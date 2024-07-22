@@ -6,6 +6,17 @@ export default {
   ],
   theme: {
     extend: {
+      fontSize: {
+        titleHero: '72px',
+        titlePage: '48px',
+        subTitle: '32px',
+        heading: '20px',
+        subHeading: '18px',
+        MD: '16px',
+        normal: '14px',
+        SM: '12px',
+        XS: '10px',
+      },
       colors: {
         adameds: {
           "A50": "#e8f8f6",

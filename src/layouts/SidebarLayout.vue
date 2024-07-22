@@ -5,7 +5,7 @@ import Header from "@/components/section/Header.vue";
 <template>
   <div>
     <Header />
-    <div class="p-3">
+    <div class="absolute bottom-[52px] left-3 right-3 top-[82px]">
       <slot />
     </div>
   </div>

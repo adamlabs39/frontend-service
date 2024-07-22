@@ -1,0 +1,145 @@
+<script setup lang="ts">
+import Accordion from "../utils/Accordion.vue";
+import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
+import { linkType } from "@/utils/Enum";
+
+interface SidebarBody {
+  name: string;
+  icon?: string;
+  type: linkType;
+  child?: SidebarBody[];
+}
+
+const props = defineProps({
+  sidebarTitle: {
+    type: String,
+    required: true,
+  },
+  sidebarBodyList: {
+    type: Array<SidebarBody>,
+    required: true,
+  },
+  showFilterPoli: {
+    type: Boolean,
+    default: false,
+  },
+  showStockBtn: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const getSVG = (svg: string) => {
+  const imgUrl = new URL(
+    `../../assets/icons/sidebar-icon/${svg}.svg`,
+    import.meta.url
+  ).href;
+  return imgUrl;
+};
+</script>
+
+<template>
+  <div class="flex w-[240px]">
+    <div
+      class="flex flex-col justify-between p-[10px] text-white rounded-xl grow bg-adameds-A300 overflow-auto"
+    >
+      <div class="p-[10px]">
+        <!-- Title -->
+        <div class="flex justify-between mb-7">
+          <div class="font-semibold text-heading">{{ sidebarTitle }}</div>
+          <img
+            src="../../assets/icons/Expand.svg"
+            alt=""
+            class="cursor-pointer"
+          />
+        </div>
+        <!-- Filter Poli -->
+        <div v-if="showFilterPoli" class="text-SM">
+          <hr class="my-[20px]" />
+          <Accordion title="Poli" icon="stethoscope" class="cursor-pointer">
+            <div class="flex m-[10px]">
+              <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+              <input
+                type="text"
+                class="w-full text-white bg-transparent"
+                placeholder="Cari Poli ..."
+              />
+            </div>
+            <div class="cursor-pointer m-[10px] pl-[10px]">Semua Poli</div>
+            <div class="cursor-pointer m-[10px] pl-[10px]">Poli Umum</div>
+            <div class="cursor-pointer m-[10px] pl-[10px]">Poli Anak</div>
+            <div class="cursor-pointer m-[10px] pl-[10px]">Poli Mata</div>
+          </Accordion>
+        </div>
+        <!-- body -->
+        <div v-for="section in props.sidebarBodyList" class="text-SM">
+          <hr class="my-[20px]" />
+          <div v-for="row1 in section.child">
+            <div
+              v-if="row1.type == linkType.LINK"
+              class="font-bold cursor-pointer mx-[10px] my-[20px] flex"
+            >
+              <img
+                v-if="row1.icon"
+                class="h-4 mr-[10px]"
+                :src="getSVG(row1.icon)"
+              />
+              <div>
+                {{ row1.name }}
+              </div>
+            </div>
+            <Accordion
+              v-else-if="row1.type == linkType.DROPDOWN"
+              :title="row1.name"
+              :icon="row1.icon ? row1.icon : ''"
+              class="cursor-pointer"
+            >
+              <div v-for="row2 in row1.child" class="ml-[10px]">
+                <div
+                  v-if="row2.type == linkType.LINK"
+                  class="cursor-pointer mx-[10px] my-[20px]"
+                >
+                  {{ row2.name }}
+                </div>
+                <Accordion
+                  v-else-if="row2.type == linkType.DROPDOWN"
+                  :title="row2.name"
+                  class="cursor-pointer"
+                >
+                  <div v-for="row3 in row2.child">
+                    <div v-if="row3.type == linkType.LINK">{{ row3.name }}</div>
+                    <Accordion
+                      v-else-if="row3.type == linkType.DROPDOWN"
+                      :title="row3.name"
+                    >
+                      <div></div>
+                    </Accordion>
+                  </div>
+                </Accordion>
+              </div>
+            </Accordion>
+          </div>
+        </div>
+      </div>
+      <div
+        v-if="showStockBtn"
+        class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-A300"
+      >
+        <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />
+        <div class="my-auto font-semibold">Stok</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+::placeholder {
+  color: white;
+  opacity: 1; /* Firefox */
+}
+
+::-ms-input-placeholder {
+  /* Edge 12 -18 */
+  color: white;
+}
+</style>
