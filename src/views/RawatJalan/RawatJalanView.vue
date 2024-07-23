@@ -49,6 +49,9 @@ const sidebarBodyList = ref<SidebarBody[]>([
       showFilterPoli
       showStockBtn
     />
-    <div class="max-h-full overflow-auto grow">Pasien Rawat Jalan</div>
+    <component
+      class="max-h-full overflow-auto grow"
+      :is="$route.meta.page || 'div'"
+    ></component>
   </div>
 </template>
