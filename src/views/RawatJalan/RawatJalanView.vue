@@ -41,7 +41,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
 </script>
 
 <template>
-  <div class="flex max-h-full gap-3">
+  <div class="flex h-full gap-3">
     <Sidebar
       sidebarTitle="Rawat Jalan"
       class="flex-none"
