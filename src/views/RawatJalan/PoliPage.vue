@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onBeforeMount, onMounted, reactive, ref } from "vue";
+import { useIndexStore } from "@/stores";
 import Textfield from "@/components/Base/Textfield.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+
+const indexStore = useIndexStore();
 
 const schema = toTypedSchema(
   yup.object({
@@ -39,14 +42,17 @@ const testLog = () => {
   console.log(email.value);
 };
 
-onBeforeMount(() => {
+const dataApi = ref();
+
+onBeforeMount(async () => {
   setValues({ email: "fahminugroho@gmail.com" });
+  dataApi.value = await indexStore.getApi();
 });
 
-const testRef = ref<any>(null)
+const testRef = ref<any>(null);
 const testRefFunction = () => {
-  testRef.value?.alerTest()
-}
+  testRef.value?.alerTest();
+};
 </script>
 <template>
   <div>
@@ -77,5 +83,6 @@ const testRefFunction = () => {
       <button @click="onSubmit">Submit</button>
     </form>
     <div @click="testRefFunction">Semua Poli</div>
+    <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
   </div>
 </template>
