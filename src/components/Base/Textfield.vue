@@ -22,6 +22,10 @@ const props = defineProps({
     type: String,
     default: "Label",
   },
+  type: {
+    type: String,
+    default: "text",
+  },
   appendIcon: {
     type: String,
     default: "",
@@ -55,7 +59,7 @@ const onInput = (event: any) => {
         ></component>
       </InputIcon>
       <InputText
-        type="text"
+        :type="type"
         v-model="value"
         @input="onInput"
         class="block h-10 border-black"
