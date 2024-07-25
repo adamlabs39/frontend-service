@@ -9,6 +9,9 @@ import PhosphorIcons from "@phosphor-icons/vue"
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
+import InputText from 'primevue/inputtext';
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
 
 const app = createApp(App)
 
@@ -28,5 +31,8 @@ app.use(PrimeVue, {
     },
   },
 });
+app.component('InputText', InputText);
+app.component('IconField', IconField);
+app.component('InputIcon', InputIcon);
 
 app.mount('#app')
