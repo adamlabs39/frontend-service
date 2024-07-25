@@ -27,6 +27,14 @@ export default {
           "A400": "#0e8174",
           "A500": "#0c7065",
         },
+        neutral: {
+          "light": "#f3f4f5",
+          "lightHover": "#edeeef",
+          "lightActive": "#dadcde",
+          "normal": "#a0a7b0",
+          "normalHover": "#90969e",
+          "normalActive": "#80868d",
+        },
         male: {
           "M50": "#ebf5ff",
           "M75": "#aed6ff",

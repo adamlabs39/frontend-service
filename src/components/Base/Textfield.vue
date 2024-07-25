@@ -34,6 +34,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const value = ref(props.modelValue);
@@ -43,6 +47,13 @@ const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
 };
+
+const alerTest = () => {
+  alert("masuk gan");
+};
+defineExpose({
+  alerTest,
+});
 </script>
 <template>
   <div>
@@ -50,11 +61,11 @@ const onInput = (event: any) => {
       label
     }}</label>
     <IconField>
-      <InputIcon v-if="appendIcon" class="-mt-[10px]">
+      <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
         <component
           :is="appendIcon"
           weight="bold"
-          :size="20"
+          :size="22"
           :color="invalid ? 'red' : 'black'"
         ></component>
       </InputIcon>
@@ -62,14 +73,15 @@ const onInput = (event: any) => {
         :type="type"
         v-model="value"
         @input="onInput"
-        class="block h-10 border-black"
+        class="block h-10 pt-1 rounded-lg border-neutral-normal"
         :class="{ 'border-red-500 text-red-500': invalid }"
+        :disabled="disabled"
       />
-      <InputIcon v-if="prependIcon" class="-mt-[10px]">
+      <InputIcon v-if="prependIcon" class="-mt-[11px] -ml-[2px]">
         <component
           :is="prependIcon"
           weight="bold"
-          :size="20"
+          :size="22"
           :color="invalid ? 'red' : 'black'"
         ></component>
       </InputIcon>

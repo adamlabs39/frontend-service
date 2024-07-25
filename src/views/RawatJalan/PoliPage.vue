@@ -42,11 +42,17 @@ const testLog = () => {
 onBeforeMount(() => {
   setValues({ email: "fahminugroho@gmail.com" });
 });
+
+const testRef = ref<any>(null)
+const testRefFunction = () => {
+  testRef.value?.alerTest()
+}
 </script>
 <template>
   <div>
     <form>
       <Textfield
+        ref="testRef"
         v-model="email"
         @input="testLog"
         label="Email"
@@ -56,7 +62,6 @@ onBeforeMount(() => {
       />
       <Textfield
         v-model="password"
-        @input="testLog"
         label="Password"
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
@@ -64,7 +69,6 @@ onBeforeMount(() => {
       />
       <Textfield
         v-model="confirmPassword"
-        @input="testLog"
         label="Confirm Password"
         appendIcon="PhLock"
         :invalid="errors.confirmPassword ? true : false"
@@ -72,6 +76,6 @@ onBeforeMount(() => {
       />
       <button @click="onSubmit">Submit</button>
     </form>
-    <div>Semua Poli</div>
+    <div @click="testRefFunction">Semua Poli</div>
   </div>
 </template>
