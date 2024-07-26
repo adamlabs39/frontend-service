@@ -56,7 +56,7 @@ const testRefFunction = () => {
 </script>
 <template>
   <div>
-    <form>
+    <form class="w-[400px]">
       <Textfield
         ref="testRef"
         v-model="email"

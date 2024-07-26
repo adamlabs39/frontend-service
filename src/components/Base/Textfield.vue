@@ -34,6 +34,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  appendText: {
+    type: String,
+    default: "",
+  },
+  prependText: {
+    type: String,
+    default: "",
+  },
   disabled: {
     type: Boolean,
     default: false,
@@ -61,8 +69,10 @@ defineExpose({
       label
     }}</label>
     <IconField>
-      <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
+      <InputIcon v-if="appendIcon || appendText" class="block -mt-[11px] -ml-[2px]">
+        <div v-if="appendText" class="text-SM text-neutral-300">{{ appendText }}</div>
         <component
+          v-else
           :is="appendIcon"
           weight="bold"
           :size="22"
@@ -73,16 +83,22 @@ defineExpose({
         :type="type"
         v-model="value"
         @input="onInput"
-        class="block h-10 pt-1 rounded-lg border-neutral-normal"
-        :class="{ 'border-red-500 text-red-500': invalid }"
+        class="h-10 pt-1 rounded-lg border-neutral-normal"
+        :class="{ 'border-red-500 text-red-500': invalid, 'pr-16': prependText, 'pl-16': appendText }"
         :disabled="disabled"
+        fluid
       />
-      <InputIcon v-if="prependIcon" class="-mt-[11px] -ml-[2px]">
+      <InputIcon v-if="prependIcon || prependText" class="-mt-[11px] -ml-[2px]">
+        <div v-if="prependText" class="w-full font-bold text-SM text-adameds-A300">
+          {{ prependText }}
+        </div>
         <component
+          v-else
           :is="prependIcon"
           weight="bold"
           :size="22"
           :color="invalid ? 'red' : 'black'"
+          class="ml-auto"
         ></component>
       </InputIcon>
     </IconField>
