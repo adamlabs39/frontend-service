@@ -62,10 +62,10 @@ const testRefFunction = () => {
         v-model="email"
         @input="testLog"
         label="Email"
-        appendIcon="PhEnvelope"
         :invalid="errors.email ? true : false"
         :invalidMessage="errors.email"
-      />
+      >
+      </Textfield>
       <Textfield
         v-model="password"
         label="Password"

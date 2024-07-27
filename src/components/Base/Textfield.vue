@@ -26,19 +26,11 @@ const props = defineProps({
     type: String,
     default: "text",
   },
-  appendIcon: {
-    type: String,
-    default: "",
-  },
   prependIcon: {
     type: String,
     default: "",
   },
-  appendText: {
-    type: String,
-    default: "",
-  },
-  prependText: {
+  appendIcon: {
     type: String,
     default: "",
   },
@@ -68,40 +60,52 @@ defineExpose({
     <label v-if="showLabel" class="block font-semibold mb-[5px]">{{
       label
     }}</label>
-    <IconField>
-      <InputIcon v-if="appendIcon || appendText" class="block -mt-[11px] -ml-[2px]">
-        <div v-if="appendText" class="text-SM text-neutral-300">{{ appendText }}</div>
-        <component
-          v-else
-          :is="appendIcon"
-          weight="bold"
-          :size="22"
-          :color="invalid ? 'red' : 'black'"
-        ></component>
-      </InputIcon>
-      <InputText
-        :type="type"
-        v-model="value"
-        @input="onInput"
-        class="h-10 pt-1 rounded-lg border-neutral-normal"
-        :class="{ 'border-red-500 text-red-500': invalid, 'pr-16': prependText, 'pl-16': appendText }"
-        :disabled="disabled"
-        fluid
-      />
-      <InputIcon v-if="prependIcon || prependText" class="-mt-[11px] -ml-[2px]">
-        <div v-if="prependText" class="w-full font-bold text-SM text-adameds-A300">
-          {{ prependText }}
-        </div>
-        <component
-          v-else
-          :is="prependIcon"
-          weight="bold"
-          :size="22"
-          :color="invalid ? 'red' : 'black'"
-          class="ml-auto"
-        ></component>
-      </InputIcon>
-    </IconField>
+    <div class="flex">
+      <div
+        v-if="$slots.prependText"
+        class="flex border border-r-0 border-solid rounded-l-lg border-neutral-normal text-SM text-neutral-300"
+      >
+        <slot name="prependText" />
+      </div>
+      <IconField class="grow">
+        <InputIcon v-if="prependIcon" class="-mt-[11px] -ml-[2px]">
+          <component
+            :is="prependIcon"
+            weight="bold"
+            :size="22"
+            :color="invalid ? 'red' : 'black'"
+          ></component>
+        </InputIcon>
+        <InputText
+          :type="type"
+          v-model="value"
+          @input="onInput"
+          class="h-10 pt-1 rounded-lg border-neutral-normal"
+          :class="{
+            'border-red-500 text-red-500': invalid,
+            'rounded-r-none border-r-0': $slots.appendText,
+            'rounded-l-none border-l-0': $slots.prependText,
+          }"
+          :disabled="disabled"
+          fluid
+        />
+        <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
+          <component
+            :is="appendIcon"
+            weight="bold"
+            :size="22"
+            :color="invalid ? 'red' : 'black'"
+            class="ml-auto"
+          ></component>
+        </InputIcon>
+      </IconField>
+      <div
+        v-if="$slots.appendText"
+        class="flex font-bold border border-l-0 border-solid rounded-r-lg border-neutral-normal text-SM text-adameds-A300"
+      >
+        <slot name="appendText" />
+      </div>
+    </div>
     <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
   </div>
 </template>
