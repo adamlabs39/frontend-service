@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 // NOTE Layout View
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
-import SidebarLayout from "@/layouts/SidebarLayout.vue";
+import SidebarLayout from "@/layouts/HeaderLayout.vue";
 // NOTE Component View
 import LoginView from "@/views/LoginView.vue";
 import DashboardView from "@/views/Dashboard/DashboardView.vue";

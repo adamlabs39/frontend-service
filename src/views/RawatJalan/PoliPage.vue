@@ -6,6 +6,13 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
+const props = defineProps({
+  filter: {
+    type: String,
+    default: "",
+  },
+});
+
 const indexStore = useIndexStore();
 
 const schema = toTypedSchema(
@@ -56,6 +63,7 @@ const testRefFunction = () => {
 </script>
 <template>
   <div>
+    Filter = {{ props.filter }}
     <form class="w-[400px]">
       <Textfield
         ref="testRef"

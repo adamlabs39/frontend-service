@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import Sidebar from "@/components/section/Sidebar.vue";
 import { linkType } from "@/utils/Enum";
+import type { SidebarBody } from "@/utils/Interface";
 import { ref } from "vue";
-
-interface SidebarBody {
-  name: string;
-  icon?: string;
-  type: linkType;
-  child?: SidebarBody[];
-}
 
 const sidebarBodyList = ref<SidebarBody[]>([
   {
@@ -20,7 +14,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "BPJS",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Monitoring Kunjungan", type: linkType.LINK },
+          { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/bpjs/monitoring-kunjungan' },
           { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK },
           { name: "Monitoring Obat Kunjungan", type: linkType.LINK },
         ],
@@ -38,20 +32,24 @@ const sidebarBodyList = ref<SidebarBody[]>([
     ],
   },
 ]);
+const filter = ref('')
 </script>
 
 <template>
   <div class="flex h-full gap-3">
     <Sidebar
       sidebarTitle="Rawat Jalan"
+      sidebarTitleUrl="/rawat-jalan"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       showFilterPoli
       showStockBtn
+      v-model:filter="filter"
     />
     <component
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
+      :filter="filter"
     ></component>
   </div>
 </template>
