@@ -43,6 +43,7 @@ const props = defineProps({
 const value = ref(props.modelValue);
 
 const emit = defineEmits(["update:modelValue"]);
+
 const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);

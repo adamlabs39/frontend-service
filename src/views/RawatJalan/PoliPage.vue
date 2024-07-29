@@ -80,6 +80,7 @@ const testRefFunction = () => {
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
         :invalidMessage="errors.password"
+        
       />
       <Textfield
         v-model="confirmPassword"
