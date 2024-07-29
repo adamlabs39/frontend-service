@@ -1,5 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+
+import AutoComplete from "@/components/Base/AutoComplete.vue";
+</script>
 
 <template>
-  <div>Test Adam</div>
+  <div class="flex justify-center items-center min-h-screen">
+    <AutoComplete/>
+  </div>
 </template>
