@@ -9,6 +9,9 @@ import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
 // NOTE Page View
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+// NOTE Test Component
+import TestComponentNaya from "@/views/TestComponentNaya.vue";
+import TestComponentAdam from "@/views/TestComponentAdam.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +45,20 @@ const router = createRouter({
       name: "bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
       component: RawatJalanView,
+    },
+
+    // NOTE Test Component
+    {
+      path: "/component-naya",
+      name: "component-naya",
+      meta: { layout: DefaultLayout },
+      component: TestComponentNaya,
+    },
+    {
+      path: "/component-adam",
+      name: "component-adam",
+      meta: { layout: DefaultLayout },
+      component: TestComponentAdam,
     },
   ],
 });
