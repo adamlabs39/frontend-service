@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 
-export interface OptionList {
-  name: string;
-  code: string;
-}
 
 const props = defineProps({
     showLabel: {
@@ -15,11 +11,15 @@ const props = defineProps({
         type: String,
         default: "Label",
     },
+    placeHolder:{
+        type:String,
+        default:"PlaceHolder"
+    },
     modelValue: {
         default: "",
     },
     options: {
-        type: Array<OptionList>,
+        type: Array,
         default: () => []
     },
     optionValue: {
@@ -58,6 +58,8 @@ const showClear = computed(() => {
 });
 
 const onChange = (event: any) => {
+    console.log(event);
+    
     if (!event) return;
     emit("update:modelValue", event.value);
     emit("change", event.value);
@@ -76,7 +78,7 @@ const onChange = (event: any) => {
             :optionLabel="optionLabel"
             :loading="isLoading"
             :showClear="showClear"
-            placeholder="Select"
+            :placeholder="placeHolder"
             :disabled="disabled"
             @change="onChange"
             variant="filled"
@@ -84,15 +86,22 @@ const onChange = (event: any) => {
                 'border-red-500 text-red-500': invalid,
                 'w-full md:w-56 h-10 rounded-lg border-neutral-normal': true
             }"
-        >
+            filter
+            filterPlaceholder="Search"
+            pt:pcFilterIconContainer:class="flex items-center"
+            pt:pcFilter:root:class="border-neutral-normal"
+            >
+        
             <template #dropdownicon>
                 <PhCaretDown
                     weight="fill"
                     :class="{ 'text-red-500': invalid, 'text-black': modelValue }"
                 />
             </template>
+            
         </Select>
         <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
     </div>
 </template>
+
 
