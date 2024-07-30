@@ -41,8 +41,9 @@ const onChange = (event: any) => {
     <AutoComplete
       v-model="value"
       dropdown
-      :suggestions="suggestions"
+      :suggestions="props.suggestions"
       @complete="onChange"
+      optionLabel: "o"
     >
       <template #dropdownicon>
         <PhAirplaneTilt :size="32" />

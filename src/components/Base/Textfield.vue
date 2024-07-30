@@ -94,7 +94,7 @@ defineExpose({
           <component
             :is="appendIcon"
             weight="bold"
-            :size="22"
+            :size="32"
             :color="invalid ? 'red' : 'black'"
             class="ml-auto"
           ></component>

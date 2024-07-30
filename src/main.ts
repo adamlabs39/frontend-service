@@ -13,6 +13,8 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import AutoComplete from 'primevue/autocomplete';
+import Textarea from 'primevue/textarea'
+
 
 const app = createApp(App)
 
@@ -36,6 +38,8 @@ app.component('InputText', InputText);
 app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
 app.component('AutoComplete', AutoComplete);
+app.component('TextArea', Textarea);
+
 
 
 

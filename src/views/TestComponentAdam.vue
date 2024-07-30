@@ -1,37 +1,45 @@
 <template>
   <div>
-    <AutoComplete 
-      showLabel="Choose Pasien" 
-      v-model="value" 
-      :suggestions="items" 
-      @complete="search"
-    />
+    <form  action="" class="w-[400px]">
+  
+      <TextArea placeholder="Text" label ="Nama Default" v-model="nameValue" variant="filled" />
+      <TextArea placeholder="Hover Email" label="Email Hover" v-model="emailValue"/>
+      <TextArea placeholder="Alamatmu" label="Alamat saat Invalid" invalid v-model="alamatValue"/>
+      <TextArea placeholder="Masukkan Password" label="Password (DISABLED)" disabled/>
+      <TextArea placeholder="Tes AutoResize" label="AutoResize MENYALA (belum)" autoResize v-model="autoResizeValue"/>
+    </form>
+
+    <p>Namamu: {{ nameValue }}</p>
+    <p>Emailmu: {{ emailValue }}</p>
+    <p>Alamatmu: {{ alamatValue }}</p>
+    <p>Autoresize: {{ autoResizeValue}}</p>
+
   </div>
+  <!-- <AutoComplete 
+        showLabel
+        v-model="value" 
+        :suggestions="items" 
+        optionLabel="name"
+        @complete="search"
+      /> -->
+
+  <!-- TextArea -->
 </template>
 
 <script setup lang="ts">
 import AutoComplete from "@/components/Base/AutoComplete.vue";
+import TextArea from "../components/Base/TextArea.vue";
+
 import { ref } from "vue";
 
-const value = ref("");
-const items = ref<any[]>([]);
-
-// Daftar pasien tetap
-
-// Fungsi pencarian
-const search = (event: { query: string }) => {
-
-  let _items = [
-  { id: 1, name: "Megawati" },
-  { id: 2, name: "Soeharto" },
-  { id: 3, name: "Soekarno" },
-  { id: 4, name: "Susilo Bambang Yudhoyono" },
-  { id: 5, name: "Jokowi" }
-];
+const nameValue = ref("");
+const emailValue = ref("");
+const alamatValue = ref("");
+const autoResizeValue = ref("");
 
 
-   items.value = event.query ? items.value = _items.filter(item => 
-      item.name.toLowerCase().includes(event.query.toLowerCase())
-    ): _items;
-}
+
+const testLog = () => {
+  console.log(nameValue.value);
+};
 </script>
