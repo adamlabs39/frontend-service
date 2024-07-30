@@ -12,6 +12,7 @@ import Aura from '@primevue/themes/aura';
 import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import Select from 'primevue/select'
 
 const app = createApp(App)
 
@@ -34,5 +35,6 @@ app.use(PrimeVue, {
 app.component('InputText', InputText);
 app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
+app.component('Select', Select);
 
 app.mount('#app')

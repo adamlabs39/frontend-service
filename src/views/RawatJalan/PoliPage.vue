@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, reactive, ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
 import Textfield from "@/components/Base/Textfield.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { downloadPdf } from "@/utils/PdfMake";
 
 const props = defineProps({
   filter: {
@@ -92,5 +93,6 @@ const testRefFunction = () => {
     </form>
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
+    <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
   </div>
 </template>
