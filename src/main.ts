@@ -16,6 +16,7 @@ import Select from 'primevue/select'
 import AutoComplete from 'primevue/autocomplete'
 import Chip from 'primevue/chip'
 import Dialog from 'primevue/dialog';
+import Breadcrumb from 'primevue/breadcrumb';
 
 const app = createApp(App)
 
@@ -42,5 +43,6 @@ app.component('Select', Select);
 app.component('AutoComplete', AutoComplete);
 app.component('Chip', Chip);
 app.component('Dialog', Dialog);
+app.component('Breadcrumb', Breadcrumb);
 
 app.mount('#app')

@@ -4,6 +4,7 @@ import { useIndexStore } from "@/stores";
 import Textfield from "@/components/Base/Textfield.vue";
 import AutoComplete from "@/components/Base/AutoComplete.vue";
 import Dialog from "@/components/Base/Dialog.vue";
+import BreadCrumb from "@/components/Base/BreadCrumb.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -77,6 +78,8 @@ onBeforeMount(async () => {
 });
 
 const testDialog = ref(false);
+const dataBreadHome = ref({ label: "Electronics", home: true });
+const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
 
 const testRef = ref<any>(null);
 const testRefFunction = () => {
@@ -85,6 +88,7 @@ const testRefFunction = () => {
 </script>
 <template>
   <div>
+    <BreadCrumb :home="dataBreadHome" :model="dataBreadCrumb"></BreadCrumb>
     Filter = {{ props.filter }}
     <form class="w-[400px]">
       <Textfield
