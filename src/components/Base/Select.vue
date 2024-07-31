@@ -82,10 +82,9 @@ const onChange = (event: any) => {
             :disabled="disabled"
             @change="onChange"
             variant="filled"
-            :class="{
-                'border-red-500 text-red-500': invalid,
-                'w-full md:w-56 h-10 rounded-lg border-neutral-normal': true
-            }"
+            class="h-10 rounded-lg border-neutral-normal"
+            :invalid=" invalid"
+            fluid
             filter
             filterPlaceholder="Search"
             pt:pcFilterIconContainer:class="flex items-center"

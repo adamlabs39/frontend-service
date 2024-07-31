@@ -33,6 +33,12 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    minDate:{
+        type:Date,
+    },
+    maxDate:{
+        type:Date,
+    }
 });
 
 const emit = defineEmits(["update:modelValue", "input", "date-select"]);
@@ -76,6 +82,8 @@ const onInput = (event: any) => {
                     <DatePicker
                     :timeOnly="timeOnly"
                     v-model="value"
+                    :minDate="minDate"
+                    :maxDate="maxDate"
                     :placeholder="placeHolder"
                     :disabled="disabled"
                     @date-select="onInput"
@@ -83,7 +91,7 @@ const onInput = (event: any) => {
                     dateFormat="dd-mm-yy"
                     :manualInput="false"    
                     fluid
-                    :pt:pcInput:root:class="{'text-red-500 border-red-500': invalid,'w-full md:w-56 h-10 rounded-lg border-neutral-normal pl-10': true,}"
+                    :pt:pcInput:root:class="{'text-red-500 border-red-500': invalid,'w-full h-10 rounded-lg border-neutral-normal pl-10': true,}"
                 />
             </IconField>
         </div>

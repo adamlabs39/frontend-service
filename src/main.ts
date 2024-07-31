@@ -14,6 +14,8 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
+import ToggleSwitch from 'primevue/toggleswitch';
+import Card from 'primevue/card';
 
 const app = createApp(App)
 
@@ -38,5 +40,7 @@ app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
+app.component('ToggleSwitch',ToggleSwitch)
+app.component('Card', Card)
 
 app.mount('#app')
