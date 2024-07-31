@@ -13,6 +13,8 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
+import AutoComplete from 'primevue/autocomplete'
+import Chip from 'primevue/chip'
 
 const app = createApp(App)
 
@@ -36,5 +38,7 @@ app.component('InputText', InputText);
 app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
 app.component('Select', Select);
+app.component('AutoComplete', AutoComplete);
+app.component('Chip', Chip);
 
 app.mount('#app')

@@ -2,6 +2,7 @@
 import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
 import Textfield from "@/components/Base/Textfield.vue";
+import AutoComplete from "@/components/Base/AutoComplete.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -51,6 +52,23 @@ const testLog = () => {
 };
 
 const dataApi = ref();
+const testAutoComplete = ref();
+const itemsAutoComplete = ref([
+  "Indonesia",
+  "Malaysia",
+  "Singapura",
+  "Timor Leste",
+  "Filipina",
+  "Thailand",
+]);
+// const itemsAutoComplete = ref([
+//   { name: "Indonesia", id: 1 },
+//   { name: "Malaysia", id: 2 },
+//   { name: "Singapura", id: 3 },
+//   { name: "Timor Leste", id: 4 },
+//   { name: "Filipina", id: 5 },
+//   { name: "Thailand", id: 6 },
+// ]);
 
 onBeforeMount(async () => {
   setValues({ email: "fahminugroho@gmail.com" });
@@ -91,6 +109,13 @@ const testRefFunction = () => {
       />
       <button @click="onSubmit">Submit</button>
     </form>
+    <AutoComplete
+      v-model="testAutoComplete"
+      :options="itemsAutoComplete"
+      label="AutoComplete"
+      multiple
+    />
+    <div>Data: {{ testAutoComplete }}</div>
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
     <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
