@@ -4,7 +4,7 @@
     <MultiSelect
       v-model="value"
       :options="options"
-      @input="onSelect"
+      @change="onSelect"
       :optionValue="optionValue"
       :optionLabel="optionLabel"
       fluid
@@ -75,11 +75,13 @@ const props = defineProps({
 });
 const value = ref(props.modelValue);
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue","change"]);
 
 const onSelect = (event: any) => {
+  console.log(`Event: `,event)
   if (!event) return;
   emit("update:modelValue", event.target?.value);
+  emit("change", event.value);
 };
 
 const alerTest = () => {

@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <form action="" class="w-[400px]">
-      <!-- TextArea dengan variasi -->
+  <div class="h-screen p-3 overflow-scroll">
+    <!-- TextArea dengan variasi -->
+    <div class="w-[400px]">
       <TextArea
         placeholder="Text"
         label="Nama Default"
@@ -30,7 +30,13 @@
         autoResize
         v-model="autoResizeValue"
       />
-    </form>
+      <div class="p-3">
+        <p>Namamu: {{ nameValue }}</p>
+        <p>Emailmu: {{ emailValue }}</p>
+        <p>Alamatmu: {{ alamatValue }}</p>
+        <p>Autoresize: {{ autoResizeValue }}</p>
+      </div>
+    </div>
 
     <!-- MultiSelect -->
     <div class="w-[500px] p-3">
@@ -39,25 +45,29 @@
         placeholder="Select Hospital"
         v-model="selectedHospital"
         :options="hospital"
-        optionLabel="name" 
+        optionLabel="name"
         optionValue="code"
         filter
-       :maxSelectedLabels=3
+        :maxSelectedLabels="3"
+        @change="testLog"
+        
       />
+      <p>Hospital :{{ selectedHospital }}</p>
     </div>
 
-    <p>Namamu: {{ nameValue }}</p>
-    <p>Emailmu: {{ emailValue }}</p>
-    <p>Alamatmu: {{ alamatValue }}</p>
-    <p>Autoresize: {{ autoResizeValue }}</p>
+    <!-- Input Number -->
+    <div class="w-[170px]">
+      <CustomInputNumber
+        v-model="numberValue"
+        label="Input Number"
+        :step="1"
+        :max="10"
+        :min="-20"
+        buttonLayout="horizontal"
+        
+      />
+    </div>
   </div>
-  <!-- <AutoComplete 
-        showLabel
-        v-model="value" 
-        :suggestions="items" 
-        optionLabel="name"
-        @complete="search"
-      /> -->
 
   <!-- TextArea -->
 </template>
@@ -67,6 +77,7 @@ import TextArea from "@/components/Base/TextArea.vue";
 
 import { ref } from "vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const nameValue = ref("");
 const emailValue = ref("");
@@ -81,7 +92,11 @@ const hospital = ref([
   { name: "Soekarno", code: "SO" },
 ]);
 
-const testLog = () => {
-  console.log(nameValue.value);
+// Untuk InputNumber
+const numberValue = ref(0);
+
+const testLog = (data: any) => {
+  console.log("Data", data);
+  console.log("Hospital data: ", selectedHospital.value);
 };
 </script>
