@@ -15,8 +15,8 @@ import InputIcon from 'primevue/inputicon'
 import AutoComplete from 'primevue/autocomplete';
 import Textarea from 'primevue/textarea'
 import MultiSelect from 'primevue/multiselect'
-
 import InputNumber from 'primevue/inputnumber';
+import Chip from 'primevue/chip';
 
 
 const app = createApp(App)
@@ -44,6 +44,7 @@ app.component('AutoComplete', AutoComplete);
 app.component('TextArea', Textarea);
 app.component('MultiSelect', MultiSelect);
 app.component('InputNumber', InputNumber);
+app.component('Chip', Chip);
 
 
 
