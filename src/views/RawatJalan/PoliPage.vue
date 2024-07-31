@@ -3,6 +3,7 @@ import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
 import Textfield from "@/components/Base/Textfield.vue";
 import AutoComplete from "@/components/Base/AutoComplete.vue";
+import Dialog from "@/components/Base/Dialog.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -75,6 +76,8 @@ onBeforeMount(async () => {
   dataApi.value = await indexStore.getApi();
 });
 
+const testDialog = ref(false);
+
 const testRef = ref<any>(null);
 const testRefFunction = () => {
   testRef.value?.alerTest();
@@ -116,6 +119,12 @@ const testRefFunction = () => {
       multiple
     />
     <div>Data: {{ testAutoComplete }}</div>
+    <div @click="testDialog = true">Show</div>
+    <Dialog class="" v-model:visible="testDialog" headerBg="bg-danger-D300">
+      <template #header> 1 </template>
+      <template #body>2</template>
+      <template #footer>3</template>
+    </Dialog>
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
     <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>

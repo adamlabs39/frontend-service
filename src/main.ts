@@ -15,6 +15,7 @@ import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import AutoComplete from 'primevue/autocomplete'
 import Chip from 'primevue/chip'
+import Dialog from 'primevue/dialog';
 
 const app = createApp(App)
 
@@ -40,5 +41,6 @@ app.component('InputIcon', InputIcon);
 app.component('Select', Select);
 app.component('AutoComplete', AutoComplete);
 app.component('Chip', Chip);
+app.component('Dialog', Dialog);
 
 app.mount('#app')
