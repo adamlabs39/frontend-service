@@ -18,6 +18,8 @@ import MultiSelect from 'primevue/multiselect'
 import InputNumber from 'primevue/inputnumber';
 import Chip from 'primevue/chip';
 
+
+
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import ToggleSwitch from 'primevue/toggleswitch';
@@ -49,10 +51,7 @@ app.component('TextArea', Textarea);
 app.component('MultiSelect', MultiSelect);
 app.component('InputNumber', InputNumber);
 app.component('Chip', Chip);
-
-
-
-
+app.component('Card', Card);
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)

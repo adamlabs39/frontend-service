@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CustomChip from "@/components/Base/CustomChip.vue";
+
 </script>
 <template>
     <Card style="width: full; overflow: hidden;height: full;" pt:body:class="bg-adameds-A50">
@@ -12,8 +14,20 @@
                     <div class="text-sm font-medium leading-5">Adam Bin Adam</div>
                 </div>
                 <div class="flex items-center gap-2 text-sm font-normal leading-5">
-                    <div>button</div>
-                    <div>button</div>
+                    <CustomChip
+                            :showCheckedIcon=false
+                            label="Tunai"
+                            borderColor="border-adameds-A300"
+                            textColor="text-adameds-A300"
+                            
+                        />
+                        <CustomChip
+                            :showCheckedIcon=false
+                            label="Tunai"
+                            borderColor="border-adameds-A300"
+                            textColor="text-adameds-A300"
+                            
+                        />
                 </div>
             </div>
         </template>
