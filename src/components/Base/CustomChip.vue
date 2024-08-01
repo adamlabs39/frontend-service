@@ -61,7 +61,7 @@ const props = defineProps({
     type: Boolean,
     default:true
   },
-  customizedClass: {
+  customClass: {
     type: String,
     default:'font-bold border-2 rounded-full cursor-pointer h-8'
   }
@@ -73,5 +73,5 @@ const onSelectedValue = () => {
   emit("selected", props.label);
 };
 
-const heightClass = computed(() => props.customizedClass)
+const customizedClass = computed(() => props.customClass)
 </script>

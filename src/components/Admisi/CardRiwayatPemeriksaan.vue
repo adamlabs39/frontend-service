@@ -1,35 +1,44 @@
 <script setup lang="ts">
 import CustomChip from "@/components/Base/CustomChip.vue";
+
+const props = defineProps({
+  pemeriksaan: {
+    default: Object
+  },
+});
 </script>
 <template>
-    <Card style="width: full; overflow: hidden;height: full;" pt:body:class="bg-adameds-A50">
-        <template #content>
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="flex gap-2">
-                        <p class="text-sm font-bold leading-5">UGD</p>
-                        <CustomChip :showCheckedIcon=false label="Tunai" borderColor="border-adameds-A300"
-                            textColor="text-adameds-A300" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <img src="../../assets/icons/user-doctor-solid.svg" />
-                        <div class="text-sm font-normal leading-5 text-neutral-normal">dr. Adameds bin Adameds</div>
-                    </div>
-                    <div class="flex gap-2 text-sm font-normal leading-5">
-                        <p>Tanggal</p>
-                        <div class="flex items-center justify-center">
-                            <PhArrowRight :size="18" />
-                        </div>
-                        <div>2024-6-12</div>
-                        <div>09:00</div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-center">
-                    <CustomChip :showCheckedIcon=false label="Tunai" borderColor="border-adameds-A300"
-                        textColor="text-adameds-A300" />
-                </div>
+  <Card style="width: full; overflow: hidden;" pt:body:class="px-2.5 bg-adameds-A50 h-[80px] py-0 flex justify-center min-h-[80px]">
+    <template #content>
+      <div class="flex items-center justify-between h-full">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="text-sm font-bold leading-5">{{ pemeriksaan.ruangan }}</div>
+            <CustomChip :label="pemeriksaan.asuransi" border-color="border-[#14B8A6]" text-color="text-[#14B8A6]"
+              :showCheckedIcon="false"
+              customClass="font-semibold flex h-4 border-2 rounded-full text-[8px] bg-transparent" />
+          </div>
+          <div class="flex items-center gap-2">
+            <img src="../../assets/icons/user-doctor-solid.svg" />
+            <div class="text-sm font-normal leading-5 text-neutral-normal">
+              {{ pemeriksaan.dokter }}
             </div>
-        </template>
-    </Card>
-
+          </div>
+          <div class="flex gap-2 text-sm font-normal leading-5">
+            <div>Tanggal</div>
+            <div class="flex items-center justify-center">
+              <img src="../../assets/icons/Vector-arows.svg" />
+            </div>
+            <div>{{ pemeriksaan.tanggal }}</div>
+            <div>{{ pemeriksaan.jam }}</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-center">
+          <CustomChip :label="pemeriksaan.statusLunas" text-color="text-[#14ac5b]" borderColor="border-transparent"
+            :showCheckedIcon="false"
+            customClass="font-normal h-4 border-2 rounded-full text-sm leading-5 bg-success-S50" />
+        </div>
+      </div>
+    </template>
+  </Card>
 </template>

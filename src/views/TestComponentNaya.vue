@@ -31,7 +31,7 @@ const testDate = (data: any) => {
 let today = new Date();
 let month = today.getMonth();
 let year = today.getFullYear();
-let firstDayOfCurrentMonth = new Date(year, month+1, 10);
+let firstDayOfCurrentMonth = new Date(year, month + 1, 10);
 
 //For Test Time Picker Component
 const selectedTime = ref();
@@ -44,72 +44,82 @@ const toggleSwitch = ref();
 const testSwitch = (data: any) => {
   console.log("value: ", toggleSwitch.value);
 };
+
+//For Test Card
+const cardPanggilan = ref(
+  { noAntri: '9349',
+    namaPoli:'Poli Gigi',
+    namaDokter: 'dr. Adameds bin Adameds',
+  },
+);
+
+const tiketAntrian = ref(
+  { noRM: '001827',
+    noBPJS:'9234938492',
+    nik: '0932493849382',
+    nama:'Adam bin Adam',
+    tanggalLahir:'01 Januari 2000',
+    gender:'Laki-laki',
+    namaPoli:'Poli Anak',
+    dokter:'dr. Umum',
+    jadwal:'07:00-10:00',
+    tanggal:'10 Jan 2024',
+    noAntri:'PD-02-01',
+  },
+);
+const riwayatPemerikasaan = ref(
+  { ruangan: 'IGD',
+    asuransi:'TUNAI',
+    dokter: 'dr. Adameds bin Adameds',
+    tanggal:'2024-6-12',
+    jam:'09:00',
+    statusLunas:'Lunas'
+  },
+);
+
+const monitoringBed = ref(
+  { nomorBed: '1',
+    nomorRM:'00123456',
+    namaPasien: 'Adam bin Adam',
+    gender:'Laki-laki Dewasa',
+    asuransi:'BPJS',
+  },
+);
 </script>
 
 <template>
   <div class="h-screen overflow-scroll">
-    <!-- <Select 
-      label="Choose a City" 
-      v-model="selectedItems" 
-      :options="items" 
-      optionValue="code" 
-      optionLabel="name" 
-      :isLoading="false" 
-      :invalid="false"
-      invalidMessage="Wajib diisi" 
-      :disabled="false" 
-      @change="testLog" 
-    />
+    <Select label="Choose a City" v-model="selectedItems" :options="items" optionValue="code" optionLabel="name"
+      :isLoading="false" :invalid="false" invalidMessage="Wajib diisi" :disabled="false" @change="testLog" />
     <p>Kota: {{ selectedItems }}</p>
     <br>
-    <DatePickers
-      label="Choose a Date" 
-      v-model="selectedDate" 
-      :invalid="false"
-      invalidMessage="Wajib diisi" 
-      :disabled="false" 
-     
-      :maxDate=firstDayOfCurrentMonth
-    />
-    
+    <DatePickers label="Choose a Date" v-model="selectedDate" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" :maxDate=firstDayOfCurrentMonth />
+
     <p>Date: {{ selectedDate }}</p>
     <br>
-    <DatePickers
-      label="Choose a Time" 
-      timeOnly
-      v-model="selectedTime" 
-      :invalid="false"
-      invalidMessage="Wajib diisi" 
-      :disabled="false" 
-      @date-select="testTime" 
-    />
+    <DatePickers label="Choose a Time" timeOnly v-model="selectedTime" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" @date-select="testTime" />
     <p>Time: {{ selectedTime }}</p>
     <br>
-    <Switch 
-    label="Switch"
-    v-model="toggleSwitch" 
-    @input="testSwitch"
-    :invalid="false"
-    invalidMessage="Wajib diisi" 
-    :disabled="false" 
-    />
+    <Switch label="Switch" v-model="toggleSwitch" @input="testSwitch" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" />
     <p>Switch: {{ toggleSwitch }}</p>
     <br>
     <div class="w-[300px]">
-      <CardPanggilan/>
-    </div>
-    <br> -->
-    <!-- <div class="w-3/4 h-[100px]">
-      <TiketAntrian />
-    </div> -->
-    <br>
-    <div class="w-3/4 h-[100px]">
-      <CardRiwayatPemeriksaan />
+      <CardPanggilan :cardPanggilan="cardPanggilan" />
     </div>
     <br>
-    <div class="w-3/4 h-[100px]">
-      <CardMonitoringBed />
+    <div class="w-3/4">
+      <TiketAntrian :tiketAntrian="tiketAntrian"/>
+    </div>
+    <br>
+    <div class="w-3/4">
+      <CardRiwayatPemeriksaan :pemeriksaan="riwayatPemerikasaan"/>
+    </div>
+    <br>
+    <div class="w-3/4">
+      <CardMonitoringBed :monitoringBed="monitoringBed" />
     </div>
   </div>
-
 </template>
