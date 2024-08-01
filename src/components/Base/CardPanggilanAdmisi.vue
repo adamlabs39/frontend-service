@@ -44,7 +44,9 @@ const props = defineProps({
 <template>
   <Card class="bg-adameds-A50 h-[92px]">
     <template #content>
-      <div class="flex items-center justify-between h-[45px] gap-3">
+      <div
+        class="flex items-center justify-between h-[45px] gap-3"
+      >
         <!-- Kiri -->
         <div
           class="flex bg-adameds-A75 rounded-md w-[60px] items-center justify-center text-adameds-A300 font-semibold text-base font-poppins h-[60px]"
@@ -85,7 +87,7 @@ const props = defineProps({
                 },
               },
               style: {
-                  background: 'bg-white',
+                background: 'bg-white',
               },
               text: 'text-white',
             },

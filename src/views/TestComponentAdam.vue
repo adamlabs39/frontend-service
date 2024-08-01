@@ -121,7 +121,7 @@
     <p>Terpilih : {{ selectedChipValues.join(", ") }}</p>
 
     <!-- Card Panggilan Aktif -->
-    <div class="lg:w-1/2 md:w-1/2">
+    <div class="lg:w-full md:w-1/2">
       <CardPanggilanAdmisi
       namaPasien="Nama Pasien"
       nomorIdentitas="32700123871230123"
@@ -129,6 +129,15 @@
       >
       </CardPanggilanAdmisi>
     </div>
+
+    <!-- Card Panggilan Selesai -->
+     <div class="mt-4">
+      <CardPanggilanSelesai
+      namaPasien="Nama Pasien"
+      nomorIdentitas="32700123871230123"
+      kodeBooking="BOOK.027391237"
+      />
+     </div>
   </div>
 </template>
 
@@ -139,6 +148,8 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
+
 
 const nameValue = ref("");
 const emailValue = ref("");
