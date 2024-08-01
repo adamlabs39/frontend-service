@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, onMounted, reactive, ref } from "vue";
 import { useIndexStore } from "@/stores";
-import Textfield from "@/components/Base/Textfield.vue";
+import Textfield from "@/components/Base/CustomTextfield.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";

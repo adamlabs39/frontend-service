@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import DatePickers from "@/components/Base/DatePicker.vue";
-import Select from "@/components/Base/Select.vue";
-import Switch from "@/components/Base/Switch.vue";
-import CardPanggilan from "@/components/Base/CardPanggilan.vue";
+import DatePickers from "@/components/Base/CustomDatePicker.vue";
+import Select from "@/components/Base/CustomSelect.vue";
+import Switch from "@/components/Base/CustomSwitch.vue";
+import CardPanggilan from "@/components/Antrian/CardPanggilan.vue";
 import { ref } from "vue";
-import TiketAntrian from "@/components/Base/TiketAntrian.vue";
+import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
+import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -45,8 +46,8 @@ const testSwitch = (data: any) => {
 </script>
 
 <template>
-  <div class="h-screen m-10 overflow-scroll">
-    <Select 
+  <div class="h-screen overflow-scroll">
+    <!-- <Select 
       label="Choose a City" 
       v-model="selectedItems" 
       :options="items" 
@@ -96,10 +97,14 @@ const testSwitch = (data: any) => {
     <div class="w-[300px]">
       <CardPanggilan/>
     </div>
+    <br> -->
+    <!-- <div class="w-3/4 h-[100px]">
+      <TiketAntrian />
+    </div> -->
     <br>
     <div class="w-3/4 h-[100px]">
-      <TiketAntrian />
+      <CardRiwayatPemeriksaan />
     </div>
-    
   </div>
+
 </template>
