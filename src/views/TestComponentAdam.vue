@@ -121,7 +121,7 @@
     <p>Terpilih : {{ selectedChipValues.join(", ") }}</p>
 
     <!-- Card Panggilan Aktif -->
-    <div class="w-1/2">
+    <div class="">
       <CardPanggilanAdmisi
       namaPasien="Nama Pasien"
       nomorIdentitas="32700123871230123"
