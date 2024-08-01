@@ -138,6 +138,11 @@
       kodeBooking="BOOK.027391237"
       />
      </div>
+
+     <!-- Customable Button -->
+      <div class="flex gap-3 p-3">
+        <CustomButton label="HAHAH" severity="bg-slate-400" class=""/>
+      </div>
   </div>
 </template>
 
@@ -149,6 +154,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
 import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
+import CustomButton from "@/components/Base/CustomButton.vue"
 
 
 const nameValue = ref("");
