@@ -68,7 +68,7 @@
 
     <!-- Chip -->
     <div class="flex gap-4 p-3 ">
-      <CustomChip
+      <CustomChip 
         label="SEMUA"
         :isSelected="selectedChipValues.includes('SEMUA')"
         @selected="onChipSelected"
