@@ -1,10 +1,10 @@
 <template>
   <div>
     <Chip
-      class="h-8 font-bold border-2 rounded-full cursor-pointer"
       :class="[
+        customizedClass,
         isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedBorderColor: borderColor
+        isSelected ? selectedBorderColor : borderColor
       ]"
       @click="onSelectedValue"
     >
@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
@@ -59,6 +60,10 @@ const props = defineProps({
   showCheckedIcon: {
     type: Boolean,
     default:true
+  },
+  customizedClass: {
+    type: String,
+    default:'font-bold border-2 rounded-full cursor-pointer h-8'
   }
 });
 
@@ -67,4 +72,6 @@ const emit = defineEmits(["selected"]);
 const onSelectedValue = () => {
   emit("selected", props.label);
 };
+
+const heightClass = computed(() => props.customizedClass)
 </script>

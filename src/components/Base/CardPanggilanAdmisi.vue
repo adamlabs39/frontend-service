@@ -1,7 +1,7 @@
 <template>
-  <Card class=" bg-adameds-A50 h-[90px]">
+  <Card class=" bg-adameds-A50 h-[100px]">
     <template #content>
-      <div class="flex items-center justify-between h-[90px] bg-slate-900">
+      <div class="flex items-center justify-between h-[60px]">
         <!-- Kiri -->
         <div
           class="flex bg-adameds-A75 rounded-md w-[60px] items-center justify-center text-adameds-A300 font-semibold text-base font-poppins h-[60px]"
@@ -9,12 +9,12 @@
           {{ nomorAntrian }}
         </div>
         <!-- Tengah --> 
-        <div class="flex flex-col justify-start flex-1 gap-2 mx-3">
+        <div class="flex flex-col justify-start flex-1 gap-2 mx-3 my-3">
           <!-- Nama Pasien dan Nomor Identitas -->
-          <div class="flex flex-col justify-center">
+          <div class="flex flex-col justify-center mt-2">
             <div class="font-bold text-black text-MD">{{ namaPasien }}</div>
-            <div>{{ nomorIdentitas }}</div>
-          </div>
+            <div class="font-normal text-SM">{{ nomorIdentitas }}</div>
+          </div>    
           <hr class="border-2 border-adameds-A300" />
           <!-- Chip dan Booking -->
           <div class="flex items-center gap-2 ">
@@ -23,8 +23,9 @@
               border-color="border-[#14B8A6]"
               text-color="text-[#14B8A6]"
               :showCheckedIcon=false
+              customizedClass="font-semibold h-3 border-2 rounded-full"
             />
-            <div class="">{{ kodeBooking }}</div>
+            <div class="font-normal text-SM">{{ kodeBooking }}</div>
           </div>
         </div>
         <!-- Kanan -->
