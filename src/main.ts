@@ -19,6 +19,7 @@ import InputNumber from 'primevue/inputnumber';
 import Chip from 'primevue/chip';
 
 import Card from 'primevue/card';
+import Tooltip from 'primevue/tooltip'
 
 
 
@@ -49,6 +50,7 @@ app.component('MultiSelect', MultiSelect);
 app.component('InputNumber', InputNumber);
 app.component('Chip', Chip);
 app.component('Card', Card);
+app.directive('tooltip', Tooltip)
 
 
 

@@ -1,25 +1,3 @@
-<template>
-  <div>
-    <Chip
-      :class="[
-        customizedClass,
-        isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedBorderColor : borderColor
-      ]"
-      @click="onSelectedValue"
-    >
-      <template v-if="showCheckedIcon">
-        <PhCheckCircle
-          :size="18"
-          :color="isSelected ? selectedIconColor : iconColor"
-          weight="fill"
-        />
-      </template>
-      <p :label="label">{{ props.label }}</p>
-    </Chip>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 import { defineProps, defineEmits } from "vue";
@@ -75,3 +53,30 @@ const onSelectedValue = () => {
 
 const customizedClass = computed(() => props.customClass)
 </script>
+
+
+
+
+
+<template>
+  <div>
+    <Chip
+      :class="[
+        customizedClass,
+        isSelected ? selectedTextColor : textColor,
+        isSelected ? selectedBorderColor : borderColor
+      ]"
+      @click="onSelectedValue"
+    >
+      <template v-if="showCheckedIcon">
+        <PhCheckCircle
+          :size="18"
+          :color="isSelected ? selectedIconColor : iconColor"
+          weight="fill"
+        />
+      </template>
+      <p :label="label">{{ props.label }}</p>
+    </Chip>
+  </div>
+</template>
+

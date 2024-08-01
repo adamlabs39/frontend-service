@@ -1,25 +1,3 @@
-<template>
-  <div class="">
-    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
-    <MultiSelect
-      v-model="value"
-      :options="options"
-      @change="onSelect"
-      :optionValue="optionValue"
-      :optionLabel="optionLabel"
-      fluid
-      filter
-      display="chip"
-      :placeholder="placeholder"
-      :maxSelectedLabels="maxSelectedLabels"
-      class="h-20 pt-1 pl-1 border-2 rounded-lg border-neutral-normal"
-      :class="{
-        'border-red-500 text-red-500': invalid,
-      }"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from "vue";
 
@@ -91,3 +69,28 @@ defineExpose({
   alerTest,
 });
 </script>
+
+
+
+<template>
+  <div class="">
+    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
+    <MultiSelect
+      v-model="value"
+      :options="options"
+      @change="onSelect"
+      :optionValue="optionValue"
+      :optionLabel="optionLabel"
+      fluid
+      filter
+      display="chip"
+      :placeholder="placeholder"
+      :maxSelectedLabels="maxSelectedLabels"
+      class="h-20 pt-1 pl-1 border-2 rounded-lg border-neutral-normal"
+      :class="{
+        'border-red-500 text-red-500': invalid,
+      }"
+    />
+  </div>
+</template>
+

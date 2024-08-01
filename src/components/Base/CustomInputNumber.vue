@@ -1,31 +1,3 @@
-<template>
-  <div>
-    <div class="p-3">
-      <label
-        for="horizontal-buttons"
-        class="block mb-2 font-bold"
-        v-if="showLabel"
-        >{{ props.label }}</label
-      >
-      <div class="flex card">
-        <InputNumber
-          v-model="value"
-          inputId="horizontal-buttons"
-          showButtons
-          :buttonLayout="buttonLayout"
-          fluid
-          :min="min"
-          :max="max"
-          @input="onInput"
-          :step="step"
-        >
-        
-        </InputNumber>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from "vue";
 
@@ -82,3 +54,33 @@ defineExpose({
   alerTest,
 });
 </script>
+
+
+<template>
+  <div>
+    <div class="p-3">
+      <label
+        for="horizontal-buttons"
+        class="block mb-2 font-bold"
+        v-if="showLabel"
+        >{{ props.label }}</label
+      >
+      <div class="flex card">
+        <InputNumber
+          v-model="value"
+          inputId="horizontal-buttons"
+          showButtons
+          :buttonLayout="buttonLayout"
+          fluid
+          :min="min"
+          :max="max"
+          @input="onInput"
+          :step="step"
+        >
+        
+        </InputNumber>
+      </div>
+    </div>
+  </div>
+</template>
+

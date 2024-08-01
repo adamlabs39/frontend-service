@@ -100,8 +100,8 @@
       />
       <CustomChip
         label="TUNAI"
-        border-color="border-[#14B8A6]"
-        text-color="text-[#14B8A6]"
+        borderColor="border-[#14B8A6]"
+        textColor="text-[#14B8A6]"
         selected-border-color="border-0 bg-[#14B8A6]"
         icon-color="#14B8A6"
         :isSelected="selectedChipValues.includes('TUNAI')"
@@ -121,7 +121,7 @@
     <p>Terpilih : {{ selectedChipValues.join(", ") }}</p>
 
     <!-- Card Panggilan Aktif -->
-    <div class="">
+    <div class="lg:w-1/2 md:w-1/2">
       <CardPanggilanAdmisi
       namaPasien="Nama Pasien"
       nomorIdentitas="32700123871230123"
