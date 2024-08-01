@@ -18,6 +18,11 @@ import Chip from 'primevue/chip'
 import Dialog from 'primevue/dialog';
 import Breadcrumb from 'primevue/breadcrumb';
 
+import Accordion from 'primevue/accordion';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
+
 const app = createApp(App)
 
 app.use(createPinia())
@@ -44,5 +49,10 @@ app.component('AutoComplete', AutoComplete);
 app.component('Chip', Chip);
 app.component('Dialog', Dialog);
 app.component('Breadcrumb', Breadcrumb);
+
+app.component('Accordion', Accordion);
+app.component('AccordionPanel', AccordionPanel);
+app.component('AccordionHeader', AccordionHeader);
+app.component('AccordionContent', AccordionContent);
 
 app.mount('#app')

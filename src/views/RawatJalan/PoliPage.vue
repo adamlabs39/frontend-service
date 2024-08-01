@@ -5,6 +5,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -136,5 +137,16 @@ const testRefFunction = () => {
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
     <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
+    <CustomAccordion headerBg="">
+      <template #header> Ini adalah header </template>
+      <template #content>
+        <div>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem impedit
+          corrupti ad qui, ex atque dolore quidem suscipit? Pariatur sint in
+          deleniti laudantium alias voluptas sapiente veniam molestias eligendi
+          nihil.
+        </div>
+      </template>
+    </CustomAccordion>
   </div>
 </template>
