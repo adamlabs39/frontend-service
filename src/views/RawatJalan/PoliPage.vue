@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
-import Textfield from "@/components/Base/Textfield.vue";
-import AutoComplete from "@/components/Base/AutoComplete.vue";
-import Dialog from "@/components/Base/Dialog.vue";
-import BreadCrumb from "@/components/Base/BreadCrumb.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -88,10 +88,10 @@ const testRefFunction = () => {
 </script>
 <template>
   <div>
-    <BreadCrumb :home="dataBreadHome" :model="dataBreadCrumb"></BreadCrumb>
+    <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
-      <Textfield
+      <CustomTextfield
         ref="testRef"
         v-model="email"
         @input="testLog"
@@ -99,15 +99,15 @@ const testRefFunction = () => {
         :invalid="errors.email ? true : false"
         :invalidMessage="errors.email"
       >
-      </Textfield>
-      <Textfield
+      </CustomTextfield>
+      <CustomTextfield
         v-model="password"
         label="Password"
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
         :invalidMessage="errors.password"
       />
-      <Textfield
+      <CustomTextfield
         v-model="confirmPassword"
         label="Confirm Password"
         appendIcon="PhLock"
@@ -116,7 +116,7 @@ const testRefFunction = () => {
       />
       <button @click="onSubmit">Submit</button>
     </form>
-    <AutoComplete
+    <CustomAutoComplete
       v-model="testAutoComplete"
       :options="itemsAutoComplete"
       label="AutoComplete"
@@ -124,11 +124,15 @@ const testRefFunction = () => {
     />
     <div>Data: {{ testAutoComplete }}</div>
     <div @click="testDialog = true">Show</div>
-    <Dialog class="" v-model:visible="testDialog" headerBg="bg-danger-D300">
+    <CustomDialog
+      class=""
+      v-model:visible="testDialog"
+      headerBg="bg-danger-D300"
+    >
       <template #header> 1 </template>
       <template #body>2</template>
       <template #footer>3</template>
-    </Dialog>
+    </CustomDialog>
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
     <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
