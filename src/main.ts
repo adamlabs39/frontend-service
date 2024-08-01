@@ -18,6 +18,9 @@ import MultiSelect from 'primevue/multiselect'
 import InputNumber from 'primevue/inputnumber';
 import Chip from 'primevue/chip';
 
+import Card from 'primevue/card';
+
+
 
 const app = createApp(App)
 
@@ -45,6 +48,7 @@ app.component('TextArea', Textarea);
 app.component('MultiSelect', MultiSelect);
 app.component('InputNumber', InputNumber);
 app.component('Chip', Chip);
+app.component('Card', Card);
 
 
 

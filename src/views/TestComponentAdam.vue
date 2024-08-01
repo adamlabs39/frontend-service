@@ -67,7 +67,7 @@
     </div>
 
     <!-- Chip -->
-    <div class="flex">
+    <div class="flex gap-4 p-3 ">
       <CustomChip
         label="SEMUA"
         :isSelected="selectedChipValues.includes('SEMUA')"
@@ -118,7 +118,17 @@
       />
     </div>
 
-    <p>Terpilih : {{ selectedChipValues.join(', ') }}</p>
+    <p>Terpilih : {{ selectedChipValues.join(", ") }}</p>
+
+    <!-- Card Panggilan Aktif -->
+    <div class="w-1/2">
+      <CardPanggilanAdmisi
+      namaPasien="Nama Pasien"
+      nomorIdentitas="32700123871230123"
+      kodeBooking="BOOK.027391237"
+      >
+      </CardPanggilanAdmisi>
+    </div>
   </div>
 </template>
 
@@ -128,6 +138,7 @@ import TextArea from "@/components/Base/TextArea.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
 
 const nameValue = ref("");
 const emailValue = ref("");

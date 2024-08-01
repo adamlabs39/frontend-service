@@ -1,5 +1,5 @@
 <template>
-  <div class="p-3">
+  <div>
     <Chip
       class="h-8 font-bold border-2 rounded-full cursor-pointer"
       :class="[
@@ -8,11 +8,13 @@
       ]"
       @click="onSelectedValue"
     >
-      <PhCheckCircle
-        :size="18"
-        :color="isSelected ? selectedIconColor : iconColor"
-        weight="fill"
-      />
+      <template v-if="showCheckedIcon">
+        <PhCheckCircle
+          :size="18"
+          :color="isSelected ? selectedIconColor : iconColor"
+          weight="fill"
+        />
+      </template>
       <p :label="label">{{ props.label }}</p>
     </Chip>
   </div>
@@ -54,6 +56,10 @@ const props = defineProps({
     type: String,
     default: "#FFFFFF",
   },
+  showCheckedIcon: {
+    type: Boolean,
+    default:true
+  }
 });
 
 const emit = defineEmits(["selected"]);
