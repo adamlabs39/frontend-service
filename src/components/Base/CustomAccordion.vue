@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 const props = defineProps({
-  headerBg: {
+  headerClass: {
     type: String,
     default: "",
   },
@@ -25,7 +25,7 @@ const openedData = ref("0");
           'rounded-b-[10px]': openedData != '0',
           'border-b-neutral-lightActive border-b-[1px]': openedData == '0',
         }"
-        :pt:root:class="headerBg"
+        :pt:root:class="headerClass"
       >
         <slot name="header" />
       </AccordionHeader>
@@ -36,8 +36,8 @@ const openedData = ref("0");
     <template #collapseicon v-if="$slots.collapseIcon">
       <slot name="collapseIcon" />
     </template>
-    <template #expandicon>
-      <slot name="expandIcon" v-if="$slots.expandIcon" />
+    <template #expandicon v-if="$slots.expandIcon">
+      <slot name="expandIcon" />
     </template>
   </Accordion>
 </template>

@@ -137,7 +137,7 @@ const testRefFunction = () => {
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
     <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
-    <CustomAccordion headerBg="">
+    <CustomAccordion headerClass="">
       <template #header> Ini adalah header </template>
       <template #content>
         <div>

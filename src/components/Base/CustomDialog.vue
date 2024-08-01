@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type PropType } from "vue";
 
 const props = defineProps({
   fullScreen: {
@@ -9,6 +9,21 @@ const props = defineProps({
   width: {
     type: String,
     default: "",
+  },
+  position: {
+    type: String as PropType<
+      | "center"
+      | "top"
+      | "bottom"
+      | "left"
+      | "right"
+      | "topleft"
+      | "topright"
+      | "bottomleft"
+      | "bottomright"
+      | undefined
+    >,
+    default: "center",
   },
   headerBg: {
     type: String,
@@ -33,6 +48,7 @@ const maximize = () => {
     class=""
     @show="maximize"
     :maximizable="fullScreen"
+    :position="position"
     :pt:header:class="`h-[60px] rounded-t-[10px] ${headerBg}`"
     pt:root:class="border-none"
     pt:pcCloseButton:root:class="hover:bg-transparent focus:outline-none"
