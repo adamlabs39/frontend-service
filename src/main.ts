@@ -12,6 +12,12 @@ import Aura from '@primevue/themes/aura';
 import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import AutoComplete from 'primevue/autocomplete';
+import Textarea from 'primevue/textarea'
+import MultiSelect from 'primevue/multiselect'
+import InputNumber from 'primevue/inputnumber';
+import Chip from 'primevue/chip';
+
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import ToggleSwitch from 'primevue/toggleswitch';
@@ -38,6 +44,15 @@ app.use(PrimeVue, {
 app.component('InputText', InputText);
 app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
+app.component('AutoComplete', AutoComplete);
+app.component('TextArea', Textarea);
+app.component('MultiSelect', MultiSelect);
+app.component('InputNumber', InputNumber);
+app.component('Chip', Chip);
+
+
+
+
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)

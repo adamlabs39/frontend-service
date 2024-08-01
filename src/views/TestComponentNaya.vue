@@ -6,6 +6,7 @@ import CardPanggilan from "@/components/Antrian/CardPanggilan.vue";
 import { ref } from "vue";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
+import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -104,6 +105,10 @@ const testSwitch = (data: any) => {
     <br>
     <div class="w-3/4 h-[100px]">
       <CardRiwayatPemeriksaan />
+    </div>
+    <br>
+    <div class="w-3/4 h-[100px]">
+      <CardMonitoringBed />
     </div>
   </div>
 
