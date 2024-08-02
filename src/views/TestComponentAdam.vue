@@ -67,8 +67,8 @@
     </div>
 
     <!-- Chip -->
-    <div class="flex gap-4 p-3 ">
-      <CustomChip 
+    <div class="flex gap-4 p-3">
+      <CustomChip
         label="SEMUA"
         :isSelected="selectedChipValues.includes('SEMUA')"
         @selected="onChipSelected"
@@ -123,26 +123,32 @@
     <!-- Card Panggilan Aktif -->
     <div class="lg:w-full md:w-1/2">
       <CardPanggilanAdmisi
-      namaPasien="Nama Pasien"
-      nomorIdentitas="32700123871230123"
-      kodeBooking="BOOK.027391237"
+        namaPasien="Nama Pasien"
+        nomorIdentitas="32700123871230123"
+        kodeBooking="BOOK.027391237"
       >
       </CardPanggilanAdmisi>
     </div>
 
     <!-- Card Panggilan Selesai -->
-     <div class="mt-4">
+    <div class="mt-4">
       <CardPanggilanSelesai
-      namaPasien="Nama Pasien"
-      nomorIdentitas="32700123871230123"
-      kodeBooking="BOOK.027391237"
+        namaPasien="Nama Pasien"
+        nomorIdentitas="32700123871230123"
+        kodeBooking="BOOK.027391237"
       />
-     </div>
+    </div>
 
-     <!-- Customable Button -->
-      <div class="flex gap-3 p-3">
-        <CustomButton label="HAHAH" severity="bg-slate-400" class=""/>
-      </div>
+    <!-- Customable Button -->
+    <div class="flex gap-3 p-3">
+      <CustomButton label="HAHAH" textColor="text-gray-200"  borderColor="border-slate-500"/>
+      <CustomButton
+        label="BUTTON"
+        textColor="text-red-500"
+        borderColor="border-red-500"
+      
+      />
+    </div>
   </div>
 </template>
 
@@ -154,8 +160,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
 import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
-import CustomButton from "@/components/Base/CustomButton.vue"
-
+import CustomButton from "@/components/Base/CustomButton.vue";
 
 const nameValue = ref("");
 const emailValue = ref("");

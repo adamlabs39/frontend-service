@@ -12,10 +12,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  severity: {
-    type: String,
-    default: "bg-adameds-A300",
-  },
   size: {
     type: String as () => "small" | "large",
     default: "small",
@@ -28,6 +24,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  backgroundColor: {
+    type: String,
+    default: "",
+  },
+  borderColor: {
+    type: String,
+    default: "",
+  },
+  textColor: {
+    type: String,
+    default: "",
+  },
 });
 </script>
 
@@ -37,9 +45,15 @@ const props = defineProps({
       :label="label"
       :icon="icon"
       :disabled="disabled"
-      :severity="severity"
       :size="size"
-      :class="class"
+      :outlined="outlined"
+      :class="[
+        backgroundColor ? backgroundColor : 'bg-adameds-A300',
+        textColor ? textColor : 'text-white',
+        borderColor ? borderColor : 'border-transparent',
+        outlined ? `bg-transparent` : '',
+      ]"
+      fluid
     />
   </div>
 </template>
