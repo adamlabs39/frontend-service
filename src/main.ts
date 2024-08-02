@@ -33,6 +33,7 @@ import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Paginator from 'primevue/paginator';
 
 
 const app = createApp(App)
@@ -75,5 +76,6 @@ app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)
 app.component('DataTable',DataTable)
 app.component('Column', Column)
+app.component('Paginator', Paginator)
 
 app.mount('#app')
