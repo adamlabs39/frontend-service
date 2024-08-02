@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, reactive, ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
-import Textfield from "@/components/Base/Textfield.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { downloadPdf } from "@/utils/PdfMake";
 
 const props = defineProps({
   filter: {
@@ -50,11 +55,32 @@ const testLog = () => {
 };
 
 const dataApi = ref();
+const testAutoComplete = ref();
+const itemsAutoComplete = ref([
+  "Indonesia",
+  "Malaysia",
+  "Singapura",
+  "Timor Leste",
+  "Filipina",
+  "Thailand",
+]);
+// const itemsAutoComplete = ref([
+//   { name: "Indonesia", id: 1 },
+//   { name: "Malaysia", id: 2 },
+//   { name: "Singapura", id: 3 },
+//   { name: "Timor Leste", id: 4 },
+//   { name: "Filipina", id: 5 },
+//   { name: "Thailand", id: 6 },
+// ]);
 
 onBeforeMount(async () => {
   setValues({ email: "fahminugroho@gmail.com" });
   dataApi.value = await indexStore.getApi();
 });
+
+const testDialog = ref(false);
+const dataBreadHome = ref({ label: "Electronics", home: true });
+const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
 
 const testRef = ref<any>(null);
 const testRefFunction = () => {
@@ -63,9 +89,10 @@ const testRefFunction = () => {
 </script>
 <template>
   <div>
+    <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
-      <Textfield
+      <CustomTextfield
         ref="testRef"
         v-model="email"
         @input="testLog"
@@ -73,15 +100,16 @@ const testRefFunction = () => {
         :invalid="errors.email ? true : false"
         :invalidMessage="errors.email"
       >
-      </Textfield>
-      <Textfield
+      </CustomTextfield>
+      <CustomTextfield
         v-model="password"
         label="Password"
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
         :invalidMessage="errors.password"
+        
       />
-      <Textfield
+      <CustomTextfield
         v-model="confirmPassword"
         label="Confirm Password"
         appendIcon="PhLock"
@@ -90,7 +118,36 @@ const testRefFunction = () => {
       />
       <button @click="onSubmit">Submit</button>
     </form>
+    <CustomAutoComplete
+      v-model="testAutoComplete"
+      :options="itemsAutoComplete"
+      label="AutoComplete"
+      multiple
+    />
+    <div>Data: {{ testAutoComplete }}</div>
+    <div @click="testDialog = true">Show</div>
+    <CustomDialog
+      class=""
+      v-model:visible="testDialog"
+      headerBg="bg-danger-D300"
+    >
+      <template #header> 1 </template>
+      <template #body>2</template>
+      <template #footer>3</template>
+    </CustomDialog>
     <div @click="testRefFunction">Semua Poli</div>
     <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
+    <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
+    <CustomAccordion headerClass="">
+      <template #header> Ini adalah header </template>
+      <template #content>
+        <div>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem impedit
+          corrupti ad qui, ex atque dolore quidem suscipit? Pariatur sint in
+          deleniti laudantium alias voluptas sapiente veniam molestias eligendi
+          nihil.
+        </div>
+      </template>
+    </CustomAccordion>
   </div>
 </template>
