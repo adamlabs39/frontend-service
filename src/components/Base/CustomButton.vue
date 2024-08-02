@@ -8,6 +8,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  iconPos: {
+    type: String as () => "left" | "right" | "top" | "bottom",
+    default: "left",
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   disabled: {
     type: Boolean,
     default: false,
@@ -47,6 +55,8 @@ const props = defineProps({
   <Button
     :label="label"
     :icon="icon"
+    :iconPos="iconPos"
+    :loading="loading"
     :disabled="disabled"
     :outlined="outlined"
     class="rounded-[10px] font-semibold"
@@ -65,6 +75,9 @@ const props = defineProps({
     ]"
     :fluid="full"
   >
+    <template #default>
+      <slot />
+    </template>
     <template #icon>
       <component :is="icon" weight="bold" :size="size == 'small' ? 14 : 20" />
     </template>
