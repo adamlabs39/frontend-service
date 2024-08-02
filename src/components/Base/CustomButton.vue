@@ -2,7 +2,7 @@
 const props = defineProps({
   label: {
     type: String,
-    default: "Button",
+    default: "",
   },
   icon: {
     type: String,
@@ -59,8 +59,14 @@ const props = defineProps({
       disabled && outlined
         ? 'border-neutral-lightActive text-neutral-lightActive'
         : '',
-      disabled && !outlined ? 'bg-neutral-lightActive text-neutral-normalActive border-none' : '',
+      disabled && !outlined
+        ? 'bg-neutral-lightActive text-neutral-normalActive border-none'
+        : '',
     ]"
     :fluid="full"
-  />
+  >
+    <template #icon>
+      <component :is="icon" weight="bold" :size="size == 'small' ? 14 : 20" />
+    </template>
+  </Button>
 </template>
