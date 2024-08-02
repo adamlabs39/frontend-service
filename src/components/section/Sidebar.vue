@@ -125,7 +125,11 @@ const getSVG = (svg: string) => {
             <div v-if="showSidebar">
               <div
                 v-if="row1.type == linkType.LINK"
-                class="font-bold cursor-pointer mx-[10px] my-[20px] flex"
+                @click="goToPage(row1.url ?? '')"
+                class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
+                :class="{
+                  'bg-adameds-A100 rounded-lg': route.path == row1.url,
+                }"
               >
                 <img
                   v-if="row1.icon"
