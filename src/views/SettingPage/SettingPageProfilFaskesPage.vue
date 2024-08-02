@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import HeaderSetting from "./HeaderSetting.vue";
+import CardSettingTemplate from "./Template/CardSettingTemplate.vue";
+import FaskesDetailTemplate from './Template/FaskesDetailTemplate.vue'
 </script>
 
 <template>
     <div class="bg-white rounded-lg shadow-md">
-        <HeaderSetting />
-        <div class="p-5 mx-5 mt-5 rounded-lg shadow-md bg-adameds-A50">
-            <!-- Tulisan Profile -->
-            <div class="font-bold text-adameds-A300 font-poppins text-heading">Profile</div>
-            <hr class="border-[#D9DCE1] border-1 mr-[87px] my-[10px]" />
-
-            
-            <div class="pl-2 bg-slate-400">
-                Kode Faskes
-            </div>
-        </div>
+        <HeaderSetting heading="Profil Faskes" showButton labelButton="Edit"/>
+        <CardSettingTemplate class="">
+            <!-- Untuk isinya profil di Profil Faskes -->
+            <FaskesDetailTemplate />
+        </CardSettingTemplate>
+        <CardSettingTemplate>
+            <!-- Logo dan Warna -->
+        </CardSettingTemplate>
     </div>
 </template>
