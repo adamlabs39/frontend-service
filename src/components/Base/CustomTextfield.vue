@@ -26,6 +26,10 @@ const props = defineProps({
     type: String,
     default: "text",
   },
+  placeholder: {
+    type: String,
+    default: "",
+  },
   prependIcon: {
     type: String,
     default: "",
@@ -88,6 +92,7 @@ defineExpose({
           }"
           :disabled="disabled"
           fluid
+          :placeholder="placeholder"
         />
         <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
           <component
