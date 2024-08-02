@@ -46,7 +46,7 @@ const props = defineProps({
 
 const value = ref(props.modelValue);
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "clickPrepend", "clickAppend"]);
 const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
@@ -67,6 +67,7 @@ defineExpose({
     <div class="flex">
       <div
         v-if="$slots.prependText"
+        @click="emit('clickPrepend')"
         class="flex border border-r-0 border-solid rounded-l-lg border-neutral-normal text-SM text-neutral-300"
       >
         <slot name="prependText" />
@@ -74,6 +75,7 @@ defineExpose({
       <IconField class="grow">
         <InputIcon v-if="prependIcon" class="-mt-[11px] -ml-[2px]">
           <component
+            @click="emit('clickPrepend')"
             :is="prependIcon"
             weight="bold"
             :size="22"
@@ -96,6 +98,7 @@ defineExpose({
         />
         <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
           <component
+            @click="emit('clickAppend')"
             :is="appendIcon"
             weight="bold"
             :size="22"
@@ -106,6 +109,7 @@ defineExpose({
       </IconField>
       <div
         v-if="$slots.appendText"
+        @click="emit('clickAppend')"
         class="flex font-bold border border-l-0 border-solid rounded-r-lg border-neutral-normal text-SM text-adameds-A300"
       >
         <slot name="appendText" />
