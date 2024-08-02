@@ -43,7 +43,6 @@ const props = defineProps({
 const value = ref(props.modelValue);
 
 const emit = defineEmits(["update:modelValue"]);
-
 const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
@@ -94,7 +93,7 @@ defineExpose({
           <component
             :is="appendIcon"
             weight="bold"
-            :size="32"
+            :size="22"
             :color="invalid ? 'red' : 'black'"
             class="ml-auto"
           ></component>
