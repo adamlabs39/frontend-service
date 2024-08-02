@@ -177,7 +177,7 @@ export default {
         }
       },
       fontFamily: {
-        poppins: ["Poppins"]
+        sans: ["Poppins"]
       }
     },
   },
