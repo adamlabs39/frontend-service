@@ -1,22 +1,3 @@
-<template>
-  <div class="p-3">
-    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
-    <div class="flex flex-col card">
-      <Textarea
-        v-model="value"
-        @input="onInput"
-        :placeholder="placeholder"
-        fluid
-        :disabled="disabled"
-        :invalid="invalid"
-        class="h-20 pt-1 pl-1 border-2 rounded-lg border-neutral-normal"
-        :class="{
-          'border-red-500 text-red-500': invalid,
-        }"
-      />
-    </div>
-  </div>
-</template>
 
 <script setup lang="ts">
 import { ref } from "vue";
@@ -71,3 +52,26 @@ defineExpose({
   alerTest,
 });
 </script>
+
+
+
+
+<template>
+  <div class="p-3">
+    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
+    <div class="flex flex-col card">
+      <Textarea
+        v-model="value"
+        @input="onInput"
+        :placeholder="placeholder"
+        fluid
+        :disabled="disabled"
+        :invalid="invalid"
+        class="h-20 pt-1 pl-1 border-2 rounded-lg border-neutral-normal"
+        :class="{
+          'border-red-500 text-red-500': invalid,
+        }"
+      />
+    </div>
+  </div>
+</template>

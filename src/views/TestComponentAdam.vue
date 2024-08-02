@@ -100,8 +100,8 @@
       />
       <CustomChip
         label="TUNAI"
-        border-color="border-[#14B8A6]"
-        text-color="text-[#14B8A6]"
+        borderColor="border-[#14B8A6]"
+        textColor="text-[#14B8A6]"
         selected-border-color="border-0 bg-[#14B8A6]"
         icon-color="#14B8A6"
         :isSelected="selectedChipValues.includes('TUNAI')"
@@ -121,7 +121,7 @@
     <p>Terpilih : {{ selectedChipValues.join(", ") }}</p>
 
     <!-- Card Panggilan Aktif -->
-    <div class="w-1/2">
+    <div class="lg:w-full md:w-1/2">
       <CardPanggilanAdmisi
       namaPasien="Nama Pasien"
       nomorIdentitas="32700123871230123"
@@ -129,6 +129,20 @@
       >
       </CardPanggilanAdmisi>
     </div>
+
+    <!-- Card Panggilan Selesai -->
+     <div class="mt-4">
+      <CardPanggilanSelesai
+      namaPasien="Nama Pasien"
+      nomorIdentitas="32700123871230123"
+      kodeBooking="BOOK.027391237"
+      />
+     </div>
+
+     <!-- Customable Button -->
+      <div class="flex gap-3 p-3">
+        <CustomButton label="HAHAH" severity="bg-slate-400" class=""/>
+      </div>
   </div>
 </template>
 
@@ -139,6 +153,9 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
+import CustomButton from "@/components/Base/CustomButton.vue"
+
 
 const nameValue = ref("");
 const emailValue = ref("");

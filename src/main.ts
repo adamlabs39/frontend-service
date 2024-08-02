@@ -29,6 +29,8 @@ import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Card from 'primevue/card';
+import Tooltip from 'primevue/tooltip'
+import Button from 'primevue/button'
 
 const app = createApp(App)
 
@@ -63,6 +65,8 @@ app.component('MultiSelect', MultiSelect);
 app.component('InputNumber', InputNumber);
 app.component('Chip', Chip);
 app.component('Card', Card);
+app.component('Button', Button)
+app.directive('tooltip', Tooltip)
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)

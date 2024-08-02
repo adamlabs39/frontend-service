@@ -174,7 +174,10 @@ export default {
           "M300": "#ccd1d9",
           "M400": "#8f9298",
           "M500": "#7c7f84",
-        },
+        }
+      },
+      fontFamily: {
+        poppins: ["Poppins"]
       }
     },
   },
