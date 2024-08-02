@@ -12,13 +12,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  severity: {
-    type: String,
-    default: "bg-adameds-A300",
-  },
   size: {
     type: String as () => "small" | "large",
-    default: "small",
+    default: "large",
   },
   showIcon: {
     type: Boolean,
@@ -28,18 +24,43 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  backgroundColor: {
+    type: String,
+    default: "",
+  },
+  borderColor: {
+    type: String,
+    default: "",
+  },
+  textColor: {
+    type: String,
+    default: "",
+  },
+  full: {
+    type: Boolean,
+    default: false,
+  },
 });
 </script>
 
 <template>
-  <div class="flex justify-center card">
-    <Button
-      :label="label"
-      :icon="icon"
-      :disabled="disabled"
-      :severity="severity"
-      :size="size"
-      :class="class"
-    />
-  </div>
+  <Button
+    :label="label"
+    :icon="icon"
+    :disabled="disabled"
+    :outlined="outlined"
+    class="rounded-[10px] font-semibold"
+    :class="[
+      backgroundColor ? backgroundColor : 'bg-adameds-A300',
+      textColor ? textColor : 'text-white',
+      borderColor ? borderColor : 'border-none',
+      outlined ? `bg-transparent` : '',
+      size == 'small' ? 'h-[21px] text-XS' : 'h-10',
+      disabled && outlined
+        ? 'border-neutral-lightActive text-neutral-lightActive'
+        : '',
+      disabled && !outlined ? 'bg-neutral-lightActive text-neutral-normalActive border-none' : '',
+    ]"
+    :fluid="full"
+  />
 </template>
