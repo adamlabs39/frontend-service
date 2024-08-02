@@ -14,6 +14,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import UserPage from "@/views/Datamaster/UserPage.vue";
+import RolePage from "@/views/Datamaster/RolePage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,6 +58,12 @@ const router = createRouter({
       path: "/datamaster/user",
       name: "user",
       meta: { layout: SidebarLayout, page: UserPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/role",
+      name: "role",
+      meta: { layout: SidebarLayout, page: RolePage },
       component: DatamasterView,
     },
 

@@ -17,7 +17,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Role",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK, url: '/datamaster/role'
       },
     ],
   },
@@ -74,6 +74,47 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
     ],
   },
+  {
+    name: "5",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Data Dokter",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Diagnosis",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Faskes",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Lokasi",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Organisasi",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Penjamin",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+      {
+        name: "Surat",
+        icon: "Datamaster",
+        type: linkType.LINK,
+      },
+    ],
+  },
 ]);
 const filter = ref('')
 </script>
@@ -85,7 +126,6 @@ const filter = ref('')
       sidebarTitleUrl="/datamaster"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
-      showStockBtn
     />
     <component
       class="max-h-full overflow-auto grow"

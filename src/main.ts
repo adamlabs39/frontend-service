@@ -31,6 +31,9 @@ import ToggleSwitch from 'primevue/toggleswitch';
 import Card from 'primevue/card';
 import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+
 
 const app = createApp(App)
 
@@ -70,5 +73,7 @@ app.directive('tooltip', Tooltip)
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)
+app.component('DataTable',DataTable)
+app.component('Column', Column)
 
 app.mount('#app')
