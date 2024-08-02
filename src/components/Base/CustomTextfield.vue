@@ -68,7 +68,7 @@ defineExpose({
       <div
         v-if="$slots.prependText"
         @click="emit('clickPrepend')"
-        class="flex border border-r-0 border-solid rounded-l-lg border-neutral-normal text-SM text-neutral-300"
+        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer border-neutral-normal text-SM text-neutral-300"
       >
         <slot name="prependText" />
       </div>
@@ -80,6 +80,7 @@ defineExpose({
             weight="bold"
             :size="22"
             :color="invalid ? 'red' : 'black'"
+            class="cursor-pointer"
           ></component>
         </InputIcon>
         <InputText
@@ -103,14 +104,14 @@ defineExpose({
             weight="bold"
             :size="22"
             :color="invalid ? 'red' : 'black'"
-            class="ml-auto"
+            class="ml-auto cursor-pointer"
           ></component>
         </InputIcon>
       </IconField>
       <div
         v-if="$slots.appendText"
         @click="emit('clickAppend')"
-        class="flex font-bold border border-l-0 border-solid rounded-r-lg border-neutral-normal text-SM text-adameds-A300"
+        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer border-neutral-normal text-SM text-adameds-A300"
       >
         <slot name="appendText" />
       </div>
