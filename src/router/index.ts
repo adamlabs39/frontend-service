@@ -12,6 +12,9 @@ import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitori
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import SettingView from "@/views/SettingPage/SettingView.vue";
+import SettingPageProfilFaskesPage from "@/views/SettingPage/SettingPageProfilFaskesPage.vue";
+import SettingPageKonfigurasiIntegrasiPage from "@/views/SettingPage/SettingPageKonfigurasiIntegrasiPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +48,18 @@ const router = createRouter({
       name: "bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
       component: RawatJalanView,
+    },
+    {
+      path: "/setting/profil-faskes",
+      name: "setting-profil-faskes",
+      meta: { layout: SidebarLayout, page: SettingPageProfilFaskesPage },
+      component: SettingView
+    },
+    {
+      path: "/setting/konfigurasi-integrasi",
+      name: "setting-konfigurasi-integrasi",
+      meta: { layout: SidebarLayout, page: SettingPageKonfigurasiIntegrasiPage },
+      component: SettingView
     },
 
     // NOTE Test Component
