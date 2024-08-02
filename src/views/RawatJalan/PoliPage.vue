@@ -107,6 +107,7 @@ const testRefFunction = () => {
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
         :invalidMessage="errors.password"
+        
       />
       <CustomTextfield
         v-model="confirmPassword"
