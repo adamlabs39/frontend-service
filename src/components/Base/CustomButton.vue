@@ -78,7 +78,7 @@ const props = defineProps({
     <template #default>
       <slot />
     </template>
-    <template #icon>
+    <template #icon v-if="icon">
       <component :is="icon" weight="bold" :size="size == 'small' ? 14 : 20" />
     </template>
   </Button>
