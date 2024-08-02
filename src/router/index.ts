@@ -12,6 +12,8 @@ import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitori
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
+import UserPage from "@/views/Datamaster/UserPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +47,17 @@ const router = createRouter({
       name: "bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
       component: RawatJalanView,
+    },
+    {
+      path: "/datamaster",
+      name: "datamaster",
+      redirect: "/datamaster/user",
+    },
+    {
+      path: "/datamaster/user",
+      name: "user",
+      meta: { layout: SidebarLayout, page: UserPage },
+      component: DatamasterView,
     },
 
     // NOTE Test Component
