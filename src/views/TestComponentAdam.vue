@@ -146,7 +146,7 @@
         label="BUTTON"
         textColor="text-red-500"
         borderColor="border-red-500"
-      
+        disabled
       />
     </div>
   </div>
