@@ -80,13 +80,13 @@ const onChange = (event: any) => {
       :disabled="disabled"
       @change="onChange"
       variant="filled"
-      class="h-10 rounded-lg border-neutral-normal"
+      class="h-10 rounded-lg border-grey-400"
       :invalid="invalid"
       fluid
       filter
       filterPlaceholder="Search"
       pt:pcFilterIconContainer:class="flex items-center"
-      pt:pcFilter:root:class="border-neutral-normal"
+      pt:pcFilter:root:class="border-grey-400"
     >
       <template #dropdownicon>
         <PhCaretDown

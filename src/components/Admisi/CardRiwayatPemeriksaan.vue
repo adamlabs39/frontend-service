@@ -8,7 +8,7 @@ const props = defineProps({
 });
 </script>
 <template>
-  <Card style="width: full; overflow: hidden;" pt:body:class="px-2.5 bg-adameds-A50 h-[80px] py-0 flex justify-center min-h-[80px]">
+  <Card style="width: full; overflow: hidden;" pt:body:class="px-2.5 bg-adameds-50 h-[80px] py-0 flex justify-center min-h-[80px]">
     <template #content>
       <div class="flex items-center justify-between h-full">
         <div>
@@ -20,7 +20,7 @@ const props = defineProps({
           </div>
           <div class="flex items-center gap-2">
             <img src="../../assets/icons/user-doctor-solid.svg" />
-            <div class="text-sm font-normal leading-5 text-neutral-normal">
+            <div class="text-sm font-normal leading-5 text-grey-400">
               {{ pemeriksaan.dokter }}
             </div>
           </div>
@@ -36,7 +36,7 @@ const props = defineProps({
         <div class="flex items-center justify-center">
           <CustomChip :label="pemeriksaan.statusLunas" text-color="text-[#14ac5b]" borderColor="border-transparent"
             :showCheckedIcon="false"
-            customClass="font-normal h-4 border-2 rounded-full text-sm leading-5 bg-success-S50" />
+            customClass="font-normal h-4 border-2 rounded-full text-sm leading-5 bg-success-50" />
         </div>
       </div>
     </template>

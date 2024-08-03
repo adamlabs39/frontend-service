@@ -9,14 +9,14 @@ const props = defineProps({
 <template>
   <Card
     style="width: full; overflow: hidden; height: full"
-    pt:body:class="p-0 bg-adameds-A50"
+    pt:body:class="p-0 bg-adameds-50"
     pt:header:class="h-full max-h-full grow"
     pt:root:class="h-full"
   >
     <template #header class="grow">
       <div class="flex items-center justify-center py-3">
         <div
-          class="font-bold text-[26.67px] leading-[27.78px] text-adameds-A300"
+          class="font-bold text-[26.67px] leading-[27.78px] text-adameds-300"
         >
           {{ cardPanggilan.noAntri }}
         </div>
@@ -25,7 +25,7 @@ const props = defineProps({
     <template #content>
       <div class="flex">
         <div
-          class="rounded-r-lg w-[44.44px] h-[44.44px] flex items-center justify-center bg-adameds-A300"
+          class="rounded-r-lg w-[44.44px] h-[44.44px] flex items-center justify-center bg-adameds-300"
         >
           <PhCaretDoubleRight :size="14" color="white" />
         </div>
@@ -33,7 +33,7 @@ const props = defineProps({
           <div class="font-bold text-normal leading-[17.78px] flex">
             {{ cardPanggilan.namaPoli }}
           </div>
-          <hr class="border-adameds-A300 border-[0.56px]" />
+          <hr class="border-adameds-300 border-[0.56px]" />
           <div class="font-semibold text-SM leading-[17.78px] flex">
             {{ cardPanggilan.namaDokter }}
           </div>

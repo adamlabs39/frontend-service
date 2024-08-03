@@ -23,7 +23,7 @@ const openedData = ref("0");
         class="rounded-t-[10px]"
         :class="{
           'rounded-b-[10px]': openedData != '0',
-          'border-b-neutral-lightActive border-b-[1px]': openedData == '0',
+          'border-b-grey-100 border-b-[1px]': openedData == '0',
         }"
         :pt:root:class="headerClass"
       >

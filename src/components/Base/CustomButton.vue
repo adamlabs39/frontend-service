@@ -61,16 +61,16 @@ const props = defineProps({
     :outlined="outlined"
     class="rounded-[10px] font-semibold"
     :class="[
-      backgroundColor ? backgroundColor : 'bg-adameds-A300',
+      backgroundColor ? backgroundColor : 'bg-adameds-300',
       textColor ? textColor : 'text-white',
       borderColor ? borderColor : 'border-none',
       outlined ? `bg-transparent` : '',
       size == 'small' ? 'h-[21px] text-XS' : 'h-10',
       disabled && outlined
-        ? 'border-neutral-lightActive text-neutral-lightActive'
+        ? 'border-grey-100 text-grey-100'
         : '',
       disabled && !outlined
-        ? 'bg-neutral-lightActive text-neutral-normalActive border-none'
+        ? 'bg-grey-100 text-grey-400Active border-none'
         : '',
     ]"
     :fluid="full"

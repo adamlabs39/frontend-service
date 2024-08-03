@@ -20,15 +20,15 @@ const props = defineProps({
       <div
         class=""
         :class="{
-          'text-adameds-A300': item.home,
-          'text-neutral-normal': !item.home,
+          'text-adameds-300': item.home,
+          'text-grey-400': !item.home,
         }"
       >
         {{ item.label }}
       </div>
     </template>
     <template #separator>
-      <PhCaretRight class="text-neutral-normal" weight="bold" :size="24" />
+      <PhCaretRight class="text-grey-400" weight="bold" :size="24" />
     </template>
   </Breadcrumb>
 </template>
