@@ -6,15 +6,18 @@ import SidebarLayout from "@/layouts/HeaderLayout.vue";
 import LoginView from "@/views/LoginView.vue";
 import DashboardView from "@/views/Dashboard/DashboardView.vue";
 import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
+import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 // NOTE Page View
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+import UserPage from "@/views/Datamaster/UserPage.vue";
+import TambahDataUserPage from "@/views/Datamaster/TambahDataUserPage.vue";
+import RolePage from "@/views/Datamaster/RolePage.vue";
+
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
-import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
-import UserPage from "@/views/Datamaster/UserPage.vue";
-import RolePage from "@/views/Datamaster/RolePage.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,6 +61,12 @@ const router = createRouter({
       path: "/datamaster/user",
       name: "user",
       meta: { layout: SidebarLayout, page: UserPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/user/tambah-data",
+      name: "datamaster-user-tambah-data",
+      meta: { layout: SidebarLayout, page: TambahDataUserPage },
       component: DatamasterView,
     },
     {
