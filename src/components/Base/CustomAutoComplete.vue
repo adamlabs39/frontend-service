@@ -81,8 +81,8 @@ const search = (event: any) => {
     <AutoComplete
       v-model="value"
       class="h-10"
-      pt:pcInput:root:class="w-full rounded-lg border-neutral-normal"
-      pt:inputMultiple:class="rounded-lg border-neutral-normal"
+      pt:pcInput:root:class="w-full rounded-lg border-grey-400"
+      pt:inputMultiple:class="rounded-lg border-grey-400"
       :suggestions="filteredData"
       :optionLabel="optionLabel"
       :forceSelection="forceSelection"
@@ -94,7 +94,7 @@ const search = (event: any) => {
     >
       <template #chip="{ value }">
         <Chip
-          class="h-6 rounded-[50px] bg-adameds-A300 px-[10px] text-SM font-bold text-white py-2"
+          class="h-6 rounded-[50px] bg-adameds-300 px-[10px] text-SM font-bold text-white py-2"
           removable
         >
           {{ optionLabel ? value[optionLabel] : value }}

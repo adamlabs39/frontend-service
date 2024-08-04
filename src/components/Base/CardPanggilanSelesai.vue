@@ -46,12 +46,12 @@ const props = defineProps({
 </script>
 
 <template>
-  <Card class="bg-adameds-A50 h-[92px]">
+  <Card class="bg-adameds-50 h-[92px]">
     <template #content>
       <div class="flex items-center h-full gap-3 -mt-2 text-black font-poppins">
         <!-- Kiri -->
         <div
-          class="flex bg-adameds-A75 rounded-md w-[60px] items-center justify-center text-adameds-A300 font-semibold text-base h-[60px]"
+          class="flex bg-adameds-75 rounded-md w-[60px] items-center justify-center text-adameds-300 font-semibold text-base h-[60px]"
         >
           {{ nomorAntrian }}
         </div>
@@ -72,7 +72,7 @@ const props = defineProps({
             </div>
           </div>
           
-          <hr class="border-[1px] border-adameds-A300 my-1" />
+          <hr class="border-[1px] border-adameds-300 my-1" />
           
           <!-- Setelah hr -->
           <div class="flex items-center justify-between">

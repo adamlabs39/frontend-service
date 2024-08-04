@@ -27,7 +27,7 @@ const props = defineProps({
   },
   headerBg: {
     type: String,
-    default: "bg-adameds-A300",
+    default: "bg-adameds-300",
   },
 });
 

@@ -60,7 +60,7 @@ const props = defineProps({
               >
                 Poliklinik
               </div>
-              <div class="font-bold leading-8 text-heading text-adameds-A300">
+              <div class="font-bold leading-8 text-heading text-adameds-300">
                 {{ tiketAntrian.namaPoli }}
               </div>
             </div>
@@ -70,7 +70,7 @@ const props = defineProps({
               >
                 Dokter
               </div>
-              <div class="font-bold leading-8 text-heading text-adameds-A300">
+              <div class="font-bold leading-8 text-heading text-adameds-300">
                 {{ tiketAntrian.dokter }}
               </div>
             </div>
@@ -80,7 +80,7 @@ const props = defineProps({
               >
                 Jadwal
               </div>
-              <div class="font-bold leading-8 text-heading text-adameds-A300">
+              <div class="font-bold leading-8 text-heading text-adameds-300">
                 {{ tiketAntrian.jadwal }}
               </div>
             </div>

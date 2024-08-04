@@ -46,7 +46,7 @@ const props = defineProps({
 
 const value = ref(props.modelValue);
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "clickPrepend", "clickAppend"]);
 const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
@@ -67,24 +67,27 @@ defineExpose({
     <div class="flex">
       <div
         v-if="$slots.prependText"
-        class="flex border border-r-0 border-solid rounded-l-lg border-neutral-normal text-SM text-neutral-300"
+        @click="emit('clickPrepend')"
+        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer border-grey-400 text-SM text-neutral-300"
       >
         <slot name="prependText" />
       </div>
       <IconField class="grow">
         <InputIcon v-if="prependIcon" class="-mt-[11px] -ml-[2px]">
           <component
+            @click="emit('clickPrepend')"
             :is="prependIcon"
             weight="bold"
             :size="22"
             :color="invalid ? 'red' : 'black'"
+            class="cursor-pointer"
           ></component>
         </InputIcon>
         <InputText
           :type="type"
           v-model="value"
           @input="onInput"
-          class="h-10 pt-1 rounded-lg border-neutral-normal"
+          class="h-10 pt-1 rounded-lg border-grey-400"
           :class="{
             'border-red-500 text-red-500': invalid,
             'rounded-r-none border-r-0': $slots.appendText,
@@ -96,17 +99,19 @@ defineExpose({
         />
         <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
           <component
+            @click="emit('clickAppend')"
             :is="appendIcon"
             weight="bold"
             :size="22"
             :color="invalid ? 'red' : 'black'"
-            class="ml-auto"
+            class="ml-auto cursor-pointer"
           ></component>
         </InputIcon>
       </IconField>
       <div
         v-if="$slots.appendText"
-        class="flex font-bold border border-l-0 border-solid rounded-r-lg border-neutral-normal text-SM text-adameds-A300"
+        @click="emit('clickAppend')"
+        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer border-grey-400 text-SM text-adameds-300"
       >
         <slot name="appendText" />
       </div>

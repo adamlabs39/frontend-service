@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.0.14",
     "@phosphor-icons/vue": "^2.2.1",
     "@primevue/themes": "^4.0.1",
     "@types/pdfmake": "^0.2.9",
