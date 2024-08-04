@@ -37,7 +37,7 @@ const getImage = (image: string) => {
   <div class="absolute top-0 bottom-0 left-0 right-0 overflow-auto login-bg">
     <div class="flex flex-col h-full md:flex-row">
       <div
-        class="w-full md:w-1/3 pl-10 pr-10 xl:pr-[80px] 2xl:pr-[200px] bg-adameds-A300/60 py-[5%] text-white flex flex-col justify-between"
+        class="w-full md:w-1/3 pl-10 pr-10 xl:pr-[80px] 2xl:pr-[200px] bg-adameds-300/60 py-[5%] text-white flex flex-col justify-between"
       >
         <div>
           <img
