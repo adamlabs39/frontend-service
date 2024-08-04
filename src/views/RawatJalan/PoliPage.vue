@@ -129,7 +129,7 @@ const testRefFunction = () => {
     <CustomDialog
       class=""
       v-model:visible="testDialog"
-      headerBg="bg-danger-D300"
+      headerBg="bg-danger-300"
     >
       <template #header> 1 </template>
       <template #body>2</template>

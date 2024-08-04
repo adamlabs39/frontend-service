@@ -42,14 +42,14 @@ const props = defineProps({
 </script>
 
 <template>
-  <Card class="bg-adameds-A50 h-[92px]">
+  <Card class="bg-adameds-50 h-[92px]">
     <template #content>
       <div
         class="flex items-center justify-between h-[45px] gap-3"
       >
         <!-- Kiri -->
         <div
-          class="flex bg-adameds-A75 rounded-md w-[60px] items-center justify-center text-adameds-A300 font-semibold text-base font-poppins h-[60px]"
+          class="flex bg-adameds-75 rounded-md w-[60px] items-center justify-center text-adameds-300 font-semibold text-base font-poppins h-[60px]"
         >
           {{ nomorAntrian }}
         </div>
@@ -60,7 +60,7 @@ const props = defineProps({
             <div class="font-bold text-MD">{{ namaPasien }}</div>
             <div class="font-normal text-SM">{{ nomorIdentitas }}</div>
           </div>
-          <hr class="border-[1px] border-adameds-A300 -mt-1" />
+          <hr class="border-[1px] border-adameds-300 -mt-1" />
           <!-- Chip dan Booking -->
           <div class="flex items-center gap-1 -mt-1">
             <CustomChip
@@ -77,7 +77,7 @@ const props = defineProps({
         </div>
         <!-- Kanan -->
         <div
-          class="bg-success-S300 w-[40px] h-[40px] cursor-pointer rounded-xl flex justify-center items-center"
+          class="bg-success-300 w-[40px] h-[40px] cursor-pointer rounded-xl flex justify-center items-center"
           v-tooltip.bottom="{
             value: 'Selesai',
             pt: {

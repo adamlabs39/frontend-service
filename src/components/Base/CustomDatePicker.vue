@@ -97,7 +97,7 @@ const onInput = (event: any) => {
           fluid
           :pt:pcInput:root:class="{
             'text-red-500 border-red-500': invalid,
-            'w-full h-10 rounded-lg border-neutral-normal pl-10': true,
+            'w-full h-10 rounded-lg border-grey-400 pl-10': true,
           }"
         />
       </IconField>

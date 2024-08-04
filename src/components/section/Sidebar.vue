@@ -51,7 +51,7 @@ const getSVG = (svg: string) => {
 <template>
   <div class="flex w-[240px]" :class="{ 'w-[80px]': !showSidebar }">
     <div
-      class="flex flex-col justify-between p-[10px] text-white rounded-xl grow bg-adameds-A300 overflow-auto"
+      class="flex flex-col justify-between p-[10px] text-white rounded-xl grow bg-adameds-300 overflow-auto"
     >
       <div class="p-[10px]">
         <!-- Title -->
@@ -90,28 +90,28 @@ const getSVG = (svg: string) => {
             </div>
             <div
               class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-A100 rounded-lg': filter == 'Semua Poli' }"
+              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Semua Poli' }"
               @click="filter = 'Semua Poli'"
             >
               Semua Poli
             </div>
             <div
               class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-A100 rounded-lg': filter == 'Poli Umum' }"
+              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Umum' }"
               @click="filter = 'Poli Umum'"
             >
               Poli Umum
             </div>
             <div
               class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-A100 rounded-lg': filter == 'Poli Anak' }"
+              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Anak' }"
               @click="filter = 'Poli Anak'"
             >
               Poli Anak
             </div>
             <div
               class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-A100 rounded-lg': filter == 'Poli Mata' }"
+              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Mata' }"
               @click="filter = 'Poli Mata'"
             >
               Poli Mata
@@ -128,7 +128,7 @@ const getSVG = (svg: string) => {
                 @click="goToPage(row1.url ?? '')"
                 class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
                 :class="{
-                  'bg-adameds-A100 rounded-lg': route.path == row1.url,
+                  'bg-adameds-100 rounded-lg': route.path == row1.url,
                 }"
               >
                 <img
@@ -152,7 +152,7 @@ const getSVG = (svg: string) => {
                     @click="goToPage(row2.url ?? '')"
                     class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
                     :class="{
-                      'bg-adameds-A100 rounded-lg': route.path == row2.url,
+                      'bg-adameds-100 rounded-lg': route.path == row2.url,
                     }"
                   >
                     {{ row2.name }}
@@ -194,7 +194,7 @@ const getSVG = (svg: string) => {
       </div>
       <div
         v-if="showStockBtn && showSidebar"
-        class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-A300"
+        class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />
         <div class="my-auto font-semibold">Stok</div>

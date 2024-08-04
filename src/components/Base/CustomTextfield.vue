@@ -68,7 +68,7 @@ defineExpose({
       <div
         v-if="$slots.prependText"
         @click="emit('clickPrepend')"
-        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer border-neutral-normal text-SM text-neutral-300"
+        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer border-grey-400 text-SM text-neutral-300"
       >
         <slot name="prependText" />
       </div>
@@ -87,7 +87,7 @@ defineExpose({
           :type="type"
           v-model="value"
           @input="onInput"
-          class="h-10 pt-1 rounded-lg border-neutral-normal"
+          class="h-10 pt-1 rounded-lg border-grey-400"
           :class="{
             'border-red-500 text-red-500': invalid,
             'rounded-r-none border-r-0': $slots.appendText,
@@ -111,7 +111,7 @@ defineExpose({
       <div
         v-if="$slots.appendText"
         @click="emit('clickAppend')"
-        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer border-neutral-normal text-SM text-adameds-A300"
+        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer border-grey-400 text-SM text-adameds-300"
       >
         <slot name="appendText" />
       </div>
