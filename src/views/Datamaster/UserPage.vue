@@ -1,64 +1,66 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
-const search = ref();
+const search = ref("");
 const selectedChipValues = ref<string[]>([]);
+const products = ref<any[]>([]);
+const rows = ref(10);
+const rowsPerPageOptions = [10, 20, 30];
 
-const products = ref();
+const router = useRouter();
 
 onMounted(() => {
   products.value = [
-    {
-      no: "1",
-      nama: "Petugas Adameds",
-      role: "Admin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "2",
-      nama: "Petugas Adameds",
-      role: "Admin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "3",
-      nama: "Petugas Adameds",
-      role: "Admin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "4",
-      nama: "Petugas Adameds",
-      role: "Admin",
-      status: "AKTIF",
-      action: "edit",
-    },
+    { no: "1", nama: "Petugas Adameds", role: "Admin", status: "AKTIF", action: "edit" },
+    { no: "2", nama: "Petugas Adameds", role: "Dokter", status: "NON-AKTIF", action: "edit" },
+    { no: "3", nama: "Petugas Adameds", role: "Admin", status: "AKTIF", action: "edit" },
+    { no: "4", nama: "Petugas Adameds", role: "Perawat", status: "NON-AKTIF", action: "edit" },
   ];
+});
+
+const filteredProducts = computed(() => {
+  // Filter berdasarkan status
+  const statusFilteredProducts = selectedChipValues.value.length === 0
+    ? products.value
+    : products.value.filter(product => selectedChipValues.value.includes(product.status));
+
+  // Filter berdasarkan pencarian
+  const searchFilteredProducts = statusFilteredProducts.filter(product =>
+    product.nama.toLowerCase().includes(search.value.toLowerCase())
+  );
+
+  return searchFilteredProducts;
 });
 
 const onChipSelected = (label: string) => {
   if (selectedChipValues.value.includes(label)) {
-    selectedChipValues.value = selectedChipValues.value.filter(
-      (item) => item !== label
-    );
+    selectedChipValues.value = selectedChipValues.value.filter(item => item !== label);
   } else {
     selectedChipValues.value.push(label);
   }
-  console.log(selectedChipValues.value);
 };
 
+const addDataPage = () => {
+  router.push({ name: "datamaster-user-tambah-data" });
+};
+
+const handleRowsUpdate = (newRows: number) => {
+  rows.value = newRows;
+};
+
+const handlePageUpdate = (newPage: number) => {
+  console.log("Current page:", newPage);
+};
 </script>
+
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
-  >
+  <div class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive">
     <CustomAccordion headerClass="">
       <template #collapseIcon>
         <CustomButton label="" icon="PhCaretUp" />
@@ -68,88 +70,86 @@ const onChipSelected = (label: string) => {
       </template>
       <template #header>
         <div class="flex items-center justify-between w-full gap-5 mr-2.5">
-          <div class="flex-none">
-            <CustomButton label="" icon="PhArrowClockwise" @click.stop="" />
+          <CustomButton label="" icon="PhArrowClockwise" @click.stop="" />
+          <div class="grow font-semibold text-heading text-adameds-300 leading-[30px]">
+            User
           </div>
-          <div class="grow">
-            <div
-              class="font-semibold text-heading text-adameds-A300 leading-[30px]"
-            >
-              User
-            </div>
-          </div>
-          <div class="flex-none">
-            <CustomButton label="Data" icon="PhPlus" />
-          </div>
+          <CustomButton label="Data" icon="PhPlus" @click.stop="addDataPage" />
         </div>
       </template>
       <template #content>
         <div class="flex flex-col gap-2.5">
           <CustomTextfield
             label="Pencarian"
-            aria-placeholder="jfdf"
             prependIcon="PhMagnifyingGlass"
-            :modelValue="search"
+            v-model="search"
             placeholder="Cari Nama User"
           />
           <div class="flex items-center gap-2.5">
             <div class="min-w-32 border-r-[0.71px]">Filter Status</div>
             <CustomChip
               label="AKTIF"
-              borderColor="border-[#80868d]"
               textColor="text-[#80868d]"
               selected-border-color="border-white bg-[#14B8A6]"
               icon-color="#80868d"
               :isSelected="selectedChipValues.includes('AKTIF')"
-              @selected="onChipSelected"
+              customClass="text-xs font-semibold cursor-pointer border border-grey-400 h-6 flex"
+              @selected="() => onChipSelected('AKTIF')"
             />
             <CustomChip
               label="NON-AKTIF"
-              borderColor="border-[#80868d]"
               textColor="text-[#80868d]"
               selected-border-color="border-white bg-[#14B8A6]"
               icon-color="#80868d"
               :isSelected="selectedChipValues.includes('NON-AKTIF')"
-              @selected="onChipSelected"
+              customClass="text-xs font-semibold cursor-pointer border border-grey-400 h-6 flex"
+              @selected="() => onChipSelected('NON-AKTIF')"
             />
           </div>
         </div>
       </template>
     </CustomAccordion>
-    <div class="overflow-scroll grow px-5">
-      <DataTable :value="products" tableStyle="min-width: 50rem"
-      :pt="{
-      	headerRow: 'bg-blue-500 text-white'
-    }"
+
+    <div class="overflow-scroll grow px-5 pt-2.5">
+      <DataTable
+        :value="filteredProducts"
+        tableStyle="min-width: 50rem"
+        :pt="{ headerRow: 'bg-blue-500 text-white' }"
       >
-        <Column field="no" header="No"></Column>
-        <Column field="nama" header="Nama User" class="w-1/2"></Column>
-        <Column field="role" header="Role" class="w-1/2"></Column>
-        <Column header="Status">
+        <Column header="No" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <CustomChip
-              label="AKTIF"
-              borderColor="border-[#80868d]"
-              textColor="text-[#80868d]"
-              selected-border-color="border-white bg-[#14B8A6]"
-              icon-color="#80868d"
-              :isSelected="selectedChipValues.includes('AKTIF')"
-              @selected="onChipSelected"
-            />
+            <div class="flex items-center justify-center">
+              {{ slotProps.index + 1 }}
+            </div>
           </template>
         </Column>
-        <Column header="Action">
+        <Column field="nama" header="Nama User" class="w-1/2" headerClass="bg-adameds-50"></Column>
+        <Column field="role" header="Role" class="w-1/2" headerClass="bg-adameds-50"></Column>
+        <Column field="status" header="Status" headerClass="bg-adameds-50 flex items-center justify-center">
           <template #body="slotProps">
-            <CustomButton
-              label=""
-              icon="PhPencilSimple"
-              background-color="bg-blue"
-            />
+            <div class="flex justify-center items-center min-w-[120px]">
+              <CustomChip
+                :label="slotProps.data.status"
+                :textColor="slotProps.data.status === 'AKTIF' ? 'text-white' : 'text-[#80868d]'"
+                :icon-color="slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'"
+                :customClass="`text-xs font-semibold h-6 flex ${slotProps.data.status === 'AKTIF' ? 'bg-adameds-300' : 'border'}`"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column header="Action" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            <div class="flex items-center justify-center">
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+                <img src="../../assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+            </div>
           </template>
         </Column>
       </DataTable>
     </div>
-    <div class="flex justify-between mx-5">
+
+    <div class="flex justify-between px-5 py-2.5">
       <div class="flex items-center gap-2.5">
         <CustomButton label="Import">
           <img src="../../assets/icons/File Import.svg" alt="" />Import
@@ -158,34 +158,15 @@ const onChipSelected = (label: string) => {
           <img src="../../assets/icons/File Import.svg" alt="" />Eksport
         </CustomButton>
       </div>
-      <div class="flex gap-2.5 items-center">
-        <div>Total Data: 100</div>
-        <Paginator
-          :rows="10" :totalRecords="120" :rowsPerPageOptions="[10, 20, 30]" :pageLinkSize=1
-          :pt="{
-            content: {
-              class: 'flex gap-0 p-0 m-0 h-[30px] items-center justify-center',
-            },
-            first: { class: 'rounded-none h-full' },
-            prev: { class: 'rounded-none h-full' },
-            pages: { class: 'rounded-none h-full' },
-            page: {
-              class:
-                'rounded-none h-full bg-adameds-A300 text-white w-10 h-10 flex items-center justify-center',
-            },
-            next: { class: 'rounded-none h-full' },
-            last: { class: 'rounded-none h-full' },
-            pcRowPerPageDropdown: {
-              root: 'border-b-2 rounded-none border-white border-b-black ml-5 h-full items-center justify-center',
-            },
-          }"
-        >
-          <template #rowsperpagedropdownicon class="border bg-blue">
-            <PhCaretDown :size="20" weight="fill" />
-          </template>
-        </Paginator>
-      </div>
+      <CustomPaginator
+        :rows="rows"
+        :total-records="products.length"
+        :rowsPerPageOptions="rowsPerPageOptions"
+        @update:rows="handleRowsUpdate"
+        @update:first="handlePageUpdate"
+      />
     </div>
   </div>
 </template>
+
 <style scoped></style>
