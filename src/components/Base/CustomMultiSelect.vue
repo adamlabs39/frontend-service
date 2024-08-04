@@ -86,7 +86,7 @@ defineExpose({
       display="chip"
       :placeholder="placeholder"
       :maxSelectedLabels="maxSelectedLabels"
-      class="h-20 pt-1 pl-1 border-2 rounded-lg border-neutral-normal"
+      class="h-20 pt-1 pl-1 border-2 rounded-lg border-grey-400"
       :class="{
         'border-red-500 text-red-500': invalid,
       }"
