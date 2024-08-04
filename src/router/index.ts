@@ -6,9 +6,15 @@ import SidebarLayout from "@/layouts/HeaderLayout.vue";
 import LoginView from "@/views/LoginView.vue";
 import DashboardView from "@/views/Dashboard/DashboardView.vue";
 import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
-// NOTE Page View
+import AdmisiView from "@/views/Admisi/AdmisiView.vue";
+// SECTION Page View
+// NOTE Admisi
+import AdmisiPage from "@/views/Admisi/AdmisiPage.vue";
+
+// NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+// !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
@@ -45,6 +51,19 @@ const router = createRouter({
       name: "bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
       component: RawatJalanView,
+    },
+
+    // NOTE Admisi
+    {
+      path: "/admisi",
+      name: "admisi",
+      redirect: '/admisi/rawat-jalan'
+    },
+    {
+      path: "/admisi/rawat-jalan",
+      name: "admisi-rawat-jalan",
+      meta: { layout: SidebarLayout, page: AdmisiPage },
+      component: AdmisiView,
     },
 
     // NOTE Test Component
