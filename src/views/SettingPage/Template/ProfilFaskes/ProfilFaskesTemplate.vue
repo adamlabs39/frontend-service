@@ -1,3 +1,7 @@
+<script setup>
+</script>
+
+
 <template>
 	<div class="pl-2 text-base">
 		<div class="grid grid-cols-2 gap-3">
@@ -58,3 +62,9 @@
 		</div>
 	</div>
 </template>
+
+
+
+<style lang="scss" scoped>
+
+</style>

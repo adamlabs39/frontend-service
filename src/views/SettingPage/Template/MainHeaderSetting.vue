@@ -20,7 +20,7 @@ const props = defineProps({
 
 <template>
 	<div class="flex items-center justify-between">
-		<div class="mt-5 ml-5 font-semibold font-poppins text-heading text-adameds-A300">
+		<div class="mt-5 ml-5 font-semibold font-poppins text-heading text-adameds-300">
 			{{ props.heading }}
 		</div>
 		<div class="mt-5 ml-5 mr-5 font-poppins" v-if="showButton">
