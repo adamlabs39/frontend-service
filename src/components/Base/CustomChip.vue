@@ -19,6 +19,10 @@ const props = defineProps({
     type: String,
     default: "text-grey-300",
   },
+  bgColor: {
+    type: String,
+    default: "bg-transparent",
+  },
   selectedColor: {
     type: String,
     default: "bg-grey-300 border-grey-300",
@@ -41,12 +45,12 @@ const props = defineProps({
   },
   showCheckedIcon: {
     type: Boolean,
-    default:true
+    default: true,
   },
   customClass: {
     type: String,
-    default:'h-6'
-  }
+    default: "h-6",
+  },
 });
 
 const emit = defineEmits(["selected"]);
@@ -55,7 +59,7 @@ const onSelectedValue = () => {
   emit("selected", props.label);
 };
 
-const customizedClass = computed(() => props.customClass)
+const customizedClass = computed(() => props.customClass);
 </script>
 
 <template>
@@ -64,7 +68,7 @@ const customizedClass = computed(() => props.customClass)
       :class="[
         customizedClass,
         isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedColor : borderColor
+        isSelected ? selectedColor : borderColor + bgColor,
       ]"
       @click="onSelectedValue"
       class="font-semibold text-XS pl-[5px] pr-3 border-2 rounded-full cursor-pointer"
@@ -72,9 +76,7 @@ const customizedClass = computed(() => props.customClass)
       <template v-if="showCheckedIcon">
         <PhCheckCircle
           :size="iconSize"
-          :class="[
-            isSelected ? selectedIconColor : iconColor
-          ]"
+          :class="[isSelected ? selectedIconColor : iconColor]"
           weight="fill"
         />
       </template>
@@ -82,4 +84,3 @@ const customizedClass = computed(() => props.customClass)
     </Chip>
   </div>
 </template>
-
