@@ -49,6 +49,8 @@ const props = defineProps({
     default: false,
   },
 });
+
+const emit = defineEmits(['click'])
 </script>
 
 <template>
@@ -74,6 +76,7 @@ const props = defineProps({
         : '',
     ]"
     :fluid="full"
+    @click = "emit('click')"
   >
     <template #default>
       <slot />

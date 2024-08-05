@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import CardSettingTemplate from "./Template/CardSettingTemplate.vue";
-import ProfilFaskesTemplate from "./Template/KonfigurasiIntegrasi/KonfigurasiVCLAIM.vue";
-import MainHeaderSetting from "./Template/MainHeaderSetting.vue";
-import LogoWarna from "./Template/ProfilFaskes/LogoWarna.vue";
+
+import CardSettingTemplate from "../GreenCard.vue"
+import MainHeaderSetting from "../MainHeaderSetting.vue";
+import LogoWarna from "./LogoWarna.vue";
+import GreenCard from "../GreenCard.vue";
+import ProfilFaskesTemplate from "./ProfilFaskesTemplate.vue";
 
 
 
@@ -12,10 +14,10 @@ import LogoWarna from "./Template/ProfilFaskes/LogoWarna.vue";
 <template>
     <div class="bg-white rounded-lg shadow-md">
         <MainHeaderSetting heading="Profil Faskes" showButton labelButton="Edit"/>
-        <CardSettingTemplate cardHeading="Profile">
+        <GreenCard cardHeading="Profile">
             <!-- Untuk isinya profil di Profil Faskes -->
             <ProfilFaskesTemplate />
-        </CardSettingTemplate>
+        </GreenCard>
         <CardSettingTemplate class="mb-4" cardHeading="Logo & Warna">
             <LogoWarna/>
         </CardSettingTemplate>

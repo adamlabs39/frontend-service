@@ -6,15 +6,18 @@ import SidebarLayout from "@/layouts/HeaderLayout.vue";
 import LoginView from "@/views/LoginView.vue";
 import DashboardView from "@/views/Dashboard/DashboardView.vue";
 import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
+import SettingView from "@/views/SettingPage/SettingView.vue";
 // NOTE Page View
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+import SettingPageProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
+import SettingPageKonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
+import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProfilFaskes.vue";
+
+
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
-import SettingView from "@/views/SettingPage/SettingView.vue";
-import SettingPageProfilFaskesPage from "@/views/SettingPage/SettingPageProfilFaskesPage.vue";
-import SettingPageKonfigurasiIntegrasiPage from "@/views/SettingPage/SettingPageKonfigurasiIntegrasiPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,11 +59,18 @@ const router = createRouter({
       component: SettingView
     },
     {
+      path: "/setting/profil-faskes/edit",
+      name: "setting-profil-faskes-edit",
+      meta: { layout: SidebarLayout, page: EditProfilFaskes },
+      component: SettingView
+    },
+    {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
       meta: { layout: SidebarLayout, page: SettingPageKonfigurasiIntegrasiPage },
       component: SettingView
     },
+
 
     // NOTE Test Component
     {

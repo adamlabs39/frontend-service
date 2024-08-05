@@ -31,6 +31,7 @@ import ToggleSwitch from 'primevue/toggleswitch';
 import Card from 'primevue/card';
 import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
+import FileUpload from 'primevue/fileupload'
 
 const app = createApp(App)
 
@@ -69,6 +70,7 @@ app.component('Button', Button)
 app.directive('tooltip', Tooltip)
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
-app.component('ToggleSwitch',ToggleSwitch)
+app.component('ToggleSwitch', ToggleSwitch);
+app.component('FileUpload', FileUpload)
 
 app.mount('#app')

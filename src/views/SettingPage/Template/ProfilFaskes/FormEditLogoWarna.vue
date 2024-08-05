@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import CustomButton from '@/components/Base/CustomButton.vue';
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomUpload from "@/components/Base/CustomUpload.vue";
 </script>
 
 <template>
@@ -16,19 +17,28 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 						dan <span class="font-bold">Print Out</span>.
 					</div>
 					<ul class="list-disc list-inside text-SM ml-[6px] text-[#858D9D]">
-						<li>Ukuran minimum yang disarankan adalah <span class="font-bold">960x540</span></li>
-						<li>Rasio aspek yang disarankan adalah <span class="font-bold">16:9</span></li>
+						<li>
+							Ukuran minimum yang disarankan adalah
+							<span class="font-bold">960x540</span>
+						</li>
+						<li>
+							Rasio aspek yang disarankan adalah
+							<span class="font-bold">16:9</span>
+						</li>
 					</ul>
 				</div>
 			</div>
 
 			<!-- Gambar -->
-			<div class="flex flex-col items-end justify-end w-1/3">
-				<div class="flex flex-col items-center justify-center">
-					<div class="mb-1 text-lg font-bold text-adameds-300">Preview Logo</div>
-					<div class="px-5 py-3 bg-white rounded-lg">
-						<img src="../../../../assets/images/adamedsPicture.svg" alt="Logo Preview"
-							class="h-auto max-w-full">
+
+
+			<div class="flex flex-col items-end justify-end w-1/2">
+				<div class="flex flex-col justify-center w-full">
+					<div class="text-lg font-bold text-center text-adameds-300">Preview Logo</div>
+					<div class="bg-white border-dashed border-[1px] rounded-lg ">
+						<CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
+							:show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
+							name="demo[]" url="/api/upload" />
 					</div>
 				</div>
 			</div>
@@ -48,7 +58,6 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 			<div>
 				<CustomButton icon="PhCheck" />
 			</div>
-
 		</div>
 	</div>
 </template>

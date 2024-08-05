@@ -45,6 +45,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  customSelectClass: {
+    type: String,
+    default:"h-10 rounded-lg border-grey-400"
+  }
 });
 
 const value = ref(props.modelValue);
@@ -80,7 +84,7 @@ const onChange = (event: any) => {
       :disabled="disabled"
       @change="onChange"
       variant="filled"
-      class="h-10 rounded-lg border-grey-400"
+      :class="customSelectClass"
       :invalid="invalid"
       fluid
       filter

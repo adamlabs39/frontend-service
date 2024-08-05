@@ -87,7 +87,7 @@ defineExpose({
           :type="type"
           v-model="value"
           @input="onInput"
-          class="h-10 pt-1 rounded-lg border-grey-400"
+          class="h-10 pt-1 rounded-lg border-[#C7CBD2]"
           :class="{
             'border-red-500 text-red-500': invalid,
             'rounded-r-none border-r-0': $slots.appendText,

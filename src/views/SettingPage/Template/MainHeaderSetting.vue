@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import CustomButton from '@/components/Base/CustomButton.vue';
 
+import { useRouter } from 'vue-router';
+
 
 const props = defineProps({
 	heading: {
@@ -16,6 +18,11 @@ const props = defineProps({
 		default:false,
 	}
 })
+
+const router = useRouter()
+const editProfilFaskes = () => {
+	router.push({name: "setting-profil-faskes-edit"})
+}
 </script>
 
 <template>
@@ -24,7 +31,7 @@ const props = defineProps({
 			{{ props.heading }}
 		</div>
 		<div class="mt-5 ml-5 mr-5 font-poppins" v-if="showButton">
-			<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm"/>
+			<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm" @click="editProfilFaskes"/>
 		</div>
 		
 	</div>

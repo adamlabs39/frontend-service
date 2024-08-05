@@ -57,8 +57,8 @@ defineExpose({
 
 
 <template>
-  <div class="p-3">
-    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
+  <div class="">
+    <label class="block font-semibold mb-[5px]" v-if="showLabel">{{ props.label }}</label>
     <div class="flex flex-col card">
       <Textarea
         v-model="value"
@@ -67,7 +67,7 @@ defineExpose({
         fluid
         :disabled="disabled"
         :invalid="invalid"
-        class="h-20 pt-1 pl-1 border-2 rounded-lg border-grey-400"
+        class="h-[75px] p-2 border-[1px] rounded-lg border-[#C7CBD2]"
         :class="{
           'border-red-500 text-red-500': invalid,
         }"
