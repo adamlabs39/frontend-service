@@ -68,7 +68,7 @@ const customizedClass = computed(() => props.customClass);
       :class="[
         customizedClass,
         isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedColor : borderColor + bgColor,
+        isSelected ? selectedColor : borderColor + ' ' + bgColor,
       ]"
       @click="onSelectedValue"
       class="font-semibold text-XS pl-[5px] pr-3 border-2 rounded-full cursor-pointer"
