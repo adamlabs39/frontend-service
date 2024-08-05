@@ -7,6 +7,7 @@ import { ref } from "vue";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -85,6 +86,14 @@ const monitoringBed = ref(
     asuransi:'BPJS',
   },
 );
+
+const categories = ref([
+    {name: "Accounting", key: "A"},
+    {name: "Marketing", key: "M"},
+    {name: "Production", key: "P"},
+    {name: "Research", key: "R"}
+]);
+const checkCategorie=ref()
 </script>
 
 <template>
@@ -120,6 +129,11 @@ const monitoringBed = ref(
     <br>
     <div class="w-3/4">
       <CardMonitoringBed :monitoringBed="monitoringBed" />
+    </div>
+    <br>
+    <div >
+      <CustomCheckbox v-model="checkCategorie" :categories="categories"/>
+    {{ checkCategorie }}
     </div>
   </div>
 </template>

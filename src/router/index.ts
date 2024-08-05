@@ -10,9 +10,11 @@ import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 // NOTE Page View
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
-import UserPage from "@/views/Datamaster/UserPage.vue";
-import TambahDataUserPage from "@/views/Datamaster/TambahDataUserPage.vue";
-import RolePage from "@/views/Datamaster/RolePage.vue";
+import UserPage from "@/views/Datamaster/User/UserPage.vue";
+import TambahDataUserPage from "@/views/Datamaster/User/TambahDataUser/TambahDataUserPage.vue";
+import RolePage from "@/views/Datamaster/Role/RolePage.vue";
+import RuanganPage from "@/views/Datamaster/Ruangan/RuanganPage.vue";
+import KategoriRuanganPage from "@/views/Datamaster/KategoriRuangan.vue/KategoriRuanganPage.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -73,6 +75,18 @@ const router = createRouter({
       path: "/datamaster/role",
       name: "role",
       meta: { layout: SidebarLayout, page: RolePage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/ruangan",
+      name: "ruangan",
+      meta: { layout: SidebarLayout, page: RuanganPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/kategori-ruangan",
+      name: "kategori-ruangan",
+      meta: { layout: SidebarLayout, page: KategoriRuanganPage },
       component: DatamasterView,
     },
 

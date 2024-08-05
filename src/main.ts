@@ -34,6 +34,7 @@ import Button from 'primevue/button'
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from 'primevue/paginator';
+import Checkbox from 'primevue/checkbox';
 
 
 const app = createApp(App)
@@ -77,5 +78,6 @@ app.component('ToggleSwitch',ToggleSwitch)
 app.component('DataTable',DataTable)
 app.component('Column', Column)
 app.component('Paginator', Paginator)
+app.component('Checkbox', Checkbox)
 
 app.mount('#app')

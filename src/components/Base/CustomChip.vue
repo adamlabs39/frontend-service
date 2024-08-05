@@ -55,8 +55,6 @@ const customizedClass = computed(() => props.customClass)
 </script>
 
 
-
-
 <template>
   <div>
     <Chip

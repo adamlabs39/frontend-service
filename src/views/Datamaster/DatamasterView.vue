@@ -28,12 +28,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Ruangan",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/ruangan'
       },
       {
         name: "Kategori Ruangan",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/kategori-ruangan'
       },
     ],
   },
