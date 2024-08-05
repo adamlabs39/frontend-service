@@ -13,27 +13,31 @@ const props = defineProps({
   },
   borderColor: {
     type: String,
-    default: "border-slate-400",
+    default: "border-grey-300",
   },
   textColor: {
     type: String,
-    default: "text-[#90969E]",
+    default: "text-grey-300",
   },
-  selectedBorderColor: {
+  selectedColor: {
     type: String,
-    default: "border-0 bg-slate-500",
+    default: "bg-grey-300 border-grey-300",
   },
   selectedTextColor: {
     type: String,
-    default: "text-[#FFFFFF]",
+    default: "text-white",
+  },
+  iconSize: {
+    type: Number,
+    default: 14,
   },
   iconColor: {
     type: String,
-    default: "#90969E",
+    default: "text-grey-300",
   },
   selectedIconColor: {
     type: String,
-    default: "#FFFFFF",
+    default: "text-white",
   },
   showCheckedIcon: {
     type: Boolean,
@@ -41,7 +45,7 @@ const props = defineProps({
   },
   customClass: {
     type: String,
-    default:'font-bold border-2 rounded-full cursor-pointer h-8'
+    default:'h-6'
   }
 });
 
@@ -54,23 +58,23 @@ const onSelectedValue = () => {
 const customizedClass = computed(() => props.customClass)
 </script>
 
-
-
-
 <template>
   <div>
     <Chip
       :class="[
         customizedClass,
         isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedBorderColor : borderColor
+        isSelected ? selectedColor : borderColor
       ]"
       @click="onSelectedValue"
+      class="font-semibold text-XS pl-[5px] pr-3 border-2 rounded-full cursor-pointer"
     >
       <template v-if="showCheckedIcon">
         <PhCheckCircle
-          :size="18"
-          :color="isSelected ? selectedIconColor : iconColor"
+          :size="iconSize"
+          :class="[
+            isSelected ? selectedIconColor : iconColor
+          ]"
           weight="fill"
         />
       </template>
