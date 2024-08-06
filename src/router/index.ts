@@ -15,6 +15,7 @@ import TambahDataUserPage from "@/views/Datamaster/User/TambahDataUser/TambahDat
 import RolePage from "@/views/Datamaster/Role/RolePage.vue";
 import RuanganPage from "@/views/Datamaster/Ruangan/RuanganPage.vue";
 import KategoriRuanganPage from "@/views/Datamaster/KategoriRuangan.vue/KategoriRuanganPage.vue";
+import TarifPage from "@/views/Datamaster/Tarif/TarifPage.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -87,6 +88,12 @@ const router = createRouter({
       path: "/datamaster/kategori-ruangan",
       name: "kategori-ruangan",
       meta: { layout: SidebarLayout, page: KategoriRuanganPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/tarif",
+      name: "tarif",
+      meta: { layout: SidebarLayout, page: TarifPage },
       component: DatamasterView,
     },
 

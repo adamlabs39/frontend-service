@@ -8,7 +8,7 @@ import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-
+import KomponenTarif from "@/components/Datamaster/KomponenTarif.vue";
 //For Test Selected Component
 const selectedItems = ref();
 const items = ref([
@@ -135,5 +135,8 @@ const checkCategorie=ref()
       <CustomCheckbox v-model="checkCategorie" :categories="categories"/>
     {{ checkCategorie }}
     </div>
+    <br>
+    <KomponenTarif/>
+
   </div>
 </template>

@@ -44,7 +44,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Tarif",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/tarif'
       },
       {
         name: "Tindakan",
