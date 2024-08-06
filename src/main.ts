@@ -32,6 +32,8 @@ import Card from 'primevue/card';
 import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
 import FileUpload from 'primevue/fileupload'
+import ColorPicker from 'primevue/colorpicker';
+
 
 const app = createApp(App)
 
@@ -72,5 +74,6 @@ app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch', ToggleSwitch);
 app.component('FileUpload', FileUpload)
+app.component('ColorPicker', ColorPicker)
 
 app.mount('#app')

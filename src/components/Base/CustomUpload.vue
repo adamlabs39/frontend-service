@@ -67,14 +67,14 @@ const onUploadedValue = (event: any) => {
 
 
     <div class="flex items-center justify-center">
-        <div class="flex flex-col w-full p-8 text-center rounded-lg">
+        <div class="relative flex flex-col w-full p-8 text-center rounded-lg">
             <div class="font-semibold font-poppins">Seret file ke sini</div>
             <div class="text-[#9DA4B1] font-semibold leading-relaxed">atau</div>
             <div class="flex items-center justify-center">
                 <FileUpload :name="name" :url="url" :mode="mode" :accept="accept" :upload-label="uploadLabel"
                     :choose-label="chooseLabel" :max-file-size="maxFileSize" :multiple="multiple" :auto="true"
                     :show-upload-button="showUploadButton" :show-cancel-button="showCancelButton" :class="class"
-                    @upload="onUploadedValue" pt:root:class="flex flex-col items-center w-full bg-transparent border-none" >
+                    @upload="onUploadedValue" pt:root:class="flex flex-col items-center w-full bg-transparent border-none" pt:pcChooseButton:root:class="" >
                 </FileUpload>
             </div>
             <p class="italic text-gray-400">File .PNG</p>
@@ -85,7 +85,12 @@ const onUploadedValue = (event: any) => {
 <style>
     .p-fileupload-content{
         width: 100%;
-        height: 50px;
-        position: relative;
+        height: 50%;
+        position: absolute;
+        z-index: 1;
+        top:0;
+        right:0;
+        left:0;
+        right:0;
     }
 </style>

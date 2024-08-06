@@ -21,5 +21,6 @@ import ProfilFaskesTemplate from "./ProfilFaskesTemplate.vue";
         <CardSettingTemplate class="mb-4" cardHeading="Logo & Warna">
             <LogoWarna/>
         </CardSettingTemplate>
+       
     </div>
 </template>

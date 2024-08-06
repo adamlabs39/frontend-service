@@ -46,7 +46,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 				</ul>
 			</div>
 			<div>
-				<CustomButton icon="PhCheck" />
+				<CustomButton icon="PhCheck"/>
 			</div>
 
 		</div>
