@@ -20,6 +20,10 @@ const props = defineProps({
 	buttonClickHandler: {
 		type: Function as () => any,
 		default: () => {}
+	},
+	iconButton: {
+		type:String,
+		default:""
 	}
 })
 
@@ -32,7 +36,7 @@ const props = defineProps({
 		</div>
 		<div class="mt-5 ml-5 mr-5 font-poppins" v-if="showButton">
 			<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm"
-				@click="buttonClickHandler" />
+				@click="buttonClickHandler" :icon="props.iconButton"/>
 		</div>
 
 	</div>
