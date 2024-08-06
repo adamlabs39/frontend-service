@@ -12,7 +12,7 @@ const props = defineProps({
   },
   placeHolder: {
     type: String,
-    default: "PlaceHolder",
+    default: "",
   },
   timeOnly: {
     type: Boolean,
@@ -78,9 +78,9 @@ const onInput = (event: any) => {
         <InputIcon class="-mt-[11px] -ml-[2px]">
           <component
             :is="timeOnly ? 'PhClock' : 'PhCalendarBlank'"
-            weight="regular"
+            weight="bold"
             :size="22"
-            :color="invalid ? 'red' : 'grey'"
+            :color="invalid ? 'red' : 'black'"
           ></component>
         </InputIcon>
         <DatePicker

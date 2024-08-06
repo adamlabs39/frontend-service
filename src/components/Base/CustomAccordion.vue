@@ -10,6 +10,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  noBorder: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const checkOpen = (data: any) => {
@@ -26,7 +30,11 @@ const openedData = ref("0");
 
 <template>
   <Accordion :value="openedData" @update:value="checkOpen">
-    <AccordionPanel class="rounded-[10px]" value="0">
+    <AccordionPanel
+      class="rounded-[10px]"
+      :class="{ 'border-none': noBorder }"
+      value="0"
+    >
       <AccordionHeader
         class="rounded-t-[10px]"
         :class="{

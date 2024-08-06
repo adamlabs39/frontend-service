@@ -12,7 +12,7 @@ const props = defineProps({
   },
   placeHolder: {
     type: String,
-    default: "PlaceHolder",
+    default: "",
   },
   modelValue: {
     default: "",
@@ -31,7 +31,7 @@ const props = defineProps({
   },
   isLoading: {
     type: Boolean,
-    default: true,
+    default: false,
   },
   disabled: {
     type: Boolean,
