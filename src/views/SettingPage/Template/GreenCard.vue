@@ -30,7 +30,11 @@ const props = defineProps({
 	showChip: {
         type: Boolean,
         default: false,
-    },
+	},
+	buttonClickHandler: {
+		type: Function as () => any,
+		default: () => {}
+	}
 });
 </script>
 
@@ -42,7 +46,7 @@ const props = defineProps({
 			</div>
 			<div class="flex items-center gap-3 font-poppins" v-if="showButton">
 				<CustomChip label="AKTIF" v-if="showChip" borderColor="border-transparent" textColor="text-white" iconColor="#FFFFFF"  customClass="font-semibold cursor-pointer rounded-full bg-[#14b8a6] font-poppins text-SM h-6"/>
-				<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm" />
+				<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm" @click="buttonClickHandler"/>
 			</div>
 		</div>
 

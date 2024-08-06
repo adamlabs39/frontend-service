@@ -14,6 +14,8 @@ import SettingPageProfilFaskesPage from "@/views/SettingPage/Template/ProfilFask
 import SettingPageKonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
 import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProfilFaskes.vue";
 
+import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
+
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -68,6 +70,12 @@ const router = createRouter({
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
       meta: { layout: SidebarLayout, page: SettingPageKonfigurasiIntegrasiPage },
+      component: SettingView
+    },
+    {
+      path: "/setting/konfigurasi-integrasi/edit",
+      name: "setting-konfigurasi-integrasi-edit",
+      meta: { layout: SidebarLayout, page: EditKonfigurasiIntegrasi },
       component: SettingView
     },
 
