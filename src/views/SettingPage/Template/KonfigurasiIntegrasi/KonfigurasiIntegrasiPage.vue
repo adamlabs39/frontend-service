@@ -3,6 +3,7 @@ import MainHeaderSetting from '../MainHeaderSetting.vue';
 import KonfigurasiVCLAIM from './KonfigurasiVCLAIM.vue';
 import KonfigurasiLainnya from './KonfigurasiLainnya.vue';
 import GreenCard from '../GreenCard.vue';
+
 </script>
 
 <template>
@@ -11,8 +12,8 @@ import GreenCard from '../GreenCard.vue';
         <GreenCard cardHeading="Konfigurasi VCLAIM" hrEnableCustomClass showButton labelButton="Edit">
             <KonfigurasiVCLAIM/>
         </GreenCard>
-        <CardSettingTemplate cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit" showChip>
+        <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit" showChip class="mb-4">
             <KonfigurasiLainnya/>
-        </CardSettingTemplate>
+        </GreenCard>
     </div>
 </template>

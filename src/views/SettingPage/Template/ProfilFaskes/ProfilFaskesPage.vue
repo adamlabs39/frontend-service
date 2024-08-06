@@ -18,9 +18,9 @@ import ProfilFaskesTemplate from "./ProfilFaskesTemplate.vue";
             <!-- Untuk isinya profil di Profil Faskes -->
             <ProfilFaskesTemplate />
         </GreenCard>
-        <CardSettingTemplate class="mb-4" cardHeading="Logo & Warna">
+        <GreenCard class="mb-4" cardHeading="Logo & Warna">
             <LogoWarna/>
-        </CardSettingTemplate>
+        </GreenCard>
        
     </div>
 </template>
