@@ -57,7 +57,9 @@ const kategori = ref([
             :button-click-handler="showDialog" />
         <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px" >
             <template #header>
-                Tambah Menu
+                <div class="py-4 pl-5">
+                    Tambah Menu
+                </div>
             </template>
             <template #body>
                 <div class="p-5">
