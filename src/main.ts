@@ -34,6 +34,9 @@ import Button from 'primevue/button'
 import FileUpload from 'primevue/fileupload'
 import ColorPicker from 'primevue/colorpicker';
 
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+
 
 const app = createApp(App)
 
@@ -75,5 +78,7 @@ app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch', ToggleSwitch);
 app.component('FileUpload', FileUpload)
 app.component('ColorPicker', ColorPicker)
+app.component('DataTable', DataTable)
+app.component('Column', Column)
 
 app.mount('#app')
