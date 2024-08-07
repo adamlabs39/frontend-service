@@ -36,6 +36,7 @@ import ColorPicker from 'primevue/colorpicker';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Paginator from 'primevue/paginator'
 
 
 const app = createApp(App)
@@ -80,5 +81,5 @@ app.component('FileUpload', FileUpload)
 app.component('ColorPicker', ColorPicker)
 app.component('DataTable', DataTable)
 app.component('Column', Column)
-
+app.component('Paginator', Paginator)
 app.mount('#app')
