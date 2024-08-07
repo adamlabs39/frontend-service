@@ -1,48 +1,51 @@
-import './assets/css/main.css'
+import "./assets/css/main.css";
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 
-import App from './App.vue'
-import router from './router'
-import PhosphorIcons from "@phosphor-icons/vue"
+import App from "./App.vue";
+import router from "./router";
+import PhosphorIcons from "@phosphor-icons/vue";
 
-import PrimeVue from 'primevue/config';
-import Aura from '@primevue/themes/aura';
-import InputText from 'primevue/inputtext';
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import Dialog from 'primevue/dialog';
-import Breadcrumb from 'primevue/breadcrumb';
+import PrimeVue from "primevue/config";
+import Aura from "@primevue/themes/aura";
+import InputText from "primevue/inputtext";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
+import Dialog from "primevue/dialog";
+import Breadcrumb from "primevue/breadcrumb";
 
-import Accordion from 'primevue/accordion';
-import AccordionPanel from 'primevue/accordionpanel';
-import AccordionHeader from 'primevue/accordionheader';
-import AccordionContent from 'primevue/accordioncontent';
-import AutoComplete from 'primevue/autocomplete';
-import Textarea from 'primevue/textarea'
-import MultiSelect from 'primevue/multiselect'
-import InputNumber from 'primevue/inputnumber';
-import Chip from 'primevue/chip';
+import Accordion from "primevue/accordion";
+import AccordionPanel from "primevue/accordionpanel";
+import AccordionHeader from "primevue/accordionheader";
+import AccordionContent from "primevue/accordioncontent";
+import AutoComplete from "primevue/autocomplete";
+import Textarea from "primevue/textarea";
+import MultiSelect from "primevue/multiselect";
+import InputNumber from "primevue/inputnumber";
+import Chip from "primevue/chip";
 
-import Select from 'primevue/select';
-import DatePicker from 'primevue/datepicker';
-import ToggleSwitch from 'primevue/toggleswitch';
-import Card from 'primevue/card';
-import Tooltip from 'primevue/tooltip'
-import Button from 'primevue/button'
+import Select from "primevue/select";
+import DatePicker from "primevue/datepicker";
+import ToggleSwitch from "primevue/toggleswitch";
+import Card from "primevue/card";
+import Tooltip from "primevue/tooltip";
+import Button from "primevue/button";
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Paginator from "primevue/paginator";
 
-const app = createApp(App)
+const app = createApp(App);
 
-app.use(createPinia())
-app.use(router)
-app.use(PhosphorIcons)
+app.use(createPinia());
+app.use(router);
+app.use(PhosphorIcons);
 
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
     options: {
-      darkModeSelector: '.my-app-dark',
+      darkModeSelector: ".my-app-dark",
       cssLayer: {
         name: "primevue",
         order: "tailwind-base, primevue, tailwind-utilities",
@@ -50,25 +53,28 @@ app.use(PrimeVue, {
     },
   },
 });
-app.component('InputText', InputText);
-app.component('IconField', IconField);
-app.component('InputIcon', InputIcon);
-app.component('Dialog', Dialog);
-app.component('Breadcrumb', Breadcrumb);
-app.component('Accordion', Accordion);
-app.component('AccordionPanel', AccordionPanel);
-app.component('AccordionHeader', AccordionHeader);
-app.component('AccordionContent', AccordionContent);
-app.component('AutoComplete', AutoComplete);
-app.component('TextArea', Textarea);
-app.component('MultiSelect', MultiSelect);
-app.component('InputNumber', InputNumber);
-app.component('Chip', Chip);
-app.component('Card', Card);
-app.component('Button', Button)
-app.directive('tooltip', Tooltip)
-app.component('Select', Select);
-app.component('DatePicker', DatePicker);
-app.component('ToggleSwitch',ToggleSwitch)
+app.component("InputText", InputText);
+app.component("IconField", IconField);
+app.component("InputIcon", InputIcon);
+app.component("Dialog", Dialog);
+app.component("Breadcrumb", Breadcrumb);
+app.component("Accordion", Accordion);
+app.component("AccordionPanel", AccordionPanel);
+app.component("AccordionHeader", AccordionHeader);
+app.component("AccordionContent", AccordionContent);
+app.component("AutoComplete", AutoComplete);
+app.component("TextArea", Textarea);
+app.component("MultiSelect", MultiSelect);
+app.component("InputNumber", InputNumber);
+app.component("Chip", Chip);
+app.component("Card", Card);
+app.component("Button", Button);
+app.directive("tooltip", Tooltip);
+app.component("Select", Select);
+app.component("DatePicker", DatePicker);
+app.component("ToggleSwitch", ToggleSwitch);
+app.component("DataTable", DataTable);
+app.component("Column", Column);
+app.component("Paginator", Paginator);
 
-app.mount('#app')
+app.mount("#app");

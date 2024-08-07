@@ -42,10 +42,99 @@ const onPaymentMethodSelect = (label: string) => {
     selectedPaymentMethod.value.push(label);
   }
 };
+
+const products = ref([
+  {
+    noRM: "123456",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctor: "dr. Spesialis Sp. A",
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "POLI ANAK",
+    gender: "L",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "1",
+  },
+  {
+    noRM: "123456",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctor: "dr. Spesialis Sp. A",
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    no_SEP: "9999999999999999",
+    insurance_account_name: "BPJS",
+    polyclinic: "POLI KANDUNGAN",
+    gender: "P",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "2",
+  },
+  {
+    noRM: "123456",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctor: "dr. Spesialis Sp. Og",
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "POLI ANAK",
+    phone: "082112341234",
+    age_year: 20,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: null,
+  },
+  {
+    noRM: "123456",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctor: "dr. Spesialis Sp. A",
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "POLI ANAK",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: null,
+  },
+  {
+    noRM: "123456",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctor: "dr. Spesialis Sp. A",
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "POLI ANAK",
+    phone: "082112341234",
+    age_year: 20,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: null,
+  },
+]);
 </script>
 
 <template>
-  <Card>
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
     <template #header>
       <CustomAccordion :openWithHeader="false" noBorder>
         <template #header>
@@ -63,7 +152,7 @@ const onPaymentMethodSelect = (label: string) => {
           <div class="flex mt-[10px]">
             <CustomTextfield
               label="Cari Pasien"
-              placeholder="Cari Nama / Alamat / No. RM"
+              placeholder="Cari Nama / address / No. RM"
               class="mr-5 grow"
             />
             <CustomSelect label="DPJP" class="mr-5 grow" :options="[]" />
@@ -154,6 +243,7 @@ const onPaymentMethodSelect = (label: string) => {
               />
             </div>
           </div>
+          <hr class="border-grey-200" />
         </template>
         <template #collapseIcon>
           <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" />
@@ -162,6 +252,165 @@ const onPaymentMethodSelect = (label: string) => {
           <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" />
         </template>
       </CustomAccordion>
+    </template>
+    <template #content>
+      <!-- <div
+        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
+      >
+        <div class="m-auto">
+          <img src="../../assets/icons/no-data-icon.svg" alt="no data" class="mx-auto" />
+          <div class="text-grey-200">No data available</div>
+        </div>
+      </div> -->
+      <DataTable
+        :value="products"
+        tableStyle="min-width: 50rem"
+        scrollable
+        scrollHeight="flex"
+        pt:virtualScroller:class="masuk"
+        c
+      >
+        <Column field="nomor" header="Nomor">
+          <template #body="slotProps">
+            <div class="text-center">
+              <div>RM.{{ slotProps.data.noRM }}</div>
+              <div
+                v-if="slotProps.data.no_antrian"
+                class="w-[21px] mx-auto bg-adameds-75 text-adameds-300 rounded-[5px]"
+              >
+                {{ slotProps.data.no_antrian }}
+              </div>
+            </div>
+          </template>
+        </Column>
+        <Column field="pasien" header="Pasien">
+          <template #body="slotProps">
+            <div>
+              {{ slotProps.data.name }}
+              <span class="text-grey-300">
+                ({{ slotProps.data.age_year }}Th
+                {{ slotProps.data.age_month }}Bln
+                {{ slotProps.data.age_day }}Hr)
+              </span>
+            </div>
+            <div>{{ slotProps.data.address }}</div>
+            <div class="flex flex-wrap">
+              <PhPlusCircle
+                :size="22"
+                class="text-adameds-300 mt-auto mr-[5px]"
+                weight="fill"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="
+                  slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
+                "
+                :bgColor="
+                  slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                "
+                :textColor="
+                  slotProps.data.gender == 'P'
+                    ? 'text-female-300'
+                    : 'text-male-300'
+                "
+                customClass="h-5 pr-1 border-none mr-[5px]"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="slotProps.data.phone"
+                bgColor="bg-adameds-75"
+                textColor="text-adameds-300"
+                customClass="h-5 pr-1 border-none"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="keperawatan" header="Keperawatan">
+          <template #body="slotProps">
+            <div>{{ slotProps.data.doctor }}</div>
+            <div class="flex flex-wrap">
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="slotProps.data.polyclinic"
+                customClass="h-5 pr-1 mr-[5px]"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="slotProps.data.insurance_account_name"
+                :bgColor="
+                  slotProps.data.insurance_account_name == 'TUNAI'
+                    ? 'bg-adameds-50'
+                    : 'bg-warning-50'
+                "
+                :textColor="
+                  slotProps.data.insurance_account_name == 'TUNAI'
+                    ? 'text-adameds-300'
+                    : 'text-warning-300'
+                "
+                :borderColor="
+                  slotProps.data.insurance_account_name == 'TUNAI'
+                    ? 'border-adameds-300'
+                    : 'border-warning-300'
+                "
+                customClass="h-5 pr-[6px] mr-[5px]"
+              />
+              <CustomChip
+                v-if="slotProps.data.no_SEP"
+                :showCheckedIcon="false"
+                :label="`SEP.${slotProps.data.no_SEP}`"
+                bgColor="bg-warning-50"
+                textColor="text-warning-300"
+                borderColor="border-warning-300"
+                customClass="h-5 pr-[6px]"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column
+          field="data-kunjungan"
+          header="Data Kunjungan"
+          style="width: 25%"
+        >
+          <template #body="slotProps">
+            <div
+              class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
+            >
+              Daftar
+              <PhArrowRight
+                :size="18"
+                class="my-auto mr-5 text-info-300"
+                weight="bold"
+              />
+              {{ slotProps.data.tanggal_daftar }}
+            </div>
+            <div class="grid content-center grid-cols-[80px_min-content_150px]">
+              Jadwal
+              <PhArrowRight
+                :size="18"
+                class="my-auto mr-5 text-success-300"
+                weight="bold"
+              />
+              {{ slotProps.data.tanggal_jadwal }}
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+    </template>
+    <template #footer>
+      <div class="flex justify-between">
+        <div class="flex">
+          <CustomButton class="my-auto" label="Cetak" icon="PhPrinter" />
+        </div>
+        <Paginator
+          :rows="10"
+          :totalRecords="120"
+          :rowsPerPageOptions="[10, 20, 30]"
+          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate="{currentPage}"
+        >
+          <template #start="slotProps">Total Data: 0</template>
+        </Paginator>
+      </div>
     </template>
   </Card>
 </template>
