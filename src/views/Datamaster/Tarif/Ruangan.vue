@@ -1,5 +1,198 @@
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+
+const products = ref();
+const expandedRows = ref();
+
+onMounted(() => {
+  products.value = [
+    {
+      id: "1",
+      nama_tarif: "Ruangan Mawar (1A)",
+      jm_varian: "4",
+      kategori_ruangan: "Rawatan Umum",
+      kelas_ruangan: "Kelas 3",
+      jumlah_bed: "4",
+      status: "AKTIF",
+      action: "edit",
+      orders: [
+        {
+          id: "1",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "2",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "3",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+      ],
+    },
+    {
+      id: "2",
+      nama_tarif: "Ruangan Mawar (1A)",
+      jm_varian: "4",
+      kategori_ruangan: "Rawatan Umum",
+      kelas_ruangan: "Kelas 3",
+      jumlah_bed: "4",
+      status: "AKTIF",
+      action: "edit",
+      orders: [
+        {
+          id: "1",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "2",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "3",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+      ],
+    },
+    {
+      id: "3",
+      nama_tarif: "Ruangan Mawar (1A)",
+      jm_varian: "4",
+      kategori_ruangan: "Rawatan Umum",
+      kelas_ruangan: "Kelas 3",
+      jumlah_bed: "4",
+      status: "AKTIF",
+      action: "edit",
+      orders: [
+        {
+          id: "1",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "2",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+        {
+          id: "3",
+          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
+          unit_pelayanan: "Rawat Jalan",
+          metode_pembayaran: "Tunai",
+          harga: "Rp.30,000",
+        },
+      ],
+    },
+  ];
+});
+</script>
+
 <template>
-    <div>
-        ini component ruangan
-    </div>
+  <DataTable
+    v-model:expandedRows="expandedRows"
+    :value="products"
+    tableStyle="min-width: 50rem"
+    :pt="{ headerRow: 'bg-blue-500 text-white' }"
+    class="text-xs"
+    dataKey="id"
+  >
+    <Column expander style="width: 5rem" header-class="text-black bg-adameds-50"/>
+    <Column header="No" header-class="text-black bg-adameds-50">
+      <template #body="slotProps">
+        <div class="flex items-center justify-center">
+          {{ slotProps.index + 1 }}
+        </div>
+      </template>
+    </Column>
+    <Column field="nama_tarif" header="Nama Tarif" header-class="text-black bg-adameds-50"></Column>
+    <Column field="jm_varian" header="Jml. Varian Tarif" header-class="text-black bg-adameds-50"></Column>
+    <Column field="kategori_ruangan" header="Kategori Ruangan" header-class="text-black bg-adameds-50"></Column>
+    <Column field="kelas_ruangan" header="Kelas Ruangan" header-class="text-black bg-adameds-50"></Column>
+    <Column field="jumlah_bed" header="Jumlah Bed" header-class="text-black bg-adameds-50"></Column>
+    <Column field="status" header="Status" header-class="text-black bg-adameds-50">
+      <template #body="slotProps">
+        <div class="flex justify-center items-center min-w-[120px]">
+          <CustomChip
+            :label="slotProps.data.status"
+            :textColor="
+              slotProps.data.status === 'AKTIF'
+                ? 'text-white'
+                : 'text-[#80868d]'
+            "
+            :icon-color="
+              slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+            "
+            :customClass="`text-xs font-semibold h-6 flex ${
+              slotProps.data.status === 'AKTIF' ? 'bg-adameds-300' : 'border'
+            }`"
+          />
+        </div>
+      </template>
+    </Column>
+    <Column header="Action" header-class="text-black bg-adameds-50">
+      <template #body="slotProps">
+        <div class="flex items-center justify-center">
+          <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+            <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+          </CustomButton>
+        </div>
+      </template>
+    </Column>
+    <template #expansion="slotProps">
+      <div class="p-3 -mx-3 -my-1.5 bg-adameds-50">
+        <DataTable
+          :value="slotProps.data.orders"
+          class="overflow-hidden rounded-lg bg-adameds-50"
+        >
+          <Column
+            header="No"
+            header-class="text-white bg-adameds-300"
+            class="text-center"
+          >
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
+              </div>
+            </template>
+          </Column>
+          <Column field="nama_varian_tarif" header="Nama Varian Tarif" header-class="text-white bg-adameds-300"></Column>
+          <Column field="unit_pelayanan" header="Unit Pelayanan" header-class="text-white bg-adameds-300"></Column>
+          <Column field="metode_pembayaran" header="Metode Pembayaran" header-class="text-white bg-adameds-300">
+            <template #body="slotProps">
+              <CustomChip
+                :label="slotProps.data.metode_pembayaran"
+                :showCheckedIcon="false"
+                custom-class="text-xs font-semibold h-6 bg-adameds-300 text-white"
+              />
+            </template>
+          </Column>
+          <Column field="harga" header="Harga/Tarif" header-class="text-white bg-adameds-300"></Column>
+        </DataTable>
+      </div>
+    </template>
+  </DataTable>
 </template>

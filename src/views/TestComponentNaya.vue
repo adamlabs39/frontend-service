@@ -9,6 +9,10 @@ import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.v
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import KomponenTarif from "@/components/Datamaster/KomponenTarif.vue";
+import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
+import Kelas from "@/components/Datamaster/Kelas.vue";
+import DetailTarifTindakan from "./Datamaster/Tarif/DetailTarifTindakan.vue";
+
 //For Test Selected Component
 const selectedItems = ref();
 const items = ref([
@@ -137,6 +141,13 @@ const checkCategorie=ref()
     </div>
     <br>
     <KomponenTarif/>
-
+    <br>
+    <div class="p-5">
+      <VarianTarif />
+    </div>
+    <br>
+    <Kelas />
+    <br>
+    <DetailTarifTindakan/>
   </div>
 </template>

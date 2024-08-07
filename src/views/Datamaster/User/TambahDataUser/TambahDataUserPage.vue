@@ -92,9 +92,9 @@ const toggleSwitch = ref();
             </div>
           </div>
           <!-- Admin Role -->
-          <div v-if="selectedRole === 'admin'" class="w-full">
+          <div v-if="selectedRole === 'admin'" class="w-full flex flex-col gap-3">
             <CustomAccordion
-              headerClass=""
+              headerClass="bg-adameds-50"
               v-for="section in sections"
               :key="section.name"
             >
@@ -109,8 +109,8 @@ const toggleSwitch = ref();
           </div>
           <!-- Dokter Role -->
           <div v-if="selectedRole === 'dokter'" class="w-full">
-            <CustomAccordion
-              headerClass=""
+            <CustomAccordion 
+              headerClass="bg-adameds-50"
               v-for="section in sections"
               :key="section.name"
             >
