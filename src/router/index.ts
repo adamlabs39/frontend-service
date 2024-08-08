@@ -15,6 +15,7 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProfilFaskes.vue";
 
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
+import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
 import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
 
 
@@ -84,6 +85,12 @@ const router = createRouter({
       path: "/setting/permission-menu",
       name: "setting-permission-menu",
       meta: { layout: SidebarLayout, page: PermissionMenuPage },
+      component: SettingView
+    },
+    {
+      path: "/setting/password-otorisasi",
+      name: "setting-password-otorisasi",
+      meta: { layout: SidebarLayout, page: PasswordOtorisasiPage },
       component: SettingView
     },
 
