@@ -74,7 +74,7 @@ const onUploadedValue = (event: any) => {
                 <FileUpload :name="name" :url="url" :mode="mode" :accept="accept" :upload-label="uploadLabel"
                     :choose-label="chooseLabel" :max-file-size="maxFileSize" :multiple="multiple" :auto="true"
                     :show-upload-button="showUploadButton" :show-cancel-button="showCancelButton" :class="class"
-                    @upload="onUploadedValue" pt:root:class="flex flex-col items-center w-full bg-transparent border-none" pt:pcChooseButton:root:class="" >
+                    @upload="onUploadedValue" pt:root:class="flex flex-col items-center bg-transparent border-none" pt:pcChooseButton:root:class="" >
                 </FileUpload>
             </div>
             <p class="italic text-gray-400">File .PNG</p>
@@ -84,13 +84,9 @@ const onUploadedValue = (event: any) => {
 
 <style>
     .p-fileupload-content{
-        width: 100%;
-        height: 50%;
-        position: absolute;
-        z-index: 1;
-        top:0;
-        right:0;
-        left:0;
-        right:0;
+        @apply w-full absolute z-10 top-0 left-0 left-0 right-0 h-1/2
+        
     }
+
+  
 </style>

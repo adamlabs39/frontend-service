@@ -16,6 +16,7 @@ import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProf
 
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
 import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
+import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
 
 
@@ -91,6 +92,12 @@ const router = createRouter({
       path: "/setting/password-otorisasi",
       name: "setting-password-otorisasi",
       meta: { layout: SidebarLayout, page: PasswordOtorisasiPage },
+      component: SettingView
+    },
+    {
+      path: "/setting/print-out",
+      name: "setting-print-out",
+      meta: { layout: SidebarLayout, page: PrintOutPage },
       component: SettingView
     },
 
