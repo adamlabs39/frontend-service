@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import MainHeaderSetting from "../MainHeaderSetting.vue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -8,6 +8,9 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
 
 const permission = ref([
     {
@@ -49,26 +52,83 @@ const kategori = ref([
     { name: "Sub Menu", code: "SUBM" },
 ]);
 
+const status = ref();
+
+// Computed property to check if the selected category is "Sub Menu"
+const isSubMenuSelected = computed(() => {
+    return selectedKategori.value === "SUBM";
+});
+
+const mainMenuOptions = ref([
+    { label: "Admisi", value: "ADM" },
+    { label: "Antrian", value: "ANT" }
+]);
+
+const selectedMainMenu = ref();
 </script>
 
 <template>
     <div class="bg-white rounded-lg shadow-md ">
         <MainHeaderSetting heading="Permission Menu" showButton labelButton="Menu" iconButton="PhPlus"
             :button-click-handler="showDialog" />
-        <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px" >
+        <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px">
             <template #header>
-                <div class="py-4 pl-5">
+                <div class="">
                     Tambah Menu
                 </div>
             </template>
             <template #body>
-                <div class="p-5">
-                    <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori" optionValue="code"
-                        optionLabel="name" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
-                        :disabled="false" placeHolder="Pilih Kategori" customSelectClass="border-[#C7CBD2]"/>
+                <div class="my-5 ">
+                    <div class="mb-2.5">
+                        <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori" optionValue="code"
+                            optionLabel="name" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+                            :disabled="false" placeHolder="Pilih Kategori" customSelectClass="border-[#C7CBD2]" />
+                    </div>
+                    
+                    <!-- Conditionally display the "Cari Main Menu" dropdown -->
+                    <div v-if="isSubMenuSelected" class="mb-2.5">
+                        <CustomSelect label="Cari Main Menu" v-model="selectedMainMenu" :options="mainMenuOptions" optionValue="value"
+                            optionLabel="label" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+                            :disabled="false" placeHolder="Pilih Main Menu" customSelectClass="border-[#C7CBD2]" />
+                    </div>
+
+                    <div class="flex gap-7 ">
+                        <div class="w-[200px]">
+                            <CustomTextfield label="Kode Menu" class="border-[#C7CBD2]" placeholder="Kode Menu" />
+                        </div>
+                        <div class="grow">
+                            <CustomTextfield label="Nama Menu" class="w-full" placeholder="Nama Menu" />
+                        </div>
+                    </div>
+
+                    <hr class="border-[#D9DCE1] border-1 my-5" />
+
+                    <div class="flex flex-col">
+                        <div class="font-semibold mb-[5px]">
+                            Status
+                        </div>
+                        <div class="flex items-center gap-2 h-10 rounded-lg  text-[#6B7280]">
+                            <CustomSwitch v-model="status" />
+                            <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+                        </div>
+                    </div>
                 </div>
             </template>
-            <template #footer>3</template>
+            <template #footer>
+
+                <div class="w-full ">
+                    <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
+                    <div class="flex items-end justify-end gap-2.5 ">
+                        <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
+                            borderColor="border-2 border-[#9DA4B1]" />
+                        <CustomButton label="Simpan" />
+                    </div>
+
+                </div>
+
+                <!-- Setelah garis ada Button -->
+
+            </template>
         </CustomDialog>
         <div class="p-4">
             <DataTable :value="permission" responsiveLayout="scroll" dataKey="id" :expandedRows="expandedRows"
@@ -116,9 +176,7 @@ const kategori = ref([
 
 <style>
 .p-datatable-row-toggle-icon {
-    width: 10px;
-    height: 10px;
-    color: #14b8a6;
+    @apply w-3 h-3 text-adameds-300;
 }
 
 .p-datatable-footer {
