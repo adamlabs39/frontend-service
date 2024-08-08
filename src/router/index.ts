@@ -17,12 +17,14 @@ import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProf
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
 import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
 
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 
 
 const router = createRouter({
@@ -99,6 +101,12 @@ const router = createRouter({
       name: "setting-print-out",
       meta: { layout: SidebarLayout, page: PrintOutPage },
       component: SettingView
+    },
+    {
+      path: "/setting/profil-akun",
+      name: "setting-print-akun",
+      meta: { layout: SidebarLayout, page: ProfilAkunPage },
+      component: ProfilAkunView
     },
 
 
