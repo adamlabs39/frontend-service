@@ -21,5 +21,7 @@ const editKonfigurasiIntegrasi = () => {
         <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit" showChip class="mb-4" :buttonClickHandler="editKonfigurasiIntegrasi">
             <KonfigurasiLainnya/>
         </GreenCard>
+        <CustomChip label="AKTIF" bg-color="bg-adameds-300" border-color="border-transparent"
+					text-color="text-white" icon-color="text-white" />
     </div>
 </template>
