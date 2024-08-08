@@ -35,7 +35,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from 'primevue/paginator';
 import Checkbox from 'primevue/checkbox';
-
+import Editor from 'primevue/editor';
 
 const app = createApp(App)
 
@@ -79,5 +79,6 @@ app.component('DataTable',DataTable)
 app.component('Column', Column)
 app.component('Paginator', Paginator)
 app.component('Checkbox', Checkbox)
+app.component('Editor', Editor)
 
 app.mount('#app')

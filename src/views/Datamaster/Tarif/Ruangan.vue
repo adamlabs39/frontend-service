@@ -2,9 +2,12 @@
 import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import DetailTarifRuangan from "./DetailTarifRuangan.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const products = ref();
 const expandedRows = ref();
+const detail = ref(false);
 
 onMounted(() => {
   products.value = [
@@ -120,7 +123,11 @@ onMounted(() => {
     class="text-xs"
     dataKey="id"
   >
-    <Column expander style="width: 5rem" header-class="text-black bg-adameds-50"/>
+    <Column
+      expander
+      style="width: 5rem"
+      header-class="text-black bg-adameds-50"
+    />
     <Column header="No" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div class="flex items-center justify-center">
@@ -128,12 +135,36 @@ onMounted(() => {
         </div>
       </template>
     </Column>
-    <Column field="nama_tarif" header="Nama Tarif" header-class="text-black bg-adameds-50"></Column>
-    <Column field="jm_varian" header="Jml. Varian Tarif" header-class="text-black bg-adameds-50"></Column>
-    <Column field="kategori_ruangan" header="Kategori Ruangan" header-class="text-black bg-adameds-50"></Column>
-    <Column field="kelas_ruangan" header="Kelas Ruangan" header-class="text-black bg-adameds-50"></Column>
-    <Column field="jumlah_bed" header="Jumlah Bed" header-class="text-black bg-adameds-50"></Column>
-    <Column field="status" header="Status" header-class="text-black bg-adameds-50">
+    <Column
+      field="nama_tarif"
+      header="Nama Tarif"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="jm_varian"
+      header="Jml. Varian Tarif"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="kategori_ruangan"
+      header="Kategori Ruangan"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="kelas_ruangan"
+      header="Kelas Ruangan"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="jumlah_bed"
+      header="Jumlah Bed"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="status"
+      header="Status"
+      header-class="text-black bg-adameds-50"
+    >
       <template #body="slotProps">
         <div class="flex justify-center items-center min-w-[120px]">
           <CustomChip
@@ -156,9 +187,27 @@ onMounted(() => {
     <Column header="Action" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div class="flex items-center justify-center">
-          <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+          <CustomButton
+            label=""
+            background-color="bg-[#3D84E5] rounded-lg"
+            @click="detail = true"
+          >
             <img src="@/assets/icons/edit.svg" alt="" width="15px" />
           </CustomButton>
+          <CustomDialog
+            fullScreen
+            v-model:visible="detail"
+            headerBg="bg-adameds-300"
+          >
+            <template #header>Detail Tarif Ruangan</template>
+            <template #body>
+              <DetailTarifRuangan />
+            </template>
+            <template #footer>
+              <CustomButton label="Batal"> </CustomButton>
+              <CustomButton label="Simpan"> </CustomButton>
+            </template>
+          </CustomDialog>
         </div>
       </template>
     </Column>
@@ -179,9 +228,21 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column field="nama_varian_tarif" header="Nama Varian Tarif" header-class="text-white bg-adameds-300"></Column>
-          <Column field="unit_pelayanan" header="Unit Pelayanan" header-class="text-white bg-adameds-300"></Column>
-          <Column field="metode_pembayaran" header="Metode Pembayaran" header-class="text-white bg-adameds-300">
+          <Column
+            field="nama_varian_tarif"
+            header="Nama Varian Tarif"
+            header-class="text-white bg-adameds-300"
+          ></Column>
+          <Column
+            field="unit_pelayanan"
+            header="Unit Pelayanan"
+            header-class="text-white bg-adameds-300"
+          ></Column>
+          <Column
+            field="metode_pembayaran"
+            header="Metode Pembayaran"
+            header-class="text-white bg-adameds-300"
+          >
             <template #body="slotProps">
               <CustomChip
                 :label="slotProps.data.metode_pembayaran"
@@ -190,7 +251,11 @@ onMounted(() => {
               />
             </template>
           </Column>
-          <Column field="harga" header="Harga/Tarif" header-class="text-white bg-adameds-300"></Column>
+          <Column
+            field="harga"
+            header="Harga/Tarif"
+            header-class="text-white bg-adameds-300"
+          ></Column>
         </DataTable>
       </div>
     </template>

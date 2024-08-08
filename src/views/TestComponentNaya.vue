@@ -13,6 +13,7 @@ import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
 import DetailTarifTindakan from "./Datamaster/Tarif/DetailTarifTindakan.vue";
 import DetailTarifRuangan from "./Datamaster/Tarif/DetailTarifRuangan.vue";
+import CustomQuil from "@/components/Base/CustomQuil.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -149,8 +150,9 @@ const checkCategorie=ref()
     <br>
     <Kelas />
     <br>
-    <DetailTarifTindakan/>
-    <br>
-    <DetailTarifRuangan />
+    <div class="w-3/4">
+      <CustomQuil/>
+    </div>
+    
   </div>
 </template>

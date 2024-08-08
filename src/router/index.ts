@@ -10,17 +10,22 @@ import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 // NOTE Page View
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+
+// NOTE Page View Datamaster
 import UserPage from "@/views/Datamaster/User/UserPage.vue";
 import TambahDataUserPage from "@/views/Datamaster/User/TambahDataUser/TambahDataUserPage.vue";
 import RolePage from "@/views/Datamaster/Role/RolePage.vue";
 import RuanganPage from "@/views/Datamaster/Ruangan/RuanganPage.vue";
 import KategoriRuanganPage from "@/views/Datamaster/KategoriRuangan.vue/KategoriRuanganPage.vue";
 import TarifPage from "@/views/Datamaster/Tarif/TarifPage.vue";
+import ICD9CMPage from "@/views/Datamaster/ICD9CM/ICD9CMPage.vue";
+import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
+import LoinchPage from "@/views/Datamaster/Loinch/LoinchPage.vue";
+import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,6 +60,8 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
       component: RawatJalanView,
     },
+
+    // NOTE Datamaster
     {
       path: "/datamaster",
       name: "datamaster",
@@ -62,7 +69,7 @@ const router = createRouter({
     },
     {
       path: "/datamaster/user",
-      name: "user",
+      name: "datamaster-user",
       meta: { layout: SidebarLayout, page: UserPage },
       component: DatamasterView,
     },
@@ -74,25 +81,91 @@ const router = createRouter({
     },
     {
       path: "/datamaster/role",
-      name: "role",
+      name: "datamaster-role",
       meta: { layout: SidebarLayout, page: RolePage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/ruangan",
-      name: "ruangan",
+      name: "datamaster-ruangan",
       meta: { layout: SidebarLayout, page: RuanganPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/kategori-ruangan",
-      name: "kategori-ruangan",
+      name: "datamaster-kategori-ruangan",
       meta: { layout: SidebarLayout, page: KategoriRuanganPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/tarif",
-      name: "tarif",
+      name: "datamaster-tarif",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/tindakan",
+      name: "datamaster-tindakan",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/icd9-cm",
+      name: "datamaster-icd9-cm",
+      meta: { layout: SidebarLayout, page: ICD9CMPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/snomed-ct",
+      name: "datamaster-snomed-ct",
+      meta: { layout: SidebarLayout, page: SnomedCTPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/loinch",
+      name: "datamaster-loinch",
+      meta: { layout: SidebarLayout, page: LoinchPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/diagnosis-icd10",
+      name: "datamaster-diagnosis-icd10",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/dokter",
+      name: "datamaster-dokter",
+      meta: { layout: SidebarLayout, page: DokterPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/penjamin",
+      name: "datamaster-penjamin",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/faskes",
+      name: "datamaster-faskes",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/lokasi",
+      name: "datamaster-lokasi",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/organisasi",
+      name: "datamaster-organisasi",
+      meta: { layout: SidebarLayout, page: TarifPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/general-consent",
+      name: "datamaster-general-consent",
       meta: { layout: SidebarLayout, page: TarifPage },
       component: DatamasterView,
     },

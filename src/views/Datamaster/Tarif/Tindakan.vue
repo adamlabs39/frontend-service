@@ -2,6 +2,8 @@
 import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import DetailTarifTindakan from "./DetailTarifTindakan.vue";
 
 const products = ref();
 const expandedRows = ref();
@@ -111,7 +113,7 @@ onMounted(() => {
 });
 const detail = ref(false);
 
-const onRowToggle = (event:any) => {
+const onRowToggle = (event: any) => {
   expandedRows.value = event.data;
 };
 </script>
@@ -126,12 +128,11 @@ const onRowToggle = (event:any) => {
     dataKey="id"
     @row-toggle="onRowToggle"
   >
-  <Column
+    <Column
       expander
       style="width: 5rem"
       header-class="text-black bg-adameds-50"
     >
-
     </Column>
     <Column header="No" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
@@ -199,6 +200,21 @@ const onRowToggle = (event:any) => {
           >
             <img src="@/assets/icons/edit.svg" alt="" width="15px" />
           </CustomButton>
+          <CustomDialog
+          fullScreen
+
+            v-model:visible="detail"
+            headerBg="bg-adameds-300"
+          >
+            <template #header>Detail Tarif Tindakan</template>
+            <template #body>
+              <DetailTarifTindakan/>
+            </template>
+            <template #footer>
+              <CustomButton label="Batal"> </CustomButton>
+              <CustomButton label="Simpan"> </CustomButton>
+            </template>
+          </CustomDialog>
         </div>
       </template>
     </Column>

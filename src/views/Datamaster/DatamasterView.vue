@@ -49,7 +49,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Tindakan",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/tindakan',
       },
     ],
   },
@@ -60,17 +60,22 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "ICD 9 CM",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/icd9-cm',
       },
       {
         name: "Snomed CT",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/snomed-ct',
       },
       {
         name: "Loinch",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/loinch',
+      },
+      {
+        name: "Diagnosis (ICD 10)",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/diagnosis-icd10',
       },
     ],
   },
@@ -79,39 +84,34 @@ const sidebarBodyList = ref<SidebarBody[]>([
     type: linkType.SECTION,
     child: [
       {
-        name: "Data Dokter",
+        name: "Dokter",
         icon: "Datamaster",
-        type: linkType.LINK,
-      },
-      {
-        name: "Diagnosis",
-        icon: "Datamaster",
-        type: linkType.LINK,
-      },
-      {
-        name: "Faskes",
-        icon: "Datamaster",
-        type: linkType.LINK,
-      },
-      {
-        name: "Lokasi",
-        icon: "Datamaster",
-        type: linkType.LINK,
-      },
-      {
-        name: "Organisasi",
-        icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/dokter',
       },
       {
         name: "Penjamin",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/penjamin',
       },
       {
-        name: "Surat",
+        name: "Faskes",
         icon: "Datamaster",
-        type: linkType.LINK,
+        type: linkType.LINK,url: '/datamaster/faskes',
+      },
+      {
+        name: "Lokasi",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/lokasi',
+      },
+      {
+        name: "Organisasi",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/organisasi',
+      },
+      {
+        name: "General Consent",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/general-consent',
       },
     ],
   },

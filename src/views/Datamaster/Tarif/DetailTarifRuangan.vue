@@ -8,15 +8,7 @@ import { ref } from "vue";
 const testDialog = ref(false);
 </script>
 <template>
-  <div @click="testDialog = true">Show Detail Tarif Ruangan</div>
-  <CustomDialog
-    fullScreen
-    v-model:visible="testDialog"
-    headerBg="bg-adameds-300"
-  >
-    <template #header>Detail Tarif Tindakan</template>
-    <template #body>
-      <div class="flex flex-col h-full gap-2.5">
+  <div class="flex flex-col h-full gap-2.5">
         <div class="flex items-center gap-2.5 my-2.5">
           <div class="min-w-[40px] min-h-[30px]">
             <CustomButton label="1" full />
@@ -53,12 +45,4 @@ const testDialog = ref(false);
         </div>
         </div>
       </div>
-
-     
-    </template>
-    <template #footer>
-      <CustomButton label="Batal"> </CustomButton>
-      <CustomButton label="Simpan"> </CustomButton>
-    </template>
-  </CustomDialog>
 </template>

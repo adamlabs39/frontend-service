@@ -37,7 +37,7 @@ const handleRoomClick = () => {
 
 <template>
   <div class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive">
-    <Header title="User" :filter="false" :search="false">
+    <Header title="Tarif" :filter="false" :search="false">
       <template #header>
         <div class="flex gap-2.5">
           <CustomButton

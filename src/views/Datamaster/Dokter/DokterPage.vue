@@ -10,6 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahDataDokter from "./TambahDataDokter.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -18,29 +19,29 @@ onMounted(() => {
   products.value = [
     {
       no: "1",
-      kode_ruangan: "MWR",
-      nama_kategori_ruangan: "Mawar",
+      kode: "001",
+      nama: "Cholera disease",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "2",
-      kode_ruangan: "MWR",
-      nama_kategori_ruangan: "Mawar",
+      kode: "002",
+      nama: "Typhoid and paratyphoid fevers",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "3",
-      kode_ruangan: "MWR",
-      nama_kategori_ruangan: "Mawar",
+      kode: "003",
+      nama: "Other Salmonella",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "4",
-      kode_ruangan: "MWR",
-      nama_kategori_ruangan: "Mawar",
+      kode: "004",
+      nama: "Dizziness and giddiness",
       status: "AKTIF",
       action: "edit",
     },
@@ -58,7 +59,7 @@ const status = ref();
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="Kategori Ruangan">
+    <Header title="Dokter" :filter="false">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
@@ -66,33 +67,12 @@ const status = ref();
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Ruangan</template>
+          <template #header>Tambah Data Dokter</template>
           <template #body>
-            <div class="my-5 flex flex-col gap-2.5">
-              
-              <div class="flex gap-2.5">
-                <CustomTextfield
-                  label="Kode Kategori Ruangan"
-                  placeholder="Kode Kategori Ruangan"
-                  class="basis-1/2"
-                />
-                <CustomTextfield
-                  label="Nama Kategori Ruangan"
-                  placeholder="Nama Kategori Ruangan"
-                  class="basis-1/2"
-                />
-              </div>
-              
-              <hr />
-
-              <hr />
-              <div class="flex gap-2.5">
-                <CustomSwitch v-model="status" />
-                <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-              </div>
-            </div>
+            <TambahDataDokter/>
           </template>
           <template #footer>
+
             <CustomButton label="Batal"> </CustomButton>
             <CustomButton label="Simpan"> </CustomButton>
           </template>
@@ -115,18 +95,17 @@ const status = ref();
           </template>
         </Column>
         <Column
-          field="kode_ruangan"
-          header="Kode Ruangan"
+          field="kode"
+          header="Kode Role"
+          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama_kategori_ruangan"
-          header="Nama Kategori Ruangan"
+          field="nama"
+          header="Nama Role"
+          class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
-       
-
-      
         <Column
           field="status"
           header="Status"
@@ -153,11 +132,19 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column header="Action" headerClass="bg-adameds-50">
+        <Column  headerClass="bg-adameds-50" class="px-auto text-center">
+          <template #header="slotProps">
+            <div class="flex justify-center items-center w-full">
+              Action
+            </div>
+          </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center min-w-[80px] gap-2.5">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>
           </template>

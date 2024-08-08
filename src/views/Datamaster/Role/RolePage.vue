@@ -62,7 +62,7 @@ const status = ref();
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="User">
+    <Header title="Role">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
