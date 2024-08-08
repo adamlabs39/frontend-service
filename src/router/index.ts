@@ -65,6 +65,18 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: AdmisiPage },
       component: AdmisiView,
     },
+    {
+      path: "/admisi/rawat-inap",
+      name: "admisi-rawat-inap",
+      meta: { layout: SidebarLayout, page: AdmisiPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/igd",
+      name: "admisi-igd",
+      meta: { layout: SidebarLayout, page: AdmisiPage },
+      component: AdmisiView,
+    },
 
     // NOTE Test Component
     {

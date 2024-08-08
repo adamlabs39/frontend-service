@@ -34,6 +34,8 @@ import Button from "primevue/button";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from "primevue/paginator";
+import InputGroup from 'primevue/inputgroup';
+import InputGroupAddon from 'primevue/inputgroupaddon';
 
 const app = createApp(App);
 
@@ -76,5 +78,7 @@ app.component("ToggleSwitch", ToggleSwitch);
 app.component("DataTable", DataTable);
 app.component("Column", Column);
 app.component("Paginator", Paginator);
+app.component("InputGroup", InputGroup);
+app.component("InputGroupAddon", InputGroupAddon);
 
 app.mount("#app");
