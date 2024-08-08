@@ -1,10 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-
 const status = ref();
 </script>
 <template>
@@ -12,14 +9,12 @@ const status = ref();
     <div class="flex gap-2.5">
       <CustomTextfield label="Kode" placeholder="Kode" />
       <CustomTextfield
-        label="Nama Role"
-        placeholder="Nama Role"
+        label="Nama Loinc"
+        placeholder="Nama Loinc"
         class="basis-3/4"
       />
     </div>
-    <hr class="border-grey-200" />
-    <CustomAutoComplete label="Menu Akses" />
-    <hr class="border-grey-200" />
+    <hr />
     <div class="flex gap-2.5">
       <CustomSwitch v-model="status" />
       <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>

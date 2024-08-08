@@ -20,8 +20,9 @@ import KategoriRuanganPage from "@/views/Datamaster/KategoriRuangan.vue/Kategori
 import TarifPage from "@/views/Datamaster/Tarif/TarifPage.vue";
 import ICD9CMPage from "@/views/Datamaster/ICD9CM/ICD9CMPage.vue";
 import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
-import LoinchPage from "@/views/Datamaster/Loinch/LoinchPage.vue";
+import LoincPage from "@/views/Datamaster/Loinc/LoincPage.vue";
 import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
+import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -122,15 +123,15 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
-      path: "/datamaster/loinch",
-      name: "datamaster-loinch",
-      meta: { layout: SidebarLayout, page: LoinchPage },
+      path: "/datamaster/loinc",
+      name: "datamaster-loinc",
+      meta: { layout: SidebarLayout, page: LoincPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/diagnosis-icd10",
       name: "datamaster-diagnosis-icd10",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: DiagnosisICD10Page },
       component: DatamasterView,
     },
     {

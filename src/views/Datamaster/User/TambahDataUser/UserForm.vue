@@ -25,9 +25,10 @@
     { label: 'dr.Susi', value: 'dr.Susi' },
     { label: 'dr.Adam', value: 'dr.Adam' }
   ]);
+  const status = ref();
   </script>
 <template>
-    <div class="grow overflow-auto flex flex-col gap-2.5">
+    <div class="grow overflow-auto flex flex-col gap-5">
       <CustomAccordion headerClass="">
         <template #collapseIcon>
           <PhCaretUp :size="20" class="text-adameds-300" />
@@ -37,7 +38,7 @@
         </template>
         <template #header>Akun</template>
         <template #content>
-          <div class="flex flex-col gap-5 py-2.5">
+          <div class="flex flex-col gap-5 py-5">
             <CustomTextfield label="Username" placeholder="Username" :disabled="!selectedRole" />
             <CustomTextfield label="Password" placeholder="********" appendIcon="PhEye" :disabled="!selectedRole" />
             <CustomTextfield label="Verify Password" placeholder="********" appendIcon="PhEye" :disabled="!selectedRole" />
@@ -53,7 +54,7 @@
         </template>
         <template #header>Data User</template>
         <template #content>
-          <div class="flex flex-col gap-5 py-2.5">
+          <div class="flex flex-col gap-5 py-5">
             <CustomTextfield
               v-if="selectedRole !== 'dokter'"
               label="Nama Lengkap User"
@@ -84,7 +85,7 @@
         </template>
         <template #header>Hak Akses Verifikator</template>
         <template #content>
-          <div class="flex flex-col gap-5 py-2.5">
+          <div class="flex flex-col gap-5 py-5">
             <div class="flex flex-col gap-2.5">
               <div>Verifikator Pengadaan Barang Medis</div>
               <div class="flex w-full border rounded-lg p-2.5 gap-2.5">
@@ -105,7 +106,10 @@
       <div>
         <div>Status</div>
         <div class="w-full border rounded-lg p-2.5">
-          <CustomSwitch />
+          <div class="flex gap-2.5">
+          <CustomSwitch v-model="status" :disabled="!selectedRole" />
+          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+        </div>
         </div>
       </div>
     </div>

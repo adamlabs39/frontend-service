@@ -10,6 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahDataRoleDialog from "./TambahDataRoleDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -62,7 +63,7 @@ const status = ref();
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="Role">
+    <Header title="Role" :filter="false">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
@@ -72,32 +73,16 @@ const status = ref();
         >
           <template #header>Tambah Data Role</template>
           <template #body>
-            <div class="my-5 flex flex-col gap-2.5">
-              <div class="flex gap-2.5">
-                <CustomTextfield label="Kode" placeholder="Kode" />
-                <CustomTextfield
-                  label="Nama Role"
-                  placeholder="Nama Role"
-                  class="basis-3/4"
-                />
-              </div>
-              <hr />
-              <CustomSelect
-                label="Menu"
-                place-holder="Cari dan Pilih Permision"
-                :is-loading="false"
-              />
-              <CustomAutoComplete label="Menu Terpilih" />
-              <hr />
-              <div class="flex gap-2.5">
-                <CustomSwitch v-model="status" />
-                <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-              </div>
-            </div>
+            <TambahDataRoleDialog />
           </template>
           <template #footer>
-            <CustomButton label="Batal"> </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
+            <div class="w-full">
+              <hr class="-mx-5 border-grey-200" />
+              <div class="mt-5 flex justify-end gap-2.5">
+                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Simpan"> </CustomButton>
+              </div>
+            </div>
           </template>
         </CustomDialog>
       </template>
@@ -135,19 +120,18 @@ const status = ref();
           class="w-6/12"
           headerClass="bg-adameds-50"
         >
-        <template #body="slotProps">
-  <div class="flex flex-wrap gap-2">
-    <div v-for="items in slotProps.data.permission" :key="items">
-      <CustomChip 
-        :label="items" 
-        :showCheckedIcon="false"
-        customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
-      />
-    </div>
-  </div>
-</template>
-
-      </Column>
+          <template #body="slotProps">
+            <div class="flex flex-wrap gap-2">
+              <div v-for="items in slotProps.data.permission" :key="items">
+                <CustomChip
+                  :label="items"
+                  :showCheckedIcon="false"
+                  customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
+                />
+              </div>
+            </div>
+          </template>
+        </Column>
         <Column
           field="status"
           header="Status"
@@ -174,18 +158,23 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column  headerClass="bg-adameds-50" class="px-auto text-center">
+        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
           <template #header="slotProps">
-            <div class="flex justify-center items-center w-full">
+            <div
+              class="flex items-center justify-center w-full font-semibold text-SM"
+            >
               Action
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center min-w-[80px] gap-2.5">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>

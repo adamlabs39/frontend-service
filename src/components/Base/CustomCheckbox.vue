@@ -29,7 +29,7 @@ watch(selectedCategories, (newVal) => {
 
 <template>
     <div :class="customClass">
-      <div v-for="category in props.categories" :key="category.key" class="flex items-center gap-2.5">
+      <div v-for="category in props.categories" :key="category.key" class="flex items-center gap-2.5 border py-2.5 px-1.5 rounded-md bg-adameds-50">
         <Checkbox
           v-model="selectedCategories"
           :inputId="category.key"

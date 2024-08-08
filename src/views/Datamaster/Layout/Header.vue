@@ -40,15 +40,16 @@ const props=defineProps({
       </div>
     </template>
     <template #content>
-      <div class="flex flex-col gap-2.5">
+      <div class="flex flex-col gap-2.5 my-2.5">
           <CustomTextfield v-if="search"
-            label="Pencarian"
+            :label="`Cari ${title}`" 
             prependIcon="PhMagnifyingGlass"
-            placeholder="Cari Nama User"
-          />
+            :placeholder="`Cari ${title}`"
+          >
+        </CustomTextfield>
         <slot name="content"></slot>
         <div v-if="filter" class="flex items-center gap-2.5">
-          <div class="min-w-32 border-r-[0.71px]">Filter Status</div>
+          <div class="min-w-32 border-r-[0.71px] font-semibold text-xs text-grey-300">Filter Status</div>
           <CustomChip
             label="AKTIF"
             textColor="text-[#80868d]"

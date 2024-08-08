@@ -10,6 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -68,26 +69,16 @@ const status = ref();
         >
           <template #header>Tambah Data Role</template>
           <template #body>
-            <div class="my-5 flex flex-col gap-2.5">
-              <div class="flex gap-2.5">
-                <CustomTextfield label="Kode" placeholder="Kode" />
-                <CustomTextfield
-                  label="Nama ICD 9 CM"
-                  placeholder="Nama ICD 9 CM"
-                  class="basis-3/4"
-                />
-              </div>
-              <hr/>
-              <div class="flex gap-2.5">
-                <CustomSwitch v-model="status" />
-                <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-              </div>
-            </div>
+            <TambahDataICD9CMDialog/>
           </template>
           <template #footer>
-
-            <CustomButton label="Batal"> </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
+            <div class="w-full">
+              <hr class="-mx-5 border-grey-200" />
+              <div class="mt-5 flex justify-end gap-2.5">
+                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Simpan"> </CustomButton>
+              </div>
+            </div>
           </template>
         </CustomDialog>
       </template>
@@ -109,13 +100,13 @@ const status = ref();
         </Column>
         <Column
           field="kode"
-          header="Kode Role"
+          header="Kode"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Role"
+          header="Nama ICD 9 CM"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
@@ -145,18 +136,23 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column  headerClass="bg-adameds-50" class="px-auto text-center">
+        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
           <template #header="slotProps">
-            <div class="flex justify-center items-center w-full">
+            <div
+              class="flex items-center justify-center w-full font-semibold text-SM"
+            >
               Action
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center min-w-[80px] gap-2.5">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>

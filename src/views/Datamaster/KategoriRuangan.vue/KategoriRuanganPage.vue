@@ -10,6 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahKategoriRuanganDialog from "./TambahKategoriRuanganDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -68,33 +69,16 @@ const status = ref();
         >
           <template #header>Tambah Data Ruangan</template>
           <template #body>
-            <div class="my-5 flex flex-col gap-2.5">
-              
-              <div class="flex gap-2.5">
-                <CustomTextfield
-                  label="Kode Kategori Ruangan"
-                  placeholder="Kode Kategori Ruangan"
-                  class="basis-1/2"
-                />
-                <CustomTextfield
-                  label="Nama Kategori Ruangan"
-                  placeholder="Nama Kategori Ruangan"
-                  class="basis-1/2"
-                />
-              </div>
-              
-              <hr />
-
-              <hr />
-              <div class="flex gap-2.5">
-                <CustomSwitch v-model="status" />
-                <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-              </div>
-            </div>
+            <TambahKategoriRuanganDialog/>
           </template>
           <template #footer>
-            <CustomButton label="Batal"> </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
+            <div class="w-full">
+              <hr class="-mx-5 border-grey-200" />
+              <div class="mt-5 flex justify-end gap-2.5">
+                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Simpan"> </CustomButton>
+              </div>
+            </div>
           </template>
         </CustomDialog>
       </template>
@@ -124,9 +108,6 @@ const status = ref();
           header="Nama Kategori Ruangan"
           headerClass="bg-adameds-50"
         ></Column>
-       
-
-      
         <Column
           field="status"
           header="Status"
@@ -153,11 +134,24 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column header="Action" headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+          <template #header="slotProps">
+            <div
+              class="flex items-center justify-center w-full font-semibold text-SM"
+            >
+              Action
+            </div>
+          </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>
           </template>

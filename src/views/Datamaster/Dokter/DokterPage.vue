@@ -10,7 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import TambahDataDokter from "./TambahDataDokter.vue";
+import TambahDataDokter from "./TambahDataDokterDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -132,18 +132,23 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column  headerClass="bg-adameds-50" class="px-auto text-center">
+        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
           <template #header="slotProps">
-            <div class="flex justify-center items-center w-full">
+            <div
+              class="flex items-center justify-center w-full font-semibold text-SM"
+            >
               Action
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center min-w-[80px] gap-2.5">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>

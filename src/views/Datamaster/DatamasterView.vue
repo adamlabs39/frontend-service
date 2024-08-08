@@ -68,9 +68,9 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.LINK,url: '/datamaster/snomed-ct',
       },
       {
-        name: "Loinch",
+        name: "Loinc",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/loinch',
+        type: linkType.LINK,url: '/datamaster/loinc',
       },
       {
         name: "Diagnosis (ICD 10)",

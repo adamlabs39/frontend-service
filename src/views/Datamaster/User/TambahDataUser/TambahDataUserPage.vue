@@ -78,11 +78,11 @@ const toggleSwitch = ref();
           :options="roleOptions"
           :isLoading="false"
         />
-        <div class="overflow-auto px-2 rounded-md">
+        <div class="overflow-auto h-full">
           <!-- Empty Role -->
           <div
             v-if="!selectedRole"
-            class="flex flex-col items-center justify-center"
+            class="flex flex-col items-center justify-center h-full w-full border border-dashed rounded-md "
           >
             <img src="@/assets/icons/empty role.svg" alt="" />
             <div
@@ -108,7 +108,7 @@ const toggleSwitch = ref();
             </CustomAccordion>
           </div>
           <!-- Dokter Role -->
-          <div v-if="selectedRole === 'dokter'" class="w-full">
+          <div v-if="selectedRole === 'dokter'" class="w-full flex flex-col gap-3">
             <CustomAccordion 
               headerClass="bg-adameds-50"
               v-for="section in sections"
@@ -117,6 +117,7 @@ const toggleSwitch = ref();
               <template #header>{{ section.name }}</template>
               <template #content>
                 <CustomCheckbox
+                  class=""
                   :categories="section.values"
                   custom-class="grid grid-cols-2 justify-center gap-4 pt-5"
                 />
