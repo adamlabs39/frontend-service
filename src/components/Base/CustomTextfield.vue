@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -44,13 +44,17 @@ const props = defineProps({
   },
 });
 
-const value = ref(props.modelValue);
+// const value = ref(props.modelValue);
+const value = computed({
+  get: () => props.modelValue,
+  set: (value: string) => emit("update:modelValue", value),
+});
 
 const emit = defineEmits(["update:modelValue", "clickPrepend", "clickAppend"]);
-const onInput = (event: any) => {
-  if (!event) return;
-  emit("update:modelValue", event.target?.value);
-};
+// const onInput = (event: any) => {
+//   if (!event) return;
+//   emit("update:modelValue", event.target?.value);
+// };
 
 const alerTest = () => {
   alert("masuk gan");
@@ -86,7 +90,6 @@ defineExpose({
         <InputText
           :type="type"
           v-model="value"
-          @input="onInput"
           class="h-10 pt-1 rounded-lg border-grey-400"
           :class="{
             'border-red-500 text-red-500': invalid,

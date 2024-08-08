@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -43,38 +43,42 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "input", "date-select"]);
 
-const value = ref(props.modelValue);
+// const value = ref(props.modelValue);
+const value = computed({
+  get: () => props.modelValue,
+  set: (value: Date | undefined) => emit("update:modelValue", value),
+});
 
-const formatDate = (date: Date): string => {
-  const day = date.getDate();
-  const month = date.toLocaleString("default", { month: "short" });
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
+// const formatDate = (date: Date): string => {
+//   const day = date.getDate();
+//   const month = date.toLocaleString("default", { month: "short" });
+//   const year = date.getFullYear();
+//   return `${day}-${month}-${year}`;
+// };
 
-const formatTime = (date: Date): string => {
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
+// const formatTime = (date: Date): string => {
+//   const hours = date.getHours().toString().padStart(2, "0");
+//   const minutes = date.getMinutes().toString().padStart(2, "0");
+//   return `${hours}:${minutes}`;
+// };
 
-const onInput = (event: any) => {
-  if (!event) return;
+// const onInput = (event: any) => {
+//   if (!event) return;
 
-  const date = new Date(event);
-  const formattedValue = props.timeOnly ? formatTime(date) : formatDate(date);
+//   const date = new Date(event);
+//   const formattedValue = props.timeOnly ? formatTime(date) : formatDate(date);
 
-  emit("update:modelValue", formattedValue);
-};
+//   emit("update:modelValue", formattedValue);
+// };
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="">
     <label v-if="showLabel" class="block font-semibold mb-[5px]">
       {{ label }}
     </label>
-    <div class="flex">
-      <IconField class="flex items-center grow">
+    <div class="">
+      <IconField class="">
         <InputIcon class="-mt-[11px] -ml-[2px]">
           <component
             :is="timeOnly ? 'PhClock' : 'PhCalendarBlank'"
@@ -90,7 +94,6 @@ const onInput = (event: any) => {
           :maxDate="maxDate"
           :placeholder="placeHolder"
           :disabled="disabled"
-          @date-select="onInput"
           selectionMode="single"
           dateFormat="dd-mm-yy"
           :manualInput="false"
