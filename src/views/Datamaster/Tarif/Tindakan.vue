@@ -110,6 +110,10 @@ onMounted(() => {
   ];
 });
 const detail = ref(false);
+
+const onRowToggle = (event:any) => {
+  expandedRows.value = event.data;
+};
 </script>
 
 <template>
@@ -120,8 +124,15 @@ const detail = ref(false);
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
     class="text-xs"
     dataKey="id"
+    @row-toggle="onRowToggle"
   >
-    <Column expander style="width: 5rem" header-class="text-black bg-adameds-50"/>
+  <Column
+      expander
+      style="width: 5rem"
+      header-class="text-black bg-adameds-50"
+    >
+
+    </Column>
     <Column header="No" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div class="flex items-center justify-center">
@@ -129,12 +140,36 @@ const detail = ref(false);
         </div>
       </template>
     </Column>
-    <Column field="nama_tarif" header="Nama Tarif" header-class="text-black bg-adameds-50"></Column>
-    <Column field="jm_varian" header="Jml. Varian" header-class="text-black bg-adameds-50"></Column>
-    <Column field="kode_tindakan" header="Kode Tindakan" header-class="text-black bg-adameds-50"></Column>
-    <Column field="snomed_ct" header="Snomed-CT" header-class="text-black bg-adameds-50"></Column>
-    <Column field="icd_9_cm_cm" header="ICD 9 CM-CM" header-class="text-black bg-adameds-50"></Column>
-    <Column field="status" header="Status" header-class="text-black bg-adameds-50">
+    <Column
+      field="nama_tarif"
+      header="Nama Tarif"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="jm_varian"
+      header="Jml. Varian"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="kode_tindakan"
+      header="Kode Tindakan"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="snomed_ct"
+      header="Snomed-CT"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="icd_9_cm_cm"
+      header="ICD 9 CM-CM"
+      header-class="text-black bg-adameds-50"
+    ></Column>
+    <Column
+      field="status"
+      header="Status"
+      header-class="text-black bg-adameds-50"
+    >
       <template #body="slotProps">
         <div class="flex justify-center items-center min-w-[120px]">
           <CustomChip
@@ -157,7 +192,11 @@ const detail = ref(false);
     <Column header="Action" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div class="flex items-center justify-center">
-          <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" @click="detail = true">
+          <CustomButton
+            label=""
+            background-color="bg-[#3D84E5] rounded-lg"
+            @click="detail = true"
+          >
             <img src="@/assets/icons/edit.svg" alt="" width="15px" />
           </CustomButton>
         </div>
@@ -180,9 +219,21 @@ const detail = ref(false);
               </div>
             </template>
           </Column>
-          <Column field="nama_varian_tarif" header="Nama Varian Tarif" header-class="text-white bg-adameds-300"></Column>
-          <Column field="unit_pelayanan" header="Unit Pelayanan" header-class="text-white bg-adameds-300"></Column>
-          <Column field="metode_pembayaran" header="Metode Pembayaran" header-class="text-white bg-adameds-300">
+          <Column
+            field="nama_varian_tarif"
+            header="Nama Varian Tarif"
+            header-class="text-white bg-adameds-300"
+          ></Column>
+          <Column
+            field="unit_pelayanan"
+            header="Unit Pelayanan"
+            header-class="text-white bg-adameds-300"
+          ></Column>
+          <Column
+            field="metode_pembayaran"
+            header="Metode Pembayaran"
+            header-class="text-white bg-adameds-300"
+          >
             <template #body="slotProps">
               <CustomChip
                 :label="slotProps.data.metode_pembayaran"
@@ -191,7 +242,11 @@ const detail = ref(false);
               />
             </template>
           </Column>
-          <Column field="harga" header="Harga/Tarif" header-class="text-white bg-adameds-300"></Column>
+          <Column
+            field="harga"
+            header="Harga/Tarif"
+            header-class="text-white bg-adameds-300"
+          ></Column>
         </DataTable>
       </div>
     </template>

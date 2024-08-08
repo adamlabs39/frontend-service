@@ -3,11 +3,12 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
+import KomponenTarif from "@/components/Datamaster/KomponenTarif.vue";
 import { ref } from "vue";
 const testDialog = ref(false);
 </script>
 <template>
-  <div @click="testDialog = true">Show</div>
+  <div @click="testDialog = true">Show Detail Tarif Tindakan</div>
   <CustomDialog
     fullScreen
     v-model:visible="testDialog"
@@ -36,9 +37,17 @@ const testDialog = ref(false);
             <div class="underline">Snomed-CT</div>
             <div>Nama Tindakan Snomed-CT</div>
           </div>
+          <div>
+            <div class="underline">IDC 9-CM</div>
+            <div>Nama Tindakan IDC 9</div>
+          </div>
         </div>
         <div class="overflow-auto grow">
-          <VarianTarif />
+          <VarianTarif>
+            <template #tarif>
+              <KomponenTarif/>
+            </template>
+          </VarianTarif>
           <div class="border border-dashed border-adameds-300 rounded-lg flex items-center justify-center p-5 m-5">
           <CustomButton icon="PhPlus" label="Komponen Tarif" borderColor="border-adameds-300" textColor="text-adameds-300" backgroundColor="bg-white" />
         </div>

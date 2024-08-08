@@ -18,7 +18,7 @@ onMounted(() => {
   products.value = [
     {
       no: "1",
-      kode_role: "Petugas Adameds",
+      kode_role: "SAD",
       nama_role: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
@@ -26,7 +26,7 @@ onMounted(() => {
     },
     {
       no: "2",
-      kode_role: "Petugas Adameds",
+      kode_role: "ADM",
       nama_role: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
@@ -34,7 +34,7 @@ onMounted(() => {
     },
     {
       no: "3",
-      kode_role: "Petugas Adameds",
+      kode_role: "DKT",
       nama_role: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
@@ -42,7 +42,7 @@ onMounted(() => {
     },
     {
       no: "4",
-      kode_role: "Petugas Adameds",
+      kode_role: "RRW",
       nama_role: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
@@ -120,19 +120,19 @@ const status = ref();
         <Column
           field="kode_role"
           header="Kode Role"
-          class="w-1/3"
+          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama_role"
           header="Nama Role"
-          class="w-1/3"
+          class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="permission"
-          header="Permission"
-          class="w-1/3"
+          header="Menu Akses"
+          class="w-6/12"
           headerClass="bg-adameds-50"
         >
         <template #body="slotProps">
@@ -174,11 +174,19 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column header="Action" headerClass="bg-adameds-50">
+        <Column  headerClass="bg-adameds-50" class="px-auto text-center">
+          <template #header="slotProps">
+            <div class="flex justify-center items-center w-full">
+              Action
+            </div>
+          </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center min-w-[80px] gap-2.5">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>
           </template>

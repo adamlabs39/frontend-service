@@ -41,16 +41,16 @@ const addDataPage = () => {
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column header="No" headerClass="bg-adameds-50 font-semibold text-SM">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
             </div>
           </template>
         </Column>
-        <Column field="nama" header="Nama User" class="w-1/2" headerClass="bg-adameds-50"></Column>
-        <Column field="role" header="Role" class="w-1/2" headerClass="bg-adameds-50"></Column>
-        <Column field="status" header="Status" headerClass="bg-adameds-50 flex items-center justify-center">
+        <Column field="nama" header="Nama User" class="w-1/2" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+        <Column field="role" header="Role" class="w-1/2" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+        <Column field="status" header="Status" headerClass="bg-adameds-50 flex items-center justify-center font-semibold text-SM">
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -62,11 +62,17 @@ const addDataPage = () => {
             </div>
           </template>
         </Column>
-        <Column header="Action" headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+          <template #header="slotProps">
+            <div class="flex items-center justify-center w-full font-semibold text-SM">Action</div>
+          </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>
           </template>

@@ -28,7 +28,8 @@ const data = ref([
             <CustomButton backgroundColor="bg-danger-300" label="Hapus" class="basis-1/12"/>
           </div>
           <div>
-            <KomponenTarif/>
+            <!-- <KomponenTarif/> -->
+             <slot name="tarif"></slot>
           </div>
         </div>
       </template>
