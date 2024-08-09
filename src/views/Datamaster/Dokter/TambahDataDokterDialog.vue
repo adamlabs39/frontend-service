@@ -8,14 +8,13 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 const status = ref();
 </script>
 <template>
-  <div class="my-5 flex flex-col gap-2.5">
+  <div class="mt-5 flex flex-col gap-5">
     <div class="flex gap-2.5">
       <CustomTextfield label="Kode HFIS (BPJS)" placeholder="0000" type="number" />
       <CustomTextfield
         label="Kode SIP"
         placeholder="0000"
         type="number"
-        class="basis-3/4"
       />
       <CustomTextfield label="Kode Dokter" placeholder="Kode Dokter" />
     </div>
@@ -23,7 +22,7 @@ const status = ref();
         <div>Nama Lengkap Dokter</div>
         <div class="flex gap-2.5">
             <CustomTextfield label="" placeholder="Gelar Awal"/>
-            <CustomTextfield label="" placeholder="Nama Lengkap" class="grow"/>
+            <CustomTextfield label="" placeholder="Nama Lengkap" />
             <CustomTextfield label="" placeholder="Gelar Akhir"/>
         </div>
     </div>
@@ -43,8 +42,8 @@ const status = ref();
             </template>
         </CustomTextfield>
     </div>
-    <div class="flex gap-2.5">
-        <CustomDatePicker :time-only="true"/>
+    <div class="flex gap-2.5 justify-between">
+        <CustomDatePicker :time-only="true" class="w-full" />
         <CustomTextfield label="Durasi Pelayanan" placeholder="00:00" type="number">
             <template #appendText>
                 <div class="flex justfy-center items-center m-2.5">

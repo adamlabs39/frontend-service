@@ -64,13 +64,13 @@ const props = defineProps({
       backgroundColor ? backgroundColor : 'bg-adameds-300',
       textColor ? textColor : 'text-white',
       borderColor ? borderColor : 'border-none',
-      outlined ? `bg-transparent` : '',
+      outlined ? `bg-transparent border-2` : '',
       size == 'small' ? 'h-[21px] text-XS' : 'h-10',
       disabled && outlined
-        ? 'border-grey-100 text-grey-100'
+        ? 'border-grey-200 text-grey-200'
         : '',
       disabled && !outlined
-        ? 'bg-grey-100 text-grey-400Active border-none'
+        ? 'bg-grey-200 text-grey-400Active border-none'
         : '',
     ]"
     :fluid="full"

@@ -6,14 +6,19 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataDokter from "./TambahDataDokterDialog.vue";
-const products = ref<any[]>([]);
+import DetailDokterDialog from "./DetailDokterDialog.vue";
 
+const products = ref<any[]>([]);
+const selectedProduct = ref(null);
 const router = useRouter();
+const tambahDataDialog = ref(false);
+const detailDokterDialog = ref(false);
+
+const onRowSelect = (event: any) => {
+  selectedProduct.value = event.data;
+  detailDokterDialog.value = true;
+};
 
 onMounted(() => {
   products.value = [
@@ -48,11 +53,6 @@ onMounted(() => {
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
-const testDialog = ref(false);
-const status = ref();
 </script>
 
 <template>
@@ -61,22 +61,11 @@ const status = ref();
   >
     <Header title="Dokter" :filter="false">
       <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Dokter</template>
-          <template #body>
-            <TambahDataDokter/>
-          </template>
-          <template #footer>
-
-            <CustomButton label="Batal"> </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
-          </template>
-        </CustomDialog>
+        <CustomButton
+          label="Tambah Data"
+          icon="PhPlus"
+          @click="tambahDataDialog= true"
+        />
       </template>
     </Header>
 
@@ -86,6 +75,10 @@ const status = ref();
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
+        selectionMode="single"
+        :metaKeySelection="false"
+        v-model:selection="selectedProduct"
+        @rowSelect="onRowSelect"
       >
         <Column header="No" headerClass="bg-adameds-50">
           <template #body="slotProps">
@@ -120,14 +113,20 @@ const status = ref();
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                :customClass="`text-xs font-semibold h-6 flex ${
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'border'
-                }`"
+                customClass="text-xs font-semibold h-6 flex"
               />
             </div>
           </template>
@@ -158,5 +157,50 @@ const status = ref();
     </div>
 
     <Footer />
+
+    <!-- Dialog for Tambah Data Dokter -->
+    <CustomDialog
+      width="600px"
+      v-model:visible="tambahDataDialog"
+      headerBg="bg-adameds-300"
+    >
+      <template #header>Tambah Data Dokter</template>
+      <template #body>
+        <TambahDataDokter />
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <hr class="-mx-5 border-grey-200" />
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton label="Batal" @click="tambahDataDialog= false">
+            </CustomButton>
+            <CustomButton label="Simpan"> </CustomButton>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
+
+    <!-- Dialog for Detail Dokter -->
+    <CustomDialog
+      width="600px"
+      v-model:visible="detailDokterDialog"
+      headerBg="bg-adameds-300"
+    >
+      <template #header>Detail Dokter</template>
+      <template #body>
+        <DetailDokterDialog :dokter="selectedProduct" />
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <hr class="-mx-5 border-grey-200" />
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton label="Batal" @click="detailDokterDialog = false">
+            </CustomButton>
+            <CustomButton label="Simpan"> </CustomButton>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
+
   </div>
 </template>

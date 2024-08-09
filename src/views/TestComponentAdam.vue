@@ -102,7 +102,7 @@
         label="TUNAI"
         borderColor="border-[#14B8A6]"
         textColor="text-[#14B8A6]"
-        selected-border-color="border-0 bg-[#14B8A6]"
+        selected-color="border-0 bg-[#14B8A6]"
         icon-color="#14B8A6"
         :isSelected="selectedChipValues.includes('TUNAI')"
         @selected="onChipSelected"
@@ -112,7 +112,7 @@
         borderColor="border-[#E89F29]"
         textColor="text-[#E89F29]"
         icon-color="#E89F29"
-        selected-border-color="border-0 bg-[#E89F29]"
+        selected-color="border-0 bg-[#E89F29]"
         :isSelected="selectedChipValues.includes('ASURANSI')"
         @selected="onChipSelected"
       />

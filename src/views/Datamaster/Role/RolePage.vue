@@ -126,6 +126,8 @@ const status = ref();
                 <CustomChip
                   :label="items"
                   :showCheckedIcon="false"
+                  border-color="border-none"
+                  bg-color="bg-adameds-300"
                   customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
                 />
               </div>
@@ -146,14 +148,20 @@ const status = ref();
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                :customClass="`text-xs font-semibold h-6 flex ${
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'border'
-                }`"
+                customClass="text-xs font-semibold h-6 flex"
               />
             </div>
           </template>

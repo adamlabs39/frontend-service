@@ -56,6 +56,8 @@ const handleRoomClick = () => {
             :class="activeButton === 'room' ? 'bg-adameds-300' : 'bg-white'"
             @click="handleRoomClick"
           />
+          <CustomButton label="Tarif" icon="PhPlus" @click="" />
+
         </div>
       </template>
       <template #content>

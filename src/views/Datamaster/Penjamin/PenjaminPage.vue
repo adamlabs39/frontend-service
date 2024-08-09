@@ -6,7 +6,11 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import TambahDataLoincDialog from "./TambahDataLoincDialog.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahDataPenjaminDialog from "./TambahDataPenjaminDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -55,7 +59,7 @@ const status = ref();
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="Loinc" :filter="false" >
+    <Header title="Penjamin" :filter="false">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
@@ -63,9 +67,9 @@ const status = ref();
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Role</template>
+          <template #header>Tambah Data Penjamin</template>
           <template #body>
-            <TambahDataLoincDialog/>
+            <TambahDataPenjaminDialog/>
           </template>
           <template #footer>
             <div class="w-full">
@@ -102,7 +106,7 @@ const status = ref();
         ></Column>
         <Column
           field="nama"
-          header="Nama Loinc"
+          header="Nama ICD 9 CM"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>

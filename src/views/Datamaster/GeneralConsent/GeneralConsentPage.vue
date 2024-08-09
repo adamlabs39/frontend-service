@@ -6,9 +6,8 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import TambahDataLoincDialog from "./TambahDataLoincDialog.vue";
+import TambahGeneralConsent from "./TambahGeneralConsent.vue";
 const products = ref<any[]>([]);
-
 const router = useRouter();
 
 onMounted(() => {
@@ -55,17 +54,17 @@ const status = ref();
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="Loinc" :filter="false" >
+    <Header title="General Consent" :filter="false" >
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
-          width="600px"
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
+          :full-screen="true"
         >
-          <template #header>Tambah Data Role</template>
+          <template #header>Tambah General Consent</template>
           <template #body>
-            <TambahDataLoincDialog/>
+            <TambahGeneralConsent/>
           </template>
           <template #footer>
             <div class="w-full">
@@ -96,13 +95,13 @@ const status = ref();
         </Column>
         <Column
           field="kode"
-          header="Kode"
+          header="Kode Diagnosis"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Loinc"
+          header="Nama Diagnosis"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>

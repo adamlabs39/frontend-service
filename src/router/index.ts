@@ -23,10 +23,16 @@ import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
 import LoincPage from "@/views/Datamaster/Loinc/LoincPage.vue";
 import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
 import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
+import PenjaminPage from "@/views/Datamaster/Penjamin/PenjaminPage.vue";
+import OrganisasiPage from "@/views/Datamaster/Organisasi/OrganisasiPage.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
+import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
+import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -143,31 +149,31 @@ const router = createRouter({
     {
       path: "/datamaster/penjamin",
       name: "datamaster-penjamin",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: PenjaminPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/faskes",
       name: "datamaster-faskes",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: FaskesPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/lokasi",
       name: "datamaster-lokasi",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: LokasiPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/organisasi",
       name: "datamaster-organisasi",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: OrganisasiPage },
       component: DatamasterView,
     },
     {
       path: "/datamaster/general-consent",
       name: "datamaster-general-consent",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: GeneralConsentPage },
       component: DatamasterView,
     },
 

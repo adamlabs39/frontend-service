@@ -8,12 +8,15 @@ import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-import KomponenTarif from "@/components/Datamaster/KomponenTarif.vue";
+import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
 import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
 import DetailTarifTindakan from "./Datamaster/Tarif/DetailTarifTindakan.vue";
 import DetailTarifRuangan from "./Datamaster/Tarif/DetailTarifRuangan.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
+import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
+import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
+import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -54,52 +57,56 @@ const testSwitch = (data: any) => {
 
 //For Test Card
 const cardPanggilan = ref(
-  { noAntri: '9349',
-    namaPoli:'Poli Gigi',
+  {
+    noAntri: '9349',
+    namaPoli: 'Poli Gigi',
     namaDokter: 'dr. Adameds bin Adameds',
   },
 );
 
 const tiketAntrian = ref(
-  { noRM: '001827',
-    noBPJS:'9234938492',
+  {
+    noRM: '001827',
+    noBPJS: '9234938492',
     nik: '0932493849382',
-    nama:'Adam bin Adam',
-    tanggalLahir:'01 Januari 2000',
-    gender:'Laki-laki',
-    namaPoli:'Poli Anak',
-    dokter:'dr. Umum',
-    jadwal:'07:00-10:00',
-    tanggal:'10 Jan 2024',
-    noAntri:'PD-02-01',
+    nama: 'Adam bin Adam',
+    tanggalLahir: '01 Januari 2000',
+    gender: 'Laki-laki',
+    namaPoli: 'Poli Anak',
+    dokter: 'dr. Umum',
+    jadwal: '07:00-10:00',
+    tanggal: '10 Jan 2024',
+    noAntri: 'PD-02-01',
   },
 );
 const riwayatPemerikasaan = ref(
-  { ruangan: 'IGD',
-    asuransi:'TUNAI',
+  {
+    ruangan: 'IGD',
+    asuransi: 'TUNAI',
     dokter: 'dr. Adameds bin Adameds',
-    tanggal:'2024-6-12',
-    jam:'09:00',
-    statusLunas:'Lunas'
+    tanggal: '2024-6-12',
+    jam: '09:00',
+    statusLunas: 'Lunas'
   },
 );
 
 const monitoringBed = ref(
-  { nomorBed: '1',
-    nomorRM:'00123456',
+  {
+    nomorBed: '1',
+    nomorRM: '00123456',
     namaPasien: 'Adam bin Adam',
-    gender:'Laki-laki Dewasa',
-    asuransi:'BPJS',
+    gender: 'Laki-laki Dewasa',
+    asuransi: 'BPJS',
   },
 );
 
 const categories = ref([
-    {name: "Accounting", key: "A"},
-    {name: "Marketing", key: "M"},
-    {name: "Production", key: "P"},
-    {name: "Research", key: "R"}
+  { name: "Accounting", key: "A" },
+  { name: "Marketing", key: "M" },
+  { name: "Production", key: "P" },
+  { name: "Research", key: "R" }
 ]);
-const checkCategorie=ref()
+const checkCategorie = ref()
 </script>
 
 <template>
@@ -126,23 +133,23 @@ const checkCategorie=ref()
     </div>
     <br>
     <div class="w-3/4">
-      <TiketAntrian :tiketAntrian="tiketAntrian"/>
+      <TiketAntrian :tiketAntrian="tiketAntrian" />
     </div>
     <br>
     <div class="w-3/4">
-      <CardRiwayatPemeriksaan :pemeriksaan="riwayatPemerikasaan"/>
+      <CardRiwayatPemeriksaan :pemeriksaan="riwayatPemerikasaan" />
     </div>
     <br>
     <div class="w-3/4">
       <CardMonitoringBed :monitoringBed="monitoringBed" />
     </div>
     <br>
-    <div >
-      <CustomCheckbox v-model="checkCategorie" :categories="categories"/>
-    {{ checkCategorie }}
+    <div>
+      <CustomCheckbox v-model="checkCategorie" :categories="categories" />
+      {{ checkCategorie }}
     </div>
     <br>
-    <KomponenTarif/>
+    <KomponenTarif />
     <br>
     <div class="p-5">
       <VarianTarif />
@@ -151,8 +158,16 @@ const checkCategorie=ref()
     <Kelas />
     <br>
     <div class="w-3/4">
-      <CustomQuil/>
+      <CustomQuil />
     </div>
-    
+    <br>
+    table komponen tarif
+    <TableKomponenTarif/>
+    <br><br>
+    table tindakan
+    <TableTindakan/>
+    <br> <br>
+    jenis pembayaran bed
+    <TableJenisPembayaranBed/>
   </div>
 </template>

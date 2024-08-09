@@ -119,14 +119,12 @@ const status = ref();
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
+                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
+                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                :customClass="`text-xs font-semibold h-6 flex ${
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'border'
-                }`"
+                customClass="text-xs font-semibold h-6 flex"
               />
             </div>
           </template>
