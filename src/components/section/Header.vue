@@ -8,11 +8,13 @@ import { useRouter } from "vue-router";
 const router = useRouter()
 
 const profileEdit = () => {
-  router.push({name : "setting-profil-akun"})
+  isDialogVisible.value = false;
+  router.push({ name: "setting-profil-akun" })
 }
 
 const clickSetting = () => {
-  router.push({name:"setting-profil-faskes"})
+  isDialogVisible.value = false;
+  router.push({ name: "setting-profil-faskes" })
 }
 const isDialogVisible = ref(false);
 
@@ -51,27 +53,30 @@ const showDialog = () => {
       <img loading="lazy" src="../../assets/icons/Bell Notification.svg" class="w-8 aspect-square" />
       <div class="flex items-center justify-center cursor-pointer " @click="showDialog">
         <img loading="lazy" src="../../assets/icons/User Account.svg" class="w-10 aspect-square" />
-        <CustomDialog class="" v-model:visible="isDialogVisible" width="400px" position="topright">
-          <template #header>
-           Pengaturan Akun
-          </template>
-          <template #body>
-            <div class="mt-2 ">
-              <div class="font-semibold text-black">NAMA AKUN</div>
-              <div class="text-[#79808F]">Terakhir Login 4 Mar 2024 | 12:00</div>
-              <CustomButton label="Profile" class="w-full mt-2 text-sm font-semibold font-poppins"
-                text-color="text-adameds-300" border-color="border-adameds-300" outlined @click="profileEdit"/>
-              <hr class="border-[#D9DCE1] border-1 mt-5" />
+        <Dialog  v-model:visible="isDialogVisible" width="400px" position="topright" pt:root:class="rounded-2xl">
+          <template #container>
+            <div class="p-2.5 rounded-2xl">
+              <div class="">
+                <div class="font-semibold text-black text-SM">NAMA AKUN</div>
+                <div class="text-[#79808F] text-[8px]">Terakhir Login 4 Mar 2024 | 12:00</div>
+                <div class="py-2">
+                    <CustomButton label="Profile" class="w-[180px] text-sm font-semibold font-poppins"
+                  text-color="text-adameds-300" border-color="border-adameds-300" outlined @click="profileEdit" />
+                </div>
+                <hr class="border-[#D9DCE1] border-1 mb-2.5" />
+              </div>
+
+              <div class="flex w-full gap-5 cursor-pointer">
+                <img src="../../assets/icons/gear_setting.svg" width="30px" height="30px" @click="clickSetting">
+                <CustomButton label="LOGOUT" full class="font-bold"/>
+              </div>
             </div>
 
+
           </template>
-          <template #footer>
-            <div class="flex w-full gap-5 cursor-pointer" @click="clickSetting">
-              <img src="../../assets/icons/gear_setting.svg" width="30px" height="30px">
-              <CustomButton label="LOGOUT" full />
-            </div>
-          </template>
-        </CustomDialog>
+
+
+        </Dialog>
       </div>
     </div>
   </div>
