@@ -50,9 +50,15 @@ const showDialog = () => {
       </div>
     </div>
     <div class="flex gap-5 my-auto">
-      <img loading="lazy" src="../../assets/icons/Bell Notification.svg" class="w-8 aspect-square" />
-      <div class="flex items-center justify-center cursor-pointer " @click="showDialog">
-        <img loading="lazy" src="../../assets/icons/User Account.svg" class="w-10 aspect-square" />
+      <div class="flex justify-between">
+        <img loading="lazy" src="../../assets/icons/Bell Notification.svg" class="relative w-8 aspect-square" />
+        <img src="../../assets/icons/notif.svg" alt="" class="absolute right-[92px] top-6 aspect-square">
+      </div>        
+      <div class="flex items-center justify-center cursor-pointer" >
+        <div class="">
+          <img loading="lazy" src="../../assets/icons/User Account.svg" class="relative w-10 aspect-square" @click="showDialog" />
+          <img src="../../assets/icons/green_profile.svg" alt="" class="absolute right-9 top-6">
+        </div>
         <Dialog  v-model:visible="isDialogVisible" width="400px" position="topright" pt:root:class="rounded-2xl">
           <template #container>
             <div class="p-2.5 rounded-2xl">
