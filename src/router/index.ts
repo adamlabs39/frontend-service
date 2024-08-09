@@ -19,6 +19,7 @@ import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisa
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
+import EditProfilAkun from "@/views/SettingPage/Template/ProfilAkun/EditProfilAkun.vue"
 
 
 // NOTE Test Component
@@ -104,8 +105,14 @@ const router = createRouter({
     },
     {
       path: "/setting/profil-akun",
-      name: "setting-print-akun",
+      name: "setting-profil-akun",
       meta: { layout: SidebarLayout, page: ProfilAkunPage },
+      component: ProfilAkunView
+    },
+    {
+      path: "/setting/profil-akun/edit",
+      name: "setting-profil-akun-edit",
+      meta: { layout: SidebarLayout, page: EditProfilAkun },
       component: ProfilAkunView
     },
 
