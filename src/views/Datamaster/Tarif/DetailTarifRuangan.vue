@@ -11,12 +11,12 @@ const testDialog = ref(false);
 <template>
   <div class="flex flex-col h-full gap-2.5">
     <div class="flex items-center justify-between w-full gap-2.5 my-2.5">
-      <CustomSelect class="grow"/>
+      <CustomSelect class="w-1/4" label="Jenis Tarif"/>
       <CustomSelect class="grow"/>
     </div>
     <div class="flex justify-between w-full gap-2.5">
-      <CustomAutoComplete class="w-full"/>
-      <CustomAutoComplete class="w-full"/>
+      <CustomAutoComplete class="w-1/3" label="Ruangan" />
+      <CustomAutoComplete class="grow" label="Metode Pembayaran"/>
     </div>
     <div class="overflow-auto grow">
       <TableJenisPembayaranBed />

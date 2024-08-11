@@ -18,28 +18,28 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
+      id: "1",
       kode_ruangan: "MWR",
       nama_kategori_ruangan: "Mawar",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "2",
+      id: "2",
       kode_ruangan: "MWR",
       nama_kategori_ruangan: "Mawar",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "3",
+      id: "3",
       kode_ruangan: "MWR",
       nama_kategori_ruangan: "Mawar",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "4",
+      id: "4",
       kode_ruangan: "MWR",
       nama_kategori_ruangan: "Mawar",
       status: "AKTIF",
@@ -48,11 +48,7 @@ onMounted(() => {
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
 const testDialog = ref(false);
-const status = ref();
 </script>
 
 <template>
@@ -67,7 +63,7 @@ const status = ref();
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Ruangan</template>
+          <template #header>Tambah Data  Kategori Ruangan</template>
           <template #body>
             <TambahKategoriRuanganDialog/>
           </template>
@@ -75,7 +71,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -114,7 +110,7 @@ const status = ref();
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center">
               <CustomChip
                 :label="slotProps.data.status"
                 :textColor="

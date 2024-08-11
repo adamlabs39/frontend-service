@@ -5,7 +5,7 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 const status = ref();
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
+  <div class="flex flex-col gap-5 mt-5">
     <div class="flex gap-2.5">
       <CustomTextfield label="Kode" placeholder="Kode" />
       <CustomTextfield
@@ -15,8 +15,8 @@ const status = ref();
       />
     </div>
     <hr />
-    <div class="flex gap-2.5">
-      <CustomSwitch v-model="status" />
+    <div class="flex items-end gap-2.5">
+      <CustomSwitch v-model="status" :show-label="false"/>
       <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
     </div>
   </div>

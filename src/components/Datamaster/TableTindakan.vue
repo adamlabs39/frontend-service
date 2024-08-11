@@ -15,7 +15,7 @@ const data = ref([{ no: "", tindakan: "", action: "" }]);
     <DataTable
       :value="data"
       tableStyle="min-width: 50rem"
-      class="overflow-hidden rounded-lg bg-adameds-50 text-xs"
+      class="overflow-hidden text-xs rounded-lg bg-adameds-50"
     >
       <Column header="No." headerClass="bg-adameds-300 text-white">
         <template #body> 1 </template>
@@ -36,9 +36,9 @@ const data = ref([{ no: "", tindakan: "", action: "" }]);
         </template>
       </Column>
     </DataTable>
-    <div class="p-5 flex flex-col gap-5">
+    <div class="flex flex-col gap-5 p-5">
       <div
-        class="border border-dashed border-adameds-300 rounded-lg flex items-center justify-center p-5"
+        class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
       >
         <CustomButton
           icon="PhPlus"
@@ -50,9 +50,9 @@ const data = ref([{ no: "", tindakan: "", action: "" }]);
       </div>
       <TableKomponenTarif/>
       <hr class="border-grey-200">
-      <div class="flex justify-end gap-4 items-center">
-        <div class="pr-4 py-2.5 border-r border-grey-300">Grand Total</div>
-        <div class="min-w-[300px] text-end">
+      <div class="flex items-center justify-end gap-4">
+        <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">Grand Total</div>
+        <div class="min-w-[300px] text-end font-bold text-MD">
             Rp. 150,000
         </div>
       </div>

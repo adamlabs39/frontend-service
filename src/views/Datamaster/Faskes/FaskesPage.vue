@@ -75,7 +75,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -100,13 +100,13 @@ const status = ref();
         </Column>
         <Column
           field="kode"
-          header="Kode"
+          header="Kode Faskes"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama ICD 9 CM"
+          header="Nama Faskes"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>

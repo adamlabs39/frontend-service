@@ -13,30 +13,34 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
-      kode: "001",
-      nama: "Cholera disease",
+      id: "1",
+      kode: "GC.01",
+      nama: "General Consent Umum-Rawat Jalan",
+      pelayanan:["Rawat Jalan","Rawat Inap", "IGD"],
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      id: "2",
+      kode: "GC.01",
+      nama: "General Consent Umum-Rawat Jalan",
+      pelayanan:["Rawat Jalan","Rawat Inap", "IGD"],
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      id: "3",
+      kode: "GC.01",
+      nama: "General Consent Umum-Rawat Jalan",
+      pelayanan:["Rawat Jalan","Rawat Inap", "IGD"],
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      id: "4",
+      kode: "GC.01",
+      nama: "General Consent Umum-Rawat Jalan",
+      pelayanan:["Rawat Jalan","Rawat Inap", "IGD"],
       status: "AKTIF",
       action: "edit",
     },
@@ -70,7 +74,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -86,25 +90,37 @@ const status = ref();
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
-            </div>
-          </template>
-        </Column>
         <Column
           field="kode"
-          header="Kode Diagnosis"
+          header="Kode General Consent"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Diagnosis"
+          header="Nama"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
+        <Column
+          field="pelayanan"
+          header="Pelayanan"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        >
+        <template #body="slotProps">
+            <div class="flex flex-wrap gap-2">
+              <div v-for="items in slotProps.data.pelayanan" :key="items">
+                <CustomChip
+                  :label="items"
+                  :showCheckedIcon="false"
+                  border-color="border-none"
+                  bg-color="bg-adameds-300"
+                  customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
+                />
+              </div>
+            </div>
+          </template></Column>
         <Column
           field="status"
           header="Status"

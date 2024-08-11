@@ -68,7 +68,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.LINK,url: '/datamaster/snomed-ct',
       },
       {
-        name: "Loinc",
+        name: "LOINC",
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/loinc',
       },
@@ -87,6 +87,11 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Dokter",
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/dokter',
+      },
+      {
+        name: "Nakes",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/nakes',
       },
       {
         name: "Penjamin",

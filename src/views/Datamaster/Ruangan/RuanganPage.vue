@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted} from "vue";
 import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -7,8 +7,6 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataRuanganDialog from "./TambahDataRuanganDialog.vue";
 const products = ref<any[]>([]);
@@ -18,7 +16,7 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
+      id: "1",
       kode_ruangan: "MWR",
       nama_ruangan: "Mawar",
       no_kamar: "1 A",
@@ -29,7 +27,7 @@ onMounted(() => {
       action: "edit",
     },
     {
-      no: "2",
+      id: "2",
       kode_ruangan: "MWR",
       nama_ruangan: "Mawar",
       no_kamar: "1 A",
@@ -40,7 +38,7 @@ onMounted(() => {
       action: "edit",
     },
     {
-      no: "3",
+      id: "3",
       kode_ruangan: "MWR",
       nama_ruangan: "Mawar",
       no_kamar: "1 A",
@@ -51,7 +49,7 @@ onMounted(() => {
       action: "edit",
     },
     {
-      no: "4",
+      id: "4",
       kode_ruangan: "MWR",
       nama_ruangan: "Mawar",
       no_kamar: "1 A",
@@ -64,11 +62,8 @@ onMounted(() => {
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
+
 const testDialog = ref(false);
-const status = ref();
 </script>
 
 <template>
@@ -91,7 +86,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -148,9 +143,16 @@ const status = ref();
         ></Column>
         <Column
           field="no_kamar"
-          header="No.Kamar"
           headerClass="bg-adameds-50"
-        ></Column>
+          class="text-center"
+        >
+        <template #header>
+            <div
+              class="w-full font-semibold text-center text-SM"
+            >
+            No.Kamar
+            </div>
+        </template></Column>
 
         <Column
           field="kategori_ruangan"
@@ -158,17 +160,35 @@ const status = ref();
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="jml_bed"
-          header="Jml.Bed"
+          field="kelas_ruangan"
+          header="Kelas Ruangan"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          field="jml_bed"
+          headerClass="bg-adameds-50"
+          class="text-center"
         >
+        <template #header>
+            <div
+              class="w-full font-semibold text-center text-SM"
+            >
+              Jml.Bed
+            </div>
+        </template></Column>
+        <Column
+          field="status"
+          headerClass="bg-adameds-50"
+        >
+        <template #header="slotProps">
+            <div
+              class="w-full font-semibold text-center text-SM"
+            >
+              Action
+            </div>
+        </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center">
               <CustomChip
                 :label="slotProps.data.status"
                 :textColor="

@@ -4,6 +4,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 
 const status = ref();
 </script>
@@ -26,7 +28,14 @@ const status = ref();
             <CustomTextfield label="" placeholder="Gelar Akhir"/>
         </div>
     </div>
-    <div class="flex gap-2.5">
+    <CustomSelect label="Jenis Kelamin" place-holder="Pilih Jenis Kelamin" class="w-1/2"/>
+    <hr />
+    <CustomAutoComplete label="Poli"/>
+    <CustomAccordion headerClass="">
+      <template #header> <div class="font-bold text-heading -ml-4">Poli Anak</div> </template>
+      <template #content>
+        <div class="flex flex-col gap-5 pt-5 -mx-4">
+            <div class="flex gap-2.5">
         <CustomTextfield label="Kuota JKN" placeholder="0" type="number">
             <template #appendText>
                 <div class="flex justfy-center items-center m-2.5">
@@ -52,7 +61,9 @@ const status = ref();
             </template>
         </CustomTextfield>
     </div>
-    <CustomAutoComplete label="Poli"/>
+        </div>
+      </template>
+    </CustomAccordion>
     <hr />
     <div class="flex gap-2.5">
       <CustomSwitch v-model="status" />

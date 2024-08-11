@@ -6,7 +6,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 const status = ref();
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
+  <div class="flex flex-col gap-5 mt-5">
     <div class="flex gap-2.5">
       <CustomTextfield label="Kode" placeholder="Kode" />
       <CustomTextfield
@@ -18,8 +18,8 @@ const status = ref();
     <CustomSelect label="Snomed CT" place-holder="Pilih Snomed CT"/>
     <CustomSelect label="ICD 9 CM" place-holder="Pilih ICD 9 CM"/>
     <hr />
-    <div class="flex gap-2.5">
-      <CustomSwitch v-model="status" />
+    <div class="flex items-end gap-2.5">
+      <CustomSwitch v-model="status" label="Status" />
       <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
     </div>
   </div>

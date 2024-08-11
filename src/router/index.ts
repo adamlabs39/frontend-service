@@ -22,6 +22,7 @@ import ICD9CMPage from "@/views/Datamaster/ICD9CM/ICD9CMPage.vue";
 import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
 import LoincPage from "@/views/Datamaster/Loinc/LoincPage.vue";
 import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
+import NakesPage from "@/views/Datamaster/Nakes/NakesPage.vue";
 import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
 import PenjaminPage from "@/views/Datamaster/Penjamin/PenjaminPage.vue";
 import OrganisasiPage from "@/views/Datamaster/Organisasi/OrganisasiPage.vue";
@@ -145,6 +146,12 @@ const router = createRouter({
       path: "/datamaster/dokter",
       name: "datamaster-dokter",
       meta: { layout: SidebarLayout, page: DokterPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/nakes",
+      name: "datamaster-nakes",
+      meta: { layout: SidebarLayout, page: NakesPage },
       component: DatamasterView,
     },
     {

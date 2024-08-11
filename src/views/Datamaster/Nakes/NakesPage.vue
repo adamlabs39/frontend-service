@@ -6,52 +6,57 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import TambahDataDiagnosisICD10DIalog from "./TambahDataDiagnosisICD10DIalog.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import TambahDataNakesDialog from "./TambahDataNakesDialog.vue";
 const products = ref<any[]>([]);
+
 const router = useRouter();
 
 onMounted(() => {
   products.value = [
     {
       id: "1",
-      kode: "123",
-      nama: "Diagnosis 1",
+      kode: "001",
+      nama: "Cholera disease",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "2",
-      kode: "123",
-      nama: "Diagnosis 2",
+      kode: "002",
+      nama: "Typhoid and paratyphoid fevers",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "3",
-      kode: "123",
-      nama: "Diagnosis 3",
+      kode: "003",
+      nama: "Other Salmonella",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "4",
-      kode: "123",
-      nama: "Diagnosis 4",
+      kode: "004",
+      nama: "Dizziness and giddiness",
       status: "AKTIF",
       action: "edit",
     },
   ];
 });
 
-
 const testDialog = ref(false);
+const status = ref();
 </script>
 
 <template>
   <div
     class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
   >
-    <Header title="Diagnosis (ICD 10)" :filter="false" >
+    <Header title="Nakes" :filter="false">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
@@ -59,9 +64,9 @@ const testDialog = ref(false);
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Diagnosis</template>
+          <template #header>Tambah Data Role</template>
           <template #body>
-            <TambahDataDiagnosisICD10DIalog/>
+            <TambahDataNakesDialog/>
           </template>
           <template #footer>
             <div class="w-full">
@@ -92,13 +97,13 @@ const testDialog = ref(false);
         </Column>
         <Column
           field="kode"
-          header="Kode Diagnosis"
+          header="Kode"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Diagnosis"
+          header="Nama Nakes"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>

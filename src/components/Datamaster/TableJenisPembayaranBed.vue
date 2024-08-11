@@ -14,7 +14,7 @@ const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }]);
     <DataTable
       :value="data"
       tableStyle="min-width: 50rem"
-      class="bg-adameds-50 text-xs"
+      class="text-xs bg-adameds-50"
     >
       <Column headerClass="bg-adameds-300 text-white" class="w-1/2">
         <template #header>
@@ -45,6 +45,16 @@ const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }]);
         </template>
       </Column>
     </DataTable>
-    
+    <div
+        class="flex items-center justify-center p-5 m-5 border border-dashed rounded-lg border-adameds-300"
+      >
+        <CustomButton
+          icon="PhPlus"
+          label="Jenis Pembayaran"
+          borderColor="border-adameds-300"
+          textColor="text-adameds-300"
+          backgroundColor="bg-white"
+        />
+      </div>
   </div>
 </template>

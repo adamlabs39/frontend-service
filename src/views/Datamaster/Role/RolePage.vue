@@ -18,45 +18,37 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
-      kode_role: "SAD",
-      nama_role: "Admin",
+      id: "1",
+      code: "SAD",
+      name: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
-      action: "edit",
     },
     {
       no: "2",
-      kode_role: "ADM",
-      nama_role: "Admin",
+      code: "ADM",
+      name: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
-      action: "edit",
     },
     {
       no: "3",
-      kode_role: "DKT",
-      nama_role: "Admin",
+      code: "DKT",
+      name: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
-      action: "edit",
     },
     {
       no: "4",
-      kode_role: "RRW",
-      nama_role: "Admin",
+      code: "RRW",
+      name: "Admin",
       permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
       status: "AKTIF",
-      action: "edit",
     },
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
-const testDialog = ref(false);
-const status = ref();
+const addData = ref(false);
 </script>
 
 <template>
@@ -65,10 +57,10 @@ const status = ref();
   >
     <Header title="Role" :filter="false">
       <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
+        <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
         <CustomDialog
           width="600px"
-          v-model:visible="testDialog"
+          v-model:visible="addData"
           headerBg="bg-adameds-300"
         >
           <template #header>Tambah Data Role</template>
@@ -79,7 +71,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -103,13 +95,13 @@ const status = ref();
           </template>
         </Column>
         <Column
-          field="kode_role"
+          field="code"
           header="Kode Role"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama_role"
+          field="name"
           header="Nama Role"
           class="w-3/12"
           headerClass="bg-adameds-50"

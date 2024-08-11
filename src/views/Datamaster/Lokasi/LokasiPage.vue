@@ -13,30 +13,42 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
+      id: "1",
       kode: "001",
+      id_satusehat:"MAT",
       nama: "Cholera disease",
+      deskripsi: "Poli Anak",
+      tlp:"022",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      id: "2",
+      kode: "001",
+      id_satusehat:"MAT",
+      nama: "Cholera disease",
+      deskripsi: "Poli Anak",
+      tlp:"022",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      id: "3",
+      kode: "001",
+      id_satusehat:"MAT",
+      nama: "Cholera disease",
+      deskripsi: "Poli Anak",
+      tlp:"022",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      id: "4",
+      kode: "001",
+      id_satusehat:"MAT",
+      nama: "Cholera disease",
+      deskripsi: "Poli Anak",
+      tlp:"022",
       status: "AKTIF",
       action: "edit",
     },
@@ -70,7 +82,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -95,13 +107,31 @@ const status = ref();
         </Column>
         <Column
           field="kode"
-          header="Kode Diagnosis"
+          header="Kode Lokasi"
+          class="w-2/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="id_satusehat"
+          header="ID SATUSEHAT"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Diagnosis"
+          header="Nama Lokasi"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="deskripsi"
+          header="Deskripsi"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="tlp"
+          header="No. Telepon"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>

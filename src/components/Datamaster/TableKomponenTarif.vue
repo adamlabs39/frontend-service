@@ -14,7 +14,7 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
     <DataTable
       :value="data"
       tableStyle="min-width: 50rem"
-      class="bg-adameds-50 text-xs"
+      class="text-xs bg-adameds-50"
     >
       <Column headerClass="bg-adameds-300 text-white" class="w-1/2">
         <template #header>
@@ -58,10 +58,10 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
         </template>
       </Column>
     </DataTable>
-    <div class="flex w-full p-5 gap-5">
+    <div class="flex w-full gap-5 p-5">
       <div class="w-1/2 pr-2.5">
         <div
-          class="border border-dashed border-adameds-300 rounded-lg flex items-center justify-center p-5"
+          class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
         >
           <CustomButton
             icon="PhPlus"
@@ -73,14 +73,14 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
         </div>
       </div>
       <div class="flex flex-col grow gap-1.5">
-        <div>Tipe Input Harga</div>
+        <div class="font-semibold text-MD">Tipe Input Harga</div>
         <div class="flex gap-2.5">
           <div class="p-2 flex gap-2.5">
-            <CustomSwitch />
+            <CustomSwitch :show-label="false"/>
             <div class="flex items-center text-[#6B7280]">Persen (%)</div>
           </div>
           <div class="p-2 flex gap-2.5">
-            <CustomSwitch />
+            <CustomSwitch :show-label="false" />
             <div class="flex items-center text-[#6B7280]">Rupiah (Rp)</div>
           </div>
         </div>

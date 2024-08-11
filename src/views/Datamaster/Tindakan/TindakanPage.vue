@@ -87,7 +87,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
@@ -129,8 +129,8 @@ const status = ref();
           headerClass="bg-adameds-50"
         >
     <template #body="slotProps">
-        <div>{{ slotProps.data.snomed_icd.nama_snomed }}</div>
-        <div>{{ slotProps.data.snomed_icd.nama_tindakan }}</div>
+        <div class="underline" >{{ slotProps.data.snomed_icd.nama_snomed }}</div>
+        <div class="font-bold">{{ slotProps.data.snomed_icd.nama_tindakan }}</div>
     </template>
     </Column>
         <Column

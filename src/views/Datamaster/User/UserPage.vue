@@ -14,10 +14,10 @@ const router = useRouter();
 
 onMounted(() => {
   products.value = [
-    { id: "1", nama: "Petugas Adameds", role: "Admin", status: "AKTIF" },
-    { id: "2", nama: "Petugas Adameds", role: "Dokter", status: "NON-AKTIF" },
-    { id: "2", nama: "Petugas Adameds", role: "Admin", status: "AKTIF" },
-    { id: "4", nama: "Petugas Adameds", role: "Perawat", status: "NON-AKTIF" },
+    { id: "1", name: "Petugas Adameds", role: "Admin", status: "AKTIF" },
+    { id: "2", name: "Petugas Adameds", role: "Dokter", status: "NON-AKTIF" },
+    { id: "2", name: "dr. Umum", role: "Admin", status: "AKTIF" },
+    { id: "4", name: "Perawat", role: "Perawat", status: "NON-AKTIF" },
   ];
 });
 
@@ -67,7 +67,7 @@ const addDataPage = () => {
           </template>
         </Column>
         <Column
-          field="nama"
+          field="name"
           header="Nama User"
           class="w-1/2"
           headerClass="bg-adameds-50 font-semibold text-SM"

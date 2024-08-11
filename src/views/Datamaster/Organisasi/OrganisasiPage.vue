@@ -24,30 +24,38 @@ const onRowSelect = (event: any) => {
 onMounted(() => {
   products.value = [
     {
-      no: "1",
+      id: "1",
       kode: "001",
       nama: "Cholera disease",
+      tlp:"022",
+      email:"dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      id: "2",
+      kode: "001",
+      nama: "Cholera disease",
+      tlp:"022",
+      email:"dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      id: "3",
+      kode: "001",
+      nama: "Cholera disease",
+      tlp:"022",
+      email:"dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      id: "4",
+      kode: "001",
+      nama: "Cholera disease",
+      tlp:"022",
+      email:"dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
@@ -90,13 +98,25 @@ onMounted(() => {
         </Column>
         <Column
           field="kode"
-          header="Kode Role"
+          header="Kode Organisasi"
           class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
-          header="Nama Role"
+          header="Nama Organisasi"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="tlp"
+          header="No. Telepon"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="email"
+          header="Email"
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
@@ -173,30 +193,9 @@ onMounted(() => {
         <div class="w-full">
           <hr class="-mx-5 border-grey-200" />
           <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" @click="tambahDataDialog= false">
+            <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" @click="tambahDataDialog= false">
             </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
 
-    <!-- Dialog for Detail Dokter -->
-    <CustomDialog
-      width="600px"
-      v-model:visible="detailDokterDialog"
-      headerBg="bg-adameds-300"
-    >
-      <template #header>Detail Data Organisasi</template>
-      <template #body>
-        <DetailDataOrganisasi :dokter="selectedProduct" />
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <hr class="-mx-5 border-grey-200" />
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" @click="detailDokterDialog = false">
-            </CustomButton>
             <CustomButton label="Simpan"> </CustomButton>
           </div>
         </div>

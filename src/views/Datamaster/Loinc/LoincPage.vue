@@ -14,41 +14,38 @@ const router = useRouter();
 onMounted(() => {
   products.value = [
     {
-      no: "1",
-      kode: "001",
-      nama: "Cholera disease",
+      id: "1",
+      kode: "123",
+      nama: "Kalium (K)",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      id: "2",
+      kode: "123",
+      nama: "Urin 24 Jam",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      id: "3",
+      kode: "123",
+      nama: "Laju Endap Darah",
       status: "AKTIF",
       action: "edit",
     },
     {
-      no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      id: "4",
+      kode: "123",
+      nama: "PCT",
       status: "AKTIF",
       action: "edit",
     },
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
+
 const testDialog = ref(false);
-const status = ref();
 </script>
 
 <template>
@@ -63,7 +60,7 @@ const status = ref();
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Role</template>
+          <template #header>Tambah Data Loinc</template>
           <template #body>
             <TambahDataLoincDialog/>
           </template>
@@ -71,7 +68,7 @@ const status = ref();
             <div class="w-full">
               <hr class="-mx-5 border-grey-200" />
               <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal"> </CustomButton>
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
                 <CustomButton label="Simpan"> </CustomButton>
               </div>
             </div>
