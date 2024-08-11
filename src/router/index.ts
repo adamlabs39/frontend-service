@@ -25,13 +25,14 @@ import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
 import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
 import PenjaminPage from "@/views/Datamaster/Penjamin/PenjaminPage.vue";
 import OrganisasiPage from "@/views/Datamaster/Organisasi/OrganisasiPage.vue";
+import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
+import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
+import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
+import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdam from "@/views/TestComponentAdam.vue";
-import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
-import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
-import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 
 
 const router = createRouter({
@@ -113,7 +114,7 @@ const router = createRouter({
     {
       path: "/datamaster/tindakan",
       name: "datamaster-tindakan",
-      meta: { layout: SidebarLayout, page: TarifPage },
+      meta: { layout: SidebarLayout, page: TindakanPage },
       component: DatamasterView,
     },
     {

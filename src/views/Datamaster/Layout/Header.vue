@@ -29,7 +29,7 @@ const props=defineProps({
       <CustomButton label="" icon="PhCaretDown" />
     </template>
     <template #header>
-      <div class="flex items-center justify-between w-full gap-5 mr-2.5">
+      <div class="flex  items-center justify-between w-full gap-5 mr-2.5">
         <CustomButton label="" icon="PhArrowClockwise" />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"

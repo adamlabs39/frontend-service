@@ -13,100 +13,82 @@ onMounted(() => {
   products.value = [
     {
       id: "1",
-      nama_tarif: "Ruangan Mawar (1A)",
-      jm_varian: "4",
+      nama_ruangan: "Ruangan Mawar",
       kategori_ruangan: "Rawatan Umum",
-      kelas_ruangan: "Kelas 3",
-      jumlah_bed: "4",
+      kelas: "Kelas III",
+      pelayanan: "Rawat Jalan",
+      metode_pembayaran:["TUNAI","BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
         {
           id: "1",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "2",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "3",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
       ],
     },
     {
       id: "2",
-      nama_tarif: "Ruangan Mawar (1A)",
-      jm_varian: "4",
+      nama_ruangan: "Ruangan Mawar",
       kategori_ruangan: "Rawatan Umum",
-      kelas_ruangan: "Kelas 3",
-      jumlah_bed: "4",
+      kelas: "Kelas III",
+      pelayanan: "Rawat Jalan",
+      metode_pembayaran:["TUNAI","BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
         {
           id: "1",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "2",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "3",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
       ],
     },
     {
       id: "3",
-      nama_tarif: "Ruangan Mawar (1A)",
-      jm_varian: "4",
+      nama_ruangan: "Ruangan Mawar",
       kategori_ruangan: "Rawatan Umum",
-      kelas_ruangan: "Kelas 3",
-      jumlah_bed: "4",
+      kelas: "Kelas III",
+      pelayanan: "Rawat Jalan",
+      metode_pembayaran:["TUNAI","BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
         {
           id: "1",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "2",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
         {
           id: "3",
-          nama_varian_tarif: "Pemeriksaan Dokter Umum - RJ",
-          unit_pelayanan: "Rawat Jalan",
-          metode_pembayaran: "Tunai",
-          harga: "Rp.30,000",
+          jenis_pembayaran_bed: "Tunai",
+          harga_tarif: "Rp. 100,000",
         },
       ],
     },
@@ -136,13 +118,8 @@ onMounted(() => {
       </template>
     </Column>
     <Column
-      field="nama_tarif"
-      header="Nama Tarif"
-      header-class="text-black bg-adameds-50"
-    ></Column>
-    <Column
-      field="jm_varian"
-      header="Jml. Varian Tarif"
+      field="nama_ruangan"
+      header="Nama Ruangan"
       header-class="text-black bg-adameds-50"
     ></Column>
     <Column
@@ -151,15 +128,34 @@ onMounted(() => {
       header-class="text-black bg-adameds-50"
     ></Column>
     <Column
-      field="kelas_ruangan"
-      header="Kelas Ruangan"
+      field="kelas"
+      header="Kelas"
       header-class="text-black bg-adameds-50"
     ></Column>
     <Column
-      field="jumlah_bed"
-      header="Jumlah Bed"
+      field="pelayanan"
+      header="pelayanan"
       header-class="text-black bg-adameds-50"
     ></Column>
+    <Column
+      field="metode_pembayaran"
+      header="Metode Pembayaran"
+      header-class="text-black bg-adameds-50"
+    >
+    <template #body="slotProps">
+            <div class="flex flex-wrap gap-2">
+              <div v-for="items in slotProps.data.metode_pembayaran" :key="items">
+                <CustomChip
+                  :label="items"
+                  :showCheckedIcon="false"
+                  border-color="border-none"
+                  bg-color="bg-adameds-300"
+                  customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
+                />
+              </div>
+            </div>
+          </template>
+  </Column>
     <Column
       field="status"
       header="Status"
@@ -218,42 +214,13 @@ onMounted(() => {
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
           <Column
-            header="No"
-            header-class="text-white bg-adameds-300"
-            class="text-center"
-          >
-            <template #body="slotProps">
-              <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
-              </div>
-            </template>
-          </Column>
-          <Column
-            field="nama_varian_tarif"
-            header="Nama Varian Tarif"
+            field="jenis_pembayaran_bed"
+            header="Jenis Pembayaran Bed"
             header-class="text-white bg-adameds-300"
           ></Column>
           <Column
-            field="unit_pelayanan"
-            header="Unit Pelayanan"
-            header-class="text-white bg-adameds-300"
-          ></Column>
-          <Column
-            field="metode_pembayaran"
-            header="Metode Pembayaran"
-            header-class="text-white bg-adameds-300"
-          >
-            <template #body="slotProps">
-              <CustomChip
-                :label="slotProps.data.metode_pembayaran"
-                :showCheckedIcon="false"
-                custom-class="text-xs font-semibold h-6 bg-adameds-300 text-white"
-              />
-            </template>
-          </Column>
-          <Column
-            field="harga"
-            header="Harga/Tarif"
+            field="harga_tarif"
+            header="Harga Tarif"
             header-class="text-white bg-adameds-300"
           ></Column>
         </DataTable>

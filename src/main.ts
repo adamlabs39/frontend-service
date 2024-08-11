@@ -37,6 +37,11 @@ import Paginator from 'primevue/paginator';
 import Checkbox from 'primevue/checkbox';
 import Editor from 'primevue/editor';
 
+import Tabs from 'primevue/tabs';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+
+
 const app = createApp(App)
 
 app.use(createPinia())
@@ -80,5 +85,8 @@ app.component('Column', Column)
 app.component('Paginator', Paginator)
 app.component('Checkbox', Checkbox)
 app.component('Editor', Editor)
+app.component('Tabs', Tabs)
+app.component('TabPanels', TabPanels)
+app.component('TabPanel', TabPanel)
 
 app.mount('#app')
