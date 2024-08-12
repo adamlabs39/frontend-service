@@ -14,14 +14,14 @@ const editKonfigurasiIntegrasi = () => {
 
 <template>
     <div class="bg-white rounded-lg shadow-md">
-        <MainHeaderSetting heading="Konfigurasi Internal"/>
+        <MainHeaderSetting heading="Konfigurasi Integrasi"/>
         <GreenCard cardHeading="Konfigurasi VCLAIM" hrEnableCustomClass showButton labelButton="Edit" :buttonClickHandler="editKonfigurasiIntegrasi">
             <KonfigurasiVCLAIM/>
         </GreenCard>
         <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit" showChip class="mb-4" :buttonClickHandler="editKonfigurasiIntegrasi">
             <KonfigurasiLainnya/>
         </GreenCard>
-        <CustomChip label="AKTIF" bg-color="bg-adameds-300" border-color="border-transparent"
+        <CustomChip label="AKTIFononon" bg-color="bg-adameds-300" border-color="border-transparent"
 					text-color="text-white" icon-color="text-white" />
     </div>
 </template>

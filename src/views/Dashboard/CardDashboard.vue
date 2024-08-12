@@ -23,12 +23,16 @@ const props = defineProps({
 	arrowIcon: {
 		type: String,
 		default:""
+	},
+	dataFont: {
+		type: String,
+		default:"font-bold text-black text-[40px]"
 	}
 })
 </script>
 
 <template>
-	<div class="w-auto p-5 bg-white rounded-lg shadow-md">
+	<div class="flex flex-col justify-between w-auto p-5 bg-white rounded-lg shadow-md min-h-44">
 		<!-- Header Section -->
 		<div class="flex items-center gap-2.5 mb-4">
 			<div class="w-10 h-10 text-white bg-teal-400 rounded-full">
@@ -40,7 +44,7 @@ const props = defineProps({
 		<!-- Main Content -->
 		<div class="">
 			<div class="flex flex-col justify-end">
-				<div class="font-bold text-black text-[40px]">{{ props.data }}</div>
+				<div :class=props.dataFont>{{ props.data }}</div>
 				<div class="text-gray-400 text-normal">{{props.satuanData}}</div>
 			</div>
 			<div class="flex justify-end -mt-6">
