@@ -15,7 +15,11 @@ const props = defineProps({
 </script>
 
 <template>
-  <Breadcrumb :home="home" :model="model" class="font-semibold text-heading">
+  <Breadcrumb
+    :home="home"
+    :model="model"
+    class="flex p-0 font-semibold bg-transparent text-heading"
+  >
     <template #item="{ item }">
       <div
         class=""
