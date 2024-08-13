@@ -74,7 +74,7 @@ const status = ref();
           v-model:visible="testDialog"
           headerBg="bg-adameds-300"
         >
-          <template #header>Tambah Data Diagnosis</template>
+          <template #header>Tambah Data Lokasi</template>
           <template #body>
             <TambahDataLokasiDialog/>
           </template>
@@ -96,9 +96,10 @@ const status = ref();
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
+        stripedRows
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}

@@ -11,7 +11,7 @@ const status = ref();
       <CustomTextfield label="Kode" placeholder="Kode" />
       <CustomTextfield
         label="Nama Organisasi"
-        placeholder="Nama ICD 9 CM"
+        placeholder="Nama Organisasi"
         class="basis-3/4"
       />
     </div>
@@ -30,8 +30,8 @@ const status = ref();
       <CustomSelect label="Kode Pos" place-holder="Pilih Kode Pos" class=" w-full"/>
     </div>
     <hr />
-    <div class="flex gap-2.5">
-      <CustomSwitch v-model="status" />
+    <div class="flex items-end gap-2.5">
+      <CustomSwitch v-model="status" label="Status"/>
       <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
     </div>
   </div>

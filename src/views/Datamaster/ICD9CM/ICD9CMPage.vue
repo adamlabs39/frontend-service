@@ -86,9 +86,13 @@ const status = ref();
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
+        stripedRows
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">No.</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}

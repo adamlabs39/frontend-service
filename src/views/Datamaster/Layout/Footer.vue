@@ -3,16 +3,19 @@ import {ref} from 'vue'
 import CustomButton from '@/components/Base/CustomButton.vue';
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
 const rows = ref(10);
-const rowsPerPageOptions = [10, 20, 30];
 const props=defineProps({
     totalRecords:{
         default:120
     },
     importExport:{
         default:true
+    },
+    rowsPerPageOptions:{
+      default:[]
     }
-
 })
+const emits = defineEmits(['update:rows', 'update:current-page']);
+
 </script>
 <template>
   <div class="flex justify-between px-5 py-2.5">
@@ -28,6 +31,9 @@ const props=defineProps({
       :rows="rows"
       :totalrecords="totalRecords"
       :rowsPerPageOptions="rowsPerPageOptions"
+      @update:rows="$emit('update:rows', $event)"
+      @update:current-page="$emit('update:current-page', $event)"
     />
+    
   </div>
 </template>

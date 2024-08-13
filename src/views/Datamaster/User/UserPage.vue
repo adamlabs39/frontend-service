@@ -57,9 +57,10 @@ const addDataPage = () => {
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
+        stripedRows
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50 font-semibold text-SM">
+        <Column header="No." headerClass="bg-adameds-50 font-semibold text-SM">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}

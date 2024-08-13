@@ -22,11 +22,12 @@ const status = ref();
     </div>
     <div class="flex gap-2.5">
       <CustomTextfield label="NIK" placeholder="0" />
-      <CustomDatePicker class="w-full"/>
+      <CustomDatePicker class="w-full" label="Tanggal Lahir" />
     </div>
+    <CustomSelect label="Jenis Kelamin" class="w-1/2" />
     <hr />
     <div class="flex items-end gap-2.5">
-      <CustomSwitch v-model="status" :show-label="false" />
+      <CustomSwitch v-model="status" label="Status"/>
       <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
     </div>
   </div>

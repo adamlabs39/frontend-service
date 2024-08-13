@@ -85,9 +85,10 @@ const addData = ref(false);
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
+        stripedRows
         class="text-xs"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -120,7 +121,7 @@ const addData = ref(false);
                   :showCheckedIcon="false"
                   border-color="border-none"
                   bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
+                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white pr-2 pl-3 "
                 />
               </div>
             </div>

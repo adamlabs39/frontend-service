@@ -14,11 +14,11 @@ const products = ref<any[]>([]);
 const selectedProduct = ref(null);
 const router = useRouter();
 const tambahDataDialog = ref(false);
-const detailDokterDialog = ref(false);
+const detailOrganisasiDialog=ref(false)
 
 const onRowSelect = (event: any) => {
   selectedProduct.value = event.data;
-  detailDokterDialog.value = true;
+  detailOrganisasiDialog.value = true;
 };
 
 onMounted(() => {
@@ -61,6 +61,8 @@ onMounted(() => {
     },
   ];
 });
+const metaKey = ref(true);
+
 
 </script>
 
@@ -85,11 +87,12 @@ onMounted(() => {
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
         selectionMode="single"
-        :metaKeySelection="false"
+        :metaKeySelection="metaKey"
         v-model:selection="selectedProduct"
+        stripedRows
         @rowSelect="onRowSelect"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -196,6 +199,28 @@ onMounted(() => {
             <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" @click="tambahDataDialog= false">
             </CustomButton>
 
+            <CustomButton label="Simpan"> </CustomButton>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
+
+    <!-- Dialog for Detail Organisasi -->
+    <CustomDialog
+      width="600px"
+      v-model:visible="detailOrganisasiDialog"
+      headerBg="bg-adameds-300"
+    >
+      <template #header>Detail Organisasi</template>
+      <template #body>
+        <DetailDataOrganisasi/>
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <hr class="-mx-5 border-grey-200" />
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton label="Batal" @click="detailOrganisasiDialog = false"  border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300">
+            </CustomButton>
             <CustomButton label="Simpan"> </CustomButton>
           </div>
         </div>

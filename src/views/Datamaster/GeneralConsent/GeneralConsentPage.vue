@@ -88,6 +88,7 @@ const status = ref();
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
+        stripedRows
         class="text-xs"
       >
         <Column
@@ -116,7 +117,7 @@ const status = ref();
                   :showCheckedIcon="false"
                   border-color="border-none"
                   bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-pointer h-6 bg-adameds-300 text-white"
+                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white pr-2 pl-3"
                 />
               </div>
             </div>

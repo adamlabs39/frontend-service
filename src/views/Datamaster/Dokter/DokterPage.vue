@@ -52,7 +52,7 @@ onMounted(() => {
     },
   ];
 });
-
+const metaKey = ref(true);
 </script>
 
 <template>
@@ -76,11 +76,17 @@ onMounted(() => {
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
         selectionMode="single"
-        :metaKeySelection="false"
+        :metaKeySelection="metaKey"
         v-model:selection="selectedProduct"
+        stripedRows
         @rowSelect="onRowSelect"
+      
+
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">No.</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -183,19 +189,19 @@ onMounted(() => {
 
     <!-- Dialog for Detail Dokter -->
     <CustomDialog
-      width="600px"
+      width="800px"
       v-model:visible="detailDokterDialog"
       headerBg="bg-adameds-300"
     >
       <template #header>Detail Dokter</template>
       <template #body>
-        <DetailDokterDialog :dokter="selectedProduct" />
+        <DetailDokterDialog />
       </template>
       <template #footer>
         <div class="w-full">
           <hr class="-mx-5 border-grey-200" />
           <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" @click="detailDokterDialog = false">
+            <CustomButton label="Batal" @click="detailDokterDialog = false"  border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300">
             </CustomButton>
             <CustomButton label="Simpan"> </CustomButton>
           </div>
@@ -205,3 +211,8 @@ onMounted(() => {
 
   </div>
 </template>
+<style>
+.p-datatable-row-selected{
+  @apply bg-transparent text-black
+}
+</style>

@@ -11,9 +11,13 @@ import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataNakesDialog from "./TambahDataNakesDialog.vue";
+import DetailNakesDialog from "./DetailNakesDialog.vue";
 const products = ref<any[]>([]);
-
-const router = useRouter();
+const selectedProduct = ref(null);
+const onRowSelect = (event: any) => {
+  selectedProduct.value = event.data;
+  detailNakesDialog.value = true;
+};
 
 onMounted(() => {
   products.value = [
@@ -48,8 +52,8 @@ onMounted(() => {
   ];
 });
 
-const testDialog = ref(false);
-const status = ref();
+const tambahDataDialog = ref(false);
+const detailNakesDialog = ref(false);
 </script>
 
 <template>
@@ -58,26 +62,7 @@ const status = ref();
   >
     <Header title="Nakes" :filter="false">
       <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Role</template>
-          <template #body>
-            <TambahDataNakesDialog/>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
+        <CustomButton label="Data" icon="PhPlus" @click="tambahDataDialog = true" />
       </template>
     </Header>
 
@@ -87,8 +72,16 @@ const status = ref();
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
+        selectionMode="single"
+        stripedRows
+        v-model:selection="selectedProduct"
+        @rowSelect="onRowSelect"
       >
-        <Column header="No" headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">No.</div>
+          </template>
+
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -155,7 +148,48 @@ const status = ref();
         </Column>
       </DataTable>
     </div>
-
     <Footer />
+    <!-- Dialog for Tambah Data Nakes -->
+    <CustomDialog
+          width="600px"
+          v-model:visible="tambahDataDialog"
+          headerBg="bg-adameds-300"
+        >
+          <template #header>Tambah Data Nakes</template>
+          <template #body>
+            <TambahDataNakesDialog/>
+          </template>
+          <template #footer>
+            <div class="w-full">
+              <hr class="-mx-5 border-grey-200" />
+              <div class="mt-5 flex justify-end gap-2.5">
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
+                <CustomButton label="Simpan"> </CustomButton>
+              </div>
+            </div>
+          </template>
+        </CustomDialog>
+    
+    <!-- Dialog for Detail Nakes -->
+    <CustomDialog
+      width="600px"
+      v-model:visible="detailNakesDialog"
+      headerBg="bg-adameds-300"
+    >
+      <template #header>Detail Nakes</template>
+      <template #body>
+        <DetailNakesDialog />
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <hr class="-mx-5 border-grey-200" />
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton label="Batal" @click="detailNakesDialog = false" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" >
+            </CustomButton>
+            <CustomButton label="Simpan"> </CustomButton>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
   </div>
 </template>
