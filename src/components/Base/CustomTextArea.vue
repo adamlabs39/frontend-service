@@ -44,13 +44,6 @@ const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
 };
-
-const alerTest = () => {
-  alert("masuk gan");
-};
-defineExpose({
-  alerTest,
-});
 </script>
 
 <template>
