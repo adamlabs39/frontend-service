@@ -89,6 +89,18 @@ const endDateFilter = ref<Date>(new Date())
       <CardGrafik headerGrafik="Pemasukan dan Pengeluaran" showDots />
       <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
         {
+          label: 'Rawat Jalan',
+          data: [3.9, 2.8, 2, 3.3],
+          fill: false,
+          borderColor: '#8EB8F0',
+          tension: 0.4,
+          pointBackgroundColor: '#2B5CA0',
+          pointBorderColor: '#2B5CA0',
+          pointBorderWidth: 2,
+          pointRadius: 7,
+          pointHoverRadius: 9,
+        },
+        {
           label: 'Rawat Inap',
           data: [1.5, 2, 1.1, 1.9],
           fill: false,
@@ -112,19 +124,8 @@ const endDateFilter = ref<Date>(new Date())
           pointRadius: 7,
           pointHoverRadius: 9,
         },
-        {
-          label: 'Rawat Jalan',
-          data: [3.9, 2.8, 2, 3.3],
-          fill: false,
-          borderColor: '#8EB8F0',
-          tension: 0.4,
-          pointBackgroundColor: '#2B5CA0',
-          pointBorderColor: '#2B5CA0',
-          pointBorderWidth: 2,
-          pointRadius: 7,
-          pointHoverRadius: 9,
-        },
-      ]" />
+
+      ]" showLegend legendPosition="bottom" labelsColor="#000000" />
     </div>
     <div class="w-full bg-white rounded-lg shadow-md">
       <CardGrafik headerGrafik="Pemasukan dan Pengeluaran" showDots />

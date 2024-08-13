@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { ref, defineProps, onMounted } from 'vue';
-import Chart from 'primevue/chart';
-import CustomChip from '@/components/Base/CustomChip.vue';
-import CardGrafik from './CardGrafik.vue'
-
+import { ref, defineProps, onMounted } from "vue";
+import Chart from "primevue/chart";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CardGrafik from "./CardGrafik.vue";
 
 const props = defineProps({
     headerGrafik: {
         type: String,
-        default: ""
+        default: "",
     },
     width: {
         type: String,
-        default: '100%'
+        default: "100%",
     },
     datasets: {
         type: Array,
@@ -22,12 +21,26 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    showLegend: {
+        type: Boolean,
+        default: false
+    },
+    legendPosition: {
+        type: String,
+        default: 'bottom'
+    },
+    labelsColor: {
+        type: String,
+        default: '#000000'
+    },
+    title: {
+        type: String,
+        default: "Tanggal Kunjungan"
+    },
 });
-
 
 const chartData = ref({});
 const chartOptions = ref({});
-
 
 onMounted(() => {
     chartData.value = setChartData();
@@ -35,7 +48,6 @@ onMounted(() => {
 });
 
 const setChartData = () => {
-
     return {
         labels: props.labels,
         datasets: props.datasets,
@@ -44,14 +56,27 @@ const setChartData = () => {
 
 const setChartOptions = () => {
     const documentStyle = getComputedStyle(document.documentElement);
-    const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
+    const textColorSecondary = documentStyle.getPropertyValue(
+        "--p-text-muted-color"
+    );
 
     return {
         responsive: true,
         aspectRatio: 3,
         plugins: {
             legend: {
-                display: false,
+                display: props.showLegend,
+                position: props.legendPosition,
+                labels: {
+                    color: props.labelsColor || textColorSecondary,
+                    usePointStyle: true,
+                    font: {
+                        family: 'Poppins',
+                        weight: 600,
+                        size: 12 // Menjadikan label bold
+                    },
+                    padding: 30
+                }
             },
         },
         scales: {
@@ -59,13 +84,12 @@ const setChartOptions = () => {
                 ticks: {
                     color: textColorSecondary,
                     padding: 2,
-
                 },
                 grid: {
                     display: false,
                     drawBorder: false,
                 },
-                offset: true
+                offset: true,
             },
             y: {
                 min: 0,
@@ -83,7 +107,6 @@ const setChartOptions = () => {
         elements: {
             line: {
                 borderWidth: 6,
-
             },
             point: {
                 radius: 2,
@@ -96,8 +119,9 @@ const setChartOptions = () => {
 <template>
     <div class="w-auto p-5">
         <Chart type="line" :data="chartData" :options="chartOptions" />
-        <div class="mt-4 text-center">
+        <div class="mt-2 text-center">
             <span class="font-semibold text-normal">Tanggal Kunjungan</span>
         </div>
+
     </div>
 </template>
