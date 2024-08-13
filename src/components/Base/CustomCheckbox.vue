@@ -37,6 +37,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  multiple: {
+    type: Boolean,
+    default: true,
+  },
   binary: {
     type: Boolean,
     default: true,
@@ -54,10 +58,18 @@ const toggleCheckbox = () => {
     if (props.binary) {
       checked.value = !checked.value;
     } else {
-      if (checked.value.includes(props.value)) {
-        checked.value.splice(checked.value.indexOf(props.value), 1);
+      if (props.multiple) {
+        if (checked.value.includes(props.value)) {
+          checked.value.splice(checked.value.indexOf(props.value), 1);
+        } else {
+          checked.value.push(props.value);
+        }
       } else {
-        checked.value.push(props.value);
+        if (checked.value.length) {
+          checked.value[0] = props.value;
+        } else {
+          checked.value.push(props.value);
+        }
       }
     }
   }
