@@ -36,6 +36,7 @@ import Column from 'primevue/column';
 import Paginator from "primevue/paginator";
 import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
+import Checkbox from 'primevue/checkbox';
 
 const app = createApp(App);
 
@@ -80,5 +81,6 @@ app.component("Column", Column);
 app.component("Paginator", Paginator);
 app.component("InputGroup", InputGroup);
 app.component("InputGroupAddon", InputGroupAddon);
+app.component('Checkbox',Checkbox)
 
 app.mount("#app");

@@ -65,9 +65,13 @@ defineExpose({
 </script>
 <template>
   <div>
-    <label v-if="showLabel" class="block font-semibold mb-[5px]">{{
-      label
-    }}</label>
+    <label
+      v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
+      {{ label }}
+    </label>
     <div class="flex">
       <div
         v-if="$slots.prependText"

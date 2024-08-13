@@ -40,11 +40,11 @@ const props = defineProps({
   },
   optionValue: {
     type: String,
-    default:"value"
+    default: "value",
   },
   optionLabel: {
     type: String,
-    default:"Label"
+    default: "Label",
   },
   maxSelectedLabels: {
     type: Number,
@@ -53,10 +53,10 @@ const props = defineProps({
 });
 const value = ref(props.modelValue);
 
-const emit = defineEmits(["update:modelValue","change"]);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 const onSelect = (event: any) => {
-  console.log(`Event: `,event)
+  console.log(`Event: `, event);
   if (!event) return;
   emit("update:modelValue", event.target?.value);
   emit("change", event.value);
@@ -70,11 +70,15 @@ defineExpose({
 });
 </script>
 
-
-
 <template>
   <div class="">
-    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
+    <label
+      v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
+      {{ props.label }}
+    </label>
     <MultiSelect
       v-model="value"
       :options="options"
@@ -93,4 +97,3 @@ defineExpose({
     />
   </div>
 </template>
-
