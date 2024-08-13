@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import TextArea from "@/components/Base/TextArea.vue";
+import TextArea from "@/components/Base/CustomTextArea.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";

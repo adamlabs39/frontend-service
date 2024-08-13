@@ -45,6 +45,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showFilter: {
+    type: Boolean,
+    default: true,
+  },
   invalidMessage: {
     type: String,
     default: "",
@@ -78,14 +82,18 @@ const showClear = computed(() => {
       {{ label }}
     </label>
     <InputGroup>
-      <InputGroupAddon v-if="prependIcon" class="rounded-l-lg border-grey-400">
+      <InputGroupAddon
+        v-if="prependIcon"
+        class="rounded-l-lg border-grey-400"
+        :class="{ 'bg-grey-100': disabled }"
+      >
         <component
           @click="emit('clickPrepend')"
           :is="prependIcon"
           weight="bold"
           :size="22"
-          :color="invalid ? 'red' : 'black'"
-          class="cursor-pointer"
+          class="text-black cursor-pointer"
+          :class="{ 'text-red-300': invalid, 'text-grey-300': disabled }"
         ></component>
       </InputGroupAddon>
       <Select
@@ -98,10 +106,10 @@ const showClear = computed(() => {
         :placeholder="placeHolder"
         :disabled="disabled"
         class="h-10 rounded-lg border-grey-400"
-        :class="[prependIcon? 'border-l-0 rounded-l-none': '']"
+        :class="[prependIcon ? 'border-l-0 rounded-l-none' : '']"
         :invalid="invalid"
         fluid
-        filter
+        :filter="showFilter"
         filterPlaceholder="Search"
         pt:pcFilterIconContainer:class="flex items-center"
         pt:pcFilter:root:class="border-grey-400"

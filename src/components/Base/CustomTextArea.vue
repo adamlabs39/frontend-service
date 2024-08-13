@@ -1,6 +1,6 @@
-
 <script setup lang="ts">
 import { ref } from "vue";
+import Textarea from "primevue/textarea";
 
 const props = defineProps({
   modelValue: {
@@ -15,9 +15,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  variant: {
+  height: {
     type: String,
-    default: "Outlined",
+    default: "h-20",
   },
   showLabel: {
     type: Boolean,
@@ -53,25 +53,23 @@ defineExpose({
 });
 </script>
 
-
-
-
 <template>
-  <div class="p-3">
-    <label class="font-bold" v-if="showLabel">{{ props.label }}</label>
-    <div class="flex flex-col card">
-      <Textarea
-        v-model="value"
-        @input="onInput"
-        :placeholder="placeholder"
-        fluid
-        :disabled="disabled"
-        :invalid="invalid"
-        class="h-20 pt-1 pl-1 border-2 rounded-lg border-grey-400"
-        :class="{
-          'border-red-500 text-red-500': invalid,
-        }"
-      />
-    </div>
+  <div class="">
+    <label class="block font-semibold mb-[5px]" v-if="showLabel">{{
+      props.label
+    }}</label>
+    <Textarea
+      v-model="value"
+      @input="onInput"
+      :placeholder="placeholder"
+      fluid
+      :disabled="disabled"
+      :invalid="invalid"
+      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] border-grey-400 w-full"
+      :class="{
+        'border-red-500 text-red-500': invalid,
+        [props.height]: true,
+      }"
+    />
   </div>
 </template>
