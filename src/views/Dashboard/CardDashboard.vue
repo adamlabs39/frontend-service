@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const props = defineProps({
 	iconKegiatan: {
 		type: String,
@@ -32,11 +33,11 @@ const props = defineProps({
 </script>
 
 <template>
-	<div class="flex flex-col justify-between w-auto p-5 bg-white rounded-lg shadow-md min-h-44">
+	<div class="flex flex-col justify-between w-auto p-5 bg-white shadow-md rounded-2xl min-h-44">
 		<!-- Header Section -->
 		<div class="flex items-center gap-2.5 mb-4">
-			<div class="w-10 h-10 text-white bg-teal-400 rounded-full">
-				<img :src="props.iconKegiatan" alt="Icon Kegiatan" class="w-full h-full rounded-full">
+			<div class="flex justify-center w-10 h-10 text-white rounded-full bg-adameds-300">
+				<img :src="props.iconKegiatan" alt="Icon Kegiatan" width="20px">
 			</div>
 			<div class="font-semibold text-black text-SM">{{ props.namaKegiatan }}</div>
 		</div>
@@ -47,7 +48,7 @@ const props = defineProps({
 				<div :class=props.dataFont>{{ props.data }}</div>
 				<div class="text-gray-400 text-normal">{{props.satuanData}}</div>
 			</div>
-			<div class="flex justify-end -mt-6">
+			<div class="flex justify-end gap-1 -mt-6">
 				<div>
 					<img :src="props.arrowIcon" alt="Icon Kegiatan" class="w-full h-full rounded-full">
 				</div>
