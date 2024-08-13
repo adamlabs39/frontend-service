@@ -92,7 +92,7 @@ const test = (data: any) => {
     :class="{
       [props.height]: true,
       'bg-grey-100': disabled,
-      'bg-adameds-50': checked,
+      'bg-adameds-50': binary ? checked : checked.includes(value),
     }"
     class="flex border-[1px] border-grey-200 rounded-lg px-[10px] py-[5px] cursor-pointer"
     @click="toggleCheckbox"
