@@ -77,11 +77,7 @@ const showDialog = () => {
                 <CustomButton label="LOGOUT" full class="font-bold"/>
               </div>
             </div>
-
-
           </template>
-
-
         </Dialog>
       </div>
     </div>

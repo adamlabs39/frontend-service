@@ -12,6 +12,12 @@ const props = defineProps({
 	}
 })
 
+const emit = defineEmits(["dotClick"]);
+
+const handleDotClick = (event: MouseEvent) => {
+    emit('dotClick', event); 
+};
+
 </script>
 
 <template>
@@ -22,7 +28,7 @@ const props = defineProps({
 				customClass="h-[30px] font-semibold text-normal pl-2.5" text-color="text-white" icon-color="text-white"
 				:show-checked-icon="false" />
 			<div class="w-[24px] h-[24px]" v-if="showDots">
-				<PhDotsThreeVertical :size="24" color="#667085" class="" />
+				<PhDotsThreeVertical :size="24" color="#667085" @click="handleDotClick" class="cursor-pointer"/>
 			</div>
 		</div>
 	</div>

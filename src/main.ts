@@ -39,6 +39,7 @@ import Column from 'primevue/column';
 import Paginator from 'primevue/paginator'
 import Chart from 'primevue/chart'
 import ProgressBar from 'primevue/progressbar'
+import Menu from 'primevue/menu'
 
 
 
@@ -86,5 +87,6 @@ app.component('DataTable', DataTable)
 app.component('Column', Column)
 app.component('Paginator', Paginator)
 app.component("Chart", Chart);
-app.component("ProgressBar",ProgressBar)
+app.component("ProgressBar", ProgressBar)
+app.component("Menu", Menu)
 app.mount('#app')

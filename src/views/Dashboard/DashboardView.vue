@@ -12,9 +12,32 @@ import IconPendapatanKlinik from '../../assets/icons/icon_pendapatanKlinik.svg'
 import ArrowIcon from '../../assets/icons/icon_circleUp.svg'
 import IconDashboard from '../../assets/icons/icon_returnDashboard.svg'
 import CardGrafik from './Grafik/CardGrafik.vue';
+import Menu from 'primevue/menu';
 
 const startDateFilter = ref<Date>(new Date())
 const endDateFilter = ref<Date>(new Date())
+
+
+const menu = ref();
+const items = ref([
+  {
+    label: 'Options',
+    items: [
+      {
+        label: 'Refresh',
+
+      },
+      {
+        label: 'Export',
+
+      }
+    ]
+  }
+]);
+
+const toggle = (event: Event) => {
+  menu.value?.toggle(event);
+};
 
 </script>
 
@@ -58,8 +81,10 @@ const endDateFilter = ref<Date>(new Date())
 
     <div class="flex gap-5">
       <div class="bg-white rounded-lg shadow-md grow">
-        <CardGrafik header-grafik="Kunjungan Pasien" showDots />
-        <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
+        <CardGrafik header-grafik="Kunjungan Pasien" showDots @dotClick="toggle" />
+          <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" appendTo="body" />
+
+          <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
           {
             label: 'Kunjungan Pasien',
             data: [3.7, 1.8, 1.6, 3.5],
