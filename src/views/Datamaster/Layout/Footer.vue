@@ -15,6 +15,12 @@ const props=defineProps({
     }
 })
 const emits = defineEmits(['update:rows', 'update:current-page']);
+const handleRowsUpdate = (rows: number) => {
+  console.log('Rows updated:', rows);
+};
+const handlePageUpdate = (page: number) => {
+  console.log('Page updated:', page);
+};
 
 </script>
 <template>
@@ -28,12 +34,11 @@ const emits = defineEmits(['update:rows', 'update:current-page']);
       </CustomButton>
     </div>
     <CustomPaginator
-      :rows="rows"
-      :totalrecords="totalRecords"
-      :rowsPerPageOptions="rowsPerPageOptions"
-      @update:rows="$emit('update:rows', $event)"
-      @update:current-page="$emit('update:current-page', $event)"
+      :rows="10"
+      :totalRecords="100"
+      :rowsPerPageOptions="[10, 20, 30]"
+      @update:rows="handleRowsUpdate"
+      @update:current-page="handlePageUpdate"
     />
-    
   </div>
 </template>

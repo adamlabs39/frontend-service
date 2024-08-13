@@ -14,7 +14,12 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
+const emit = defineEmits(['update:rows', 'update:current-page']);
+
+const onPageChange = (event: { first: number; rows: number; page: number }) => {
+  emit('update:rows', event.rows);
+  emit('update:current-page', event.page);
+};
 </script>
 
 <template>
@@ -41,8 +46,7 @@ const emits = defineEmits(['update:rows', 'update:current-page']);
           root: 'border-b-2 rounded-none border-white border-b-grey-200 ml-5 h-full items-center justify-center',
         },
       }"
-      @update:rows="$emit('update:rows', $event)"
-      @update:first="$emit('update:current-page', $event)"
+      @page="onPageChange"
     >
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />

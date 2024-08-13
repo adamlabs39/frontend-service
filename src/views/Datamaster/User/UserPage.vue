@@ -7,58 +7,113 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-
-const products = ref<any[]>([]);
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const router = useRouter();
-
-onMounted(() => {
-  products.value = [
-    { id: "1", name: "Petugas Adameds", role: "Admin", status: "AKTIF" },
-    { id: "2", name: "Petugas Adameds", role: "Dokter", status: "NON-AKTIF" },
-    { id: "2", name: "dr. Umum", role: "Admin", status: "AKTIF" },
-    { id: "4", name: "Perawat", role: "Perawat", status: "NON-AKTIF" },
-  ];
-});
-
 const addDataPage = () => {
   router.push({ name: "datamaster-user-tambah-data" });
+};
+const searchUser = ref<any>();
+const selectedUser = ref<any>();
+const itemSelectUser = ref([
+  { name: "Dokter", code: "DK" },
+  { name: "Admin", code: "AD" },
+  { name: "Perawat", code: "PR" },
+]);
+
+// Data User (contoh data, bisa disesuaikan)
+const dataUser = ref([
+  { name: "John Doe", role: "Admin", status: "AKTIF" },
+  { name: "Jane Smith", role: "User", status: "NON-AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary ", role: "User", status: "AKTIF" },
+  { name: "Mary ", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  { name: "Mary Johnson", role: "User", status: "AKTIF" },
+  // Tambahkan data lainnya di sini...
+]);
+
+// State untuk pagination
+const rowsPerPage = ref(10);
+const currentPage = ref(0);
+
+// Menghitung data yang akan ditampilkan berdasarkan pagination
+const paginatedData = computed(() => {
+  const start = currentPage.value * rowsPerPage.value;
+  const end = start + rowsPerPage.value;
+  return dataUser.value.slice(start, end);
+});
+
+// Event handler untuk perubahan pagination
+const handleRowsUpdate = (newRows: number) => {
+  rowsPerPage.value = newRows;
+  currentPage.value = 0; // Reset ke halaman pertama jika rows per page berubah
+};
+
+const handlePageUpdate = (newPage: number) => {
+  currentPage.value = newPage;
 };
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="User" :filter="false" :search="false">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="addDataPage" />
-      </template>
-      <template #content>
-        <div class="flex items-end justify-between gap-5">
-          <CustomTextfield class="grow" label="Cari User" placeholder="Cari Nama User" prependIcon="PhMagnifyingGlass"/>
-          <CustomSelect class="grow" :is-loading="false" />
-          <div class="flex gap-2.5">
-            <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-            <CustomButton
-              label="Reset"
-              @click=""
-              background-color="bg-white"
-              border-color="border-adameds-300"
-              text-color="text-adameds-300"
+    <template #header>
+      <Header title="User" :filter="false" :search="false" class="mb-5">
+        <template #header>
+          <CustomButton label="Data" icon="PhPlus" @click="addDataPage" />
+        </template>
+        <template #content>
+          <div class="flex items-end justify-between gap-5">
+            <CustomTextfield
+              v-model="searchUser"
+              class="w-1/2"
+              label="Cari User"
+              placeholder="Cari Nama User"
+              prependIcon="PhMagnifyingGlass"
             />
+            <CustomSelect
+              class="w-1/2"
+              label="Role"
+              v-model="selectedUser"
+              :options="itemSelectUser"
+              optionValue="code"
+              optionLabel="name"
+            />
+            <div class="flex gap-2.5">
+              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
+              <CustomButton
+                label="Reset"
+                @click=""
+                background-color="bg-white"
+                border-color="border-adameds-300"
+                text-color="text-adameds-300"
+              />
+            </div>
           </div>
-        </div>
-      </template>
-    </Header>
-
-    <div class="overflow-scroll grow px-5 pt-2.5">
+        </template>
+      </Header>
+    </template>
+    <template #content>
       <DataTable
-        :value="products"
+        :value="paginatedData"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
+        scrollable
+        scrollHeight="flex"
       >
         <Column header="No." headerClass="bg-adameds-50 font-semibold text-SM">
           <template #body="slotProps">
@@ -93,8 +148,16 @@ const addDataPage = () => {
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
@@ -126,8 +189,25 @@ const addDataPage = () => {
           </template>
         </Column>
       </DataTable>
-    </div>
-
-    <Footer />
-  </div>
+    </template>
+    <template #footer>
+      <div class="flex justify-between px-5 py-2.5">
+        <div class="flex items-center gap-2.5">
+          <CustomButton label="Import">
+            <img src="@/assets/icons/File Import.svg" alt="" />Import
+          </CustomButton>
+          <CustomButton label="Eksport">
+            <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+          </CustomButton>
+        </div>
+        <CustomPaginator
+          :rows="rowsPerPage"
+          :totalRecords="dataUser.length"
+          :rowsPerPageOptions="[10, 20, 30]"
+          @update:rows="handleRowsUpdate"
+          @update:current-page="handlePageUpdate"
+        />
+      </div>
+    </template>
+  </Card>
 </template>

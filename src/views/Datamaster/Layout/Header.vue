@@ -40,7 +40,7 @@ const props=defineProps({
       </div>
     </template>
     <template #content>
-      <div class="flex flex-col gap-2.5 my-2.5">
+      <div class="flex flex-col gap-2.5 mt-2.5">
           <CustomTextfield v-if="search"
             :label="`Cari ${title}`" 
             prependIcon="PhMagnifyingGlass"

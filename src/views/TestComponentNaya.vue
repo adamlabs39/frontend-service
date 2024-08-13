@@ -17,6 +17,7 @@ import CustomQuil from "@/components/Base/CustomQuil.vue";
 import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
 import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -107,6 +108,13 @@ const categories = ref([
   { name: "Research", key: "R" }
 ]);
 const checkCategorie = ref()
+const handleRowsUpdate = (rows: number) => {
+  console.log('Rows updated:', rows);
+};
+
+const handlePageUpdate = (page: number) => {
+  console.log('Page updated:', page);
+};
 </script>
 
 <template>
@@ -169,5 +177,14 @@ const checkCategorie = ref()
     <br> <br>
     jenis pembayaran bed
     <TableJenisPembayaranBed/>
+    <br>
+    <br>
+    <CustomPaginator
+      :rows="10"
+      :totalRecords="100"
+      :rowsPerPageOptions="[10, 20, 30]"
+      @update:rows="handleRowsUpdate"
+      @update:current-page="handlePageUpdate"
+    />
   </div>
 </template>
