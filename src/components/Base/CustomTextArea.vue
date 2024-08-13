@@ -55,9 +55,13 @@ defineExpose({
 
 <template>
   <div class="">
-    <label class="block font-semibold mb-[5px]" v-if="showLabel">{{
-      props.label
-    }}</label>
+    <label
+    v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
+      {{ props.label }}
+    </label>
     <Textarea
       v-model="value"
       @input="onInput"
