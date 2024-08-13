@@ -3,8 +3,10 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import HeaderFilter from "./Layout/HeaderFilter.vue";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
+import RegisterForm from "./Layout/RegisterForm.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -14,8 +16,19 @@ const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
 };
 
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
 const updatePageType = (path: string) => {
-  resetFilter()
+  resetFilter();
+  dataBreadCrumb.value = [];
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[2] ?? "";
 };
@@ -128,23 +141,21 @@ const cancelReason = ref<string>();
 
 <template>
   <Card
+    v-if="dataBreadCrumb.length == 0"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <HeaderFilter ref="headerFilterRef" :pageType="pageType" />
+      <HeaderFilter
+        ref="headerFilterRef"
+        :pageType="pageType"
+        @daftar="changeSection('Daftar')"
+      />
     </template>
     <template #content>
-      <!-- <div
-        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-      >
-        <div class="m-auto">
-          <img src="../../assets/icons/no-data-icon.svg" alt="no data" class="mx-auto" />
-          <div class="text-grey-200">No data available</div>
-        </div>
-      </div> -->
       <DataTable
+        v-if="itemsPasien.length"
         v-model:selection="selectedPatient"
         :value="itemsPasien"
         tableStyle="min-width: 50rem"
@@ -305,6 +316,19 @@ const cancelReason = ref<string>();
           class="custom-checkbox"
         ></Column>
       </DataTable>
+      <div
+        v-else
+        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
+      >
+        <div class="m-auto">
+          <img
+            src="../../assets/icons/no-data-icon.svg"
+            alt="no data"
+            class="mx-auto"
+          />
+          <div class="text-grey-200">No data available</div>
+        </div>
+      </div>
     </template>
     <template #footer>
       <div class="flex justify-between">
@@ -351,6 +375,11 @@ const cancelReason = ref<string>();
       </div>
     </template>
   </Card>
+  <RegisterForm
+    v-else-if="dataBreadCrumb[0].label == 'Daftar'"
+    :pageType="pageType"
+    @back="dataBreadCrumb.pop()"
+  />
 </template>
 
 <style>

@@ -15,6 +15,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["daftar"]);
+
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
@@ -140,7 +142,12 @@ defineExpose({
             }}
           </span>
         </div>
-        <CustomButton icon="PhPlus" label="Daftar" class="mr-[10px]" />
+        <CustomButton
+          @click="emit('daftar')"
+          icon="PhPlus"
+          label="Daftar"
+          class="mr-[10px]"
+        />
       </div>
     </template>
     <template #content>
