@@ -153,6 +153,11 @@
 
     <!-- Custom Upload -->
     <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false" :show-cancel-button="false" class="border-none bg-adameds-300" auto :maxFileSize="1000000"/>
+
+
+
+
+    <PopUpDownload/>
   </div>
 </template>
 
@@ -167,6 +172,7 @@ import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomUpload from "@/components/Base/CustomUpload.vue";
+import PopUpDownload from "./Dashboard/Grafik/PopUpDownload.vue";
 
 const nameValue = ref("");
 const emailValue = ref("");

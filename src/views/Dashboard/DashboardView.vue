@@ -12,31 +12,20 @@ import IconPendapatanKlinik from '../../assets/icons/icon_pendapatanKlinik.svg'
 import ArrowIcon from '../../assets/icons/icon_circleUp.svg'
 import IconDashboard from '../../assets/icons/icon_returnDashboard.svg'
 import CardGrafik from './Grafik/CardGrafik.vue';
-import Menu from 'primevue/menu';
+
+import PopUpDownload from './Grafik/PopUpDownload.vue'
 
 const startDateFilter = ref<Date>(new Date())
 const endDateFilter = ref<Date>(new Date())
 
+const currentVisibleMenu = ref<string | null>(null);
 
-const menu = ref();
-const items = ref([
-  {
-    label: 'Options',
-    items: [
-      {
-        label: 'Refresh',
-
-      },
-      {
-        label: 'Export',
-
-      }
-    ]
+const toggleMenu = (menuName: string) => {
+  if (currentVisibleMenu.value === menuName) {
+    currentVisibleMenu.value = null;  
+  } else {
+    currentVisibleMenu.value = menuName;  
   }
-]);
-
-const toggle = (event: Event) => {
-  menu.value?.toggle(event);
 };
 
 </script>
@@ -81,10 +70,9 @@ const toggle = (event: Event) => {
 
     <div class="flex gap-5">
       <div class="bg-white rounded-lg shadow-md grow">
-        <CardGrafik header-grafik="Kunjungan Pasien" showDots @dotClick="toggle" />
-          <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" appendTo="body" />
-
-          <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
+        <CardGrafik header-grafik="Kunjungan Pasien" showDots @dot-click="toggleMenu('kunjunganPasien')"/>
+         <PopUpDownload v-if="currentVisibleMenu === 'kunjunganPasien'" />
+        <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
           {
             label: 'Kunjungan Pasien',
             data: [3.7, 1.8, 1.6, 3.5],
@@ -111,7 +99,8 @@ const toggle = (event: Event) => {
     </div>
 
     <div class="w-full bg-white rounded-lg shadow-md">
-      <CardGrafik headerGrafik="Pemasukan dan Pengeluaran" showDots />
+      <CardGrafik headerGrafik="Kunjungan Berdasarkan Status Rawat" showDots @dot-click="toggleMenu('kunjunganStatusRawat')" />
+      <PopUpDownload v-if="currentVisibleMenu === 'kunjunganStatusRawat'"/>
       <LineChartDashboard :labels="['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04']" :datasets="[
         {
           label: 'Rawat Jalan',

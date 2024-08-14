@@ -25,7 +25,7 @@ const handleDotClick = (event: MouseEvent) => {
 		<div class="text-lg font-bold">{{ props.headerGrafik }}</div>
 		<div class="flex gap-2.5 items-center">
 			<CustomChip label="Detail" bg-color="bg-adameds-300" border-color="border-transparent"
-				customClass="h-[30px] font-semibold text-normal pl-2.5" text-color="text-white" icon-color="text-white"
+				customClass="h-[30px] font-semibold text-normal pl-3" text-color="text-white" icon-color="text-white"
 				:show-checked-icon="false" />
 			<div class="w-[24px] h-[24px]" v-if="showDots">
 				<PhDotsThreeVertical :size="24" color="#667085" @click="handleDotClick" class="cursor-pointer"/>
