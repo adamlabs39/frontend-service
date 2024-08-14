@@ -12,13 +12,12 @@ import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
-import EditProfilFaskes from "@/views/SettingPage/Template/ProfilFaskes/EditProfilFaskes.vue";
+
 
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
 import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
-import EditKonfigurasiIntegrasi from "@/views/SettingPage/Template/KonfigurasiIntegrasi/EditKonfigurasiIntegrasi.vue"
 import EditProfilAkun from "@/views/SettingPage/Template/ProfilAkun/EditProfilAkun.vue"
 
 
@@ -67,22 +66,11 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: ProfilFaskesPage },
       component: SettingView
     },
-    {
-      path: "/setting/profil-faskes/edit",
-      name: "setting-profil-faskes-edit",
-      meta: { layout: SidebarLayout, page: EditProfilFaskes },
-      component: SettingView
-    },
+
     {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
       meta: { layout: SidebarLayout, page: KonfigurasiIntegrasiPage },
-      component: SettingView
-    },
-    {
-      path: "/setting/konfigurasi-integrasi/edit",
-      name: "setting-konfigurasi-integrasi-edit",
-      meta: { layout: SidebarLayout, page: EditKonfigurasiIntegrasi },
       component: SettingView
     },
     {
