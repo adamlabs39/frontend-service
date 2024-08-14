@@ -5,15 +5,8 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataRoleDialog from "./TambahDataRoleDialog.vue";
 const products = ref<any[]>([]);
-
-const router = useRouter();
 
 onMounted(() => {
   products.value = [
@@ -49,43 +42,38 @@ onMounted(() => {
 });
 
 const addData = ref(false);
+
+function handleClose() {
+  addData.value = false;
+}
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Role" :filter="false">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="addData"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Role</template>
-          <template #body>
-            <TambahDataRoleDialog />
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
-      </template>
-    </Header>
+    <template #header>
+      <Header title="Role" :filter="false" class="mb-5">
+        <template #header>
+          <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
+          <TambahDataRoleDialog
+            v-model:isDialogVisible="addData"
+            @close="handleClose"
+          />
+        </template>
+      </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
+        scrollable
+        scrollHeight="flex"
         class="text-xs"
       >
         <Column header="No." headerClass="bg-adameds-50">
@@ -182,8 +170,10 @@ const addData = ref(false);
           </template>
         </Column>
       </DataTable>
-    </div>
+    </template>
 
-    <Footer />
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>

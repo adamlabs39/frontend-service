@@ -1,18 +1,27 @@
 <script lang="ts" setup>
-import { ref, onMounted} from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataRuanganDialog from "./TambahDataRuanganDialog.vue";
 const products = ref<any[]>([]);
-
-const router = useRouter();
-
+const searchRoom = ref<any>();
+const selectedKategori = ref<any>();
+const selectedKelas = ref<any>();
+const itemKategori = ref([
+  { name: "Dokter", code: "DK" },
+  { name: "Admin", code: "AD" },
+  { name: "Perawat", code: "PR" },
+]);
+const itemKelas = ref([
+  { name: "Dokter", code: "DK" },
+  { name: "Admin", code: "AD" },
+  { name: "Perawat", code: "PR" },
+]);
 onMounted(() => {
   products.value = [
     {
@@ -62,68 +71,86 @@ onMounted(() => {
   ];
 });
 
+const addData = ref(false);
 
-const testDialog = ref(false);
+function handleClose() {
+  addData.value = false;
+}
+const resetFilter = () => {
+  searchRoom.value = "";
+  selectedKategori.value = null;
+  selectedKelas.value = null;
+};
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Ruangan" :search="false" :filter="false">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Ruangan</template>
-          <template #body>
-            <TambahDataRuanganDialog/>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
-      </template>
-      <template #content>
-        <div class="flex items-end justify-between gap-5">
-          <CustomTextfield
-            class="grow"
-            label="Cari Ruangan"
-            placeholder="Cari Ruangan"
-            prependIcon="PhMagnifyingGlass"
+    <template #header>
+      <Header title="Ruangan" :search="false" :filter="false" class="mb-5">
+        <template #header>
+          <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
+          <TambahDataRuanganDialog
+            v-model:isDialogVisible="addData"
+            @close="handleClose"
           />
-          <CustomSelect class="grow" :is-loading="false" label="Kategori" place-holder="Kategori"/>
-          <CustomSelect class="grow" :is-loading="false" label="Kelas" place-holder="Kelas" />
-          <div class="flex gap-2.5">
-            <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-            <CustomButton
-              label="Reset"
-              @click=""
-              background-color="bg-white"
-              border-color="border-adameds-300"
-              text-color="text-adameds-300"
+        </template>
+        <template #content>
+          <div class="flex items-end justify-between gap-5">
+            <CustomTextfield
+              v-model="searchRoom"
+              class="w-1/2"
+              label="Cari Ruangan"
+              placeholder="Cari Ruangan"
+              prependIcon="PhMagnifyingGlass"
             />
+            <CustomSelect
+              v-model="selectedKategori"
+              :options="itemKategori"
+              optionValue="code"
+              optionLabel="name"
+              class="w-1/4"
+              :is-loading="false"
+              label="Kategori"
+              place-holder="Kategori"
+            />
+            <CustomSelect
+              v-model="selectedKelas"
+              :options="itemKelas"
+              optionValue="code"
+              optionLabel="name"
+              class="w-1/4"
+              :is-loading="false"
+              label="Kelas"
+              place-holder="Kelas"
+            />
+            <div class="flex gap-2.5">
+              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
+              <CustomButton
+                label="Reset"
+                @click="resetFilter"
+                background-color="bg-white"
+                border-color="border-adameds-300"
+                text-color="text-adameds-300"
+              />
+            </div>
           </div>
-        </div>
-      </template>
-    </Header>
+        </template>
+      </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
+         scrollable
+        scrollHeight="flex"
       >
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
@@ -147,13 +174,10 @@ const testDialog = ref(false);
           headerClass="bg-adameds-50"
           class="text-center"
         >
-        <template #header>
-            <div
-              class="w-full font-semibold text-center text-SM"
-            >
-            No.Kamar
-            </div>
-        </template></Column>
+          <template #header>
+            <div class="w-full font-semibold text-center text-SM">No.Kamar</div>
+          </template></Column
+        >
 
         <Column
           field="kategori_ruangan"
@@ -165,29 +189,15 @@ const testDialog = ref(false);
           header="Kelas Ruangan"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="jml_bed"
-          headerClass="bg-adameds-50"
-          class="text-center"
+        <Column field="jml_bed" headerClass="bg-adameds-50" class="text-center">
+          <template #header>
+            <div class="w-full font-semibold text-center text-SM">Jml.Bed</div>
+          </template></Column
         >
-        <template #header>
-            <div
-              class="w-full font-semibold text-center text-SM"
-            >
-              Jml.Bed
-            </div>
-        </template></Column>
-        <Column
-          field="status"
-          headerClass="bg-adameds-50"
-        >
-        <template #header="slotProps">
-            <div
-              class="w-full font-semibold text-center text-SM"
-            >
-              Action
-            </div>
-        </template>
+        <Column field="status" headerClass="bg-adameds-50">
+          <template #header="slotProps">
+            <div class="w-full font-semibold text-center text-SM">Action</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               <CustomChip
@@ -197,8 +207,16 @@ const testDialog = ref(false);
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
@@ -230,8 +248,10 @@ const testDialog = ref(false);
           </template>
         </Column>
       </DataTable>
-    </div>
+    </template>
 
-    <Footer />
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>

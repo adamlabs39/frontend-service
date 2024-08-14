@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, defineProps } from "vue";
+import { ref, watch, defineProps,computed } from "vue";
 import { useRouter } from "vue-router";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -18,12 +18,14 @@ const router = useRouter();
 function goBack() {
   router.back();
 }
-
+const showSelected = ref(false);
+const showNama = ref(false);
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
-const schema = toTypedSchema(
+const schema = computed(()=>
+toTypedSchema(
   yup.object({
-    username: yup.string().required("Username harus diisi"),
+    username: yup.string().required("Username harus diisi") ,
     password: yup
       .string()
       .min(8, "Password minimal 8 karakter")
@@ -47,7 +49,9 @@ const schema = toTypedSchema(
       )
       .required("Password harus diisi")
       .oneOf([yup.ref("password")], "Password tidak sama"),
-    namaLengkap: yup.string().required("Nama Lengkap harus diisi"),
+    namaLengkap: showNama
+    ? yup.string().required("Nama Lengkap harus diisi")
+    : yup.string().nullable(),
     email: yup
       .string()
       .required("Email harus diisi")
@@ -57,12 +61,16 @@ const schema = toTypedSchema(
       .string()
       .required("No. Handhpone harus diisi")
       .matches(phoneRegExp, "Format tidak sesuai"),
-    selectedDokter: yup.string().required("Nama Dokter harus diisi"),
+    selectedDokter: showSelected
+    ? yup.string().required("Nama Dokter harus diisi")
+    : yup.string().nullable(),
     status: yup
       .bool()
       .required("Status harus dipilih")
   })
+)
 );
+
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -71,6 +79,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 const onSubmit = handleSubmit((values) => {
   console.log("Submitted with", values);
 });
+
 
 const [username] = defineField("username");
 const [password] = defineField("password");
@@ -166,6 +175,19 @@ const sections = ref([
     ],
   },
 ]);
+// Watch for changes in selectedRole and reset form
+watch(selectedRole, (newRole) => {
+  resetForm(); // Reset the form
+
+  // You can also set the initial values for specific fields if needed
+  // if (newRole === 'dokter') {
+  //   showSelected.value = true;
+  //   showNama.value = false;
+  // } else {
+  //   showSelected.value = false;
+  //   showNama.value = true;
+  // }
+});
 </script>
 
 <template>

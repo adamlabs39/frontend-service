@@ -1,41 +1,140 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 
-const menuAksesAutoComplete = ref();
+const props = defineProps({
+  isDialogVisible: {
+    default: false,
+  },
+});
+
+const schema = toTypedSchema(
+  yup.object({
+    code: yup.string().required("Kode harus diisi"),
+    name: yup.string().required("Nama Role harus diisi"),
+    permission: yup
+      .array()
+      .of(yup.string())
+      .required("Menu Akses harus dipilih"),
+    status: yup
+      .bool()
+      .required("Status harus diisi")
+      .oneOf([true], "Status harus dipilih"),
+  })
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+const onSubmit = handleSubmit((values) => {
+  console.log("Submitted with", values);
+  emit("close");
+});
+
+const [code] = defineField("code");
+const [name] = defineField("name");
+const [permission] = defineField("permission");
+const [status] = defineField("status");
+
 const itemsMenuAkses = ref([
-  "Admisi",
-  "Antrian",
-  "Pembayaran",
-  "Formasi",
+  { name: "New York", code: "NY" },
+  { name: "Rome", code: "RM" },
+  { name: "London", code: "LDN" },
+  { name: "Istanbul", code: "IST" },
+  { name: "Paris", code: "PRS" },
+  { name: "Rome", code: "RM1" },
+  { name: "London", code: "LDN1" },
+  { name: "Istanbul", code: "IST1" },
+  { name: "Paris", code: "PRS1" },
 ]);
-const status = ref();
+const emit = defineEmits(["update:isDialogVisible", "close"]);
+
+function updateVisibility(value: any) {
+  emit("update:isDialogVisible", value);
+}
+function closeDialog() {
+  emit("close");
+}
+
+watch(
+  () => props.isDialogVisible,
+  (newValue) => {
+    if (!newValue) {
+      resetForm();
+    }
+  }
+);
+const tongle = ref();
 </script>
 <template>
-  <form class="flex flex-col gap-5 mt-5">
-    <div class="flex gap-2.5">
-      <CustomTextfield label="Kode" placeholder="Kode" />
-      <CustomTextfield
-        label="Nama Role"
-        placeholder="Nama Role"
-        class="basis-3/4"
-      />
-    </div>
-    <hr class="border-grey-200" />
-    <CustomAutoComplete
-      v-model="menuAksesAutoComplete"
-      :options="itemsMenuAkses"
-      label="Menu Akses"
-      multiple
-      
-    />
-    <hr class="border-grey-200" />
-    <div class="flex items-end gap-2.5">
-      <CustomSwitch v-model="status" label="Status" />
-      <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-    </div>
-  </form>
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="600px"
+    headerBg="bg-adameds-300"
+  >
+    <template #header>Tambah Data Role</template>
+    <template #body>
+      <form class="flex flex-col gap-5 mt-5">
+        <div class="flex gap-2.5">
+          <CustomTextfield
+            label="Kode"
+            v-model="code"
+            placeholder="Kode"
+            :invalid="errors.code ? true : false"
+            :invalidMessage="errors.code"
+          />
+          <CustomTextfield
+            label="Nama Role"
+            v-model="name"
+            placeholder="Nama Role"
+            class="basis-3/4"
+            :invalid="errors.name ? true : false"
+            :invalidMessage="errors.name"
+          />
+        </div>
+        <hr class="border-grey-200" />
+        <CustomMultiSelect
+          v-model="permission"
+          :options="itemsMenuAkses"
+          label="Menu Akses"
+          optionLabel="name"
+          optionValue="code"
+          :invalid="errors.permission ? true : false"
+        />
+        <hr class="border-grey-200" />
+        <div class="flex items-end gap-2.5">
+          <CustomSwitch
+            v-model="status"
+            :invalid="errors.status ? true : false"
+            :invalidMessage="errors.status"
+            label="Status"
+          />
+          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+        </div>
+      </form>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <hr class="-mx-5 border-grey-200" />
+        <div class="mt-5 flex justify-end gap-2.5">
+          <CustomButton
+            label="Batal"
+            border-color="border-grey-200"
+            background-color="bg-white"
+            text-color="text-grey-300"
+            @click="closeDialog"
+          >
+          </CustomButton>
+          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+        </div>
+      </div>
+    </template>
+  </CustomDialog>
 </template>

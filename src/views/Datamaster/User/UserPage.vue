@@ -21,7 +21,6 @@ const itemSelectUser = ref([
   { name: "Perawat", code: "PR" },
 ]);
 
-// Data User (contoh data, bisa disesuaikan)
 const dataUser = ref([
   { name: "John Doe", role: "Admin", status: "AKTIF" },
   { name: "Jane Smith", role: "User", status: "NON-AKTIF" },
@@ -38,28 +37,29 @@ const dataUser = ref([
   { name: "Mary Johnson", role: "User", status: "AKTIF" },
   { name: "Mary Johnson", role: "User", status: "AKTIF" },
   { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  // Tambahkan data lainnya di sini...
 ]);
 
-// State untuk pagination
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
 
-// Menghitung data yang akan ditampilkan berdasarkan pagination
 const paginatedData = computed(() => {
   const start = currentPage.value * rowsPerPage.value;
   const end = start + rowsPerPage.value;
   return dataUser.value.slice(start, end);
 });
 
-// Event handler untuk perubahan pagination
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
-  currentPage.value = 0; // Reset ke halaman pertama jika rows per page berubah
+  currentPage.value = 0; 
 };
 
 const handlePageUpdate = (newPage: number) => {
   currentPage.value = newPage;
+};
+
+const resetFilter = () => {
+  searchUser.value = "";
+  selectedUser.value = null;
 };
 </script>
 
@@ -95,7 +95,7 @@ const handlePageUpdate = (newPage: number) => {
               <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
               <CustomButton
                 label="Reset"
-                @click=""
+                @click="resetFilter"
                 background-color="bg-white"
                 border-color="border-adameds-300"
                 text-color="text-adameds-300"
