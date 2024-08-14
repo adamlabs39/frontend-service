@@ -33,11 +33,14 @@ import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox';
 
+import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
+
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.use(PhosphorIcons)
+app.use(CkeditorPlugin)
 
 app.use(PrimeVue, {
   theme: {

@@ -11,6 +11,7 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 
 const props = defineProps({
   filter: {
@@ -89,6 +90,7 @@ const testRefFunction = () => {
 };
 const testCheckboxMulti = ref([]);
 const testCheckbox = ref(false);
+const testEditor = ref("");
 </script>
 <template>
   <div>
@@ -175,5 +177,9 @@ const testCheckbox = ref(false);
     </div>
     {{ testCheckbox }}
     <CustomCheckbox v-model="testCheckbox" endText="Masuk" value="3" />
+    {{ testEditor }}
+    <div>
+      <CustomCkEditor v-model="testEditor" />
+    </div>
   </div>
 </template>
