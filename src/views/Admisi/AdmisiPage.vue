@@ -376,9 +376,16 @@ const cancelReason = ref<string>();
     </template>
   </Card>
   <RegisterForm
-    v-else-if="dataBreadCrumb[0].label == 'Daftar'"
+    v-else-if="
+      dataBreadCrumb[0].label == 'Daftar' ||
+      dataBreadCrumb[0].label == 'Detail' ||
+      dataBreadCrumb[0].label == 'Detail Edit'
+    "
+    :dataBreadCrumb="dataBreadCrumb"
     :pageType="pageType"
     @back="dataBreadCrumb.pop()"
+    @goToDetail="dataBreadCrumb[0].label = 'Detail'"
+    @goToEdit="dataBreadCrumb[0].label = 'Detail Edit'"
   />
 </template>
 

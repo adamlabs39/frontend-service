@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem";
-import { ref, type PropType } from "vue";
+import { computed, ref, type PropType } from "vue";
+import Qrcode from "qrcode.vue";
+import { getDateNow } from "@/utils/Helpers";
 
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -12,6 +14,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const props = defineProps({
   pageType: {
@@ -24,7 +27,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["back"]);
+const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
 const newBorn = ref(false);
 const noIdentity = ref(false);
@@ -38,6 +41,20 @@ const selectedBabyBed = ref([]);
 const selectedPaymentMethod = ref<string[]>(["TUNAI"]);
 const onPaymentMethodSelect = (label: string) => {
   selectedPaymentMethod.value[0] = label;
+};
+
+const confirmSaveDialog = ref(false);
+const generalConsentDialog = ref(false);
+
+const generalConsentType = ref(["Pasien", "Keluarga"]);
+const selectedGeneralConsent = ref("Pasien");
+const onFilterBedRoomSelect = (label: string) => {
+  selectedGeneralConsent.value = label;
+};
+
+const isDetail = () => {
+  if (props.dataBreadCrumb[0].label == "Detail") return true;
+  else return false;
 };
 </script>
 
@@ -59,15 +76,24 @@ const onPaymentMethodSelect = (label: string) => {
             :model="dataBreadCrumb"
             class=""
           />
-          <CustomButton
-            @click="emit('back')"
-            icon="PhCaretLeft"
-            label="Kembali"
-            class="mr-[10px]"
-            outlined
-            borderColor="border-adameds-300"
-            textColor="text-adameds-300"
-          />
+          <div class="flex">
+            <CustomButton
+              @click="emit('back')"
+              icon="PhCaretLeft"
+              label="Kembali"
+              class="mr-[10px]"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+            />
+            <CustomButton
+              v-if="isDetail()"
+              @click="emit('goToEdit')"
+              label="Edit"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
         </div>
       </template>
     </Card>
@@ -93,12 +119,13 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
                 prependIcon="PhMagnifyingGlass"
-                :disabled="noIdentity || newBorn"
+                :disabled="noIdentity || newBorn || isDetail()"
               />
               <CustomSwitch
                 v-model="newBorn"
                 label="Bayi Baru Lahir"
                 @update:model-value="noIdentity = false"
+                :disabled="isDetail()"
               />
               <CustomSwitch
                 v-if="pageType == 'igd'"
@@ -106,6 +133,7 @@ const onPaymentMethodSelect = (label: string) => {
                 label="Tanpa Identitas"
                 class="ml-[8%]"
                 @update:model-value="newBorn = false"
+                :disabled="isDetail()"
               />
             </div>
             <hr class="mt-5 mb-[30px]" />
@@ -117,6 +145,7 @@ const onPaymentMethodSelect = (label: string) => {
                 label="Nama Lengkap"
                 class="w-full mr-[30px]"
                 placeholder="Nama Lengkap"
+                :disabled="isDetail()"
               />
               <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
                 <CustomSelect
@@ -127,12 +156,14 @@ const onPaymentMethodSelect = (label: string) => {
                   optionValue=""
                   :showFilter="false"
                   :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                  :disabled="isDetail()"
                 />
                 <CustomTextfield
                   :label="newBorn ? 'No. KTP Ibu' : ''"
                   class="col-span-3"
                   :class="{ 'mt-auto': noIdentity }"
                   placeholder="KTP"
+                  :disabled="isDetail()"
                 />
               </div>
             </div>
@@ -152,12 +183,14 @@ const onPaymentMethodSelect = (label: string) => {
                   'An. (Anak)',
                   'By. (Bayi)',
                 ]"
+                :disabled="isDetail()"
               />
               <div class="flex ml-[10px] grow">
                 <CustomTextfield
                   label="Nama Lengkap"
                   class="w-full mr-[30px]"
                   placeholder="Nama Lengkap"
+                  :disabled="isDetail()"
                 />
                 <CustomSelect
                   label="Identitas"
@@ -167,12 +200,14 @@ const onPaymentMethodSelect = (label: string) => {
                   optionValue=""
                   :showFilter="false"
                   :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                  :disabled="isDetail()"
                 />
               </div>
               <CustomTextfield
                 label=" "
                 class="w-[23.5%] mt-auto"
                 placeholder="KTP"
+                :disabled="isDetail()"
               />
             </div>
             <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
@@ -182,11 +217,13 @@ const onPaymentMethodSelect = (label: string) => {
                 label="Tempat Lahir"
                 class=""
                 placeholder="Tempat Lahir"
+                :disabled="isDetail()"
               />
               <CustomDatePicker
                 label="Tanggal Lahir"
                 placeHolder="01-01-2024"
                 class=""
+                :disabled="isDetail()"
               />
               <CustomDatePicker
                 v-if="newBorn"
@@ -194,12 +231,14 @@ const onPaymentMethodSelect = (label: string) => {
                 placeHolder="00:00"
                 class=""
                 timeOnly
+                :disabled="isDetail()"
               />
               <CustomTextfield
                 v-else
                 label="Umur"
                 class=""
                 placeholder="Umur"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 label="Jenis Kelamin"
@@ -209,6 +248,7 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['Laki-laki', 'Perempuan']"
+                :disabled="isDetail()"
               />
               <!-- Row 2 -->
               <CustomTextfield
@@ -216,6 +256,7 @@ const onPaymentMethodSelect = (label: string) => {
                 label="No. Handphone"
                 class=""
                 placeholder="08XX-XXXX-XXXX"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 v-if="!newBorn && !noIdentity"
@@ -234,6 +275,7 @@ const onPaymentMethodSelect = (label: string) => {
                   'Konghucu',
                   'Lain-lain',
                 ]"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 v-if="!newBorn && !noIdentity"
@@ -244,6 +286,7 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['Indonesia', 'Jepang', 'Amerika Serikat']"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 v-if="!newBorn && !noIdentity"
@@ -254,6 +297,7 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['Bahasa Indonesia', 'Bahasa Inggris', 'Bahasa Jawa']"
+                :disabled="isDetail()"
               />
               <!-- Row 3 -->
               <CustomSelect
@@ -265,12 +309,14 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']"
+                :disabled="isDetail()"
               />
               <CustomTextfield
                 v-if="!noIdentity"
                 label="Nama Ibu Kandung"
                 class="col-span-3"
                 placeholder="Nama Ibu Kandung"
+                :disabled="isDetail()"
               />
             </div>
             <hr v-if="!noIdentity" class="my-[30px]" />
@@ -286,6 +332,7 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['DKI Jakarta', 'Jawa Barat', 'Jawa Timur']"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 label="Kabupaten / Kota"
@@ -299,6 +346,7 @@ const onPaymentMethodSelect = (label: string) => {
                   'Kota Bandung',
                   'Kota Surabaya',
                 ]"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 label="Kecamatan"
@@ -312,6 +360,7 @@ const onPaymentMethodSelect = (label: string) => {
                   'Kecamatan Cidadap',
                   'Kecamatan Wonokromo',
                 ]"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 label="Kelurahan / Desa"
@@ -325,10 +374,21 @@ const onPaymentMethodSelect = (label: string) => {
                   'Desa Ciburial',
                   'Kelurahan Dukuh Menanggal',
                 ]"
+                :disabled="isDetail()"
               />
               <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
-                <CustomTextfield label="RT" class="" placeholder="0" />
-                <CustomTextfield label="RW" class="" placeholder="0" />
+                <CustomTextfield
+                  label="RT"
+                  class=""
+                  placeholder="0"
+                  :disabled="isDetail()"
+                />
+                <CustomTextfield
+                  label="RW"
+                  class=""
+                  placeholder="0"
+                  :disabled="isDetail()"
+                />
               </div>
               <CustomSelect
                 label="Kode Pos"
@@ -338,12 +398,14 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['10110', '40115', '60241']"
+                :disabled="isDetail()"
               />
               <CustomTextArea
                 label="Alamat"
                 class="col-span-2"
                 placeholder="Alamat"
                 height="h-10"
+                :disabled="isDetail()"
               />
             </div>
           </div>
@@ -401,6 +463,7 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['POLI UMUM', 'POLI ANAK', 'POLI GIGI POLI MATA']"
+                :disabled="isDetail()"
               />
               <CustomSelect
                 label="DPJP"
@@ -410,44 +473,53 @@ const onPaymentMethodSelect = (label: string) => {
                 optionValue=""
                 :showFilter="false"
                 :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+                :disabled="isDetail()"
               />
               <CustomTextfield
                 v-if="pageType == 'igd' || pageType == 'rawat-inap'"
                 label="Keluhan Utama"
                 class=""
                 placeholder="Keluhan Utama"
+                :disabled="isDetail()"
               />
             </div>
             <div
               class="grid grid-cols-5 gap-y-5 gap-x-[30px] mt-5"
               :class="{ 'grid-cols-6': pageType == 'rawat-inap' }"
             >
-              <CustomSwitch label="Pasien Maternitas" sideLabel="Iya" />
+              <CustomSwitch
+                label="Pasien Maternitas"
+                sideLabel="Iya"
+                :disabled="isDetail()"
+              />
               <CustomSwitch
                 v-if="pageType == 'rawat-inap'"
                 label="Pasien Titipan"
                 sideLabel="Iya"
+                :disabled="isDetail()"
               />
               <CustomSwitch
                 v-if="pageType == 'rawat-inap'"
                 label="Naik Kelas"
                 sideLabel="Iya"
+                :disabled="isDetail()"
               />
               <CustomSwitch
                 v-if="pageType == 'rawat-inap'"
                 v-model="mergeBill"
                 label="Gabung Tagihan"
                 sideLabel="Iya"
+                :disabled="isDetail()"
               />
               <CustomSwitch
                 v-if="pageType == 'rawat-inap'"
-                :disabled="!mergeBill"
+                :disabled="!mergeBill || isDetail()"
                 label="Tagihan Sebelumnya"
                 sideLabel="Iya"
               />
               <CustomSwitch
                 v-if="pageType == 'rawat-inap'"
-                :disabled="!mergeBill"
+                :disabled="!mergeBill || isDetail()"
                 label="Tagihan Keluarga"
                 sideLabel="Iya"
               />
@@ -456,6 +528,7 @@ const onPaymentMethodSelect = (label: string) => {
                 label="Keluhan Utama"
                 class="col-span-2"
                 placeholder="Keluhan Utama"
+                :disabled="isDetail()"
               />
               <CustomTextArea
                 v-if="pageType != 'rawat-inap'"
@@ -464,6 +537,7 @@ const onPaymentMethodSelect = (label: string) => {
                 :class="{ 'col-span-4': pageType == 'igd' }"
                 placeholder="Catatan"
                 height="h-10"
+                :disabled="isDetail()"
               />
             </div>
             <div v-if="selectedPaymentMethod.includes('ASURANSI')">
@@ -481,11 +555,13 @@ const onPaymentMethodSelect = (label: string) => {
                     'Asuransi Prudential',
                     'Asuransi Allianz',
                   ]"
+                  :disabled="isDetail()"
                 />
                 <CustomTextfield
                   label="No. Penjamin"
                   class=""
                   placeholder="No. Penjamin"
+                  :disabled="isDetail()"
                 />
               </div>
             </div>
@@ -500,6 +576,7 @@ const onPaymentMethodSelect = (label: string) => {
                   optionValue=""
                   :showFilter="false"
                   :options="['Ruangan Rawat Umum']"
+                  :disabled="isDetail()"
                 />
                 <CustomSelect
                   label="Kelas"
@@ -509,6 +586,7 @@ const onPaymentMethodSelect = (label: string) => {
                   optionValue=""
                   :showFilter="false"
                   :options="['Kelas 2']"
+                  :disabled="isDetail()"
                 />
                 <CustomSelect
                   v-model="selectedRoom"
@@ -519,6 +597,7 @@ const onPaymentMethodSelect = (label: string) => {
                   optionValue=""
                   :showFilter="false"
                   :options="['Mawar']"
+                  :disabled="isDetail()"
                 />
               </div>
               <div v-if="selectedRoom" class="grid grid-cols-3 mt-[30px]">
@@ -549,7 +628,7 @@ const onPaymentMethodSelect = (label: string) => {
                         :binary="false"
                         :value="`${data}`"
                         :multiple="false"
-                        :disabled="data == 2 || data == 4"
+                        :disabled="data == 2 || data == 4 || isDetail()"
                       />
                     </div>
                   </div>
@@ -578,6 +657,7 @@ const onPaymentMethodSelect = (label: string) => {
                         :binary="false"
                         :value="`${data}`"
                         :multiple="false"
+                        :disabled="isDetail()"
                       />
                     </div>
                   </div>
@@ -587,11 +667,13 @@ const onPaymentMethodSelect = (label: string) => {
                     label="Tambahan"
                     class="mb-[30px]"
                     sideLabel="Bed Cadangan"
+                    :disabled="isDetail()"
                   />
                   <CustomSwitch
                     v-model="babyBox"
                     label=""
                     sideLabel="Box Bayi"
+                    :disabled="isDetail()"
                   />
                 </div>
               </div>
@@ -608,7 +690,30 @@ const onPaymentMethodSelect = (label: string) => {
     </div>
     <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
       <template #content>
-        <div class="flex justify-end">
+        <div v-if="isDetail()" class="flex">
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak Kunjungan"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak Label"
+            class=""
+            backgroundColor="bg-adameds-300"
+          />
+          <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
+          <CustomButton
+            @click="() => {}"
+            label="General Consent"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+        </div>
+        <div v-else class="flex justify-end">
           <CustomButton
             label="Reset"
             class="mr-[10px]"
@@ -617,6 +722,7 @@ const onPaymentMethodSelect = (label: string) => {
             textColor="text-grey-300"
           />
           <CustomButton
+            @click="confirmSaveDialog = true"
             label="Simpan"
             class=""
             backgroundColor="bg-adameds-300"
@@ -624,5 +730,175 @@ const onPaymentMethodSelect = (label: string) => {
         </div>
       </template>
     </Card>
+
+    <CustomDialog v-model:visible="confirmSaveDialog" width="600px">
+      <template #header>General Consent - Rawat Jalan</template>
+      <template #body>
+        <div class="mt-5">
+          <div class="mb-2">
+            Pasien belum menyetujui
+            <span class="font-bold">General Consent - Rawap Inap.</span>
+          </div>
+          <div>
+            Membuat kesepakatan <span class="font-bold">General Consent?</span>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <CustomButton
+          @click="emit('goToDetail'), (confirmSaveDialog = false)"
+          label="Lewati"
+          outlined
+          class=""
+          borderColor="border-adameds-300"
+          textColor="text-adameds-300"
+        />
+        <CustomButton
+          @click="(confirmSaveDialog = false), (generalConsentDialog = true)"
+          label="Buat"
+          class=""
+          backgroundColor="bg-adameds-300"
+        />
+      </template>
+    </CustomDialog>
+
+    <CustomDialog v-model:visible="generalConsentDialog" width="1000px">
+      <template #header>
+        <div class="flex">
+          <div>General Consent</div>
+          <CustomChip
+            v-for="(GC, index) in generalConsentType"
+            :label="GC"
+            borderColor="border-white"
+            iconColor="text-white"
+            textColor="text-white"
+            selected-icon-color="text-adameds-300"
+            selectedTextColor="text-adameds-300"
+            :iconSize="16"
+            class="ml-[10px]"
+            selectedColor="bg-white border-white"
+            :isSelected="selectedGeneralConsent == GC"
+            @selected="onFilterBedRoomSelect"
+            :key="GC + index"
+          />
+        </div>
+      </template>
+      <template #body>
+        <div class="mt-5">
+          <div
+            v-if="selectedGeneralConsent == 'Keluarga'"
+            class="grid grid-cols-2 gap-x-[30px] gap-y-5 mb-5"
+          >
+            <CustomTextfield
+              label="Nama Lengkap Keluarga"
+              class="col-span-2"
+              placeholder="Nama Lengkap Keluarga"
+            />
+            <CustomSelect
+              label="Jenis Kelamin"
+              placeHolder="Pilih Jenis Kelamin"
+              class=""
+              optionLabel=""
+              optionValue=""
+              :showFilter="false"
+              :options="['Laki-laki', 'Perempuan']"
+            />
+            <CustomSelect
+              label="Hubungan Dengan Pasien"
+              placeHolder="Pilih Hubungan Dengan Pasien"
+              class=""
+              optionLabel=""
+              optionValue=""
+              :showFilter="false"
+              :options="[
+                'Kepala Keluarga',
+                'Mertua',
+                'Menantu',
+                'Kepokanan',
+                'Sepupu',
+                'Teman',
+                'Kerabat',
+                'Asisten Rumah Tangga',
+                'Suami',
+                'Istri',
+                'Ayah',
+                'Ibu',
+                'Anak',
+                'Kakak',
+                'Adik',
+                'Cucu',
+                'Kakek',
+                'Nenek',
+                'Lainnya',
+                'Family Lain',
+              ]"
+            />
+          </div>
+          <CustomSelect
+            label="Format General Consent"
+            :placeHolder="`General Consent ${
+              pageType == 'rawat-jalan'
+                ? 'Rawat Jalan'
+                : pageType == 'rawat-inap'
+                ? 'Rawat Inap'
+                : 'IGD'
+            }`"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :options="['Format 1', 'Format 2', 'Format 3']"
+            prependIcon="PhMagnifyingGlass"
+          />
+          <div
+            class="h-[400px] border-[1px] border-grey-200 border-dashed rounded-[10px] mt-5 flex"
+          >
+            <div class="m-auto font-semibold text-normal">
+              Default General Consent Rawat Jalan Pilihan Awal
+            </div>
+          </div>
+          <div class="grid grid-cols-2 mt-10 text-center">
+            <div class="font-semibold text-normal">Petugas</div>
+            <div class="font-semibold text-normal">
+              {{ selectedGeneralConsent == "Pasien" ? "Pasien" : "Keluarga" }}
+            </div>
+            <Qrcode
+              class="mx-auto my-[10px]"
+              :value="`Dikeluarkan di Klinik ADAMEDS, Ditandatangani secara elektronik oleh Petugas, Pada tanggal ${getDateNow()}`"
+            />
+            <Qrcode
+              class="mx-auto my-[10px]"
+              :value="`Dikeluarkan di Klinik ADAMEDS, Ditandatangani secara elektronik oleh ${
+                selectedGeneralConsent == 'Pasien'
+                  ? 'Pasien'
+                  : 'Keluarga Pasien'
+              }, Pada tanggal ${getDateNow()}`"
+            />
+            <div class="text-SM">Nama Petugas</div>
+            <div class="text-SM">
+              {{
+                selectedGeneralConsent == "Pasien"
+                  ? "Nama Pasien"
+                  : "Nama Keluarga Pasien"
+              }}
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <CustomButton
+          label="Batal"
+          outlined
+          class=""
+          borderColor="border-grey-200"
+          textColor="text-grey-300"
+        />
+        <CustomButton
+          @click="emit('goToDetail'), (generalConsentDialog = false)"
+          label="Setuju & Simpan"
+          class=""
+          backgroundColor="bg-adameds-300"
+        />
+      </template>
+    </CustomDialog>
   </div>
 </template>
