@@ -91,11 +91,11 @@ const updateColor = (index: number, color: string) => {
 				</div>
 
 				<div class="">
-					<CustomButton icon="PhCheck" fluid class="w-24 h-14" />
+					<CustomButton icon="PhCheck" fluid class="w-24 rounded-md h-14" />
 				</div>
 
 				<!-- Eyedrop -->
-				<div class="flex items-start justify-end w-24 border-[#858D9D] rounded-lg border-[1px] h-14">
+				<div class="flex items-start justify-end w-24 border-[#858D9D] rounded-md border-[1px] h-14 bg-white">
 					<div class="p-2">
 						<PhEyedropper :size="18" color="#858d9d" weight="fill" />
 					</div>
