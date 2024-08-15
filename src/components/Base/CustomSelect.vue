@@ -25,13 +25,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  optionValue: {
-    type: String,
-    default: "value",
-  },
   optionLabel: {
     type: String,
     default: "label",
+  },
+  optionValue: {
+    type: String,
+    default: null,
   },
   isLoading: {
     type: Boolean,
@@ -103,8 +103,8 @@ const showClear = computed(() => {
       <Select
         v-model="value"
         :options="options"
-        :optionValue="optionValue"
         :optionLabel="optionLabel"
+        :optionValue="optionValue"
         :loading="isLoading"
         :showClear="showClear"
         :placeholder="placeHolder"
