@@ -6,7 +6,12 @@ import CustomTextfield from '@/components/Base/CustomTextfield.vue';
 
 import { ref } from "vue";
 
-
+const props = defineProps({
+    buttonClickHandler: {
+		type: Function as () => any,
+		default: () => {}
+	},
+})
 </script>
 
 
@@ -24,7 +29,7 @@ import { ref } from "vue";
         <hr class="border-[#D9DCE1] border-1 mt-12 mb-5 w-full" />
         <div class="flex items-end justify-end gap-3">
             <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                borderColor="border-2 border-[#9DA4B1]" />
+                borderColor="border-2 border-[#9DA4B1]"  @click="buttonClickHandler"/>
             <CustomButton label="Simpan" />
         </div>
     </div>

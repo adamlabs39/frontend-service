@@ -18,7 +18,7 @@ import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/Perm
 import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
-import EditProfilAkun from "@/views/SettingPage/Template/ProfilAkun/EditProfilAkun.vue"
+
 
 
 // NOTE Test Component
@@ -97,12 +97,7 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: ProfilAkunPage },
       component: ProfilAkunView
     },
-    {
-      path: "/setting/profil-akun/edit",
-      name: "setting-profil-akun-edit",
-      meta: { layout: SidebarLayout, page: EditProfilAkun },
-      component: ProfilAkunView
-    },
+
 
 
     // NOTE Test Component

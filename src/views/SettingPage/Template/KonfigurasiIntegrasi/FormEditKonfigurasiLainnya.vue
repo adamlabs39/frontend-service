@@ -15,6 +15,13 @@ const metode = ref([
 ]);
 
 const status = ref();
+
+const props = defineProps({
+    buttonClickHandler: {
+		type: Function as () => any,
+		default: () => {}
+	},
+})
 </script>
 
 
@@ -52,7 +59,7 @@ const status = ref();
         <!-- Setelah garis ada Button -->
         <div class="flex items-end justify-end gap-3">
             <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                borderColor="border-2 border-[#9DA4B1]" />
+                borderColor="border-2 border-[#9DA4B1]" @click="buttonClickHandler"/>
             <CustomButton label="Simpan" />
         </div>
     </div>

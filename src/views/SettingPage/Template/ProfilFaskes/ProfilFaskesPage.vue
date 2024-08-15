@@ -34,7 +34,7 @@ const editProfilFaskes = () => {
             <GreenCard cardHeading="Profile">
                 <ProfilFaskesTemplate />
             </GreenCard>
-            <GreenCard class="mb-4" cardHeading="Logo & Warnnia">
+            <GreenCard class="mb-4" cardHeading="Logo & Warna">
                 <LogoWarna />
             </GreenCard>
         </template>
