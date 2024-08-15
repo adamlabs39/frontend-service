@@ -182,7 +182,7 @@ const cancelReason = ref<string>();
         <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">
-              {{ slotProps.data.name }}
+              <span class="font-semibold">{{ slotProps.data.name }}</span>
               <span class="text-grey-300">
                 ({{ slotProps.data.age_year }}Th
                 {{ slotProps.data.age_month }}Bln
@@ -191,7 +191,7 @@ const cancelReason = ref<string>();
             </div>
             <div class="text-XS">{{ slotProps.data.address }}</div>
             <div class="flex flex-wrap">
-              <PhPlusCircle
+              <PhUserCirclePlus
                 v-if="slotProps.data.new_patient"
                 :size="22"
                 class="text-adameds-300 mt-auto mr-[5px]"
@@ -295,12 +295,12 @@ const cancelReason = ref<string>();
                 {{ slotProps.data.tanggal_daftar }}
               </div>
               <div
-                class="grid content-center grid-cols-[80px_min-content_150px]"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Jadwal
                 <PhArrowRight
                   :size="18"
-                  class="my-auto mr-5 text-success-300"
+                  class="my-auto mr-5 text-sunFlower-300"
                   weight="bold"
                 />
                 {{ slotProps.data.tanggal_jadwal }}
