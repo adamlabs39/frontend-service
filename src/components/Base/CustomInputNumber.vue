@@ -7,6 +7,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
@@ -57,7 +61,7 @@ const props = defineProps({
   },
   currency: {
     type: String,
-    default: 'IDR',
+    default: "IDR",
   },
   disabled: {
     type: Boolean,
@@ -91,13 +95,18 @@ defineExpose({
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
-      {{ label }}
+      {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <div class="flex">
       <div
         v-if="$slots.prependText"
         @click="emit('clickPrepend')"
-        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer border-grey-400 text-SM text-neutral-300"
+        class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
+        :class="{
+          'text-danger-300 border-danger-300': invalid,
+          'border-grey-400': !disabled && !invalid,
+          'border-grey-200 bg-grey-100': disabled,
+        }"
       >
         <slot name="prependText" />
       </div>
@@ -108,18 +117,24 @@ defineExpose({
             :is="prependIcon"
             weight="bold"
             :size="22"
-            :color="invalid ? 'red' : 'black'"
             class="cursor-pointer"
+            :class="{
+              'text-danger-300': invalid,
+              'text-black': !disabled && !invalid,
+              'text-grey-300': disabled,
+            }"
           ></component>
         </InputIcon>
         <InputNumber
           v-model="value"
           class=""
           :pt:pcInput:root:class="{
-            'border-red-500 text-red-500': invalid,
+            'border-danger-300 text-danger-300': invalid,
+            'border-grey-200 bg-grey-100': disabled,
+            'border-grey-400': !disabled && !invalid,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
-            'h-10 pt-1 rounded-lg border-grey-400': true,
+            'h-10 pt-1 rounded-lg': true,
           }"
           :min="min"
           :max="max"
@@ -138,15 +153,24 @@ defineExpose({
             :is="appendIcon"
             weight="bold"
             :size="22"
-            :color="invalid ? 'red' : 'black'"
             class="ml-auto cursor-pointer"
+            :class="{
+              'text-danger-300': invalid,
+              'text-black': !disabled && !invalid,
+              'text-grey-300': disabled,
+            }"
           ></component>
         </InputIcon>
       </IconField>
       <div
         v-if="$slots.appendText"
         @click="emit('clickAppend')"
-        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer border-grey-400 text-SM text-adameds-300"
+        class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
+        :class="{
+          'text-danger-300 border-danger-300': invalid,
+          'border-grey-400 text-adameds-300': !disabled && !invalid,
+          'border-grey-200 bg-grey-100 text-grey-300': disabled,
+        }"
       >
         <slot name="appendText" />
       </div>

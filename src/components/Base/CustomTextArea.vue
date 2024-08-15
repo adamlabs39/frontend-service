@@ -11,9 +11,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
+  },
+  invalidMessage: {
+    type: String,
+    default: "",
   },
   height: {
     type: String,
@@ -49,11 +57,11 @@ const onInput = (event: any) => {
 <template>
   <div class="">
     <label
-    v-if="showLabel"
+      v-if="showLabel"
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
-      {{ props.label }}
+      {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <Textarea
       v-model="value"
@@ -62,11 +70,14 @@ const onInput = (event: any) => {
       fluid
       :disabled="disabled"
       :invalid="invalid"
-      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] border-grey-400 w-full"
+      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] w-full"
       :class="{
-        'border-red-500 text-red-500': invalid,
+        'border-danger-300 text-danger-300': invalid,
+        'border-grey-200 bg-grey-100': disabled,
+        'border-grey-400': !disabled && !invalid,
         [props.height]: true,
       }"
     />
+    <small v-if="invalid" class="text-danger-300">{{ invalidMessage }}</small>
   </div>
 </template>
