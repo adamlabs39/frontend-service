@@ -2,22 +2,45 @@
 import { useRouter } from "vue-router";
 import MainHeaderSetting from "../MainHeaderSetting.vue";
 import GreenCard from "../GreenCard.vue";
-import { ref } from "vue";
-import EditProfilAkun from "./EditProfilAkun.vue";
+import { onBeforeMount, onMounted, ref } from "vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useSettingStore } from "@/stores/setting";
 
+
+const profileResponse = ref({
+    name: '',
+    email: '',
+    phone: '',
+    role: {
+        name: ''
+    },
+    username: '',
+    password: '',
+    inventory_medis: '',
+    inventory_non_medis: ''
+});
+
+
+const settingStore = useSettingStore();
 const isEditProfilAkun = ref(false);
 
-const editProfilAkun = () => {
+const cancelProfileAccount = () => {
     isEditProfilAkun.value = !isEditProfilAkun.value;
 };
+
+onBeforeMount(async () => {
+    const response = await settingStore.getApi();
+    profileResponse.value = response.payload;
+});
+
+
 </script>
 
 <template>
     <div class="bg-white rounded-lg shadow-md">
         <MainHeaderSetting heading="Profil Saya" v-if="!isEditProfilAkun" showButton labelButton="Edit"
-            :buttonClickHandler="editProfilAkun" />
+            :buttonClickHandler="cancelProfileAccount" />
         <MainHeaderSetting heading="Profil Saya" v-else />
 
         <template v-if="!isEditProfilAkun">
@@ -34,21 +57,21 @@ const editProfilAkun = () => {
                     <div class="flex flex-col justify-evenly ">
                         <div>
                             <div class="col-span-2 text-sm underline">Nama Lengkap</div>
-                            <div class="font-bold text-heading">Tuan Admin, S.Kom</div>
+                            <div class="font-bold text-heading">{{ profileResponse.name}}</div>
                         </div>
 
                         <div class="grid grid-cols-3">
                             <div class="w-80">
                                 <div class="text-sm underline">Role</div>
-                                <div class="font-bold text-heading">Admin</div>
+                                <div class="font-bold text-heading">{{ profileResponse.role.name}}</div>
                             </div>
                             <div class="grow">
                                 <div class="text-sm underline">Email</div>
-                                <div class="font-bold text-heading">user@gmail.com</div>
+                                <div class="font-bold text-heading">{{ profileResponse.email}}</div>
                             </div>
                             <div class="w-[180px]">
                                 <div class="text-sm underline">No. Handphone</div>
-                                <div class="font-bold text-heading">089172937728</div>
+                                <div class="font-bold text-heading">{{ profileResponse.phone}}</div>
                             </div>
                         </div>
 
@@ -60,11 +83,11 @@ const editProfilAkun = () => {
                 <div class="grid grid-cols-2 gap-3">
                     <div class="mb-4">
                         <div class="text-sm underline">Username</div>
-                        <div class="font-bold text-heading">Username</div>
+                        <div class="font-bold text-heading">{{ profileResponse.username}}</div>
                     </div>
                     <div class="mb-4">
                         <div class="text-sm underline">Password</div>
-                        <div class="font-bold text-heading">*************</div>
+                        <div class="font-bold text-heading">{{ profileResponse.password}}</div>
                     </div>
                 </div>
             </GreenCard>
@@ -74,13 +97,13 @@ const editProfilAkun = () => {
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Medis
                         </div>
-                        <div class="font-bold text-heading">Penanggung Jawab</div>
+                        <div class="font-bold text-heading">{{ profileResponse.inventory_medis}}</div>
                     </div>
                     <div class="mb-4">
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Non-Medis
                         </div>
-                        <div class="font-bold text-heading">Penanggung Jawab</div>
+                        <div class="font-bold text-heading">{{ profileResponse.inventory_non_medis}}</div>
                     </div>
                 </div>
             </GreenCard>
@@ -88,6 +111,8 @@ const editProfilAkun = () => {
 
 
         </template>
+
+        <!-- Untuk Edit DATA -->
         <template v-else>
             <GreenCard cardHeading="Foto Profile dan Nama Lengkap" hrEnableCustomClass>
                 <div class="flex gap-10 ">
@@ -121,7 +146,7 @@ const editProfilAkun = () => {
                             </div>
                             <div class="w-80 ">
                                 <div class="text-sm underline">Email</div>
-                                <div class="font-bold text-heading">user@gmail.com</div>
+                                <div class="font-bold text-heading">{{ profileResponse.email }}</div>
                             </div>
                             <div class="w-[150px] ">
                                 <CustomTextfield label="No. Handphone" class="w-full" placeholder="08123xx"
@@ -142,7 +167,7 @@ const editProfilAkun = () => {
                     <div class="mb-4">
 
                         <CustomTextfield label="Password Lama" class="w-full" placeholder="************"
-                            appendIcon="PhEye" />
+                            appendIcon="PhEye" v-model=" profileResponse.name" />
                     </div>
                     <div class="mb-4">
                         <CustomTextfield label="Password Baru" class="w-full" placeholder="************"
@@ -174,8 +199,8 @@ const editProfilAkun = () => {
             <hr class="border-[#D9DCE1] border-1 mt-5" />
             <div class="flex items-end justify-end gap-3 p-5">
                 <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                    borderColor="border-2 border-[#9DA4B1]"  @click="editProfilAkun"/>
-                <CustomButton label="Simpan" />
+                    borderColor="border-2 border-[#9DA4B1]" @click="cancelProfileAccount" />
+                <CustomButton label="Simpan"  @click="saveProfile"/>
             </div>
         </template>
 
