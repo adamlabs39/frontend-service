@@ -6,7 +6,7 @@ import CustomAutoComplete from "../Base/CustomAutoComplete.vue";
 import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
-const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }]);
+const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }, { jenisPembayaran: "", harga: "",  action: "" }]);
 </script>
 
 <template>

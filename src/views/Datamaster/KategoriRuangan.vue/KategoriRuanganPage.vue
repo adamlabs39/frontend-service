@@ -8,8 +8,6 @@ import Footer from "../Layout/Footer.vue";
 import TambahKategoriRuanganDialog from "./TambahKategoriRuanganDialog.vue";
 const products = ref<any[]>([]);
 
-const router = useRouter();
-
 onMounted(() => {
   products.value = [
     {
@@ -43,11 +41,33 @@ onMounted(() => {
   ];
 });
 
-const addData = ref(false);
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah Data"
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah Data"
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit Data"
+  };
+}
 
 function handleClose() {
-  addData.value = false;
+  dialogData.value.isVisible = false;
 }
+
+
 </script>
 
 <template>
@@ -59,9 +79,8 @@ function handleClose() {
   <template #header >
     <Header title="Kategori Ruangan" class="mb-5">
       <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
-        <TambahKategoriRuanganDialog  v-model:isDialogVisible="addData"
-        @close="handleClose"/>
+        <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
+        
       </template>
     </Header>
   </template>
@@ -130,7 +149,7 @@ function handleClose() {
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg"  @click="handleEdit">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -143,6 +162,12 @@ function handleClose() {
           </template>
         </Column>
       </DataTable>
+      <TambahKategoriRuanganDialog  
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"/>
+
 </template>
 
 <template #footer>

@@ -82,6 +82,8 @@ const testDialog = ref(false);
 const dataBreadHome = ref({ label: "Electronics", home: true });
 const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
 
+console.log(dataApi.value)
+
 const testRef = ref<any>(null);
 const testRefFunction = () => {
   testRef.value?.alerTest();

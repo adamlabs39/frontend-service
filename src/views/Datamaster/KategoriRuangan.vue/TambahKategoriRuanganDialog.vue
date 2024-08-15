@@ -7,11 +7,19 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+
 const props = defineProps({
   isDialogVisible: {
     default: false,
   },
+  title: {
+    type: String,
+  },
+  method: {
+    type: String,
+  },
 });
+
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
@@ -22,9 +30,15 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-  emit("close");
+const onSubmit = handleSubmit((values: any) => {
+  if (props.method === "edit") {
+    // Logic to save edited data
+    console.log("Editing data:", values);
+  } else if (props.method === "add") {
+    // Logic to add new data
+    console.log("Adding new data:", values);
+  }
+  closeDialog();
 });
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -54,7 +68,7 @@ watch(
     width="600px"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah Data Kategori Ruangan</template>
+    <template #header>{{ title }} Kategori Ruangan</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
@@ -62,7 +76,7 @@ watch(
             label="Kode"
             v-model="code"
             placeholder="Kode"
-            :invalid="errors.code ? true : false"
+            :invalid="!!errors.code"
             :invalidMessage="errors.code"
             class="basis-1/6"
           />
@@ -70,7 +84,7 @@ watch(
             label="Nama Kategori Ruangan"
             v-model="name"
             placeholder="Nama Kategori Ruangan"
-            :invalid="errors.name ? true : false"
+            :invalid="!!errors.name"
             :invalidMessage="errors.name"
             class="grow"
           />
@@ -80,8 +94,6 @@ watch(
           <CustomSwitch
             v-model="status"
             label="Status"
-            :invalid="errors.status ? true : false"
-            :invalidMessage="errors.status"
           />
           <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
         </div>

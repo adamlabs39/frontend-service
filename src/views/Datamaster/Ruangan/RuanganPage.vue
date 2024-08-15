@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
@@ -71,11 +70,32 @@ onMounted(() => {
   ];
 });
 
-const addData = ref(false);
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah Data"
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah Data"
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit Data"
+  };
+}
 
 function handleClose() {
-  addData.value = false;
+  dialogData.value.isVisible = false;
 }
+
 const resetFilter = () => {
   searchRoom.value = "";
   selectedKategori.value = null;
@@ -92,11 +112,7 @@ const resetFilter = () => {
     <template #header>
       <Header title="Ruangan" :search="false" :filter="false" class="mb-5">
         <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="addData = true" />
-          <TambahDataRuanganDialog
-            v-model:isDialogVisible="addData"
-            @close="handleClose"
-          />
+          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
         </template>
         <template #content>
           <div class="flex items-end justify-between gap-5">
@@ -149,7 +165,7 @@ const resetFilter = () => {
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
-         scrollable
+        scrollable
         scrollHeight="flex"
       >
         <Column header="No." headerClass="bg-adameds-50">
@@ -235,7 +251,11 @@ const resetFilter = () => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                @click="handleEdit"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -248,6 +268,12 @@ const resetFilter = () => {
           </template>
         </Column>
       </DataTable>
+      <TambahDataRuanganDialog
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+      />
     </template>
 
     <template #footer>

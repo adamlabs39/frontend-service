@@ -66,7 +66,6 @@ toTypedSchema(
     : yup.string().nullable(),
     status: yup
       .bool()
-      .required("Status harus dipilih")
   })
 )
 );
@@ -89,7 +88,6 @@ const [email] = defineField("email");
 const [phoneNumber] = defineField("phoneNumber");
 const [selectedDokter] = defineField("selectedDokter");
 const [status] = defineField("status");
-
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 

@@ -13,7 +13,21 @@ const props = defineProps({
   isDialogVisible: {
     default: false,
   },
+  title: {
+    type: String,
+  },
+  method: {
+    type: String,
+  },
 });
+
+const itemsPermission = ref([
+  { name_mainMenu: "dashboard", code_mainMenu: "dashboard" },
+  { name_mainMenu: "pasien", code_mainMenu: "pasien" },
+  { name_mainMenu: "setting", code_mainMenu: "setting" },
+  { name_mainMenu: "profile", code_mainMenu: "profile" },
+  { name_mainMenu: "datamaster", code_mainMenu: "datamaster" },
+]);
 
 const schema = toTypedSchema(
   yup.object({
@@ -23,18 +37,21 @@ const schema = toTypedSchema(
       .array()
       .of(yup.string())
       .required("Menu Akses harus dipilih"),
-    status: yup
-      .bool()
-      .required("Status harus diisi")
-      .oneOf([true], "Status harus dipilih"),
+    status: yup.bool(),
   })
 );
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+
+const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-  emit("close");
+
+const onSubmit = handleSubmit((values: any) => {
+  if (props.method === "edit") {
+    console.log("Editing data:", values);
+  } else if (props.method === "add") {
+    console.log("Adding new data:", values);
+  }
+  closeDialog();
 });
 
 const [code] = defineField("code");
@@ -42,22 +59,12 @@ const [name] = defineField("name");
 const [permission] = defineField("permission");
 const [status] = defineField("status");
 
-const itemsMenuAkses = ref([
-  { name: "New York", code: "NY" },
-  { name: "Rome", code: "RM" },
-  { name: "London", code: "LDN" },
-  { name: "Istanbul", code: "IST" },
-  { name: "Paris", code: "PRS" },
-  { name: "Rome", code: "RM1" },
-  { name: "London", code: "LDN1" },
-  { name: "Istanbul", code: "IST1" },
-  { name: "Paris", code: "PRS1" },
-]);
 const emit = defineEmits(["update:isDialogVisible", "close"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
 }
+
 function closeDialog() {
   emit("close");
 }
@@ -70,8 +77,8 @@ watch(
     }
   }
 );
-const tongle = ref();
 </script>
+
 <template>
   <CustomDialog
     :visible="isDialogVisible"
@@ -79,7 +86,7 @@ const tongle = ref();
     width="600px"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah Data Role</template>
+    <template #header>{{ title }} Role</template>
     <template #body>
       <form class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
@@ -87,7 +94,7 @@ const tongle = ref();
             label="Kode"
             v-model="code"
             placeholder="Kode"
-            :invalid="errors.code ? true : false"
+            :invalid="!!errors.code"
             :invalidMessage="errors.code"
           />
           <CustomTextfield
@@ -95,24 +102,26 @@ const tongle = ref();
             v-model="name"
             placeholder="Nama Role"
             class="basis-3/4"
-            :invalid="errors.name ? true : false"
+            :invalid="!!errors.name"
             :invalidMessage="errors.name"
           />
         </div>
         <hr class="border-grey-200" />
         <CustomMultiSelect
           v-model="permission"
-          :options="itemsMenuAkses"
+          :options="itemsPermission"
           label="Menu Akses"
-          optionLabel="name"
-          optionValue="code"
-          :invalid="errors.permission ? true : false"
+          optionLabel="name_mainMenu"
+          optionValue="code_mainMenu"
+          :invalid="!!errors.permission"
+          maxSelectedLabels=""
+
         />
         <hr class="border-grey-200" />
         <div class="flex items-end gap-2.5">
           <CustomSwitch
             v-model="status"
-            :invalid="errors.status ? true : false"
+            :invalid="!!errors.status"
             :invalidMessage="errors.status"
             label="Status"
           />
@@ -130,9 +139,8 @@ const tongle = ref();
             background-color="bg-white"
             text-color="text-grey-300"
             @click="closeDialog"
-          >
-          </CustomButton>
-          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+          />
+          <CustomButton label="Simpan" @click="onSubmit" />
         </div>
       </div>
     </template>

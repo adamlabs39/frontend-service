@@ -15,10 +15,13 @@ const testDialog = ref(false);
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Tarif" :filter="false" :search="false">
+    <template #header>
+      <Header title="Tarif" :filter="false" :search="false">
       <template #header>
         <div class="flex flex-row items-center justify-end gap-2">
           <CustomButton
@@ -64,7 +67,7 @@ const testDialog = ref(false);
         </div>
       </template>
       <template #content>
-        <div class="flex justify-between gap-2.5 py-5">
+        <div class="flex justify-between gap-2.5">
           <CustomSelect
             :is-loading="false"
             label="Cari Tarif"
@@ -94,8 +97,9 @@ const testDialog = ref(false);
         </div>
       </template>
     </Header>
-    <div class="overflow-scroll grow">
-      <Tabs v-model:value="value">
+    </template>
+    <template #content>
+      <Tabs v-model:value="value" >
         <TabPanels>
           <TabPanel value="0">
             <Tindakan />
@@ -105,8 +109,10 @@ const testDialog = ref(false);
           </TabPanel>
         </TabPanels>
       </Tabs>
-    </div>
-    <Footer />
-  </div>
+    </template>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>
 

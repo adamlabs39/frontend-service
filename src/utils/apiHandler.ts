@@ -1,4 +1,4 @@
-import { baseInstance } from "./Api";
+import { baseInstance, baseInstanceICD9 } from "./Api";
 
 const errorApiHandler = (error: any) => {
   alert("Error");
@@ -37,4 +37,13 @@ const apiBaseDelete = async (url: string, data: object) => {
   }
 };
 
-export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete };
+const apiIcd9Get = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceICD9.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiIcd9Get };

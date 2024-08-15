@@ -11,7 +11,6 @@ const baseInstance = axios.create({
 
 baseInstance.interceptors.request.use((config) => {
   const token = "";
-  
   if (!token) {
     config.headers["Authorization"] = "";
   } else {
@@ -21,4 +20,16 @@ baseInstance.interceptors.request.use((config) => {
   return config;
 });
 
-export { baseInstance };
+
+const baseInstanceICD9 = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+    
+  },
+  baseURL: import.meta.env.VITE_BASE_ICD9,
+  
+});
+
+export { baseInstance, baseInstanceICD9 };
