@@ -25,19 +25,23 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  optionValue: {
-    type: String,
-    default: "value",
-  },
   optionLabel: {
     type: String,
     default: "label",
+  },
+  optionValue: {
+    type: String,
+    default: null,
   },
   isLoading: {
     type: Boolean,
     default: false,
   },
   disabled: {
+    type: Boolean,
+    default: false,
+  },
+  required: {
     type: Boolean,
     default: false,
   },
@@ -83,7 +87,7 @@ const showClear = computed(() => {
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
-      {{ label }}
+      {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <InputGroup>
       <InputGroupAddon
@@ -96,21 +100,29 @@ const showClear = computed(() => {
           :is="prependIcon"
           weight="bold"
           :size="22"
-          class="text-black cursor-pointer"
-          :class="{ 'text-red-300': invalid, 'text-grey-300': disabled }"
+          class="cursor-pointer"
+          :class="{
+            'text-danger-300': invalid,
+            'text-grey-300': disabled,
+            'text-black': !disabled && !invalid,
+          }"
         ></component>
       </InputGroupAddon>
       <Select
         v-model="value"
         :options="options"
-        :optionValue="optionValue"
         :optionLabel="optionLabel"
+        :optionValue="optionValue"
         :loading="isLoading"
         :showClear="showClear"
         :placeholder="placeHolder"
         :disabled="disabled"
-        class="h-10 rounded-lg border-grey-400"
-        :class="[prependIcon ? 'border-l-0 rounded-l-none' : '']"
+        class="h-10 rounded-lg"
+        :class="[
+          prependIcon ? 'border-l-0 rounded-l-none' : '',
+          invalid ? 'border-danger-300 text-danger-300' : '',
+          disabled ? 'border-grey-200 bg-grey-100' : 'border-grey-400',
+        ]"
         :invalid="invalid"
         fluid
         :filter="showFilter"
@@ -121,7 +133,11 @@ const showClear = computed(() => {
         <template #dropdownicon>
           <PhCaretDown
             weight="fill"
-            :class="{ 'text-red-500': invalid, 'text-black': modelValue }"
+            :class="{
+              'text-red-500': invalid,
+              'text-black': modelValue,
+              'text-grey-300': disabled,
+            }"
           />
         </template>
       </Select>
