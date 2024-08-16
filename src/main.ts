@@ -101,14 +101,8 @@ app.component("ProgressBar", ProgressBar)
 app.component("Menu", Menu)
 app.component('Checkbox', Checkbox)
 app.component('Carousel',Carousel)
-app.component("ToggleSwitch", ToggleSwitch);
 app.component("InputGroup", InputGroup);
 app.component("InputGroupAddon", InputGroupAddon);
-app.component('Checkbox',Checkbox)
-app.component('DataTable',DataTable)
-app.component('Column', Column)
-app.component('Paginator', Paginator)
-app.component('Checkbox', Checkbox)
 app.component('Editor', Editor)
 app.component('Tabs', Tabs)
 app.component('TabPanels', TabPanels)
