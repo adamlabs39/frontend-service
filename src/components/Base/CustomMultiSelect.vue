@@ -114,7 +114,7 @@ const removeSelect = (data: any) => {
       class="h-10 rounded-lg"
       :class="{
         'border-danger-300 text-danger-300': invalid,
-        'border-grey-200 bg-grey-100': disabled,
+        'border-grey-200 bg-grey-100 text-grey-300': disabled,
         'border-grey-400': !disabled && !invalid,
       }"
     >

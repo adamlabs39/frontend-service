@@ -1,4 +1,4 @@
-<script setup lang="ts">
+  <script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -40,6 +40,7 @@ const schema = toTypedSchema(
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  
   validationSchema: schema,
 });
 
@@ -82,6 +83,8 @@ onBeforeMount(async () => {
 const testDialog = ref(false);
 const dataBreadHome = ref({ label: "Electronics", home: true });
 const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
+
+console.log(dataApi.value)
 
 const testRef = ref<any>(null);
 const testRefFunction = () => {
