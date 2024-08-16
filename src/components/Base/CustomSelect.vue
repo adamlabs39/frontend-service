@@ -121,7 +121,7 @@ const showClear = computed(() => {
         :class="[
           prependIcon ? 'border-l-0 rounded-l-none' : '',
           invalid ? 'border-danger-300 text-danger-300' : '',
-          disabled ? 'border-grey-200 bg-grey-100' : 'border-grey-400',
+          disabled ? 'border-grey-200 bg-grey-100 text-grey-300' : 'border-grey-400',
         ]"
         :invalid="invalid"
         fluid

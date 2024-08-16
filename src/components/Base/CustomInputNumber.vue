@@ -130,7 +130,7 @@ defineExpose({
           class=""
           :pt:pcInput:root:class="{
             'border-danger-300 text-danger-300': invalid,
-            'border-grey-200 bg-grey-100': disabled,
+            'border-grey-200 bg-grey-100 text-grey-300': disabled,
             'border-grey-400': !disabled && !invalid,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
