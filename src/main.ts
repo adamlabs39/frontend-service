@@ -31,6 +31,7 @@ import ToggleSwitch from 'primevue/toggleswitch';
 import Card from 'primevue/card';
 import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox';
 import Carousel from 'primevue/carousel';
 
 const app = createApp(App)
@@ -71,6 +72,7 @@ app.directive('tooltip', Tooltip)
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)
+app.component('Checkbox',Checkbox)
 app.component('Carousel',Carousel)
 
 app.mount('#app')

@@ -13,36 +13,44 @@ const props = defineProps({
   },
   borderColor: {
     type: String,
-    default: "border-slate-400",
+    default: "border-grey-300",
   },
   textColor: {
     type: String,
-    default: "text-[#90969E]",
+    default: "text-grey-300",
   },
-  selectedBorderColor: {
+  bgColor: {
     type: String,
-    default: "border-0 bg-slate-500",
+    default: "bg-transparent",
+  },
+  selectedColor: {
+    type: String,
+    default: "bg-grey-300 border-grey-300",
   },
   selectedTextColor: {
     type: String,
-    default: "text-[#FFFFFF]",
+    default: "text-white",
+  },
+  iconSize: {
+    type: Number,
+    default: 14,
   },
   iconColor: {
     type: String,
-    default: "#90969E",
+    default: "text-grey-300",
   },
   selectedIconColor: {
     type: String,
-    default: "#FFFFFF",
+    default: "text-white",
   },
   showCheckedIcon: {
     type: Boolean,
-    default:true
+    default: true,
   },
   customClass: {
     type: String,
-    default:'font-bold border-2 rounded-full cursor-pointer h-8'
-  }
+    default: "h-6",
+  },
 });
 
 const emit = defineEmits(["selected"]);
@@ -51,31 +59,27 @@ const onSelectedValue = () => {
   emit("selected", props.label);
 };
 
-const customizedClass = computed(() => props.customClass)
+const customizedClass = computed(() => props.customClass);
 </script>
 
-
-
-
 <template>
-  <div>
-    <Chip
-      :class="[
-        customizedClass,
-        isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedBorderColor : borderColor
-      ]"
-      @click="onSelectedValue"
-    >
-      <template v-if="showCheckedIcon">
-        <PhCheckCircle
-          :size="18"
-          :color="isSelected ? selectedIconColor : iconColor"
-          weight="fill"
-        />
-      </template>
-      <p :label="label">{{ props.label }}</p>
-    </Chip>
-  </div>
+  <Chip
+    :class="[
+      customizedClass,
+      isSelected ? selectedTextColor : textColor,
+      isSelected ? selectedColor : borderColor + ' ' + bgColor,
+      showCheckedIcon ? 'pr-3' : 'pr-[6px]',
+    ]"
+    @click="onSelectedValue"
+    class="font-semibold text-XS pl-[5px] border-2 rounded-full cursor-pointer"
+  >
+    <template v-if="showCheckedIcon">
+      <PhCheckCircle
+        :size="iconSize"
+        :class="[isSelected ? selectedIconColor : iconColor]"
+        weight="fill"
+      />
+    </template>
+    <p :label="label">{{ props.label }}</p>
+  </Chip>
 </template>
-
