@@ -1,0 +1,39 @@
+<script setup lang="ts">
+import Sidebar from "@/components/section/Sidebar.vue";
+import { linkType } from "@/utils/Enum";
+import type { SidebarBody } from "@/utils/Interface";
+import { ref } from "vue";
+
+const sidebarBodyList = ref<SidebarBody[]>([
+  {
+    name: "1",
+    type: linkType.SECTION,
+    child: [
+      
+          { name: "Profil Faskes", type: linkType.LINK, url: '/setting/profil-faskes', icon:'gear' },
+          { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'gear' },
+          { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'gear' },
+          { name: "Password Otorisasi", type: linkType.LINK, url:'/setting/password-otorisasi', icon:'gear'},
+          { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:'gear' },
+    ],
+  },
+]);
+const filter = ref('')
+</script>
+
+<template>
+  <div class="flex h-full gap-3">
+    <Sidebar
+      sidebarTitle="Setting"
+      sidebarTitleUrl="/setting/profil-faskes"
+      class="flex-none"
+      :sidebar-body-list="sidebarBodyList"
+      v-model:filter="filter"
+    />
+    <component
+      class="max-h-full overflow-auto grow"
+      :is="$route.meta.page || 'div'"
+      :filter="filter"
+    ></component>
+  </div>
+</template>
