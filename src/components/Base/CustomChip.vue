@@ -63,24 +63,23 @@ const customizedClass = computed(() => props.customClass);
 </script>
 
 <template>
-  <div>
-    <Chip
-      :class="[
-        customizedClass,
-        isSelected ? selectedTextColor : textColor,
-        isSelected ? selectedColor : borderColor + ' ' + bgColor,
-      ]"
-      @click="onSelectedValue"
-      class="font-semibold text-XS pl-[5px] pr-3 border-2 rounded-full cursor-pointer"
-    >
-      <template v-if="showCheckedIcon">
-        <PhCheckCircle
-          :size="iconSize"
-          :class="[isSelected ? selectedIconColor : iconColor]"
-          weight="fill"
-        />
-      </template>
-      <p :label="label">{{ props.label }}</p>
-    </Chip>
-  </div>
+  <Chip
+    :class="[
+      customizedClass,
+      isSelected ? selectedTextColor : textColor,
+      isSelected ? selectedColor : borderColor + ' ' + bgColor,
+      showCheckedIcon ? 'pr-3' : 'pr-[6px]',
+    ]"
+    @click="onSelectedValue"
+    class="font-semibold text-XS pl-[5px] border-2 rounded-full cursor-pointer"
+  >
+    <template v-if="showCheckedIcon">
+      <PhCheckCircle
+        :size="iconSize"
+        :class="[isSelected ? selectedIconColor : iconColor]"
+        weight="fill"
+      />
+    </template>
+    <p :label="label">{{ props.label }}</p>
+  </Chip>
 </template>
