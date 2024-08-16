@@ -1,4 +1,4 @@
-import { baseInstance, baseInstanceICD9 } from "./Api";
+import { baseInstance, settingInstance,baseInstanceICD9 } from "./Api";
 
 const errorApiHandler = (error: any) => {
   alert("Error");
@@ -37,6 +37,42 @@ const apiBaseDelete = async (url: string, data: object) => {
   }
 };
 
+// Setting
+const apiSettingPost = async (url: string, data: object) => {
+  try {
+    let response = await settingInstance.post(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiSettingGet = async (url: string, data: object) => {
+  try {
+    let response = await settingInstance.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiSettingPut = async (url: string, data: object) => {
+  try {
+    let response = await settingInstance.put(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiSettingDelete = async (url: string, data: object) => {
+  try {
+    let response = await settingInstance.delete(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+//ICD 9
+
 const apiIcd9Get = async (url: string, data: object) => {
   try {
     let response = await baseInstanceICD9.get(url, data);
@@ -46,4 +82,4 @@ const apiIcd9Get = async (url: string, data: object) => {
   }
 };
 
-export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiIcd9Get };
+export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiSettingPost, apiSettingGet, apiSettingPut, apiSettingDelete, apiIcd9Get };

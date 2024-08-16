@@ -17,6 +17,7 @@
     "@types/pdfmake": "^0.2.9",
     "@vee-validate/yup": "^4.13.2",
     "axios": "^1.7.2",
+    "chart.js": "^4.4.3",
     "pdfmake": "^0.2.10",
     "pinia": "^2.1.7",
     "primevue": "^4.0.1",

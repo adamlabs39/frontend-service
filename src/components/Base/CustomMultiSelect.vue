@@ -11,9 +11,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
+  },
+  invalidMessage: {
+    type: String,
+    default: "",
   },
   variant: {
     type: String,
@@ -89,7 +97,7 @@ const removeSelect = (data: any) => {
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
-      {{ props.label }}
+      {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <MultiSelect
       v-model="value2"
@@ -98,12 +106,16 @@ const removeSelect = (data: any) => {
       :optionValue="optionValue"
       fluid
       :filter="showFilter"
+      :disabled="disabled"
+      :invalid="invalid"
       display="chip"
       :placeholder="placeholder"
       :maxSelectedLabels="maxSelectedLabels"
-      class="h-10 border-2 rounded-lg border-grey-400"
+      class="h-10 rounded-lg"
       :class="{
-        'border-red-500 text-red-500': invalid,
+        'border-danger-300 text-danger-300': invalid,
+        'border-grey-200 bg-grey-100 text-grey-300': disabled,
+        'border-grey-400': !disabled && !invalid,
       }"
     >
       <template
@@ -118,8 +130,12 @@ const removeSelect = (data: any) => {
       </template>
       <template #chip="{ value }">
         <Chip
-          class="h-6 rounded-[50px] bg-adameds-300 px-[10px] text-SM font-bold text-white py-2"
+          class="h-6 rounded-[50px] px-[10px] text-SM font-bold  py-2"
           removable
+          :class="{
+            'bg-grey-300 text-grey-400': disabled,
+            'bg-adameds-300 text-white': !disabled && !invalid,
+          }"
         >
           {{ optionValue ? value : value[optionLabel] }}
           <template #removeicon>
@@ -133,5 +149,6 @@ const removeSelect = (data: any) => {
         </Chip>
       </template>
     </MultiSelect>
+    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
   </div>
 </template>

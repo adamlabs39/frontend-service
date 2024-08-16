@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
@@ -79,7 +83,7 @@ const value = computed({
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
-      {{ label }}
+      {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <div class="">
       <IconField class="">
@@ -88,7 +92,11 @@ const value = computed({
             :is="timeOnly ? 'PhClock' : 'PhCalendarBlank'"
             weight="bold"
             :size="22"
-            :color="invalid ? 'red' : 'black'"
+            :class="{
+              'text-danger-300': invalid,
+              'text-black': !disabled && !invalid,
+              'text-grey-300': disabled,
+            }"
           ></component>
         </InputIcon>
         <DatePicker
@@ -103,8 +111,10 @@ const value = computed({
           :manualInput="false"
           fluid
           :pt:pcInput:root:class="{
-            'text-red-500 border-red-500': invalid,
-            'w-full h-10 rounded-lg border-grey-400 pl-10': true,
+            'border-danger-300 text-danger-300': invalid,
+            'border-grey-400': !disabled && !invalid,
+            'border-grey-200 bg-grey-100 text-grey-300': disabled,
+            'w-full h-10 rounded-lg pl-10': true,
           }"
         />
       </IconField>
