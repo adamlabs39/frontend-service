@@ -23,30 +23,46 @@ const onRowSelect = (event: any) => {
 onMounted(() => {
   products.value = [
     {
-      no: "1",
-      kode: "001",
-      nama: "Cholera disease",
+      id: "1",
+      code_bpjs: "001",
+      SIP: "Cholera disease",
+      STR:"10000000",
+      code_antrian:"UMUM",
+      name_dokter:"dr. Umum",
+      telepon:"087898765678",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      code_bpjs: "002",
+      SIP: "Cholera disease",
+      STR:"10000000",
+      code_antrian:"UMUM",
+      name_dokter:"dr. Umum",
+      telepon:"087898765678",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      code_bpjs: "003",
+      SIP: "Cholera disease",
+      STR:"10000000",
+      code_antrian:"UMUM",
+      name_dokter:"dr. Umum",
+      telepon:"087898765678",
       status: "AKTIF",
       action: "edit",
     },
     {
       no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      code_bpjs: "004",
+      SIP: "Cholera disease",
+      STR:"10000000",
+      code_antrian:"UMUM",
+      name_dokter:"dr. Umum",
+      telepon:"087898765678",
       status: "AKTIF",
       action: "edit",
     },
@@ -98,24 +114,37 @@ const metaKey = ref(true);
           </template>
         </Column>
         <Column
-          field="kode"
-          header="Kode Role"
-          class="w-2/12"
+          field="code_bpjs"
+          header="kode HFIS (BPJS)"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama"
-          header="Nama Role"
-          class="w-3/12"
+          field="SIP"
+          header="Kode SIP"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="status"
-          header="Status"
+          field="STR"
+          header="STR"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="code_antrian"
+          header="Kode Antrian"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name_dokter"
+          header="Nama Dokter"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="telepon"
+          header="No. Telepon"
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center">
               <CustomChip
                 :label="slotProps.data.status"
                 :textColor="

@@ -19,29 +19,37 @@ onMounted(() => {
   products.value = [
     {
       id: "1",
-      kode: "001",
-      nama: "Cholera disease",
+      nik: "1666666666",
+      STR: "10000000000000",
+      name_nakes: "Nama Lengkap Nakes",
+      jenis_kelamin: "Laki-laki",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
+      nik: "1666666666",
+      STR: "10000000000000",
+      name_nakes: "Nama Lengkap Nakes",
+      jenis_kelamin: "Laki-laki",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "3",
-      kode: "003",
-      nama: "Other Salmonella",
+      nik: "1666666666",
+      STR: "10000000000000",
+      name_nakes: "Nama Lengkap Nakes",
+      jenis_kelamin: "Perempuan",
       status: "AKTIF",
       action: "edit",
     },
     {
       id: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
+      nik: "1666666666",
+      STR: "10000000000000",
+      name_nakes: "Nama Lengkap Nakes",
+      jenis_kelamin: "Laki-laki",
       status: "AKTIF",
       action: "edit",
     },
@@ -91,16 +99,44 @@ const detailNakesDialog = ref(false);
           </template>
         </Column>
         <Column
-          field="kode"
-          header="Kode"
-          class="w-2/12"
+          field="nik"
+          header="NIK"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama"
-          header="Nama Nakes"
-          class="w-3/12"
+          field="STR"
+          header="STR"
           headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name_nakes"
+          header="Name Nakes"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          headerClass="bg-adameds-50"
+        >
+        <template #header>
+          <div class="w-full font-semibold text-center text-SM">
+            Jenis Kelamin
+          </div>
+        </template>
+        <template #body="slotProps">
+            <div class="flex items-center justify-center">
+              <CustomChip
+                :label="slotProps.data.jenis_kelamin"
+                :show-checked-icon="false"
+                :textColor="
+                  slotProps.data.jenis_kelamin === 'Laki-laki'
+                    ? 'text-male-300'
+                    : 'text-female-300'
+                "
+                :bgColor="slotProps.data.jenis_kelamin === 'Laki-laki' ? 'bg-male-75':'bg-female-75'"
+                :border-color="slotProps.data.jenis_kelamin === 'Laki-laki' ? 'border-male-75':'border-female-75'"
+                
+                customClass="text-xs font-semibold h-6 flex"
+              />
+            </div> </template
         ></Column>
         <Column
           field="status"
@@ -108,7 +144,7 @@ const detailNakesDialog = ref(false);
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center">
               <CustomChip
                 :label="slotProps.data.status"
                 :textColor="

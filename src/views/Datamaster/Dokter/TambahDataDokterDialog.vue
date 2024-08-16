@@ -10,7 +10,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 const status = ref();
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
+  <div class="flex flex-col gap-5 mt-5">
     <div class="flex gap-2.5">
       <CustomTextfield label="Kode HFIS (BPJS)" placeholder="0000" type="number" />
       <CustomTextfield
@@ -20,19 +20,19 @@ const status = ref();
       />
       <CustomTextfield label="Kode Dokter" placeholder="Kode Dokter" />
     </div>
-    <div class="flex flex-col">
-        <div>Nama Lengkap Dokter</div>
-        <div class="flex gap-2.5">
-            <CustomTextfield label="" placeholder="Gelar Awal"/>
-            <CustomTextfield label="" placeholder="Nama Lengkap" />
-            <CustomTextfield label="" placeholder="Gelar Akhir"/>
+    <div class="flex flex-col ">
+        <div class="font-semibold text-MD">Nama Lengkap Dokter</div>
+        <div class="flex gap-2.5 w-full">
+          <CustomSelect label="" place-holder="Gelar Awal" class="basis-1/4" />
+            <CustomTextfield label="" placeholder="Nama Lengkap" class="basis-1/2" />
+            <CustomSelect label="" place-holder="Gelar Akhir" class="basis-1/4" />
         </div>
     </div>
-    <CustomSelect label="Jenis Kelamin" place-holder="Pilih Jenis Kelamin" class="w-1/2"/>
+    <CustomSelect label="Jenis Kelamin" place-holder="Pilih Jenis Kelamin" class="w-full"/>
     <hr />
     <CustomAutoComplete label="Poli"/>
     <CustomAccordion headerClass="">
-      <template #header> <div class="font-bold text-heading -ml-4">Poli Anak</div> </template>
+      <template #header> <div class="-ml-4 font-bold text-heading">Poli Anak</div> </template>
       <template #content>
         <div class="flex flex-col gap-5 pt-5 -mx-4">
             <div class="flex gap-2.5">

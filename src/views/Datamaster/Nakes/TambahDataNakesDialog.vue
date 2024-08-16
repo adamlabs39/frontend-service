@@ -21,10 +21,14 @@ const status = ref();
     </div>
     </div>
     <div class="flex gap-2.5">
-      <CustomTextfield label="NIK" placeholder="0" />
-      <CustomDatePicker class="w-full" label="Tanggal Lahir" />
+      <CustomTextfield label="NIK" placeholder="0" class="basis-1/2"/>
+      <CustomTextfield label="STR" placeholder="0" class="basis-1/2" />
     </div>
-    <CustomSelect label="Jenis Kelamin" class="w-1/2" />
+    <div class="flex gap-2.5">
+      <CustomDatePicker class="basis-1/2" label="Tanggal Lahir" />
+      <CustomSelect label="Jenis Kelamin" place-holder="Pilih Jenis Kelamin" class="basis-1/2" />
+
+    </div>
     <hr />
     <div class="flex items-end gap-2.5">
       <CustomSwitch v-model="status" label="Status"/>
