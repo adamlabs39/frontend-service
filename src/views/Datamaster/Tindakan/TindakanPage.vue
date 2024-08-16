@@ -6,11 +6,25 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataTindakanDialog from "./TambahDataTindakanDialog.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
-
+const searchRoom = ref<any>();
+const selectedKategori = ref<any>();
+const selectedKelas = ref<any>();
+const itemKategori = ref([
+  { name: "Dokter", code: "DK" },
+  { name: "Admin", code: "AD" },
+  { name: "Perawat", code: "PR" },
+]);
+const itemKelas = ref([
+  { name: "Dokter", code: "DK" },
+  { name: "Admin", code: "AD" },
+  { name: "Perawat", code: "PR" },
+]);
 onMounted(() => {
   products.value = [
     {
@@ -84,6 +98,11 @@ function handleEdit() {
 function handleClose() {
   dialogData.value.isVisible = false;
 }
+const resetFilter = () => {
+  searchRoom.value = "";
+  selectedKategori.value = null;
+  selectedKelas.value = null;
+};
 </script>
 
 <template>
@@ -92,10 +111,51 @@ function handleClose() {
     pt:content:class="h-full overflow-auto"
     class=""
   >
-    <template #header>
-      <Header title="Tindakan" :filter="false">
+  <template #header>
+      <Header title="Tindakan" :search="false" :filter="false" class="mb-5">
         <template #header>
           <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
+        </template>
+        <template #content>
+          <div class="flex items-end justify-between gap-5">
+            <CustomTextfield
+              v-model="searchRoom"
+              class="w-1/2"
+              label="Cari Tindakan"
+              placeholder="Cari Tindakan"
+              prependIcon="PhMagnifyingGlass"
+            />
+            <CustomSelect
+              v-model="selectedKategori"
+              :options="itemKategori"
+              optionValue="code"
+              optionLabel="name"
+              class="w-1/4"
+              :is-loading="false"
+              label="Kategori"
+              place-holder="Kategori"
+            />
+            <CustomSelect
+              v-model="selectedKelas"
+              :options="itemKelas"
+              optionValue="code"
+              optionLabel="name"
+              class="w-1/4"
+              :is-loading="false"
+              label="Kelas"
+              place-holder="Kelas"
+            />
+            <div class="flex gap-2.5">
+              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
+              <CustomButton
+                label="Reset"
+                @click="resetFilter"
+                background-color="bg-white"
+                border-color="border-adameds-300"
+                text-color="text-adameds-300"
+              />
+            </div>
+          </div>
         </template>
       </Header>
     </template>

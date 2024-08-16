@@ -105,6 +105,8 @@ onMounted(() => {
     class="text-xs"
     stripedRows
     dataKey="id"
+    scrollable
+    scrollHeight="flex"
   >
     <Column
       expander
@@ -159,11 +161,14 @@ onMounted(() => {
   </Column>
     <Column
       field="status"
-      header="Status"
+
       header-class="text-black bg-adameds-50"
     >
+    <template #header>
+        <div class="w-full font-semibold text-center">Status</div>
+      </template>
       <template #body="slotProps">
-        <div class="flex justify-center items-center min-w-[120px]">
+        <div class="flex items-center justify-center">
           <CustomChip
                 :label="slotProps.data.status"
                 :textColor="
@@ -181,30 +186,26 @@ onMounted(() => {
         </div>
       </template>
     </Column>
-    <Column header="Action" header-class="text-black bg-adameds-50">
+    <Column header-class="text-black bg-adameds-50">
+      <template #header="slotProps">
+        <div
+          class="flex items-center justify-center w-full font-semibold text-SM"
+        >
+          Action
+        </div>
+      </template>
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
-          <CustomButton
-            label=""
-            background-color="bg-[#3D84E5] rounded-lg"
-            @click="detail = true"
-          >
+        <div class="flex items-center gap-2.5 justify-center">
+          <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
             <img src="@/assets/icons/edit.svg" alt="" width="15px" />
           </CustomButton>
-          <CustomDialog
-            fullScreen
-            v-model:visible="detail"
-            headerBg="bg-adameds-300"
+          <CustomButton
+            label=""
+            background-color="bg-danger-300 rounded-lg"
+            @click="hapusDataDialog = true"
           >
-            <template #header>Detail Tarif Ruangan</template>
-            <template #body>
-              <DetailTarifRuangan />
-            </template>
-            <template #footer>
-              <CustomButton label="Batal"> </CustomButton>
-              <CustomButton label="Simpan"> </CustomButton>
-            </template>
-          </CustomDialog>
+            <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+          </CustomButton>
         </div>
       </template>
     </Column>

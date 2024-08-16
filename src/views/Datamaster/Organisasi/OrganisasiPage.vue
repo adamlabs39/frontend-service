@@ -9,26 +9,15 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataOrganisasiDialog from "./TambahDataOrganisasiDialog.vue";
 import DetailDataOrganisasi from "./DetailDataOrganisasi.vue";
 
-
 const products = ref<any[]>([]);
-const selectedProduct = ref(null);
-const router = useRouter();
-const tambahDataDialog = ref(false);
-const detailOrganisasiDialog=ref(false)
-
-const onRowSelect = (event: any) => {
-  selectedProduct.value = event.data;
-  detailOrganisasiDialog.value = true;
-};
-
 onMounted(() => {
   products.value = [
     {
       id: "1",
       kode: "001",
       nama: "Cholera disease",
-      tlp:"022",
-      email:"dep.lab@gmail.com",
+      tlp: "022",
+      email: "dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
@@ -36,8 +25,8 @@ onMounted(() => {
       id: "2",
       kode: "001",
       nama: "Cholera disease",
-      tlp:"022",
-      email:"dep.lab@gmail.com",
+      tlp: "022",
+      email: "dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
@@ -45,8 +34,8 @@ onMounted(() => {
       id: "3",
       kode: "001",
       nama: "Cholera disease",
-      tlp:"022",
-      email:"dep.lab@gmail.com",
+      tlp: "022",
+      email: "dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
@@ -54,41 +43,78 @@ onMounted(() => {
       id: "4",
       kode: "001",
       nama: "Cholera disease",
-      tlp:"022",
-      email:"dep.lab@gmail.com",
+      tlp: "022",
+      email: "dep.lab@gmail.com",
       status: "AKTIF",
       action: "edit",
     },
   ];
 });
 const metaKey = ref(true);
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah Data",
+});
 
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah Data",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit Data",
+  };
+}
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
+
+const handleDetail=ref(false)
+const selectedOrganisasi = ref(null);
+
+const onRowSelect = (event: any) => {
+  selectedOrganisasi.value = event.data;
+  handleDetail.value = true;
+};
 
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Organisasi" :filter="false">
-      <template #header>
-        <CustomButton
-          label="Tambah Data"
-          icon="PhPlus"
-          @click="tambahDataDialog= true"
-        />
-      </template>
-    </Header>
+    <template #header>
+      <Header title="Organisasi" :filter="false" class="mb-5">
+        <template #header>
+          <CustomButton
+            label="Tambah Data"
+            icon="PhPlus"
+            @click="handleAdd" 
+          />
+        </template>
+      </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
+        scrollable
+        scrollHeight="flex"
         selectionMode="single"
         :metaKeySelection="metaKey"
-        v-model:selection="selectedProduct"
+        v-model:selection="selectedOrganisasi"
         stripedRows
         @rowSelect="onRowSelect"
       >
@@ -165,7 +191,8 @@ const metaKey = ref(true);
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg"
+              @click="handleEdit">
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -178,54 +205,18 @@ const metaKey = ref(true);
           </template>
         </Column>
       </DataTable>
-    </div>
+      <!-- Dialog for Tambah Data Dokter -->
+      <TambahDataOrganisasiDialog v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"/>
 
-    <Footer />
+      <!-- Dialog for Detail Organisasi -->
+     <DetailDataOrganisasi v-model:isDialogVisible="handleDetail"/>
+    </template>
 
-    <!-- Dialog for Tambah Data Dokter -->
-    <CustomDialog
-      width="600px"
-      v-model:visible="tambahDataDialog"
-      headerBg="bg-adameds-300"
-    >
-      <template #header>Tambah Data Organisasi</template>
-      <template #body>
-        <TambahDataOrganisasiDialog/>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <hr class="-mx-5 border-grey-200" />
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" @click="tambahDataDialog= false">
-            </CustomButton>
-
-            <CustomButton label="Simpan"> </CustomButton>
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
-
-    <!-- Dialog for Detail Organisasi -->
-    <CustomDialog
-      width="600px"
-      v-model:visible="detailOrganisasiDialog"
-      headerBg="bg-adameds-300"
-    >
-      <template #header>Detail Organisasi</template>
-      <template #body>
-        <DetailDataOrganisasi/>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <hr class="-mx-5 border-grey-200" />
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" @click="detailOrganisasiDialog = false"  border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300">
-            </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
-
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>

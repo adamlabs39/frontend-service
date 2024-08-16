@@ -63,6 +63,8 @@ const detail = ref(false);
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
     stripedRows
     class="text-xs"
+    scrollable
+        scrollHeight="flex"
   >
     <Column header="No." headerClass="bg-adameds-50">
       <template #body="slotProps">

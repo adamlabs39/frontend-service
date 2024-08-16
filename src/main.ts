@@ -31,10 +31,10 @@ import ToggleSwitch from 'primevue/toggleswitch';
 import Card from 'primevue/card';
 import Tooltip from 'primevue/tooltip'
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from 'primevue/paginator';
-import Checkbox from 'primevue/checkbox';
 import Editor from 'primevue/editor';
 
 import Tabs from 'primevue/tabs';
@@ -80,6 +80,7 @@ app.directive('tooltip', Tooltip)
 app.component('Select', Select);
 app.component('DatePicker', DatePicker);
 app.component('ToggleSwitch',ToggleSwitch)
+app.component('Checkbox',Checkbox)
 app.component('DataTable',DataTable)
 app.component('Column', Column)
 app.component('Paginator', Paginator)

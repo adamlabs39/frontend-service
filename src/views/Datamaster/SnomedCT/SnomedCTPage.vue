@@ -5,11 +5,6 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
 const products = ref<any[]>([]);
 
@@ -48,49 +43,55 @@ onMounted(() => {
   ];
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
-const testDialog = ref(false);
-const status = ref();
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah Data",
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah Data",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit Data",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Snomed CT">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Snomed CT</template>
-          <template #body>
-            <TambahDataSnomedCTDialog/>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
-      </template>
-    </Header>
-
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #header>
+      <Header title="Snomed CT" class="mb-5">
+        <template #header>
+          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
+        </template>
+      </Header>
+    </template>
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
         :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
+        scrollable
+        scrollHeight="flex"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -128,8 +129,16 @@ const status = ref();
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
@@ -148,7 +157,11 @@ const status = ref();
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                @click="handleEdit"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -161,8 +174,16 @@ const status = ref();
           </template>
         </Column>
       </DataTable>
-    </div>
+      <TambahDataSnomedCTDialog
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+      />
+    </template>
 
-    <Footer />
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>

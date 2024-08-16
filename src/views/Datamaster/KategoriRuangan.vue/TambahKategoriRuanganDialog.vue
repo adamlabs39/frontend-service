@@ -73,12 +73,12 @@ watch(
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
           <CustomTextfield
-            label="Kode"
+            label="Kode Kategori Rua.."
             v-model="code"
             placeholder="Kode"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
-            class="basis-1/6"
+            class="basis-2/6"
           />
           <CustomTextfield
             label="Nama Kategori Ruangan"

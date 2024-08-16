@@ -107,7 +107,7 @@ function handleClose() {
         </Column>
         <Column
           field="kode_ruangan"
-          header="Kode Ruangan"
+          header="Kode Kategori Ruangan"
           headerClass="bg-adameds-50"
         ></Column>
         <Column

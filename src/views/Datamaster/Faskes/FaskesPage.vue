@@ -6,10 +6,6 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataFaskesDialog from "./TambahDataFaskesDialog.vue";
 const products = ref<any[]>([]);
 
@@ -56,10 +52,13 @@ const status = ref();
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Faskes" :filter="false">
+    <template #header>
+      <Header title="Faskes" :filter="false" class="mb-5">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
         <CustomDialog
@@ -83,8 +82,9 @@ const status = ref();
         </CustomDialog>
       </template>
     </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
@@ -161,8 +161,10 @@ const status = ref();
           </template>
         </Column>
       </DataTable>
-    </div>
+    </template>
 
-    <Footer />
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>

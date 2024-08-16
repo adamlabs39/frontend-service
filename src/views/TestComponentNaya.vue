@@ -18,6 +18,7 @@ import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
 import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -156,6 +157,7 @@ const handlePageUpdate = (page: number) => {
       <CustomCheckbox v-model="checkCategorie" :categories="categories" />
       {{ checkCategorie }}
     </div>
+    <CustomCheckBoxUser v-model="checkCategorie" :categories="categories"/>
     <br>
     <KomponenTarif />
     <br>

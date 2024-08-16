@@ -10,6 +10,10 @@ const props = defineProps({
       <div class="font-semibold">{{ label }}</div>
       <div>:</div>
     </div>
-    <div>{{ value }}</div>
+    <div>
+      <slot name="value">
+        {{ value }}
+      </slot>
+    </div>
   </div>
 </template>

@@ -34,8 +34,6 @@ const props = defineProps({
 const dialog = ref();
 
 const maximize = () => {
-  console.log("masuk", dialog.value.maximized, !props.fullScreen);
-
   if (dialog.value.maximized || !props.fullScreen) return;
   dialog.value.maximize();
 };

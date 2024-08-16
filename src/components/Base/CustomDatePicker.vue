@@ -19,7 +19,7 @@ const props = defineProps({
     default: false,
   },
   modelValue: {
-    type:Date,
+    type: Date,
   },
   disabled: {
     type: Boolean,
@@ -74,7 +74,11 @@ const value = computed({
 
 <template>
   <div class="">
-    <label v-if="showLabel" class="block font-semibold mb-[5px]">
+    <label
+      v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
       {{ label }}
     </label>
     <div class="">

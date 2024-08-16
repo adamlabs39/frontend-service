@@ -116,8 +116,8 @@ watch(
         optionLabel="name"
          />
         <CustomSelect 
-        label="ICD 9 CM" 
-        place-holder="Pilih ICD 9 CM" 
+        label="ICD-9 CM" 
+        place-holder="Pilih ICD-9 CM" 
         v-model="icd9"
         :options="itemsIcd9"
         optionValue="code"

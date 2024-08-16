@@ -56,20 +56,24 @@ const metaKey = ref(true);
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Dokter" :filter="false">
-      <template #header>
-        <CustomButton
-          label="Tambah Data"
-          icon="PhPlus"
-          @click="tambahDataDialog= true"
-        />
-      </template>
-    </Header>
+    <template #header>
+      <Header title="Dokter" :filter="false" class="mb-5">
+        <template #header>
+          <CustomButton
+            label="Data"
+            icon="PhPlus"
+            @click="tambahDataDialog = true"
+          />
+        </template>
+      </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
@@ -80,8 +84,8 @@ const metaKey = ref(true);
         v-model:selection="selectedProduct"
         stripedRows
         @rowSelect="onRowSelect"
-      
-
+        scrollable
+        scrollHeight="flex"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -152,6 +156,12 @@ const metaKey = ref(true);
               </CustomButton>
               <CustomButton
                 label=""
+                background-color="bg-adameds-300 rounded-lg"
+              >
+                <img src="@/assets/icons/dokter.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton
+                label=""
                 background-color="bg-danger-300 rounded-lg"
               >
                 <img src="@/assets/icons/delete.svg" alt="" width="15px" />
@@ -160,59 +170,71 @@ const metaKey = ref(true);
           </template>
         </Column>
       </DataTable>
-    </div>
+      <!-- Dialog for Tambah Data Dokter -->
+      <CustomDialog
+        width="600px"
+        v-model:visible="tambahDataDialog"
+        headerBg="bg-adameds-300"
+      >
+        <template #header>Tambah Data Dokter</template>
+        <template #body>
+          <TambahDataDokter />
+        </template>
+        <template #footer>
+          <div class="w-full">
+            <hr class="-mx-5 border-grey-200" />
+            <div class="mt-5 flex justify-end gap-2.5">
+              <CustomButton
+                label="Batal"
+                border-color="border-grey-200"
+                background-color="bg-white"
+                text-color="text-grey-300"
+                @click="tambahDataDialog = false"
+              >
+              </CustomButton>
 
-    <Footer />
-
-    <!-- Dialog for Tambah Data Dokter -->
-    <CustomDialog
-      width="600px"
-      v-model:visible="tambahDataDialog"
-      headerBg="bg-adameds-300"
-    >
-      <template #header>Tambah Data Dokter</template>
-      <template #body>
-        <TambahDataDokter />
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <hr class="-mx-5 border-grey-200" />
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300"  @click="tambahDataDialog= false">
-            </CustomButton>
-
-            <CustomButton label="Simpan"> </CustomButton>
+              <CustomButton label="Simpan"> </CustomButton>
+            </div>
           </div>
-        </div>
-      </template>
-    </CustomDialog>
+        </template>
+      </CustomDialog>
 
-    <!-- Dialog for Detail Dokter -->
-    <CustomDialog
-      width="800px"
-      v-model:visible="detailDokterDialog"
-      headerBg="bg-adameds-300"
-    >
-      <template #header>Detail Dokter</template>
-      <template #body>
-        <DetailDokterDialog />
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <hr class="-mx-5 border-grey-200" />
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton label="Batal" @click="detailDokterDialog = false"  border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300">
-            </CustomButton>
-            <CustomButton label="Simpan"> </CustomButton>
+      <!-- Dialog for Detail Dokter -->
+      <CustomDialog
+        width="800px"
+        v-model:visible="detailDokterDialog"
+        headerBg="bg-adameds-300"
+      >
+        <template #header>Detail Dokter</template>
+        <template #body>
+          <DetailDokterDialog />
+        </template>
+        <template #footer>
+          <div class="w-full">
+            <hr class="-mx-5 border-grey-200" />
+            <div class="mt-5 flex justify-end gap-2.5">
+              <CustomButton
+                label="Batal"
+                @click="detailDokterDialog = false"
+                border-color="border-grey-200"
+                background-color="bg-white"
+                text-color="text-grey-300"
+              >
+              </CustomButton>
+              <CustomButton label="Simpan"> </CustomButton>
+            </div>
           </div>
-        </div>
-      </template>
-    </CustomDialog>
+        </template>
+      </CustomDialog>
+    </template>
 
-  </div>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
 </template>
 <style>
-.p-datatable-row-selected{
-  @apply bg-transparent text-black
+.p-datatable-row-selected {
+  @apply bg-transparent text-black;
 }
 </style>

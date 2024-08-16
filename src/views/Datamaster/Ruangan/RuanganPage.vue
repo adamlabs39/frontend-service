@@ -205,11 +205,7 @@ const resetFilter = () => {
           header="Kelas Ruangan"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column field="jml_bed" headerClass="bg-adameds-50" class="text-center">
-          <template #header>
-            <div class="w-full font-semibold text-center text-SM">Jml.Bed</div>
-          </template></Column
-        >
+        
         <Column field="status" headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div class="w-full font-semibold text-center text-SM">Action</div>

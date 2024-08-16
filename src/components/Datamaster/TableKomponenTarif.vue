@@ -7,6 +7,14 @@ import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
 const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
+const addRow = () => {
+  data.value.push({
+    komponenTarif: "",
+    persen: "",
+    rupiah:"",
+     action: ""
+  });
+};
 </script>
 
 <template>
@@ -21,7 +29,7 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
           <div>Komponen Tarif</div>
         </template>
         <template #body>
-          <CustomSelect label="" />
+          <CustomSelect label="" place-holder="Pilih Komponen Tarif" />
         </template>
       </Column>
       <Column header="Persen (%)" headerClass="bg-adameds-300 text-white">
@@ -42,7 +50,7 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
           <CustomTextfield pr label="" placeholder="0">
             <template #prependText>
               <div
-                class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
+                class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r "
               >
                 Rp.
               </div>
@@ -69,6 +77,7 @@ const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
             borderColor="border-adameds-300"
             textColor="text-adameds-300"
             backgroundColor="bg-white"
+            @click="addRow"
           />
         </div>
       </div>

@@ -114,15 +114,12 @@ watch(
           optionLabel="name_mainMenu"
           optionValue="code_mainMenu"
           :invalid="!!errors.permission"
-          maxSelectedLabels=""
 
         />
         <hr class="border-grey-200" />
         <div class="flex items-end gap-2.5">
           <CustomSwitch
             v-model="status"
-            :invalid="!!errors.status"
-            :invalidMessage="errors.status"
             label="Status"
           />
           <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>

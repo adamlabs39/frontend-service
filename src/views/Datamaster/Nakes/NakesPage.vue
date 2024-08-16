@@ -6,10 +6,6 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataNakesDialog from "./TambahDataNakesDialog.vue";
 import DetailNakesDialog from "./DetailNakesDialog.vue";
 const products = ref<any[]>([]);
@@ -57,16 +53,20 @@ const detailNakesDialog = ref(false);
 </script>
 
 <template>
-  <div
-    class="flex flex-col justify-between overflow-hidden bg-white border rounded border-neutral-lightActive"
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
-    <Header title="Nakes" :filter="false">
+    <template #header>
+      <Header title="Nakes" :filter="false" class="mb-5">
       <template #header>
         <CustomButton label="Data" icon="PhPlus" @click="tambahDataDialog = true" />
       </template>
     </Header>
+    </template>
 
-    <div class="overflow-scroll grow px-5 pt-2.5">
+    <template #content>
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
@@ -76,6 +76,8 @@ const detailNakesDialog = ref(false);
         stripedRows
         v-model:selection="selectedProduct"
         @rowSelect="onRowSelect"
+        scrollable
+        scrollHeight="flex"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -147,10 +149,8 @@ const detailNakesDialog = ref(false);
           </template>
         </Column>
       </DataTable>
-    </div>
-    <Footer />
-    <!-- Dialog for Tambah Data Nakes -->
-    <CustomDialog
+            <!-- Dialog for Tambah Data Nakes -->
+            <CustomDialog
           width="600px"
           v-model:visible="tambahDataDialog"
           headerBg="bg-adameds-300"
@@ -191,5 +191,10 @@ const detailNakesDialog = ref(false);
         </div>
       </template>
     </CustomDialog>
-  </div>
+    </template>
+    <template #footer>
+      <Footer />
+    </template>
+  </Card>
+
 </template>

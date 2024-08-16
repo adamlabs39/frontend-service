@@ -125,7 +125,7 @@ function handleClose() {
                   :showCheckedIcon="false"
                   border-color="border-none"
                   bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white pr-2 pl-3 "
+                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white"
                 />
               </div>
             </div>

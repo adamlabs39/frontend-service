@@ -74,6 +74,7 @@ const props = defineProps({
         : '',
     ]"
     :fluid="full"
+    pt:label:class="font-semibold text-normal"
   >
     <template #default>
       <slot />

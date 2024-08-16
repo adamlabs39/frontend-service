@@ -141,7 +141,7 @@ watch(
             :invalidMessage="errors.no_room"
           />
         </div>
-        <div class="flex gap-2.5">
+        
           <CustomSelect
             label="Kelas Ruangan"
             v-model="kelasRuangan"
@@ -154,7 +154,7 @@ watch(
             :invalidMessage="errors.kelasRuangan"
           />
 
-        </div>
+       
         <hr class="border-grey-200" />
         <div class="flex gap-2.5 items-end">
           <CustomSwitch

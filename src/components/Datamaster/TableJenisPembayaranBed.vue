@@ -7,6 +7,13 @@ import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
 const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }, { jenisPembayaran: "", harga: "",  action: "" }]);
+const addRow = () => {
+  data.value.push({
+    jenisPembayaran: "",
+    harga: "",
+    action: "" 
+  });
+};
 </script>
 
 <template>
@@ -14,17 +21,21 @@ const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }, { jenisPembay
     <DataTable
       :value="data"
       tableStyle="min-width: 50rem"
-      class="text-xs bg-adameds-50"
+      class="overflow-hidden text-xs rounded-lg bg-adameds-50 "
+
     >
       <Column headerClass="bg-adameds-300 text-white" class="w-1/2">
         <template #header>
           <div>Jenis Pembayaran Bed</div>
         </template>
         <template #body>
-          <CustomSelect label="" />
+          <CustomSelect label="" place-holder="Jenis Pembayaran Lain" />
         </template>
       </Column>
-      <Column header="Harga Bed" headerClass="bg-adameds-300 text-white">
+      <Column headerClass="bg-adameds-300 text-white">
+        <template #header>
+        <div class="w-full font-semibold text-end">Harga Bed</div>
+      </template>
         <template #body>
           <CustomTextfield pr label="" placeholder="0">
             <template #prependText>
@@ -37,11 +48,16 @@ const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }, { jenisPembay
           </CustomTextfield>
         </template>
       </Column>
-      <Column header="Action" headerClass="bg-adameds-300 text-white">
+      <Column headerClass="bg-adameds-300 text-white">
+        <template #header>
+        <div class="w-full font-semibold text-center">Action</div>
+      </template>
         <template #body="slotProps">
-          <CustomButton label="" background-color="bg-danger-300 rounded-lg">
+          <div class="flex items-center justify-center">
+            <CustomButton label="" background-color="bg-danger-300 rounded-lg">
             <img src="@/assets/icons/delete.svg" alt="" width="15px" />
           </CustomButton>
+          </div>
         </template>
       </Column>
     </DataTable>
@@ -54,6 +70,7 @@ const data = ref([{ jenisPembayaran: "", harga: "",  action: "" }, { jenisPembay
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           backgroundColor="bg-white"
+          @click="addRow"
         />
       </div>
   </div>

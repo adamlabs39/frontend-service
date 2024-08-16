@@ -7,7 +7,14 @@ import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
 import TableKomponenTarif from "./TableKomponenTarif.vue";
-const data = ref([{ no: "", tindakan: "", action: "" }]);
+const data = ref([{ no: 1, tindakan: "", action: "" }]);
+const addRow = () => {
+  data.value.push({
+    no: data.value.length + 1,
+    tindakan: "",
+    action: ""
+  });
+};
 </script>
 
 <template>
@@ -18,14 +25,14 @@ const data = ref([{ no: "", tindakan: "", action: "" }]);
       class="overflow-hidden text-xs rounded-lg bg-adameds-50"
     >
       <Column header="No." headerClass="bg-adameds-300 text-white">
-        <template #body> 1 </template>
+        <template #body="slotProps">{{ slotProps.data.no }}</template>
       </Column>
       <Column headerClass="bg-adameds-300 text-white" class="w-full">
         <template #header>
-          <div>Komponen Tarif</div>
+          <div>Tindakan</div>
         </template>
         <template #body>
-          <CustomSelect label="" />
+          <CustomSelect label="" place-holder="Pilih Tindakan" />
         </template>
       </Column>
       <Column header="Action" headerClass="bg-adameds-300 text-white">
@@ -42,10 +49,11 @@ const data = ref([{ no: "", tindakan: "", action: "" }]);
       >
         <CustomButton
           icon="PhPlus"
-          label="Komponen Tarif"
+          label="Tindakan"
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           backgroundColor="bg-white"
+          @click="addRow"
         />
       </div>
       <TableKomponenTarif/>

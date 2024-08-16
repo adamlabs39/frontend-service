@@ -4,12 +4,13 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 </script>
 <template>
   <div class="flex flex-col h-full gap-2.5">
     <div class="flex items-center justify-between w-full gap-2.5 my-2.5">
-      <CustomSelect class="grow" label="Jenis Tarif" placeholder="Jenis Tarif" />
-      <CustomTextfield class="grow" label="Nama Tarif Tindakan" placeholder="Nama Tarif TIndakan" />
+      <CustomSelect class="grow" label="Jenis Tarif" place-holder="Jenis Tarif" />
+      <CustomTextfield class="grow" label="Nama Tarif Tindakan" placeholder="Nama Tarif Tindakan" />
       <div class="flex flex-col gap-1.5">
         <div class="font-semibold text-MD">Metode Pilihan Tarif</div>
         <div class="flex gap-2.5">
@@ -25,8 +26,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
       </div>
     </div>
     <div class="flex justify-between w-full gap-2.5">
-      <CustomAutoComplete class="w-full" label="Pelayanan" />
-      <CustomAutoComplete class="w-full" label="Metode Pembayaran" />
+      <CustomMultiSelect class="w-full" label="Pelayanan" placeholder="Pelayanan" />
+      <CustomMultiSelect class="w-full" label="Metode Pembayaran" placeholder="Metode Pembayaran" />
     </div>
     <div class="overflow-auto grow">
       <TableTindakan />
