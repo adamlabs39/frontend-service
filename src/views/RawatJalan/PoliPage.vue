@@ -10,6 +10,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 const props = defineProps({
   filter: {
@@ -87,6 +88,8 @@ const testRef = ref<any>(null);
 const testRefFunction = () => {
   testRef.value?.alerTest();
 };
+const testCheckboxMulti = ref([]);
+const testCheckbox = ref(false);
 </script>
 <template>
   <div>
@@ -108,7 +111,6 @@ const testRefFunction = () => {
         appendIcon="PhLock"
         :invalid="errors.password ? true : false"
         :invalidMessage="errors.password"
-        
       />
       <CustomTextfield
         v-model="confirmPassword"
@@ -150,5 +152,29 @@ const testRefFunction = () => {
         </div>
       </template>
     </CustomAccordion>
+    <div>
+      {{ testCheckboxMulti }}
+      <CustomCheckbox
+        v-model="testCheckboxMulti"
+        :binary="false"
+        endText="Masuk"
+        value="1"
+      />
+      <CustomCheckbox
+        v-model="testCheckboxMulti"
+        :binary="false"
+        endText="Masuk"
+        value="2"
+      />
+      <CustomCheckbox
+        v-model="testCheckboxMulti"
+        :binary="false"
+        endText="Masuk"
+        value="3"
+        disabled
+      />
+    </div>
+    {{ testCheckbox }}
+    <CustomCheckbox v-model="testCheckbox" endText="Masuk" value="3" />
   </div>
 </template>

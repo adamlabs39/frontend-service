@@ -14,6 +14,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  prependIcon: {
+    type: String,
+    default: "",
+  },
   modelValue: {
     default: "",
   },
@@ -21,13 +25,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  optionValue: {
-    type: String,
-    default: "value",
-  },
   optionLabel: {
     type: String,
     default: "label",
+  },
+  optionValue: {
+    type: String,
+    default: null,
   },
   isLoading: {
     type: Boolean,
@@ -37,9 +41,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
+  },
+  showFilter: {
+    type: Boolean,
+    default: true,
   },
   invalidMessage: {
     type: String,
@@ -51,27 +63,35 @@ const props = defineProps({
   }
 });
 
-const value = ref(props.modelValue);
+// const value = ref(props.modelValue);
+const value = computed({
+  get: () => props.modelValue,
+  set: (value: string) => emit("update:modelValue", value),
+});
 
-const emit = defineEmits(["update:modelValue", "change"]);
+const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
 
 const showClear = computed(() => {
   return value.value !== "";
 });
 
-const onChange = (event: any) => {
-  console.log(event);
+// const onChange = (event: any) => {
+//   console.log(event);
 
-  if (!event) return;
-  emit("update:modelValue", event.value);
-  emit("change", event.value);
-};
+//   if (!event) return;
+//   emit("update:modelValue", event.value);
+//   emit("change", event.value);
+// };
 </script>
 
 <template>
-  <div class="flex flex-col">
-    <label v-if="showLabel" class="block font-semibold mb-[5px]">
-      {{ label }}
+  <div class="">
+    <label
+      v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
+      {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
     <Select
       v-model="value"
@@ -84,7 +104,7 @@ const onChange = (event: any) => {
       :disabled="disabled"
       @change="onChange"
       variant="filled"
-      :class="customSelectClass"
+      class="h-10 rounded-lg border-grey-400"
       :invalid="invalid"
       fluid
       filter

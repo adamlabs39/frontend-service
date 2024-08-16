@@ -15,9 +15,17 @@ const props = defineProps({
 </script>
 
 <template>
-  <Breadcrumb :home="home" :model="model" class="font-semibold text-heading">
+  <Breadcrumb
+    :home="home"
+    :model="model"
+    class="flex p-0 font-semibold bg-transparent text-heading"
+  >
     <template #item="{ item }">
+      <div v-if="$slots.customItem">
+        <slot name="customItem" :item="item" />
+      </div>
       <div
+        v-else
         class=""
         :class="{
           'text-adameds-300': item.home,

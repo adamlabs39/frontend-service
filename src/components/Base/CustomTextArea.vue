@@ -1,6 +1,6 @@
-
 <script setup lang="ts">
 import { ref } from "vue";
+import Textarea from "primevue/textarea";
 
 const props = defineProps({
   modelValue: {
@@ -11,13 +11,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   invalid: {
     type: Boolean,
     default: false,
   },
-  variant: {
+  invalidMessage: {
     type: String,
-    default: "Outlined",
+    default: "",
+  },
+  height: {
+    type: String,
+    default: "h-20",
   },
   showLabel: {
     type: Boolean,
@@ -44,34 +52,32 @@ const onInput = (event: any) => {
   if (!event) return;
   emit("update:modelValue", event.target?.value);
 };
-
-const alerTest = () => {
-  alert("masuk gan");
-};
-defineExpose({
-  alerTest,
-});
 </script>
-
-
-
 
 <template>
   <div class="">
-    <label class="block font-semibold mb-[5px]" v-if="showLabel">{{ props.label }}</label>
-    <div class="flex flex-col card">
-      <Textarea
-        v-model="value"
-        @input="onInput"
-        :placeholder="placeholder"
-        fluid
-        :disabled="disabled"
-        :invalid="invalid"
-        class="h-[75px] p-2 border-[1px] rounded-lg border-[#C7CBD2]"
-        :class="{
-          'border-red-500 text-red-500': invalid,
-        }"
-      />
-    </div>
+    <label
+      v-if="showLabel"
+      class="block font-semibold mb-[5px]"
+      :class="{ 'text-grey-300': disabled }"
+    >
+      {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
+    </label>
+    <Textarea
+      v-model="value"
+      @input="onInput"
+      :placeholder="placeholder"
+      fluid
+      :disabled="disabled"
+      :invalid="invalid"
+      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] w-full"
+      :class="{
+        'border-danger-300 text-danger-300': invalid,
+        'border-grey-200 bg-grey-100 text-grey-300': disabled,
+        'border-grey-400': !disabled && !invalid,
+        [props.height]: true,
+      }"
+    />
+    <small v-if="invalid" class="text-danger-300">{{ invalidMessage }}</small>
   </div>
 </template>
