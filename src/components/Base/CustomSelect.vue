@@ -57,10 +57,6 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  customSelectClass: {
-    type: String,
-    default:"h-10 rounded-lg border-grey-400"
-  }
 });
 
 // const value = ref(props.modelValue);
@@ -93,32 +89,63 @@ const showClear = computed(() => {
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
-    <Select
-      v-model="value"
-      :options="options"
-      :optionValue="optionValue"
-      :optionLabel="optionLabel"
-      :loading="isLoading"
-      :showClear="showClear"
-      :placeholder="placeHolder"
-      :disabled="disabled"
-      @change="onChange"
-      variant="filled"
-      class="h-10 rounded-lg border-grey-400"
-      :invalid="invalid"
-      fluid
-      filter
-      filterPlaceholder="Search"
-      pt:pcFilterIconContainer:class="flex items-center"
-      pt:pcFilter:root:class="border-grey-400"
-    >
-      <template #dropdownicon>
-        <PhCaretDown
-          weight="fill"
-          :class="{ 'text-red-500': invalid, 'text-black': modelValue }"
-        />
-      </template>
-    </Select>
+    <InputGroup>
+      <InputGroupAddon
+        v-if="prependIcon"
+        class="rounded-l-lg"
+        :class="{
+          'text-danger-300 border-danger-300': invalid,
+          'border-grey-400': !disabled && !invalid,
+          'border-grey-200 bg-grey-100': disabled,
+        }"
+      >
+        <component
+          @click="emit('clickPrepend')"
+          :is="prependIcon"
+          weight="bold"
+          :size="22"
+          class="cursor-pointer"
+          :class="{
+            'text-danger-300': invalid,
+            'text-grey-300': disabled,
+            'text-black': !disabled && !invalid,
+          }"
+        ></component>
+      </InputGroupAddon>
+      <Select
+        v-model="value"
+        :options="options"
+        :optionLabel="optionLabel"
+        :optionValue="optionValue"
+        :loading="isLoading"
+        :showClear="showClear"
+        :placeholder="placeHolder"
+        :disabled="disabled"
+        class="h-10 rounded-lg"
+        :class="[
+          prependIcon ? 'border-l-0 rounded-l-none' : '',
+          invalid ? 'border-danger-300 text-danger-300' : '',
+          disabled ? 'border-grey-200 bg-grey-100 text-grey-300' : 'border-grey-400',
+        ]"
+        :invalid="invalid"
+        fluid
+        :filter="showFilter"
+        filterPlaceholder="Search"
+        pt:pcFilterIconContainer:class="flex items-center"
+        pt:pcFilter:root:class="border-grey-400"
+      >
+        <template #dropdownicon>
+          <PhCaretDown
+            weight="fill"
+            :class="{
+              'text-red-500': invalid,
+              'text-black': modelValue,
+              'text-grey-300': disabled,
+            }"
+          />
+        </template>
+      </Select>
+    </InputGroup>
     <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
   </div>
 </template>

@@ -13,19 +13,19 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Rawat Jalan",
         icon: "user-plus",
         type: linkType.LINK,
-        url: '/admisi/rawat-jalan'
+        url: "/admisi/rawat-jalan",
       },
       {
         name: "Rawat Inap",
         icon: "user-plus",
         type: linkType.LINK,
-        url: '/admisi/rawat-inap'
+        url: "/admisi/rawat-inap",
       },
       {
         name: "IGD",
         icon: "user-plus",
         type: linkType.LINK,
-        url: '/admisi/igd'
+        url: "/admisi/igd",
       },
     ],
   },
@@ -42,16 +42,19 @@ const sidebarBodyList = ref<SidebarBody[]>([
             name: "Rawat Jalan",
             icon: "Rawat Jalan",
             type: linkType.LINK,
+            url: "/admisi/sep/rawat-jalan",
           },
           {
             name: "Rawat Inap",
             icon: "Rawat Inap",
             type: linkType.LINK,
+            url: "/admisi/sep/rawat-inap",
           },
           {
             name: "IGD",
             icon: "IGD",
             type: linkType.LINK,
+            url: "/admisi/sep/igd",
           },
         ],
       },

@@ -13,6 +13,7 @@ import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 // SECTION Page View
 // NOTE Admisi
 import AdmisiPage from "@/views/Admisi/AdmisiPage.vue";
+import SEPAdmisiPage from "@/views/Admisi/SEPAdmisiPage.vue";
 
 // NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
@@ -261,6 +262,24 @@ const router = createRouter({
       path: "/admisi/igd",
       name: "admisi-igd",
       meta: { layout: SidebarLayout, page: AdmisiPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/sep/rawat-jalan",
+      name: "admisi-sep-rawat-jalan",
+      meta: { layout: SidebarLayout, page: SEPAdmisiPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/sep/rawat-inap",
+      name: "admisi-sep-rawat-inap",
+      meta: { layout: SidebarLayout, page: SEPAdmisiPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/sep/igd",
+      name: "admisi-sep-igd",
+      meta: { layout: SidebarLayout, page: SEPAdmisiPage },
       component: AdmisiView,
     },
 

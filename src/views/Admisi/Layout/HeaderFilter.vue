@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -7,11 +7,21 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import type { MenuItem } from "primevue/menuitem";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 
 const props = defineProps({
   pageType: {
     type: String,
     required: true,
+  },
+  isSEP: {
+    type: Boolean,
+    default: false,
+  },
+  dataBreadCrumb: {
+    type: Array as PropType<MenuItem[]>,
+    default: () => [],
   },
 });
 
@@ -103,6 +113,12 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
+// NOTE SEP Filter
+const selectedSEPType = ref<string>("belumSEP");
+const onSEPTypeSelect = (label: string) => {
+  selectedSEPType.value = label;
+};
+
 const filters = [
   selectedFilterPoli,
   selectedFilterRegisterMethod,
@@ -132,7 +148,7 @@ defineExpose({
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
           <CustomButton icon="PhArrowClockwise" class="mr-5" />
-          <span class="leading-10 text-adameds-300 text-heading">
+          <span v-if="!isSEP" class="leading-10 text-adameds-300 text-heading">
             {{
               pageType == "rawat-jalan"
                 ? "Rawat Jalan"
@@ -141,8 +157,18 @@ defineExpose({
                 : "IGD"
             }}
           </span>
+          <CustomBreadCrumb
+            v-else
+            :home="{
+              label: 'SEP',
+              home: true,
+            }"
+            :model="dataBreadCrumb"
+            class=""
+          />
         </div>
         <CustomButton
+          v-if="!isSEP"
           @click="emit('daftar')"
           icon="PhPlus"
           label="Daftar"
@@ -192,6 +218,36 @@ defineExpose({
           class="mt-auto"
         />
       </div>
+      <div v-if="isSEP" class="flex mt-[10px]">
+        <CustomButton
+          @click="onSEPTypeSelect('belumSEP')"
+          label="BELUM SEP"
+          :outlined="selectedSEPType != 'belumSEP'"
+          borderColor="border-warning-300"
+          :textColor="
+            selectedSEPType != 'belumSEP' ? 'text-warning-300' : 'text-white'
+          "
+          :backgroundColor="
+            selectedSEPType != 'belumSEP' ? 'bg-transparent' : 'bg-warning-300'
+          "
+          class="mt-auto mr-[5px] font-semibold"
+          full
+        />
+        <CustomButton
+          @click="onSEPTypeSelect('sudahSEP')"
+          label="SUDAH SEP"
+          :outlined="selectedSEPType != 'sudahSEP'"
+          borderColor="border-warning-300"
+          :textColor="
+            selectedSEPType != 'sudahSEP' ? 'text-warning-300' : 'text-white'
+          "
+          :backgroundColor="
+            selectedSEPType != 'sudahSEP' ? 'bg-transparent' : 'bg-warning-300'
+          "
+          class="mt-auto ml-[5px] font-semibold"
+          full
+        />
+      </div>
       <div class="font-semibold text-SM text-grey-300">
         <div v-if="pageType == 'rawat-jalan'">
           <div class="flex mb-[10px] mt-5">
@@ -208,7 +264,7 @@ defineExpose({
               />
             </div>
           </div>
-          <div class="flex my-[10px]">
+          <div v-if="!isSEP" class="flex my-[10px]">
             <div class="w-[15%]">Filter Cara Daftar</div>
             <div class="flex">
               |
@@ -274,7 +330,7 @@ defineExpose({
             </div>
           </div>
         </div>
-        <div class="flex my-[10px]">
+        <div v-if="!isSEP" class="flex my-[10px]">
           <div class="w-[15%]">Filter Pembayaran</div>
           <div class="flex">
             |
@@ -308,10 +364,18 @@ defineExpose({
       <hr class="border-grey-200" />
     </template>
     <template #collapseIcon>
-      <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" />
+      <CustomButton
+        icon="PhCaretUp"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
     </template>
     <template #expandIcon>
-      <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" />
+      <CustomButton
+        icon="PhCaretDown"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
     </template>
   </CustomAccordion>
 </template>

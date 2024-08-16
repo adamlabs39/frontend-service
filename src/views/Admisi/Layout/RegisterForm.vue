@@ -414,10 +414,18 @@ const isDetail = () => {
           </div>
         </template>
         <template #collapseIcon>
-          <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" />
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-adameds-75"
+            textColor="text-adameds-300"
+          />
         </template>
         <template #expandIcon>
-          <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" />
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-adameds-75"
+            textColor="text-adameds-300"
+          />
         </template>
       </CustomAccordion>
       <CustomAccordion :openWithHeader="false" class="mt-[10px]">
@@ -684,10 +692,18 @@ const isDetail = () => {
           </div>
         </template>
         <template #collapseIcon>
-          <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" />
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-adameds-75"
+            textColor="text-adameds-300"
+          />
         </template>
         <template #expandIcon>
-          <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" />
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-adameds-75"
+            textColor="text-adameds-300"
+          />
         </template>
       </CustomAccordion>
     </div>
