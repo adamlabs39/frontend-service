@@ -137,6 +137,10 @@ const selectedPatient = ref([]);
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
+
+const showPatientDetail = () => {
+  changeSection('Detail')
+}
 </script>
 
 <template>
@@ -162,6 +166,7 @@ const cancelReason = ref<string>();
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
+        @rowClick="showPatientDetail"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
