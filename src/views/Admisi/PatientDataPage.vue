@@ -10,6 +10,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import ExaminationHistoryCard from "./Section/ExaminationHistoryCard.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import NoData from "@/components/section/NoData.vue";
+import PatientIdentityForm from "./Section/PatientIdentityForm.vue";
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
@@ -308,7 +309,7 @@ const isDetail = () => {
             />
             <div class="flex">
               <CustomButton
-                @click="() => {}"
+                @click="dataBreadCrumb.pop()"
                 icon="PhCaretLeft"
                 label="Kembali"
                 class="mr-[10px]"
@@ -324,6 +325,44 @@ const isDetail = () => {
                 backgroundColor="bg-adameds-300"
               />
             </div>
+          </div>
+        </template>
+      </Card>
+      <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
+        <PatientIdentityForm pageType="datamaster" :isDetail="isDetail()" />
+      </div>
+      <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+        <template #content>
+          <div v-if="isDetail()" class="flex">
+            <CustomButton
+              @click="() => {}"
+              icon="PhPrinter"
+              label="Cetak Kartu Pasien"
+              class=""
+              backgroundColor="bg-adameds-300"
+            />
+            <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
+            <CustomButton
+              @click="() => {}"
+              label="General Consent"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
+          <div v-else class="flex justify-end">
+            <CustomButton
+              label="Reset"
+              class="mr-[10px]"
+              outlined
+              borderColor="border-grey-200"
+              textColor="text-grey-300"
+            />
+            <CustomButton
+              @click="() => {}"
+              label="Simpan"
+              class=""
+              backgroundColor="bg-adameds-300"
+            />
           </div>
         </template>
       </Card>
@@ -486,7 +525,9 @@ const isDetail = () => {
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="changeSection('Edit Data Pasien')"
+            @click="
+              (detailPatientDialog = false), changeSection('Detail Data Pasien')
+            "
             label="Edit Data Pasien"
             class=""
             backgroundColor="bg-adameds-300"

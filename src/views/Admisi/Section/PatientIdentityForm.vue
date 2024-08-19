@@ -48,14 +48,18 @@ defineExpose({
           <CustomSelect
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
-            class="mr-[30px] grow"
+            class="grow"
+            :class="{ 'mr-[30px]': pageType != 'datamaster' }"
             optionLabel=""
             optionValue=""
             :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
             prependIcon="PhMagnifyingGlass"
-            :disabled="noIdentity || newBorn || isDetail"
+            :disabled="
+              noIdentity || newBorn || isDetail || pageType == 'datamaster'
+            "
           />
           <CustomSwitch
+            v-if="pageType != 'datamaster'"
             v-model="newBorn"
             label="Bayi Baru Lahir"
             @update:model-value="noIdentity = false"
