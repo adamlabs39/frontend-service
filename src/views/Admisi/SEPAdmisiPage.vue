@@ -9,6 +9,7 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import PatientIdentitySEPForm from "./Section/PatientIdentitySEPForm.vue";
 import SEPForm from "./Section/SEPForm.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -314,19 +315,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
           </template>
         </Column>
       </DataTable>
-      <div
-        v-else
-        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-      >
-        <div class="m-auto">
-          <img
-            src="../../assets/icons/no-data-icon.svg"
-            alt="no data"
-            class="mx-auto"
-          />
-          <div class="text-grey-200">No data available</div>
-        </div>
-      </div>
+      <NoData v-else />
     </template>
     <template #footer>
       <div class="flex justify-end">

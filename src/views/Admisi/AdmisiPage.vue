@@ -7,6 +7,7 @@ import { onMounted, ref } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import RegisterForm from "./Layout/RegisterForm.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -139,8 +140,8 @@ const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
 const showPatientDetail = () => {
-  changeSection('Detail')
-}
+  changeSection("Detail");
+};
 </script>
 
 <template>
@@ -321,19 +322,7 @@ const showPatientDetail = () => {
           class="custom-checkbox"
         ></Column>
       </DataTable>
-      <div
-        v-else
-        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-      >
-        <div class="m-auto">
-          <img
-            src="../../assets/icons/no-data-icon.svg"
-            alt="no data"
-            class="mx-auto"
-          />
-          <div class="text-grey-200">No data available</div>
-        </div>
-      </div>
+      <NoData v-else />
     </template>
     <template #footer>
       <div class="flex justify-between">

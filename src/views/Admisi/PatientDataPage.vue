@@ -9,6 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import ExaminationHistoryCard from "./Section/ExaminationHistoryCard.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
@@ -262,19 +263,7 @@ const detailPatientDialog = ref(false);
             </template>
           </Column>
         </DataTable>
-        <div
-          v-else
-          class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-        >
-          <div class="m-auto">
-            <img
-              src="../../assets/icons/no-data-icon.svg"
-              alt="no data"
-              class="mx-auto"
-            />
-            <div class="text-grey-200">No data available</div>
-          </div>
-        </div>
+        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-between">
