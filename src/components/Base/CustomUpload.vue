@@ -84,7 +84,7 @@ const onUploadedValue = (event: any) => {
 
 <style>
     .p-fileupload-content{
-        @apply w-full absolute z-10 top-0 left-0 left-0 right-0 h-1/2
+        @apply w-full absolute z-10 top-0 left-0 right-0 h-1/2
         
     }
 

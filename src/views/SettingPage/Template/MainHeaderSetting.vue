@@ -24,7 +24,19 @@ const props = defineProps({
 	iconButton: {
 		type:String,
 		default:""
-	}
+	},
+	outlined: {  // Tambahkan properti outlined
+		type: Boolean,
+		default: false,
+	},
+	borderColor: { // Tambahkan props untuk border color
+		type: String,
+		default: "",
+	},
+	textColor: {
+		type: String,
+		default: "",
+	},
 })
 
 </script>
@@ -36,7 +48,7 @@ const props = defineProps({
 		</div>
 		<div class="mt-5 ml-5 mr-5 font-poppins" v-if="showButton">
 			<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm"
-				@click="buttonClickHandler" :icon="props.iconButton"/>
+				@click="buttonClickHandler" :icon="props.iconButton" :outlined="props.outlined" :border-color="props.borderColor" :text-color="props.textColor"/>
 		</div>
 
 	</div>

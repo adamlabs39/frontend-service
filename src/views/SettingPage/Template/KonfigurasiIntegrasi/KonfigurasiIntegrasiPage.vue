@@ -8,12 +8,20 @@ import FormEditKonfigurasiVCLAIM from './FormEditKonfigurasiVCLAIM.vue';
 import FormEditKonfigurasiLainnya from './FormEditKonfigurasiLainnya.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';
 
-const isEditKonfigurasiIntegrasi = ref(false);
+const isEditKonfigurasiVCLAIM = ref(false);
+const isEditKonfigurasiLainnya = ref(false);
 
 
-const editKonfigurasiIntegrasi = () => {
+
+
+const editKonfigurasiVCLAIM = () => {
     console.log("NININI")
-    isEditKonfigurasiIntegrasi.value = !isEditKonfigurasiIntegrasi.value;
+    isEditKonfigurasiVCLAIM.value = !isEditKonfigurasiVCLAIM.value;
+};
+
+const editKonfigurasiLainnya = () => {
+    console.log("NININI")
+    isEditKonfigurasiLainnya.value = !isEditKonfigurasiLainnya.value;
 };
 </script>
 
@@ -24,24 +32,34 @@ const editKonfigurasiIntegrasi = () => {
             <MainHeaderSetting heading="Konfigurasi Integrasi" />
         </template>
         <template #content>
-            <template v-if="!isEditKonfigurasiIntegrasi">
+            <template v-if="!isEditKonfigurasiVCLAIM">
                 <GreenCard cardHeading="Konfigurasi VCLAIM" hrEnableCustomClass showButton labelButton="Edit"
-                    :buttonClickHandler="editKonfigurasiIntegrasi">
+                    :buttonClickHandler="editKonfigurasiVCLAIM">
                     <KonfigurasiVCLAIM />
                 </GreenCard>
+            </template>
 
+            <template v-else-if="isEditKonfigurasiVCLAIM">
+                <GreenCard cardHeading="Konfigurasi VCLAIM" hr-enable-custom-class showButton labelButton="Batal Edit"
+                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                    :buttonClickHandler="editKonfigurasiVCLAIM">
+                    <FormEditKonfigurasiVCLAIM />
+                </GreenCard>
+            </template>
+
+            <!--  -->
+            <template v-if="!isEditKonfigurasiLainnya">
                 <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit"
-                    :buttonClickHandler="editKonfigurasiIntegrasi" class="mb-4">
+                    :buttonClickHandler="editKonfigurasiLainnya">
                     <KonfigurasiLainnya />
                 </GreenCard>
             </template>
 
-            <template v-else>
-                <GreenCard cardHeading="Konfigurasi VCLAIM">
-                    <FormEditKonfigurasiVCLAIM :buttonClickHandler="editKonfigurasiIntegrasi" />
-                </GreenCard>
-                <GreenCard cardHeading="Konfigurasi Lainnya" class="mb-4">
-                    <FormEditKonfigurasiLainnya :buttonClickHandler="editKonfigurasiIntegrasi" />
+            <template v-else-if="isEditKonfigurasiLainnya">
+                <GreenCard cardHeading="Konfigurasi Lainnya" hr-enable-custom-class
+                        showButton labelButton="Batal Edit" outlined borderColor="border-adameds-300"
+                        textColor="text-adameds-300" :buttonClickHandler="editKonfigurasiLainnya">
+                    <FormEditKonfigurasiLainnya  />
                 </GreenCard>
             </template>
         </template>

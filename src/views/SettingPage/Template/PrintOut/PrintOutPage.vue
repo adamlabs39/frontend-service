@@ -2,8 +2,14 @@
 import CustomUpload from '@/components/Base/CustomUpload.vue';
 import MainHeaderSetting from '../MainHeaderSetting.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';
+import Card from 'primevue/card';
+import { ref } from 'vue';
 
-
+const isEditPrintOut = ref(false);
+const editPrintOut = () => {
+    isEditPrintOut.value = !isEditPrintOut.value;
+    console.log(isEditPrintOut)
+};
 </script>
 
 
@@ -11,7 +17,11 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 <template>
     <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
         <template #header>
-            <MainHeaderSetting heading="Print Out" />
+            <MainHeaderSetting v-if="!isEditPrintOut" heading="Print Out" showButton labelButton="Edit"
+                :buttonClickHandler="editPrintOut" />
+            <MainHeaderSetting v-else-if="isEditPrintOut" heading="Print Out" showButton labelButton="Batal Edit"
+                :buttonClickHandler="editPrintOut" outlined borderColor="border-adameds-300"
+                textColor="text-adameds-300" />
             <div class="ml-5 mr-7 mt-2.5">
                 <div class="text-sm font-semibold font-poppins">Pengaturan Cetak Print</div>
                 <div class="py-2.5">
@@ -23,69 +33,98 @@ import CustomButton from '@/components/Base/CustomButton.vue';
                     </ul>
                 </div>
             </div>
+        </template>
+
+        <template #content v-if="!isEditPrintOut">
+            <div class="py-5 flex flex-col gap-2.5">
+                <div class="text-sm font-semibold font-poppins text-adameds-300">Preview Header</div>
+                <Card class="border border-dashed border-[#d3e1e1] bg-[#eff8f6]">
+                    <template #content>
+                        <div class="flex items-center justify-center min-h-[200px]">
+                            <img src="../../../../assets/icons/noPicture.svg" alt="">
+                        </div>
+                    </template>
+
+                </Card>
+            </div>
+
+            <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5 flex flex-col gap-2.5">
+                <div>Preview Gambar</div>
+                <Card class="border border-dashed border-[#d3e1e1] bg-[#eff8f6]">
+                    <template #content>
+                        <div class="flex items-center justify-center min-h-[600px]">
+                            <img src="../../../../assets/icons/noPicture.svg" alt="">
+                        </div>
+                    </template>
+                </Card>
+            </div>
+
+
+            <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5 flex flex-col gap-2.5">
+                <div> Preview Footer</div>
+                <Card class=" border border-dashed border-[#d3e1e1] bg-[#eff8f6]">
+                    <template #content>
+                        <div class="flex items-center justify-center min-h-[200px]">
+                            <img src="../../../../assets/icons/noPicture.svg" alt="">
+                        </div>
+                    </template>
+                </Card>
+            </div>
 
 
         </template>
-        <template #content>
 
-            <div class="">
-                <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5">
-                    Preview Header
+        <template #content v-else-if="isEditPrintOut">
+            <div class="text-sm font-semibold font-poppins text-adameds-300 py-5 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between ">
+                    <div> Preview Header</div>
+                    <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300" icon="PhTrash"/>
                 </div>
-                <div class="bg-adameds-50 border-dashed border-[1px] rounded-lg mb-2.5">
-                    <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
-                        :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
-                        name="demo[]" url="/api/upload" />
+                <Card class=" border border-dashed border-[#d3e1e1] bg-[#eff8f6] min-h-[200px] flex justify-center">
+                    <template #content>
+                        <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
+                            :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
+                            name="demo[]" url="/api/upload" />
+                    </template>
+                </Card>
+
+                <div class="flex items-center justify-between ">
+                    <div> Preview Gambar</div>
+                    <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300" icon="PhTrash" />
                 </div>
-                <div class="">
-                    <CustomButton label="Hapus" class="px-5 py-[10px] font-poppins font-semibold text-sm w-full"
-                        text-color="text-adameds-300" border-color="border-adameds-300" outlined />
+                <Card class=" border border-dashed border-[#d3e1e1] bg-[#eff8f6] min-h-[600px] flex justify-center">
+                    <template #content>
+                        <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
+                            :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
+                            name="demo[]" url="/api/upload" />
+                    </template>
+                </Card>
+
+                <div class="flex items-center justify-between ">
+                    <div> Preview Footer</div>
+                    <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300" icon="PhTrash"/>
                 </div>
+                <Card class=" border border-dashed border-[#d3e1e1] bg-[#eff8f6] min-h-[200px] flex justify-center">
+                    <template #content>
+                        <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
+                            :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
+                            name="demo[]" url="/api/upload" />
+                    </template>
+                </Card>
+
             </div>
 
-            <div class="basis-1/2">
-                <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5">
-                    Preview Gambar
-                </div>
-                <div class="bg-adameds-50 border-dashed border-[1px] rounded-lg mb-2.5">
-                    <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
-                        :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
-                        name="demo[]" url="/api/upload" />
-                </div>
-                <div class="">
-                    <CustomButton label="Hapus" class="px-5 py-[10px] font-poppins font-semibold text-sm w-full"
-                        text-color="text-adameds-300" border-color="border-adameds-300" outlined />
-                </div>
-            </div>
+        </template>
 
-            <div class="basis-1/4">
-                <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5">
-                    Preview Footer
-                </div>
-                <div class="bg-adameds-50 border-dashed border-[1px] rounded-lg mb-2.5">
-                    <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
-                        :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
-                        name="demo[]" url="/api/upload" />
-                </div>
-                <!-- <div class="mb-4">
-                    <CustomButton label="Hapus" class="px-5 py-[10px] font-poppins font-semibold text-sm w-full"
-                        text-color="text-adameds-300" border-color="border-adameds-300" outlined />
-                </div>
-                <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5 bg-slate-400" />
-                <div class="flex items-end justify-end gap-2.5  mb-5">
-                    <CustomButton label="Setel Ulang" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
+        <template #footer v-if="isEditPrintOut">
+            <div class="w-full">
+                <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
+                <div class="flex items-end justify-end gap-2.5 ">
+                    <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
                         borderColor="border-2 border-[#9DA4B1]" />
                     <CustomButton label="Simpan" />
-                </div> -->
+                </div>
             </div>
-
         </template>
     </Card>
-
-
-
-
 </template>
-
-
-<style scoped></style>

@@ -23,7 +23,6 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
-import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
@@ -106,12 +105,7 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: PermissionMenuPage },
       component: SettingView
     },
-    {
-      path: "/setting/password-otorisasi",
-      name: "setting-password-otorisasi",
-      meta: { layout: SidebarLayout, page: PasswordOtorisasiPage },
-      component: SettingView
-    },
+
     {
       path: "/setting/print-out",
       name: "setting-print-out",

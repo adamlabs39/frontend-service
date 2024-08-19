@@ -74,12 +74,10 @@ const selectedMainMenu = ref();
                     :button-click-handler="showDialog"/>
                 <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px">
                     <template #header>
-                        <div class="">
                             Tambah Menu
-                        </div>
                     </template>
                     <template #body>
-                        <div class="my-5 ">
+                        <div class="my-5 text-black text-normal">
                             <div class="mb-2.5">
                                 <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori"
                                     optionValue="code" optionLabel="name" :isLoading="false" :invalid="false"
@@ -97,11 +95,11 @@ const selectedMainMenu = ref();
 
                             <div class="flex gap-7 ">
                                 <div class="w-[200px]">
-                                    <CustomTextfield label="Kode Menu" class="border-[#C7CBD2]"
+                                    <CustomTextfield label="Kode Menu" class="border-[#C7CBD2] "
                                         placeholder="Kode Menu" />
                                 </div>
                                 <div class="grow">
-                                    <CustomTextfield label="Nama Menu" class="w-full" placeholder="Nama Menu" />
+                                    <CustomTextfield label="Nama Menu" class="" placeholder="Nama Menu" />
                                 </div>
                             </div>
 
@@ -111,9 +109,9 @@ const selectedMainMenu = ref();
                                 <div class="font-semibold mb-[5px]">
                                     Status
                                 </div>
-                                <div class="flex items-center gap-2 h-10 rounded-lg  text-[#6B7280]">
-                                    <CustomSwitch v-model="status" />
-                                    <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+                                <div class="flex items-center gap-2">
+                                    <CustomSwitch v-model="status" label=""/>
+                                    <div class="mt-2">{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
                                 </div>
                             </div>
                         </div>
@@ -123,7 +121,7 @@ const selectedMainMenu = ref();
                         <div class="w-full">
                             <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
                             <div class="flex items-end justify-end gap-2.5 ">
-                                <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
+                                <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
                                     borderColor="border-2 border-[#9DA4B1]" />
                                 <CustomButton label="Simpan" />
                             </div>
