@@ -40,5 +40,5 @@ const props = defineProps({
 		</div>
 
 	</div>
-	<hr class="border-[#D9DCE1] border-1 mx-5 mt-5 mb-2" />
+	<hr class="border-[#D9DCE1] border-1 ml-5 mr-7 mt-5" />
 </template>

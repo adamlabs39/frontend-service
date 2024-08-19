@@ -18,32 +18,36 @@ const editKonfigurasiIntegrasi = () => {
 </script>
 
 <template>
-    <div class="bg-white rounded-lg shadow-md">
-        <MainHeaderSetting heading="Konfigurasi Integrasi" />
 
-
-        <template v-if="!isEditKonfigurasiIntegrasi">
-            <GreenCard cardHeading="Konfigurasi VCLAIM" hrEnableCustomClass showButton labelButton="Edit"
-                :buttonClickHandler="editKonfigurasiIntegrasi">
-                <KonfigurasiVCLAIM />
-            </GreenCard>
-
-            <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit"
-                :buttonClickHandler="editKonfigurasiIntegrasi" class="mb-4">
-                <KonfigurasiLainnya />
-            </GreenCard>
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
+        <template #header>
+            <MainHeaderSetting heading="Konfigurasi Integrasi" />
         </template>
+        <template #content>
+            <template v-if="!isEditKonfigurasiIntegrasi">
+                <GreenCard cardHeading="Konfigurasi VCLAIM" hrEnableCustomClass showButton labelButton="Edit"
+                    :buttonClickHandler="editKonfigurasiIntegrasi">
+                    <KonfigurasiVCLAIM />
+                </GreenCard>
 
-        <template v-else>
+                <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit"
+                    :buttonClickHandler="editKonfigurasiIntegrasi" class="mb-4">
+                    <KonfigurasiLainnya />
+                </GreenCard>
+            </template>
 
-
-            <GreenCard cardHeading="Konfigurasi VCLAIM">
-                <FormEditKonfigurasiVCLAIM :buttonClickHandler="editKonfigurasiIntegrasi"/>
-            </GreenCard>
-
-            <GreenCard cardHeading="Konfigurasi Lainnya" class="mb-4">
-                <FormEditKonfigurasiLainnya :buttonClickHandler="editKonfigurasiIntegrasi" />
-            </GreenCard>
+            <template v-else>
+                <GreenCard cardHeading="Konfigurasi VCLAIM">
+                    <FormEditKonfigurasiVCLAIM :buttonClickHandler="editKonfigurasiIntegrasi" />
+                </GreenCard>
+                <GreenCard cardHeading="Konfigurasi Lainnya" class="mb-4">
+                    <FormEditKonfigurasiLainnya :buttonClickHandler="editKonfigurasiIntegrasi" />
+                </GreenCard>
+            </template>
         </template>
-    </div>
+    </Card>
+
+
+
+
 </template>

@@ -9,18 +9,24 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 
 
 <template>
-    <div class="bg-white rounded-lg shadow-md ">
-        <MainHeaderSetting heading="Print Out" />
-        <div class="flex flex-col px-5">
-            <div class="text-sm font-semibold font-poppins">Pengaturan Cetak Print</div>
-            <div class="py-2.5">
-                <div class="text-SM text-[#858D9D]">
-                    Gambar ini akan ditampilkan saat cetak Print Out PDF
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
+        <template #header>
+            <MainHeaderSetting heading="Print Out" />
+            <div class="ml-5 mr-7 mt-2.5">
+                <div class="text-sm font-semibold font-poppins">Pengaturan Cetak Print</div>
+                <div class="py-2.5">
+                    <div class="text-SM text-[#858D9D]">
+                        Gambar ini akan ditampilkan saat cetak Print Out PDF
+                    </div>
+                    <ul class="list-disc list-inside text-SM ml-[6px] text-[#858D9D]">
+                        <li>Ukuran gambar Header dan Footer yang disarankan adalah 793x1192.</li>
+                    </ul>
                 </div>
-                <ul class="list-disc list-inside text-SM ml-[6px] text-[#858D9D]">
-                    <li>Ukuran gambar Header dan Footer yang disarankan adalah 793x1192.</li>
-                </ul>
             </div>
+
+
+        </template>
+        <template #content>
 
             <div class="">
                 <div class="text-sm font-semibold font-poppins text-adameds-300 py-2.5">
@@ -61,7 +67,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
                         :show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
                         name="demo[]" url="/api/upload" />
                 </div>
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                     <CustomButton label="Hapus" class="px-5 py-[10px] font-poppins font-semibold text-sm w-full"
                         text-color="text-adameds-300" border-color="border-adameds-300" outlined />
                 </div>
@@ -70,11 +76,15 @@ import CustomButton from '@/components/Base/CustomButton.vue';
                     <CustomButton label="Setel Ulang" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
                         borderColor="border-2 border-[#9DA4B1]" />
                     <CustomButton label="Simpan" />
-                </div>
+                </div> -->
             </div>
-        </div>
 
-    </div>
+        </template>
+    </Card>
+
+
+
+
 </template>
 
 

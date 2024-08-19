@@ -15,12 +15,12 @@ const province = ref([
 </script>
 
 <template>
-	<div class="rounded-lg">
+	<div class="rounded-lg text-normal">
 
 		<!-- Kode Faskes dan Nama Faskes berada dalam dua kolom -->
 		<div class="flex gap-[30px] mb-4">
 			<div class="w-[200px]">
-				<CustomTextfield label="Kode Faskes" class="border-[#C7CBD2]" placeholder="Kode Faskes" />
+				<CustomTextfield label="Kode Faskes" placeholder="Kode Faskes" />
 			</div>
 			<div class="grow">
 				<CustomTextfield label="Nama Faskes" class="w-full" placeholder="Nama Faskes" />

@@ -35,7 +35,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 		</div>
 
 		<!-- Setelah Gambar -->
-		<div class="flex items-center justify-between mt-8">
+		<div class="flex items-center justify-between mt-5">
 			<div>
 				<div class="text-sm font-semibold font-poppins">Warna Tema</div>
 				<div class="text-SM text-[#858D9D]">
