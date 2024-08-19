@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import InfoRow from "../Layout/InfoRow.vue";
+import InfoRow from "../../../components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
@@ -18,12 +18,7 @@ function updateVisibility(value: any) {
 
 </script>
 <template>
-  <CustomDialog
-    width="600px"
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility"
-    headerBg="bg-adameds-300"
-  >
+  <CustomDialog width="600px" :visible="isDialogVisible" @update:visible="updateVisibility" headerBg="bg-adameds-300">
     <template #header>Detail Data Lokasi</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
@@ -42,28 +37,19 @@ function updateVisibility(value: any) {
             <InfoRow label="Part Of Id" value="a0fddeae-20b6-472d-99c1-bcf956c92de0" />
             <InfoRow label="Part Of Name" value="Laboratorium" />
             <InfoRow label="Organization ID" value="498cdfc1-78fa-462c-ad5f-6936258aa25f" />
-            <InfoRow
-              label="ID SATUSEHAT"
-              value="a0fddeae-20b6-472d-99c1-bcf956c92de0"
-            />
+            <InfoRow label="ID SATUSEHAT" value="a0fddeae-20b6-472d-99c1-bcf956c92de0" />
             <hr class="border-grey-200" />
-            <InfoRow
-              label="Status"
-            >
+            <InfoRow label="Status">
               <template #value>
                 <CustomChip label="NON-AKTIF" />
               </template>
             </InfoRow>
-            <InfoRow
-              label="Status Operasional"
-            >
+            <InfoRow label="Status Operasional">
               <template #value>
                 <CustomChip label="NON-AKTIF" />
               </template>
             </InfoRow>
-            <InfoRow
-              label="Status SATUSEHAT"
-            >
+            <InfoRow label="Status SATUSEHAT">
               <template #value>
                 <CustomChip label="NON-AKTIF" />
               </template>

@@ -1,5 +1,9 @@
-@import './base.css';
-@import '@fontsource/poppins';
+@import "./base.css";
+@import "@fontsource/poppins";
+
+:root {
+  --p-slate-700: @apply text-black;
+}
 
 html {
   overflow: hidden;
