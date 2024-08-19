@@ -29,7 +29,7 @@ const openedData = ref("0");
 </script>
 
 <template>
-  <Accordion :value="openedData" @update:value="checkOpen">
+  <Accordion :value="openedData" @update:value="checkOpen" class="text-black">
     <AccordionPanel
       class="rounded-[10px]"
       :class="{ 'border-none': noBorder }"
@@ -54,13 +54,13 @@ const openedData = ref("0");
     <template #collapseicon>
       <div @click="openAccordion('null')" class="cursor-pointer">
         <slot v-if="$slots.collapseIcon" name="collapseIcon" />
-        <PhCaretDown v-else :size="20" />
+        <PhCaretUp v-else :size="20" />
       </div>
     </template>
     <template #expandicon>
       <div @click="openAccordion('0')" class="cursor-pointer">
         <slot v-if="$slots.expandIcon" name="expandIcon" />
-        <PhCaretUp v-else :size="20" />
+        <PhCaretDown v-else :size="20" />
       </div>
     </template>
   </Accordion>

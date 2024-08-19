@@ -14,6 +14,7 @@ import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 // NOTE Admisi
 import AdmisiPage from "@/views/Admisi/AdmisiPage.vue";
 import SEPAdmisiPage from "@/views/Admisi/SEPAdmisiPage.vue";
+import PatientDataPage from "@/views/Admisi/PatientDataPage.vue";
 
 // NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
@@ -27,7 +28,6 @@ import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisa
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
-
 
 // NOTE Page View Datamaster
 import UserPage from "@/views/Datamaster/User/UserPage.vue";
@@ -280,6 +280,12 @@ const router = createRouter({
       path: "/admisi/sep/igd",
       name: "admisi-sep-igd",
       meta: { layout: SidebarLayout, page: SEPAdmisiPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/data-pasien",
+      name: "admisi-data-pasien",
+      meta: { layout: SidebarLayout, page: PatientDataPage },
       component: AdmisiView,
     },
 
