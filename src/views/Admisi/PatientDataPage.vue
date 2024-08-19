@@ -440,13 +440,27 @@ const isDetail = () => {
                   <div class="w-full font-semibold text-center">Preview</div>
                 </template>
                 <template #body="slotProps">
-                  <div class="flex">
+                  <div class="flex justify-center">
                     <CustomButton
                       @click="() => {}"
                       icon="PhEye"
-                      label="Lihat"
-                      class="h-[30px] mx-auto"
+                      label=""
+                      class="h-[30px]"
                       backgroundColor="bg-adameds-300"
+                    />
+                    <CustomButton
+                      @click="() => {}"
+                      icon="PhPencilSimple"
+                      label=""
+                      class="h-[30px] mx-[5px]"
+                      backgroundColor="bg-info-300"
+                    />
+                    <CustomButton
+                      @click="() => {}"
+                      icon="PhTrash"
+                      label=""
+                      class="h-[30px]"
+                      backgroundColor="bg-danger-300"
                     />
                   </div>
                 </template>
@@ -509,29 +523,39 @@ const isDetail = () => {
         </CustomAccordion>
       </template>
       <template #footer>
-        <div>
-          <CustomButton
-            @click="detailPatientDialog = false"
-            label="Batal"
-            outlined
-            class="mr-[10px]"
-            borderColor="border-grey-200"
-            textColor="text-grey-300"
-          />
-          <CustomButton
-            @click="showUploadForm = true"
-            label="Unggah berkas RM"
-            class="mr-[10px]"
-            backgroundColor="bg-adameds-300"
-          />
-          <CustomButton
-            @click="
-              (detailPatientDialog = false), changeSection('Detail Data Pasien')
-            "
-            label="Edit Data Pasien"
-            class=""
-            backgroundColor="bg-adameds-300"
-          />
+        <div class="flex justify-between w-full">
+          <div class="flex">
+            <CustomButton
+              @click="() => {}"
+              icon="PhPrinter"
+              label="Cetak Kartu Pasien"
+              class=""
+              backgroundColor="bg-adameds-300"
+            />
+            <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
+            <CustomButton
+              @click="() => {}"
+              label="General Consent"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
+          <div class="flex">
+            <CustomButton
+              @click="showUploadForm = true"
+              label="Upload berkas RM"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+            <CustomButton
+              @click="
+                (detailPatientDialog = false), changeSection('Edit Data Pasien')
+              "
+              label="Edit Data Pasien"
+              class=""
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
         </div>
       </template>
     </CustomDialog>
