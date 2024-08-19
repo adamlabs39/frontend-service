@@ -13,6 +13,14 @@ import NoData from "@/components/section/NoData.vue";
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
 const itemsPasien = ref([
   {
     noRM: "123456",
@@ -116,11 +124,19 @@ const itemsMedicalRecord = ref([
 ]);
 
 const detailPatientDialog = ref(false);
+const showUploadForm = ref(false);
+
+const isDetail = () => {
+  const label = dataBreadCrumb.value[0].label;
+  if (typeof label == "string" && label.includes("Detail")) return true;
+  else return false;
+};
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
+      v-if="dataBreadCrumb.length == 0"
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
@@ -148,7 +164,7 @@ const detailPatientDialog = ref(false);
                   class="mr-[10px]"
                 />
                 <CustomButton
-                  @click="() => {}"
+                  @click="changeSection('Tambah Data Pasien')"
                   icon="PhPlus"
                   label="Pasien"
                   class="mr-[10px]"
@@ -202,12 +218,6 @@ const detailPatientDialog = ref(false);
             <template #body="slotProps">
               <div class="text-center">
                 <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
-                <div
-                  v-if="slotProps.data.no_antrian"
-                  class="w-[21px] mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] text-SM font-semibold"
-                >
-                  {{ slotProps.data.no_antrian }}
-                </div>
               </div>
             </template>
           </Column>
@@ -284,8 +294,51 @@ const detailPatientDialog = ref(false);
         </div>
       </template>
     </Card>
+    <div v-else class="relative w-full h-full overflow-hidden">
+      <Card class="h-min mb-[10px] absolute right-0 left-0">
+        <template #content>
+          <div class="flex justify-between">
+            <CustomBreadCrumb
+              :home="{
+                label: 'Data Pasien',
+                home: true,
+              }"
+              :model="dataBreadCrumb"
+              class=""
+            />
+            <div class="flex">
+              <CustomButton
+                @click="() => {}"
+                icon="PhCaretLeft"
+                label="Kembali"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+              />
+              <CustomButton
+                v-if="isDetail()"
+                @click="changeSection('Edit Data Pasien')"
+                label="Edit"
+                class="mr-[10px]"
+                backgroundColor="bg-adameds-300"
+              />
+            </div>
+          </div>
+        </template>
+      </Card>
+    </div>
+
     <CustomDialog v-model:visible="detailPatientDialog" width="1000px">
-      <template #header>Adam Bin Adam</template>
+      <template #header>
+        <div class="flex">
+          <div class="bg-white rounded-lg text-adameds-300 px-[10px]">
+            RM.123456
+          </div>
+          <span class="mx-[10px]">Adam Bin Adam</span>
+          <span class="font-normal leading-6 text-normal">(20Th 3Bln 5Hr)</span>
+        </div>
+      </template>
       <template #body>
         <CustomAccordion noBorder headerClass="text-black py-[15px]">
           <template #header>Riwayat Pemeriksaan</template>
@@ -360,6 +413,40 @@ const detailPatientDialog = ref(false);
                 </template>
               </Column>
             </DataTable>
+            <div
+              v-if="showUploadForm"
+              class="h-20 border-dashed border-[1px] border-adameds-300 rounded-[10px] mt-5 overflow-hidden"
+            >
+              <FileUpload
+                chooseLabel="Pilih File"
+                chooseIcon="pi pi-upload"
+                :pt="{ root: 'border-none', content: 'hidden' }"
+              >
+                <template #header="{ files, chooseCallback, uploadCallback }">
+                  <div class="flex mx-auto">
+                    <span class="leading-10 text-SM">{{
+                      files[0] ? files[0].name : "No File Chosen"
+                    }}</span>
+                    <CustomButton
+                      @click="chooseCallback()"
+                      icon="PhUploadSimple"
+                      label="Pilih File"
+                      outlined
+                      class="mx-[10px]"
+                      borderColor="border-adameds-300"
+                      textColor="text-adameds-300"
+                    />
+                    <CustomButton
+                      @click="uploadCallback()"
+                      label="Upload"
+                      class=""
+                      :disabled="!files[0]"
+                      backgroundColor="bg-adameds-300"
+                    />
+                  </div>
+                </template>
+              </FileUpload>
+            </div>
           </template>
         </CustomAccordion>
         <CustomAccordion noBorder headerClass="text-black py-[15px]">
@@ -393,13 +480,13 @@ const detailPatientDialog = ref(false);
             textColor="text-grey-300"
           />
           <CustomButton
-            @click="() => {}"
+            @click="showUploadForm = true"
             label="Unggah berkas RM"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="() => {}"
+            @click="changeSection('Edit Data Pasien')"
             label="Edit Data Pasien"
             class=""
             backgroundColor="bg-adameds-300"
