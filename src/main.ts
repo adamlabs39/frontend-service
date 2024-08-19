@@ -31,26 +31,26 @@ import ToggleSwitch from "primevue/toggleswitch";
 import Card from "primevue/card";
 import Tooltip from "primevue/tooltip";
 import Button from "primevue/button";
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
 import Paginator from "primevue/paginator";
-import InputGroup from 'primevue/inputgroup';
-import InputGroupAddon from 'primevue/inputgroupaddon';
+import InputGroup from "primevue/inputgroup";
+import InputGroupAddon from "primevue/inputgroupaddon";
 
-import FileUpload from 'primevue/fileupload'
-import ColorPicker from 'primevue/colorpicker';
+import FileUpload from "primevue/fileupload";
+import ColorPicker from "primevue/colorpicker";
 
-import Chart from 'primevue/chart'
-import ProgressBar from 'primevue/progressbar'
-import Menu from 'primevue/menu'
-import Checkbox from 'primevue/checkbox';
-import Carousel from 'primevue/carousel';
-import Editor from 'primevue/editor';
+import Chart from "primevue/chart";
+import ProgressBar from "primevue/progressbar";
+import Menu from "primevue/menu";
+import Checkbox from "primevue/checkbox";
+import Carousel from "primevue/carousel";
+import Editor from "primevue/editor";
 
-import Tabs from 'primevue/tabs';
-import TabPanels from 'primevue/tabpanels';
-import TabPanel from 'primevue/tabpanel';
-
+import Tabs from "primevue/tabs";
+import TabPanels from "primevue/tabpanels";
+import TabPanel from "primevue/tabpanel";
+import { definePreset } from "@primevue/themes";
 
 const app = createApp(App);
 
@@ -58,9 +58,21 @@ app.use(createPinia());
 app.use(router);
 app.use(PhosphorIcons);
 
+const myPreset = definePreset(Aura, {
+  semantic: {
+    colorScheme: {
+      light: {
+        text: {
+          color: "#000000",
+        },
+      },
+    },
+  },
+});
+
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: myPreset,
     options: {
       darkModeSelector: ".my-app-dark",
       cssLayer: {
@@ -90,22 +102,22 @@ app.directive("tooltip", Tooltip);
 app.component("Select", Select);
 app.component("DatePicker", DatePicker);
 
-app.component('ToggleSwitch', ToggleSwitch);
-app.component('FileUpload', FileUpload)
-app.component('ColorPicker', ColorPicker)
-app.component('DataTable', DataTable)
-app.component('Column', Column)
-app.component('Paginator', Paginator)
+app.component("ToggleSwitch", ToggleSwitch);
+app.component("FileUpload", FileUpload);
+app.component("ColorPicker", ColorPicker);
+app.component("DataTable", DataTable);
+app.component("Column", Column);
+app.component("Paginator", Paginator);
 app.component("Chart", Chart);
-app.component("ProgressBar", ProgressBar)
-app.component("Menu", Menu)
-app.component('Checkbox', Checkbox)
-app.component('Carousel',Carousel)
+app.component("ProgressBar", ProgressBar);
+app.component("Menu", Menu);
+app.component("Checkbox", Checkbox);
+app.component("Carousel", Carousel);
 app.component("InputGroup", InputGroup);
 app.component("InputGroupAddon", InputGroupAddon);
-app.component('Editor', Editor)
-app.component('Tabs', Tabs)
-app.component('TabPanels', TabPanels)
-app.component('TabPanel', TabPanel)
+app.component("Editor", Editor);
+app.component("Tabs", Tabs);
+app.component("TabPanels", TabPanels);
+app.component("TabPanel", TabPanel);
 
 app.mount("#app");
