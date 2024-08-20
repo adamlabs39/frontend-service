@@ -15,6 +15,7 @@ import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 import AdmisiPage from "@/views/Admisi/AdmisiPage.vue";
 import SEPAdmisiPage from "@/views/Admisi/SEPAdmisiPage.vue";
 import PatientDataPage from "@/views/Admisi/PatientDataPage.vue";
+import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
 
 // NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
@@ -286,6 +287,12 @@ const router = createRouter({
       path: "/admisi/data-pasien",
       name: "admisi-data-pasien",
       meta: { layout: SidebarLayout, page: PatientDataPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/monitoring-kamar",
+      name: "admisi-monitoring-kamar",
+      meta: { layout: SidebarLayout, page: RoomMonitoringPage },
       component: AdmisiView,
     },
 

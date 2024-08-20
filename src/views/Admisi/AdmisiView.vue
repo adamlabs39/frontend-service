@@ -68,6 +68,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Monitoring Kamar",
         icon: "monitoring-bed",
         type: linkType.LINK,
+        url: "/admisi/monitoring-kamar",
       },
     ],
   },
