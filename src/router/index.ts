@@ -16,6 +16,7 @@ import AdmisiPage from "@/views/Admisi/AdmisiPage.vue";
 import SEPAdmisiPage from "@/views/Admisi/SEPAdmisiPage.vue";
 import PatientDataPage from "@/views/Admisi/PatientDataPage.vue";
 import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
+import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 
 // NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
@@ -25,9 +26,9 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
-import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue"
-import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
-import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
+import PasswordOtorisasiPage from "../views/SettingPage/Template/PasswordOtorisasi/PasswordOtorisasiPage.vue";
+import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue";
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue";
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 
 // NOTE Page View Datamaster
@@ -92,38 +93,38 @@ const router = createRouter({
       path: "/setting/profil-faskes",
       name: "setting-profil-faskes",
       meta: { layout: SidebarLayout, page: ProfilFaskesPage },
-      component: SettingView
+      component: SettingView,
     },
 
     {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
       meta: { layout: SidebarLayout, page: KonfigurasiIntegrasiPage },
-      component: SettingView
+      component: SettingView,
     },
     {
       path: "/setting/permission-menu",
       name: "setting-permission-menu",
       meta: { layout: SidebarLayout, page: PermissionMenuPage },
-      component: SettingView
+      component: SettingView,
     },
     {
       path: "/setting/password-otorisasi",
       name: "setting-password-otorisasi",
       meta: { layout: SidebarLayout, page: PasswordOtorisasiPage },
-      component: SettingView
+      component: SettingView,
     },
     {
       path: "/setting/print-out",
       name: "setting-print-out",
       meta: { layout: SidebarLayout, page: PrintOutPage },
-      component: SettingView
+      component: SettingView,
     },
     {
       path: "/setting/profil-akun",
       name: "setting-profil-akun",
       meta: { layout: SidebarLayout, page: ProfilAkunPage },
-      component: ProfilAkunView
+      component: ProfilAkunView,
     },
 
     // NOTE Datamaster
@@ -245,7 +246,7 @@ const router = createRouter({
     {
       path: "/admisi",
       name: "admisi",
-      redirect: '/admisi/rawat-jalan'
+      redirect: "/admisi/rawat-jalan",
     },
     {
       path: "/admisi/rawat-jalan",
@@ -293,6 +294,53 @@ const router = createRouter({
       path: "/admisi/monitoring-kamar",
       name: "admisi-monitoring-kamar",
       meta: { layout: SidebarLayout, page: RoomMonitoringPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan",
+      name: "admisi-laporan",
+      redirect: "/admisi/laporan/kunjungan",
+    },
+    {
+      path: "/admisi/laporan/kunjungan",
+      name: "admisi-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/penjamin",
+      name: "admisi-laporan-penjamin",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/batal-kunjungan",
+      name: "admisi-laporan-batal-kunjungan",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/status-kamar",
+      name: "admisi-laporan-status-kamar",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/keperawatan-inap-pasien",
+      name: "admisi-laporan-keperawatan-inap-pasien",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/bayi-baru-lahir",
+      name: "admisi-laporan-bayi-baru-lahir",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
+      component: AdmisiView,
+    },
+    {
+      path: "/admisi/laporan/rekap-pasien-bpjs",
+      name: "admisi-laporan-rekap-pasien-bpjs",
+      meta: { layout: SidebarLayout, page: AdmisiReportPage },
       component: AdmisiView,
     },
 
