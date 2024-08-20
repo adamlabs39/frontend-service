@@ -48,7 +48,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  
 });
+
+const emit = defineEmits(['click'])
 </script>
 
 <template>
@@ -74,6 +77,8 @@ const props = defineProps({
         : '',
     ]"
     :fluid="full"
+    @click = "emit('click')"
+    pt:label:class="font-semibold text-normal"
   >
     <template #default>
       <slot />
