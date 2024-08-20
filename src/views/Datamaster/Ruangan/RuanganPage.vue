@@ -162,7 +162,6 @@ const resetFilter = () => {
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
         scrollable
@@ -232,7 +231,7 @@ const resetFilter = () => {
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
@@ -251,14 +250,16 @@ const resetFilter = () => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 @click="handleEdit"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt=""/>
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt=""/>
               </CustomButton>
             </div>
           </template>

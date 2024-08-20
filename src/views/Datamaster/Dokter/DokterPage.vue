@@ -1,74 +1,80 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataDokter from "./TambahDataDokterDialog.vue";
 import DetailDokterDialog from "./DetailDokterDialog.vue";
+import PemeriksaanDialog from "./PemeriksaanDialog.vue";
 
+// State Variables
 const products = ref<any[]>([]);
-const selectedProduct = ref(null);
-const router = useRouter();
-const tambahDataDialog = ref(false);
-const detailDokterDialog = ref(false);
+const selectedDokter = ref(null);
 
-const onRowSelect = (event: any) => {
-  selectedProduct.value = event.data;
-  detailDokterDialog.value = true;
-};
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+const isDetailDokterDialogVisible = ref(false);
+const isPemeriksaanDialogVisible = ref(false);
 
+// Dialog Configuration
+const dialogConfig = ref({
+  method: "add",
+  title: "Tambah Data",
+});
+
+// Lifecycle Hook
 onMounted(() => {
+  loadProducts();
+});
+
+// Functions
+
+// Load initial product data
+function loadProducts() {
   products.value = [
     {
       id: "1",
       code_bpjs: "001",
       SIP: "Cholera disease",
-      STR:"10000000",
-      code_antrian:"UMUM",
-      name_dokter:"dr. Umum",
-      telepon:"087898765678",
+      STR: "10000000",
+      code_antrian: "UMUM",
+      name_dokter: "dr. Umum",
+      telepon: "087898765678",
       status: "AKTIF",
       action: "edit",
     },
-    {
-      no: "2",
-      code_bpjs: "002",
-      SIP: "Cholera disease",
-      STR:"10000000",
-      code_antrian:"UMUM",
-      name_dokter:"dr. Umum",
-      telepon:"087898765678",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "3",
-      code_bpjs: "003",
-      SIP: "Cholera disease",
-      STR:"10000000",
-      code_antrian:"UMUM",
-      name_dokter:"dr. Umum",
-      telepon:"087898765678",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "4",
-      code_bpjs: "004",
-      SIP: "Cholera disease",
-      STR:"10000000",
-      code_antrian:"UMUM",
-      name_dokter:"dr. Umum",
-      telepon:"087898765678",
-      status: "AKTIF",
-      action: "edit",
-    },
+    // Additional product objects...
   ];
-});
-const metaKey = ref(true);
+}
+
+// Handle dialog for adding or editing data
+function openDialog(method:any, title:any) {
+  dialogConfig.value = { method, title };
+  isTambahDataDialogVisible.value = true;
+}
+
+// Handle closing of the dialog
+function closeDialog() {
+  isTambahDataDialogVisible.value = false;
+}
+
+// Handle row selection and open detail dialog
+function handleRowSelect(event:any) {
+  selectedDokter.value = event.data;
+  openDetailDialog(true);
+}
+
+// Toggle detail dialog visibility
+function openDetailDialog(isVisible:any) {
+  isDetailDokterDialogVisible.value = isVisible;
+}
+
+// Toggle pemeriksaan dialog visibility
+function openPemeriksaanDialog(isVisible:any) {
+  isPemeriksaanDialogVisible.value = isVisible;
+}
 </script>
 
 <template>
@@ -80,11 +86,7 @@ const metaKey = ref(true);
     <template #header>
       <Header title="Dokter" :filter="false" class="mb-5">
         <template #header>
-          <CustomButton
-            label="Data"
-            icon="PhPlus"
-            @click="tambahDataDialog = true"
-          />
+          <CustomButton label="Data" icon="PhPlus" @click="openDialog('add', 'Tambah Data')" />
         </template>
       </Header>
     </template>
@@ -93,13 +95,12 @@ const metaKey = ref(true);
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
         selectionMode="single"
-        :metaKeySelection="metaKey"
-        v-model:selection="selectedProduct"
+        :metaKeySelection="true"
+        v-model:selection="selectedDokter"
         stripedRows
-        @rowSelect="onRowSelect"
+        @rowSelect="handleRowSelect"
         scrollable
         scrollHeight="flex"
       >
@@ -165,12 +166,12 @@ const metaKey = ref(true);
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50" >
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
@@ -180,81 +181,38 @@ const metaKey = ref(true);
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0" @click="openDialog('edit', 'Edit Data')">
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-adameds-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="openPemeriksaanDialog(true)"
               >
-                <img src="@/assets/icons/dokter.svg" alt="" width="15px" />
+                <img src="@/assets/icons/dokter.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
       <!-- Dialog for Tambah Data Dokter -->
-      <CustomDialog
-        width="600px"
-        v-model:visible="tambahDataDialog"
-        headerBg="bg-adameds-300"
-      >
-        <template #header>Tambah Data Dokter</template>
-        <template #body>
-          <TambahDataDokter />
-        </template>
-        <template #footer>
-          <div class="w-full">
-            <hr class="-mx-5 border-grey-200" />
-            <div class="mt-5 flex justify-end gap-2.5">
-              <CustomButton
-                label="Batal"
-                border-color="border-grey-200"
-                background-color="bg-white"
-                text-color="text-grey-300"
-                @click="tambahDataDialog = false"
-              >
-              </CustomButton>
+      <TambahDataDokter
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        @close="closeDialog"
+      />
+      <DetailDokterDialog v-model:isDialogVisible="isDetailDokterDialogVisible" />
+      <PemeriksaanDialog v-model:isDialogVisible="isPemeriksaanDialogVisible" />
 
-              <CustomButton label="Simpan"> </CustomButton>
-            </div>
-          </div>
-        </template>
-      </CustomDialog>
-
-      <!-- Dialog for Detail Dokter -->
-      <CustomDialog
-        width="800px"
-        v-model:visible="detailDokterDialog"
-        headerBg="bg-adameds-300"
-      >
-        <template #header>Detail Dokter</template>
-        <template #body>
-          <DetailDokterDialog />
-        </template>
-        <template #footer>
-          <div class="w-full">
-            <hr class="-mx-5 border-grey-200" />
-            <div class="mt-5 flex justify-end gap-2.5">
-              <CustomButton
-                label="Batal"
-                @click="detailDokterDialog = false"
-                border-color="border-grey-200"
-                background-color="bg-white"
-                text-color="text-grey-300"
-              >
-              </CustomButton>
-              <CustomButton label="Simpan"> </CustomButton>
-            </div>
-          </div>
-        </template>
-      </CustomDialog>
     </template>
 
     <template #footer>
@@ -262,8 +220,3 @@ const metaKey = ref(true);
     </template>
   </Card>
 </template>
-<style>
-.p-datatable-row-selected {
-  @apply bg-transparent text-black;
-}
-</style>

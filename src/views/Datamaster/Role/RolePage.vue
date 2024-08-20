@@ -86,7 +86,6 @@ function handleClose() {
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         scrollable
         scrollHeight="flex"
@@ -125,7 +124,7 @@ function handleClose() {
                   :showCheckedIcon="false"
                   border-color="border-none"
                   bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white"
+                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
                 />
               </div>
             </div>
@@ -133,9 +132,13 @@ function handleClose() {
         </Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50 bg-adameds-50 font-semibold text-SM"
         >
+        <template #header>
+          <div class="w-full text-center">
+            Status
+          </div>
+        </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -158,12 +161,12 @@ function handleClose() {
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
@@ -177,14 +180,16 @@ function handleClose() {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 @click="handleEdit"
+                class="h-6 w-[26px] p-0" 
               >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0" 
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>

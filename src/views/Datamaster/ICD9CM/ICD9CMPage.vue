@@ -8,53 +8,52 @@ import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
 import { useIcd9Store } from "@/stores/icd9";
-const products = ref<any[]>([]);
+import NoData from "@/components/section/NoData.vue";
 
 const icd9Store = useIcd9Store();
-const icd9Response = ref();
+const icd9Response = ref<any[]>([]);
+const loading = ref(true);
 
-onBeforeMount(async () => {
-  const response = await icd9Store.getApi();
-  icd9Response.value = response.payload;
+onMounted(async () => {
+  try {
+    const response = await icd9Store.getApi();
+    icd9Response.value = response.payload || [];
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    icd9Response.value = [];
+  } finally {
+    loading.value = false;
+  }
 });
 
-//   icd9Response.value=await icd9Response.value.payload
-//   console.log('test 2', icd9Response.value)
-// })
-// onMounted(() => {
-//   products.value = [
-//     {
-//       id: "1",
-//       kode: "001",
-//       nama: "Cholera disease",
-//       status: "AKTIF",
-//       action: "edit",
-//     },
-//     {
-//       id: "2",
-//       kode: "002",
-//       nama: "Typhoid and paratyphoid fevers",
-//       status: "AKTIF",
-//       action: "edit",
-//     },
-//     {
-//       id: "3",
-//       kode: "003",
-//       nama: "Other Salmonella",
-//       status: "AKTIF",
-//       action: "edit",
-//     },
-//     {
-//       id: "4",
-//       kode: "004",
-//       nama: "Dizziness and giddiness",
-//       status: "AKTIF",
-//       action: "edit",
-//     },
-//   ];
-// });
+const hasData = computed(() => icd9Response.value && icd9Response.value.length > 0);
 
-const testDialog = ref(false);
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah Data"
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah Data"
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit Data"
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
+
 </script>
 
 <template>
@@ -64,42 +63,21 @@ const testDialog = ref(false);
     class=""
   >
     <template #header>
-      <Header title="ICD 9 CM" :filter="false">
+      <Header title="ICD 9 CM" :filter="false" class="mb-5">
         <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-          <CustomDialog
-            width="600px"
-            v-model:visible="testDialog"
-            headerBg="bg-adameds-300"
-          >
-            <template #header>Tambah Data Role</template>
-            <template #body>
-              <TambahDataICD9CMDialog />
-            </template>
-            <template #footer>
-              <div class="w-full">
-                <hr class="-mx-5 border-grey-200" />
-                <div class="mt-5 flex justify-end gap-2.5">
-                  <CustomButton
-                    label="Batal"
-                    border-color="border-grey-200"
-                    background-color="bg-white"
-                    text-color="text-grey-300"
-                  >
-                  </CustomButton>
-                  <CustomButton label="Simpan"> </CustomButton>
-                </div>
-              </div>
-            </template>
-          </CustomDialog>
+          <CustomButton label="Data" icon="PhPlus" @click="handleAdd"/>
         </template>
       </Header>
     </template>
     <template #content>
+      <div v-if="loading" class="flex justify-center items-center h-full">
+        Loading...
+      </div>
+      <NoData v-else-if="!hasData" />
       <DataTable
+      v-else
         :value="icd9Response"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
         scrollable
@@ -160,7 +138,7 @@ const testDialog = ref(false);
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
               <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt="" width="15px" @click="handleEdit" />
               </CustomButton>
               <CustomButton
                 label=""
@@ -172,6 +150,11 @@ const testDialog = ref(false);
           </template>
         </Column>
       </DataTable>
+      <TambahDataICD9CMDialog
+      v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"/>
     </template>
     <template #footer>
       <Footer />

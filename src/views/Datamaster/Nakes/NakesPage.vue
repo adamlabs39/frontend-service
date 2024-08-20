@@ -78,7 +78,6 @@ const detailNakesDialog = ref(false);
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
         selectionMode="single"
         stripedRows

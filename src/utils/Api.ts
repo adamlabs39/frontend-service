@@ -119,17 +119,17 @@ settingInstance.interceptors.response.use(
   }
 );
 
-//ICD 9
-const baseInstanceICD9 = axios.create({
+//Datamaster
+const baseInstanceDatamaster = axios.create({
   headers: {
     common: {
       Accept: "text/plain, */*",
     },
   },
-  baseURL: import.meta.env.VITE_BASE_ICD9,
+  baseURL: import.meta.env.VITE_BASE_DATAMASTER,
 });
 
-baseInstanceICD9.interceptors.request.use(
+baseInstanceDatamaster.interceptors.request.use(
   (config) => {
     const token = "";
     if (!token) {
@@ -148,7 +148,7 @@ baseInstanceICD9.interceptors.request.use(
   }
 );
 
-baseInstanceICD9.interceptors.response.use(
+baseInstanceDatamaster.interceptors.response.use(
   (response: AxiosResponse) => {
     if (response.data) {
       response.data = toCamelCase(response.data);
@@ -160,4 +160,4 @@ baseInstanceICD9.interceptors.response.use(
   }
 );
 
-export { baseInstance, settingInstance, baseInstanceICD9 };
+export { baseInstance, settingInstance, baseInstanceDatamaster };

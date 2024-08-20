@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { apiIcd9Get } from "@/utils/apiHandler";
+import { apiDatamasterGet } from "@/utils/apiHandler";
 
 export const useIcd9Store = defineStore({
   id: "index",
@@ -7,7 +7,7 @@ export const useIcd9Store = defineStore({
   getters: {},
   actions: {
     async getApi(payload = {}) {
-      return apiIcd9Get("/datamaster/icd9", payload);
+      return apiDatamasterGet("/datamaster/icd9", payload);
     },
   },
 });

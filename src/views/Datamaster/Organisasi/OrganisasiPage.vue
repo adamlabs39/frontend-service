@@ -108,7 +108,6 @@ const onRowSelect = (event: any) => {
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         class="text-xs"
         scrollable
         scrollHeight="flex"

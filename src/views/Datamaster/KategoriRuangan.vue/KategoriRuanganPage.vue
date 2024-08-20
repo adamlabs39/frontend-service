@@ -6,11 +6,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahKategoriRuanganDialog from "./TambahKategoriRuanganDialog.vue";
+import NoData from "@/components/section/NoData.vue";
 const products = ref<any[]>([]);
 
 onMounted(() => {
   products.value = [
-    {
+  {
       id: "1",
       kode_ruangan: "MWR",
       nama_kategori_ruangan: "Mawar",
@@ -44,14 +45,14 @@ onMounted(() => {
 const dialogData = ref({
   isVisible: false,
   method: "add",
-  title: "Tambah Data"
+  title: "Tambah Data",
 });
 
 function handleAdd() {
   dialogData.value = {
     isVisible: true,
     method: "add",
-    title: "Tambah Data"
+    title: "Tambah Data",
   };
 }
 
@@ -59,15 +60,13 @@ function handleEdit() {
   dialogData.value = {
     isVisible: true,
     method: "edit",
-    title: "Edit Data"
+    title: "Edit Data",
   };
 }
 
 function handleClose() {
   dialogData.value.isVisible = false;
 }
-
-
 </script>
 
 <template>
@@ -76,20 +75,20 @@ function handleClose() {
     pt:content:class="h-full overflow-auto"
     class=""
   >
-  <template #header >
-    <Header title="Kategori Ruangan" class="mb-5">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        
-      </template>
-    </Header>
-  </template>
-    
-<template #content>
-  <DataTable
+    <template #header>
+      <Header title="Kategori Ruangan" class="mb-5">
+        <template #header>
+          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
+        </template>
+      </Header>
+    </template>
+
+    <template #content>
+      <NoData v-if="products.length === 0" />
+      <DataTable
+        v-else
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
         scrollable
@@ -129,8 +128,16 @@ function handleClose() {
                     ? 'text-white'
                     : 'text-[#80868d]'
                 "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
@@ -149,7 +156,11 @@ function handleClose() {
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg"  @click="handleEdit">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                @click="handleEdit"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -162,17 +173,16 @@ function handleClose() {
           </template>
         </Column>
       </DataTable>
-      <TambahKategoriRuanganDialog  
+      <TambahKategoriRuanganDialog
         v-model:isDialogVisible="dialogData.isVisible"
         :title="dialogData.title"
         :method="dialogData.method"
-        @close="handleClose"/>
+        @close="handleClose"
+      />
+    </template>
 
-</template>
-
-<template #footer>
-  <Footer />
-</template>
-    
+    <template #footer>
+      <Footer />
+    </template>
   </Card>
 </template>

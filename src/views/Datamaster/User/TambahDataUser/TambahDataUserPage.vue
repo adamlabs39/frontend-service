@@ -12,6 +12,7 @@ import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import NoData from "@/components/section/NoData.vue";
 
 const router = useRouter();
 
@@ -246,17 +247,7 @@ watch(selectedRole, (newRole) => {
           />
           <div class="h-full overflow-auto">
             <!-- Empty Role -->
-            <div
-              v-if="!selectedRole"
-              class="flex flex-col items-center justify-center w-full h-full border border-dashed rounded-md"
-            >
-              <img src="@/assets/icons/empty role.svg" alt="" />
-              <div
-                class="font-normal text-sm text-[#9CA3AF] leading-5 mt-[18.5px]"
-              >
-                Pilih Role Terlebih Dahulu
-              </div>
-            </div>
+             <NoData v-if="!selectedRole" title="Pilih Role Terlebih Dahulu" />
             <!-- Admin Role -->
             <div
               v-if="selectedRole === 'admin'"

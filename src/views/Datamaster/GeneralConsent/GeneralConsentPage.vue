@@ -97,7 +97,6 @@ const status = ref();
       <DataTable
         :value="products"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
       >
@@ -127,16 +126,20 @@ const status = ref();
                   :showCheckedIcon="false"
                   border-color="border-none"
                   bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white pr-2 pl-3"
+                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3"
                 />
               </div>
             </div> </template
         ></Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50"
         >
+        <template #header>
+          <div class="w-full text-center h-full font-semibold text-SM">
+            Status
+          </div>
+        </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -159,7 +162,7 @@ const status = ref();
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
@@ -167,21 +170,22 @@ const status = ref();
         <Column headerClass="bg-adameds-50" class="min-w-[120px]">
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
+                <img src="@/assets/icons/edit.svg" alt=""  />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt=""  />
               </CustomButton>
             </div>
           </template>

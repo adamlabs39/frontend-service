@@ -1,4 +1,4 @@
-import { baseInstance, settingInstance,baseInstanceICD9 } from "./Api";
+import { baseInstance, settingInstance,baseInstanceDatamaster } from "./Api";
 
 const errorApiHandler = (error: any) => {
   alert("Error");
@@ -71,15 +71,15 @@ const apiSettingDelete = async (url: string, data: object) => {
   }
 };
 
-//ICD 9
+//Datamaster
 
-const apiIcd9Get = async (url: string, data: object) => {
+const apiDatamasterGet = async (url: string, data: object) => {
   try {
-    let response = await baseInstanceICD9.get(url, data);
+    let response = await baseInstanceDatamaster.get(url, data);
     return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
 };
 
-export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiSettingPost, apiSettingGet, apiSettingPut, apiSettingDelete, apiIcd9Get };
+export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiSettingPost, apiSettingGet, apiSettingPut, apiSettingDelete, apiDatamasterGet };

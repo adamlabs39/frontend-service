@@ -101,7 +101,6 @@ onMounted(() => {
     v-model:expandedRows="expandedRows"
     :value="products"
     tableStyle="min-width: 50rem"
-    :pt="{ headerRow: 'bg-blue-500 text-white' }"
     class="text-xs"
     stripedRows
     dataKey="id"
