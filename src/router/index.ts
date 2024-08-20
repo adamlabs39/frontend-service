@@ -9,6 +9,7 @@ import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
 import SettingView from "@/views/SettingPage/SettingView.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
+import AntrianView from "@/views/Antrian/AntrianView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -48,6 +49,10 @@ import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
 import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
+
+// NOTE Page Antrian
+import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
+import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -282,6 +287,50 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: SEPAdmisiPage },
       component: AdmisiView,
     },
+
+    // NOTE Antrian
+    {
+      path: "/antrian",
+      name: "antrian",
+      redirect: '/antrian/konfigurasi/jadwal-dokter'
+    },
+    {
+      path: "/antrian/konfigurasi/jadwal-dokter",
+      name: "antrian-konfigurasi-jadwal-dokter",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/konfigurasi/layar-antrian",
+      name: "antrian-konfigurasi-layar-antrian",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/data-antrian",
+      name: "antrian-data-antrian",
+      meta: { layout: SidebarLayout, page: DataAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/monitoring-antrian",
+      name: "antrian-monitoring-antrian",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/layar",
+      name: "antrian-layar",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/apm",
+      name: "antrian-apm",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    
 
     // NOTE Test Component
     {
