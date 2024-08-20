@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, type PropType } from "vue";
+import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -20,9 +21,24 @@ const props = defineProps({
   },
 });
 
+const storeUtils = utilsStore();
+
+onMounted(() => {
+  console.log(storeUtils.selectedRoom);
+  if (storeUtils.selectedRoom) {
+    selectedRoomCategory.value = storeUtils.selectedRoom.roomCategory;
+    selectedRoomClass.value = storeUtils.selectedRoom.roomClass;
+    selectedRoom.value = storeUtils.selectedRoom.room;
+    selectedBed.value.push(`${storeUtils.selectedRoom.bed}`);
+    storeUtils.setSelectedRoom(null);
+  }
+});
+
 const mergeBill = ref(false);
+const selectedRoomCategory = ref();
+const selectedRoomClass = ref();
 const selectedRoom = ref();
-const selectedBed = ref([]);
+const selectedBed = ref<string[]>([]);
 const babyBox = ref(false);
 const selectedBabyBed = ref([]);
 
@@ -193,16 +209,18 @@ defineExpose({
           <hr class="my-[30px]" />
           <div class="grid grid-cols-3 gap-x-[30px]">
             <CustomSelect
+              v-model="selectedRoomCategory"
               label="Kategori Ruangan"
               placeHolder="Pilih Kategori Ruangan"
               class=""
               optionLabel=""
               optionValue=""
               :showFilter="false"
-              :options="['Ruangan Rawat Umum']"
+              :options="['Rawatan Umum']"
               :disabled="isDetail"
             />
             <CustomSelect
+              v-model="selectedRoomClass"
               label="Kelas"
               placeHolder="Pilih Kelas"
               class=""
@@ -233,10 +251,10 @@ defineExpose({
                 </div>
                 <div class="grid grid-cols-2 gap-[10px] mr-[15px]">
                   <CustomCheckbox
-                    v-for="(data, index) in [1, 2, 3, 4, 5, 6]"
+                    v-for="(data, index) in ['1', '2', '3', '4', '5', '6']"
                     v-model="selectedBed"
                     :title="
-                      selectedBed[0] == data || data == 2 || data == 4
+                      selectedBed[0] == data || data == '2' || data == '4'
                         ? 'Nama Lengkap Pasien'
                         : '-'
                     "
@@ -244,7 +262,7 @@ defineExpose({
                     :endText="
                       selectedBed[0] == data
                         ? 'Terpilih'
-                        : data == 2 || data == 4
+                        : data == '2' || data == '4'
                         ? 'Terisi'
                         : 'Kosong'
                     "
@@ -252,7 +270,7 @@ defineExpose({
                     :binary="false"
                     :value="`${data}`"
                     :multiple="false"
-                    :disabled="data == 2 || data == 4 || isDetail"
+                    :disabled="data == '2' || data == '4' || isDetail"
                   />
                 </div>
               </div>

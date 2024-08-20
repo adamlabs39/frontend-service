@@ -7,3 +7,10 @@ export interface SidebarBody {
   url?: string;
   child?: SidebarBody[];
 }
+
+export interface selectedBedType {
+  roomCategory: string;
+  roomClass: string;
+  room: string;
+  bed: number;
+}
