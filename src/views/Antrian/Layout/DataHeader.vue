@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -56,11 +56,20 @@ const onFilterSelect = (label: string) => {
 const resetFilter = () => {
   selectedFilters.value = [];
 };
+
+// Watch for activeTab changes to reset selected filters
+watch(
+  () => props.activeTab,
+  () => {
+    resetFilter();
+  }
+);
+
 defineExpose({
   resetFilter,
 });
 
-const getChipBgColor = (status) => {
+const getChipBgColor = (status:string) => {
   switch (status) {
     case "semua":
       return "bg-adameds-50";
@@ -78,7 +87,7 @@ const getChipBgColor = (status) => {
   }
 };
 
-const getChipTextColor = (status) => {
+const getChipTextColor = (status:string) => {
   switch (status) {
     case "semua":
       return "text-adameds-300";
@@ -96,7 +105,7 @@ const getChipTextColor = (status) => {
   }
 };
 
-const getChipBorderColor = (status) => {
+const getChipBorderColor = (status:string) => {
   switch (status) {
     case "semua":
       return "border-adameds-300";
@@ -150,7 +159,7 @@ const getChipIconColor = (status: string) => {
   }
 };
 
-const getChipCustomClass = (status) => {
+const getChipCustomClass = (status:string) => {
   switch (status) {
     default:
       return "h-5 ml-[10px]";

@@ -48,7 +48,7 @@ onMounted(() => {
   ];
 });
 
-const getChipBgColor = (status) => {
+const getChipBgColor = (status:string) => {
   switch (status) {
     case "antri":
       return "bg-blue-50";
@@ -61,7 +61,7 @@ const getChipBgColor = (status) => {
   }
 };
 
-const getChipTextColor = (status) => {
+const getChipTextColor = (status:string) => {
   switch (status) {
     case "antri":
       return "text-blue-500";
@@ -74,7 +74,7 @@ const getChipTextColor = (status) => {
   }
 };
 
-const getChipBorderColor = (status) => {
+const getChipBorderColor = (status:string) => {
   switch (status) {
     case "antri":
       return "border-blue-400";
@@ -87,7 +87,7 @@ const getChipBorderColor = (status) => {
   }
 };
 
-const getChipCustomClass = (status) => {
+const getChipCustomClass = (status:string) => {
   switch (status) {
     case "antri":
       return "h-5 ml-[10px]";
@@ -126,23 +126,29 @@ const getChipCustomClass = (status) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex items-center">
-          Daftar
-          <img
-            src="@/assets/icons/solar_arrow-left-broken.svg"
-            alt="Arrow Icon"
-            class="ml-3 mr-2"
-          />
-          {{ slotProps.data.tanggal_daftar }}
-        </div>
-        <div class="flex items-center">
-          Jadwal
-          <img
-            src="@/assets/icons/solar_arrow-left-broken (1).svg"
-            alt="Arrow Icon"
-            class="mx-2"
-          />
-          {{ slotProps.data.tanggal_jadwal }}
+        <div class="text-SM">
+          <div
+            class="grid content-center grid-cols-[60px_min-content_110px] auto-cols-min"
+          >
+            Daftar
+            <img
+              src="@/assets/icons/solar_arrow-left-broken.svg"
+              alt="Arrow Icon"
+              class="my-auto mr-8"
+            />
+            {{ slotProps.data.tanggal_daftar }}
+          </div>
+          <div
+            class="grid content-center grid-cols-[60px_min-content_110px] mt-[5px]"
+          >
+            Jadwal
+            <img
+              src="@/assets/icons/solar_arrow-left-broken (1).svg"
+              alt="Arrow Icon"
+              class="my-auto mr-8"
+            />
+            {{ slotProps.data.tanggal_jadwal }}
+          </div>
         </div>
       </template>
     </Column>
@@ -152,23 +158,29 @@ const getChipCustomClass = (status) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex items-center">
-          Book
-          <img
-            src="@/assets/icons/solar_arrow-left-broken.svg"
-            alt="Arrow Icon"
-            class="ml-5 mr-3"
-          />
-          {{ slotProps.data.nomor_book }}
-        </div>
-        <div class="flex items-center">
-          Antrian
-          <img
-            src="@/assets/icons/solar_arrow-left-broken (1).svg"
-            alt="Arrow Icon"
-            class="mx-2"
-          />
-          {{ slotProps.data.nomor_antrian }}
+        <div class="text-SM">
+          <div
+            class="grid content-center grid-cols-[60px_min-content_70px] auto-cols-min"
+          >
+            Book
+            <img
+              src="@/assets/icons/solar_arrow-left-broken.svg"
+              alt="Arrow Icon"
+              class="my-auto mr-8"
+            />
+            {{ slotProps.data.nomor_book }}
+          </div>
+          <div
+            class="grid content-center grid-cols-[60px_min-content_70px] mt-[5px]"
+          >
+            Antrian
+            <img
+              src="@/assets/icons/solar_arrow-left-broken (1).svg"
+              alt="Arrow Icon"
+              class="my-auto mr-8"
+            />
+            {{ slotProps.data.nomor_antrian }}
+          </div>
         </div>
       </template>
     </Column>
