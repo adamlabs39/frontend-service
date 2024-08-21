@@ -128,7 +128,7 @@ function handleClose() {
             <div
               class="w-full font-semibold text-center text-SM"
             >
-              Status
+              Statusss
             </div>
           </template>
           <template #body="slotProps">
