@@ -42,7 +42,7 @@ onMounted(() => {
   ];
 });
 
-const getChipBgColor = (status) => {
+const getChipBgColor = (status:string) => {
   switch (status) {
     case "belum dipanggil":
       return "bg-blue-50"; // Set color for 'belum dipanggil'
@@ -55,7 +55,7 @@ const getChipBgColor = (status) => {
   }
 };
 
-const getChipTextColor = (status) => {
+const getChipTextColor = (status:string) => {
   switch (status) {
     case "belum dipanggil":
       return "text-blue-500"; // Set text color for 'belum dipanggil'
@@ -68,7 +68,7 @@ const getChipTextColor = (status) => {
   }
 };
 
-const getChipBorderColor = (status) => {
+const getChipBorderColor = (status:string) => {
   switch (status) {
     case "belum dipanggil":
       return "border-blue-400"; // Set text color for 'belum dipanggil'
@@ -81,7 +81,7 @@ const getChipBorderColor = (status) => {
   }
 };
 
-const getChipCustomClass = (status) => {
+const getChipCustomClass = (status:string) => {
   switch (status) {
     case "belum dipanggil":
       return "h-5 ml-[10px]"; // Custom class for 'belum dipanggil'
