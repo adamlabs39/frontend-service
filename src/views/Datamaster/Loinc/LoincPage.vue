@@ -117,9 +117,13 @@ function handleClose() {
         ></Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50"
         >
+        <template #header>
+          <div class="w-full text-center font-semibold text-SM">
+            Status
+          </div>
+        </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -142,15 +146,15 @@ function handleClose() {
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
@@ -161,14 +165,16 @@ function handleClose() {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 @click="handleEdit"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt=""/>
               </CustomButton>
             </div>
           </template>

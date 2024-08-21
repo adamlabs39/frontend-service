@@ -22,6 +22,7 @@ import {
   Table,
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
+import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
 
 const status = ref();
 const lokasiPelayanan = ref();
@@ -119,12 +120,7 @@ const editorConfig = {
     </CustomAccordion>
     <div>
       <div class="font-semibold text-MD">Isi General Consent</div>
-      <ckeditor
-        v-model="editorData"
-        :editor="editor"
-        :config="editorConfig"
-        tag-name="textarea"
-      />
+      <CustomCkEditor/>
     </div>
     <hr />
     <div class="flex items-end gap-2.5">

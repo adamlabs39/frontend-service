@@ -18,6 +18,9 @@ const isTambahDataDialogVisible = ref(false);
 const isDetailDokterDialogVisible = ref(false);
 const isPemeriksaanDialogVisible = ref(false);
 
+
+const metaKey = ref(true);
+
 // Dialog Configuration
 const dialogConfig = ref({
   method: "add",
@@ -97,7 +100,7 @@ function openPemeriksaanDialog(isVisible:any) {
         tableStyle="min-width: 50rem"
         class="text-xs"
         selectionMode="single"
-        :metaKeySelection="true"
+        :metaKeySelection="metaKey"
         v-model:selection="selectedDokter"
         stripedRows
         @rowSelect="handleRowSelect"

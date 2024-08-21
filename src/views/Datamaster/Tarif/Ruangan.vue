@@ -17,7 +17,7 @@ onMounted(() => {
       kategori_ruangan: "Rawatan Umum",
       kelas: "Kelas III",
       pelayanan: "Rawat Jalan",
-      metode_pembayaran:["TUNAI","BPJS"],
+      metode_pembayaran: ["TUNAI", "BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
@@ -44,7 +44,7 @@ onMounted(() => {
       kategori_ruangan: "Rawatan Umum",
       kelas: "Kelas III",
       pelayanan: "Rawat Jalan",
-      metode_pembayaran:["TUNAI","BPJS"],
+      metode_pembayaran: ["TUNAI", "BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
@@ -71,7 +71,7 @@ onMounted(() => {
       kategori_ruangan: "Rawatan Umum",
       kelas: "Kelas III",
       pelayanan: "Rawat Jalan",
-      metode_pembayaran:["TUNAI","BPJS"],
+      metode_pembayaran: ["TUNAI", "BPJS"],
       status: "AKTIF",
       action: "edit",
       orders: [
@@ -144,44 +144,46 @@ onMounted(() => {
       header="Metode Pembayaran"
       header-class="text-black bg-adameds-50"
     >
-    <template #body="slotProps">
-            <div class="flex flex-wrap gap-2">
-              <div v-for="items in slotProps.data.metode_pembayaran" :key="items">
-                <CustomChip
-                  :label="items"
-                  :showCheckedIcon="false"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-6 bg-adameds-300 text-white pr-2 pl-3"
-                />
-              </div>
-            </div>
-          </template>
-  </Column>
-    <Column
-      field="status"
-
-      header-class="text-black bg-adameds-50"
-    >
-    <template #header>
+      <template #body="slotProps">
+        <div class="flex flex-wrap gap-2">
+          <div v-for="items in slotProps.data.metode_pembayaran" :key="items">
+            <CustomChip
+              :label="items"
+              :showCheckedIcon="false"
+              border-color="border-none"
+              bg-color="bg-adameds-300"
+              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3"
+            />
+          </div>
+        </div>
+      </template>
+    </Column>
+    <Column field="status" header-class="text-black bg-adameds-50">
+      <template #header>
         <div class="w-full font-semibold text-center">Status</div>
       </template>
       <template #body="slotProps">
         <div class="flex items-center justify-center">
           <CustomChip
-                :label="slotProps.data.status"
-                :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
-                "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
-                customClass="text-xs font-semibold h-6 flex"
-              />
+            :label="slotProps.data.status"
+            :textColor="
+              slotProps.data.status === 'AKTIF'
+                ? 'text-white'
+                : 'text-[#80868d]'
+            "
+            :bgColor="
+              slotProps.data.status === 'AKTIF' ? 'bg-adameds-300' : 'bg-white'
+            "
+            :borderColor="
+              slotProps.data.status === 'AKTIF'
+                ? 'border-none'
+                : 'border-[#80868d]'
+            "
+            :icon-color="
+              slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+            "
+            customClass="text-xs font-semibold h-5 flex"
+          />
         </div>
       </template>
     </Column>
@@ -195,15 +197,20 @@ onMounted(() => {
       </template>
       <template #body="slotProps">
         <div class="flex items-center gap-2.5 justify-center">
-          <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-            <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+          <CustomButton
+            label=""
+            background-color="bg-[#3D84E5] rounded-lg"
+            class="h-6 w-[26px] p-0"
+          >
+            <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>
           <CustomButton
             label=""
             background-color="bg-danger-300 rounded-lg"
             @click="hapusDataDialog = true"
+            class="h-6 w-[26px] p-0"
           >
-            <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+            <img src="@/assets/icons/delete.svg" alt="" />
           </CustomButton>
         </div>
       </template>

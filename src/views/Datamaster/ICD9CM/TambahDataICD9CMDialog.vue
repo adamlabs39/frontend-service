@@ -7,6 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useIcd9Store } from "@/stores/icd9";
 
 const props = defineProps({
   isDialogVisible: {
@@ -18,28 +19,42 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama ICD 9 CM harus diisi"),
-    status: yup.bool(),
+    status: yup.bool().default(false),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    console.log("Adding new data:", values);
+const icd9Store = useIcd9Store();
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      console.log("Editing data:", values);
+      // Panggil metode update di store di sini dengan values sebagai objek
+    } else if (props.method === "add") {
+    
+      const response = await icd9Store.postApi(values);
+      console.log("Data added successfully:", response);
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
+
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -58,13 +73,20 @@ function closeDialog() {
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        code: props.editData.code,
+        name: props.editData.name,
+        status: props.editData.status === "AKTIF",
+      });
+    } else if (!newValue) {
       resetForm();
     }
   }
 );
 </script>
 <template>
+
   <CustomDialog
     width="600px"
     :visible="isDialogVisible"
@@ -115,4 +137,5 @@ watch(
       </div>
     </template>
   </CustomDialog>
+  
 </template>

@@ -131,11 +131,11 @@ const baseInstanceDatamaster = axios.create({
 
 baseInstanceDatamaster.interceptors.request.use(
   (config) => {
-    const token = "";
+    const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTE1YTI2LWI0MjAtN2VjOC1hYzc4LWJiZjgwYTMxMjU2ZiIsInVzZXJuYW1lIjoiYWxsaWFuby1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwidXNlclV1aWQiOiIwMTkxNWEyNi1iNDJlLTcyODAtOTc1ZC0yMGEwNjNjZDI1NDEiLCJpYXQiOjE3MjQxMzQ3NjMsImV4cCI6MTcyNDE0NTU2MywiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.VtxG20POdBL-EO9ImszuvQUFwbivLGd-SZfDD1Zjsg8vw5_LJkEmPFO5Kp9Re6nL3OCGpCl0UjjPYi2Wa4vtHaYZsoP_aS7ThImeg8KS920QqMc4u8Yzhj5IzNwEkON2tUEhugEeCghJgyq4fftMB89DsXwhwtkPSpRXXqG4Yh8O8k2-Mxittu_r_UkzZOZz9T0G7q3XmBaUSyAtr9SlSz7QuLIrhRfLBSKNQXf0GBKyIdTySbSU60Pg9T3Mrk1AzgNqCOOJryMGZUiKPZ05Sp4OgQT0qTo7Znr1wEV6if79CKt8kdG60v4DnkUzfWoVhOF3gRaSg7qMC-F4SOeb_g";
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = token;
+      config.headers["Authorization"] =`Bearer ${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);

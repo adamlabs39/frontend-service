@@ -1,11 +1,9 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, onBeforeMount } from "vue";
-import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
 import { useIcd9Store } from "@/stores/icd9";
 import NoData from "@/components/section/NoData.vue";
@@ -14,24 +12,38 @@ const icd9Store = useIcd9Store();
 const icd9Response = ref<any[]>([]);
 const loading = ref(true);
 
-onMounted(async () => {
+
+async function fetchIcd9Data() {
   try {
     const response = await icd9Store.getApi();
-    icd9Response.value = response.payload || [];
+    
+    // Check if the response and payload exist
+    if (response && response.payload) {
+      icd9Response.value = response.payload;
+    } else {
+      console.error("Unexpected response structure", response);
+      icd9Response.value = [];
+    }
+  
   } catch (error) {
     console.error("Failed to fetch data", error);
     icd9Response.value = [];
   } finally {
     loading.value = false;
   }
+}
+
+onMounted(() => {
+  fetchIcd9Data();
 });
 
 const hasData = computed(() => icd9Response.value && icd9Response.value.length > 0);
 
-const dialogData = ref({
+const dialogData = ref<any>({
   isVisible: false,
   method: "add",
-  title: "Tambah Data"
+  title: "Tambah Data",
+  id: null,
 });
 
 function handleAdd() {
@@ -42,17 +54,20 @@ function handleAdd() {
   };
 }
 
-function handleEdit() {
+function handleEdit(id:any) {
   dialogData.value = {
     isVisible: true,
     method: "edit",
-    title: "Edit Data"
+    title: "Edit Data",
+    id: id,
   };
 }
 
 function handleClose() {
   dialogData.value.isVisible = false;
+  fetchIcd9Data();
 }
+
 
 </script>
 
@@ -70,7 +85,7 @@ function handleClose() {
       </Header>
     </template>
     <template #content>
-      <div v-if="loading" class="flex justify-center items-center h-full">
+      <div v-if="loading" class="flex items-center justify-center h-full">
         Loading...
       </div>
       <NoData v-else-if="!hasData" />
@@ -107,9 +122,15 @@ function handleClose() {
         ></Column>
         <Column
           field="status"
-          header="Status"
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
+        <template #header>
+            <div
+              class="w-full font-semibold text-center text-SM"
+            >
+              Status
+            </div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -122,12 +143,12 @@ function handleClose() {
                   slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
                 :icon-color="slotProps.data.status ? 'white' : '#80868d'"
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
@@ -137,14 +158,16 @@ function handleClose() {
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" @click="handleEdit" />
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
+                <img src="@/assets/icons/edit.svg" alt=""                 @click="handleEdit(slotProps.data.id)"
+                />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>

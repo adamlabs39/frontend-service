@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { onBeforeMount, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -18,7 +18,12 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
+console.log(props.editData)
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
@@ -27,7 +32,7 @@ const schema = toTypedSchema(
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
@@ -58,7 +63,15 @@ function closeDialog() {
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      onBeforeMount(async()=>{
+        setValues({
+        code: props.editData.code,
+        name: props.editData.name,
+        status: props.editData.status === "AKTIF",
+      });
+      })
+    } else if (!newValue) {
       resetForm();
     }
   }
