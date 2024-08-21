@@ -91,7 +91,7 @@ const profileResponse = ref({
     name: '',
     email: '',
     phone: '',
-    photo:'',
+    photo: '',
     role: {
         name: ''
     },
@@ -143,9 +143,9 @@ const onSubmitNamaLengkap = handleSubmitNamaLengkap(async (values) => {
             photo: values.photo,
         };
         const response = await settingStore.putApi(payload);
-        if (response?.status === 200) { 
-            isEditNamaFoto.value = false; 
-            fetchSettingData(); 
+        if (response?.status === 200) {
+            isEditNamaFoto.value = false;
+            fetchSettingData();
         } else {
             console.error("Failed to update profile:");
         }
@@ -200,12 +200,12 @@ const handleImageUpload = (event: Event) => {
                     <div class="flex gap-10 ">
                         <!-- Image -->
                         <div class="w-[200px] h-[200px] flex justify-center items-center relative">
-                            <img :src="profileResponse.photo ? profileResponse.photo : profileImage"  alt="">
+                            <img :src="profileResponse.photo ? profileResponse.photo : profileImage" alt="">
                         </div>
                         <div class="flex flex-col justify-evenly ">
                             <div>
                                 <div class="col-span-2 text-sm underline">Nama Lengkap</div>
-                                <div class="font-bold text-heading">{{ profileResponse.name }}</div>
+                                <div class="font-bold text-heading">{{ awalanGelar }} {{ profileResponse.name }} {{ akhiranGelar }}</div>
                             </div>
 
                             <div class="grid grid-cols-3">
@@ -248,15 +248,18 @@ const handleImageUpload = (event: Event) => {
                             <div class="flex gap-7">
                                 <div class="w-[150px]">
                                     <CustomTextfield label="Awalan/Gelar" class="border-[#C7CBD2]"
-                                        placeholder="Awalan/Gelar" v-model="awalanGelar" />
+                                        placeholder="Awalan/Gelar" v-model="awalanGelar"  :invalid="!!namaLengkapErrors.awalanGelar"
+                                        :invalidMessage="namaLengkapErrors.awalanGelar" />
                                 </div>
                                 <div class="grow">
                                     <CustomTextfield label="Nama Lengkap" class="w-full" placeholder="Nama Lengkap"
-                                        v-model="name" />
+                                        v-model="name" :invalid="!!namaLengkapErrors.name"
+                                        :invalidMessage="namaLengkapErrors.name" />
                                 </div>
                                 <div class="w-[150px]">
                                     <CustomTextfield label="Akhiran/Gelar" class="w-full" placeholder="Akhiran/Gelar"
-                                        v-model="akhiranGelar" />
+                                        v-model="akhiranGelar"  :invalid="!!namaLengkapErrors.akhiranGelar"
+                                        :invalidMessage="namaLengkapErrors.akhiranGelar"/>
                                 </div>
                             </div>
 
@@ -272,7 +275,8 @@ const handleImageUpload = (event: Event) => {
                                 </div>
                                 <div class="w-[150px] ">
                                     <CustomTextfield label="No. Handphone" class="w-full" placeholder="08123xx"
-                                        v-model="phone" type="number" />
+                                        v-model="phone" type="number"  :invalid="!!namaLengkapErrors.phone"
+                                        :invalidMessage="namaLengkapErrors.phone" />
                                 </div>
                             </div>
 
