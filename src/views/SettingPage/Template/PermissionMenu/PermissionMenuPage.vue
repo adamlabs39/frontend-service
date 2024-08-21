@@ -77,7 +77,7 @@ const selectedMainMenu = ref();
                             Tambah Menu
                     </template>
                     <template #body>
-                        <div class="my-5 text-black text-normal">
+                        <div class="my-5 text-normal">
                             <div class="mb-2.5">
                                 <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori"
                                     optionValue="code" optionLabel="name" :isLoading="false" :invalid="false"
