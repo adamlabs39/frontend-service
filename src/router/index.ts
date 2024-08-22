@@ -24,7 +24,7 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
-import newProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/newProfilAkunPage.vue"
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 
 
@@ -115,7 +115,7 @@ const router = createRouter({
     {
       path: "/setting/profil-akun",
       name: "setting-profil-akun",
-      meta: { layout: SidebarLayout, page: newProfilAkunPage },
+      meta: { layout: SidebarLayout, page: ProfilAkunPage },
       component: ProfilAkunView
     },
 
