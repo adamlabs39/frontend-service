@@ -39,13 +39,23 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 
 const icd9Store = useIcd9Store();
 
+
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (props.method === "edit") {
-      console.log("Editing data:", values);
-      // Panggil metode update di store di sini dengan values sebagai objek
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await icd9Store.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+
     } else if (props.method === "add") {
-    
+      console.log("Adding new data with values:", values);
+
       const response = await icd9Store.postApi(values);
       console.log("Data added successfully:", response);
     }
@@ -75,9 +85,10 @@ watch(
   (newValue) => {
     if (newValue && props.method === "edit" && props.editData) {
       setValues({
-        code: props.editData.code,
-        name: props.editData.name,
-        status: props.editData.status === "AKTIF",
+        // ...props.editData,
+        // code:props.editData.code,
+        name:props.editData.name,
+        status:props.editData.status,
       });
     } else if (!newValue) {
       resetForm();
@@ -103,7 +114,7 @@ watch(
             placeholder="Kode"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
-          />          
+          />        
           <CustomTextfield
             label="Nama ICD 9 CM"
             v-model="name"

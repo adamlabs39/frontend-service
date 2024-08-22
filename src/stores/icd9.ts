@@ -12,8 +12,8 @@ export const useIcd9Store = defineStore({
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/icd9", payload);
     },
-    async putApi(payload = {}) {
-      return apiDatamasterPut("/datamaster/icd9", payload);
+    async putApi(uuid: string, payload = {}) {
+      return apiDatamasterPut(`/datamaster/icd9/${uuid}`, payload);
     },
   },
 });

@@ -54,12 +54,12 @@ function handleAdd() {
   };
 }
 
-function handleEdit(id:any) {
+function handleEdit(dataItem:any) {
   dialogData.value = {
     isVisible: true,
     method: "edit",
     title: "Edit Data",
-    id: id,
+    editData: dataItem,
   };
 }
 
@@ -128,7 +128,7 @@ function handleClose() {
             <div
               class="w-full font-semibold text-center text-SM"
             >
-              Statusss
+              Status
             </div>
           </template>
           <template #body="slotProps">
@@ -158,8 +158,8 @@ function handleClose() {
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
-                <img src="@/assets/icons/edit.svg" alt=""                 @click="handleEdit(slotProps.data.id)"
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0"  @click="handleEdit(slotProps.data)">
+                <img src="@/assets/icons/edit.svg" alt=""                
                 />
               </CustomButton>
               <CustomButton
@@ -177,7 +177,9 @@ function handleClose() {
       v-model:isDialogVisible="dialogData.isVisible"
         :title="dialogData.title"
         :method="dialogData.method"
+        :editData="dialogData.editData"
         @close="handleClose"/>
+        
     </template>
     <template #footer>
       <Footer />
