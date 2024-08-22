@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import HeaderFilter from "../Layout/LayarHeader.vue";
+import HeaderFilter from "../Layout/KonfigurasiLayarHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
@@ -41,11 +41,10 @@ onMounted(() => {
 const itemsLayar = ref([
   {
     noLayar: "1",
-    name: "Layar 1",
-    antrian: "Antrian 1",
-    panggilan: "2 List & 2 Panggilan",
+    nama_layar: "Antrian 1",
+    tipe_layar: "2 List & 2 Panggilan",
     isi_konten: ["Admisi", "Poli"],
-    ucapan: [
+    flash_text: [
       "Selamat Datang Di Klinik Adameds",
       "#ImprovingHealthCare",
       "#SATUSEHAT",
@@ -54,11 +53,10 @@ const itemsLayar = ref([
   },
   {
     noLayar: "2",
-    name: "Layar 2",
-    antrian: "Antrian 2",
-    panggilan: "3 x 3 Panggilan",
+    nama_layar: "Antrian 2",
+    tipe_layar: "3 x 3 Panggilan",
     isi_konten: "Poli",
-    ucapan: "Selamat Datang Di Klinik Adameds",
+    flash_text: "Selamat Datang Di Klinik Adameds",
     status: "AKTIF",
   },
 ]);
@@ -103,25 +101,14 @@ const selectedPatient = ref([]);
             </div>
           </template>
         </Column>
-        <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
+        <Column field="Nama Layar" header="Nama Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.name }}</div>
-            <div class="flex flex-wrap">
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.antrian"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.panggilan"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-            </div>
+            <div class="text-SM">{{ slotProps.data.nama_layar }}</div>
+          </template>
+        </Column>
+        <Column field="Tipe Layar" header="Tipe Layar" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            <div class="text-SM">{{ slotProps.data.tipe_layar }}</div>
           </template>
         </Column>
         <Column
@@ -163,12 +150,12 @@ const selectedPatient = ref([]);
             <div class="flex flex-wrap">
               <div
                 v-if="
-                  Array.isArray(slotProps.data.ucapan) &&
-                  slotProps.data.ucapan.length
+                  Array.isArray(slotProps.data.flash_text) &&
+                  slotProps.data.flash_text.length
                 "
               >
                 <CustomChip
-                  v-for="(konten, index) in slotProps.data.ucapan"
+                  v-for="(konten, index) in slotProps.data.flash_text"
                   :key="index"
                   :showCheckedIcon="false"
                   :label="konten"
@@ -177,10 +164,10 @@ const selectedPatient = ref([]);
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
               </div>
-              <div v-else-if="slotProps.data.ucapan">
+              <div v-else-if="slotProps.data.flash_text">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.ucapan"
+                  :label="slotProps.data.flash_text"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -192,7 +179,7 @@ const selectedPatient = ref([]);
         <Column
           field="status"
           header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50 items-center justify-center"
         >
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
@@ -222,17 +209,23 @@ const selectedPatient = ref([]);
           </template>
         </Column>
         <Column
-          field="action"
-          header="action"
-          headerClass="bg-adameds-50 justify-center"
+          field="Action"
+          header="Action"
+          headerClass="bg-adameds-50 flex items-center justify-center"
         >
-          <template #body="slotProps">
-            <div class="flex items-center gap-2.5">
+        <template #body="slotProps">
+            <div class="flex items-center gap-2.5 justify-center">
               <CustomButton
-                size="small"
-                icon="PhScreencast"
-                customClass="bg-adameds-300 rounded-full p-0 flex"
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
               >
+                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              </CustomButton>
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
             </div>
           </template>

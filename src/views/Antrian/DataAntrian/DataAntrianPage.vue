@@ -5,6 +5,7 @@ import Header from "../Layout/DataHeader.vue";
 import Admisi from "./DataAntrianAdmisi.vue";
 import RawatJalan from "./DataAntrianRawatJalan.vue";
 import Farmasi from "./DataAntrianFarmasi.vue";
+import AntrianFooter from "../Layout/AntrianFooter.vue";
 
 const value = ref("0");
 </script>
@@ -62,17 +63,7 @@ const value = ref("0");
       </Tabs>
     </template>
     <template #footer>
-      <div class="flex justify-end">
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 3</template>
-        </Paginator>
-      </div>
+      <AntrianFooter />
     </template>
   </Card>
 </template>

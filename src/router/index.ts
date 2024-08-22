@@ -53,6 +53,8 @@ import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
 import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
+import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
+import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -303,7 +305,7 @@ const router = createRouter({
     {
       path: "/antrian/konfigurasi/layar-antrian",
       name: "antrian-konfigurasi-layar-antrian",
-      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      meta: { layout: SidebarLayout, page: KonfigurasiLayarPage },
       component: AntrianView,
     },
     {
@@ -327,7 +329,7 @@ const router = createRouter({
     {
       path: "/antrian/apm",
       name: "antrian-apm",
-      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      meta: { layout: SidebarLayout, page: ApmPage },
       component: AntrianView,
     },
     

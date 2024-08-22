@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import HeaderFilter from "../Layout/LayarHeader.vue";
+import HeaderFilter from "../Layout/ApmHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
@@ -38,32 +38,17 @@ onMounted(() => {
   updatePageType(route.path);
 });
 
-const itemsLayar = ref([
+const itemsAPM = ref([
   {
-    noLayar: "1",
-    name: "Layar 1",
-    antrian: "Antrian 1",
-    panggilan: "2 List & 2 Panggilan",
-    isi_konten: ["Admisi", "Poli"],
-    ucapan: [
-      "Selamat Datang Di Klinik Adameds",
-      "#ImprovingHealthCare",
-      "#SATUSEHAT",
-    ],
-    status: "AKTIF",
-  },
-  {
-    noLayar: "2",
-    name: "Layar 2",
-    antrian: "Antrian 2",
-    panggilan: "3 x 3 Panggilan",
-    isi_konten: "Poli",
-    ucapan: "Selamat Datang Di Klinik Adameds",
+    noAPM: "1",
+    name: "APM 1",
+    jumlahMenu: 4,
+    ucapan: ["Pasien JKN", "Pasien Non-JKN", "Checkin", "Print"],
     status: "AKTIF",
   },
 ]);
 
-const totalItems = computed(() => itemsLayar.value.length);
+const totalItems = computed(() => itemsAPM.value.length);
 
 const selectedPatient = ref([]);
 </script>
@@ -84,9 +69,9 @@ const selectedPatient = ref([]);
     </template>
     <template #content>
       <DataTable
-        v-if="itemsLayar.length"
+        v-if="itemsAPM.length"
         v-model:selection="selectedPatient"
-        :value="itemsLayar"
+        :value="itemsAPM"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -99,59 +84,22 @@ const selectedPatient = ref([]);
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-sm">{{ slotProps.data.noLayar }}</div>
+              <div class="text-sm">{{ slotProps.data.noAPM }}</div>
             </div>
           </template>
         </Column>
-        <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
+        <Column field="nama-apm" header="Nama APM" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.name }}</div>
-            <div class="flex flex-wrap">
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.antrian"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.panggilan"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-            </div>
           </template>
         </Column>
         <Column
-          field="Isi Konten"
-          header="Isi Konten"
+          field="jumlah-menu"
+          header="Jumlah Menu"
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex flex-wrap">
-              <div v-if="Array.isArray(slotProps.data.isi_konten)">
-                <CustomChip
-                  v-for="(konten, index) in slotProps.data.isi_konten"
-                  :key="index"
-                  :showCheckedIcon="false"
-                  :label="konten"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
-                />
-              </div>
-              <div v-else>
-                <CustomChip
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.isi_konten"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
-                />
-              </div>
-            </div>
+            <div class="text-SM">{{ slotProps.data.jumlahMenu }} Menu</div>
           </template>
         </Column>
         <Column
@@ -218,22 +166,6 @@ const selectedPatient = ref([]);
                 "
                 customClass="text-xs font-semibold h-6 flex"
               />
-            </div>
-          </template>
-        </Column>
-        <Column
-          field="action"
-          header="action"
-          headerClass="bg-adameds-50 justify-center"
-        >
-          <template #body="slotProps">
-            <div class="flex items-center gap-2.5">
-              <CustomButton
-                size="small"
-                icon="PhScreencast"
-                customClass="bg-adameds-300 rounded-full p-0 flex"
-              >
-              </CustomButton>
             </div>
           </template>
         </Column>
