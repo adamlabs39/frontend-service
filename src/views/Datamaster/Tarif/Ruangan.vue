@@ -101,7 +101,7 @@ onMounted(() => {
     v-model:expandedRows="expandedRows"
     :value="products"
     tableStyle="min-width: 50rem"
-    class="text-xs"
+    class="text-xs -m-4"
     stripedRows
     dataKey="id"
     scrollable

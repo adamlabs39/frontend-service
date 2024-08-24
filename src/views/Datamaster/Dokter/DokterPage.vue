@@ -8,24 +8,11 @@ import Footer from "../Layout/Footer.vue";
 import TambahDataDokter from "./TambahDataDokterDialog.vue";
 import DetailDokterDialog from "./DetailDokterDialog.vue";
 import PemeriksaanDialog from "./PemeriksaanDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 
 // State Variables
 const products = ref<any[]>([]);
 const selectedDokter = ref(null);
-
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
-const isDetailDokterDialogVisible = ref(false);
-const isPemeriksaanDialogVisible = ref(false);
-
-
-const metaKey = ref(true);
-
-// Dialog Configuration
-const dialogConfig = ref({
-  method: "add",
-  title: "Tambah Data",
-});
 
 // Lifecycle Hook
 onMounted(() => {
@@ -52,32 +39,40 @@ function loadProducts() {
   ];
 }
 
-// Handle dialog for adding or editing data
-function openDialog(method:any, title:any) {
-  dialogConfig.value = { method, title };
-  isTambahDataDialogVisible.value = true;
-}
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+const isDetailDokterDialogVisible = ref(false);
+const isPemeriksaanDialogVisible = ref(false);
 
+const metaKey = ref(true);
+
+// Dialog Configuration
+const dialogConfig = ref({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value  = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
 // Handle closing of the dialog
-function closeDialog() {
+const closeDialog= () => {
   isTambahDataDialogVisible.value = false;
 }
 
-// Handle row selection and open detail dialog
-function handleRowSelect(event:any) {
-  selectedDokter.value = event.data;
-  openDetailDialog(true);
-}
-
 // Toggle detail dialog visibility
-function openDetailDialog(isVisible:any) {
-  isDetailDokterDialogVisible.value = isVisible;
-}
+const handleRowSelect = (data:any) => {
+  selectedDokter.value = data;
+  isDetailDokterDialogVisible.value = true;
+};
 
 // Toggle pemeriksaan dialog visibility
-function openPemeriksaanDialog(isVisible:any) {
-  isPemeriksaanDialogVisible.value = isVisible;
-}
+const openPemeriksaanDialog = (data:any) => {
+  selectedDokter.value = data;
+  isPemeriksaanDialogVisible.value = true;
+};
 </script>
 
 <template>
@@ -87,13 +82,8 @@ function openPemeriksaanDialog(isVisible:any) {
     class=""
   >
     <template #header>
-      <Header title="Dokter" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="openDialog('add', 'Tambah Data')" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="dokter" @tambah-data="openDialog('add', 'Tambah Data')" />
     </template>
-
     <template #content>
       <DataTable
         :value="products"
@@ -144,9 +134,32 @@ function openPemeriksaanDialog(isVisible:any) {
         ></Column>
         <Column
           field="telepon"
-          header="No. Telepon"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50"
         >
+        <template #header>
+            <div
+              class="w-full text-center font-semibold text-SM"
+            >
+              Telepon
+            </div>
+          </template>
+          <template #body="slotProps" >
+            <div class="w-full text-center">
+              {{ slotProps.data.telepon  }}
+            </div>
+          </template>
+        </Column>
+        <Column
+          field="status"
+          headerClass="bg-adameds-50"
+        >
+        <template #header>
+            <div
+              class=" w-full text-center font-semibold text-SM"
+            >
+              Status
+            </div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               <CustomChip
@@ -177,7 +190,7 @@ function openPemeriksaanDialog(isVisible:any) {
         <Column headerClass="bg-adameds-50" >
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
@@ -215,11 +228,11 @@ function openPemeriksaanDialog(isVisible:any) {
       />
       <DetailDokterDialog v-model:isDialogVisible="isDetailDokterDialogVisible" />
       <PemeriksaanDialog v-model:isDialogVisible="isPemeriksaanDialogVisible" />
-
     </template>
 
     <template #footer>
       <Footer />
     </template>
   </Card>
+
 </template>

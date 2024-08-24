@@ -9,6 +9,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataTindakanDialog from "./TambahDataTindakanDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -112,52 +113,8 @@ const resetFilter = () => {
     class=""
   >
   <template #header>
-      <Header title="Tindakan" :search="false" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-        <template #content>
-          <div class="flex items-end justify-between gap-5">
-            <CustomTextfield
-              v-model="searchRoom"
-              class="w-1/2"
-              label="Cari Tindakan"
-              placeholder="Cari Tindakan"
-              prependIcon="PhMagnifyingGlass"
-            />
-            <CustomSelect
-              v-model="selectedKategori"
-              :options="itemKategori"
-              optionValue="code"
-              optionLabel="name"
-              class="w-1/4"
-              :is-loading="false"
-              label="Kategori"
-              place-holder="Kategori"
-            />
-            <CustomSelect
-              v-model="selectedKelas"
-              :options="itemKelas"
-              optionValue="code"
-              optionLabel="name"
-              class="w-1/4"
-              :is-loading="false"
-              label="Kelas"
-              place-holder="Kelas"
-            />
-            <div class="flex gap-2.5">
-              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-              <CustomButton
-                label="Reset"
-                @click="resetFilter"
-                background-color="bg-white"
-                border-color="border-adameds-300"
-                text-color="text-adameds-300"
-              />
-            </div>
-          </div>
-        </template>
-      </Header>
+    <HeaderFilter page-type="tindakan" @tambah-data="handleAdd" />
+
     </template>
     <template #content>
       <DataTable

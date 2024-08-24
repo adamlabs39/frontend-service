@@ -61,7 +61,7 @@ const detail = ref(false);
     :value="products"
     tableStyle="min-width: 50rem"
     stripedRows
-    class="text-xs"
+    class="text-xs -m-4"
     scrollable
         scrollHeight="flex"
   >
@@ -76,19 +76,16 @@ const detail = ref(false);
       field="nama_tarif"
       header="Nama Tarif"
       headerClass="bg-adameds-50"
-      class="w-2/12"
     ></Column>
     <Column
       field="pilihan_tarif"
       header="Pilihan Tarif"
       headerClass="bg-adameds-50"
-      class="w-1/12"
     ></Column>
     <Column
       field="pelayanan"
       header="Pelayanan"
       headerClass="bg-adameds-50"
-      class="4/12"
     >
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2">
@@ -127,6 +124,7 @@ const detail = ref(false);
       field="tarif_harga"
       header="Tarif Harga"
       headerClass="bg-adameds-50"
+      class="w-[100px]"
     ></Column>
     <Column field="status" headerClass="bg-adameds-50 text-center">
       <template #header>

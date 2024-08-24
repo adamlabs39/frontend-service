@@ -7,6 +7,7 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahGeneralConsent from "./TambahGeneralConsent.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 const router = useRouter();
 
@@ -61,36 +62,7 @@ const status = ref();
     class=""
   >
     <template #header>
-      <Header title="General Consent" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-          <CustomDialog
-            v-model:visible="testDialog"
-            headerBg="bg-adameds-300"
-            :full-screen="true"
-          >
-            <template #header>Tambah General Consent</template>
-            <template #body>
-              <TambahGeneralConsent />
-            </template>
-            <template #footer>
-              <div class="w-full">
-                <hr class="-mx-5 border-grey-200" />
-                <div class="mt-5 flex justify-end gap-2.5">
-                  <CustomButton
-                    label="Batal"
-                    border-color="border-grey-200"
-                    background-color="bg-white"
-                    text-color="text-grey-300"
-                  >
-                  </CustomButton>
-                  <CustomButton label="Simpan"> </CustomButton>
-                </div>
-              </div>
-            </template>
-          </CustomDialog>
-        </template>
-      </Header>
+      <HeaderFilter page-type="general" @tambah-data="testDialog = true" />
     </template>
 
     <template #content>
@@ -103,19 +75,17 @@ const status = ref();
         <Column
           field="kode"
           header="Kode General Consent"
-          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
           header="Nama"
-          class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="pelayanan"
           header="Pelayanan"
-          class="w-3/12"
+          class="w-4/12"
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
@@ -167,7 +137,7 @@ const status = ref();
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="w-full text-center font-semibold text-SM"
@@ -191,6 +161,31 @@ const status = ref();
           </template>
         </Column>
       </DataTable>
+      <CustomDialog
+            v-model:visible="testDialog"
+            headerBg="bg-adameds-300"
+            :full-screen="true"
+          >
+            <template #header>Tambah General Consent</template>
+            <template #body>
+              <TambahGeneralConsent />
+            </template>
+            <template #footer>
+              <div class="w-full">
+                <hr class="-mx-5 border-grey-200" />
+                <div class="mt-5 flex justify-end gap-2.5">
+                  <CustomButton
+                    label="Batal"
+                    border-color="border-grey-200"
+                    background-color="bg-white"
+                    text-color="text-grey-300"
+                  >
+                  </CustomButton>
+                  <CustomButton label="Simpan"> </CustomButton>
+                </div>
+              </div>
+            </template>
+          </CustomDialog>
     </template>
 
     <template #footer>

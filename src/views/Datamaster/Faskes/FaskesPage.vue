@@ -7,6 +7,7 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataFaskesDialog from "./TambahDataFaskesDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -58,30 +59,7 @@ const status = ref();
     class=""
   >
     <template #header>
-      <Header title="Faskes" :filter="false" class="mb-5">
-      <template #header>
-        <CustomButton label="Data" icon="PhPlus" @click="testDialog = true" />
-        <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Faskes</template>
-          <template #body>
-            <TambahDataFaskesDialog/>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
-      </template>
-    </Header>
+      <HeaderFilter page-type="faskes" @tambah-data="testDialog = true" />
     </template>
 
     <template #content>
@@ -104,13 +82,12 @@ const status = ref();
         <Column
           field="kode"
           header="Kode Faskes"
-          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
           header="Nama Faskes"
-          class="w-3/12"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
@@ -132,34 +109,54 @@ const status = ref();
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
+                <img src="@/assets/icons/edit.svg" alt=""/>
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt=""/>
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
+      <CustomDialog
+          width="600px"
+          v-model:visible="testDialog"
+          headerBg="bg-adameds-300"
+        >
+          <template #header>Tambah Data Faskes</template>
+          <template #body>
+            <TambahDataFaskesDialog/>
+          </template>
+          <template #footer>
+            <div class="w-full">
+              <hr class="-mx-5 border-grey-200" />
+              <div class="mt-5 flex justify-end gap-2.5">
+                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
+                <CustomButton label="Simpan"> </CustomButton>
+              </div>
+            </div>
+          </template>
+        </CustomDialog>
     </template>
 
     <template #footer>

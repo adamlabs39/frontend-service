@@ -76,9 +76,9 @@ watch(
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
           <CustomTextfield
-            label="Kode"
+            label="Kode Snomed-CT"
             v-model="code"
-            placeholder="Kode"
+            placeholder="Kode Snomed-CT"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
           />

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, watch, defineProps, computed } from "vue";
-import { useRouter } from "vue-router";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -14,11 +13,8 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import NoData from "@/components/section/NoData.vue";
 
-const router = useRouter();
+const emit = defineEmits(["back"]);
 
-function goBack() {
-  router.back();
-}
 const showSelected = ref(false);
 const showNama = ref(false);
 const phoneRegExp =
@@ -115,6 +111,7 @@ const dataBreadCrumb = ref([{ label: "Tambah Data" }]);
 const selectedRole = ref();
 const roleOptions = ref([
   { label: "Admin", value: "admin" },
+  { label: "Super Admin", value: "superAdmin" },
   { label: "Dokter", value: "dokter" },
   { label: "Perawat", value: "perawat" },
 ]);
@@ -207,6 +204,7 @@ watch(selectedRole, (newRole) => {
     showNama.value = true;
   }
 });
+
 </script>
 
 <template>
@@ -226,7 +224,7 @@ watch(selectedRole, (newRole) => {
         <CustomButton
           label="Kembali"
           icon="PhCaretLeft"
-          @click="goBack"
+          @click="emit('back')"
           background-color="bg-white"
           border-color="border-adameds-300"
           text-color="text-adameds-300"
@@ -290,6 +288,18 @@ watch(selectedRole, (newRole) => {
         <div class="basis-1/2 px-5 flex flex-col gap-2.5 overflow-hidden">
           <div class="overflow-auto grow">
             <div class="flex flex-col gap-5">
+              <CustomAccordion v-if="selectedRole === 'superAdmin'" headerClass="">
+                <template #collapseIcon>
+                  <PhCaretUp :size="20" class="text-adameds-300" />
+                </template>
+                <template #expandIcon>
+                  <PhCaretDown :size="20" class="text-adameds-300" />
+                </template>
+                <template #header>Data Faskes</template>
+                <template #content>
+                  <CustomSelect label="Faskes" place-holder="Pilih Faskes" class="py-5" />
+                </template>
+              </CustomAccordion>
               <CustomAccordion headerClass="">
                 <template #collapseIcon>
                   <PhCaretUp :size="20" class="text-adameds-300" />

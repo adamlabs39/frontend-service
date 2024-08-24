@@ -1,18 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, onBeforeRouteLeave } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
+import TambahDataUserPage from "./TambahDataUser/TambahDataUserPage.vue";
 
-const router = useRouter();
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
 const searchUser = ref<any>();
 const selectedUser = ref<any>();
 const itemSelectUser = ref([
@@ -50,60 +45,58 @@ const paginatedData = computed(() => {
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
-  currentPage.value = 0; 
+  currentPage.value = 0;
 };
 
 const handlePageUpdate = (newPage: number) => {
   currentPage.value = newPage;
 };
 
+const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
-  searchUser.value = "";
-  selectedUser.value = null;
+  headerFilterRef.value?.resetFilter();
 };
+
+const pageType = ref("");
+const route = useRoute();
+
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
+const updatePageType = (path: string) => {
+  resetFilter();
+  dataBreadCrumb.value = [];
+  let tempArrPath = path.split("/");
+  pageType.value = tempArrPath[2] ?? "";
+};
+onBeforeRouteLeave((to, from) => {
+  updatePageType(to.path);
+});
+onMounted(() => {
+  updatePageType(route.path);
+});
 </script>
 
 <template>
   <Card
+    v-if="dataBreadCrumb.length == 0"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <Header title="User" :filter="false" :search="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="addDataPage" />
-        </template>
-        <template #content>
-          <div class="flex items-end justify-between gap-5">
-            <CustomTextfield
-              v-model="searchUser"
-              class="w-1/2"
-              label="Cari User"
-              placeholder="Cari Nama User"
-              prependIcon="PhMagnifyingGlass"
-            />
-            <CustomSelect
-              class="w-1/2"
-              label="Role"
-              v-model="selectedUser"
-              :options="itemSelectUser"
-              optionValue="code"
-              optionLabel="name"
-            />
-            <div class="flex gap-2.5">
-              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-              <CustomButton
-                label="Reset"
-                @click="resetFilter"
-                background-color="bg-white"
-                border-color="border-adameds-300"
-                text-color="text-adameds-300"
-              />
-            </div>
-          </div>
-        </template>
-      </Header>
+      <HeaderFilter
+        page-type="user"
+        :value-search="searchUser"
+        @tambah-data="changeSection('Daftar')"
+      />
     </template>
     <template #content>
       <DataTable
@@ -116,9 +109,7 @@ const resetFilter = () => {
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
-            <div class="w-full text-center">
-              No.
-            </div>
+            <div class="w-full text-center">No.</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
@@ -139,14 +130,12 @@ const resetFilter = () => {
           class="w-4/12"
         ></Column>
         <Column
-        field="status"
-        headerClass="bg-adameds-50 font-semibold text-SM"
+          field="status"
+          headerClass="bg-adameds-50 font-semibold text-SM"
         >
-        <template #header>
-          <div class="w-full text-center">
-            Status
-          </div>
-        </template>
+          <template #header>
+            <div class="w-full text-center">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -174,25 +163,29 @@ const resetFilter = () => {
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" >
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center gap-2.5 justify-center ">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0" >
-                <img src="@/assets/icons/edit.svg" alt=""  />
+            <div class="flex items-center gap-2.5 justify-center">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
-                 class="h-6 w-[26px] p-0"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt=""  />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
@@ -219,4 +212,8 @@ const resetFilter = () => {
       </div>
     </template>
   </Card>
+  <TambahDataUserPage
+    v-else-if="dataBreadCrumb[0].label == 'Daftar'"
+    @back="dataBreadCrumb.pop()"
+  />
 </template>

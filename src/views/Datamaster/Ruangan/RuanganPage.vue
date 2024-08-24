@@ -2,11 +2,9 @@
 import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import TambahDataRuanganDialog from "./TambahDataRuanganDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 const searchRoom = ref<any>();
 const selectedKategori = ref<any>();
@@ -110,52 +108,8 @@ const resetFilter = () => {
     class=""
   >
     <template #header>
-      <Header title="Ruangan" :search="false" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-        <template #content>
-          <div class="flex items-end justify-between gap-5">
-            <CustomTextfield
-              v-model="searchRoom"
-              class="w-1/2"
-              label="Cari Ruangan"
-              placeholder="Cari Ruangan"
-              prependIcon="PhMagnifyingGlass"
-            />
-            <CustomSelect
-              v-model="selectedKategori"
-              :options="itemKategori"
-              optionValue="code"
-              optionLabel="name"
-              class="w-1/4"
-              :is-loading="false"
-              label="Kategori"
-              place-holder="Kategori"
-            />
-            <CustomSelect
-              v-model="selectedKelas"
-              :options="itemKelas"
-              optionValue="code"
-              optionLabel="name"
-              class="w-1/4"
-              :is-loading="false"
-              label="Kelas"
-              place-holder="Kelas"
-            />
-            <div class="flex gap-2.5">
-              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-              <CustomButton
-                label="Reset"
-                @click="resetFilter"
-                background-color="bg-white"
-                border-color="border-adameds-300"
-                text-color="text-adameds-300"
-              />
-            </div>
-          </div>
-        </template>
-      </Header>
+      <HeaderFilter page-type="ruangan" @tambah-data="handleAdd" />
+      
     </template>
 
     <template #content>
@@ -167,7 +121,10 @@ const resetFilter = () => {
         scrollable
         scrollHeight="flex"
       >
-        <Column header="No." headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50 font-semibold text-SM">
+          <template #header>
+            <div class="flex items-center">No.</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -183,6 +140,7 @@ const resetFilter = () => {
           field="nama_ruangan"
           header="Nama Ruangan"
           headerClass="bg-adameds-50"
+          class="w-3/12"
         ></Column>
         <Column
           field="no_kamar"
@@ -207,7 +165,7 @@ const resetFilter = () => {
         
         <Column field="status" headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full font-semibold text-center text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
@@ -236,7 +194,7 @@ const resetFilter = () => {
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"

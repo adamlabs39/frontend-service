@@ -8,6 +8,7 @@ import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataLokasiDialog from "./TambahDataLokasiDialog.vue";
 import DetailDataLokasi from "./DetailDataLokasi.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 const router = useRouter();
 
@@ -99,11 +100,8 @@ const onRowSelect = (event: any) => {
     class=""
   >
     <template #header>
-      <Header title="Lokasi" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="lokasi" @tambah-data="handleAdd" />
+
     </template>
 
     <template #content>
@@ -158,9 +156,15 @@ const onRowSelect = (event: any) => {
         ></Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50"
         >
+        <template #header="slotProps">
+            <div
+              class="w-full text-center font-semibold text-SM"
+            >
+              Status
+            </div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -183,12 +187,12 @@ const onRowSelect = (event: any) => {
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
@@ -201,15 +205,17 @@ const onRowSelect = (event: any) => {
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
                 @click="handleEdit"
               >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt=""/>
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>

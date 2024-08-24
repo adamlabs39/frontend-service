@@ -6,6 +6,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 
 const router = useRouter();
@@ -77,11 +78,8 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <Header title="Snomed CT" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="snomed-ct" @tambah-data="handleAdd" />
+
     </template>
     <template #content>
       <DataTable
@@ -105,13 +103,12 @@ function handleClose() {
         <Column
           field="kode"
           header="Kode"
-          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
           header="Nama Snomed CT"
-          class="w-3/12"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column

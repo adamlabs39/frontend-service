@@ -97,5 +97,13 @@ const apiDatamasterPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiDatamasterDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceDatamaster.delete(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 
-export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiSettingPost, apiSettingGet, apiSettingPut, apiSettingDelete, apiDatamasterGet, apiDatamasterPost, apiDatamasterPut };
+export { apiBasePost, apiBaseGet, apiBasePut, apiBaseDelete, apiSettingPost, apiSettingGet, apiSettingPut, apiSettingDelete, apiDatamasterGet, apiDatamasterPost, apiDatamasterPut,apiDatamasterDelete };

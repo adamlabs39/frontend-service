@@ -6,6 +6,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahDataRoleDialog from "./TambahDataRoleDialog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 
 onMounted(() => {
@@ -66,6 +67,8 @@ function handleEdit() {
 function handleClose() {
   dialogData.value.isVisible = false;
 }
+
+const search=ref()
 </script>
 
 <template>
@@ -75,11 +78,7 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <Header title="Role" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="role" @tambah-data="handleAdd" v-model:value-search="search" />
     </template>
 
     <template #content>
@@ -91,7 +90,10 @@ function handleClose() {
         scrollHeight="flex"
         class="text-xs"
       >
-        <Column header="No." headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50 font-semibold text-SM">
+          <template #header>
+            <div class="flex items-center">No.</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -132,13 +134,11 @@ function handleClose() {
         </Column>
         <Column
           field="status"
-          headerClass="bg-adameds-50 bg-adameds-50 font-semibold text-SM"
+          headerClass="bg-adameds-50 font-semibold text-SM"
         >
-        <template #header>
-          <div class="w-full text-center">
-            Status
-          </div>
-        </template>
+          <template #header>
+            <div class="w-full text-center">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -180,14 +180,14 @@ function handleClose() {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 @click="handleEdit"
-                class="h-6 w-[26px] p-0" 
+                class="h-6 w-[26px] p-0"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
-                class="h-6 w-[26px] p-0" 
+                class="h-6 w-[26px] p-0"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

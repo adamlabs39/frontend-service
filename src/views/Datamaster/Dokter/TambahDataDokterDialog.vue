@@ -38,7 +38,7 @@ function closeDialog() {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah Data Dokter</template>
+    <template #header>{{ title }} Dokter</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
@@ -70,8 +70,12 @@ function closeDialog() {
             />
           </div>
         </div>
-        <div class="flex flex gap-2.5">
-          <CustomDatePicker />
+        <div class="flex gap-2.5">
+          <CustomTextfield label="NIK" placeholder="0" class="basis-1/2" />
+          <CustomTextfield label="STR" placeholder="0" class="basis-1/2" />
+        </div>
+        <div class="flex gap-2.5">
+          <CustomDatePicker label="Tanggal Lahir" />
           <CustomSelect
             label="Jenis Kelamin"
             place-holder="Pilih Jenis Kelamin"
@@ -79,7 +83,7 @@ function closeDialog() {
           />
         </div>
         <hr />
-        <CustomMultiSelect label="Poli" />
+        <CustomMultiSelect label="Poli" placeholder="Pilih Poli" />
         <hr />
         <div class="flex items-end gap-2.5">
           <CustomSwitch v-model="status" label="Status" />

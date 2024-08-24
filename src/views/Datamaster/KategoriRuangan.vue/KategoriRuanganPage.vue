@@ -7,6 +7,7 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahKategoriRuanganDialog from "./TambahKategoriRuanganDialog.vue";
 import NoData from "@/components/section/NoData.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 
 onMounted(() => {
@@ -76,11 +77,8 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <Header title="Kategori Ruangan" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="kategori-ruangan" @tambah-data="handleAdd" />
+
     </template>
 
     <template #content>
@@ -113,6 +111,7 @@ function handleClose() {
           field="nama_kategori_ruangan"
           header="Nama Kategori Ruangan"
           headerClass="bg-adameds-50"
+          class="w-1/2"
         ></Column>
         <Column
           field="status"

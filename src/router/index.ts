@@ -31,7 +31,6 @@ import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 
 // NOTE Page View Datamaster
 import UserPage from "@/views/Datamaster/User/UserPage.vue";
-import TambahDataUserPage from "@/views/Datamaster/User/TambahDataUser/TambahDataUserPage.vue";
 import RolePage from "@/views/Datamaster/Role/RolePage.vue";
 import RuanganPage from "@/views/Datamaster/Ruangan/RuanganPage.vue";
 import KategoriRuanganPage from "@/views/Datamaster/KategoriRuangan.vue/KategoriRuanganPage.vue";
@@ -135,12 +134,6 @@ const router = createRouter({
       path: "/datamaster/user",
       name: "datamaster-user",
       meta: { layout: SidebarLayout, page: UserPage },
-      component: DatamasterView,
-    },
-    {
-      path: "/datamaster/user/tambah-data",
-      name: "datamaster-user-tambah-data",
-      meta: { layout: SidebarLayout, page: TambahDataUserPage },
       component: DatamasterView,
     },
     {

@@ -5,6 +5,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -54,30 +55,24 @@ function updateVisibility(value: any) {
           <template #content>
             <div class="flex flex-col gap-5 pt-5 -mx-4">
               <div class="flex gap-2.5">
-                <CustomTextfield
-                  label="Kuota JKN"
+                <CustomInputNumber label="Kuota JKN"
                   placeholder="0"
-                  type="number"
-                  class="basis-1/2"
-                >
+                  class="basis-1/2">
                   <template #appendText>
                     <div class="flex justfy-center items-center m-2.5">
                       Pasien
                     </div>
                   </template>
-                </CustomTextfield>
-                <CustomTextfield
-                  label="Kuota Non-JKN"
+                </CustomInputNumber>
+                <CustomInputNumber  label="Kuota Non-JKN"
                   placeholder="0"
-                  type="number"
-                  class="basis-1/2"
-                >
+                  class="basis-1/2">
                   <template #appendText>
                     <div class="flex justfy-center items-center m-2.5">
                       Pasien
                     </div>
                   </template>
-                </CustomTextfield>
+                </CustomInputNumber>
               </div>
               <div class="flex gap-2.5 justify-between">
                 <CustomDatePicker :time-only="true" class="basis-1/2" />

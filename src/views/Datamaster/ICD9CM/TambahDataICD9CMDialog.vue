@@ -85,10 +85,7 @@ watch(
   (newValue) => {
     if (newValue && props.method === "edit" && props.editData) {
       setValues({
-        // ...props.editData,
-        // code:props.editData.code,
-        name:props.editData.name,
-        status:props.editData.status,
+        ...props.editData,
       });
     } else if (!newValue) {
       resetForm();
@@ -104,7 +101,7 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Role</template>
+    <template #header>{{ title }} ICD 9 CM</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">

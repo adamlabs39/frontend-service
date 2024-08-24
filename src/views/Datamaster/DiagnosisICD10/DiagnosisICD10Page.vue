@@ -7,6 +7,7 @@ import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataDiagnosisICD10DIalog from "./TambahDataDiagnosisICD10DIalog.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 const router = useRouter();
 
@@ -79,11 +80,7 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <Header title="Diagnosis (ICD 10)" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="diagnosis" @tambah-data="handleAdd" />
     </template>
 
     <template #content>
@@ -108,13 +105,12 @@ function handleClose() {
         <Column
           field="kode"
           header="Kode Diagnosis"
-          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="nama"
           header="Nama Diagnosis"
-          class="w-3/12"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column

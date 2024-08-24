@@ -23,6 +23,7 @@ import {
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
 import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 
 const status = ref();
 const lokasiPelayanan = ref();
@@ -78,42 +79,46 @@ const editorConfig = {
         placeholder="Kategori General Consent"
         class="w-1/3"
       />
-      <CustomAutoComplete
-        label="Lokasi Pelayanan"
-        v-model="lokasiPelayanan"
-        :options="itemsLokasiPelayanan"
-        class="grow"
-      />
+      <CustomMultiSelect label="Lokasi Pelayanan" v-model="lokasiPelayanan" placeholder="Pilih Lokasi Pelayanan" class="grow" />
+
     </div>
     <CustomTextfield
       label="Nama General Consent"
       placeholder="Nama General Consent"
     />
     <CustomAccordion>
-      <template #header>Text Formating</template>
+      <template #header> <div class="-ml-4">Text Formating</div></template>
       <template #content>
-        <div class="flex justify-between">
+        <div class="flex justify-between bg-adameds-50 mt-2.5 p-4 rounded-[10px] -m-4 gap-40">
           <div class="w-1/2">
             <div class="mb-2">
               Field dinamis diharap menggunakan penanda
-              <span class="font-bold">{{}}</span>, contoh :
+              
+              <span v-pre class="font-bold">{{ }}</span>, contoh :
+              <hr class="border-grey-200 my-2.5">
             </div>
-            <div>Nama : Nama</div>
-            <div>Alamat : Alamat</div>
-            <div>No. Telepon : Telepon</div>
+            <div v-pre>Nama : {{Nama}}</div>
+            <div v-pre>Alamat : {{Alamat}}</div>
+            <div v-pre>No. Telepon : {{Telepon}}</div>
           </div>
           <div class="w-1/2">
             <div class="">list data dinamis</div>
-            <ul class="list-decimal list-inside">
-              <li>nama</li>
-              <li>alamat</li>
-              <li>umur</li>
-              <li>tindakan</li>
-              <li>nama_wali</li>
-              <li>jenis_kelamin_wali</li>
-              <li>alamat_wali</li>
-              <li>hubungan_dengan_pasien</li>
+            <hr class="border-grey-200 my-2.5">
+            <div class="flex gap">
+              <ul class="basis-1/3" >
+              <li>1. nama</li>
+              <li>2. alamat</li>
+              <li>3. umur</li>
+              <li>4. tindakan</li>
             </ul>
+            <ul >
+              <li>5. nama_wali</li>
+              <li>6. jenis_kelamin_wali</li>
+              <li>7. alamat_wali</li>
+              <li>8. hubungan_dengan_pasien</li>
+            </ul>
+            </div>
+            
           </div>
         </div>
       </template>
