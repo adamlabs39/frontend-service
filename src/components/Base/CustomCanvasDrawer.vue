@@ -1,66 +1,25 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import CustomButton from "./CustomButton.vue";
+import CustomTextArea from "./CustomTextArea.vue";
 
 const message = ref<string>("Drawing App");
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ctx = ref<CanvasRenderingContext2D | null>(null);
+const canvas2 = ref<HTMLCanvasElement | null>(null);
+const ctx2 = ref<CanvasRenderingContext2D | null>(null);
 
 const painting = ref<boolean>(false);
 const textMode = ref(false);
 
-const colors = ref<string[]>([
-  "#000000",
-  "#FF0000",
-  "#00FF00",
-  "#0000FF",
-  "#FFFF00",
-  "#FF00FF",
-  "#00FFFF",
-]);
+const colors = ref("e9594c");
+const lineWidth = ref(5);
+const isStartPainting = ref(false);
+const selectedTool = ref("pencil");
 
-const changeColor = (color: string) => {
-  ctx.value!.strokeStyle = color;
-};
-
-const clearCanvas = () => {
-  ctx.value!.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
-};
-
-const startPainting = (e: MouseEvent) => {
-  if (textMode.value) return; // Tidak menggambar jika dalam mode teks
-  painting.value = true;
-  // addText(e);
-  draw(e);
-  // insertArrow(e);
-};
-
-const finishedPainting = () => {
-  painting.value = false;
-  ctx.value!.beginPath();
-};
-
-const draw = (e: MouseEvent) => {
-  if (!painting.value) return;
-
-  const rect = canvas.value!.getBoundingClientRect();
-
-  ctx.value!.lineWidth = 10;
-  ctx.value!.lineCap = "round";
-
-  ctx.value!.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-  ctx.value!.stroke();
-
-  ctx.value!.beginPath();
-  ctx.value!.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-
-  ctx.value!.stroke();
-};
-
-const setPen = () => {
-  ctx.value!.globalCompositeOperation = "source-over"; // Mode menggambar biasa
-  ctx.value!.strokeStyle = "#000000"; // Warna garis
-  ctx.value!.lineWidth = 5; // Ukuran kuas
-};
+const startX = ref(0);
+const startY = ref(0);
+const currentRect = ref<any>({});
 
 const addText = (e: MouseEvent) => {
   if (!textMode) return;
@@ -74,12 +33,7 @@ const addText = (e: MouseEvent) => {
     ctx.value!.font = `20px Arial`;
     ctx.value!.fillText(text, x, y);
   }
-  finishedPainting();
-};
-
-const setEraser = () => {
-  ctx.value!.globalCompositeOperation = "destination-out"; // Mode penghapus
-  ctx.value!.lineWidth = 20; // Ukuran kuas penghapus
+  finishedPainting(e);
 };
 
 const insertArrow = (e: MouseEvent) => {
@@ -256,6 +210,174 @@ const drawArrow = (ctx: any, startX: any, startY: any, direction: any) => {
   // ctx.stroke();
 };
 
+const setPen = () => {
+  selectedTool.value = "pencil";
+  ctx.value!.globalCompositeOperation = "source-over"; // Mode menggambar biasa
+  ctx.value!.strokeStyle = `#${colors.value}`; // Warna garis
+  ctx.value!.lineWidth = lineWidth.value; // Ukuran kuas
+};
+
+const setEraser = () => {
+  selectedTool.value = "eraser";
+  ctx.value!.globalCompositeOperation = "destination-out"; // Mode penghapus
+  ctx.value!.lineWidth = lineWidth.value; // Ukuran kuas penghapus
+};
+
+const clearCanvas = () => {
+  ctx.value!.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
+};
+
+const startPainting = (e: MouseEvent) => {
+  if (textMode.value) return; // Tidak menggambar jika dalam mode teks
+  painting.value = true;
+  ctx.value!.strokeStyle = `#${colors.value}`;
+
+  startX.value = e.offsetX;
+  startY.value = e.offsetY;
+  currentRect.value = { x: startX, y: startY, width: 0, height: 0 };
+};
+
+const finishedPainting = (e: MouseEvent) => {
+  ctx.value!.beginPath();
+  if (selectedTool.value == "line" && isStartPainting.value) {
+    ctx.value!.moveTo(startX.value, startY.value);
+    ctx.value!.lineTo(e.offsetX, e.offsetY);
+  } else if (selectedTool.value == "circle" && isStartPainting.value) {
+    const radius = Math.sqrt(
+      (e.offsetX - startX.value) ** 2 + (e.offsetY - startY.value) ** 2
+    );
+    ctx.value!.arc(startX.value, startY.value, radius, 0, Math.PI * 2);
+  } else if (selectedTool.value == "square" && isStartPainting.value) {
+    currentRect.value.width = e.offsetX - startX.value;
+    currentRect.value.height = e.offsetY - startY.value;
+
+    // Draw the current rectangle
+    ctx.value!.rect(
+      currentRect.value.x,
+      currentRect.value.y,
+      currentRect.value.width,
+      currentRect.value.height
+    );
+  }
+  ctx.value!.stroke();
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  painting.value = false;
+  ctx.value!.beginPath();
+};
+
+const draw = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    (selectedTool.value != "pencil" && selectedTool.value != "eraser" )
+  )
+    return;
+
+  const rect = canvas.value!.getBoundingClientRect();
+
+  ctx.value!.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+  ctx.value!.stroke();
+
+  ctx.value!.beginPath();
+  ctx.value!.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+  ctx.value!.stroke();
+};
+
+const drawLine = (e: MouseEvent) => {
+  if (!painting.value || !isStartPainting.value || selectedTool.value != "line")
+    return;
+
+  let endX = e.offsetX;
+  let endY = e.offsetY;
+
+  // Bersihkan canvas
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Gambar garis dari titik awal ke titik akhir saat ini
+  ctx2.value!.beginPath();
+  ctx2.value!.moveTo(startX.value, startY.value);
+  ctx2.value!.lineTo(endX, endY);
+  ctx2.value!.stroke();
+};
+
+const drawCircle = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    selectedTool.value != "circle"
+  )
+    return;
+
+  let endX = e.offsetX;
+  let endY = e.offsetY;
+  const radius = Math.sqrt(
+    (endX - startX.value) ** 2 + (endY - startY.value) ** 2
+  );
+
+  // Bersihkan canvas
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Gambar garis dari titik awal ke titik akhir saat ini
+  ctx2.value!.beginPath();
+  ctx2.value!.arc(startX.value, startY.value, radius, 0, Math.PI * 2);
+  ctx2.value!.stroke();
+};
+
+const drawSquare = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    selectedTool.value != "square"
+  )
+    return;
+  let endX = e.offsetX;
+  let endY = e.offsetY;
+
+  currentRect.value.width = endX - startX.value;
+  currentRect.value.height = endY - startY.value;
+
+  // Clear the canvas and redraw everything
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Draw the current rectangle
+  ctx2.value!.beginPath();
+  ctx2.value!.rect(
+    currentRect.value.x,
+    currentRect.value.y,
+    currentRect.value.width,
+    currentRect.value.height
+  );
+  ctx2.value!.stroke();
+};
+
+const drawing = (e: MouseEvent) => {
+  ctx.value!.lineCap = "round";
+  ctx.value!.strokeStyle = `#${colors.value}`;
+  ctx.value!.lineWidth = lineWidth.value;
+  ctx2.value!.lineCap = "round";
+  ctx2.value!.strokeStyle = `#${colors.value}`;
+  ctx2.value!.lineWidth = lineWidth.value;
+  switch (selectedTool.value) {
+    case "line":
+      drawLine(e);
+      break;
+    case "pencil":
+      draw(e);
+      break;
+    case "eraser":
+      draw(e);
+      break;
+    case "circle":
+      drawCircle(e);
+      break;
+    case "square":
+      drawSquare(e);
+      break;
+  }
+};
+
 const saveCanvas = () => {
   const dataURL = canvas.value!.toDataURL("image/png");
   console.log(dataURL);
@@ -275,22 +397,18 @@ onMounted(() => {
   canvas.value = canvasElement as HTMLCanvasElement;
   ctx.value = canvas.value!.getContext("2d");
 
+  const canvasElement2 = document.getElementById("canvas2");
+  canvas2.value = canvasElement2 as HTMLCanvasElement;
+  ctx2.value = canvas2.value!.getContext("2d");
+
   // Set default stroke color
-  ctx.value!.strokeStyle = colors.value[0];
+  ctx.value!.strokeStyle = `#${colors.value}`;
 });
 </script>
 
 <template>
   <div>
     <h2>{{ message }}</h2>
-    <div class="color-picker">
-      <div
-        v-for="color in colors"
-        class="color-box"
-        :style="{ backgroundColor: color }"
-        @click="changeColor(color)"
-      ></div>
-    </div>
 
     <div class="flex">
       <div class="relative h-[400px] w-[800px]">
@@ -588,61 +706,131 @@ onMounted(() => {
         <canvas
           height="400"
           width="800"
-          @mousedown="startPainting"
-          @mouseup="finishedPainting"
-          @mousemove="draw"
           id="canvas"
           class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
         ></canvas>
+        <canvas
+          height="400"
+          width="800"
+          @mousedown="startPainting"
+          @mouseup="finishedPainting"
+          @mousemove="drawing"
+          id="canvas2"
+          class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+        ></canvas>
       </div>
-      <div>
-        <a class="clear-button" @click.prevent="clearCanvas">Clear Canvas</a>
-        <a class="clear-button" @click.prevent="setEraser">Set Penghapus</a>
-        <a class="clear-button" @click.prevent="setPen">Set Pen</a>
-        <a class="clear-button" @click.prevent="saveCanvas">Save</a>
-        <a class="clear-button" @click.prevent="loadImage">Load</a>
+      <div class="px-[30px] grow">
+        <CustomButton
+          @click="isStartPainting = true"
+          class="w-full mb-[10px]"
+          icon="PhPaintBrush"
+          label="Mulai Menggambar"
+          :disabled="isStartPainting"
+        />
+        <div v-if="isStartPainting">
+          <div
+            class="grid grid-cols-[13%_13%_13%_13%_13%_13%_22%] h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
+          >
+            <div
+              class="p-2 m-auto rounded-full cursor-pointer"
+              :class="{ 'bg-adameds-75': selectedTool == 'pencil' }"
+            >
+              <PhPencilSimple
+                @click="setPen"
+                :size="25"
+                color="#000000"
+                weight="fill"
+              />
+            </div>
+            <div
+              class="p-2 m-auto rounded-full cursor-pointer"
+              :class="{ 'bg-adameds-75': selectedTool == 'eraser' }"
+            >
+              <PhEraser
+                @click="setEraser"
+                :size="25"
+                color="#000000"
+                weight="fill"
+              />
+            </div>
+            <div
+              class="p-2 m-auto rounded-full cursor-pointer"
+              :class="{ 'bg-adameds-75': selectedTool == 'line' }"
+            >
+              <PhLineVertical
+                @click="selectedTool = 'line'"
+                :size="25"
+                color="#000000"
+                weight="bold"
+              />
+            </div>
+            <div
+              class="p-2 m-auto rounded-full cursor-pointer"
+              :class="{ 'bg-adameds-75': selectedTool == 'circle' }"
+            >
+              <PhCircle
+                @click="selectedTool = 'circle'"
+                :size="25"
+                color="#000000"
+                weight="bold"
+              />
+            </div>
+            <div
+              class="p-2 m-auto rounded-full cursor-pointer"
+              :class="{ 'bg-adameds-75': selectedTool == 'square' }"
+            >
+              <PhSquare
+                @click="selectedTool = 'square'"
+                :size="25"
+                color="#000000"
+                weight="bold"
+              />
+            </div>
+            <ColorPicker class="m-auto" v-model="colors" />
+            <Slider
+              v-model="lineWidth"
+              :min="0"
+              :max="20"
+              class="h-[10px] my-auto"
+              :dt="{
+                handleContentWidth: '25px',
+                handleContentHeight: '25px',
+                handleWidth: '25px',
+                handleHeight: '25px',
+                handleContentBackground: '#14b8a6',
+              }"
+              pt:root="rounded-lg"
+              pt:range="rounded-lg bg-adameds-300"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-[10px]">
+            <CustomButton
+              @click="clearCanvas"
+              class="w-full mb-[10px]"
+              label="Reset"
+              outlined
+              borderColor="border-grey-200"
+              textColor="text-grey-300"
+            />
+            <CustomButton
+              @click="
+                saveCanvas(), (isStartPainting = false), (selectedTool = 'pencil')
+              "
+              class="w-full mb-[10px]"
+              label="Simpan"
+            />
+          </div>
+        </div>
+        <CustomTextArea
+          label="Keterangan Kepala"
+          class="mt-[30px]"
+          placeholder="Keterangan kepala"
+          height="h-10"
+        />
+        <!-- <a class="clear-button" @click.prevent="loadImage">Load</a> -->
       </div>
     </div>
   </div>
 </template>
 
-<style>
-/* canvas {
-  display: block;
-  border: 2px solid #333;
-  border-radius: 5px;
-  cursor: crosshair;
-} */
-
-.color-box {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin: 0 5px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-.color-picker {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.clear-button {
-  display: block;
-  margin: 1rem auto;
-  padding: 0.5rem 1rem;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.clear-button:hover {
-  background-color: #444;
-}
-</style>
+<style></style>
