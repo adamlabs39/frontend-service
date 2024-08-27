@@ -50,6 +50,7 @@ import Editor from "primevue/editor";
 import Tabs from "primevue/tabs";
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
+import Slider from 'primevue/slider';
 import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
@@ -122,5 +123,6 @@ app.component("Editor", Editor);
 app.component("Tabs", Tabs);
 app.component("TabPanels", TabPanels);
 app.component("TabPanel", TabPanel);
+app.component("Slider", Slider);
 
 app.mount("#app");
