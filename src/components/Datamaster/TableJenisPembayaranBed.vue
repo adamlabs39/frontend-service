@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref,computed,onBeforeMount } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -7,11 +7,10 @@ import CustomTextfield from "../Base/CustomTextfield.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
 import CustomButton from "../Base/CustomButton.vue";
 
-const schema = yup.object().shape({
-  datas: yup
-    .array()
-    .of(
-      yup.object().shape({
+const schema = toTypedSchema(
+  yup.object({
+    datas: yup.array().of(
+      yup.object({
         jenisPembayaran: yup.string().required("Jenis pembayaran harus diisi"),
         harga: yup
           .string()
@@ -19,38 +18,48 @@ const schema = yup.object().shape({
           .matches(/^\d+$/, "Harga harus berupa angka"),
       })
     )
-    .strict(),
-});
+     
+  })
+);
 
-const { errors, handleSubmit, resetForm } = useForm({
+const { errors, handleSubmit, resetForm, setValues } = useForm({
   validationSchema: schema,
+ 
   initialValues: {
     datas: [{ jenisPembayaran: '', harga: '' }],
   },
+
 });
 
-const { remove, push, fields } = useFieldArray('datas');
+const { remove, push, fields  } = useFieldArray('datas');
 
 const myPushFunction = () => {
   push({ jenisPembayaran: '', harga: '' });
 };
 
-
-const onSubmit = handleSubmit(values => {
-  console.log(JSON.stringify(values, null, 2));
+const onSubmit = handleSubmit((values) => {
+  console.log("Submitted with", values);
 });
+
+// onBeforeMount(async () => {
+//   setValues({
+//     datas: [{ jenisPembayaran: 'tunai', harga: '30000' }]
+//   });
+// });
 
 const jenisBayarOptions = ref([
   { label: "Tunai", value: "tunai" },
   { label: "BPJS", value: "bpjs" },
 ]);
 
+
 </script>
 
 <template>
   <div>
-    {{ fields }}
-    {{ errors }}
+    filed: {{ fields }}<br>
+    error: {{ errors }}
+    {{  }}
     <DataTable
       :value="fields"
       tableStyle="min-width: 50rem"
@@ -68,9 +77,9 @@ const jenisBayarOptions = ref([
             optionLabel="label"
             label=""
             place-holder="Jenis Pembayaran Lain"
-
+            :invalid="!slotProps.data.value.jenisPembayaran"
           />
-          <ErrorMessage :name="`datas[${slotProps.data.key}].jenisPembayaran`" class="text-danger-300" />
+          <ErrorMessage :name="`datas[${slotProps.index}].jenisPembayaran`" class="text-danger-300" />
         </template>
       </Column>
       <Column headerClass="bg-adameds-300 text-white">
@@ -82,6 +91,7 @@ const jenisBayarOptions = ref([
             v-model="slotProps.data.value.harga"
             label=""
             placeholder="0"
+            :invalid="!slotProps.data.value.harga"
           >
             <template #prependText>
               <div
@@ -91,7 +101,7 @@ const jenisBayarOptions = ref([
               </div>
             </template>
           </CustomTextfield>
-          <ErrorMessage :name="`datas[${slotProps.data.key}].harga`" class="text-danger-300"/>
+          <ErrorMessage :name="`datas[${slotProps.index}].harga`" class="text-danger-300"/>
         </template>
       </Column>
       <Column headerClass="bg-adameds-300 text-white">
@@ -124,5 +134,6 @@ const jenisBayarOptions = ref([
       />
     </div>
     <CustomButton label="Simpan" @click="onSubmit" />
+    <CustomButton label="Reset" @click="resetForm" />
   </div>
 </template>

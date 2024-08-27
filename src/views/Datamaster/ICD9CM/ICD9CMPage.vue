@@ -2,10 +2,8 @@
 import { ref, onMounted, computed, onBeforeMount } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
 import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
-import { useIcd9Store } from "@/stores/icd9";
+import { useIcd9Store } from "@/stores/datamaster/icd9";
 import NoData from "@/components/section/NoData.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
@@ -18,14 +16,13 @@ const searchQuery = ref<string>("");
 const currentPage = ref<number>(1);
 const rowsPerPage = ref<number>(10);
 
-async function fetchIcd9Data() {
+const fetchIcd9Data = async () => {
   loading.value = true;
   try {
     const response = await icd9Store.getApi(
-      currentPage.value,
-      rowsPerPage.value,
-      searchQuery.value
     );
+    console.log('response', response);
+    
 
     if (response && response.payload) {
       icd9Response.value = response.payload;
@@ -39,19 +36,20 @@ async function fetchIcd9Data() {
   } finally {
     loading.value = false;
   }
-}
+};
 
-onMounted(() => {
-  fetchIcd9Data();
+onMounted(async () => {
+  await fetchIcd9Data();
 });
 
-function handlePageUpdate() {
-  fetchIcd9Data();
-}
 
-function handleRowsUpdate(rows: number) {
+const handlePageUpdate = () => {
   fetchIcd9Data();
-}
+};
+
+const handleRowsUpdate = (rows: number) => {
+  fetchIcd9Data();
+};
 
 function handleSearch() {
   currentPage.value = 1;
@@ -62,36 +60,26 @@ const hasData = computed(
   () => icd9Response.value && icd9Response.value.length > 0
 );
 
-const dialogData = ref<any>({
-  isVisible: false,
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+
+// Dialog Configuration
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
-  id: null,
+  data: null,
 });
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+// Handle closing of the dialog
+const closeDialog = () => {
+  isTambahDataDialogVisible.value = false;
+};
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah Data",
-  };
-}
-
-function handleEdit(dataItem: any) {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit Data",
-    editData: dataItem,
-  };
-}
-
-function handleClose() {
-  dialogData.value.isVisible = false;
-  fetchIcd9Data();
-}
-
-function handleDelete(dataItem: any) {
+const handleDelete = (dataItem: any) => {
   const confirmed = confirm(
     `Are you sure you want to delete ${dataItem.name}?`
   );
@@ -108,7 +96,7 @@ function handleDelete(dataItem: any) {
         loading.value = false;
       });
   }
-}
+};
 </script>
 
 <template>
@@ -118,7 +106,10 @@ function handleDelete(dataItem: any) {
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="icd9-cm" @tambah-data="handleAdd" />
+      <HeaderFilter
+        page-type="icd9-cm"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
     <template #content>
       <div v-if="loading" class="flex items-center justify-center h-full">
@@ -158,7 +149,7 @@ function handleDelete(dataItem: any) {
         ></Column>
         <Column
           field="status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50"
         >
           <template #header>
             <div class="w-full font-semibold text-center text-SM">Status</div>
@@ -194,7 +185,7 @@ function handleDelete(dataItem: any) {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="handleEdit(slotProps.data)"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -211,11 +202,11 @@ function handleDelete(dataItem: any) {
         </Column>
       </DataTable>
       <TambahDataICD9CMDialog
-        v-model:isDialogVisible="dialogData.isVisible"
-        :title="dialogData.title"
-        :method="dialogData.method"
-        :editData="dialogData.editData"
-        @close="handleClose"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :editData="dialogConfig.data"
+        @close="closeDialog"
       />
     </template>
     <template #footer>

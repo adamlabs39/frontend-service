@@ -1,55 +1,84 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed,onBeforeMount } from "vue";
+import { useFaskesStore } from "@/stores/datamaster/faskes";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataFaskesDialog from "./TambahDataFaskesDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
+import NoData from "@/components/section/NoData.vue";
 
-const router = useRouter();
+const faskesStore = useFaskesStore();
+const faskesResponse = ref<any[]>([]);
+const loading = ref(true);
+
+const fetchFaskesData = async () => {
+  try {
+    const response = await faskesStore.getApi();
+    faskesResponse.value = response.payload || [];
+
+    // Check if the response and payload exist
+    if (response && response.payload) {
+      faskesResponse.value = response.payload;
+    } else {
+      console.error("Unexpected response structure", response);
+      faskesResponse.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    faskesResponse.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
 
 onMounted(() => {
-  products.value = [
-    {
-      no: "1",
-      kode: "001",
-      nama: "Cholera disease",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "2",
-      kode: "002",
-      nama: "Typhoid and paratyphoid fevers",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "3",
-      kode: "003",
-      nama: "Other Salmonella",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      no: "4",
-      kode: "004",
-      nama: "Dizziness and giddiness",
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+  fetchFaskesData();
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
+const hasData = computed(
+  () => faskesResponse.value && faskesResponse.value.length > 0
+);
+
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+
+// Dialog Configuration
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
 };
-const testDialog = ref(false);
-const status = ref();
+// Handle closing of the dialog
+const closeDialog = () => {
+  isTambahDataDialogVisible.value = false;
+  fetchFaskesData();
+};
+
+const handleDelete = (dataItem: any) => {
+  const confirmed = confirm(
+    `Are you sure you want to delete ${dataItem.name}?`
+  );
+
+  if (confirmed) {
+    loading.value = true;
+    faskesStore
+      .deleteApi(dataItem.uuid)
+      .then(() => {
+        fetchFaskesData();
+      })
+      .catch((error) => {
+        console.error("Failed to delete data", error);
+        loading.value = false;
+      });
+  }
+};
 </script>
 
 <template>
@@ -59,12 +88,17 @@ const status = ref();
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="faskes" @tambah-data="testDialog = true" />
+      <HeaderFilter page-type="faskes" @tambah-data="openDialog('add', 'Tambah Data')" />
     </template>
 
     <template #content>
+      <div v-if="loading" class="flex items-center justify-center h-full">
+        Loading...
+      </div>
+      <NoData v-else-if="!hasData" />
       <DataTable
-        :value="products"
+      v-else
+        :value="faskesResponse"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -80,12 +114,12 @@ const status = ref();
           </template>
         </Column>
         <Column
-          field="kode"
+          field="code"
           header="Kode Faskes"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama"
+          field="name"
           header="Nama Faskes"
           class="w-1/2"
           headerClass="bg-adameds-50"
@@ -98,17 +132,15 @@ const status = ref();
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="slotProps.data.status === 'AKTIF' ? 'bg-adameds-300':'bg-white'"
-                :borderColor="slotProps.data.status === 'AKTIF' ? 'border-none':'border-[#80868d]'"
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>
@@ -116,47 +148,37 @@ const status = ref();
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div
-              class="w-full text-center font-semibold text-SM"
-            >
-              Action
-            </div>
+            <div class="w-full text-center font-semibold text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
-                <img src="@/assets/icons/edit.svg" alt=""/>
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data',slotProps.data)"
+              >
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="handleDelete(slotProps.data)"
               >
-                <img src="@/assets/icons/delete.svg" alt=""/>
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <CustomDialog
-          width="600px"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Data Faskes</template>
-          <template #body>
-            <TambahDataFaskesDialog/>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
+
+      <TambahDataFaskesDialog 
+       v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :editData="dialogConfig.data"
+        @close="closeDialog"/>
     </template>
 
     <template #footer>

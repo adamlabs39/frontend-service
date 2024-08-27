@@ -1,74 +1,84 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed,onUnmounted } from "vue";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
+import NoData from "@/components/section/NoData.vue";
 
-const router = useRouter();
+const snomedCTStore = useSnomedCTStore();
+const snomedResponse = ref<any[]>([]);
+const loading = ref(true);
+
+const fetchSnomedData = async () => {
+  try {
+    const response = await snomedCTStore.getApi();
+    snomedResponse.value = response.payload || [];
+
+    // Check if the response and payload exist
+    if (response && response.payload) {
+      snomedResponse.value = response.payload;
+    } else {
+      console.error("Unexpected response structure", response);
+      snomedResponse.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    snomedResponse.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
 
 onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode: "123",
-      nama: "Amoxcilin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode: "123",
-      nama: "Aspirin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode: "123",
-      nama: "Human Insulin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode: "123",
-      nama: "Acarbose",
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+  fetchSnomedData();
 });
 
-const dialogData = ref({
-  isVisible: false,
+const hasData = computed(
+  () => snomedResponse.value && snomedResponse.value.length > 0
+);
+
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+
+// Dialog Configuration
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
+  data: null,
 });
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah Data",
-  };
-}
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+// Handle closing of the dialog
+const closeDialog = () => {
+  isTambahDataDialogVisible.value = false;
+  fetchSnomedData();
+};
 
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit Data",
-  };
-}
+const handleDelete = (dataItem: any) => {
+  const confirmed = confirm(
+    `Are you sure you want to delete ${dataItem.name}?`
+  );
 
-function handleClose() {
-  dialogData.value.isVisible = false;
-}
+  if (confirmed) {
+    loading.value = true;
+    snomedCTStore
+      .deleteApi(dataItem.uuid)
+      .then(() => {
+        fetchSnomedData();
+      })
+      .catch((error) => {
+        console.error("Failed to delete data", error);
+        loading.value = false;
+      });
+  }
+};
 </script>
 
 <template>
@@ -78,12 +88,19 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="snomed-ct" @tambah-data="handleAdd" />
-
+      <HeaderFilter
+        page-type="snomed-ct"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
     <template #content>
+      <div v-if="loading" class="flex items-center justify-center h-full">
+        Loading...
+      </div>
+      <NoData v-else-if="!hasData" />
       <DataTable
-        :value="products"
+        v-else
+        :value="snomedResponse"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -100,13 +117,9 @@ function handleClose() {
             </div>
           </template>
         </Column>
+        <Column field="code" header="Kode" headerClass="bg-adameds-50"></Column>
         <Column
-          field="kode"
-          header="Kode"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="nama"
+          field="name"
           header="Nama Snomed CT"
           class="w-1/2"
           headerClass="bg-adameds-50"
@@ -119,25 +132,15 @@ function handleClose() {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>
@@ -156,27 +159,29 @@ function handleClose() {
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/edit.svg" alt=""/>
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="handleDelete(slotProps.data)"
               >
-                <img src="@/assets/icons/delete.svg" alt=""/>
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
       <TambahDataSnomedCTDialog
-        v-model:isDialogVisible="dialogData.isVisible"
-        :title="dialogData.title"
-        :method="dialogData.method"
-        @close="handleClose"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :editData="dialogConfig.data"
+        @close="closeDialog"
       />
     </template>
 

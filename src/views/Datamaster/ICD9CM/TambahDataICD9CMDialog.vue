@@ -7,7 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useIcd9Store } from "@/stores/icd9";
+import { useIcd9Store } from "@/stores/datamaster/icd9";
 
 const props = defineProps({
   isDialogVisible: {
@@ -39,20 +39,18 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 
 const icd9Store = useIcd9Store();
 
-
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (props.method === "edit") {
       if (!props.editData || !props.editData.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
-      
+
       const uuid = props.editData.uuid;
       console.log("Editing data with UUID:", uuid, "and values:", values);
 
       const response = await icd9Store.putApi(uuid, values);
       console.log("Data updated successfully:", response);
-
     } else if (props.method === "add") {
       console.log("Adding new data with values:", values);
 
@@ -64,7 +62,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     console.error("Failed to process the data:", error);
   }
 });
-
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -94,7 +91,6 @@ watch(
 );
 </script>
 <template>
-
   <CustomDialog
     width="600px"
     :visible="isDialogVisible"
@@ -111,7 +107,7 @@ watch(
             placeholder="Kode"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
-          />        
+          />
           <CustomTextfield
             label="Nama ICD 9 CM"
             v-model="name"
@@ -137,7 +133,7 @@ watch(
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-             @click="closeDialog"
+            @click="closeDialog"
           >
           </CustomButton>
           <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
@@ -145,5 +141,4 @@ watch(
       </div>
     </template>
   </CustomDialog>
-  
 </template>

@@ -7,11 +7,13 @@ import {
 } from "@/utils/apiHandler";
 
 export const useIcd9Store = defineStore({
-  id: "index",
+  id: "icd9",
   state: () => ({}),
   getters: {},
   actions: {
     async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {
+      console.log('masuk sini');
+      
       return apiDatamasterGet(`/datamaster/icd9?page=${page}&limit=${limit}&name=${name}`, payload);
     },
     async postApi(payload = {}) {

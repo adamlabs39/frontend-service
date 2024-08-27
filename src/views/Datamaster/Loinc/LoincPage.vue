@@ -1,48 +1,44 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/Footer.vue";
 import TambahDataLoincDialog from "./TambahDataLoincDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
+import { useLoincStore } from "@/stores/datamaster/loinc";
+import NoData from "@/components/section/NoData.vue";
 
-const router = useRouter();
+const loincStore=useLoincStore();
+const loincResponse = ref<any[]>([]);
+const loading=ref(true)
+
+const fetchFaskesData = async () => {
+  try {
+    const response = await loincStore.getApi();
+    loincResponse.value = response.payload || [];
+
+    // Check if the response and payload exist
+    if (response && response.payload) {
+      loincResponse.value = response.payload;
+    } else {
+      console.error("Unexpected response structure", response);
+      loincResponse.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    loincResponse.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
 
 onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode: "123",
-      nama: "Kalium (K)",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode: "123",
-      nama: "Urin 24 Jam",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode: "123",
-      nama: "Laju Endap Darah",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode: "123",
-      nama: "PCT",
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+  fetchFaskesData();
 });
+
+const hasData = computed(
+  () => loincResponse.value && loincResponse.value.length > 0
+);
 
 const dialogData = ref({
   isVisible: false,
@@ -83,8 +79,13 @@ function handleClose() {
     </template>
 
     <template #content>
+      <div v-if="loading" class="flex items-center justify-center h-full">
+        Loading...
+      </div>
+      <NoData v-else-if="!hasData" />
       <DataTable
-        :value="products"
+      v-else
+        :value="loincResponse"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -102,12 +103,12 @@ function handleClose() {
           </template>
         </Column>
         <Column
-          field="kode"
+          field="code"
           header="Kode"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="nama"
+          field="name"
           header="Nama Loinc"
           class="w-1/2"
           headerClass="bg-adameds-50"
@@ -124,25 +125,15 @@ function handleClose() {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>

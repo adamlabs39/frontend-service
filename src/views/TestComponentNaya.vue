@@ -116,6 +116,12 @@ const handleRowsUpdate = (rows: number) => {
 const handlePageUpdate = (page: number) => {
   console.log('Page updated:', page);
 };
+// const handleUpdate = (page: number) => {
+//   console.log('first updated:', page);
+// };
+const handlePage = (page: number) => {
+  console.log('Page updated:', page);
+};
 </script>
 
 <template>
@@ -186,7 +192,8 @@ const handlePageUpdate = (page: number) => {
       :totalRecords="100"
       :rowsPerPageOptions="[10, 20, 30]"
       @update:rows="handleRowsUpdate"
-      @update:current-page="handlePageUpdate"
+      @update:first="handlePageUpdate"
+      @page="handlePage"
     />
   </div>
 </template>

@@ -1,23 +1,141 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-const status = ref();
+import { useFaskesStore } from "@/stores/datamaster/faskes";
+
+const props = defineProps({
+  isDialogVisible: {
+    default: false,
+  },
+  title: {
+    type: String,
+  },
+  method: {
+    type: String,
+  },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+const schema = toTypedSchema(
+  yup.object({
+    code: yup.string().required("Kode harus diisi"),
+    name: yup.string().required("Nama Faskes harus diisi"),
+    status: yup.bool().default(false),
+  })
+);
+
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+
+const faskesStore = useFaskesStore();
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await faskesStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await faskesStore.postApi(values);
+      console.log("Data added successfully:", response);
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
+
+const [code] = defineField("code");
+const [name] = defineField("name");
+const [status] = defineField("status");
+
+const emit = defineEmits(["update:isDialogVisible", "close"]);
+
+function updateVisibility(value: any) {
+  emit("update:isDialogVisible", value);
+}
+
+function closeDialog() {
+  emit("close");
+}
+
+watch(
+  () => props.isDialogVisible,
+  (newValue) => {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        ...props.editData,
+      });
+    } else if (!newValue) {
+      resetForm();
+    }
+  }
+);
+
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
-    <div class="flex gap-2.5">
-      <CustomTextfield label="Kode Faskes" placeholder="Kode Faskes" />
-      <CustomTextfield
-        label="Nama Faskes"
-        placeholder="Nama Faskes"
-        class="basis-3/4"
-      />
-    </div>
-    <hr />
-    <div class="flex items-end gap-2.5">
-      <CustomSwitch v-model="status" label="Status"/>
-      <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-    </div>
-  </div>
+  <CustomDialog
+    width="600px"
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    headerBg="bg-adameds-300"
+  >
+    <template #header>{{ title }} Faskes</template>
+    <template #body>
+      <div class="mt-5 flex flex-col gap-5">
+        <div class="flex gap-2.5">
+          <CustomTextfield label="Kode Faskes" v-model="code" placeholder="Kode Faskes" :invalid="!!errors.code"
+          :invalidMessage="errors.code" />
+          <CustomTextfield
+            label="Nama Faskes"
+            v-model="name"
+            placeholder="Nama Faskes"
+            class="basis-3/4"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
+          />
+        </div>
+        <hr />
+        <div class="flex items-end gap-2.5">
+          <CustomSwitch v-model="status" label="Status" />
+          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <hr class="-mx-5 border-grey-200" />
+        <div class="mt-5 flex justify-end gap-2.5">
+          <CustomButton
+            label="Batal"
+            border-color="border-grey-200"
+            background-color="bg-white"
+            text-color="text-grey-300"
+            @click="closeDialog"
+          >
+          </CustomButton>
+          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+        </div>
+      </div>
+    </template>
+  </CustomDialog>
 </template>
