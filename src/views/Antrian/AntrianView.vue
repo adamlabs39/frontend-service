@@ -21,7 +21,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             url: "/antrian/konfigurasi/jadwal-dokter",
           },
           {
-            name: "Layar antrian",
+            name: "Layar Antrian",
             icon: "",
             type: linkType.LINK,
             url: "/antrian/konfigurasi/layar-antrian",
@@ -66,7 +66,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
 <template>
   <div class="flex h-full gap-3">
     <Sidebar
-      sidebarTitle="antrian"
+      sidebarTitle="Antrian"
       sidebarTitleUrl="/antrian"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
