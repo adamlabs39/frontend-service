@@ -6,6 +6,7 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -142,6 +143,24 @@ const itemsLayar = ref([
 const totalItems = computed(() => itemsLayar.value.length);
 
 const selectedPatient = ref([]);
+
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah",
+});
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
 </script>
 
 <template>
@@ -249,7 +268,11 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                @click="handleEdit"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
               <CustomButton
@@ -307,7 +330,6 @@ const selectedPatient = ref([]);
           </div>
         </template>
       </DataTable>
-
       <div
         v-else
         class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
@@ -321,6 +343,12 @@ const selectedPatient = ref([]);
           <div class="text-grey-200">No data available</div>
         </div>
       </div>
+      <EditDataKonfigurasiJadwal
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+      />
     </template>
     <template #footer>
       <AntrianFooter />

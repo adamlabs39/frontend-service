@@ -7,6 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import TambahDataKonfigurasiJadwal from "../Konfigurasi/TambahDataKonfigurasiJadwal.vue";
 
 const props = defineProps({
   title: {
@@ -59,7 +60,31 @@ const onPaymentMethodSelect = (label: string) => {
 
 const filters = [selectedPaymentMethod];
 
-const emit = defineEmits(["daftar"]);
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah",
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
 
 const resetFilter = () => {
   filters.forEach((filter) => {
@@ -92,7 +117,7 @@ defineExpose({
           </div>
         </div>
         <CustomButton
-          @click="emit('daftar')"
+          @click="handleAdd"
           icon="PhPlus"
           label="Jadwal"
           class="px-4 ml-auto"
@@ -195,4 +220,10 @@ defineExpose({
       />
     </template>
   </CustomAccordion>
+  <TambahDataKonfigurasiJadwal
+    v-model:isDialogVisible="dialogData.isVisible"
+    :title="dialogData.title"
+    :method="dialogData.method"
+    @close="handleClose"
+  />
 </template>

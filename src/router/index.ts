@@ -10,6 +10,7 @@ import SettingView from "@/views/SettingPage/SettingView.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
+import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -55,6 +56,12 @@ import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
 import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
+import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+
+// NOTE Page Laboratorium
+import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
+import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
+
 
 // !SECTION
 // NOTE Test Component
@@ -299,7 +306,7 @@ const router = createRouter({
     {
       path: "/antrian/konfigurasi/jadwal-dokter",
       name: "antrian-konfigurasi-jadwal-dokter",
-      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      meta: { layout: SidebarLayout, page: KonfigurasiJadwalPage },
       component: AntrianView,
     },
     {
@@ -333,6 +340,78 @@ const router = createRouter({
       component: AntrianView,
     },
     
+    // NOTE Laboratorium
+    {
+      path: "/laboratorium",
+      name: "laboratorium",
+      redirect: '/laboratorium/order-lab'
+    },
+    {
+      path: "/laboratorium/order-lab",
+      name: "laboratorium-order-lab",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/hasil-pemeriksaan",
+      name: "laboratorium-hasil-pemeriksaan",
+      meta: { layout: SidebarLayout, page: HasilPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/expertise",
+      name: "laboratorium-expertise",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/kategori-pemeriksaan",
+      name: "laboratorium-datamaster/kategori-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/kelompok-pemeriksaan",
+      name: "laboratorium-datamaster/kelompok-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/item-pemeriksaan",
+      name: "laboratorium-datamaster/item-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/spesimen",
+      name: "laboratorium-datamaster/spesimen",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/tarif-lab",
+      name: "laboratorium-datamaster/tarif-lab",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/kunjungan",
+      name: "laboratorium-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/waktu-tunggu",
+      name: "laboratorium-laporan-waktu-tunggu",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/rekap-jumlah",
+      name: "laboratorium-laporan-rekap-jumlah",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
 
     // NOTE Test Component
     {
