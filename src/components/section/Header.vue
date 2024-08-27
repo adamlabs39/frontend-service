@@ -53,28 +53,31 @@ const showDialog = () => {
       <div class="flex justify-between">
         <img loading="lazy" src="../../assets/icons/Bell Notification.svg" class="relative w-8 aspect-square" />
         <img src="../../assets/icons/notif.svg" alt="" class="absolute right-[92px] top-6 aspect-square">
-      </div>        
-      <div class="flex items-center justify-center cursor-pointer" >
+      </div>
+      <div class="flex items-center justify-center cursor-pointer">
         <div class="">
-          <img loading="lazy" src="../../assets/icons/User Account.svg" class="relative w-10 aspect-square" @click="showDialog" />
+          <img loading="lazy" src="../../assets/icons/User Account.svg" class="relative w-10 aspect-square"
+            @click="showDialog" />
           <img src="../../assets/icons/green_profile.svg" alt="" class="absolute right-9 top-6">
         </div>
-        <Dialog  v-model:visible="isDialogVisible" width="400px" position="topright" pt:root:class="rounded-2xl">
+        <Dialog v-model:visible="isDialogVisible" width="400px" position="topright" pt:root:class="rounded-2xl">
           <template #container>
             <div class="p-2.5 rounded-2xl">
               <div class="">
                 <div class="font-semibold text-black text-SM">NAMA AKUN</div>
                 <div class="text-[#79808F] text-[8px]">Terakhir Login 4 Mar 2024 | 12:00</div>
+                <hr class="border-[#D9DCE1] border-1 " />
                 <div class="py-2">
-                    <CustomButton label="Profile" class="w-[180px] text-sm font-semibold font-poppins"
-                  text-color="text-adameds-300" border-color="border-adameds-300" outlined @click="profileEdit" />
+                  <CustomButton label="Profile" class="text-sm font-semibold font-poppins"
+                    text-color="text-adameds-300" border-color="border-adameds-300" outlined @click="profileEdit"
+                    icon="ph-user-circle" iconPos="left" />
                 </div>
                 <hr class="border-[#D9DCE1] border-1 mb-2.5" />
               </div>
 
               <div class="flex w-full gap-5 cursor-pointer">
                 <img src="../../assets/icons/gear_setting.svg" width="30px" height="30px" @click="clickSetting">
-                <CustomButton label="LOGOUT" full class="font-bold"/>
+                <CustomButton label="LOGOUT" full class="font-bold" />
               </div>
             </div>
           </template>

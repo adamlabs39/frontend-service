@@ -9,7 +9,7 @@ import { useSettingStore } from '@/stores/setting';
 import UsernamePassword from './UsernamePassword.vue';
 import EditUsernamePassword from './EditUsernamePassword.vue';
 
-const profileResponse = ref({
+const profilAkunResponse = ref({
     name: '',
     email: '',
     phone: '',
@@ -27,11 +27,11 @@ const profileResponse = ref({
 
 const settingStore = useSettingStore();
 
-const fetchSettingData = async () => {
+const fetchSettingProfilAkunData = async () => {
     try {
-        const response = await settingStore.getApi();
+        const response = await settingStore.getProfilAkunApi();
         if (response && response.payload) {
-            profileResponse.value = response.payload;
+            profilAkunResponse.value = response.payload;
         } else {
             console.error("Unexpected response Structure", response);
         }
@@ -41,14 +41,14 @@ const fetchSettingData = async () => {
 };
 
 onMounted(() => {
-    fetchSettingData();
+    fetchSettingProfilAkunData();
 });
 
 
 // Setelah Edit Data
 const handleProfileUpdate = (updatedProfile: any) => {
-    profileResponse.value = updatedProfile;
-    fetchSettingData();
+    profilAkunResponse.value = updatedProfile;
+    fetchSettingProfilAkunData();
 };
 
 const isEditNamaFoto = ref(false);
@@ -70,19 +70,19 @@ const editUsernamePassword = () => {
         </template>
         <template #content>
             <template v-if="!isEditNamaFoto">
-                <NamaFoto :profileResponse="profileResponse" :editHandler="editNamaFoto" />
+                <NamaFoto :profilAkunResponse="profilAkunResponse" :editHandler="editNamaFoto" />
             </template>
             <template v-else>
-                <EditNamaFoto :profileResponse="profileResponse" :isEditNamaFoto="isEditNamaFoto"
+                <EditNamaFoto :profilAkunResponse="profilAkunResponse" :isEditNamaFoto="isEditNamaFoto"
                     @update:isEditNamaFoto="isEditNamaFoto = $event" @update:afterEditNamaFoto="handleProfileUpdate" />
             </template>
 
 
             <template v-if="!isEditUsernamePassword">
-                <UsernamePassword :profileResponse="profileResponse" :editHandler="editUsernamePassword" />
+                <UsernamePassword :profilAkunResponse="profilAkunResponse" :editHandler="editUsernamePassword" />
             </template>
             <template v-else>
-                <EditUsernamePassword :profileResponse="profileResponse" :isEditUsernamePassword="isEditUsernamePassword" @update:isEditUsernamePassword="isEditUsernamePassword = $event" @update:afterEditUsernamePassword="handleProfileUpdate"/>
+                <EditUsernamePassword :profilAkunResponse="profilAkunResponse" :isEditUsernamePassword="isEditUsernamePassword" @update:isEditUsernamePassword="isEditUsernamePassword = $event" @update:afterEditUsernamePassword="handleProfileUpdate"/>
             </template>
 
             <GreenCard cardHeading="Hak Akses Verifikator" hrEnableCustomClass class="mb-4">
@@ -91,14 +91,14 @@ const editUsernamePassword = () => {
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Medis
                         </div>
-                        <div class="font-bold text-heading">{{ profileResponse.inventoryMedis ? 'Penanggung Jawab' : '-'
+                        <div class="font-bold text-heading">{{ profilAkunResponse.inventoryMedis ? 'Penanggung Jawab' : '-'
                             }}</div>
                     </div>
                     <div class="mb-4">
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Non-Medis
                         </div>
-                        <div class="font-bold text-heading">{{ profileResponse.inventoryNonMedis ? 'Penanggung Jawab' :
+                        <div class="font-bold text-heading">{{ profilAkunResponse.inventoryNonMedis ? 'Penanggung Jawab' :
                             '-' }}</div>
                     </div>
                 </div>

@@ -16,7 +16,7 @@ const showVerifikasiPasswordBaru = ref(false);
 const settingStore = useSettingStore();
 
 const props = defineProps({
-    profileResponse: {
+    profilAkunResponse: {
         type: Object,
         required: true,
     },
@@ -105,17 +105,17 @@ const onSubmitUsernamePassword = handleSubmitUsernamePassword(
                 const payload = {
                     oldPassword: values.password,
                     password: values.passwordBaru,
-                    name: props.profileResponse.name,
-                    awalanGelar: props.profileResponse.awalanGelar,
-                    akhiranGelar: props.profileResponse.akhiranGelar,
-                    phone: props.profileResponse.phone,
-                    photo: props.profileResponse.photo,
+                    name: props.profilAkunResponse.name,
+                    awalanGelar: props.profilAkunResponse.awalanGelar,
+                    akhiranGelar: props.profilAkunResponse.akhiranGelar,
+                    phone: props.profilAkunResponse.phone,
+                    photo: props.profilAkunResponse.photo,
                 };
-                const response = await settingStore.putApi(payload);
+                const response = await settingStore.putProfilAkunApi(payload);
                 if (response?.status === 200) {
                     emit("update:isEditUsernamePassword", false);
                     emit("update:afterEditUsernamePassword", {
-                        ...props.profileResponse,
+                        ...props.profilAkunResponse,
                         ...payload,
                     });
                 } else {
@@ -137,7 +137,7 @@ const onSubmitUsernamePassword = handleSubmitUsernamePassword(
         <div class="grid grid-cols-2 gap-7">
             <div class="flex flex-col mt-2">
                 <div class="text-sm underline">Username</div>
-                <div class="font-bold text-heading">{{ profileResponse.username }}</div>
+                <div class="font-bold text-heading">{{ profilAkunResponse.username }}</div>
             </div>
             <div class="mb-4">
                 <CustomTextfield label="Password Lama" class="w-full" placeholder="************" v-model="password"

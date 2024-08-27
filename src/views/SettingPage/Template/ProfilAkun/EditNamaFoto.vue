@@ -12,7 +12,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 
 
 const props = defineProps({
-    profileResponse: {
+    profilAkunResponse: {
         type: Object,
         required: true,
     },
@@ -72,11 +72,11 @@ const schemaNamaLengkap = computed(() =>
 const {errors: namaLengkapErrors, handleSubmit: handleSubmitNamaLengkap, defineField: defineFieldNamaLengkap, resetForm:resetNamaLengkapForm } = useForm({
     validationSchema: schemaNamaLengkap,
     initialValues: {
-        name: props.profileResponse.name,
-        phone: props.profileResponse.phone,
-        awalanGelar: props.profileResponse.awalanGelar,
-        akhiranGelar: props.profileResponse.akhiranGelar,
-        photo: props.profileResponse.photo,
+        name: props.profilAkunResponse.name,
+        phone: props.profilAkunResponse.phone,
+        awalanGelar: props.profilAkunResponse.awalanGelar,
+        akhiranGelar: props.profilAkunResponse.akhiranGelar,
+        photo: props.profilAkunResponse.photo,
     },
 });
 
@@ -109,11 +109,11 @@ const onSubmitNamaLengkap = handleSubmitNamaLengkap(async (values) => {
             akhiran_gelar: values.akhiranGelar,
             photo: values.photo,
         };
-        const response = await settingStore.putApi(payload);
+        const response = await settingStore.putProfilAkunApi(payload);
   
         if (response?.status === 200) {
             emit('update:isEditNamaFoto', false);
-            emit('update:afterEditNamaFoto', { ...props.profileResponse, ...payload });
+            emit('update:afterEditNamaFoto', { ...props.profilAkunResponse, ...payload });
         } else {
             console.error("Failed to update profile:");
         }
@@ -164,11 +164,11 @@ const onSubmitNamaLengkap = handleSubmitNamaLengkap(async (values) => {
                 <div class="flex items-center gap-1">
                     <div class="w-80">
                         <div class="text-sm underline">Role</div>
-                        <div class="font-bold text-heading">{{ props.profileResponse.role.name }}</div>
+                        <div class="font-bold text-heading">{{ props.profilAkunResponse.role.name }}</div>
                     </div>
                     <div class="w-80 ">
                         <div class="text-sm underline">Email</div>
-                        <div class="font-bold text-heading">{{ props.profileResponse.email }}</div>
+                        <div class="font-bold text-heading">{{ props.profilAkunResponse.email }}</div>
                     </div>
                     <div class="w-[150px] ">
                         <CustomTextfield label="No. Handphone" class="w-full" placeholder="08123xx" v-model="phone"

@@ -7,9 +7,12 @@ import { ref } from 'vue';
 import FormEditKonfigurasiVCLAIM from './FormEditKonfigurasiVCLAIM.vue';
 import FormEditKonfigurasiLainnya from './FormEditKonfigurasiLainnya.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';
+import KonfigurasiSatuSehat from './KonfigurasiSatuSehat.vue';
+import FormEditKonfigurasiSatuSehat from './FormEditKonfigurasiSatuSehat.vue';
 
 const isEditKonfigurasiVCLAIM = ref(false);
 const isEditKonfigurasiLainnya = ref(false);
+const isEditKonfigurasiSatuSehat = ref(false);
 
 
 
@@ -23,6 +26,10 @@ const editKonfigurasiLainnya = () => {
     console.log("NININI")
     isEditKonfigurasiLainnya.value = !isEditKonfigurasiLainnya.value;
 };
+
+const editKonfigurasiSatuSehat = () => {
+    isEditKonfigurasiSatuSehat.value = !isEditKonfigurasiSatuSehat.value
+}
 </script>
 
 <template>
@@ -38,13 +45,27 @@ const editKonfigurasiLainnya = () => {
                     <KonfigurasiVCLAIM />
                 </GreenCard>
             </template>
-
-            <template v-else-if="isEditKonfigurasiVCLAIM">
+            <template v-else>
                 <GreenCard cardHeading="Konfigurasi VCLAIM" hr-enable-custom-class showButton labelButton="Batal Edit"
                     outlined borderColor="border-adameds-300" textColor="text-adameds-300"
                     :buttonClickHandler="editKonfigurasiVCLAIM">
                     <FormEditKonfigurasiVCLAIM />
                 </GreenCard>
+            </template>
+
+            <template v-if="!isEditKonfigurasiSatuSehat">
+
+                <GreenCard cardHeading="Konfigurasi SATUSEHAT" hrEnableCustomClass showButton labelButton="Edit"
+                    :buttonClickHandler="editKonfigurasiSatuSehat">
+                    <KonfigurasiSatuSehat/>
+                </GreenCard>
+            </template>
+            <template v-else>
+                <GreenCard cardHeading="Konfigurasi SATUSEHAT" hrEnableCustomClass showButton labelButton="Batal Edit"
+                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                    :buttonClickHandler="editKonfigurasiSatuSehat">
+                    <FormEditKonfigurasiSatuSehat/>
+                </GreenCard>  
             </template>
 
             <!--  -->
@@ -54,14 +75,15 @@ const editKonfigurasiLainnya = () => {
                     <KonfigurasiLainnya />
                 </GreenCard>
             </template>
-
-            <template v-else-if="isEditKonfigurasiLainnya">
-                <GreenCard cardHeading="Konfigurasi Lainnya" hr-enable-custom-class
-                        showButton labelButton="Batal Edit" outlined borderColor="border-adameds-300"
-                        textColor="text-adameds-300" :buttonClickHandler="editKonfigurasiLainnya">
-                    <FormEditKonfigurasiLainnya  />
+            <template v-else>
+                <GreenCard cardHeading="Konfigurasi Lainnya" hr-enable-custom-class showButton labelButton="Batal Edit"
+                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                    :buttonClickHandler="editKonfigurasiLainnya">
+                    <FormEditKonfigurasiLainnya />
                 </GreenCard>
             </template>
+
+
         </template>
     </Card>
 

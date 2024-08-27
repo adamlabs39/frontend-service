@@ -22,7 +22,7 @@ const props = defineProps({
             <CustomTextfield label="User Key" class="border-[#C7CBD2]" placeholder="User Key" />
             <CustomTextfield label="Cons ID (BPJS)" class="border-[#C7CBD2]" placeholder="Port" />
             <CustomTextfield label="Secret Key" class="border-[#C7CBD2]" placeholder="Secret Key" />
-            <div class="grid col-span-2">
+            <div class="grid">
                 <CustomTextfield label="PPK" class="border-[#C7CBD2]" placeholder="PPK" />
             </div>
         </div>

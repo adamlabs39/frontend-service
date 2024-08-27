@@ -3,7 +3,7 @@ import { defineProps, ref } from 'vue';
 import GreenCard from "../GreenCard.vue";
 
 const props = defineProps({
-    profileResponse: {
+    profilAkunResponse: {
         type: Object,
         required: true,
     },
@@ -19,35 +19,35 @@ import ProfilePhoto from '../../../../assets/icons/profil.svg';
 
 <template>
     <GreenCard cardHeading="Foto Profile dan Nama Lengkap" hrEnableCustomClass showButton labelButton="Edit"
-        :buttonClickHandler="props.editHandler">
+        :button-click-handler="props.editHandler">
         <div class="flex gap-10">
             <!-- Image -->
             <div class="w-[200px] h-[200px] flex justify-center items-center relative">
-                <img :src="props.profileResponse.photo ? props.profileResponse.photo : profileImage" alt="HALO" />
+                <img :src="props.profilAkunResponse.photo ? props.profilAkunResponse.photo : profileImage" alt="HALO" />
             </div>
             <div class="flex flex-col justify-evenly">
                 <div>
                     <div class="col-span-2 text-sm underline">Nama Lengkap</div>
-                    <div class="font-bold text-heading">{{ props.profileResponse.awalanGelar }} {{ props.profileResponse.name }}  {{ props.profileResponse.akhiranGelar }}</div>
+                    <div class="font-bold text-heading">{{ props.profilAkunResponse.awalanGelar }} {{ props.profilAkunResponse.name }}  {{ props.profilAkunResponse.akhiranGelar }}</div>
                 </div>
 
                 <div class="grid grid-cols-3">
                     <div class="w-80">
                         <div class="text-sm underline">Role</div>
                         <div class="font-bold text-heading">
-                            {{ props.profileResponse.role.name }}
+                            {{ props.profilAkunResponse.role.name }}
                         </div>
                     </div>
                     <div class="grow">
                         <div class="text-sm underline">Email</div>
                         <div class="font-bold text-heading">
-                            {{ props.profileResponse.email }}
+                            {{ props.profilAkunResponse.email }}
                         </div>
                     </div>
                     <div class="w-[180px]">
                         <div class="text-sm underline">No. Handphone</div>
                         <div class="font-bold text-heading">
-                            {{ props.profileResponse.phone }}
+                            {{ props.profilAkunResponse.phone }}
                         </div>
                     </div>
                 </div>
