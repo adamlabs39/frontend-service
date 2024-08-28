@@ -12,9 +12,6 @@ import GreenCard from "../GreenCard.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useSettingStore } from "@/stores/setting";
 
-
-
-
 const props = defineProps({
 	profilFaskesResponse: {
 		type: Object,
@@ -34,11 +31,12 @@ const API_URL_ALAMAT = "https://alamat.thecloudalert.com/api/";
 
 
 // Pilihan di select
-const provinces = ref<{ id: string; name: string }[]>([]);
-const regencies = ref<{ id: string; name: string }[]>([]);
-const districts = ref<{ id: string; name: string }[]>([]);
-const villages = ref<{ id: string; name: string }[]>([]);
-const postalCodes = ref<{ id: string; name: string }[]>([]);
+const provinces = ref<{ id: string; text: string }[]>([]);
+const regencies = ref<{ id: string; text: string }[]>([]);
+const districts = ref<{ id: string; text: string }[]>([]);
+const villages = ref<{ id: string; text: string }[]>([]);
+const postalCodes = ref<{ id: string; text: string }[]>([]);
+
 
 const schemaProfilFaskes = computed(() =>
     toTypedSchema(
@@ -119,7 +117,8 @@ const resetForm = () => {
 };
 
 const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
-    try {
+	try {
+		// console.log(`${values.selectedProvinceId} ${provinces.value.find(obj => obj.id === values.selectedProvinceId)?.text}`)
 		const payload = {
 			code : values.code,
             name: values.name,
@@ -127,11 +126,11 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
 			address_uuid: values.addressUuid,
 			logo: values.logo,
 			bg_warna: values.bgWarna,
-            prov: values.selectedProvinceId,
-			city: values.selectedRegencyId,
-			district: values.selectedDistrictId,
-			village: values.selectedVillageId,
-			postal_code: values.selectedPostalCodeId,
+			prov: provinces.value.find(obj => obj.id === values.selectedProvinceId)?.text,
+			city: regencies.value.find(obj => obj.id === values.selectedRegencyId)?.text,
+			district: districts.value.find(obj => obj.id === values.selectedDistrictId)?.text,
+			village: villages.value.find(obj => obj.id === values.selectedVillageId)?.text,
+			postal_code: postalCodes.value.find(obj => obj.id === values.selectedPostalCodeId)?.text,
 			phone: values.phone,
 			email: values.email,
 			website: values.website,
@@ -159,6 +158,7 @@ const fetchData = async (url: string, refVar: any) => {
 			text: item.text,
 			id: item.id,
 		}));
+		console.log(refVar.value)
 	} catch (error) {
 		console.error(`Error fetching data from ${url}:`, error);
 	}

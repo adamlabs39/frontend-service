@@ -1,48 +1,37 @@
 <script setup lang="ts">
-import ColorPicker from 'primevue/colorpicker';
 import { ref } from 'vue';
 
-
 const props = defineProps({
-    modelValue: {
+    icon: {
         type: String,
-        default:""
+        default: "",
     },
-    defaultColor: {
-        type: String,
-        default: "ff0000"
-    },
-    inline: {
+    showIcon: {
         type: Boolean,
-        default:false
-    }
-})
+        default: false,
+    },
+});
 
-const value = ref(props.modelValue);
+const selectedColor = ref('#14B8A6');
 
-const emit = defineEmits(["update:modelValue", "change"]);
+const emitColorChange = defineEmits<{
+    (e: 'update:color', color: string): void;
+}>();
 
-const onColorChange = (event:any) => {
-    console.log(`Event: `, event);
-    if (!event) return;
-    emit("update:modelValue", event.target?.value);
-    emit("change", event.value);
+function handleColorChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    selectedColor.value = target.value;
+    emitColorChange('update:color', selectedColor.value);
 }
-
-const alerTest = () => {
-  alert("masuk gan");
-};
-
 </script>
 
-
 <template>
-    <div>
-        <ColorPicker @change="onColorChange" v-model="value" :inline="inline" :default-color="defaultColor" space/>
+    <div class="flex items-center">
+        <input type="color" v-model="selectedColor" @input="handleColorChange"
+            class="w-24 h-16 bg-transparent border-none cursor-pointer " />
     </div>
 </template>
 
-
-<style lang="scss" scoped>
+<style>
 
 </style>

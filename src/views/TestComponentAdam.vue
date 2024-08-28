@@ -158,6 +158,8 @@
 
 
     <PopUpDownload/>
+
+    <NewColorPicker @update:color="updateThemeColor" />
   </div>
 </template>
 
@@ -173,6 +175,14 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomUpload from "@/components/Base/CustomUpload.vue";
 import PopUpDownload from "./Dashboard/Grafik/PopUpDownload.vue";
+// import NewColorPicker from "@/components/Base/newColorPicker.vue";
+
+const themeColor = ref('#3498db');
+
+function updateThemeColor(newColor: string) {
+  themeColor.value = newColor;
+  document.documentElement.style.setProperty('--primary-color', newColor);
+}
 
 const nameValue = ref("");
 const emailValue = ref("");

@@ -53,6 +53,10 @@ onMounted(() => {
     fetchSettingProfilFaskesData();
 });
 
+const handleProfilFaskesUpdate = (updatedProfile: any) => {
+    profilFaskesResponse.value = updatedProfile;
+    fetchSettingProfilFaskesData();
+};
 
 const isEditProfilFaskes = ref(false);
 const isEditLogoWarna = ref(false);
@@ -77,28 +81,15 @@ const editLogoWarna = () => {
                 <ProfilFaskesTemplate :profilFaskesResponse="profilFaskesResponse" :editHandler="editProfilFaskes" />
             </template>
             <template v-else>
-                <FormEditProfilFaskes :profilFaskesResponse="profilFaskesResponse" :isEditProfilFaskes="isEditProfilFaskes"  @update:isEditProfilFaskes="isEditProfilFaskes = $event" />
+                <FormEditProfilFaskes :profilFaskesResponse="profilFaskesResponse" :isEditProfilFaskes="isEditProfilFaskes"  @update:isEditProfilFaskes="isEditProfilFaskes = $event" @update:afterEditProfilFaskes="handleProfilFaskesUpdate"/>
             </template>
 
             <!-- Menampilkan Logo & Warna -->
             <template v-if="!isEditLogoWarna">
-                <GreenCard class="mb-4" cardHeading="Logo & Warna" showButton labelButton="Edit" hrEnableCustomClass
-                    :button-click-handler="editLogoWarna">
-                    <LogoWarna />
-                </GreenCard>
+                    <LogoWarna :profilFaskesResponse="profilFaskesResponse" :editHandler="editLogoWarna" />
             </template>
             <template v-else>
-                <GreenCard class="mb-4" cardHeading="Logo & Warna" hr-enable-custom-class showButton
-                    labelButton="Batal Edit" :button-click-handler="editLogoWarna" outlined
-                    borderColor="border-adameds-300" textColor="text-adameds-300">
-                    <FormEditLogoWarna />
-                    <hr class="border-[#D9DCE1] border-1 mt-5" />
-                    <div class="flex items-end justify-end gap-3 py-2.5">
-                        <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                            borderColor="border-2 border-[#9DA4B1]" />
-                        <CustomButton label="Simpan" />
-                    </div>
-                </GreenCard>
+                    <FormEditLogoWarna  :profilFaskesResponse="profilFaskesResponse" :isEditLogoWarna="isEditLogoWarna"  @update:is-edit-logo-warna="isEditLogoWarna = $event" />
             </template>
 
         </template>
