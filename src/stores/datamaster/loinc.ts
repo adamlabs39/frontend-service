@@ -11,8 +11,8 @@ export const useLoincStore = defineStore({
     state: () => ({}),
     getters: {},
     actions: {
-      async getApi(payload={}) {
-        return apiDatamasterGet("/datamaster/loinc", payload);
+      async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
+        return apiDatamasterGet(`/datamaster/loinc?page=${page}&limit=${limit}&name=${name}`, payload);
       },
       async postApi(payload = {}) {
         return apiDatamasterPost("/datamaster/loinc", payload);

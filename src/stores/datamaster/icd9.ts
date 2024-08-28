@@ -11,9 +11,7 @@ export const useIcd9Store = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {
-      console.log('masuk sini');
-      
+    async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
       return apiDatamasterGet(`/datamaster/icd9?page=${page}&limit=${limit}&name=${name}`, payload);
     },
     async postApi(payload = {}) {

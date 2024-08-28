@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
+import { useLoincStore } from "@/stores/datamaster/loinc";
 import * as yup from "yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -17,33 +18,55 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama Loinc harus diisi"),
-    status: yup.bool(),
+    status: yup.bool().default(false),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    console.log("Adding new data:", values);
+const loincStore=useLoincStore();
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await loincStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await loincStore.postApi(values);
+      console.log("Data added successfully:", response);
+      emit('data-updated');
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
 
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [status] = defineField("status");
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -56,7 +79,11 @@ function closeDialog() {
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        ...props.editData,
+      });
+    } else if (!newValue) {
       resetForm();
     }
   }

@@ -11,8 +11,8 @@ export const useFaskesStore = defineStore({
     state: () => ({}),
     getters: {},
     actions: {
-      async getApi(payload={}) {
-        return apiDatamasterGet("/datamaster/faskes", payload);
+      async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
+        return apiDatamasterGet(`/datamaster/faskes?page=${page}&limit=${limit}&name=${name}`, payload);
       },
       async postApi(payload = {}) {
         return apiDatamasterPost("/datamaster/faskes", payload);

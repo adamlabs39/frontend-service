@@ -56,6 +56,7 @@ const onSubmit = handleSubmit(async (values: any) => {
 
       const response = await icd9Store.postApi(values);
       console.log("Data added successfully:", response);
+      emit('data-updated');
     }
     closeDialog();
   } catch (error) {
@@ -67,7 +68,7 @@ const [code] = defineField("code");
 const [name] = defineField("name");
 const [status] = defineField("status");
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);

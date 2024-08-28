@@ -1,63 +1,71 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed, onBeforeMount } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
+import { useIcd9Store } from "@/stores/datamaster/icd9";
+import { downloadPdf } from "@/utils/PdfMake";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
-import { useIcd9Store } from "@/stores/datamaster/icd9";
 import NoData from "@/components/section/NoData.vue";
-import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 
 const icd9Store = useIcd9Store();
-const icd9Response = ref<any[]>([]);
-const loading = ref(true);
-
+const icd9Payload = ref<any[]>([]);
+const icd9Properties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
 const searchQuery = ref<string>("");
-const currentPage = ref<number>(1);
-const rowsPerPage = ref<number>(10);
+const loading = ref(true);
 
 const fetchIcd9Data = async () => {
   loading.value = true;
   try {
     const response = await icd9Store.getApi(
+      icd9Properties.value.page,
+      icd9Properties.value.page_size,
+      searchQuery.value
     );
-    console.log('response', response);
-    
 
     if (response && response.payload) {
-      icd9Response.value = response.payload;
+      icd9Properties.value.total = response.properties.total;
+      icd9Payload.value = response.payload;
     } else {
-      console.error("Unexpected response structure", response);
-      icd9Response.value = [];
+      icd9Payload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    icd9Response.value = [];
+    icd9Payload.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-onMounted(async () => {
-  await fetchIcd9Data();
+watch([searchQuery], fetchIcd9Data);
+
+onMounted(() => {
+  fetchIcd9Data();
 });
 
-
-const handlePageUpdate = () => {
+const handlePage = (event: any) => {
+  icd9Properties.value.page = event.page + 1;
+  icd9Properties.value.page_size = event.rows;
   fetchIcd9Data();
 };
 
-const handleRowsUpdate = (rows: number) => {
-  fetchIcd9Data();
-};
-
-function handleSearch() {
-  currentPage.value = 1;
-  fetchIcd9Data();
-}
+// const handlePage = (event: any) => {
+//   if (icd9Payload.value.length === 0) {
+//     icd9Properties.value.page = 1;
+//   } else {
+//     icd9Properties.value.page = event.page + 1;
+//   }
+//   icd9Properties.value.page_size = event.rows;
+//   fetchIcd9Data();
+// };
 
 const hasData = computed(
-  () => icd9Response.value && icd9Response.value.length > 0
+  () => icd9Payload.value && icd9Payload.value.length > 0
 );
 
 // Dialog States
@@ -69,14 +77,15 @@ const dialogConfig = ref<any>({
   title: "Tambah Data",
   data: null,
 });
-// Handle add and edit of the dialog
-const openDialog = (method: any, title: any, data: any = null) => {
+
+const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
-// Handle closing of the dialog
+
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
+  fetchIcd9Data();
 };
 
 const handleDelete = (dataItem: any) => {
@@ -97,17 +106,19 @@ const handleDelete = (dataItem: any) => {
       });
   }
 };
+
 </script>
 
 <template>
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
-    class=""
   >
     <template #header>
       <HeaderFilter
         page-type="icd9-cm"
+        :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
@@ -118,7 +129,7 @@ const handleDelete = (dataItem: any) => {
       <NoData v-else-if="!hasData" />
       <DataTable
         v-else
-        :value="icd9Response"
+        :value="icd9Payload"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -131,7 +142,11 @@ const handleDelete = (dataItem: any) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                slotProps.index +
+                1 +
+                (icd9Properties.page - 1) * icd9Properties.page_size
+              }}
             </div>
           </template>
         </Column>
@@ -147,10 +162,7 @@ const handleDelete = (dataItem: any) => {
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="status"
-          headerClass="bg-adameds-50"
-        >
+        <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
@@ -172,7 +184,7 @@ const handleDelete = (dataItem: any) => {
           </template>
         </Column>
         <Column headerClass="bg-adameds-50">
-          <template #header="slotProps">
+          <template #header>
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
             >
@@ -207,26 +219,16 @@ const handleDelete = (dataItem: any) => {
         :method="dialogConfig.method"
         :editData="dialogConfig.data"
         @close="closeDialog"
+        @data-updated="fetchIcd9Data"
       />
     </template>
     <template #footer>
-      <div class="flex justify-between px-5 py-2.5">
-        <div class="flex items-center gap-2.5">
-          <CustomButton label="Import">
-            <img src="@/assets/icons/File Import.svg" alt="" />Import
-          </CustomButton>
-          <CustomButton label="Eksport">
-            <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-          </CustomButton>
-        </div>
-        <CustomPaginator
-          :rows="rowsPerPage"
-          :totalRecords="icd9Response.length"
-          :rowsPerPageOptions="[10, 20, 30]"
-          @update:rows="handleRowsUpdate"
-          @update:current-page="handlePageUpdate"
-        />
-      </div>
+      <Footer
+        :rows="icd9Properties.page_size"
+        :totalRecords="icd9Properties.total"
+        @page="handlePage"
+        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+      />
     </template>
   </Card>
 </template>

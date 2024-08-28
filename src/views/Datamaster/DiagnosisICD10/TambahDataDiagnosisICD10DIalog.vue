@@ -7,6 +7,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
 
 const props = defineProps({
   isDialogVisible: {
@@ -23,12 +24,11 @@ const props = defineProps({
     default: () => ({}),
   },
 });
-console.log(props.editData)
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama diagnosis harus diisi"),
-    status: yup.bool(),
+    status: yup.bool().default(false),
   })
 );
 
@@ -36,13 +36,30 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    console.log("Adding new data:", values);
+const diagnosisStore=useDiagnosisStore();
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await diagnosisStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await diagnosisStore.postApi(values);
+      console.log("Data added successfully:", response);
+      emit('data-updated');
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
 
 const [code] = defineField("code");
@@ -50,7 +67,7 @@ const [name] = defineField("name");
 const [status] = defineField("status");
 
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -64,13 +81,9 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue && props.method === "edit" && props.editData) {
-      onBeforeMount(async()=>{
-        setValues({
-        code: props.editData.code,
-        name: props.editData.name,
-        status: props.editData.status === "AKTIF",
+      setValues({
+        ...props.editData,
       });
-      })
     } else if (!newValue) {
       resetForm();
     }

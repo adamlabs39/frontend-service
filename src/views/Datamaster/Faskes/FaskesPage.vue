@@ -1,43 +1,61 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed,onBeforeMount } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
+import { downloadPdf } from "@/utils/PdfMake";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Footer from "../Layout/Footer.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 import TambahDataFaskesDialog from "./TambahDataFaskesDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
 
 const faskesStore = useFaskesStore();
-const faskesResponse = ref<any[]>([]);
+const faskesPayload = ref<any[]>([]);
+const faskesProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
 const loading = ref(true);
 
 const fetchFaskesData = async () => {
+  loading.value = true;
   try {
-    const response = await faskesStore.getApi();
-    faskesResponse.value = response.payload || [];
+    const response = await faskesStore.getApi(
+      faskesProperties.value.page,
+      faskesProperties.value.page_size,
+      searchQuery.value
+    );
 
-    // Check if the response and payload exist
     if (response && response.payload) {
-      faskesResponse.value = response.payload;
+      faskesProperties.value.total = response.properties.total;
+      faskesPayload.value = response.payload;
     } else {
-      console.error("Unexpected response structure", response);
-      faskesResponse.value = [];
+      faskesPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    faskesResponse.value = [];
+    faskesPayload.value = [];
   } finally {
     loading.value = false;
   }
 };
 
+watch([searchQuery], fetchFaskesData);
+
 onMounted(() => {
   fetchFaskesData();
 });
 
+const handlePage = (event: any) => {
+  faskesProperties.value.page = event.page + 1;
+  faskesProperties.value.page_size = event.rows;
+  fetchFaskesData();
+};
+
 const hasData = computed(
-  () => faskesResponse.value && faskesResponse.value.length > 0
+  () => faskesPayload.value && faskesPayload.value.length > 0
 );
 
 // Dialog States
@@ -88,7 +106,12 @@ const handleDelete = (dataItem: any) => {
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="faskes" @tambah-data="openDialog('add', 'Tambah Data')" />
+      <HeaderFilter
+        page-type="faskes"
+          :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
 
     <template #content>
@@ -97,8 +120,8 @@ const handleDelete = (dataItem: any) => {
       </div>
       <NoData v-else-if="!hasData" />
       <DataTable
-      v-else
-        :value="faskesResponse"
+        v-else
+        :value="faskesPayload"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -156,7 +179,7 @@ const handleDelete = (dataItem: any) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data',slotProps.data)"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -173,16 +196,22 @@ const handleDelete = (dataItem: any) => {
         </Column>
       </DataTable>
 
-      <TambahDataFaskesDialog 
-       v-model:isDialogVisible="isTambahDataDialogVisible"
+      <TambahDataFaskesDialog
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :editData="dialogConfig.data"
-        @close="closeDialog"/>
+        @close="closeDialog"
+      />
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer
+        :rows="faskesProperties.page_size"
+        :totalRecords="faskesProperties.total"
+        @page="handlePage"
+        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+      />
     </template>
   </Card>
 </template>

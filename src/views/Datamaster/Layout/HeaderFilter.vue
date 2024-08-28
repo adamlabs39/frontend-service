@@ -1,13 +1,10 @@
 <script lang="ts" setup>
 import { ref, type PropType, computed, watch } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import type { MenuItem } from "primevue/menuitem";
-import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 
 const props = defineProps({
   pageType: {
@@ -130,6 +127,7 @@ const selectedTab = ref("0");
             :placeholder="`Cari ${pageLabel}`"
             class="grow"
             prependIcon="PhMagnifyingGlass"
+
           />
           <CustomSelect
             v-if="['user', 'ruangan', 'tarif', 'tindakan'].includes(pageType)"

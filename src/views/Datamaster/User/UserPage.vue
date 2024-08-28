@@ -99,6 +99,7 @@ onMounted(() => {
       />
     </template>
     <template #content>
+      {{ searchUser }}
       <DataTable
         :value="paginatedData"
         tableStyle="min-width: 50rem"

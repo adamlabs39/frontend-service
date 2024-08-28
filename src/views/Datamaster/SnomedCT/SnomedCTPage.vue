@@ -1,43 +1,59 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed,onUnmounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
+import { downloadPdf } from "@/utils/PdfMake";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Footer from "../Layout/Footer.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
 
 const snomedCTStore = useSnomedCTStore();
-const snomedResponse = ref<any[]>([]);
+const snomedPayload = ref<any[]>([]);
+const snomedProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
 const loading = ref(true);
 
 const fetchSnomedData = async () => {
   try {
-    const response = await snomedCTStore.getApi();
-    snomedResponse.value = response.payload || [];
-
-    // Check if the response and payload exist
+    const response = await snomedCTStore.getApi(
+      snomedProperties.value.page,
+      snomedProperties.value.page_size,
+      searchQuery.value
+    );
     if (response && response.payload) {
-      snomedResponse.value = response.payload;
+      snomedPayload.value = response.payload;
+      snomedProperties.value.total = response.properties.total;
     } else {
-      console.error("Unexpected response structure", response);
-      snomedResponse.value = [];
+      snomedPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    snomedResponse.value = [];
+    snomedPayload.value = [];
   } finally {
     loading.value = false;
   }
 };
 
+watch([searchQuery], fetchSnomedData);
+
 onMounted(() => {
   fetchSnomedData();
 });
 
+const handlePage = (event: any) => {
+  snomedProperties.value.page = event.page + 1;
+  snomedProperties.value.page_size = event.rows;
+  fetchSnomedData();
+};
+
 const hasData = computed(
-  () => snomedResponse.value && snomedResponse.value.length > 0
+  () => snomedPayload.value && snomedPayload.value.length > 0
 );
 
 // Dialog States
@@ -90,6 +106,8 @@ const handleDelete = (dataItem: any) => {
     <template #header>
       <HeaderFilter
         page-type="snomed-ct"
+         :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
@@ -100,7 +118,7 @@ const handleDelete = (dataItem: any) => {
       <NoData v-else-if="!hasData" />
       <DataTable
         v-else
-        :value="snomedResponse"
+        :value="snomedPayload"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -182,11 +200,17 @@ const handleDelete = (dataItem: any) => {
         :method="dialogConfig.method"
         :editData="dialogConfig.data"
         @close="closeDialog"
+        @data-updated="fetchSnomedData"
       />
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer
+        :rows="snomedProperties.page_size"
+        :totalRecords="snomedProperties.total"
+        @page="handlePage"
+        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+      />
     </template>
   </Card>
 </template>

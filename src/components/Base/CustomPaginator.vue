@@ -7,18 +7,16 @@ const props = defineProps({
     default: 0,
   },
   totalRecords: {
-    type: Number,
     default: 0,
   },
   rowsPerPageOptions: {
-    default: [],
+    type: Array,
+    default: () => [10, 20, 30],
   },
 });
 
 const emits = defineEmits([
-  "update:rows",
-  "update:first",
-  "page",
+  "page"
 ]);
 </script>
 
@@ -47,8 +45,6 @@ const emits = defineEmits([
           root: 'border-b-2 rounded-none border-white border-b-grey-200 ml-5 h-full items-center justify-center',
         },
       }"
-      @update:rows="$emit('update:rows', $event)"
-      @update:first="$emit('update:first', $event)"
       @page="$emit('page', $event)"
     >
       <template #rowsperpagedropdownicon>
@@ -58,6 +54,3 @@ const emits = defineEmits([
   </div>
 </template>
 
-<style scoped>
-/* Custom styles if needed */
-</style>

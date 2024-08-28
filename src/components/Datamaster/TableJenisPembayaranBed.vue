@@ -41,11 +41,11 @@ const onSubmit = handleSubmit((values) => {
   console.log("Submitted with", values);
 });
 
-// onBeforeMount(async () => {
-//   setValues({
-//     datas: [{ jenisPembayaran: 'tunai', harga: '30000' }]
-//   });
-// });
+onBeforeMount(async () => {
+  setValues({
+    datas: [{ jenisPembayaran: 'tunai', harga: '30000' }]
+  });
+});
 
 const jenisBayarOptions = ref([
   { label: "Tunai", value: "tunai" },
