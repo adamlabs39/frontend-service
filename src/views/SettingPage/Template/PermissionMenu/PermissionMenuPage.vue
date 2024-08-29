@@ -68,108 +68,114 @@ const selectedMainMenu = ref();
 </script>
 
 <template>
-    <div class="bg-white rounded-lg shadow-md ">
-        <MainHeaderSetting heading="Permission Menu" showButton labelButton="Menu" iconButton="PhPlus"
-            :button-click-handler="showDialog" />
-        <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px">
+        <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
             <template #header>
-                <div class="">
-                    Tambah Menu
-                </div>
-            </template>
-            <template #body>
-                <div class="my-5 ">
-                    <div class="mb-2.5">
-                        <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori" optionValue="code"
-                            optionLabel="name" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
-                            :disabled="false" placeHolder="Pilih Kategori" customSelectClass="border-[#C7CBD2]" />
-                    </div>
-                    
-                    <!-- Conditionally display the "Cari Main Menu" dropdown -->
-                    <div v-if="isSubMenuSelected" class="mb-2.5">
-                        <CustomSelect label="Cari Main Menu" v-model="selectedMainMenu" :options="mainMenuOptions" optionValue="value"
-                            optionLabel="label" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
-                            :disabled="false" placeHolder="Pilih Main Menu" customSelectClass="border-[#C7CBD2]" />
-                    </div>
-
-                    <div class="flex gap-7 ">
-                        <div class="w-[200px]">
-                            <CustomTextfield label="Kode Menu" class="border-[#C7CBD2]" placeholder="Kode Menu" />
-                        </div>
-                        <div class="grow">
-                            <CustomTextfield label="Nama Menu" class="w-full" placeholder="Nama Menu" />
-                        </div>
-                    </div>
-
-                    <hr class="border-[#D9DCE1] border-1 my-5" />
-
-                    <div class="flex flex-col">
-                        <div class="font-semibold mb-[5px]">
-                            Status
-                        </div>
-                        <div class="flex items-center gap-2 h-10 rounded-lg  text-[#6B7280]">
-                            <CustomSwitch v-model="status" />
-                            <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-            <template #footer>
-
-                <div class="w-full ">
-                    <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
-                    <div class="flex items-end justify-end gap-2.5 ">
-                        <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                            borderColor="border-2 border-[#9DA4B1]" />
-                        <CustomButton label="Simpan" />
-                    </div>
-
-                </div>
-
-            </template>
-        </CustomDialog>
-        <div class="p-4">
-            <DataTable :value="permission" responsiveLayout="scroll" dataKey="id" :expandedRows="expandedRows"
-                class="p-datatable-sm">
-                <Column expander style="width: 2em" header-class="text-black bg-adameds-50">
-                </Column>
-                <Column field="id" header="No" header-class="text-black bg-adameds-50"
-                    class="w-10 p-5 text-center text-black text-SM" />
-                <Column field="namaPermission" header="Nama Permission" header-class="text-black bg-adameds-50 "
-                    class="text-black text-SM" style="min-width: 600px" />
-                <Column field="kode" header="Kode" header-class="text-black bg-adameds-50" class="text-black text-SM"
-                    style="min-width: 140px" />
-                <Column field="kategori" header="Kategori" header-class="text-black bg-adameds-50"
-                    class="text-black text-SM" style="min-width: 110px" />
-                <Column field="status" header="Status" header-class="text-black bg-adameds-50" class="text-SM"
-                    style="min-width: 100px">
-                    <template #body="slotProps">
-                        <CustomChip :label="slotProps.data.status" bg-color="bg-adameds-300"
-                            border-color="border-transparent" text-color="text-white" icon-color="text-white" />
+                <MainHeaderSetting heading="Permission Menu" showButton labelButton="Menu" iconButton="PhPlus"
+                    :button-click-handler="showDialog"/>
+                <CustomDialog class="" v-model:visible="isDialogVisible" headerBg="bg-adameds-300" width="600px">
+                    <template #header>
+                            Tambah Menu
                     </template>
-                </Column>
+                    <template #body>
+                        <div class="my-5 text-normal">
+                            <div class="mb-2.5">
+                                <CustomSelect label="Kategori" v-model="selectedKategori" :options="kategori"
+                                    optionValue="code" optionLabel="name" :isLoading="false" :invalid="false"
+                                    invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Kategori"
+                                    customSelectClass="border-[#C7CBD2]" />
+                            </div>
 
-                <template #expansion="slotProps">
-                    <div class="p-3 -mx-2 -my-1.5 bg-adameds-50">
-                        <DataTable :value="slotProps.data.subMenu" class="overflow-hidden rounded-lg bg-adameds-50">
-                            <Column field="id" header="No." header-class="text-white bg-adameds-300"
-                                class="w-10 p-5 text-center text-black text-SM"></Column>
-                            <Column field="namaSubMenu" header="Nama Sub Menu" header-class="text-white bg-adameds-300"
-                                class="text-black text-SM"></Column>
-                        </DataTable>
+                            <!-- Conditionally display the "Cari Main Menu" dropdown -->
+                            <div v-if="isSubMenuSelected" class="mb-2.5">
+                                <CustomSelect label="Cari Main Menu" v-model="selectedMainMenu"
+                                    :options="mainMenuOptions" optionValue="value" optionLabel="label"
+                                    :isLoading="false" :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
+                                    placeHolder="Pilih Main Menu" customSelectClass="border-[#C7CBD2]" />
+                            </div>
+
+                            <div class="flex gap-7 ">
+                                <div class="w-[200px]">
+                                    <CustomTextfield label="Kode Menu" class="border-[#C7CBD2] "
+                                        placeholder="Kode Menu" />
+                                </div>
+                                <div class="grow">
+                                    <CustomTextfield label="Nama Menu" class="" placeholder="Nama Menu" />
+                                </div>
+                            </div>
+
+                            <hr class="border-[#D9DCE1] border-1 my-5" />
+
+                            <div class="flex flex-col">
+                                <div class="font-semibold mb-[5px]">
+                                    Status
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <CustomSwitch v-model="status" label=""/>
+                                    <div class="mt-2">{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <template #footer>
+
+                        <div class="w-full">
+                            <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
+                            <div class="flex items-end justify-end gap-2.5 ">
+                                <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
+                                    borderColor="border-2 border-[#9DA4B1]" />
+                                <CustomButton label="Simpan" />
+                            </div>
+
+                        </div>
+
+                    </template>
+                </CustomDialog>
+            </template>
+
+            <template #content>
+                <DataTable :value="permission" responsiveLayout="scroll" dataKey="id" :expandedRows="expandedRows"
+                    scrollable scrollHeight="flex" class="p-datatable-sm">
+                    <Column expander style="width: 2em" header-class="text-black bg-adameds-50">
+                    </Column>
+                    <Column field="id" header="No" header-class="text-black bg-adameds-50"
+                        class="w-10 p-5 text-center text-black text-SM" />
+                    <Column field="namaPermission" header="Nama Permission" header-class="text-black bg-adameds-50 "
+                        class="text-black text-SM" style="min-width: 500px" />
+                    <Column field="kode" header="Kode" header-class="text-black bg-adameds-50"
+                        class="text-black text-SM" style="min-width: 140px" />
+                    <Column field="kategori" header="Kategori" header-class="text-black bg-adameds-50"
+                        class="text-black text-SM" style="min-width: 110px" />
+                    <Column field="status" header="Status" header-class="text-black bg-adameds-50" class="text-SM"
+                        style="min-width: 100px">
+                        <template #body="slotProps">
+                            <CustomChip :label="slotProps.data.status" bg-color="bg-adameds-300"
+                                border-color="border-transparent" text-color="text-white" icon-color="text-white" />
+                        </template>
+                    </Column>
+
+                    <template #expansion="slotProps">
+                        <div class="p-3 -mx-2 -my-1.5 bg-adameds-50">
+                            <DataTable :value="slotProps.data.subMenu" class="overflow-hidden rounded-lg bg-adameds-50">
+                                <Column field="id" header="No." header-class="text-white bg-adameds-300"
+                                    class="w-10 p-5 text-center text-black text-SM"></Column>
+                                <Column field="namaSubMenu" header="Nama Sub Menu"
+                                    header-class="text-white bg-adameds-300" class="text-black text-SM"></Column>
+                            </DataTable>
+                        </div>
+                    </template>
+                </DataTable>
+            </template>
+
+            <template #footer>
+                <hr class="border-[#D9DCE1] border-1  mt-16 mb-2" />
+                <div class="flex justify-end gap-10 p-5">
+                    <!-- Pagination -->
+                    <div>
+                        <CustomPaginator :rows="10" :totalRecords="totalRecords" />
                     </div>
-                </template>
-            </DataTable>
-            <hr class="border-[#D9DCE1] border-1  mt-16 mb-2" />
-            <div class="flex justify-end gap-10 p-5">
-                <!-- Pagination -->
-                <div>
-                    <CustomPaginator :rows="10" :totalRecords="totalRecords" />
                 </div>
-            </div>
-        </div>
-
-    </div>
+            </template>
+        </Card>
 </template>
 
 <style>

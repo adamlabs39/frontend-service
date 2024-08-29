@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import Textarea from "primevue/textarea";
 
 const props = defineProps({
@@ -44,40 +44,39 @@ const props = defineProps({
     default: false,
   },
 });
-const value = ref(props.modelValue);
 
 const emit = defineEmits(["update:modelValue"]);
 
-const onInput = (event: any) => {
-  if (!event) return;
-  emit("update:modelValue", event.target?.value);
-};
+const value = computed({
+  get: () => props.modelValue,
+  set: (value: string) => emit("update:modelValue", value),
+});
+
 </script>
 
 <template>
-  <div class="">
+  <div>
     <label
-      v-if="showLabel"
+      v-if="props.showLabel"
       class="block font-semibold mb-[5px]"
-      :class="{ 'text-grey-300': disabled }"
+      :class="{ 'text-grey-300': props.disabled }"
     >
-      {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
+      {{ props.label }}<span v-if="props.required" class="text-danger-300">*</span>
     </label>
     <Textarea
       v-model="value"
-      @input="onInput"
-      :placeholder="placeholder"
+      :placeholder="props.placeholder"
       fluid
-      :disabled="disabled"
-      :invalid="invalid"
+      :disabled="props.disabled"
+      :invalid="props.invalid"
       class="pt-2 pl-3 pb-0 rounded-lg border-[1px] w-full"
       :class="{
-        'border-danger-300 text-danger-300': invalid,
-        'border-grey-200 bg-grey-100 text-grey-300': disabled,
-        'border-grey-400': !disabled && !invalid,
+        'border-danger-300 text-danger-300': props.invalid,
+        'border-grey-200 bg-grey-100 text-grey-300': props.disabled,
+        'border-grey-400': !props.disabled && !props.invalid,
         [props.height]: true,
       }"
     />
-    <small v-if="invalid" class="text-danger-300">{{ invalidMessage }}</small>
+    <small v-if="props.invalid" class="text-danger-300">{{ props.invalidMessage }}</small>
   </div>
 </template>

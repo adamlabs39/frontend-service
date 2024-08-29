@@ -46,6 +46,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  maxLength: {
+    type: Number,
+    default: 8, 
+  }
 });
 
 // const value = ref(props.modelValue);

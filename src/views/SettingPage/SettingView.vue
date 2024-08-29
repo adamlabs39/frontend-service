@@ -13,7 +13,6 @@ const sidebarBodyList = ref<SidebarBody[]>([
           { name: "Profil Faskes", type: linkType.LINK, url: '/setting/profil-faskes', icon:'gear' },
           { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'gear' },
           { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'gear' },
-          { name: "Password Otorisasi", type: linkType.LINK, url:'/setting/password-otorisasi', icon:'gear'},
           { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:'gear' },
     ],
   },
