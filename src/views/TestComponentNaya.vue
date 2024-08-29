@@ -11,14 +11,17 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
 import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
-import DetailTarifTindakan from "./Datamaster/Tarif/DetailTarifTindakan.vue";
-import DetailTarifRuangan from "./Datamaster/Tarif/DetailTarifRuangan.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
 import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
 import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
+import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
+import Kesadaran from "@/components/RekamMedis/Kesadaran/Kesadaran.vue";
+import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
+import CatatanHasilPenunjang from "@/components/RekamMedis/CatatanHasilPenunjang/CatatanHasilPenunjang.vue";
+import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanKeperawatan.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -117,8 +120,8 @@ const handlePage = (page: number) => {
 </script>
 
 <template>
-  <div class="h-screen overflow-scroll">
-    <Select
+  <div class="h-screen overflow-scroll mx-5">
+    <!-- <Select
       label="Choose a City"
       v-model="selectedItems"
       :options="items"
@@ -245,6 +248,13 @@ const handlePage = (page: number) => {
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
-    </Paginator>
+    </Paginator> -->
+
+    <b>Component Rekam Medis</b>
+    <Anamnesis/> <br>
+    <Kesadaran/><br>
+    <Antropometri/> <br>
+    <CatatanHasilPenunjang/> <br>
+    <AsuhanKeperawatan/>
   </div>
 </template>
