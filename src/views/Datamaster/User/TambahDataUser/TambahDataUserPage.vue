@@ -472,18 +472,13 @@ watch(selectedRole, (newRole) => {
               <div>
                 <div>Status</div>
                 <div class="w-full border rounded-lg p-2.5">
-                  <div class="flex items-center gap-2.5">
                     <CustomSwitch
                       v-model="status"
                       :disabled="!selectedRole"
                       :show-label="false"
-                      :invalid="
-                        !selectedRole ? false : errors.status ? true : false
-                      "
-                      :invalidMessage="errors.status"
+                      sideLabel="NON-AKTIF"
+                      sideLabelTrue="AKTIF"
                     />
-                    <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-                  </div>
                 </div>
               </div>
             </div>

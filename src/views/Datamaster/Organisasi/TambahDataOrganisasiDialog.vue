@@ -80,10 +80,13 @@ function closeDialog() {
         </div>
         <CustomSelect label="Part Of" place-holder="Pilih Part Of" />
         <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+        />
       </div>
     </template>
     <template #footer>

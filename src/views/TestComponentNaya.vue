@@ -19,6 +19,7 @@ import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
+import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -114,6 +115,8 @@ const handlePageUpdate = (page: number) => {
 const handlePage = (page: number) => {
   console.log("Page updated:", page);
 };
+const selectedValue = ref();
+
 </script>
 
 <template>
@@ -246,5 +249,9 @@ const handlePage = (page: number) => {
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
     </Paginator>
+    <br>
+    {{ selectedValue }}
+    <CustomRadioButton v-model="selectedValue" value="1" label="Option 1"  />
+  <CustomRadioButton v-model="selectedValue" value="2" label="Option 2" />
   </div>
 </template>

@@ -195,19 +195,20 @@ watch(
         </div>
         <hr />
         <div class="flex gap-2.5">
-          <div class="flex items-end gap-2.5 w-1/2">
-            <CustomSwitch
-              v-model="status_operasional"
-              label="Status Operasional"
-            />
-            <div class="-ml-24">
-              {{ status_operasional === true ? "Occupied" : "Non-Occupied" }}
-            </div>
-          </div>
-          <div class="flex items-end gap-2.5 w-1/2">
-            <CustomSwitch v-model="status" label="Status" />
-            <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-          </div>
+          <CustomSwitch
+          v-model="status_operasional"
+          :show-label="true"
+          label="Status Operasional"
+          sideLabel="Non-Occupied"
+          sideLabelTrue="Occupied"
+        />
+        <CustomSwitch
+          v-model="status_operasional"
+          :show-label="true"
+          label="Status"
+          sideLabel="Non-Aktif"
+          sideLabelTrue="Aktif"
+        />
         </div>
       </div>
     </template>

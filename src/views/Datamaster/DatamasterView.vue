@@ -25,6 +25,24 @@ const sidebarBodyList = ref<SidebarBody[]>([
     name: "2",
     type: linkType.SECTION,
     child: [
+    {
+        name: "Pegawai",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/nakes',
+      },
+    {
+        name: "Praktisioner",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/dokter',
+      },
+      
+    ],
+  },
+  
+  {
+    name: "3",
+    type: linkType.SECTION,
+    child: [
       {
         name: "Ruangan",
         icon: "Datamaster",
@@ -38,25 +56,14 @@ const sidebarBodyList = ref<SidebarBody[]>([
     ],
   },
   {
-    name: "3",
-    type: linkType.SECTION,
-    child: [
-      {
-        name: "Tarif",
-        icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/tarif'
-      },
-      {
-        name: "Tindakan",
-        icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/tindakan',
-      },
-    ],
-  },
-  {
     name: "4",
     type: linkType.SECTION,
     child: [
+    {
+        name: "Diagnosis (ICD 10)",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/diagnosis-icd10',
+      },
       {
         name: "ICD 9 CM",
         icon: "Datamaster",
@@ -72,11 +79,6 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/loinc',
       },
-      {
-        name: "Diagnosis (ICD 10)",
-        icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/diagnosis-icd10',
-      },
     ],
   },
   {
@@ -84,24 +86,31 @@ const sidebarBodyList = ref<SidebarBody[]>([
     type: linkType.SECTION,
     child: [
       {
-        name: "Praktisioner",
+        name: "Tarif",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/dokter',
+        type: linkType.LINK,url: '/datamaster/tarif'
       },
       {
-        name: "Pegawai",
+        name: "Tindakan",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/nakes',
+        type: linkType.LINK,url: '/datamaster/tindakan',
       },
-      {
-        name: "Penjamin",
-        icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/penjamin',
-      },
-      {
+    ],
+  },
+
+  {
+    name: "6",
+    type: linkType.SECTION,
+    child: [
+    {
         name: "Faskes",
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/faskes',
+      },
+      {
+        name: "Organisasi",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/organisasi',
       },
       {
         name: "Lokasi",
@@ -109,10 +118,15 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.LINK,url: '/datamaster/lokasi',
       },
       {
-        name: "Organisasi",
+        name: "Penjamin",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/organisasi',
+        type: linkType.LINK,url: '/datamaster/penjamin',
       },
+      {
+        name: "Voucher",
+        icon: "Datamaster",
+        type: linkType.LINK,url: '/datamaster/voucher',
+      },  
       {
         name: "General Consent",
         icon: "Datamaster",

@@ -50,6 +50,8 @@ const pageLabel = computed(() => {
     ? "Pegawai"
     : props.pageType === "penjamin"
     ? "Penjamin"
+    : props.pageType === "voucher"
+    ? "Voucher"
     : props.pageType === "faskes"
     ? "Faskes"
     : props.pageType === "lokasi"
@@ -83,7 +85,7 @@ const tabs = ref([
 const selectedTab = ref("0");
 </script>
 <template>
-  <CustomAccordion :openWithHeader="false" noBorder>
+  <CustomAccordion :openWithHeader="false" noBorder  initialState="0" >
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">

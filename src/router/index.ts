@@ -48,6 +48,7 @@ import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
 import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
+import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -202,6 +203,12 @@ const router = createRouter({
       path: "/datamaster/penjamin",
       name: "datamaster-penjamin",
       meta: { layout: SidebarLayout, page: PenjaminPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/voucher",
+      name: "datamaster-voucher",
+      meta: { layout: SidebarLayout, page: VoucherPage },
       component: DatamasterView,
     },
     {

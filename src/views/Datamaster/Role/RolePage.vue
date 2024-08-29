@@ -74,7 +74,7 @@ const search = ref()
 <template>
   <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
     <template #header>
-      <HeaderFilter page-type="role" @tambah-data="handleAdd" v-model:value-search="search" />
+      <HeaderFilter page-type="role" @tambah-data="handleAdd" v-model:value-search="search"/>
     </template>
 
     <template #content>

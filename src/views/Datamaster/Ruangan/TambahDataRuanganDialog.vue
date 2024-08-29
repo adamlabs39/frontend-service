@@ -147,15 +147,13 @@ watch(
         />
 
         <hr class="border-grey-200" />
-        <div class="flex gap-2.5 items-end">
-          <CustomSwitch
-            v-model="status"
-            :invalid="!!errors.status"
-            :invalidMessage="errors.status"
-            label="Status"
-          />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+        />
       </div>
     </template>
     <template #footer>
