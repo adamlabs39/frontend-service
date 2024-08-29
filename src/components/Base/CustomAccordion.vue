@@ -32,8 +32,8 @@ const openAccordion = (data: string) => {
 const openedData = ref(props.initialState);
 
 const open = () => {
-  openedData.value = '0'
-}
+  openedData.value = "0";
+};
 
 defineExpose({
   open,
@@ -61,6 +61,11 @@ defineExpose({
       </AccordionHeader>
       <AccordionContent class="" pt:content:class="rounded-b-[10px]">
         <slot name="content" />
+        <div
+          v-if="$slots.footer"
+          class="border-t-[1px] border-grey-200 -mx-[18px] my-5"
+        ></div>
+        <slot v-if="$slots.footer" name="footer" />
       </AccordionContent>
     </AccordionPanel>
     <template #collapseicon>
