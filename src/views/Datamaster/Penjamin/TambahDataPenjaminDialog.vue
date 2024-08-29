@@ -7,7 +7,7 @@ const status = ref();
 <template>
   <div class="mt-5 flex flex-col gap-5">
     <div class="flex gap-2.5">
-      <CustomTextfield label="Kode" placeholder="Kode" />
+      <CustomTextfield label="Kode Penjamin" placeholder="Kode Penjamin" />
       <CustomTextfield
         label="Nama Penjamin"
         placeholder="Nama Penjamin"

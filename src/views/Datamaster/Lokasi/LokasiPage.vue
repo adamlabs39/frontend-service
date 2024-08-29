@@ -4,10 +4,11 @@ import { useRouter } from "vue-router";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataLokasiDialog from "./TambahDataLokasiDialog.vue";
 import DetailDataLokasi from "./DetailDataLokasi.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 const products = ref<any[]>([]);
 const router = useRouter();
 
@@ -82,7 +83,7 @@ function handleClose() {
 }
 
 
-const handleDetail=ref(false)
+const handleDetail = ref(false)
 const metaKey = ref(true);
 const selectedLokasi = ref(null);
 const onRowSelect = (event: any) => {
@@ -93,33 +94,16 @@ const onRowSelect = (event: any) => {
 </script>
 
 <template>
-  <Card
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
-    class=""
-  >
+  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
     <template #header>
-      <Header title="Lokasi" :filter="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter page-type="lokasi" @tambah-data="handleAdd" />
+
     </template>
 
     <template #content>
-      <DataTable
-        :value="products"
-        tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
-        stripedRows
-        class="text-xs"
-        scrollable
-        scrollHeight="flex"
-        selectionMode="single"
-        :metaKeySelection="metaKey"
-        v-model:selection="selectedLokasi"
-        @rowSelect="onRowSelect"
-      >
+      <DataTable :value="products" tableStyle="min-width: 50rem" stripedRows class="text-xs" scrollable
+        scrollHeight="flex" selectionMode="single" :metaKeySelection="metaKey" v-model:selection="selectedLokasi"
+        @rowSelect="onRowSelect">
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
@@ -127,103 +111,55 @@ const onRowSelect = (event: any) => {
             </div>
           </template>
         </Column>
-        <Column
-          field="kode"
-          header="Kode Lokasi"
-          class="w-2/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="id_satusehat"
-          header="ID SATUSEHAT"
-          class="w-2/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="nama"
-          header="Nama Lokasi"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="deskripsi"
-          header="Deskripsi"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="tlp"
-          header="No. Telepon"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
-        >
+        <Column field="kode" header="Kode Lokasi" class="w-2/12" headerClass="bg-adameds-50"></Column>
+        <Column field="id_satusehat" header="ID SATUSEHAT" class="w-2/12" headerClass="bg-adameds-50"></Column>
+        <Column field="nama" header="Nama Lokasi" class="w-3/12" headerClass="bg-adameds-50"></Column>
+        <Column field="deskripsi" header="Deskripsi" class="w-3/12" headerClass="bg-adameds-50"></Column>
+        <Column field="tlp" header="No. Telepon" class="w-3/12" headerClass="bg-adameds-50"></Column>
+        <Column field="status" headerClass="bg-adameds-50">
+          <template #header="slotProps">
+            <div class="w-full text-center font-semibold text-SM">
+              Status
+            </div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
-              <CustomChip
-                :label="slotProps.data.status"
-                :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
-                "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
+              <CustomChip :label="slotProps.data.status" :textColor="slotProps.data.status === 'AKTIF'
+                  ? 'text-white'
+                  : 'text-[#80868d]'
+                " :bgColor="slotProps.data.status === 'AKTIF'
                     ? 'bg-adameds-300'
                     : 'bg-white'
-                "
-                :borderColor="
-                  slotProps.data.status === 'AKTIF'
+                  " :borderColor="slotProps.data.status === 'AKTIF'
                     ? 'border-none'
                     : 'border-[#80868d]'
-                "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
-                customClass="text-xs font-semibold h-6 flex"
-              />
+                  " :icon-color="slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                  " customClass="text-xs font-semibold h-5 flex" />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
-            >
+            <div class="flex items-center justify-center w-full font-semibold text-SM">
               Action
             </div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0"
+                @click="handleEdit">
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+              <CustomButton label="" background-color="bg-danger-300 rounded-lg" class="h-6 w-[26px] p-0">
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <TambahDataLokasiDialog
-        v-model:isDialogVisible="dialogData.isVisible"
-        :title="dialogData.title"
-        :method="dialogData.method"
-        @close="handleClose"
-      />
-      <DetailDataLokasi 
-      v-model:isDialogVisible="handleDetail"/>
+      <TambahDataLokasiDialog v-model:isDialogVisible="dialogData.isVisible" :title="dialogData.title"
+        :method="dialogData.method" @close="handleClose" />
+      <DetailDataLokasi v-model:isDialogVisible="handleDetail" />
     </template>
 
     <template #footer>

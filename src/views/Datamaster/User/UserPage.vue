@@ -1,18 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, onBeforeRouteLeave } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
+import TambahDataUserPage from "./TambahDataUser/TambahDataUserPage.vue";
 
-const router = useRouter();
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
-};
 const searchUser = ref<any>();
 const selectedUser = ref<any>();
 const itemSelectUser = ref([
@@ -50,72 +45,73 @@ const paginatedData = computed(() => {
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
-  currentPage.value = 0; 
+  currentPage.value = 0;
 };
 
 const handlePageUpdate = (newPage: number) => {
   currentPage.value = newPage;
 };
 
+const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
-  searchUser.value = "";
-  selectedUser.value = null;
+  headerFilterRef.value?.resetFilter();
 };
+
+const pageType = ref("");
+const route = useRoute();
+
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
+const updatePageType = (path: string) => {
+  resetFilter();
+  dataBreadCrumb.value = [];
+  let tempArrPath = path.split("/");
+  pageType.value = tempArrPath[2] ?? "";
+};
+onBeforeRouteLeave((to, from) => {
+  updatePageType(to.path);
+});
+onMounted(() => {
+  updatePageType(route.path);
+});
 </script>
 
 <template>
   <Card
+    v-if="dataBreadCrumb.length == 0"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <Header title="User" :filter="false" :search="false" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="addDataPage" />
-        </template>
-        <template #content>
-          <div class="flex items-end justify-between gap-5">
-            <CustomTextfield
-              v-model="searchUser"
-              class="w-1/2"
-              label="Cari User"
-              placeholder="Cari Nama User"
-              prependIcon="PhMagnifyingGlass"
-            />
-            <CustomSelect
-              class="w-1/2"
-              label="Role"
-              v-model="selectedUser"
-              :options="itemSelectUser"
-              optionValue="code"
-              optionLabel="name"
-            />
-            <div class="flex gap-2.5">
-              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
-              <CustomButton
-                label="Reset"
-                @click="resetFilter"
-                background-color="bg-white"
-                border-color="border-adameds-300"
-                text-color="text-adameds-300"
-              />
-            </div>
-          </div>
-        </template>
-      </Header>
+      <HeaderFilter
+        page-type="user"
+        :value-search="searchUser"
+        @tambah-data="changeSection('Daftar')"
+      />
     </template>
     <template #content>
+      {{ searchUser }}
       <DataTable
         :value="paginatedData"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
       >
-        <Column header="No." headerClass="bg-adameds-50 font-semibold text-SM">
+        <Column headerClass="bg-adameds-50 font-semibold text-SM">
+          <template #header>
+            <div class="w-full text-center">No.</div>
+          </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{ slotProps.index + 1 }}
@@ -125,20 +121,22 @@ const resetFilter = () => {
         <Column
           field="name"
           header="Nama User"
-          class="w-1/2"
           headerClass="bg-adameds-50 font-semibold text-SM"
+          class="w-4/12"
         ></Column>
         <Column
           field="role"
           header="Role"
-          class="w-1/2"
           headerClass="bg-adameds-50 font-semibold text-SM"
+          class="w-4/12"
         ></Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center font-semibold text-SM"
+          headerClass="bg-adameds-50 font-semibold text-SM"
         >
+          <template #header>
+            <div class="w-full text-center">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -161,29 +159,34 @@ const resetFilter = () => {
                 :icon-color="
                   slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
                 "
-                customClass="text-xs font-semibold h-6 flex"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
-              class="flex items-center justify-center w-full font-semibold text-SM"
+              class="w-full text-center font-semibold text-SM"
             >
               Action
             </div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg">
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
@@ -210,4 +213,8 @@ const resetFilter = () => {
       </div>
     </template>
   </Card>
+  <TambahDataUserPage
+    v-else-if="dataBreadCrumb[0].label == 'Daftar'"
+    @back="dataBreadCrumb.pop()"
+  />
 </template>

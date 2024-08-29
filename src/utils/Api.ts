@@ -93,7 +93,7 @@ settingInstance.interceptors.request.use((config) => {
   console.log(import.meta.env.VITE_URL_SETTING);
 
   const token =
-    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTE1MDZlLTIwMTUtNzRiOC1hY2ExLTVmNjhkY2NiOTE0OSIsInVzZXJuYW1lIjoiYWxsaWFuby1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwidXNlclV1aWQiOiIwMTkxNTA2ZS0yMDIwLTdkY2ItODdjMy1iMmU4ZjE1NDMzZjEiLCJpYXQiOjE3MjM3OTA1NTQsImV4cCI6MTcyMzgwMTM1NCwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.nYMZVYwKLi-rg0k-LGQTq7lxAoyWrt7DV7Sxn7GMhH1wNlLaGzBKzxsVTORIhNy6nSjBGR-b46l0Oi-yHGFr6nBLDr7cTlx-3ZtaCfgyIAmBlZHcXURiUm_YZmMwsJkaXC1MAJCzwyIiq0SlCaRGFGrWB3TZaSFl7cM8mdh3d21bEMlkSf-fEEbqsH2_tO5xzbC_kHMDSjccaaOEG_CECmqCiiYkA1EZ6yNd6UXYld2K7gzTpRoiygPa9jy50gmBPCT9aKE80EryBwR67g7KgpAv9kWO_57eoDNJYAF3m4F8_w_PYyWfrBEG8ZdZgtiK0KY-Z59wkx8i5qVPcMqyzA";
+    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTE1YTI2LWI0MjAtN2VjOC1hYzc4LWJiZjgwYTMxMjU2ZiIsInVzZXJuYW1lIjoiYWxsaWFuby1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwidXNlclV1aWQiOiIwMTkxNWEyNi1iNDJlLTcyODAtOTc1ZC0yMGEwNjNjZDI1NDEiLCJpYXQiOjE3MjQyMzA1NzQsImV4cCI6MTcyNDI0MTM3NCwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.lCYlhliErN9aHiQJT9OOR6iIJm4Jk40IB8HNvxhhMqloioVkVrHLjBLZgUrwgJUsa_wUxbZUmjmqVO-gVoiiq2Th-ExBZZsIllpex1bcyja1_diz_g5U23nI7zLmug1czLxVcJ05zySNQwi1O2bYEZqGJrLkTR7clrW9FDmmu0YgUtk91S05JU4iJHslZnduIKB2-7b9UQzlDC6M2toXxKjKjGfiR98IiAQgkgiaNZg4fmnrzH9fuxbJbKqHoVcYOLFFnDjFTHhHYo4BzB3HrXlmlJMOUpzClXKOtPzmMPK2QZ5GhP6E_DM5VMfYcRrWP7zKntbel0i27ezlBFrwKg";
 
   if (!token) {
     config.headers["Authorization"] = "";
@@ -119,23 +119,24 @@ settingInstance.interceptors.response.use(
   }
 );
 
-//ICD 9
-const baseInstanceICD9 = axios.create({
+//Datamaster
+const baseInstanceDatamaster = axios.create({
   headers: {
     common: {
       Accept: "text/plain, */*",
     },
   },
-  baseURL: import.meta.env.VITE_BASE_ICD9,
+  baseURL: import.meta.env.VITE_BASE_DATAMASTER,
 });
 
-baseInstanceICD9.interceptors.request.use(
+baseInstanceDatamaster.interceptors.request.use(
   (config) => {
-    const token = "";
+    const token =
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTE3OTU5LWY5ZDktNzk5Zi1hOGE3LWFlZjk2YmM3YzdhMyIsInVzZXJuYW1lIjoiaGFiaWItZGV2IiwiZmFza2VzVXVpZCI6IjlkNDAzdWZqaDQzdWZoM3VmODQzMGloZiIsInVzZXJVdWlkIjoiMDE5MTc5NTktZmM5MS03Y2EwLTlkNGYtN2U3N2M3M2Y4MGU3IiwiaWF0IjoxNzI0MzE3ODQwLCJleHAiOjE3MjY5MDk4NDAsImlzcyI6ImF1dGhlbnRpY2F0aW9uLXNlcml2aWNlIn0.f1lUymDMagYxbNI-IbZoB9uiKiltrigarFg4cZXcbDggAIiTuiV4X0rg1pHisyBS86fE_gLN4nhrfpTCCYGyfg-r3DCKW1mxqVqsLdb5bFVhlobP_YENmwkJ0rGjIjKj7El15KxwOrVea2hRdlvwSd6Q7VFkOafsO7W-Rgl8mTVpS1qFmlSLCu6u_sfTm4l4TUZppm8-42w4IYrMfINBw6zm2sb2TiCFCGyHDgzcCvnHniK3xnegJdkmnlzhJvR9MAzrVUL6yvYDGS2VS5pEcGOFfdoVtOMG-lLvHWrhnz1Mnt-J4sH9IwCYrYEa3k4koBSQ4xJ7QS_zcjWyD6VO-A";
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = token;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);
@@ -148,7 +149,7 @@ baseInstanceICD9.interceptors.request.use(
   }
 );
 
-baseInstanceICD9.interceptors.response.use(
+baseInstanceDatamaster.interceptors.response.use(
   (response: AxiosResponse) => {
     if (response.data) {
       response.data = toCamelCase(response.data);
@@ -160,4 +161,4 @@ baseInstanceICD9.interceptors.response.use(
   }
 );
 
-export { baseInstance, settingInstance, baseInstanceICD9 };
+export { baseInstance, settingInstance, baseInstanceDatamaster };
