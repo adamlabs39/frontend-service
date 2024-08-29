@@ -6,6 +6,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import TambahDataKonfigurasiLayar from "../Konfigurasi/TambahDataKonfigurasiLayar.vue";
 
 const props = defineProps({
   title: {
@@ -24,10 +25,38 @@ const props = defineProps({
 
 const selectedLayar = ref<any>();
 const itemLayar = ref([
-  { name: "Layar 1", code: "L1" },
-  { name: "Layar 2", code: "L2" },
-  { name: "Layar 3", code: "L3" },
+  { name: "Layar 3 x 3 Panggilan", code: "L-1" },
+  { name: "Layar 3 x 2 Panggilan", code: "L-2" },
+  { name: "Layar 3 List & 3 Panggilan", code: "L-3" },
+  { name: "Layar 2 List & 2 Panggilan", code: "L-4" },
+  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: "L-5" },
 ]);
+
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah",
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
 
 // !SECTION
 
@@ -43,8 +72,6 @@ const onPaymentMethodSelect = (label: string) => {
 };
 
 const filters = [selectedPaymentMethod];
-
-const emit = defineEmits(["daftar"]);
 
 const resetFilter = () => {
   filters.forEach((filter) => {
@@ -76,7 +103,7 @@ defineExpose({
           </div>
         </div>
         <CustomButton
-          @click="emit('daftar')"
+          @click="handleAdd"
           icon="PhPlus"
           label="Layar Antrian"
           class="px-4 ml-auto"
@@ -164,4 +191,11 @@ defineExpose({
       />
     </template>
   </CustomAccordion>
+  <TambahDataKonfigurasiLayar
+    :full-screen="true"
+    v-model:isDialogVisible="dialogData.isVisible"
+    :title="dialogData.title"
+    :method="dialogData.method"
+    @close="handleClose"
+  />
 </template>
