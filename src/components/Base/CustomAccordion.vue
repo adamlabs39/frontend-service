@@ -6,6 +6,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  initialState: {
+    type: String,
+    default: "null",
+  },
   openWithHeader: {
     type: Boolean,
     default: true,
@@ -25,7 +29,15 @@ const openAccordion = (data: string) => {
   }
 };
 
-const openedData = ref("0");
+const openedData = ref(props.initialState);
+
+const open = () => {
+  openedData.value = '0'
+}
+
+defineExpose({
+  open,
+});
 </script>
 
 <template>
