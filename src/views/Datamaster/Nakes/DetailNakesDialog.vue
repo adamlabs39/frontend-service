@@ -19,18 +19,17 @@ function updateVisibility(value: any) {
     :visible="isDialogVisible" @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Detail Nakes</template>
+    <template #header>Detail Data Pegawai</template>
     <template #body>
       <div class="flex flex-col gap-5">
-        <div class="mt-2.5 font-bold text-heading leading-8">Data Nakes</div>
+        <div class="mt-2.5 font-bold text-heading leading-8">Data Pegawai - Nakes</div>
         <hr class="border-grey-200" />
         <div class="flex">
           <div class="flex flex-col w-1/2 gap-5">
             <InfoRow label="NIK" value="00000000" />
+            <InfoRow label="No. STR" value="00000000" />
             <InfoRow label="Nama Lengkap" value="dr. Spesialis Sp. A" />
             <InfoRow label="Tanggal Lahir" value="01-01-2000" />
-          </div>
-          <div class="flex flex-col justify-end w-1/2 gap-5">
             <InfoRow label="Jenis Kelamin" value="Laki-laki" />
           </div>
         </div>

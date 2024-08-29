@@ -102,7 +102,8 @@ const handleRowSelect = (data: any) => {
         </Column>
         <Column field="nik" header="NIK" headerClass="bg-adameds-50"></Column>
         <Column field="STR" header="STR" headerClass="bg-adameds-50"></Column>
-        <Column field="name_nakes" header="Name Nakes" headerClass="bg-adameds-50"></Column>
+        <Column field="name_nakes" header="Nama Pegawai" headerClass="bg-adameds-50"></Column>
+        <Column field="name_nakes" header="Tipe Pegawai" headerClass="bg-adameds-50"></Column>
         <Column headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center text-SM">

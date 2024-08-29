@@ -36,11 +36,12 @@ function closeDialog() {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Nakes</template>
+    <template #header>{{ title }} Pegawai</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
+        <CustomSelect label="Tipe Pegawai" place-holder="Tipe Pegawai" class="w-full" />
         <div class="flex flex-col gap-2.5">
-          <div class="font-semibold text-MD">Nama Lengkap Nakes</div>
+          <div class="font-semibold text-MD">Nama Lengkap Pegawai</div>
           <div class="flex gap-2.5">
             <CustomSelect label="" place-holder="Gelar Awal" />
             <CustomTextfield label="" placeholder="Nama Lengkap" class="grow" />

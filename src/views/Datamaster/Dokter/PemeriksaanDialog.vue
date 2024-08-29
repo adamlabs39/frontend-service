@@ -30,7 +30,7 @@ function updateVisibility(value: any) {
       <div class="flex flex-col mt-5 gap-5">
         <!-- Data Dokter -->
         <div class="flex flex-col gap-5">
-          <div class="my-2.5 font-bold text-heading leading-8">Data Dokter</div>
+          <div class="my-2.5 font-bold text-heading leading-8">Data Praktisioner</div>
           <hr class="border-grey-200" />
           <div class="flex">
             <div class="w-1/2 flex flex-col gap-5">

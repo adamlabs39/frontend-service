@@ -54,16 +54,6 @@ const handlePage = (event: any) => {
   fetchIcd9Data();
 };
 
-// const handlePage = (event: any) => {
-//   if (icd9Payload.value.length === 0) {
-//     icd9Properties.value.page = 1;
-//   } else {
-//     icd9Properties.value.page = event.page + 1;
-//   }
-//   icd9Properties.value.page_size = event.rows;
-//   fetchIcd9Data();
-// };
-
 const hasData = computed(
   () => icd9Payload.value && icd9Payload.value.length > 0
 );

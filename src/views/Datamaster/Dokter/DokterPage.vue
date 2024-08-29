@@ -78,7 +78,7 @@ const openPemeriksaanDialog = (data: any) => {
 <template>
   <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
     <template #header>
-      <HeaderFilter page-type="dokter" @tambah-data="openDialog('add', 'Tambah Data')" />
+      <HeaderFilter page-type="praktisioner" @tambah-data="openDialog('add', 'Tambah Data')" />
     </template>
     <template #content>
       <DataTable :value="products" tableStyle="min-width: 50rem" class="text-xs" selectionMode="single"
@@ -98,11 +98,11 @@ const openPemeriksaanDialog = (data: any) => {
         <Column field="SIP" header="Kode SIP" headerClass="bg-adameds-50"></Column>
         <Column field="STR" header="STR" headerClass="bg-adameds-50"></Column>
         <Column field="code_antrian" header="Kode Antrian" headerClass="bg-adameds-50"></Column>
-        <Column field="name_dokter" header="Nama Dokter" headerClass="bg-adameds-50"></Column>
+        <Column field="name_dokter" header="Nama Praktisioner" headerClass="bg-adameds-50"></Column>
         <Column field="telepon" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full text-center font-semibold text-SM">
-              Telepon
+              No. Telepon
             </div>
           </template>
           <template #body="slotProps">

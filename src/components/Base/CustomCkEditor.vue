@@ -43,8 +43,7 @@ const editorConfig = ref({
     HeadingButtonsUI,
     ParagraphButtonUI,
   ],
-  toolbar:{
-    items: [
+  toolbar: [
     "heading",
     "alignment",
     "|",
@@ -63,7 +62,6 @@ const editorConfig = ref({
     "|",
     "insertTable",
   ],
-  },
   table: {
     contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
   },
