@@ -6,8 +6,16 @@ import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+
+const props = defineProps({
+  method: {
+    type: String,
+    default: "form",
+  },
+});
 
 const schema = toTypedSchema(
   yup.object({
@@ -39,12 +47,22 @@ const myPushFunction = () => {
   push({ listTindakan: '', harga: '', jumlah:'',petugas:'' });
 };
 
+const listTindakanOptions = ref([
+  { label: "Pemeriksaan Dokter Spesialis", value: "spesialis" },
+  { label: "Pemeriksaan Dokter Biasa", value: "bbiasa" },
+]);
+
+const petugasOption=ref([
+{ label: "dr.Spesialis Sp. M", value: "spesialis" },
+{ label: "Perawat", value: "perawat" },
+])
+
 </script>
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Pemeriksaan dan Tindakan</template>
     <template #content>
-      <div class="pt-5">
+      <div v-if="props.method=='form'" class="pt-5">
         <DataTable
           :value="fields"
           tableStyle="min-width: 50rem"
@@ -67,7 +85,7 @@ const myPushFunction = () => {
             <template #body="slotProps">
               <CustomSelect
                 v-model="slotProps.data.value.listTindakan"
-                :options="jenisBayarOptions"
+                :options="listTindakanOptions"
                 optionValue="value"
                 optionLabel="label"
                 label=""
@@ -85,24 +103,7 @@ const myPushFunction = () => {
               <div class="font-semibold ">Harga</div>
             </template>
             <template #body="slotProps">
-              <CustomTextfield
-                v-model="slotProps.data.value.harga"
-                label=""
-                placeholder="0"
-                :invalid="!slotProps.data.value.harga"
-              >
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <ErrorMessage
-                :name="`datas[${slotProps.index}].harga`"
-                class="text-danger-300"
-              />
+              Rp.100000
             </template>
           </Column>
           <Column headerClass="bg-adameds-50"> 
@@ -110,7 +111,7 @@ const myPushFunction = () => {
               <div class="w-full font-semibold text-center">Jumlah</div>
             </template>
             <template #body="slotProps">
-                <CustomInputNumber label="" v-model="slotProps.data.value.jumlah"/>
+                <CustomInputNumber :show-label="false" v-model="slotProps.data.value.jumlah" :show-buttons="true" class="w-[100px]"/>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-1/2">
@@ -118,14 +119,14 @@ const myPushFunction = () => {
               <div class="w-full font-semibold text-center">Petugas</div>
             </template>
             <template #body="slotProps">
-              <CustomSelect
+              
+              <CustomMultiSelect
                 v-model="slotProps.data.value.petugas"
-                :options="jenisBayarOptions"
+                :options="petugasOption"
                 optionValue="value"
                 optionLabel="label"
                 label=""
                 place-holder="Jenis Pembayaran Lain"
-                :invalid="!slotProps.data.value.jenisPembayaran"
               />
               <ErrorMessage
                 :name="`datas[${slotProps.index}].jenisPembayaran`"
@@ -171,16 +172,27 @@ const myPushFunction = () => {
           />
         </div>
       </div>
+      <div v-if="props.method=='detail'" class="py-5 flex flex-col gap-[19px]">
+        <CustomInfoRow label="List Tindakan" value="Pemeriksaan Dokter Spesialis"/>
+        <CustomInfoRow label="Harga" value="Rp. 100,000" />
+        <CustomInfoRow label="Jumlah" value="1" />
+        <CustomInfoRow label="Petugas" value="dr. Spesialis Sp. M" />
+        <hr class="border-grey-200">
+        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+      </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
+        v-if="props.method=='form'"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton label="Simpan" />
+        <CustomButton v-if="props.method=='form'" label="Simpan" />
+        <CustomButton v-if="props.method=='detail'" label="Edit" />
+
       </div>
     </template>
   </CustomAccordion>

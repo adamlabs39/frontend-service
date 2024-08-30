@@ -6,11 +6,12 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { ref } from "vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 const props = defineProps({
   method: {
     type: String,
-    default: "form",
+    default: "detail",
   },
 });
 
@@ -36,7 +37,7 @@ const pernahDirawat = ref();
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Anamnesis</template>
     <template #content>
-      <div class="grid grid-cols-2 gap-x-8 gap-y-5 py-5">
+      <div v-if="props.method=='form'" class="grid grid-cols-2 gap-x-8 gap-y-5 py-5">
         <CustomSelect
           v-model="anamnesis"
           label="Anamnesis"
@@ -93,16 +94,31 @@ const pernahDirawat = ref();
           placeholder="Catatan"
         />
       </div>
+      <div v-if="props.method=='detail'" class="py-5 flex flex-col gap-[19px]">
+        <CustomInfoRow label="Anamnesis" value="Auto Anamnesis"/>
+        <CustomInfoRow label="Keluhan Utama" value="Sakit Mata" />
+        <CustomInfoRow label="Riwayat Penyakit" value="Asma" />
+        <CustomInfoRow label="Tingkat Keparahan" value="Tidak terlalu parah" />
+        <CustomInfoRow label="Pernah Dirawat" value="Tidak" />
+        <CustomInfoRow label="Riwayat Pengobatan" value="Tidak ada" />
+        <CustomInfoRow label="Riwayat Penyakit Keluarga" value="Tidak ada" />
+        <CustomInfoRow label="Pengetahuan Tentang Penyakit Saat Ini" value="Tidak ada" />
+        <hr class="border-grey-200">
+        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+      </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
+        v-if="props.method=='form'"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton label="Simpan" />
+        <CustomButton v-if="props.method=='form'" label="Simpan" />
+        <CustomButton v-if="props.method=='detail'" label="Edit" />
+
       </div>
     </template>
   </CustomAccordion>

@@ -23,6 +23,8 @@ import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue"
 import CatatanHasilPenunjang from "@/components/RekamMedis/CatatanHasilPenunjang/CatatanHasilPenunjang.vue";
 import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanKeperawatan.vue";
 import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
+import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -257,6 +259,14 @@ const handlePage = (page: number) => {
     <Antropometri/> <br>
     <CatatanHasilPenunjang/> <br>
     <AsuhanKeperawatan/> <br>
-    <PemeriksaanTindakan/>
+    <PemeriksaanTindakan/> <br>
+    <InstruksiMedis/>
+    <br>
+    <CustomInputNumber />
+    <div class="w-[100px]">
+      <CustomInputNumber :show-buttons="true" />
+
+    </div>
+
   </div>
 </template>
