@@ -99,7 +99,7 @@ const testRadio = ref("");
 </script>
 <template>
   <div>
-    <CustomCanvasDrawer />
+    <CustomCanvasDrawer header="Kepala" type="Kepala" />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
