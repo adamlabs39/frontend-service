@@ -14,6 +14,7 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
+import Adult from "@/components/Base/BurnSVG/Adult.vue";
 
 const props = defineProps({
   filter: {
@@ -99,6 +100,7 @@ const testRadio = ref("");
 </script>
 <template>
   <div>
+    <Adult />
     <CustomCanvasDrawer header="Kepala" type="Kepala" />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
