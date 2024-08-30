@@ -9,6 +9,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import HeaderFilter from "./Layout/HeaderFilter.vue";
 import RegisterForm from "./Layout/RegisterForm.vue";
 import NoData from "@/components/section/NoData.vue";
+import type { DataTableRowClickEvent } from "primevue/datatable";
 
 const storeUtils = utilsStore();
 
@@ -22,11 +23,15 @@ const resetFilter = () => {
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string) => {
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
   if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
+    dataBreadCrumb.value[0] = tempData;
   } else {
-    dataBreadCrumb.value.push({ label: label });
+    dataBreadCrumb.value.push(tempData);
   }
 };
 
@@ -65,6 +70,9 @@ const itemsPasien = ref([
     no_antrian: "1",
     new_patient: true,
     platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
   },
   {
     noRM: "123456",
@@ -84,6 +92,9 @@ const itemsPasien = ref([
     no_antrian: "2",
     new_patient: false,
     platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: true,
   },
   {
     noRM: "123456",
@@ -102,6 +113,8 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: true,
     platform: "APM",
+    status_rj: "2",
+    status_ri: "2",
   },
   {
     noRM: "123456",
@@ -120,6 +133,8 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: false,
     platform: "MOBILE APP",
+    status_rj: "2",
+    status_ri: "3",
   },
   {
     noRM: "123456",
@@ -138,6 +153,8 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: false,
     platform: "APM",
+    status_rj: "1",
+    status_ri: "3",
   },
 ]);
 const selectedPatient = ref([]);
@@ -145,8 +162,24 @@ const selectedPatient = ref([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
-const showPatientDetail = () => {
-  changeSection("Detail");
+const openedPatientData = ref<any>({})
+const showPatientDetail = (event: DataTableRowClickEvent) => {
+  openedPatientData.value = event.data
+  if (pageType.value == "rawat-jalan") {
+    if (openedPatientData.value.status_rj == "1") {
+      changeSection("Checkin", { platform: openedPatientData.value.platform });
+    } else {
+      changeSection("Detail");
+    }
+  } else if (pageType.value == "rawat-inap") {
+    if (openedPatientData.value.status_ri == "1" || openedPatientData.value.status_ri == "2") {
+      changeSection("Daftar");
+    } else {
+      changeSection("Detail");
+    }
+  } else {
+    changeSection("Detail");
+  }
 };
 </script>
 
@@ -162,6 +195,7 @@ const showPatientDetail = () => {
         ref="headerFilterRef"
         :pageType="pageType"
         @daftar="changeSection('Daftar')"
+        @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
       />
     </template>
     <template #content>
@@ -296,6 +330,7 @@ const showPatientDetail = () => {
           <template #body="slotProps">
             <div class="text-SM">
               <div
+                v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
               >
                 Daftar
@@ -307,6 +342,7 @@ const showPatientDetail = () => {
                 {{ slotProps.data.tanggal_daftar }}
               </div>
               <div
+                v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Jadwal
@@ -316,6 +352,54 @@ const showPatientDetail = () => {
                   weight="bold"
                 />
                 {{ slotProps.data.tanggal_jadwal }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-inap'"
+                class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
+              >
+                SPRI
+                <PhArrowRight
+                  :size="18"
+                  class="my-auto mr-5 text-grey-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-inap'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Dirawat
+                <PhArrowRight
+                  :size="18"
+                  class="my-auto mr-5 text-info-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'igd'"
+                class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
+              >
+                Daftar
+                <PhArrowRight
+                  :size="18"
+                  class="my-auto mr-5 text-grey-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'igd'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Dirawat
+                <PhArrowRight
+                  :size="18"
+                  class="my-auto mr-5 text-info-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
               </div>
             </div>
           </template>
@@ -377,12 +461,15 @@ const showPatientDetail = () => {
   </Card>
   <RegisterForm
     v-else-if="
+      dataBreadCrumb[0].label == 'Checkin' ||
       dataBreadCrumb[0].label == 'Daftar' ||
+      dataBreadCrumb[0].label == 'Daftar Bayi Baru Lahir' ||
       dataBreadCrumb[0].label == 'Detail' ||
       dataBreadCrumb[0].label == 'Detail Edit'
     "
     :dataBreadCrumb="dataBreadCrumb"
     :pageType="pageType"
+    :patientData="openedPatientData"
     @back="dataBreadCrumb.pop()"
     @goToDetail="dataBreadCrumb[0].label = 'Detail'"
     @goToEdit="dataBreadCrumb[0].label = 'Detail Edit'"

@@ -22,6 +22,10 @@ const props = defineProps({
     type: Array as PropType<MenuItem[]>,
     default: () => [],
   },
+  patientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
 });
 
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
@@ -60,7 +64,29 @@ const isDetail = () => {
             }"
             :model="dataBreadCrumb"
             class=""
-          />
+          >
+            <template #customItem="{ item }">
+              <div class="flex">
+                <span
+                  :class="{
+                    'text-adameds-300': item.home,
+                    'text-grey-400': !item.home,
+                  }"
+                >
+                  {{ item.label }}
+                </span>
+                <CustomChip
+                  v-if="item.platform"
+                  :showCheckedIcon="false"
+                  :label="item.platform"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  class="my-auto ml-[10px]"
+                />
+              </div>
+            </template>
+          </CustomBreadCrumb>
           <div class="flex">
             <CustomButton
               @click="emit('back')"
@@ -83,8 +109,18 @@ const isDetail = () => {
       </template>
     </Card>
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-      <PatientIdentityForm :pageType="pageType" :isDetail="isDetail()" />
-      <DoctorVisitDetail :pageType="pageType" :isDetail="isDetail()" />
+      <PatientIdentityForm
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label as string"
+        :patientData="patientData"
+      />
+      <DoctorVisitDetail
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label as string"
+        :patientData="patientData"
+      />
     </div>
     <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
       <template #content>
@@ -120,6 +156,14 @@ const isDetail = () => {
             textColor="text-grey-300"
           />
           <CustomButton
+            v-if="dataBreadCrumb[0].label == 'Checkin'"
+            @click="confirmSaveDialog = true"
+            label="Simpan & Checkin"
+            class=""
+            backgroundColor="bg-adameds-300"
+          />
+          <CustomButton
+            v-else
             @click="confirmSaveDialog = true"
             label="Simpan"
             class=""

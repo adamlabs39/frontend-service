@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -13,10 +13,24 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  formType: {
+    type: String,
+    default: "",
+  },
   isDetail: {
     type: Boolean,
     required: false,
   },
+  patientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
+});
+
+onMounted(() => {
+  if (props.formType == 'Daftar Bayi Baru Lahir') {
+    newBorn.value = true
+  }
 });
 
 const newBorn = ref(false);
@@ -46,6 +60,7 @@ defineExpose({
       <div class="pt-5">
         <div class="flex">
           <CustomSelect
+            v-if="pageType != 'rawat-inap'"
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
             class="grow"
@@ -59,9 +74,10 @@ defineExpose({
             "
           />
           <CustomSwitch
-            v-if="pageType != 'datamaster'"
+            v-if="pageType == 'igd'"
             v-model="newBorn"
             label="Bayi Baru Lahir"
+            class="mr-[50px]"
             @update:model-value="noIdentity = false"
             :disabled="isDetail"
           />
@@ -69,9 +85,19 @@ defineExpose({
             v-if="pageType == 'igd'"
             v-model="noIdentity"
             label="Tanpa Identitas"
-            class="ml-[8%]"
+            class="mr-[35px]"
             @update:model-value="newBorn = false"
             :disabled="isDetail"
+          />
+          <div
+            v-if="pageType != 'rawat-inap'"
+            class="border-[1px] border-grey-200 mr-[35px]"
+          ></div>
+          <CustomTextfield
+            label="No. RM"
+            class="w-[23.5%]"
+            placeholder="No. RM"
+            disabled
           />
         </div>
         <hr class="mt-5 mb-[30px]" />
@@ -252,8 +278,14 @@ defineExpose({
           <CustomTextfield
             v-if="!noIdentity"
             label="Nama Ibu Kandung"
-            class="col-span-3"
+            :class="[newBorn? 'col-span-2': 'col-span-3']"
             placeholder="Nama Ibu Kandung"
+            :disabled="isDetail"
+          />
+          <CustomSwitch
+            v-if="newBorn"
+            label="Bayi Kembar"
+            class=""
             :disabled="isDetail"
           />
         </div>

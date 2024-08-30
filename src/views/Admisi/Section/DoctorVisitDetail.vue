@@ -15,16 +15,26 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  formType: {
+    type: String,
+    default: "",
+  },
   isDetail: {
     type: Boolean,
     required: false,
+  },
+  patientData: {
+    type: Object as PropType<any>,
+    required: true,
   },
 });
 
 const storeUtils = utilsStore();
 
 onMounted(() => {
-  console.log(storeUtils.selectedRoom);
+  if (props.formType == "Daftar Bayi Baru Lahir") {
+    babyBox.value = true;
+  }
   if (storeUtils.selectedRoom) {
     selectedRoomCategory.value = storeUtils.selectedRoom.roomCategory;
     selectedRoomClass.value = storeUtils.selectedRoom.roomClass;
@@ -40,7 +50,6 @@ const selectedRoomClass = ref();
 const selectedRoom = ref();
 const selectedBed = ref<string[]>([]);
 const babyBox = ref(false);
-const selectedBabyBed = ref([]);
 
 const selectedPaymentMethod = ref<string[]>(["TUNAI"]);
 const onPaymentMethodSelect = (label: string) => {
@@ -62,7 +71,11 @@ defineExpose({
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
           <span class="leading-10 text-adameds-300 text-heading">
-            Detail Kunjungan Dokter
+            {{
+              pageType == "rawat-inap"
+                ? "Detail Kunjungan & Ruangan"
+                : "Detail Kunjungan Dokter"
+            }}
           </span>
           <CustomChip
             label="TUNAI"
@@ -93,7 +106,14 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-        <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
+        <div
+          class="grid gap-y-5 gap-x-[30px]"
+          :class="[
+            patientData.is_newborn && pageType == 'rawat-inap'
+              ? 'grid-cols-5'
+              : 'grid-cols-2',
+          ]"
+        >
           <CustomSelect
             v-if="pageType == 'rawat-jalan'"
             label="Poli"
@@ -108,7 +128,7 @@ defineExpose({
           <CustomSelect
             label="DPJP"
             placeHolder="Pilih DPJP"
-            class=""
+            :class="{ 'col-span-2': patientData.is_newborn && pageType == 'rawat-inap' }"
             optionLabel=""
             optionValue=""
             :showFilter="false"
@@ -118,14 +138,23 @@ defineExpose({
           <CustomTextfield
             v-if="pageType == 'igd' || pageType == 'rawat-inap'"
             label="Keluhan Utama"
-            class=""
+            :class="{
+              'col-span-2': patientData.is_newborn && pageType == 'rawat-inap',
+            }"
             placeholder="Keluhan Utama"
             :disabled="isDetail"
           />
+          <CustomSwitch
+            v-if="patientData.is_newborn && pageType == 'rawat-inap'"
+            :disabled="!mergeBill || isDetail"
+            label="Tagihan Keluarga"
+            sideLabel="Iya"
+          />
         </div>
         <div
-          class="grid grid-cols-5 gap-y-5 gap-x-[30px] mt-5"
-          :class="{ 'grid-cols-6': pageType == 'rawat-inap' }"
+          v-if="!patientData.is_newborn && pageType == 'rawat-inap' || pageType != 'rawat-inap'"
+          class="grid gap-y-5 gap-x-[30px] mt-5"
+          :class="[pageType == 'rawat-inap' ? 'grid-cols-4' : 'grid-cols-5']"
         >
           <CustomSwitch
             label="Pasien Maternitas"
@@ -147,21 +176,9 @@ defineExpose({
           <CustomSwitch
             v-if="pageType == 'rawat-inap'"
             v-model="mergeBill"
-            label="Gabung Tagihan"
+            label="Gabung Tagihan Sebelumnya"
             sideLabel="Iya"
             :disabled="isDetail"
-          />
-          <CustomSwitch
-            v-if="pageType == 'rawat-inap'"
-            :disabled="!mergeBill || isDetail"
-            label="Tagihan Sebelumnya"
-            sideLabel="Iya"
-          />
-          <CustomSwitch
-            v-if="pageType == 'rawat-inap'"
-            :disabled="!mergeBill || isDetail"
-            label="Tagihan Keluarga"
-            sideLabel="Iya"
           />
           <CustomTextfield
             v-if="pageType == 'rawat-jalan'"
@@ -207,12 +224,18 @@ defineExpose({
         </div>
         <div v-if="pageType == 'rawat-inap'">
           <hr class="my-[30px]" />
-          <div class="grid grid-cols-3 gap-x-[30px]">
+          <div class="grid grid-cols-6 gap-x-[30px]">
+            <CustomTextfield
+              label="SPRI"
+              class=""
+              placeholder="SPRI"
+              disabled
+            />
             <CustomSelect
               v-model="selectedRoomCategory"
               label="Kategori Ruangan"
               placeHolder="Pilih Kategori Ruangan"
-              class=""
+              class="col-span-2"
               optionLabel=""
               optionValue=""
               :showFilter="false"
@@ -234,7 +257,7 @@ defineExpose({
               v-model="selectedRoom"
               label="Ruangan"
               placeHolder="Pilih Ruangan"
-              class=""
+              class="col-span-2"
               optionLabel=""
               optionValue=""
               :showFilter="false"
@@ -243,7 +266,14 @@ defineExpose({
             />
           </div>
           <div v-if="selectedRoom" class="grid grid-cols-3 mt-[30px]">
-            <div class="col-span-2">
+            <div
+              class=""
+              :class="[
+                formType == 'Daftar Bayi Baru Lahir'
+                  ? 'col-span-3'
+                  : 'col-span-2',
+              ]"
+            >
               <div>
                 <div class="font-semibold text-normal">
                   <span class="text-adameds-300">{{ selectedRoom }}</span> >
@@ -270,7 +300,12 @@ defineExpose({
                     :binary="false"
                     :value="`${data}`"
                     :multiple="false"
-                    :disabled="data == '2' || data == '4' || isDetail"
+                    :disabled="
+                      data == '2' ||
+                      data == '4' ||
+                      isDetail ||
+                      formType == 'Daftar Bayi Baru Lahir'
+                    "
                   />
                 </div>
               </div>
@@ -289,7 +324,7 @@ defineExpose({
                       'Bed 5',
                       'Bed 6',
                     ]"
-                    v-model="selectedBabyBed"
+                    v-model="selectedBed"
                     title="-"
                     :subTitle="'Box ' + data"
                     endText="Kosong"
@@ -302,7 +337,10 @@ defineExpose({
                 </div>
               </div>
             </div>
-            <div class="border-l-[1px] border-gray-100 pl-[15px]">
+            <div
+              v-if="formType != 'Daftar Bayi Baru Lahir'"
+              class="border-l-[1px] border-gray-100 pl-[15px]"
+            >
               <CustomSwitch
                 label="Tambahan"
                 class="mb-[30px]"
