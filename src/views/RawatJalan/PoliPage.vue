@@ -13,6 +13,7 @@ import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
+import CustomRadio from "../../components/Base/CustomRadio.vue";
 
 const props = defineProps({
   filter: {
@@ -94,10 +95,11 @@ const testRefFunction = () => {
 const testCheckboxMulti = ref([]);
 const testCheckbox = ref(false);
 const testEditor = ref("");
+const testRadio = ref("");
 </script>
 <template>
   <div>
-    <CustomCanvasDrawer  />
+    <CustomCanvasDrawer />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
@@ -184,6 +186,14 @@ const testEditor = ref("");
     {{ testEditor }}
     <div>
       <CustomCkEditor v-model="testEditor" />
+    </div>
+    <div class="grid grid-cols-2">
+      <CustomRadio
+        v-for="data in ['Option 1', 'Option 2']"
+        v-model="testRadio"
+        :sideLabel="data"
+        :value="data"
+      />
     </div>
   </div>
 </template>

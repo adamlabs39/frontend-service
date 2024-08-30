@@ -53,6 +53,7 @@ import TabPanel from "primevue/tabpanel";
 import Slider from 'primevue/slider';
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
+import RadioButton from 'primevue/radiobutton';
 import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
@@ -128,5 +129,6 @@ app.component("TabPanels", TabPanels);
 app.component("TabPanel", TabPanel);
 app.component("Slider", Slider);
 app.component("Toast", Toast);
+app.component("RadioButton", RadioButton);
 
 app.mount("#app");
