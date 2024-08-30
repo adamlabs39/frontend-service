@@ -57,9 +57,6 @@ const jenisBayarOptions = ref([
 
 <template>
   <div>
-    filed: {{ fields }}<br>
-    error: {{ errors }}
-    {{  }}
     <DataTable
       :value="fields"
       tableStyle="min-width: 50rem"
@@ -133,7 +130,6 @@ const jenisBayarOptions = ref([
         @click="myPushFunction"
       />
     </div>
-    <CustomButton label="Simpan" @click="onSubmit" />
-    <CustomButton label="Reset" @click="resetForm" />
+    <!-- <CustomButton label="Simpan" @click="onSubmit" /> -->
   </div>
 </template>

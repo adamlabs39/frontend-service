@@ -11,9 +11,12 @@ const catatan=ref()
 </script>
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
-    <template #header>Catatan Hasil Penunjang</template>
+    <template #header>Asuhan Keperawatan</template>
     <template #content>
-        <CustomCkEditor class="pt-5" />
+      <div class="pt-5">
+        <CustomCkEditor  label="Diagnosis Perawat" />
+
+      </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">

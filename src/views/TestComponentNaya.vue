@@ -22,6 +22,7 @@ import Kesadaran from "@/components/RekamMedis/Kesadaran/Kesadaran.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
 import CatatanHasilPenunjang from "@/components/RekamMedis/CatatanHasilPenunjang/CatatanHasilPenunjang.vue";
 import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanKeperawatan.vue";
+import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -255,6 +256,7 @@ const handlePage = (page: number) => {
     <Kesadaran/><br>
     <Antropometri/> <br>
     <CatatanHasilPenunjang/> <br>
-    <AsuhanKeperawatan/>
+    <AsuhanKeperawatan/> <br>
+    <PemeriksaanTindakan/>
   </div>
 </template>

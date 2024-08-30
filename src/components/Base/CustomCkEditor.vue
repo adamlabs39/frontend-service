@@ -72,6 +72,14 @@ const props = defineProps({
     type: String,
     default: "<p>Hello from CKEditor 5 in Vue!</p>",
   },
+  showLabel: {
+    type: Boolean,
+    default: true,
+  },
+  label: {
+    type: String,
+    default: "Label",
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -82,6 +90,12 @@ const value = computed({
 </script>
 
 <template>
+  <label
+      v-if="props.showLabel"
+      class="block font-semibold mb-[5px]"
+    >
+      {{ props.label }}
+    </label>
   <div class="max-w-full prose">
     <ckeditor v-model="value" :editor="editor" :config="editorConfig" />
   </div>
