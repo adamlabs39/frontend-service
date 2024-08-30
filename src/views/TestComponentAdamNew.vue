@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import FormAlergi from '@/components/RekamMedis/Alergi/FormAlergi.vue';
+import Coba from '@/components/RekamMedis/AsesmenNyeri/Scaler.vue';
 import FormAsesmenNyeri from '@/components/RekamMedis/AsesmenNyeri/FormAsesmenNyeri.vue';
 import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vue';
+import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue';
+import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/FormDiagnosaDokterICD10.vue';
 </script>
 
 <template>
@@ -9,6 +12,7 @@ import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vu
         <FormAlergi/>
          <FormTandaVital/>
          <FormAsesmenNyeri/>
-        
+         <FormCatatanPerawat/>
+         <FormDiagnosaDokterICD10/>
     </div>
 </template>

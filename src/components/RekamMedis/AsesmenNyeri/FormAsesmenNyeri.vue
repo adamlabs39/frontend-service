@@ -7,8 +7,38 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
+import Scaler from "./Scaler.vue";
+import sangatRingan from "@/assets/images/RekamMedis/AsesmenNyeri/1sangatRingan.svg"
+import agakRingan from "@/assets/images/RekamMedis/AsesmenNyeri/2agakRingan.svg"
+import lumayanRingan from "@/assets/images/RekamMedis/AsesmenNyeri/3lumayanRingan.svg"
+import sedang from "@/assets/images/RekamMedis/AsesmenNyeri/4sedang.svg"
+import sedangg from "@/assets/images/RekamMedis/AsesmenNyeri/5sedangg.svg"
+import sedanggg from "@/assets/images/RekamMedis/AsesmenNyeri/6sedanggg.svg"
+import berat from "@/assets/images/RekamMedis/AsesmenNyeri/7berat.svg"
+import beratt from "@/assets/images/RekamMedis/AsesmenNyeri/8beratt.svg"
+import berattt from "@/assets/images/RekamMedis/AsesmenNyeri/9berattt.svg"
+import beratttt from "@/assets/images/RekamMedis/AsesmenNyeri/10beratttt.svg"
 
-const catatan = ref<string>('');
+const catatan = ref<string>("");
+const selectedImageId = ref<number | null>(null);
+
+const handleImageClick = (id: number) => {
+    selectedImageId.value = id;
+};
+
+
+const imagePengkajianNyeri = ref([
+    { id: 1, skalaNyeri: sangatRingan },
+    { id: 2, skalaNyeri: agakRingan },
+    { id: 3, skalaNyeri: lumayanRingan },
+    { id: 4, skalaNyeri: sedang },
+    { id: 5, skalaNyeri: sedangg },
+    { id: 6, skalaNyeri: sedanggg },
+    { id: 7, skalaNyeri: berat },
+    { id: 8, skalaNyeri: beratt },
+    { id: 9, skalaNyeri: berattt },
+    { id: 10, skalaNyeri: beratttt }
+])
 </script>
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
@@ -16,17 +46,24 @@ const catatan = ref<string>('');
         <template #content>
             <div class="grid grid-cols-2 py-5 gap-[30px] gap-y-5">
                 <div class="flex flex-col">
-                    <div>Pilih Pengkajian Nyeri </div>
-                    <div>Gambar Disini</div>
-                    <div>Garis Puanjang Rentang 1-10</div>
-                    <hr class="border-[#D9DCE1] border-1 mt-12 mb-5" />
-                    <div>1-3 = Ringan 4-6 = Sedang 7-10 = Berat</div>
-                    <hr class="border-[#D9DCE1] border-1 mb-5" />
-                    
+                    <div class="font-semibold text-normal">Pilih Pengkajian Nyeri</div>
+                    <div class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4">
+                        <div v-for="(image, index) in imagePengkajianNyeri" :key="image.id" :class="[
+                            'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
+                            { 'border-4 border-adameds-300': image.id === selectedImageId }
+                        ]" @click="handleImageClick(image.id)">
+                            <img :src="image.skalaNyeri" :alt="'Image ' + image.id" class="w-full h-auto" />
+                        </div>
+                    </div>
+                    <Scaler />
+                    <div class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2">
+                        <div class="font-semibold text-normal">1-3 = <span class="text-success-300">Ringan</span></div>
+                        <div class="font-semibold text-normal">4-6 = <span class="text-warning-300">Sedang</span></div>
+                        <div class="font-semibold text-normal">7-10 = <span class="text-danger-300">Berat</span></div>
+                    </div>
                 </div>
                 <div class="">
-                    <CustomTextfield label="Catatan" placeholder="Masukkan Catatan"
-                        v-model:modelValue="catatan" />
+                    <CustomTextfield label="Catatan" placeholder="Masukkan Catatan" v-model:modelValue="catatan" />
                 </div>
             </div>
         </template>
@@ -38,6 +75,4 @@ const catatan = ref<string>('');
             </div>
         </template>
     </CustomAccordion>
-
-
 </template>

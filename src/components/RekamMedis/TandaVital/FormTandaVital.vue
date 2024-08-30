@@ -56,10 +56,10 @@ const tekananDarah = ref<number | undefined>(undefined);
         <template #content>
             <div>
                 <div class="grid grid-cols-4 gap-[30px] py-3">
-                    <CustomSelect label="Kriteria Pemantauan" v-model="selectedCriteria" :options="criterias"
-                        optionValue="id" optionLabel="kriteriaPemantauan" :isLoading="false" :invalid="false"
-                        invalidMessage="Wajib diisi" :disabled="false" placeHolder="PEWS"
-                        customSelectClass="border-[#C7CBD2]" />
+                        <CustomSelect label="Kriteria Pemantauan" v-model="selectedCriteria" :options="criterias"
+                            optionValue="id" optionLabel="kriteriaPemantauan" :isLoading="false" :invalid="false"
+                            invalidMessage="Wajib diisi" :disabled="false" placeHolder="PEWS"
+                            customSelectClass="border-[#C7CBD2]" />
                     <CustomDatePicker v-model="waktuAsesmen" label="Waktu Asesmen" />
                     <CustomInputNumber label="Frekuensi Nafas" placeholder="46" v-model:modelValue="frekuensiNafas"
                         type="number">
