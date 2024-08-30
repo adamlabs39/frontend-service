@@ -50,7 +50,7 @@ const addRow = () => {
           <CustomTextfield pr label="" placeholder="0">
             <template #prependText>
               <div
-                class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r "
+              class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
               >
                 Rp.
               </div>

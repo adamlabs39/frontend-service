@@ -22,6 +22,8 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const status = ref();
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 function updateVisibility(value: any) {
@@ -83,10 +85,11 @@ const tipeVoucher = ref();
                   <div class="flex items-center justify-center mr-2.5">%</div>
                 </template>
               </CustomInputNumber>
-              <CustomInputNumber label="">
+              <CustomInputNumber class="" label="">
                 <template #prependText>
                   <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r"
+                    class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
+                    style="width: 60px"
                   >
                     Rp.
                   </div>
