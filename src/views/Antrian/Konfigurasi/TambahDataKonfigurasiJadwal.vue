@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -22,23 +22,45 @@ const props = defineProps({
 });
 
 const defaultData = [
-  { noJadwal: 1, hariModel: undefined, startDateFilter: new Date(), kuota: "20", durasi: "20", slot_booking: "5", slot_jkn: "5" },
-  { noJadwal: 2, hariModel: undefined, startDateFilter: new Date(), kuota: "20", durasi: "20", slot_booking: "5", slot_jkn: "5" },
+  {
+    noJadwal: 1,
+    hariModel: undefined,
+    startDateFilter: new Date(),
+    endDateFilter: new Date(),
+    kuota: "20",
+    durasi: "20",
+    slot_booking: "5",
+    slot_jkn: "5",
+  },
+  {
+    noJadwal: 2,
+    hariModel: undefined,
+    startDateFilter: new Date(),
+    endDateFilter: new Date(),
+    kuota: "20",
+    durasi: "20",
+    slot_booking: "5",
+    slot_jkn: "5",
+  },
 ];
 
-defaultData.forEach(item => item.startDateFilter.setHours(0, 0, 0, 0));
+defaultData.forEach((item) => item.startDateFilter.setHours(0, 0, 0, 0));
+defaultData.forEach((item) => item.endDateFilter.setHours(0, 0, 0, 0));
 
 // Initialize data with default values
 const data = ref([...defaultData]);
 
 const startDateFilter = ref<Date>(new Date());
 startDateFilter.value.setHours(0, 0, 0, 0);
+const endDateFilter = ref<Date>(new Date());
+  endDateFilter.value.setHours(0, 0, 0, 0);
 
 const addRow = () => {
   data.value.push({
     noJadwal: data.value.length + 1,
-    hariModel: undefined, 
+    hariModel: undefined,
     startDateFilter: startDateFilter.value,
+    endDateFilter: endDateFilter.value,
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
@@ -129,6 +151,11 @@ function closeDialog() {
   emit("close");
 }
 
+// to trigger handleReset at the start
+onMounted(() => {
+  handleReset();
+});
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -143,25 +170,29 @@ watch(
 function handleReset() {
   // Reset form fields
   resetForm();
-  
+
   // Clear selections and date filters
   dokterModel.value = undefined;
   poliModel.value = undefined;
   hariModel.value = undefined;
   status.value = false; // or default value if required
-  
+
   // Clear date picker value
   startDateFilter.value = new Date();
   startDateFilter.value.setHours(0, 0, 0, 0);
-  
+  endDateFilter.value = new Date();
+  endDateFilter.value.setHours(0, 0, 0, 0);
+
   // Reset the DataTable to its default values
   data.value = [...defaultData];
-  
+
   // Ensure that CustomSelect and CustomDatePicker are reset properly
-  data.value.forEach(item => {
-    item.hariModel = undefined;  // Reset each entry's hariModel
+  data.value.forEach((item) => {
+    item.hariModel = undefined; // Reset each entry's hariModel
     item.startDateFilter = new Date(); // Reset each entry's startDateFilter
     item.startDateFilter.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
+    item.endDateFilter = new Date(); // Reset each entry's endDateFilter
+    item.endDateFilter.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
   });
 }
 
@@ -240,13 +271,23 @@ const selectedPatient = ref([]);
               headerClass="bg-adameds-50"
             >
               <template #body="slotProps">
-                <CustomDatePicker
-                  place-holder="00:00"
-                  timeOnly
-                  v-model="slotProps.data.startDateFilter"
-                  label=""
-                  class="w-[200px] text-grey-400 text-sm"
-                />
+                <div class="flex items-center space-x-2">
+                  <CustomDatePicker
+                    place-holder="00:00"
+                    timeOnly
+                    v-model="slotProps.data.startDateFilter"
+                    label=""
+                    class="w-[100px] text-grey-400 text-xs"
+                  />
+                  <PhMinus class="mx-[5px] text-black" />
+                  <CustomDatePicker
+                    place-holder="00:00"
+                    timeOnly
+                    v-model="slotProps.data.endDateFilter"
+                    label=""
+                    class="w-[100px] text-grey-400 text-sm"
+                  />
+                </div>
               </template>
             </Column>
             <Column field="kuota" header="Kuota" headerClass="bg-adameds-50">

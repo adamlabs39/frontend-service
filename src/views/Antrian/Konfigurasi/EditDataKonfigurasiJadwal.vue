@@ -26,6 +26,7 @@ const defaultData = [
     noJadwal: 1,
     hariModel: "H1",
     startDateFilter: new Date(),
+    endDateFilter: new Date(),
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
@@ -35,6 +36,7 @@ const defaultData = [
     noJadwal: 2,
     hariModel: "H2",
     startDateFilter: new Date(),
+    endDateFilter: new Date(),
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
@@ -44,6 +46,7 @@ const defaultData = [
     noJadwal: 3,
     hariModel: "H3",
     startDateFilter: new Date(),
+    endDateFilter: new Date(),
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
@@ -55,18 +58,25 @@ const defaultData = [
 defaultData[0].startDateFilter.setHours(8, 0, 0, 0); // 08:00
 defaultData[1].startDateFilter.setHours(14, 0, 0, 0); // 14:00
 defaultData[2].startDateFilter.setHours(20, 0, 0, 0); // 20:00
+// Set specific hours for each item
+defaultData[0].endDateFilter.setHours(12, 0, 0, 0); // 08:00
+defaultData[1].endDateFilter.setHours(16, 0, 0, 0); // 14:00
+defaultData[2].endDateFilter.setHours(23, 0, 0, 0); // 20:00
 
 // Initialize data with default values
 const data = ref([...defaultData]);
 
 const startDateFilter = ref<Date>(new Date());
 startDateFilter.value.setHours(0, 0, 0, 0);
+const endDateFilter = ref<Date>(new Date());
+endDateFilter.value.setHours(0, 0, 0, 0);
 
 const addRow = () => {
   data.value.push({
     noJadwal: data.value.length + 1,
     hariModel: "",
     startDateFilter: startDateFilter.value,
+    endDateFilter: endDateFilter.value,
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
@@ -197,11 +207,14 @@ function handleReset() {
   // Clear date picker value
   startDateFilter.value = new Date();
   startDateFilter.value.setHours(0, 0, 0, 0);
+  endDateFilter.value = new Date();
+  endDateFilter.value.setHours(0, 0, 0, 0);
 
   // Reset the DataTable to its default values
   data.value = defaultData.map((item) => ({
     ...item,
     startDateFilter: new Date(item.startDateFilter.getTime()), // Create a new Date instance to ensure a fresh state
+    endDateFilter: new Date(item.endDateFilter.getTime()), // Create a new Date instance to ensure a fresh state
   }));
 
   // Reset the switches to their default status (e.g., true or false based on the requirement)
@@ -301,13 +314,23 @@ const selectedPatient = ref([]);
               headerClass="bg-adameds-50"
             >
               <template #body="slotProps">
-                <CustomDatePicker
-                  place-holder="00:00"
-                  timeOnly
-                  v-model="slotProps.data.startDateFilter"
-                  label=""
-                  class="w-[200px] text-grey-400 text-sm"
-                />
+                <div class="flex items-center space-x-2">
+                  <CustomDatePicker
+                    place-holder="00:00"
+                    timeOnly
+                    v-model="slotProps.data.startDateFilter"
+                    label=""
+                    class="w-[100px] text-grey-400 text-xs"
+                  />
+                  <PhMinus class="mx-[5px] text-black" />
+                  <CustomDatePicker
+                    place-holder="00:00"
+                    timeOnly
+                    v-model="slotProps.data.endDateFilter"
+                    label=""
+                    class="w-[100px] text-grey-400 text-sm"
+                  />
+                </div>
               </template>
             </Column>
             <Column field="kuota" header="Kuota" headerClass="bg-adameds-50">
