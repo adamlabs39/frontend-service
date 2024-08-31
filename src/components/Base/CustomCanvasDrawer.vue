@@ -410,122 +410,120 @@ const getSVG = (svg: string) => {
 </script>
 
 <template>
-  <div>
-    <CustomAccordion headerClass="bg-adameds-50">
-      <template #header>{{ header }}</template>
-      <template #content>
-        <div class="flex pt-5">
-          <div class="relative h-[400px] w-[800px]">
-            <img :src="getSVG(type)" alt="" />
-            <canvas
-              height="400"
-              width="800"
-              id="canvas"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
-            ></canvas>
-            <canvas
-              height="400"
-              width="800"
-              @mousedown="startPainting"
-              @mouseup="finishedPainting"
-              @mousemove="drawing"
-              id="canvas2"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
-            ></canvas>
-          </div>
-          <div class="px-[30px] grow">
-            <CustomButton
-              @click="isStartPainting = true"
-              class="w-full mb-[10px]"
-              icon="PhPaintBrush"
-              label="Mulai Menggambar"
-              :disabled="isStartPainting"
-            />
-            <div v-if="isStartPainting">
-              <div
-                class="grid grid-cols-[13%_13%_13%_13%_13%_13%_22%] h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
-              >
-                <div
-                  @click="selectedTool = 'pencil'"
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{ 'bg-adameds-75': selectedTool == 'pencil' }"
-                >
-                  <PhPencilSimple :size="25" color="#000000" weight="fill" />
-                </div>
-                <div
-                  @click="selectedTool = 'eraser'"
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{ 'bg-adameds-75': selectedTool == 'eraser' }"
-                >
-                  <PhEraser :size="25" color="#000000" weight="fill" />
-                </div>
-                <div
-                  @click="selectedTool = 'line'"
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{ 'bg-adameds-75': selectedTool == 'line' }"
-                >
-                  <PhLineVertical :size="25" color="#000000" weight="bold" />
-                </div>
-                <div
-                  @click="selectedTool = 'circle'"
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{ 'bg-adameds-75': selectedTool == 'circle' }"
-                >
-                  <PhCircle :size="25" color="#000000" weight="bold" />
-                </div>
-                <div
-                  @click="selectedTool = 'square'"
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{ 'bg-adameds-75': selectedTool == 'square' }"
-                >
-                  <PhSquare :size="25" color="#000000" weight="bold" />
-                </div>
-                <ColorPicker class="m-auto" v-model="colors" />
-                <Slider
-                  v-model="lineWidth"
-                  :min="0"
-                  :max="20"
-                  class="h-[10px] my-auto"
-                  :dt="{
-                    handleContentWidth: '25px',
-                    handleContentHeight: '25px',
-                    handleWidth: '25px',
-                    handleHeight: '25px',
-                    handleContentBackground: '#14b8a6',
-                  }"
-                  pt:root="rounded-lg"
-                  pt:range="rounded-lg bg-adameds-300"
-                />
-              </div>
-              <div class="grid grid-cols-2 gap-[10px]">
-                <CustomButton
-                  @click="clearCanvas"
-                  class="w-full mb-[10px]"
-                  label="Reset"
-                  outlined
-                  borderColor="border-grey-200"
-                  textColor="text-grey-300"
-                />
-                <CustomButton
-                  @click="
-                    saveCanvas(),
-                      (isStartPainting = false),
-                      (selectedTool = 'pencil')
-                  "
-                  class="w-full mb-[10px]"
-                  label="Simpan"
-                />
-              </div>
-            </div>
-            <CustomTextArea
-              :label="'Keterangan ' + header"
-              class="mt-[30px]"
-              :placeholder="'Keterangan ' + header.toLowerCase()"
-              height="h-10"
-            />
-          </div>
+  <CustomAccordion headerClass="bg-adameds-50">
+    <template #header>{{ header }}</template>
+    <template #content>
+      <div class="flex pt-5">
+        <div class="relative h-[400px] w-[800px]">
+          <img :src="getSVG(type)" alt="" />
+          <canvas
+            height="400"
+            width="800"
+            id="canvas"
+            class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+          ></canvas>
+          <canvas
+            height="400"
+            width="800"
+            @mousedown="startPainting"
+            @mouseup="finishedPainting"
+            @mousemove="drawing"
+            id="canvas2"
+            class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+          ></canvas>
         </div>
-      </template>
-    </CustomAccordion>
-  </div>
+        <div class="px-[30px] grow">
+          <CustomButton
+            @click="isStartPainting = true"
+            class="w-full mb-[10px]"
+            icon="PhPaintBrush"
+            label="Mulai Menggambar"
+            :disabled="isStartPainting"
+          />
+          <div v-if="isStartPainting">
+            <div
+              class="grid grid-cols-[13%_13%_13%_13%_13%_13%_22%] h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
+            >
+              <div
+                @click="selectedTool = 'pencil'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'pencil' }"
+              >
+                <PhPencilSimple :size="25" color="#000000" weight="fill" />
+              </div>
+              <div
+                @click="selectedTool = 'eraser'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'eraser' }"
+              >
+                <PhEraser :size="25" color="#000000" weight="fill" />
+              </div>
+              <div
+                @click="selectedTool = 'line'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'line' }"
+              >
+                <PhLineVertical :size="25" color="#000000" weight="bold" />
+              </div>
+              <div
+                @click="selectedTool = 'circle'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'circle' }"
+              >
+                <PhCircle :size="25" color="#000000" weight="bold" />
+              </div>
+              <div
+                @click="selectedTool = 'square'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'square' }"
+              >
+                <PhSquare :size="25" color="#000000" weight="bold" />
+              </div>
+              <ColorPicker class="m-auto" v-model="colors" />
+              <Slider
+                v-model="lineWidth"
+                :min="0"
+                :max="20"
+                class="h-[10px] my-auto"
+                :dt="{
+                  handleContentWidth: '25px',
+                  handleContentHeight: '25px',
+                  handleWidth: '25px',
+                  handleHeight: '25px',
+                  handleContentBackground: '#14b8a6',
+                }"
+                pt:root="rounded-lg"
+                pt:range="rounded-lg bg-adameds-300"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-[10px]">
+              <CustomButton
+                @click="clearCanvas"
+                class="w-full mb-[10px]"
+                label="Reset"
+                outlined
+                borderColor="border-grey-200"
+                textColor="text-grey-300"
+              />
+              <CustomButton
+                @click="
+                  saveCanvas(),
+                    (isStartPainting = false),
+                    (selectedTool = 'pencil')
+                "
+                class="w-full mb-[10px]"
+                label="Simpan"
+              />
+            </div>
+          </div>
+          <CustomTextArea
+            :label="'Keterangan ' + header"
+            class="mt-[30px]"
+            :placeholder="'Keterangan ' + header.toLowerCase()"
+            height="h-10"
+          />
+        </div>
+      </div>
+    </template>
+  </CustomAccordion>
 </template>
