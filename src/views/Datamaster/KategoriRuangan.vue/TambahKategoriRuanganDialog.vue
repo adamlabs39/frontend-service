@@ -70,15 +70,14 @@ watch(
   >
     <template #header>{{ title }} Kategori Ruangan</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
+      <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode Kategori Ruangan"
             v-model="code"
             placeholder="Kode"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
-            class="basis-2/6"
+            class="col-span-4"
           />
 
           <CustomTextfield
@@ -87,14 +86,10 @@ watch(
             placeholder="Nama Kategori Ruangan"
             :invalid="!!errors.name"
             :invalidMessage="errors.name"
-            class="grow"
+            class="col-span-8"
           />
-        </div>
-        <hr class="border-grey-200" />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <hr class="border-grey-200 col-span-12" />
+          <CustomSwitch v-model="status" label="Status" class="col-span-12" />
       </div>
     </template>
     <template #footer>

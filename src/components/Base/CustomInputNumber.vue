@@ -93,7 +93,7 @@ defineExpose({
   <div>
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px] w-[20px]"
+      class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>

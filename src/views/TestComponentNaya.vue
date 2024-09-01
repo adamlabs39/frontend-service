@@ -25,6 +25,8 @@ import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanK
 import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
 import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
+import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/ListSuratKeterangan.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -262,11 +264,8 @@ const handlePage = (page: number) => {
     <PemeriksaanTindakan/> <br>
     <InstruksiMedis/>
     <br>
-    <CustomInputNumber />
-    <div class="w-[100px]">
-      <CustomInputNumber :show-buttons="true" />
-
-    </div>
+    <OrderLab/><br>
+    <ListSuratKeterangan/>
 
   </div>
 </template>

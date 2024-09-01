@@ -80,7 +80,7 @@ const value = computed({
   <div class="">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] truncate"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>

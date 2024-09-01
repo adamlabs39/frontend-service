@@ -11,7 +11,7 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 const props = defineProps({
   method: {
     type: String,
-    default: "detail",
+    default: "form",
   },
 });
 
@@ -30,7 +30,7 @@ const keluhanUtama = ref();
 const riwayatPenyakit = ref();
 const riwayatPengobatan = ref();
 const catatan = ref();
-const riwayatKeluarga = ref([""]);
+const riwayatKeluarga = ref();
 const pernahDirawat = ref();
 </script>
 <template>

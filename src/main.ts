@@ -46,6 +46,7 @@ import Menu from "primevue/menu";
 import Checkbox from "primevue/checkbox";
 import Carousel from "primevue/carousel";
 import Editor from "primevue/editor";
+import RadioButton from 'primevue/radiobutton';
 
 import Tabs from "primevue/tabs";
 import TabPanels from "primevue/tabpanels";
@@ -105,7 +106,7 @@ app.component("Button", Button);
 app.directive("tooltip", Tooltip);
 app.component("Select", Select);
 app.component("DatePicker", DatePicker);
-
+app.component("RadioButton", RadioButton);
 app.component("ToggleSwitch", ToggleSwitch);
 app.component("FileUpload", FileUpload);
 app.component("ColorPicker", ColorPicker);
