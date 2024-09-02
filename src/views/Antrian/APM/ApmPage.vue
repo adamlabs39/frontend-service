@@ -6,6 +6,7 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import ApmAktifPage from "./ApmAktifPage.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -47,6 +48,32 @@ const itemsAPM = ref([
     status: "AKTIF",
   },
 ]);
+
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah",
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
 
 const totalItems = computed(() => itemsAPM.value.length);
 
@@ -145,6 +172,7 @@ const selectedPatient = ref([]);
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
+                @click="handleAdd"
                 :label="slotProps.data.status"
                 :textColor="
                   slotProps.data.status === 'AKTIF'
@@ -184,6 +212,13 @@ const selectedPatient = ref([]);
           <div class="text-grey-200">No data available</div>
         </div>
       </div>
+      <ApmAktifPage
+        :full-screen="true"
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+      />
     </template>
     <template #footer>
       <AntrianFooter />

@@ -6,6 +6,7 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import TambahDataKonfigurasiLayar from "./TambahDataKonfigurasiLayar.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -61,6 +62,32 @@ const itemsLayar = ref([
   },
 ]);
 
+const dialogData = ref({
+  isVisible: false,
+  method: "add",
+  title: "Tambah",
+});
+
+function handleAdd() {
+  dialogData.value = {
+    isVisible: true,
+    method: "add",
+    title: "Tambah",
+  };
+}
+
+function handleEdit() {
+  dialogData.value = {
+    isVisible: true,
+    method: "edit",
+    title: "Edit",
+  };
+}
+
+function handleClose() {
+  dialogData.value.isVisible = false;
+}
+
 const totalItems = computed(() => itemsLayar.value.length);
 
 const selectedPatient = ref([]);
@@ -101,12 +128,20 @@ const selectedPatient = ref([]);
             </div>
           </template>
         </Column>
-        <Column field="Nama Layar" header="Nama Layar" headerClass="bg-adameds-50">
+        <Column
+          field="Nama Layar"
+          header="Nama Layar"
+          headerClass="bg-adameds-50"
+        >
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.nama_layar }}</div>
           </template>
         </Column>
-        <Column field="Tipe Layar" header="Tipe Layar" headerClass="bg-adameds-50">
+        <Column
+          field="Tipe Layar"
+          header="Tipe Layar"
+          headerClass="bg-adameds-50"
+        >
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.tipe_layar }}</div>
           </template>
@@ -213,11 +248,12 @@ const selectedPatient = ref([]);
           header="Action"
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
-        <template #body="slotProps">
+          <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
+                @click="handleAdd"
               >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
@@ -245,6 +281,13 @@ const selectedPatient = ref([]);
           <div class="text-grey-200">No data available</div>
         </div>
       </div>
+      <TambahDataKonfigurasiLayar
+        :full-screen="true"
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+      />
     </template>
     <template #footer>
       <AntrianFooter />
