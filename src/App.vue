@@ -5,6 +5,7 @@ import Footer from "./components/section/Footer.vue";
 
 <template>
   <body class="flex flex-col min-h-screen bg-[#f2f8ff]">
+    <Toast />
     <component :is="$route.meta.layout || 'div'">
       <RouterView />
     </component>
