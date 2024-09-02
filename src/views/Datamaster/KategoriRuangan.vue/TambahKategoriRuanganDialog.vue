@@ -70,33 +70,32 @@ watch(
   >
     <template #header>{{ title }} Kategori Ruangan</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode Kategori Ruangan"
-            v-model="code"
-            placeholder="Kode"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-            class="basis-2/6"
-          />
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode Kategori Ruangan"
+          v-model="code"
+          placeholder="Kode"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-4"
+        />
 
-          <CustomTextfield
-            label="Nama Kategori Ruangan"
-            v-model="name"
-            placeholder="Nama Kategori Ruangan"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-            class="grow"
-          />
-        </div>
-        <hr class="border-grey-200" />
+        <CustomTextfield
+          label="Nama Kategori Ruangan"
+          v-model="name"
+          placeholder="Nama Kategori Ruangan"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+          class="col-span-8"
+        />
+        <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
+          class="col-span-12"
         />
       </div>
     </template>

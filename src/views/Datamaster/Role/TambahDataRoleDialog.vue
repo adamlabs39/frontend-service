@@ -88,25 +88,24 @@ watch(
   >
     <template #header>{{ title }} Role</template>
     <template #body>
-      <form class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode"
-            v-model="code"
-            placeholder="Kode"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-          />
-          <CustomTextfield
-            label="Nama Role"
-            v-model="name"
-            placeholder="Nama Role"
-            class="basis-3/4"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-          />
-        </div>
-        <hr class="border-grey-200" />
+      <form class="grid grid-cols-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode"
+          v-model="code"
+          placeholder="Kode"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-5"
+        />
+        <CustomTextfield
+          label="Nama Role"
+          v-model="name"
+          placeholder="Nama Role"
+          class="col-span-7"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+        />
+        <hr class="border-grey-200 col-span-12" />
         <CustomMultiSelect
           v-model="permission"
           :options="itemsPermission"
@@ -114,14 +113,16 @@ watch(
           optionLabel="name_mainMenu"
           optionValue="code_mainMenu"
           :invalid="!!errors.permission"
+          class="col-span-12"
         />
-        <hr class="border-grey-200" />
+        <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
+          class="col-span-12"
         />
       </form>
     </template>

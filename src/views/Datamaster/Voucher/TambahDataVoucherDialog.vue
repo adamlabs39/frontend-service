@@ -44,61 +44,59 @@ const tipeVoucher = ref();
   >
     <template #header>{{ title }} Voucher</template>
     <template #body>
-      <div class="flex flex-col mt-5 gap-5">
-        <div class="flex gap-[30px]">
-          <CustomTextfield label="Kode Voucher" placeholder="Kode Voucher" />
-          <CustomTextfield
-            label="Nama Voucher"
-            placeholder="Nama Voucher"
-            class="w-full"
+      <div class="grid grid-cols-12 mt-5 gap-5">
+        <CustomTextfield
+          label="Kode Voucher"
+          placeholder="Kode Voucher"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="Nama Voucher"
+          placeholder="Nama Voucher"
+          class="col-span-8"
+        />
+        <div class="flex gap-2.5 col-span-7">
+          <CustomDatePicker label="Tanggal" class="w-[150px]" />
+          <PhMinus class="mt-auto mb-3 text-black" />
+          <CustomDatePicker :showLabel="false" class="mt-auto w-[150px]" />
+        </div>
+        <CustomInputNumber label="Jumlah Voucher" class="col-span-5" />
+        <div class="grid grid-cols-2 gap-5 items-end w-full col-span-6">
+          <CustomRadioButton
+            v-model="tipeVoucher"
+            value="persen"
+            label="Tipe Voucher"
+            title="Persen (%)"
+            height="h-10"
+          />
+          <CustomRadioButton
+            v-model="tipeVoucher"
+            value="rupiah"
+            title="Rupiah (RP)"
+            height="h-10"
           />
         </div>
-        <div class="flex gap-[30px]">
-          <div class="flex gap-2.5">
-            <CustomDatePicker label="Tanggal" class="w-[150px]" />
-            <PhMinus class="mt-auto mb-3 text-black" />
-            <CustomDatePicker :showLabel="false" class="mt-auto w-[150px]" />
-          </div>
-          <CustomInputNumber label="Jumlah Voucher" class="grow" />
-        </div>
-        <div class="flex gap-[30px]">
-          <div class="grid grid-cols-2 gap-5 items-end w-full">
-            <CustomRadioButton
-              v-model="tipeVoucher"
-              value="persen"
-              label="Tipe Voucher"
-              title="Persen (%)"
-              height="h-10"
-            />
-            <CustomRadioButton
-              v-model="tipeVoucher"
-              value="rupiah"
-              title="Rupiah (RP)"
-              height="h-10"
-            />
-          </div>
-          <div class="flex flex-col">
-            <div class="block font-semibold">Tarif Voucher</div>
-            <div class="flex gap-5 items-end">
-              <CustomInputNumber label="" class="basis-1/3">
-                <template #appendText>
-                  <div class="flex items-center justify-center mr-2.5">%</div>
-                </template>
-              </CustomInputNumber>
-              <CustomInputNumber class="" label="">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
-                    style="width: 60px"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomInputNumber>
-            </div>
+        <div class="flex flex-col col-span-6">
+          <div class="block font-semibold">Tarif Voucher</div>
+          <div class="flex gap-5 items-end">
+            <CustomInputNumber label="" class="basis-1/3">
+              <template #appendText>
+                <div class="flex items-center justify-center mr-2.5">%</div>
+              </template>
+            </CustomInputNumber>
+            <CustomInputNumber class="" label="">
+              <template #prependText>
+                <div
+                  class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
+                  style="width: 60px"
+                >
+                  Rp.
+                </div>
+              </template>
+            </CustomInputNumber>
           </div>
         </div>
-        <hr class="border-grey-200" />
+        <hr class="border-grey-200 col-span-12" />
 
         <CustomSwitch
           v-model="status"
@@ -106,6 +104,7 @@ const tipeVoucher = ref();
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
+          class="col-span-12"
         />
       </div>
     </template>

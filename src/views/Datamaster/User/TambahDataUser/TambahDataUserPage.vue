@@ -115,7 +115,7 @@ const roleOptions = ref([
   { label: "Dokter", value: "dokter" },
   { label: "Perawat", value: "perawat" },
 ]);
-console.log("text",selectedRole );
+console.log("text", selectedRole);
 
 const checkCategorie = ref();
 const sections = ref([
@@ -196,7 +196,7 @@ watch(selectedRole, (newRole) => {
   resetForm(); // Reset the form
 
   // You can also set the initial values for specific fields if needed
-  if (newRole === 'dokter') {
+  if (newRole === "dokter") {
     showSelected.value = true;
     showNama.value = false;
   } else {
@@ -204,7 +204,6 @@ watch(selectedRole, (newRole) => {
     showNama.value = true;
   }
 });
-
 </script>
 
 <template>
@@ -240,12 +239,12 @@ watch(selectedRole, (newRole) => {
             v-model="selectedRole"
             :options="roleOptions"
             :isLoading="false"
-            optionValue="value" 
+            optionValue="value"
             optionLabel="label"
           />
           <div class="h-full overflow-auto">
             <!-- Empty Role -->
-             <NoData v-if="!selectedRole" title="Pilih Role Terlebih Dahulu" />
+            <NoData v-if="!selectedRole" title="Pilih Role Terlebih Dahulu" />
             <!-- Admin Role -->
             <div
               v-if="selectedRole === 'admin'"
@@ -258,9 +257,11 @@ watch(selectedRole, (newRole) => {
               >
                 <template #header>{{ section.name }}</template>
                 <template #content>
-                  <CustomCheckBoxUser v-model="checkCategorie" :categories="section.items"
-                  custom-class="grid justify-center grid-cols-2 gap-4 pt-5"/>
-                 
+                  <CustomCheckBoxUser
+                    v-model="checkCategorie"
+                    :categories="section.items"
+                    custom-class="grid justify-center grid-cols-2 gap-4 pt-5"
+                  />
                 </template>
               </CustomAccordion>
             </div>
@@ -269,17 +270,18 @@ watch(selectedRole, (newRole) => {
               v-if="selectedRole === 'dokter'"
               class="flex flex-col w-full gap-3"
             >
-
-            <CustomAccordion
+              <CustomAccordion
                 headerClass="bg-adameds-50"
                 v-for="section in sections"
                 :key="section.name"
               >
                 <template #header>{{ section.name }}</template>
                 <template #content>
-                  <CustomCheckBoxUser v-model="checkCategorie" :categories="section.items"
-                  custom-class="grid justify-center grid-cols-2 gap-4 pt-5"/>
-                 
+                  <CustomCheckBoxUser
+                    v-model="checkCategorie"
+                    :categories="section.items"
+                    custom-class="grid justify-center grid-cols-2 gap-4 pt-5"
+                  />
                 </template>
               </CustomAccordion>
             </div>
@@ -288,7 +290,11 @@ watch(selectedRole, (newRole) => {
         <div class="basis-1/2 px-5 flex flex-col gap-2.5 overflow-hidden">
           <div class="overflow-auto grow">
             <div class="flex flex-col gap-5">
-              <CustomAccordion v-if="selectedRole === 'superAdmin'" headerClass="">
+              <CustomAccordion
+                v-if="selectedRole === 'superAdmin'"
+                headerClass=""
+                initialState="0"
+              >
                 <template #collapseIcon>
                   <PhCaretUp :size="20" class="text-adameds-300" />
                 </template>
@@ -297,10 +303,14 @@ watch(selectedRole, (newRole) => {
                 </template>
                 <template #header>Data Faskes</template>
                 <template #content>
-                  <CustomSelect label="Faskes" place-holder="Pilih Faskes" class="py-5" />
+                  <CustomSelect
+                    label="Faskes"
+                    place-holder="Pilih Faskes"
+                    class="py-5"
+                  />
                 </template>
               </CustomAccordion>
-              <CustomAccordion headerClass="">
+              <CustomAccordion headerClass="" initialState="0">
                 <template #collapseIcon>
                   <PhCaretUp :size="20" class="text-adameds-300" />
                 </template>
@@ -354,7 +364,7 @@ watch(selectedRole, (newRole) => {
                   </div>
                 </template>
               </CustomAccordion>
-              <CustomAccordion headerClass="">
+              <CustomAccordion headerClass="" initialState="0">
                 <template #collapseIcon>
                   <PhCaretUp :size="20" class="text-adameds-300" />
                 </template>
@@ -472,13 +482,13 @@ watch(selectedRole, (newRole) => {
               <div>
                 <div>Status</div>
                 <div class="w-full border rounded-lg p-2.5">
-                    <CustomSwitch
-                      v-model="status"
-                      :disabled="!selectedRole"
-                      :show-label="false"
-                      sideLabel="NON-AKTIF"
-                      sideLabelTrue="AKTIF"
-                    />
+                  <CustomSwitch
+                    v-model="status"
+                    :disabled="!selectedRole"
+                    :show-label="false"
+                    sideLabel="NON-AKTIF"
+                    sideLabelTrue="AKTIF"
+                  />
                 </div>
               </div>
             </div>

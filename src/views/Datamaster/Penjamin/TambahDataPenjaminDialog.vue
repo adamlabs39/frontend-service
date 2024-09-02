@@ -5,30 +5,32 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 const status = ref();
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
-    <div class="flex gap-2.5">
-      <CustomTextfield label="Kode Penjamin" placeholder="Kode Penjamin" />
-      <CustomTextfield
-        label="Nama Penjamin"
-        placeholder="Nama Penjamin"
-        class="basis-3/4"
-      />
-    </div>
-    <div class="flex gap-2.5">
-      <CustomTextfield label="No. Telepon" placeholder="0" type="number" />
-      <CustomTextfield
-        label="Alamat"
-        placeholder="Alamat"
-        class="basis-3/4"
-      />
-    </div>
-    <hr />
+  <div class="mt-5 grid grid-cols-12 gap-5">
+    <CustomTextfield
+      label="Kode Penjamin"
+      placeholder="Kode Penjamin"
+      class="col-span-4"
+    />
+    <CustomTextfield
+      label="Nama Penjamin"
+      placeholder="Nama Penjamin"
+      class="col-span-8"
+    />
+    <CustomTextfield
+      label="No. Telepon"
+      placeholder="0"
+      type="number"
+      class="col-span-4"
+    />
+    <CustomTextfield label="Alamat" placeholder="Alamat" class="col-span-8" />
+    <hr class="border-grey-200 col-span-12"/>
     <CustomSwitch
-          v-model="status"
-          :show-label="true"
-          label="Status"
-          sideLabel="NON-AKTIF"
-          sideLabelTrue="AKTIF"
-        />
+      v-model="status"
+      :show-label="true"
+      label="Status"
+      sideLabel="NON-AKTIF"
+      sideLabelTrue="AKTIF"
+      class="col-span-12"
+    />
   </div>
 </template>

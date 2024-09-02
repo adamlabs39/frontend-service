@@ -100,31 +100,32 @@ watch(
   >
     <template #header>{{ title }} ICD 9 CM</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
+      <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode"
             v-model="code"
             placeholder="Kode"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
+            class="col-span-4"
           />
           <CustomTextfield
             label="Nama ICD 9 CM"
             v-model="name"
             placeholder="Nama ICD 9 CM"
-            class="basis-3/4"
             :invalid="!!errors.name"
             :invalidMessage="errors.name"
+            class="col-span-8"
+
           />
-        </div>
-        <hr />
+        <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
+          class="col-span-12"
         />
       </div>
     </template>
