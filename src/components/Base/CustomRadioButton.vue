@@ -74,7 +74,7 @@ const toggleRadio = () => {
       }"
     />
     <div class="ml-[10px] flex items-center justify-center">
-      <div class="font-semibold text-SM" :class="{ 'text-grey-300': disabled }">
+      <div class="font-semibold text-SM truncate" :class="{ 'text-grey-300': disabled }">
         {{ title }}
       </div>
     </div>

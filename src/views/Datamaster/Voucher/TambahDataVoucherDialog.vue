@@ -120,7 +120,7 @@ const tipeVoucher = ref();
             @click="closeDialog"
           >
           </CustomButton>
-          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+          <CustomButton label="Simpan" > </CustomButton>
         </div>
       </div>
     </template>
