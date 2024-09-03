@@ -9,6 +9,14 @@ import { PhArrowUUpLeft, PhCalendarDots, PhClock, PhPencil } from '@phosphor-ico
 import { ref } from 'vue';
 import CustomChip from '@/components/Base/CustomChip.vue';
 
+const props = defineProps({
+    method: {
+        type: String,
+        default: "detail",
+    }
+})
+
+
 const messages = ref([
     {
         role: "Perawat 01",
@@ -68,7 +76,7 @@ const catatanPerawat = ref("");
                             {{ message.text }}
                         </div>
                         <div :class="message.isSender ? 'justify-start' : 'justify-end'" class="flex gap-4">
-                            <button v-for="action in message.actions" :key="action.text"
+                            <button v-for="action in message.actions" :key="action.text" v-if="props.method == 'form'"
                                 class="flex items-center gap-2 font-medium text-SM"
                                 :style="{ color: action.text === 'Edit' ? '#3D84E5' : '#14B8A6' }">
                                 <!-- Dynamically render the icon component -->
@@ -80,7 +88,7 @@ const catatanPerawat = ref("");
                 </div>
 
                 <hr class="border-grey-200 my-2.5" />
-                <div class="space-y-2.5">
+                <div v-if="props.method == 'form'" class="space-y-2.5">
                     <CustomChip label="Membalas Perawat01" selected-color="border-0 bg-[#14B8A6]"
                         :showCheckedIcon="false" bgColor="bg-adameds-300" textColor="text-white"
                         borderColor="border-transparent" customClass="h-5 pr-[6px]" />
@@ -89,6 +97,9 @@ const catatanPerawat = ref("");
                             placeholder="Ketik Catatan..." />
                         <CustomButton :full="true" icon="PhPaperPlaneTilt" label="Kirim Catatan" />
                     </div>
+                </div>
+                <div>
+                    
                 </div>
             </div>
         </template>

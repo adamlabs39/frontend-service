@@ -18,6 +18,14 @@ import berat from "@/assets/images/RekamMedis/AsesmenNyeri/7berat.svg"
 import beratt from "@/assets/images/RekamMedis/AsesmenNyeri/8beratt.svg"
 import berattt from "@/assets/images/RekamMedis/AsesmenNyeri/9berattt.svg"
 import beratttt from "@/assets/images/RekamMedis/AsesmenNyeri/10beratttt.svg"
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+
+const props = defineProps({
+    method: {
+        type: String,
+        default: "form",
+    }
+})
 
 const catatan = ref<string>("");
 const selectedImageId = ref<number | null>(null);
@@ -44,7 +52,7 @@ const imagePengkajianNyeri = ref([
     <CustomAccordion headerClass="bg-adameds-50">
         <template #header> Asesmen Nyeri</template>
         <template #content>
-            <div class="grid grid-cols-2 py-5 gap-[30px] gap-y-5">
+            <div v-if="props.method == 'form'" class="grid grid-cols-2 py-5 gap-[30px] gap-y-5">
                 <div class="flex flex-col">
                     <div class="font-semibold text-normal">Pilih Pengkajian Nyeri</div>
                     <div class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4">
@@ -66,12 +74,19 @@ const imagePengkajianNyeri = ref([
                     <CustomTextfield label="Catatan" placeholder="Masukkan Catatan" v-model:modelValue="catatan" />
                 </div>
             </div>
+            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Pengkajian Nyeri" value="Ringan" />
+                <CustomInfoRow label="Catatan" value="Minum Obat" />
+                <hr class="border-grey-200">
+                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                    borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton label="Simpan" />
+                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                    backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
+                <CustomButton  v-if="props.method=='form'"  label="Simpan" />
+                <CustomButton v-if="props.method == 'detail'" label="Edit" />
             </div>
         </template>
     </CustomAccordion>

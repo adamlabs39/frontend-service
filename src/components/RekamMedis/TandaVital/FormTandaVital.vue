@@ -2,11 +2,20 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
+
+const props = defineProps({
+    method: {
+        type: String,
+        default: "form",
+    }
+})
+
 
 const criterias = ref([
     { id: "1", kriteriaPemantauan: "PEWS" },
@@ -54,12 +63,12 @@ const tekananDarah = ref<number | undefined>(undefined);
     <CustomAccordion headerClass="bg-adameds-50">
         <template #header> Tanda Vital</template>
         <template #content>
-            <div>
+            <div v-if="props.method == 'form'">
                 <div class="grid grid-cols-4 gap-[30px] py-3">
-                        <CustomSelect label="Kriteria Pemantauan" v-model="selectedCriteria" :options="criterias"
-                            optionValue="id" optionLabel="kriteriaPemantauan" :isLoading="false" :invalid="false"
-                            invalidMessage="Wajib diisi" :disabled="false" placeHolder="PEWS"
-                            customSelectClass="border-[#C7CBD2]" />
+                    <CustomSelect label="Kriteria Pemantauan" v-model="selectedCriteria" :options="criterias"
+                        optionValue="id" optionLabel="kriteriaPemantauan" :isLoading="false" :invalid="false"
+                        invalidMessage="Wajib diisi" :disabled="false" placeHolder="PEWS"
+                        customSelectClass="border-[#C7CBD2]" />
                     <CustomDatePicker v-model="waktuAsesmen" label="Waktu Asesmen" />
                     <CustomInputNumber label="Frekuensi Nafas" placeholder="46" v-model:modelValue="frekuensiNafas"
                         type="number">
@@ -108,7 +117,7 @@ const tekananDarah = ref<number | undefined>(undefined);
                 <!-- Baris Tiga -->
                 <div class="flex gap-[30px] py-3">
                     <div class="flex flex-col w-1/5">
-                            <CustomSwitch v-model="oksigenTambahan" label="Oxygen Tambahan" />
+                        <CustomSwitch v-model="oksigenTambahan" label="Oxygen Tambahan" />
                     </div>
                     <div class="w-1/3">
                         <CustomInputNumber label="Tekanan Darah" placeholder="98" v-model:modelValue="tekananDarah"
@@ -137,12 +146,31 @@ const tekananDarah = ref<number | undefined>(undefined);
                         customSelectClass="border-[#C7CBD2]" />
                 </div>
             </div>
+
+            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Kriteria Pemantauan" value="PEWS" />
+                <CustomInfoRow label="Waktu Asesmen" value="01-01-2024" />
+                <CustomInfoRow label="Frekuensi Napas" value="48 x/mnt" />
+                <CustomInfoRow label="Frekuensi Nadi" value="158 x/mnt" />
+                <CustomInfoRow label="Suhu" value="37 C" />
+                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" value="Tidak" />
+                <CustomInfoRow label="Blood Oxygen" value="98%" />
+                <CustomInfoRow label="Gula Darah" value="98%" />
+                <CustomInfoRow label="Oksigen Tambahan" value="Tidak" />
+                <CustomInfoRow label="Tekanan Darah" value="100 mmHg" />
+                <CustomInfoRow label="Respirasi Anak" value="Tidak Ada retraksi" />
+                <CustomInfoRow label="Kardiovaskuler Anak" value="Tidak Sianosis" />
+                <CustomInfoRow label="Keadaan Umum" value="Interaksi Biasa" />
+                <hr class="border-grey-200">
+                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                    borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton label="Simpan" />
+                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                    backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
+                <CustomButton  v-if="props.method=='form'"  label="Simpan" />
+                <CustomButton v-if="props.method == 'detail'" label="Edit" />
             </div>
         </template>
     </CustomAccordion>
