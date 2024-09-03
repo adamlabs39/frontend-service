@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import FormAlergi from '@/components/RekamMedis/Alergi/FormAlergi.vue';
-import Coba from '@/components/RekamMedis/AsesmenNyeri/Scaler.vue';
 import FormAsesmenNyeri from '@/components/RekamMedis/AsesmenNyeri/FormAsesmenNyeri.vue';
 import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vue';
 import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue';
