@@ -28,7 +28,7 @@ const props = defineProps({
 });
 
 onMounted(() => {
-  if (props.formType == 'Daftar Bayi Baru Lahir') {
+  if (props.formType == 'Daftar Bayi Baru Lahir' || props.patientData.is_newborn) {
     newBorn.value = true
   }
 });
