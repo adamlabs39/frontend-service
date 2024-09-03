@@ -6,7 +6,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
+import CustomRadio from "@/components/Base/CustomRadio.vue";
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -34,6 +34,7 @@ function closeDialog() {
   emit("close");
 }
 const tipeVoucher = ref();
+const testRadio = ref("");
 </script>
 <template>
   <CustomDialog
@@ -55,25 +56,21 @@ const tipeVoucher = ref();
           placeholder="Nama Voucher"
           class="col-span-8"
         />
-        <div class="flex gap-2.5 col-span-7">
+        <div class="flex gap-2.5 col-span-6">
           <CustomDatePicker label="Tanggal" class="w-[150px]" />
           <PhMinus class="mt-auto mb-3 text-black" />
           <CustomDatePicker :showLabel="false" class="mt-auto w-[150px]" />
         </div>
-        <CustomInputNumber label="Jumlah Voucher" class="col-span-5" />
+        <CustomInputNumber label="Jumlah Voucher" class="col-span-6" />
         <div class="grid grid-cols-2 gap-5 items-end w-full col-span-6">
-          <CustomRadioButton
-            v-model="tipeVoucher"
-            value="persen"
-            label="Tipe Voucher"
-            title="Persen (%)"
-            height="h-10"
-          />
-          <CustomRadioButton
-            v-model="tipeVoucher"
-            value="rupiah"
-            title="Rupiah (RP)"
-            height="h-10"
+          <div class="col-span-2 font-semibold text-MD -mb-4">Tipe Voucher</div>
+          <CustomRadio
+           label="Tipe Voucher"
+            v-for="data in ['Persen (%)', 'Rupiah (RP)']"
+            v-model="testRadio"
+            :sideLabel="data"
+            :value="data"
+            class="f"
           />
         </div>
         <div class="flex flex-col col-span-6">
@@ -88,7 +85,6 @@ const tipeVoucher = ref();
               <template #prependText>
                 <div
                   class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
-                  style="width: 60px"
                 >
                   Rp.
                 </div>
@@ -120,7 +116,7 @@ const tipeVoucher = ref();
             @click="closeDialog"
           >
           </CustomButton>
-          <CustomButton label="Simpan" > </CustomButton>
+          <CustomButton label="Simpan"> </CustomButton>
         </div>
       </div>
     </template>

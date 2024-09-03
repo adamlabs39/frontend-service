@@ -38,7 +38,7 @@ function closeDialog() {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Dokter</template>
+    <template #header>{{ title }} Praktisi</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
@@ -51,7 +51,7 @@ function closeDialog() {
           <CustomTextfield label="Kode Dokter" placeholder="Kode Dokter" />
         </div>
         <div class="flex flex-col">
-          <div class="font-semibold text-MD">Nama Lengkap Praktisioner</div>
+          <div class="font-semibold text-MD">Nama Lengkap Praktisi</div>
           <div class="flex gap-2.5 w-full">
             <CustomSelect
               label=""

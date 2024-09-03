@@ -7,6 +7,7 @@ import Footer from "../Layout/FooterPaginator.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import TambahDataVoucherDialog from "./TambahDataVoucherDialog.vue";
+import CustomRadio from "@/components/Base/CustomRadio.vue";
 
 const products = ref<any[]>([]);
 

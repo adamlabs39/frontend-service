@@ -20,12 +20,12 @@ function updateVisibility(value: any) {
     :visible="isDialogVisible" @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Detail Praktisioner</template>
+    <template #header>Detail Praktisi</template>
     <template #body>
       <div class="flex flex-col mt-5 gap-5">
         <!-- Data Dokter -->
         <div class="flex flex-col gap-5">
-          <div class="my-2.5 font-bold text-heading leading-8">Data Praktisioner</div>
+          <div class="my-2.5 font-bold text-heading leading-8">Data Praktisi</div>
           <hr class="border-grey-200" />
           <div class="flex">
             <div class="w-1/2 flex flex-col gap-5">

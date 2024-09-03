@@ -77,7 +77,7 @@ watch(
           placeholder="Kode"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
-          class="col-span-4"
+          class="col-span-4 "
         />
 
         <CustomTextfield
