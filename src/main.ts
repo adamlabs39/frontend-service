@@ -51,11 +51,14 @@ import Tabs from "primevue/tabs";
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
 import Slider from 'primevue/slider';
+import Toast from 'primevue/toast';
+import ToastService from 'primevue/toastservice';
+import RadioButton from 'primevue/radiobutton';
 import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
-const app = createApp(App);
+export const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
@@ -73,6 +76,7 @@ const myPreset = definePreset(Aura, {
   },
 });
 app.use(CkeditorPlugin)
+app.use(ToastService);
 
 app.use(PrimeVue, {
   theme: {
@@ -124,5 +128,7 @@ app.component("Tabs", Tabs);
 app.component("TabPanels", TabPanels);
 app.component("TabPanel", TabPanel);
 app.component("Slider", Slider);
+app.component("Toast", Toast);
+app.component("RadioButton", RadioButton);
 
 app.mount("#app");
