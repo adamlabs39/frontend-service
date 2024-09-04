@@ -95,7 +95,7 @@ const showClear = computed(() => {
         class="rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -124,15 +124,15 @@ const showClear = computed(() => {
         class="h-10 rounded-lg"
         :class="[
           prependIcon ? 'border-l-0 rounded-l-none' : '',
-          invalid ? 'border-danger-300 text-danger-300' : '',
-          disabled ? 'border-grey-200 bg-grey-100 text-grey-300' : 'border-grey-400',
+          invalid ? 'border-danger-300 text-danger-300' : 'text-white',
+          disabled ? 'border-grey-200 bg-grey-100 text-grey-300' : 'border-grey-200',
         ]"
         :invalid="invalid"
         fluid
         :filter="showFilter"
         filterPlaceholder="Search"
         pt:pcFilterIconContainer:class="flex items-center"
-        pt:pcFilter:root:class="border-grey-400"
+        pt:pcFilter:root:class="text-black border-grey-200"
       >
         <template #dropdownicon>
           <PhCaretDown

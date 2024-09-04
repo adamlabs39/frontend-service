@@ -51,7 +51,6 @@ const value = computed({
   get: () => props.modelValue,
   set: (value: string) => emit("update:modelValue", value),
 });
-
 </script>
 
 <template>
@@ -61,7 +60,8 @@ const value = computed({
       class="block font-semibold mb-[5px]"
       :class="{ 'text-grey-300': props.disabled }"
     >
-      {{ props.label }}<span v-if="props.required" class="text-danger-300">*</span>
+      {{ props.label
+      }}<span v-if="props.required" class="text-danger-300">*</span>
     </label>
     <Textarea
       v-model="value"
@@ -73,10 +73,12 @@ const value = computed({
       :class="{
         'border-danger-300 text-danger-300': props.invalid,
         'border-grey-200 bg-grey-100 text-grey-300': props.disabled,
-        'border-grey-400': !props.disabled && !props.invalid,
+        'border-grey-200': !props.disabled && !props.invalid,
         [props.height]: true,
       }"
     />
-    <small v-if="props.invalid" class="text-danger-300">{{ props.invalidMessage }}</small>
+    <small v-if="props.invalid" class="text-danger-300">{{
+      props.invalidMessage
+    }}</small>
   </div>
 </template>

@@ -75,8 +75,8 @@ defineExpose({
   <div>
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px] truncate"
-      :class="{ 'text-grey-300': disabled }"
+    class="block font-semibold mb-[5px] truncate"
+      :class="{ 'text-grey-200': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
@@ -87,7 +87,7 @@ defineExpose({
         class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -115,7 +115,7 @@ defineExpose({
           :class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
-            'border-grey-400': !disabled && !invalid,
+            'border-grey-200': !disabled && !invalid,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
           }"
@@ -144,7 +144,7 @@ defineExpose({
         class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400 text-adameds-300': !disabled && !invalid,
+          'border-grey-200 text-adameds-300': !disabled && !invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
         }"
       >
@@ -154,3 +154,4 @@ defineExpose({
     <small v-if="invalid" class="text-danger-300">{{ invalidMessage }}</small>
   </div>
 </template>
+

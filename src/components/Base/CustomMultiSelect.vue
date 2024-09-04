@@ -109,7 +109,7 @@ const removeSelect = (data: any) => {
         class="rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -142,7 +142,7 @@ const removeSelect = (data: any) => {
           'border-l-0 rounded-l-none': prependIcon,
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
         }"
       >
         <template

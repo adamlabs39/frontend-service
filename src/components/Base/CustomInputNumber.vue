@@ -105,7 +105,7 @@ defineExpose({
         class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -132,7 +132,7 @@ defineExpose({
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'rounded-r-none border-r-0': $slots.appendText,
           'rounded-l-none border-l-0': $slots.prependText,
           'h-10 pt-1 ': true,
@@ -184,7 +184,7 @@ defineExpose({
         class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400 text-adameds-300': !disabled && !invalid,
+          'border-grey-200 text-adameds-300': !disabled && !invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
         }"
       >
