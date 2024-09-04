@@ -37,7 +37,7 @@ const tipePeriksa = ref();
         :value="products"
         tableStyle="min-width: 50rem"
         stripedRows
-        class="text-xs mt-5"
+        class="pt-5 text-xs"
         scrollable
         scrollHeight="flex"
       >
@@ -108,7 +108,7 @@ const tipePeriksa = ref();
         <template #header>Buat Surat</template>
         <template #body>
           <div class="flex flex-col gap-5 mt-5">
-            <div class="flex items-end gap-5 w-full">
+            <div class="flex items-end w-full gap-5">
               <CustomSelect
                 label="Cari Surat"
                 place-holder="Cari & Pilih Surat"
@@ -236,10 +236,10 @@ const tipePeriksa = ref();
                   />
                   <CustomSwitch
                     label="Buta Warna"
-                    class="col-span-3 col-span-3"
+                    class="col-span-3"
                   />
                   <div class="grid grid-cols-2 gap-x-2.5 col-span-6">
-                    <div class="col-span-2 font-semibold text-MD pb-1">Setelah Diperiksa Dinyatakan</div>
+                    <div class="col-span-2 pb-1 font-semibold text-MD">Setelah Diperiksa Dinyatakan</div>
                     <CustomRadioButton
                       v-model="tipePeriksa"
                       value="persen"

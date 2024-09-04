@@ -36,6 +36,7 @@ import PemeriksaanFisik from "@/components/RekamMedis/ResumeDiscarge/Pemeriksaan
 import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
 import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
 import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
+import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue";
 
 
 //For Test Selected Component
@@ -135,8 +136,8 @@ const handlePage = (page: number) => {
 </script>
 
 <template>
-  <div class="h-screen overflow-scroll mx-5">
-    <!-- <Select
+  <div class="h-screen mx-5 overflow-scroll">
+    <Select
       label="Choose a City"
       v-model="selectedItems"
       :options="items"
@@ -263,7 +264,7 @@ const handlePage = (page: number) => {
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
-    </Paginator> -->
+    </Paginator>
 
     <b>Component Rekam Medis</b>
     <Anamnesis/> <br>
@@ -285,6 +286,7 @@ const handlePage = (page: number) => {
     <PemeriksaanFisik/> <br>
     <Diagnosis/> <br>
     <Tindakan/> <br>
-    <Obat/>
+    <Obat/> <br>
+    <FormPemberianObat/>
   </div>
 </template>

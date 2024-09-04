@@ -30,14 +30,14 @@ const selectedPemeriksaan = ref();
 
 <template>
   <CustomAccordion initial-state="0" header-class="bg-adameds-50">
-    <template #header> Tindakan </template>
+    <template #header> Obat </template>
     <template #content>
       <DataTable
         v-model:selection="selectedPemeriksaan"
         :value="products"
         tableStyle="min-width: 50rem"
         stripedRows
-        class="text-xs pt-5"
+        class="pt-5 text-xs"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -88,11 +88,11 @@ const selectedPemeriksaan = ref();
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-::v-deep .custom-checkbox .p-checkbox-checked .p-checkbox-box {
+:deep .custom-checkbox .p-checkbox-checked .p-checkbox-box {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-::v-deep .custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
+:deep .custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
   @apply text-white;
 }
 </style>

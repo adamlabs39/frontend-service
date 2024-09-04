@@ -12,9 +12,9 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Order Lab</template>
     <template #content>
-        <div class="flex flex-col mt-5 gap-5">
+        <div class="flex flex-col gap-5 pt-5">
             <CustomDatePicker label="Tgl. Pemeriksaan Lab"/>
-            <div class="font-semibold text-MD mt-5">Kategori</div>
+            <div class="mt-5 font-semibold text-MD">Kategori</div>
             <hr class="border-grey-200 ">
             <CustomAccordion headerClass="bg-adameds-50">
                 <template #header>HEMATOLOGI</template>
