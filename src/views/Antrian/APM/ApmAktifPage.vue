@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CardPasien from "@/components/Antrian/CardPasien.vue";
+import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -33,6 +35,19 @@ function nextSlide() {
 function prevSlide() {
   currentIndex.value = (currentIndex.value - 1 + 2) % 2; // Change 2 to the number of images in the carousel
 }
+
+const cardPasienJKN = ref({
+  keterangan: "Pasien JKN",
+});
+const cardPasienNonJKN = ref({
+  keterangan: "Pasien Non-JKN",
+});
+const cardAktivitasCheckIn = ref({
+  keterangan: "Checkin",
+});
+const cardAktivitasPrint = ref({
+  keterangan: "Print",
+});
 </script>
 
 <template>
@@ -88,14 +103,11 @@ function prevSlide() {
       <!-- Carousel Section -->
       <div class="relative items-center justify-center mx-20 mt-14 w-180">
         <div class="overflow-hidden rounded-xl">
-          <div
-            class="flex transition-transform duration-300"
-            :style="{ transform: `translateX(-${currentIndex.value * 100}%)` }"
-          >
+          <div class="flex transition-transform duration-300">
             <div
               class="bg-adameds-300 w-3/5 h-[280px] flex items-center justify-center"
             >
-              <div class="text-center">
+              <div class="text-center text-white">
                 <div class="mb-2 text-5xl">#Improving</div>
                 <div class="text-5xl font-extrabold">Healthcare</div>
               </div>
@@ -109,6 +121,22 @@ function prevSlide() {
           </div>
         </div>
       </div>
+
+      <div class="flex h-[220px] justify-center">
+        <div class="w-[350px] my-10">
+          <CardPasien :cardPasien="cardPasienJKN" />
+        </div>
+        <div class="w-[350px] mx-8 my-10">
+          <CardPasien :cardPasien="cardPasienNonJKN" />
+        </div>
+        <div class="w-1 my-auto rounded-md h-28 bg-adameds-300"></div>
+        <div class="w-[180px] mx-8 my-10">
+          <CardAktivitas :cardAktivitas="cardAktivitasCheckIn" />
+        </div>
+        <div class="w-[180px] my-10">
+          <CardAktivitas :cardAktivitas="cardAktivitasPrint" />
+        </div>
+      </div>  
     </template>
     <template #footer> </template>
   </CustomDialog>

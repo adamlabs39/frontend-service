@@ -9,6 +9,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomUpload from "@/components/Base/CustomUpload.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -45,8 +46,8 @@ const itemsFlash = ref([
 ]);
 
 const defaultValues = {
-  poliModel: undefined,
-  flashModel: undefined,
+  poliModel: [],
+  flashModel: [],
   admisiStatus: false,
   poliStatus: false,
   farmasiStatus: false,
@@ -60,8 +61,8 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama tindakan harus diisi"),
     layarModel: yup.string(),
-    poliModel: yup.string(),
-    flashModel: yup.string(),
+    poliModel: yup.array().required(),
+    flashModel: yup.array().required(),
     admisiStatus: yup.bool(),
     poliStatus: yup.bool(),
     farmasiStatus: yup.bool(),
@@ -184,12 +185,12 @@ function handleReset() {
               <CustomSwitch v-model="poliStatus" label="Poli" />
               <div>{{ poliStatus ? "Aktif" : "Non-Aktif" }}</div>
             </div>
-            <CustomSelect
+            <CustomMultiSelect
               label="Pilih Poli"
-              place-holder="Pilih Poli"
+              placeholder="Pilih Poli"
               v-model="poliModel"
               :options="itemsPoli"
-              optionValue="code"
+              optionValue="name"
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
             />
@@ -197,12 +198,12 @@ function handleReset() {
               <CustomSwitch v-model="farmasiStatus" label="Farmasi" />
               <div>{{ farmasiStatus ? "Aktif" : "Non-Aktif" }}</div>
             </div>
-            <CustomSelect
+            <CustomMultiSelect
               label="Flash Text"
-              place-holder="Flash Text"
+              placeholder="Flash Text"
               v-model="flashModel"
               :options="itemsFlash"
-              optionValue="code"
+              optionValue="name"
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
             />
@@ -263,12 +264,12 @@ function handleReset() {
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
             />
-            <CustomSelect
+            <CustomMultiSelect
               label="Flash Text"
-              place-holder="Flash Text"
+              placeholder="Flash Text"
               v-model="flashModel"
               :options="itemsFlash"
-              optionValue="code"
+              optionValue="name"
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
             />
