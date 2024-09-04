@@ -27,6 +27,16 @@ import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/ListSuratKeterangan.vue";
+import TandaVital from "@/components/RekamMedis/ResumeDiscarge/TandaVital.vue";
+import AnamnesisResume from "@/components/RekamMedis/ResumeDiscarge/Anamnesis.vue";
+import Edukasi from "@/components/RekamMedis/ResumeDiscarge/Edukasi.vue";
+import KeadaanWaktuPulang from "@/components/RekamMedis/ResumeDiscarge/KeadaanWaktuPulang.vue";
+import StatusPulang from "@/components/RekamMedis/ResumeDiscarge/StatusPulang.vue";
+import PemeriksaanFisik from "@/components/RekamMedis/ResumeDiscarge/PemeriksaanFisik.vue";
+import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
+import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
+import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
+
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -265,7 +275,16 @@ const handlePage = (page: number) => {
     <InstruksiMedis/>
     <br>
     <OrderLab/><br>
-    <ListSuratKeterangan/>
-
+    <ListSuratKeterangan/> <br>
+    <b>Form resume medis</b>
+    <TandaVital/> <br>
+    <AnamnesisResume/><br>
+    <Edukasi/> <br>
+    <KeadaanWaktuPulang/><br>
+    <StatusPulang/><br>
+    <PemeriksaanFisik/> <br>
+    <Diagnosis/> <br>
+    <Tindakan/> <br>
+    <Obat/>
   </div>
 </template>

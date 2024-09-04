@@ -46,6 +46,10 @@ const selectRadio = (value: string) => {
   <div
     @click="selectRadio(value)"
     class="flex px-3 py-2 border-2 border-gray-200 rounded-lg cursor-pointer"
+    :class="{
+      'bg-adameds-50': checked===value ,
+    }"
+
   >
     <RadioButton
       v-model="checked"

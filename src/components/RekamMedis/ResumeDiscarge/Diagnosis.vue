@@ -6,22 +6,24 @@ const products = ref<any[]>([]);
 onMounted(() => {
   products.value = [
     {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
+      namaDiagnosis: "Diagnosis Primer",
+      tipeDiagnosis: "Primer",
     },
     {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
+      namaDiagnosis: "Diagnosis Sekunder",
+      tipeDiagnosis: "Sekunder",
     },
     {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
+      namaDiagnosis: "Diagnosis Sekunder",
+      tipeDiagnosis: "Sekunder",
+    },
+    {
+      namaDiagnosis: "Diagnosis Sekunder",
+      tipeDiagnosis: "Sekunder",
+    },
+    {
+      namaDiagnosis: "Diagnosis Sekunder",
+      tipeDiagnosis: "Sekunder",
     },
   ];
 });
@@ -30,7 +32,7 @@ const selectedPemeriksaan = ref();
 
 <template>
   <CustomAccordion initial-state="0" header-class="bg-adameds-50">
-    <template #header> Tindakan </template>
+    <template #header> Diagnosis </template>
     <template #content>
       <DataTable
         v-model:selection="selectedPemeriksaan"
@@ -50,25 +52,13 @@ const selectedPemeriksaan = ref();
           </template>
         </Column>
         <Column
-          field="namaObat"
-          header="Nama Obat"
+          field="namaDiagnosis"
+          header="Nama Diagnosis"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="jumlah"
-          header="Jumlah"
-          headerClass="bg-adameds-50"
-        >
-        </Column>
-        <Column
-          field="aturanPakai"
-          header="Aturan Pakai"
-          headerClass="bg-adameds-50"
-        >
-        </Column>
-        <Column
-          field="caraPakai"
-          header="Cara Pakai"
+          field="tipeDiagnosis"
+          header="Tipe Diagnosis"
           headerClass="bg-adameds-50"
         >
         </Column>

@@ -150,17 +150,10 @@ const opsiKesadaran = [
 ];
 
 const selectOption = (categoryIndex: number, responseIndex: number) => {
-  if (
-    lastClicked.value &&
-    lastClicked.value.categoryIndex === categoryIndex &&
-    lastClicked.value.responseIndex === responseIndex
-  ) {
-    opsiKesadaran[categoryIndex].selected.value = null;
-    lastClicked.value = null;
-  } else {
+
     opsiKesadaran[categoryIndex].selected.value = responseIndex;
     lastClicked.value = { categoryIndex, responseIndex };
-  }
+
 };
 
 const getImageSrc = (categoryIndex: number, responseIndex: number) => {
@@ -200,7 +193,7 @@ const getImageSrc = (categoryIndex: number, responseIndex: number) => {
                     :src="getImageSrc(categoryIndex, responseIndex)"
                     alt="Response Image"
                   />
-                  <div class="text-SM font-normal">{{ response.label }}</div>
+                  <div class="font-normal text-SM">{{ response.label }}</div>
                 </div>
               </div>
             </div>
