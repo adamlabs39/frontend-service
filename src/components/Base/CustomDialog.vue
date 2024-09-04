@@ -54,7 +54,7 @@ const maximize = () => {
     :style="fullScreen ? '' : `width: ${width ? width : '400px'}`"
   >
     <template #header>
-      <div class="font-semibold text-white text-MD">
+      <div class="w-full font-semibold text-white text-MD">
         <slot name="header" />
       </div>
     </template>
