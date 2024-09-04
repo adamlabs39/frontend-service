@@ -1,9 +1,36 @@
 <script setup lang="ts">
 import CustomButton from '@/components/Base/CustomButton.vue';
+import GreenCard from '../GreenCard.vue';
+import DefaultImage from '../../../../assets/images/adamedsPicture.svg'
+import { ref } from 'vue';
+import CustomColorPicker from '@/components/Base/CustomColorPicker.vue';
+import { computed } from 'vue';
+
+const props = defineProps({
+	profilFaskesResponse: {
+		type: Object,
+		required: true,
+	},
+	editHandler: {
+		type: Function,
+		required: true,
+	},
+
+});
+
+
+const defaultImage = ref(DefaultImage);
+
+const backgroundColor = computed(() => {
+    return props.profilFaskesResponse.bgWarna ?   props.profilFaskesResponse.bgWarna :'#000000';
+});
+
+
 </script>
 
 <template>
-	<div>
+	<GreenCard class="mb-4" cardHeading="Logo & Warna" showButton labelButton="Edit" hrEnableCustomClass
+		:button-click-handler="props.editHandler">
 		<!-- Sebelum tulisan Warna Tema  -->
 		<div class="flex w-full">
 			<!-- Bagian Konten Kiri -->
@@ -27,7 +54,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 				<div class="flex flex-col items-center justify-center">
 					<div class="mb-1 text-lg font-bold text-adameds-300">Preview Logo</div>
 					<div class="px-5 py-3 bg-white rounded-lg">
-						<img src="../../../../assets/images/adamedsPicture.svg" alt="Logo Preview"
+						<img :src="props.profilFaskesResponse.logo ? props.profilFaskesResponse.logo :  defaultImage" alt="Logo Preview"
 							class="h-auto max-w-full">
 					</div>
 				</div>
@@ -35,7 +62,7 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 		</div>
 
 		<!-- Setelah Gambar -->
-		<div class="flex items-center justify-between mt-8">
+		<div class="flex items-center justify-between mt-5">
 			<div>
 				<div class="text-sm font-semibold font-poppins">Warna Tema</div>
 				<div class="text-SM text-[#858D9D]">
@@ -46,9 +73,11 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 				</ul>
 			</div>
 			<div>
-				<CustomButton icon="PhCheck" class="w-[100px] h-14 rounded-md"/>
+				<CustomColorPicker icon="PhHandTap" showIcon v-model="backgroundColor" mode="view"/>
 			</div>
 
 		</div>
-	</div>
+	</GreenCard>
+
+
 </template>

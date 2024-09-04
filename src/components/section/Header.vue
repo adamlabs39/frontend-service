@@ -53,28 +53,34 @@ const showDialog = () => {
       <div class="flex justify-between">
         <img loading="lazy" src="../../assets/icons/Bell Notification.svg" class="relative w-8 aspect-square" />
         <img src="../../assets/icons/notif.svg" alt="" class="absolute right-[92px] top-6 aspect-square">
-      </div>        
-      <div class="flex items-center justify-center cursor-pointer" >
+      </div>
+      <div class="flex items-center justify-center cursor-pointer">
         <div class="">
-          <img loading="lazy" src="../../assets/icons/User Account.svg" class="relative w-10 aspect-square" @click="showDialog" />
+          <img loading="lazy" src="../../assets/icons/User Account.svg" class="relative w-10 aspect-square"
+            @click="showDialog" />
           <img src="../../assets/icons/green_profile.svg" alt="" class="absolute right-9 top-6">
         </div>
-        <Dialog  v-model:visible="isDialogVisible" width="400px" position="topright" pt:root:class="rounded-2xl">
+        <Dialog v-model:visible="isDialogVisible" position="topright" pt:root:class="rounded-2xl">
           <template #container>
-            <div class="p-2.5 rounded-2xl">
-              <div class="">
-                <div class="font-semibold text-black text-SM">NAMA AKUN</div>
+            <div class="p-2.5 rounded-2xl w-[180px]">
+                <div class="font-semibold text-black text-XS">NAMA AKUN</div>
                 <div class="text-[#79808F] text-[8px]">Terakhir Login 4 Mar 2024 | 12:00</div>
-                <div class="py-2">
-                    <CustomButton label="Profile" class="w-[180px] text-sm font-semibold font-poppins"
-                  text-color="text-adameds-300" border-color="border-adameds-300" outlined @click="profileEdit" />
+                <div class="flex items-center gap-1 p-2 my-2.5 rounded-md bg-adameds-75">
+                  <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
+                  <span class=" font-semibold text-adameds-300 text-[8px]">Perawat</span>
+                </div>
+                <hr class="border-[#D9DCE1] border-1 " />
+                <div class="flex flex-col items-start py-2">
+                  <CustomButton label="Profile" text-color="text-gray-300"
+                    outlined @click="profileEdit" icon="PhUser" iconPos="left" pt:label:class="font-normal text-SM"/>
+                  <CustomButton label="Setting" text-color="text-gray-300"
+                    outlined @click="clickSetting" iconPos="left" icon="PhGearSix" pt:label:class="font-normal text-SM "  />
                 </div>
                 <hr class="border-[#D9DCE1] border-1 mb-2.5" />
-              </div>
+              
 
               <div class="flex w-full gap-5 cursor-pointer">
-                <img src="../../assets/icons/gear_setting.svg" width="30px" height="30px" @click="clickSetting">
-                <CustomButton label="LOGOUT" full class="font-bold"/>
+                <CustomButton label="LOGOUT" full class="font-semibold" iconPos="left" icon="PhSignOut" pt:label:class="text-XS" />
               </div>
             </div>
           </template>

@@ -46,6 +46,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  maxLength: {
+    type: Number,
+    default: 8, 
+  }
 });
 
 // const value = ref(props.modelValue);
@@ -71,7 +75,7 @@ defineExpose({
   <div>
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] truncate"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>

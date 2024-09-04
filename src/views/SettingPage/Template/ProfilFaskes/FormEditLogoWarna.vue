@@ -1,30 +1,106 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomColorPicker from "@/components/Base/CustomColorPicker.vue";
+import CustomDragDrop from "@/components/Base/CustomDragDrop.vue";
 import CustomUpload from "@/components/Base/CustomUpload.vue";
 import { ref } from 'vue';
+import GreenCard from "../GreenCard.vue";
+import { PhHandTap } from "@phosphor-icons/vue";
+import { useSettingStore } from '@/stores/setting';
+import { computed } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
-// Definisikan warna berdasarkan gambar
-const colors = ref([
-	{ name: 'Color 1', value: '#E57373' },
-	{ name: 'Color 2', value: '#EF5350' },
-	{ name: 'Color 3', value: '#FFEB3B' },
-	{ name: 'Color 4', value: '#81C784' },
-	{ name: 'Color 5', value: '#4DB6AC' },
-	{ name: 'Color 6', value: '#F06292' },
-	{ name: 'Color 7', value: '#F48FB1' },
-	{ name: 'Color 8', value: '#FFF59D' },
-	{ name: 'Color 9', value: '#AED581' },
-	{ name: 'Color 10', value: '#4DD0E1' }
-]);
+const props = defineProps({
+	profilFaskesResponse: {
+		type: Object,
+		required: true,
+	},
+	isEditLogoWarna: {
+		type: Boolean,
+		required: true,
+	},
+});
 
-const updateColor = (index: number, color: string) => {
-	colors.value[index].value = color;
+const emit = defineEmits(['update:isEditLogoWarna', 'update:afterEditLogoWarna']);
+
+
+const settingStore = useSettingStore()
+
+
+const schemaLogoWarna = computed(() =>
+	toTypedSchema(
+		yup.object({
+			logo: yup.string().required("Harus Mengupload Foto"),
+			bgWarna: yup.string()
+		})
+	)
+);
+
+const { errors: logoWarnaErrors, handleSubmit: handleSubmitLogoWarna, defineField: defineFieldLogoWarna, resetForm: resetLogoWarnaForm } = useForm({
+	validationSchema: schemaLogoWarna,
+	initialValues: {
+		logo: props.profilFaskesResponse.logo,
+		bgWarna: props.profilFaskesResponse.bgWarna
+	},
+});
+
+const [logo] = defineFieldLogoWarna("logo");
+const [bgWarna] = defineFieldLogoWarna("bgWarna");
+
+
+const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
+	try {
+		 console.log('bgWarna value before submission:', values.bgWarna);
+		const payload = {
+			logo: "TES234",
+			bgWarna: values.bgWarna,
+			code: props.profilFaskesResponse.code,
+			name: props.profilFaskesResponse.name,
+			address_uuid: props.profilFaskesResponse.addressUuid,
+			phone: props.profilFaskesResponse.phone,
+			email: props.profilFaskesResponse.email,
+			website: props.profilFaskesResponse.website,
+			url_gmaps: props.profilFaskesResponse.urlGmaps,
+			prov: props.profilFaskesResponse.address.prov,
+			city: props.profilFaskesResponse.address.city,
+			district: props.profilFaskesResponse.address.district,
+			village: props.profilFaskesResponse.address.village,
+			postal_code: props.profilFaskesResponse.address.postalCode,
+			full_address: props.profilFaskesResponse.address.fullAddress
+			
+		};
+		 console.log('Payload to be sent:', payload);
+		const response = await settingStore.putProfilFaskesApi(payload);
+		if (response?.status === 200) {
+			emit('update:isEditLogoWarna', false);
+			emit('update:afterEditLogoWarna', { ...props.profilFaskesResponse, ...payload });
+		} else {
+			console.error("Failed to update profile:");
+		}
+	} catch (error) {
+		console.error("Error during submission:", error);
+	}
+})
+
+const resetForm = () => {
+    resetLogoWarnaForm({
+		values: {
+			logo: '',
+			bgWarna: '#14B8A6'
+        },
+    });
 };
+
+
+
 </script>
 
 <template>
-	<div>
+	<GreenCard class="mb-4" cardHeading="Logo & Warna" hr-enable-custom-class showButton labelButton="Batal Edit"
+		:button-click-handler="() => emit('update:isEditLogoWarna', false)" outlined borderColor="border-adameds-300"
+		textColor="text-adameds-300">
 		<!-- Sebelum tulisan Warna Tema  -->
 		<div class="flex w-full">
 			<!-- Bagian Konten Kiri -->
@@ -50,20 +126,17 @@ const updateColor = (index: number, color: string) => {
 			</div>
 
 			<!-- Gambar -->
-			<div class="flex flex-col items-end justify-end w-1/2">
+			<div class="flex flex-col items-end justify-end w-2/5 ">
 				<div class="flex flex-col justify-center w-full">
-					<div class="text-lg font-bold text-center text-adameds-300">Preview Logo</div>
-					<div class="bg-white border-dashed border-[1px] rounded-lg ">
-						<CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false"
-							:show-cancel-button="false" class="border-none bg-adameds-300" :maxFileSize="1000000"
-							name="demo[]" url="/api/upload" />
-					</div>
+					<div class="font-bold text-center text-normalt- text-adameds-300">Preview Logo</div>
+					<CustomDragDrop v-model="logo" :allowed-file-types="['image/png']" class="bg-white "/>
+
 				</div>
 			</div>
 		</div>
 
 		<!-- Setelah Gambar -->
-		<div class="flex items-center justify-between mt-8">
+		<div class="flex items-center justify-between mt-5">
 			<div class="">
 				<div class="text-sm font-semibold font-poppins">Warna Tema</div>
 				<div class="text-SM text-[#858D9D]">Warna yang dipilih akan mengubah seluruh tema warna LIS.</div>
@@ -76,33 +149,19 @@ const updateColor = (index: number, color: string) => {
 				<div class="flex flex-col">
 					<!-- Color Baris atas -->
 					<div class="flex gap-x-2">
-						<div v-for="(color, index) in colors.slice(0, 5)" :key="index" class="flex items-center">
-							<CustomColorPicker v-model="color.value"
-								@change="(newColor) => updateColor(index, newColor)" />
-						</div>
-					</div>
-					<!-- Color Baris Bawah	 -->
-					<div class="flex mt-1 gap-x-2">
-						<div v-for="(color, index) in colors.slice(5, 10)" :key="index" class="flex items-center">
-							<CustomColorPicker v-model="color.value"
-								@change="(newColor) => updateColor(index + 5, newColor)" />
-						</div>
-					</div>
-				</div>
-
-				<div class="">
-					<CustomButton icon="PhCheck" fluid class="w-24 rounded-md h-14" />
-				</div>
-
-				<!-- Eyedrop -->
-				<div class="flex items-start justify-end w-24 border-[#858D9D] rounded-md border-[1px] h-14 bg-white">
-					<div class="p-2">
-						<PhEyedropper :size="18" color="#858d9d" weight="fill" />
+						<CustomColorPicker icon="PhHandTap" showIcon v-model="bgWarna"/>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+
+		<hr class="border-[#D9DCE1] border-1 mt-5" />
+		<div class="flex items-end justify-end gap-3 py-2.5">
+			<CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
+				borderColor="border-2 border-[#9DA4B1]" @click="resetForm" />
+			<CustomButton label="Simpan" @click="onSubmitLogoWarna" />
+		</div>
+	</GreenCard>
 </template>
 
 <style lang="scss" scoped></style>

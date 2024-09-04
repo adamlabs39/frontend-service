@@ -78,6 +78,7 @@ function closeDialog() {
             class="w-3/4"
           />
         </div>
+        <CustomSelect label="Part Of" place-holder="Pilih Part Of" />
         <hr />
         <div class="flex items-end gap-2.5">
           <CustomSwitch v-model="status" label="Status" />

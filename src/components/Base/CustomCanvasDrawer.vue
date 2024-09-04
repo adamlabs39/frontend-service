@@ -1,0 +1,529 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import CustomButton from "./CustomButton.vue";
+import CustomTextArea from "./CustomTextArea.vue";
+import CustomAccordion from "./CustomAccordion.vue";
+
+const props = defineProps({
+  header: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: String,
+    required: true,
+  },
+});
+
+const canvas = ref<HTMLCanvasElement | null>(null);
+const ctx = ref<CanvasRenderingContext2D | null>(null);
+const canvas2 = ref<HTMLCanvasElement | null>(null);
+const ctx2 = ref<CanvasRenderingContext2D | null>(null);
+
+const painting = ref<boolean>(false);
+const textMode = ref(false);
+
+const colors = ref("e9594c");
+const lineWidth = ref(5);
+const isStartPainting = ref(false);
+const selectedTool = ref("pencil");
+
+const startX = ref(0);
+const startY = ref(0);
+const currentRect = ref<any>({});
+
+const addText = (e: MouseEvent) => {
+  if (!textMode) return;
+
+  const rect = canvas.value!.getBoundingClientRect();
+
+  const text = prompt("Enter the text:");
+  if (text) {
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    ctx.value!.font = `20px Arial`;
+    ctx.value!.fillText(text, x, y);
+  }
+  finishedPainting(e);
+};
+
+const insertArrow = (e: MouseEvent) => {
+  if (!painting.value) return;
+
+  const rect = canvas.value!.getBoundingClientRect();
+
+  ctx.value!.beginPath();
+  drawArrow(ctx.value, e.clientX - rect.left, e.clientY - rect.top, "N");
+  ctx.value!.stroke();
+};
+
+const drawArrow = (ctx: any, startX: any, startY: any, direction: any) => {
+  ctx.beginPath();
+  const arrowSize = 20; // Ukuran kepala panah
+  const arrowLength = 40; // Panjang panah
+
+  switch (direction) {
+    case "N": // Utara
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX, startY - arrowLength); // Garis utama
+      ctx.lineTo(startX - arrowSize, startY - arrowLength + arrowSize); // Kepala panah kiri
+      ctx.moveTo(startX, startY - arrowLength);
+      ctx.lineTo(startX + arrowSize, startY - arrowLength + arrowSize); // Kepala panah kanan
+      ctx.moveTo(startX - 20, startY - arrowLength);
+      ctx.lineTo(startX + 20, startY - arrowLength);
+      break;
+
+    case "NE": // Timur Laut
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX + arrowLength, startY - arrowLength); // Garis utama
+      ctx.lineTo(
+        startX + arrowLength - arrowSize,
+        startY - arrowLength + arrowSize
+      ); // Kepala panah kanan
+      ctx.moveTo(startX + arrowLength, startY - arrowLength);
+      ctx.lineTo(
+        startX + arrowLength - arrowSize,
+        startY - arrowLength - arrowSize
+      ); // Kepala panah kiri
+      break;
+
+    case "E": // Timur
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX + arrowLength, startY); // Garis utama
+      ctx.lineTo(startX + arrowLength - arrowSize, startY - arrowSize); // Kepala panah atas
+      ctx.moveTo(startX + arrowLength, startY);
+      ctx.lineTo(startX + arrowLength - arrowSize, startY + arrowSize); // Kepala panah bawah
+      break;
+
+    case "SE": // Tenggara
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX + arrowLength, startY + arrowLength); // Garis utama
+      ctx.lineTo(
+        startX + arrowLength - arrowSize,
+        startY + arrowLength - arrowSize
+      ); // Kepala panah kanan
+      ctx.moveTo(startX + arrowLength, startY + arrowLength);
+      ctx.lineTo(
+        startX + arrowLength - arrowSize,
+        startY + arrowLength + arrowSize
+      ); // Kepala panah kiri
+      break;
+
+    case "S": // Selatan
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX, startY + arrowLength); // Garis utama
+      ctx.lineTo(startX - arrowSize, startY + arrowLength - arrowSize); // Kepala panah kiri
+      ctx.moveTo(startX, startY + arrowLength);
+      ctx.lineTo(startX + arrowSize, startY + arrowLength - arrowSize); // Kepala panah kanan
+      break;
+
+    case "SW": // Barat Daya
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX - arrowLength, startY + arrowLength); // Garis utama
+      ctx.lineTo(
+        startX - arrowLength + arrowSize,
+        startY + arrowLength - arrowSize
+      ); // Kepala panah kiri
+      ctx.moveTo(startX - arrowLength, startY + arrowLength);
+      ctx.lineTo(
+        startX - arrowLength + arrowSize,
+        startY + arrowLength + arrowSize
+      ); // Kepala panah kanan
+      break;
+
+    case "W": // Barat
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX - arrowLength, startY); // Garis utama
+      ctx.lineTo(startX - arrowLength + arrowSize, startY - arrowSize); // Kepala panah atas
+      ctx.moveTo(startX - arrowLength, startY);
+      ctx.lineTo(startX - arrowLength + arrowSize, startY + arrowSize); // Kepala panah bawah
+      break;
+
+    case "NW": // Barat Laut
+      ctx.moveTo(startX, startY); // Titik tengah
+      ctx.lineTo(startX - arrowLength, startY - arrowLength); // Garis utama
+      ctx.lineTo(
+        startX - arrowLength + arrowSize,
+        startY - arrowLength + arrowSize
+      ); // Kepala panah kiri
+      ctx.moveTo(startX - arrowLength, startY - arrowLength);
+      ctx.lineTo(
+        startX - arrowLength + arrowSize,
+        startY - arrowLength - arrowSize
+      ); // Kepala panah kanan
+      break;
+  }
+
+  ctx.stroke();
+
+  // ctx.beginPath();
+  // const detailSize = 20; // Ukuran detail di ujung panah
+
+  // switch (direction) {
+  //   case "N":
+  //     ctx.moveTo(startX - detailSize, startY - arrowLength);
+  //     ctx.lineTo(startX + detailSize, startY - arrowLength);
+  //     break;
+  //   case "NE":
+  //     ctx.moveTo(
+  //       startX + arrowLength - arrowSize,
+  //       startY - arrowLength + arrowSize
+  //     );
+  //     ctx.lineTo(
+  //       startX + arrowLength - arrowSize,
+  //       startY - arrowLength - detailSize
+  //     );
+  //     break;
+  //   case "E":
+  //     ctx.moveTo(startX + arrowLength - arrowSize, startY - detailSize);
+  //     ctx.lineTo(startX + arrowLength - arrowSize, startY + detailSize);
+  //     break;
+  //   case "SE":
+  //     ctx.moveTo(
+  //       startX + arrowLength - arrowSize,
+  //       startY + arrowLength - arrowSize
+  //     );
+  //     ctx.lineTo(
+  //       startX + arrowLength - detailSize,
+  //       startY + arrowLength - arrowSize
+  //     );
+  //     break;
+  //   case "S":
+  //     ctx.moveTo(startX - detailSize, startY + arrowLength - arrowSize);
+  //     ctx.lineTo(startX + detailSize, startY + arrowLength - arrowSize);
+  //     break;
+  //   case "SW":
+  //     ctx.moveTo(
+  //       startX - arrowLength + arrowSize,
+  //       startY + arrowLength - arrowSize
+  //     );
+  //     ctx.lineTo(
+  //       startX - arrowLength + detailSize,
+  //       startY + arrowLength - arrowSize
+  //     );
+  //     break;
+  //   case "W":
+  //     ctx.moveTo(startX - arrowLength + arrowSize, startY - detailSize);
+  //     ctx.lineTo(startX - arrowLength + arrowSize, startY + detailSize);
+  //     break;
+  //   case "NW":
+  //     ctx.moveTo(
+  //       startX - arrowLength + arrowSize,
+  //       startY - arrowLength + arrowSize
+  //     );
+  //     ctx.lineTo(
+  //       startX - arrowLength + arrowSize,
+  //       startY - arrowLength + detailSize
+  //     );
+  //     break;
+  // }
+
+  // ctx.stroke();
+};
+
+const clearCanvas = () => {
+  ctx.value!.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
+};
+
+const startPainting = (e: MouseEvent) => {
+  if (textMode.value) return;
+  if (selectedTool.value == "eraser") {
+    ctx.value!.globalCompositeOperation = "destination-out";
+  } else {
+    ctx.value!.globalCompositeOperation = "source-over";
+  }
+  painting.value = true;
+  ctx.value!.strokeStyle = `#${colors.value}`;
+
+  startX.value = e.offsetX;
+  startY.value = e.offsetY;
+  currentRect.value = { x: startX, y: startY, width: 0, height: 0 };
+};
+
+const finishedPainting = (e: MouseEvent) => {
+  ctx.value!.beginPath();
+  if (selectedTool.value == "line" && isStartPainting.value) {
+    ctx.value!.moveTo(startX.value, startY.value);
+    ctx.value!.lineTo(e.offsetX, e.offsetY);
+  } else if (selectedTool.value == "circle" && isStartPainting.value) {
+    const radius = Math.sqrt(
+      (e.offsetX - startX.value) ** 2 + (e.offsetY - startY.value) ** 2
+    );
+    ctx.value!.arc(startX.value, startY.value, radius, 0, Math.PI * 2);
+  } else if (selectedTool.value == "square" && isStartPainting.value) {
+    currentRect.value.width = e.offsetX - startX.value;
+    currentRect.value.height = e.offsetY - startY.value;
+
+    // Draw the current rectangle
+    ctx.value!.rect(
+      currentRect.value.x,
+      currentRect.value.y,
+      currentRect.value.width,
+      currentRect.value.height
+    );
+  }
+  ctx.value!.stroke();
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  painting.value = false;
+  ctx.value!.beginPath();
+};
+
+const draw = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    (selectedTool.value != "pencil" && selectedTool.value != "eraser")
+  )
+    return;
+
+  const rect = canvas.value!.getBoundingClientRect();
+
+  ctx.value!.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+  ctx.value!.stroke();
+
+  ctx.value!.beginPath();
+  ctx.value!.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+  ctx.value!.stroke();
+};
+
+const drawLine = (e: MouseEvent) => {
+  if (!painting.value || !isStartPainting.value || selectedTool.value != "line")
+    return;
+
+  // Bersihkan canvas
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Gambar garis dari titik awal ke titik akhir saat ini
+  ctx2.value!.beginPath();
+  ctx2.value!.moveTo(startX.value, startY.value);
+  ctx2.value!.lineTo(e.offsetX, e.offsetY);
+  ctx2.value!.stroke();
+};
+
+const drawCircle = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    selectedTool.value != "circle"
+  )
+    return;
+
+  const radius = Math.sqrt(
+    (e.offsetX - startX.value) ** 2 + (e.offsetY - startY.value) ** 2
+  );
+
+  // Bersihkan canvas
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Gambar garis dari titik awal ke titik akhir saat ini
+  ctx2.value!.beginPath();
+  ctx2.value!.arc(startX.value, startY.value, radius, 0, Math.PI * 2);
+  ctx2.value!.stroke();
+};
+
+const drawSquare = (e: MouseEvent) => {
+  if (
+    !painting.value ||
+    !isStartPainting.value ||
+    selectedTool.value != "square"
+  )
+    return;
+
+  currentRect.value.width = e.offsetX - startX.value;
+  currentRect.value.height = e.offsetY - startY.value;
+
+  // Clear the canvas and redraw everything
+  ctx2.value!.clearRect(0, 0, canvas2.value!.width, canvas2.value!.height);
+
+  // Draw the current rectangle
+  ctx2.value!.beginPath();
+  ctx2.value!.rect(
+    currentRect.value.x,
+    currentRect.value.y,
+    currentRect.value.width,
+    currentRect.value.height
+  );
+  ctx2.value!.stroke();
+};
+
+const drawing = (e: MouseEvent) => {
+  ctx.value!.lineCap = "round";
+  ctx.value!.strokeStyle = `#${colors.value}`;
+  ctx.value!.lineWidth = lineWidth.value;
+  ctx2.value!.lineCap = "round";
+  ctx2.value!.strokeStyle = `#${colors.value}`;
+  ctx2.value!.lineWidth = lineWidth.value;
+  switch (selectedTool.value) {
+    case "line":
+      drawLine(e);
+      break;
+    case "pencil":
+      draw(e);
+      break;
+    case "eraser":
+      draw(e);
+      break;
+    case "circle":
+      drawCircle(e);
+      break;
+    case "square":
+      drawSquare(e);
+      break;
+  }
+};
+
+const saveCanvas = () => {
+  const dataURL = canvas.value!.toDataURL("image/png");
+  console.log(dataURL);
+};
+
+const loadImage = () => {
+  const img = new Image();
+  img.src = "";
+  img.onload = () => {
+    ctx.value!.drawImage(img, 0, 0);
+  };
+};
+
+onMounted(() => {
+  const canvasElement = document.getElementById("canvas");
+  canvas.value = canvasElement as HTMLCanvasElement;
+  ctx.value = canvas.value!.getContext("2d");
+
+  const canvasElement2 = document.getElementById("canvas2");
+  canvas2.value = canvasElement2 as HTMLCanvasElement;
+  ctx2.value = canvas2.value!.getContext("2d");
+
+  // Set default stroke color
+  ctx.value!.strokeStyle = `#${colors.value}`;
+});
+
+const getSVG = (svg: string) => {
+  const imgUrl = new URL(
+    `../../assets/images/PhisicalExam/${svg}.svg`,
+    import.meta.url
+  ).href;
+  return imgUrl;
+};
+</script>
+
+<template>
+  <CustomAccordion headerClass="bg-adameds-50">
+    <template #header>{{ header }}</template>
+    <template #content>
+      <div class="flex pt-5">
+        <div class="relative h-[400px] w-[800px]">
+          <img :src="getSVG(type)" alt="" />
+          <canvas
+            height="400"
+            width="800"
+            id="canvas"
+            class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+          ></canvas>
+          <canvas
+            height="400"
+            width="800"
+            @mousedown="startPainting"
+            @mouseup="finishedPainting"
+            @mousemove="drawing"
+            id="canvas2"
+            class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+          ></canvas>
+        </div>
+        <div class="px-[30px] grow">
+          <CustomButton
+            @click="isStartPainting = true"
+            class="w-full mb-[10px]"
+            icon="PhPaintBrush"
+            label="Mulai Menggambar"
+            :disabled="isStartPainting"
+          />
+          <div v-if="isStartPainting">
+            <div
+              class="grid grid-cols-[13%_13%_13%_13%_13%_13%_22%] h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
+            >
+              <div
+                @click="selectedTool = 'pencil'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'pencil' }"
+              >
+                <PhPencilSimple :size="25" color="#000000" weight="fill" />
+              </div>
+              <div
+                @click="selectedTool = 'eraser'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'eraser' }"
+              >
+                <PhEraser :size="25" color="#000000" weight="fill" />
+              </div>
+              <div
+                @click="selectedTool = 'line'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'line' }"
+              >
+                <PhLineVertical :size="25" color="#000000" weight="bold" />
+              </div>
+              <div
+                @click="selectedTool = 'circle'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'circle' }"
+              >
+                <PhCircle :size="25" color="#000000" weight="bold" />
+              </div>
+              <div
+                @click="selectedTool = 'square'"
+                class="p-2 m-auto rounded-full cursor-pointer"
+                :class="{ 'bg-adameds-75': selectedTool == 'square' }"
+              >
+                <PhSquare :size="25" color="#000000" weight="bold" />
+              </div>
+              <ColorPicker class="m-auto" v-model="colors" />
+              <Slider
+                v-model="lineWidth"
+                :min="0"
+                :max="20"
+                class="h-[10px] my-auto"
+                :dt="{
+                  handleContentWidth: '25px',
+                  handleContentHeight: '25px',
+                  handleWidth: '25px',
+                  handleHeight: '25px',
+                  handleContentBackground: '#14b8a6',
+                }"
+                pt:root="rounded-lg"
+                pt:range="rounded-lg bg-adameds-300"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-[10px]">
+              <CustomButton
+                @click="clearCanvas"
+                class="w-full mb-[10px]"
+                label="Reset"
+                outlined
+                borderColor="border-grey-200"
+                textColor="text-grey-300"
+              />
+              <CustomButton
+                @click="
+                  saveCanvas(),
+                    (isStartPainting = false),
+                    (selectedTool = 'pencil')
+                "
+                class="w-full mb-[10px]"
+                label="Simpan"
+              />
+            </div>
+          </div>
+          <CustomTextArea
+            :label="'Keterangan ' + header"
+            class="mt-[30px]"
+            :placeholder="'Keterangan ' + header.toLowerCase()"
+            height="h-10"
+          />
+        </div>
+      </div>
+    </template>
+  </CustomAccordion>
+</template>

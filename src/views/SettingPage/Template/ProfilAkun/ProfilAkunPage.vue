@@ -1,210 +1,109 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import MainHeaderSetting from "../MainHeaderSetting.vue";
 import GreenCard from "../GreenCard.vue";
-import { onBeforeMount, onMounted, ref } from "vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import { useSettingStore } from "@/stores/setting";
+import NamaFoto from "./NamaFoto.vue";
+import EditNamaFoto from "./EditNamaFoto.vue"; // Pastikan import ini ada
+import { useSettingStore } from '@/stores/setting';
+import UsernamePassword from './UsernamePassword.vue';
+import EditUsernamePassword from './EditUsernamePassword.vue';
 
-
-const profileResponse = ref({
+const profilAkunResponse = ref({
     name: '',
     email: '',
     phone: '',
+    photo: '',
     role: {
         name: ''
     },
     username: '',
     password: '',
-    inventory_medis: '',
-    inventory_non_medis: ''
+    inventoryMedis: '',
+    inventoryNonMedis: '',
+    awalanGelar: '',
+    akhiranGelar: '',
 });
-
 
 const settingStore = useSettingStore();
-const isEditProfilAkun = ref(false);
 
-const cancelProfileAccount = () => {
-    isEditProfilAkun.value = !isEditProfilAkun.value;
+const fetchSettingProfilAkunData = async () => {
+    try {
+        const response = await settingStore.getProfilAkunApi();
+        if (response && response.payload) {
+            profilAkunResponse.value = response.payload;
+        } else {
+            console.error("Unexpected response Structure", response);
+        }
+    } catch (error) {
+        console.error("Failed to fetch data", error);
+    }
 };
 
-onBeforeMount(async () => {
-    const response = await settingStore.getApi();
-    profileResponse.value = response.payload;
+onMounted(() => {
+    fetchSettingProfilAkunData();
 });
 
 
+// Setelah Edit Data
+const handleProfileUpdate = (updatedProfile: any) => {
+    profilAkunResponse.value = updatedProfile;
+    fetchSettingProfilAkunData();
+};
+
+const isEditNamaFoto = ref(false);
+const isEditUsernamePassword = ref(false);
+
+const editNamaFoto = () => {
+    isEditNamaFoto.value = !isEditNamaFoto.value;
+};
+
+const editUsernamePassword = () => {
+    isEditUsernamePassword.value = !isEditUsernamePassword.value;
+};
 </script>
 
 <template>
-    <div class="bg-white rounded-lg shadow-md">
-        <MainHeaderSetting heading="Profil Saya" v-if="!isEditProfilAkun" showButton labelButton="Edit"
-            :buttonClickHandler="cancelProfileAccount" />
-        <MainHeaderSetting heading="Profil Saya" v-else />
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
+        <template #header>
+            <MainHeaderSetting heading="Profil Saya" />
+        </template>
+        <template #content>
+            <template v-if="!isEditNamaFoto">
+                <NamaFoto :profilAkunResponse="profilAkunResponse" :editHandler="editNamaFoto" />
+            </template>
+            <template v-else>
+                <EditNamaFoto :profilAkunResponse="profilAkunResponse" :isEditNamaFoto="isEditNamaFoto"
+                    @update:isEditNamaFoto="isEditNamaFoto = $event" @update:afterEditNamaFoto="handleProfileUpdate" />
+            </template>
 
-        <template v-if="!isEditProfilAkun">
-            <GreenCard cardHeading="Foto Profile dan Nama Lengkap" hrEnableCustomClass>
-                <div class="flex gap-10 ">
-                    <!-- Image -->
-                    <div class="w-[200px] h-[200px] flex justify-center items-center relative">
-                        <img src="../../../../assets/icons/profil.svg" alt="">
-                        <div class="w-[50px] absolute bottom-3 right-0">
-                            <img src="../../../../assets/icons/pencil_icon.svg" alt="">
 
-                        </div>
-                    </div>
-                    <div class="flex flex-col justify-evenly ">
-                        <div>
-                            <div class="col-span-2 text-sm underline">Nama Lengkap</div>
-                            <div class="font-bold text-heading">{{ profileResponse.name}}</div>
-                        </div>
+            <template v-if="!isEditUsernamePassword">
+                <UsernamePassword :profilAkunResponse="profilAkunResponse" :editHandler="editUsernamePassword" />
+            </template>
+            <template v-else>
+                <EditUsernamePassword :profilAkunResponse="profilAkunResponse" :isEditUsernamePassword="isEditUsernamePassword" @update:isEditUsernamePassword="isEditUsernamePassword = $event" @update:afterEditUsernamePassword="handleProfileUpdate"/>
+            </template>
 
-                        <div class="grid grid-cols-3">
-                            <div class="w-80">
-                                <div class="text-sm underline">Role</div>
-                                <div class="font-bold text-heading">{{ profileResponse.role.name}}</div>
-                            </div>
-                            <div class="grow">
-                                <div class="text-sm underline">Email</div>
-                                <div class="font-bold text-heading">{{ profileResponse.email}}</div>
-                            </div>
-                            <div class="w-[180px]">
-                                <div class="text-sm underline">No. Handphone</div>
-                                <div class="font-bold text-heading">{{ profileResponse.phone}}</div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </GreenCard>
-
-            <GreenCard cardHeading="Username & Password" hrEnableCustomClass>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="mb-4">
-                        <div class="text-sm underline">Username</div>
-                        <div class="font-bold text-heading">{{ profileResponse.username}}</div>
-                    </div>
-                    <div class="mb-4">
-                        <div class="text-sm underline">Password</div>
-                        <div class="font-bold text-heading">{{ profileResponse.password}}</div>
-                    </div>
-                </div>
-            </GreenCard>
             <GreenCard cardHeading="Hak Akses Verifikator" hrEnableCustomClass class="mb-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="mb-4">
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Medis
                         </div>
-                        <div class="font-bold text-heading">{{ profileResponse.inventory_medis}}</div>
+                        <div class="font-bold text-heading">{{ profilAkunResponse.inventoryMedis ? 'Penanggung Jawab' : '-'
+                            }}</div>
                     </div>
                     <div class="mb-4">
                         <div class="text-sm underline">
                             Verifikator Usulan Pengadaan Barang Non-Medis
                         </div>
-                        <div class="font-bold text-heading">{{ profileResponse.inventory_non_medis}}</div>
+                        <div class="font-bold text-heading">{{ profilAkunResponse.inventoryNonMedis ? 'Penanggung Jawab' :
+                            '-' }}</div>
                     </div>
                 </div>
             </GreenCard>
-
-
 
         </template>
-
-        <!-- Untuk Edit DATA -->
-        <template v-else>
-            <GreenCard cardHeading="Foto Profile dan Nama Lengkap" hrEnableCustomClass>
-                <div class="flex gap-10 ">
-                    <!-- Image -->
-                    <div class="w-[200px] h-[200px] flex justify-center items-center relative">
-                        <img src="../../../../assets/icons/profil.svg" alt="">
-                        <div class="w-[50px] absolute bottom-3 right-0">
-                            <img src="../../../../assets/icons/pencil_icon.svg" alt="">
-
-                        </div>
-                    </div>
-                    <div class="flex flex-col justify-evenly">
-                        <div class="flex gap-7">
-                            <div class="w-[150px]">
-                                <CustomTextfield label="Awalan/Gelar" class="border-[#C7CBD2]"
-                                    placeholder="Awalan/Gelar" />
-                            </div>
-                            <div class="grow">
-                                <CustomTextfield label="Nama Lengkap" class="w-full" placeholder="Nama Lengkap" />
-                            </div>
-                            <div class="w-[150px]">
-                                <CustomTextfield label="Akhiran/Gelar" class="w-full" placeholder="Akhiran/Gelar" />
-                            </div>
-                        </div>
-
-
-                        <div class="flex items-center gap-1">
-                            <div class="w-80">
-                                <div class="text-sm underline">Role</div>
-                                <div class="font-bold text-heading">Admin</div>
-                            </div>
-                            <div class="w-80 ">
-                                <div class="text-sm underline">Email</div>
-                                <div class="font-bold text-heading">{{ profileResponse.email }}</div>
-                            </div>
-                            <div class="w-[150px] ">
-                                <CustomTextfield label="No. Handphone" class="w-full" placeholder="08123xx"
-                                    appendIcon="PhXCircle" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </GreenCard>
-
-            <GreenCard cardHeading="Username & Password" hrEnableCustomClass>
-                <div class="grid grid-cols-2 gap-7">
-                    <div class="flex flex-col mt-2 ">
-                        <div class="text-sm underline">Username</div>
-                        <div class="font-bold text-heading">Username</div>
-                    </div>
-                    <div class="mb-4">
-
-                        <CustomTextfield label="Password Lama" class="w-full" placeholder="************"
-                            appendIcon="PhEye" v-model=" profileResponse.name" />
-                    </div>
-                    <div class="mb-4">
-                        <CustomTextfield label="Password Baru" class="w-full" placeholder="************"
-                            appendIcon="PhEye" />
-                    </div>
-                    <div class="mb-4">
-
-                        <CustomTextfield label="Verify Password Baru" class="w-full" placeholder="************"
-                            appendIcon="PhEye" />
-                    </div>
-                </div>
-            </GreenCard>
-            <GreenCard cardHeading="Hak Akses Verifikator" hrEnableCustomClass class="mb-4">
-                <div class="grid grid-cols-2 gap-7">
-                    <div class="mb-4">
-                        <div class="text-sm underline">
-                            Verifikator Usulan Pengadaan Barang Medis
-                        </div>
-                        <div class="font-bold text-heading">Penanggung Jawab</div>
-                    </div>
-                    <div class="mb-4">
-                        <div class="text-sm underline">
-                            Verifikator Usulan Pengadaan Barang Non-Medis
-                        </div>
-                        <div class="font-bold text-heading">Penanggung Jawab</div>
-                    </div>
-                </div>
-            </GreenCard>
-            <hr class="border-[#D9DCE1] border-1 mt-5" />
-            <div class="flex items-end justify-end gap-3 p-5">
-                <CustomButton label="Batal" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                    borderColor="border-2 border-[#9DA4B1]" @click="cancelProfileAccount" />
-                <CustomButton label="Simpan"  @click="saveProfile"/>
-            </div>
-        </template>
-
-    </div>
+    </Card>
 </template>
-
-<style lang="scss" scoped></style>
