@@ -15,6 +15,7 @@ import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
 import BurnInput from "@/components/Base/BurnInput.vue";
+import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
 import OdontogramInput from "@/components/Base/OdontogramInput.vue";
 
 const props = defineProps({
@@ -98,6 +99,10 @@ const testCheckboxMulti = ref([]);
 const testCheckbox = ref(false);
 const testEditor = ref("");
 const testRadio = ref("");
+const medicalRecord = ref<any>();
+const openDialogRM = () => {
+  medicalRecord.value?.showDialogRM()
+}
 </script>
 <template>
   <div>
@@ -199,5 +204,7 @@ const testRadio = ref("");
         :value="data"
       />
     </div>
+    <div @click="openDialogRM">Show Dialog RM</div>
+    <MedicalRecord ref="medicalRecord" />
   </div>
 </template>
