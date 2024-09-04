@@ -15,6 +15,7 @@ import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
 import BurnInput from "@/components/Base/BurnInput.vue";
+import OdontogramInput from "@/components/Base/OdontogramInput.vue";
 
 const props = defineProps({
   filter: {
@@ -100,6 +101,7 @@ const testRadio = ref("");
 </script>
 <template>
   <div>
+    <OdontogramInput/>
     <BurnInput/>
     <CustomCanvasDrawer header="Kepala" type="Kepala" />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
