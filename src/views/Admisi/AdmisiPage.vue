@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import HeaderFilter from "./Layout/HeaderFilter.vue";
-import { onMounted, ref } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
-import type { MenuItem } from "primevue/menuitem";
 import RegisterForm from "./Layout/RegisterForm.vue";
+import NoData from "@/components/section/NoData.vue";
+
+const storeUtils = utilsStore();
 
 const pageType = ref("");
 const route = useRoute();
@@ -37,6 +41,9 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+  if (storeUtils.selectedRoom) {
+    changeSection("Daftar");
+  }
 });
 
 const itemsPasien = ref([
@@ -137,6 +144,10 @@ const selectedPatient = ref([]);
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
+
+const showPatientDetail = () => {
+  changeSection("Detail");
+};
 </script>
 
 <template>
@@ -162,6 +173,7 @@ const cancelReason = ref<string>();
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
+        @rowClick="showPatientDetail"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -316,19 +328,7 @@ const cancelReason = ref<string>();
           class="custom-checkbox"
         ></Column>
       </DataTable>
-      <div
-        v-else
-        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-      >
-        <div class="m-auto">
-          <img
-            src="../../assets/icons/no-data-icon.svg"
-            alt="no data"
-            class="mx-auto"
-          />
-          <div class="text-grey-200">No data available</div>
-        </div>
-      </div>
+      <NoData v-else />
     </template>
     <template #footer>
       <div class="flex justify-between">

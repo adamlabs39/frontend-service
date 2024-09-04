@@ -1,3 +1,60 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import TextArea from "@/components/Base/CustomTextArea.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomUpload from "@/components/Base/CustomUpload.vue";
+import PopUpDownload from "./Dashboard/Grafik/PopUpDownload.vue";
+// import NewColorPicker from "@/components/Base/newColorPicker.vue";
+
+const themeColor = ref('#3498db');
+
+function updateThemeColor(newColor: string) {
+  themeColor.value = newColor;
+  document.documentElement.style.setProperty('--primary-color', newColor);
+}
+
+const nameValue = ref("");
+const emailValue = ref("");
+const alamatValue = ref("");
+const autoResizeValue = ref("");
+
+const selectedHospital = ref();
+const hospital = ref([
+  { name: "Adisucipto ", code: "AD" },
+  { name: "Ahmad Basuki", code: "AB" },
+  { name: "Ciptomangunkusumo", code: "CM" },
+  { name: "Soekarno", code: "SO" },
+]);
+
+const numberValue = ref(0);
+
+// untuk chip
+const selectedChipValues = ref<string[]>([]);
+
+const testLog = (data: any) => {
+  console.log("Data", data);
+  console.log("Hospital data: ", selectedHospital.value);
+};
+
+const onChipSelected = (label: string) => {
+  if (selectedChipValues.value.includes(label)) {
+    selectedChipValues.value = selectedChipValues.value.filter(
+      (item) => item !== label
+    );
+  } else {
+    selectedChipValues.value.push(label);
+  }
+  console.log(selectedChipValues.value);
+};
+</script>
+
+
 <template>
   <div class="h-screen p-3 overflow-scroll">
     <!-- TextArea dengan variasi -->
@@ -158,53 +215,8 @@
 
 
     <PopUpDownload/>
+
+    <NewColorPicker @update:color="updateThemeColor" />
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import TextArea from "@/components/Base/CustomTextArea.vue";
-import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomChip from "@/components/Base/CustomChip.vue";
-import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
-import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomUpload from "@/components/Base/CustomUpload.vue";
-import PopUpDownload from "./Dashboard/Grafik/PopUpDownload.vue";
-
-const nameValue = ref("");
-const emailValue = ref("");
-const alamatValue = ref("");
-const autoResizeValue = ref("");
-
-const selectedHospital = ref();
-const hospital = ref([
-  { name: "Adisucipto ", code: "AD" },
-  { name: "Ahmad Basuki", code: "AB" },
-  { name: "Ciptomangunkusumo", code: "CM" },
-  { name: "Soekarno", code: "SO" },
-]);
-
-const numberValue = ref(0);
-
-// untuk chip
-const selectedChipValues = ref<string[]>([]);
-
-const testLog = (data: any) => {
-  console.log("Data", data);
-  console.log("Hospital data: ", selectedHospital.value);
-};
-
-const onChipSelected = (label: string) => {
-  if (selectedChipValues.value.includes(label)) {
-    selectedChipValues.value = selectedChipValues.value.filter(
-      (item) => item !== label
-    );
-  } else {
-    selectedChipValues.value.push(label);
-  }
-  console.log(selectedChipValues.value);
-};
-</script>

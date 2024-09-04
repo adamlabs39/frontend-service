@@ -2,104 +2,29 @@
 import { ref, onMounted } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import Ruangan from "./Ruangan.vue";
 import Tindakan from "./Tindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DetailTarifTindakan from "./DetailTarifTindakan.vue";
 import DetailTarifRuangan from "./DetailTarifRuangan.vue";
+import HeaderFilter from "../Layout/HeaderFilter.vue";
 
-const value = ref("0");
+const selectedTab = ref("0");
+const handleSelectedTab = (newTab: any) => {
+  selectedTab.value = newTab;
+};
 const testDialog = ref(false);
 </script>
 
 <template>
-  <Card
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
-    class=""
-  >
+  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
     <template #header>
-      <Header title="Tarif" :filter="false" :search="false">
-      <template #header>
-        <div class="flex flex-row items-center justify-end gap-2">
-          <CustomButton
-            label="TINDAKAN"
-            class="w-[320px]"
-            :text-color="value === '0' ? 'text-white' : 'text-adameds-300'"
-            :border-color="value === '0' ? 'border-none' : 'border-adameds-300'"
-            :class="value === '0' ? 'bg-adameds-300' : 'bg-white'"
-            @click="value = '0'"
-            :outlined="value !== '0'"
-          />
-          <CustomButton
-            label="RUANGAN"
-            class="w-[320px]"
-            :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
-            :border-color="value === '1' ? 'border-none' : 'border-adameds-300'"
-            :class="value === '1' ? 'bg-adameds-300' : 'bg-white'"
-            @click="value = '1'"
-            :outlined="value !== '1'"
-          />
-          <CustomButton label="Tarif" icon="PhPlus" @click="testDialog = true"/>
-          <CustomDialog
-          :full-screen="true"
-          v-model:visible="testDialog"
-          headerBg="bg-adameds-300"
-        >
-          <template #header>Tambah Tarif</template>
-          <template #body>
-            <div v-if="value === '0'" ><DetailTarifTindakan/></div>
-            <div v-if="value==='1'"><DetailTarifRuangan/></div>
-          </template>
-          <template #footer>
-            <div class="w-full">
-              <hr class="-mx-5 border-grey-200" />
-              <div class="mt-5 flex justify-end gap-2.5">
-                <CustomButton label="Batal" border-color="border-grey-200"  background-color="bg-white" text-color="text-grey-300" > </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
-              </div>
-            </div>
-          </template>
-        </CustomDialog>
-
-        </div>
-      </template>
-      <template #content>
-        <div class="flex justify-between gap-2.5">
-          <CustomSelect
-            :is-loading="false"
-            label="Cari Tarif"
-            place-holder="Cari Tarif"
-            class="grow"
-          />
-          <CustomSelect
-            :is-loading="false"
-            label="Unit Pelayanan"
-            place-holder="Pilih Unit Pelayanan"
-          />
-          <CustomSelect
-            :is-loading="false"
-            label="Metode Pembayaran"
-            place-holder="Pilih Metode Pembayaran"
-          />
-          <div class="flex justify-between items-end gap-2.5">
-            <CustomButton icon="PhMagnifyingGlass" label="Cari" @click="" />
-            <CustomButton
-              label="Reset"
-              @click=""
-              border-color="border-adameds-300"
-              background-color="bg-white"
-              text-color="text-adameds-300"
-            />
-          </div>
-        </div>
-      </template>
-    </Header>
+      <HeaderFilter page-type="tarif" @tambah-data="testDialog = true" @selected-tab="handleSelectedTab" />
     </template>
     <template #content>
-      <Tabs v-model:value="value" >
+      <Tabs v-model:value="selectedTab">
         <TabPanels>
           <TabPanel value="0">
             <Tindakan />
@@ -109,10 +34,31 @@ const testDialog = ref(false);
           </TabPanel>
         </TabPanels>
       </Tabs>
+      <CustomDialog :full-screen="true" v-model:visible="testDialog" headerBg="bg-adameds-300">
+        <template #header>Tambah Tarif</template>
+        <template #body>
+          <div v-if="selectedTab === '0'">
+            <DetailTarifTindakan />
+          </div>
+          <div v-if="selectedTab === '1'">
+            <DetailTarifRuangan />
+          </div>
+        </template>
+        <template #footer>
+          <div class="w-full">
+            <hr class="-mx-5 border-grey-200" />
+            <div class="mt-5 flex justify-end gap-2.5">
+              <CustomButton label="Batal" border-color="border-grey-200" background-color="bg-white"
+                text-color="text-grey-300">
+              </CustomButton>
+              <CustomButton label="Simpan"> </CustomButton>
+            </div>
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer>
       <Footer />
     </template>
   </Card>
 </template>
-

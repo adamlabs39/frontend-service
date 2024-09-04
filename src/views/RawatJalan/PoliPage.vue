@@ -1,4 +1,4 @@
-  <script setup lang="ts">
+<script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
 import { useIndexStore } from "@/stores";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -11,6 +11,10 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
+import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
+import CustomRadio from "../../components/Base/CustomRadio.vue";
+import BurnInput from "@/components/Base/BurnInput.vue";
 
 const props = defineProps({
   filter: {
@@ -40,7 +44,6 @@ const schema = toTypedSchema(
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
-  
   validationSchema: schema,
 });
 
@@ -84,7 +87,7 @@ const testDialog = ref(false);
 const dataBreadHome = ref({ label: "Electronics", home: true });
 const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
 
-console.log(dataApi.value)
+console.log(dataApi.value);
 
 const testRef = ref<any>(null);
 const testRefFunction = () => {
@@ -92,9 +95,13 @@ const testRefFunction = () => {
 };
 const testCheckboxMulti = ref([]);
 const testCheckbox = ref(false);
+const testEditor = ref("");
+const testRadio = ref("");
 </script>
 <template>
   <div>
+    <BurnInput/>
+    <CustomCanvasDrawer header="Kepala" type="Kepala" />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
@@ -178,5 +185,17 @@ const testCheckbox = ref(false);
     </div>
     {{ testCheckbox }}
     <CustomCheckbox v-model="testCheckbox" endText="Masuk" value="3" />
+    {{ testEditor }}
+    <div>
+      <CustomCkEditor v-model="testEditor" />
+    </div>
+    <div class="grid grid-cols-2">
+      <CustomRadio
+        v-for="data in ['Option 1', 'Option 2']"
+        v-model="testRadio"
+        :sideLabel="data"
+        :value="data"
+      />
+    </div>
   </div>
 </template>

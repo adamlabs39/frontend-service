@@ -12,7 +12,23 @@ const props = defineProps({
   },
   sideLabel: {
     type: String,
-    default: "",
+    default: "Tidak",
+  },
+  sideLabelTrue: {
+    type: String,
+    default: "Iya",
+  },
+  sideLabelColor: {
+    type: String,
+    default: "text-grey-300",
+  },
+  sideLabelColorTrue: {
+    type: String,
+    default: "text-black",
+  },
+  leftLabel: {
+    type: Boolean,
+    default: false,
   },
   bgSwitch: {
     type: String,
@@ -40,18 +56,11 @@ const props = defineProps({
   },
 });
 
-// const checked = ref(props.modelValue);
 const checked = computed({
   get: () => props.modelValue,
   set: (value: Boolean) => emit("update:modelValue", value),
 });
 const emit = defineEmits(["update:modelValue", "change"]);
-
-// const onChange = (event: any) => {
-//   if (!event) return;
-//   emit("update:modelValue", event.target.checked);
-//   emit("change", event.target.checked);
-// };
 </script>
 <template>
   <div class="flex flex-col">
@@ -68,7 +77,7 @@ const emit = defineEmits(["update:modelValue", "change"]);
         :disabled="disabled"
         fluid
         :invalid="invalid"
-        class=""
+        :class="{ 'order-2': leftLabel }"
         :dt="{
           width: '48px',
           height: '28px',
@@ -81,10 +90,13 @@ const emit = defineEmits(["update:modelValue", "change"]);
       />
       <div
         v-if="sideLabel"
-        class="mt-1 ml-[10px] text-SM"
-        :class="[checked ? 'text-black' : 'text-grey-300']"
+        class="mt-1 text-SM"
+        :class="[
+          checked ? sideLabelColorTrue : sideLabelColor,
+          leftLabel ? 'mr-[10px] order-1' : 'ml-[10px]',
+        ]"
       >
-        {{ sideLabel }}
+        {{ checked ? sideLabelTrue : sideLabel }}
       </div>
     </div>
     <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>

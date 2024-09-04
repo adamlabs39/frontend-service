@@ -6,6 +6,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  initialState: {
+    type: String,
+    default: "null",
+  },
   openWithHeader: {
     type: Boolean,
     default: true,
@@ -25,11 +29,19 @@ const openAccordion = (data: string) => {
   }
 };
 
-const openedData = ref("0");
+const openedData = ref(props.initialState);
+
+const open = () => {
+  openedData.value = "0";
+};
+
+defineExpose({
+  open,
+});
 </script>
 
 <template>
-  <Accordion :value="openedData" @update:value="checkOpen">
+  <Accordion :value="openedData" @update:value="checkOpen" class="text-black">
     <AccordionPanel
       class="rounded-[10px]"
       :class="{ 'border-none': noBorder }"
@@ -49,18 +61,23 @@ const openedData = ref("0");
       </AccordionHeader>
       <AccordionContent class="" pt:content:class="rounded-b-[10px]">
         <slot name="content" />
+        <div
+          v-if="$slots.footer"
+          class="border-t-[1px] border-grey-200 -mx-[18px] my-5"
+        ></div>
+        <slot v-if="$slots.footer" name="footer" />
       </AccordionContent>
     </AccordionPanel>
     <template #collapseicon>
       <div @click="openAccordion('null')" class="cursor-pointer">
         <slot v-if="$slots.collapseIcon" name="collapseIcon" />
-        <PhCaretDown v-else :size="20" />
+        <PhCaretUp v-else :size="20" />
       </div>
     </template>
     <template #expandicon>
       <div @click="openAccordion('0')" class="cursor-pointer">
         <slot v-if="$slots.expandIcon" name="expandIcon" />
-        <PhCaretUp v-else :size="20" />
+        <PhCaretDown v-else :size="20" />
       </div>
     </template>
   </Accordion>

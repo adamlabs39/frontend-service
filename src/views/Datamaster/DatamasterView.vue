@@ -84,12 +84,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
     type: linkType.SECTION,
     child: [
       {
-        name: "Dokter",
+        name: "Praktisioner",
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/dokter',
       },
       {
-        name: "Nakes",
+        name: "Pegawai",
         icon: "Datamaster",
         type: linkType.LINK,url: '/datamaster/nakes',
       },

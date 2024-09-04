@@ -7,6 +7,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 
 const props = defineProps({
   isDialogVisible: {
@@ -18,26 +19,48 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama Snomed CT harus diisi"),
-    status: yup.bool(),
+    status: yup.bool().default(false),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    console.log("Adding new data:", values);
+const snomedCTStore=useSnomedCTStore();
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await snomedCTStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await snomedCTStore.postApi(values);
+      console.log("Data added successfully:", response);
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
 
 const [code] = defineField("code");
@@ -58,7 +81,11 @@ function closeDialog() {
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        ...props.editData,
+      });
+    } else if (!newValue) {
       resetForm();
     }
   }
@@ -76,9 +103,9 @@ watch(
       <div class="flex flex-col gap-5 mt-5">
         <div class="flex gap-2.5">
           <CustomTextfield
-            label="Kode"
+            label="Kode Snomed-CT"
             v-model="code"
-            placeholder="Kode"
+            placeholder="Kode Snomed-CT"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
           />

@@ -1,73 +1,100 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed, watch } from "vue";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
+import { downloadPdf } from "@/utils/PdfMake";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/Footer.vue";
+import Footer from "../Layout/FooterPaginator.vue";
 import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
-const products = ref<any[]>([]);
+import HeaderFilter from "../Layout/HeaderFilter.vue";
+import NoData from "@/components/section/NoData.vue";
 
-const router = useRouter();
+const snomedCTStore = useSnomedCTStore();
+const snomedPayload = ref<any[]>([]);
+const snomedProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+const loading = ref(true);
+
+const fetchSnomedData = async () => {
+  try {
+    const response = await snomedCTStore.getApi(
+      snomedProperties.value.page,
+      snomedProperties.value.page_size,
+      searchQuery.value
+    );
+    if (response && response.payload) {
+      snomedPayload.value = response.payload;
+      snomedProperties.value.total = response.properties.total;
+    } else {
+      snomedPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    snomedPayload.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+watch([searchQuery], fetchSnomedData);
 
 onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode: "123",
-      nama: "Amoxcilin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode: "123",
-      nama: "Aspirin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode: "123",
-      nama: "Human Insulin",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode: "123",
-      nama: "Acarbose",
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+  fetchSnomedData();
 });
 
-const dialogData = ref({
-  isVisible: false,
+const handlePage = (event: any) => {
+  snomedProperties.value.page = event.page + 1;
+  snomedProperties.value.page_size = event.rows;
+  fetchSnomedData();
+};
+
+const hasData = computed(
+  () => snomedPayload.value && snomedPayload.value.length > 0
+);
+
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
+
+// Dialog Configuration
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
+  data: null,
 });
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah Data",
-  };
-}
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+// Handle closing of the dialog
+const closeDialog = () => {
+  isTambahDataDialogVisible.value = false;
+  fetchSnomedData();
+};
 
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit Data",
-  };
-}
+const handleDelete = (dataItem: any) => {
+  const confirmed = confirm(
+    `Are you sure you want to delete ${dataItem.name}?`
+  );
 
-function handleClose() {
-  dialogData.value.isVisible = false;
-}
+  if (confirmed) {
+    loading.value = true;
+    snomedCTStore
+      .deleteApi(dataItem.uuid)
+      .then(() => {
+        fetchSnomedData();
+      })
+      .catch((error) => {
+        console.error("Failed to delete data", error);
+        loading.value = false;
+      });
+  }
+};
 </script>
 
 <template>
@@ -77,17 +104,22 @@ function handleClose() {
     class=""
   >
     <template #header>
-      <Header title="Snomed CT" class="mb-5">
-        <template #header>
-          <CustomButton label="Data" icon="PhPlus" @click="handleAdd" />
-        </template>
-      </Header>
+      <HeaderFilter
+        page-type="snomed-ct"
+         :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
     <template #content>
+      <div v-if="loading" class="flex items-center justify-center h-full">
+        Loading...
+      </div>
+      <NoData v-else-if="!hasData" />
       <DataTable
-        :value="products"
+        v-else
+        :value="snomedPayload"
         tableStyle="min-width: 50rem"
-        :pt="{ headerRow: 'bg-blue-500 text-white' }"
         stripedRows
         class="text-xs"
         scrollable
@@ -103,16 +135,11 @@ function handleClose() {
             </div>
           </template>
         </Column>
+        <Column field="code" header="Kode" headerClass="bg-adameds-50"></Column>
         <Column
-          field="kode"
-          header="Kode"
-          class="w-2/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="nama"
+          field="name"
           header="Nama Snomed CT"
-          class="w-3/12"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
@@ -123,31 +150,21 @@ function handleClose() {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
-                customClass="text-xs font-semibold h-6 flex"
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5 flex"
               />
             </div>
           </template>
         </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[120px]">
+        <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
               class="flex items-center justify-center w-full font-semibold text-SM"
@@ -160,30 +177,40 @@ function handleClose() {
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                class="h-6 w-[26px] p-0"
               >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="handleDelete(slotProps.data)"
               >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
       <TambahDataSnomedCTDialog
-        v-model:isDialogVisible="dialogData.isVisible"
-        :title="dialogData.title"
-        :method="dialogData.method"
-        @close="handleClose"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :editData="dialogConfig.data"
+        @close="closeDialog"
+        @data-updated="fetchSnomedData"
       />
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer
+        :rows="snomedProperties.page_size"
+        :totalRecords="snomedProperties.total"
+        @page="handlePage"
+        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+      />
     </template>
   </Card>
 </template>
