@@ -52,7 +52,7 @@ import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 // !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
-import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -339,10 +339,10 @@ const router = createRouter({
       component: TestComponentNaya,
     },
     {
-      path: "/component-adam",
+      path: "/component-adam-new",
       name: "component-adam",
       meta: { layout: DefaultLayout },
-      component: TestComponentAdam,
+      component: TestComponentAdamNew,
     },
   ],
 });

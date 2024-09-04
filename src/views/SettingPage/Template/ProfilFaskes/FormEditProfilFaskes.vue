@@ -199,62 +199,63 @@ onMounted(() => {
 			<!-- Kode Faskes dan Nama Faskes berada dalam dua kolom -->
 			<div class="flex gap-[30px] mb-4">
 				<div class="w-[200px]">
-					<CustomTextfield label="Kode Faskes" placeholder="Kode Faskes" v-model="code"/>
+					<CustomTextfield label="Kode Faskes" placeholder="Kode Faskes" v-model="code" :invalid="!!profilFaskesErrors.code"
+                            :invalidMessage="profilFaskesErrors.code"/>
 				</div>
 				<div class="grow">
-					<CustomTextfield label="Nama Faskes" class="w-full" placeholder="Nama Faskes" v-model="name"/>
+					<CustomTextfield label="Nama Faskes" class="w-full" placeholder="Nama Faskes" v-model="name" :invalid="!!profilFaskesErrors.name"
+                            :invalidMessage="profilFaskesErrors.name"/>
 				</div>
 			</div>
 
 			<!-- Alamat mengambil dua kolom penuh -->
 			<div class="mb-4">
-				<CustomTextArea label="Alamat" placeholder="Alamat" v-model:model-value="fullAddress" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
-						:disabled="false"/>
+				<CustomTextArea label="Alamat" placeholder="Alamat" v-model:model-value="fullAddress" :isLoading="false" 
+						:disabled="false" :invalid="!!profilFaskesErrors.fullAddress" :invalidMessage="profilFaskesErrors.fullAddress"/>
 			</div>
 
 			<div class="grid grid-cols-2 gap-[30px]">
 				<!-- Provinsi, Kabupaten, Kecamatan, dan Kelurahan berada dalam dua kolom -->
 				<div>
 					<CustomSelect label="Provinsi" v-model="selectedProvinceId" :options="provinces" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedProvinceId" :invalidMessage="profilFaskesErrors.selectedProvinceId"
 						:disabled="false" placeHolder="Pilih Provinsi" customSelectClass="border-[#C7CBD2]"  />
 				</div>
 				<div>
 					<CustomSelect label="Kabupaten" v-model="selectedRegencyId" :options="regencies" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedRegencyId" :invalidMessage="profilFaskesErrors.selectedRegencyId"
 						:disabled="false" placeHolder="Pilih Kabupaten" customSelectClass="border-[#C7CBD2]" />
 				</div>
 				<div>
 					<CustomSelect label="Kecamatan" v-model="selectedDistrictId" :options="districts" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedDistrictId" :invalidMessage="profilFaskesErrors.selectedDistrictId"
 						:disabled="false" placeHolder="Pilih Kecamatan" customSelectClass="border-[#C7CBD2]" />
 				</div>
 				<div>
 					<CustomSelect label="Kelurahan" v-model="selectedVillageId" :options="villages" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="false" invalidMessage="Wajib diisi"
+						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedVillageId" :invalidMessage="profilFaskesErrors.selectedVillageId"
 						:disabled="false" placeHolder="Pilih Kelurahan" customSelectClass="border-[#C7CBD2]" />
 				</div>
 
 				<div>
 					<CustomSelect label="Kode Pos" v-model="selectedPostalCodeId" :options="postalCodes"
-						optionValue="id" optionLabel="text" :isLoading="false" :invalid="false"
-						invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Kode Pos"
+						optionValue="id" optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedPostalCodeId" :invalidMessage="profilFaskesErrors.selectedPostalCodeId":disabled="false" placeHolder="Pilih Kode Pos"
 						customSelectClass="border-[#C7CBD2]" />
 				</div>
 				<div>
-					<CustomTextfield label="No. Telpon" class="w-full" placeholder="No. Telpon" v-model="phone"/>
+					<CustomTextfield label="No. Telpon" class="w-full" placeholder="No. Telpon" v-model="phone" :invalid="!!profilFaskesErrors.phone" :invalidMessage="profilFaskesErrors.phone"/>
 				</div>
 				<div>
-					<CustomTextfield label="Email" class="w-full" placeholder="ex: mail@Email.com"  v-model="email" />
+					<CustomTextfield label="Email" class="w-full" placeholder="ex: mail@Email.com"  v-model="email" :invalid="!!profilFaskesErrors.email" :invalidMessage="profilFaskesErrors.email" />
 				</div>
 				<div>
-					<CustomTextfield label="Website" class="w-full" placeholder="ex: www.website.com"  v-model="website"/>
+					<CustomTextfield label="Website" class="w-full" placeholder="ex: www.website.com"  v-model="website" :invalid="!!profilFaskesErrors.website" :invalidMessage="profilFaskesErrors.website"/>
 				</div>
 
 				<!-- Link Google Map mengambil dua kolom penuh -->
 				<div class="">
 					<CustomTextfield label="Link Google Map" class="w-full border-[#C7CBD2]"
-						placeholder="Link Google Map" v-model="urlGmaps" />
+						placeholder="Link Google Map" v-model="urlGmaps" :invalid="!!profilFaskesErrors.urlGmaps" :invalidMessage="profilFaskesErrors.urlGmaps" />
 				</div>
 			</div>
 			<hr class="border-[#D9DCE1] border-1 mt-5" />

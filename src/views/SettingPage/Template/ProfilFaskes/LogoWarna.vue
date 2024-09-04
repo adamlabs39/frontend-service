@@ -24,6 +24,8 @@ const defaultImage = ref(DefaultImage);
 const backgroundColor = computed(() => {
     return props.profilFaskesResponse.bgWarna ?   props.profilFaskesResponse.bgWarna :'#000000';
 });
+
+
 </script>
 
 <template>
@@ -71,7 +73,7 @@ const backgroundColor = computed(() => {
 				</ul>
 			</div>
 			<div>
-				<CustomColorPicker icon="PhHandTap" showIcon v-model:color="backgroundColor"/>
+				<CustomColorPicker icon="PhHandTap" showIcon v-model="backgroundColor" mode="view"/>
 			</div>
 
 		</div>

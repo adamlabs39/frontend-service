@@ -78,7 +78,7 @@ const emit = defineEmits(['click'])
     ]"
     :fluid="full"
     @click = "emit('click')"
-    pt:label:class="font-semibold text-normal"
+  pt:label:class="font-semibold text-normal"
   >
     <template #default>
       <slot />
