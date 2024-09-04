@@ -23,13 +23,42 @@ const drawTooth = (
   label: number,
   scale: number
 ) => {
+  const tooth1 = [
+    16, 17, 18, 26, 27, 28, 36, 37, 38, 46, 47, 48, 55, 65, 75, 85,
+  ];
+  const tooth2 = [14, 15, 24, 25, 34, 35, 44, 45, 54, 64, 84, 74];
+  const tooth3 = [
+    11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53, 61, 62, 63, 71,
+    72, 73, 81, 82, 83,
+  ];
   const toothWidth = 30 * scale;
-  const toothHeight = 40 * scale;
+  const toothHeight = 30 * scale;
+
   ctx.fillStyle = "#FFF";
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 2;
-  ctx.fillRect(x, y, toothWidth, toothHeight);
-  ctx.strokeRect(x, y, toothWidth, toothHeight);
+  // ctx.fillRect(x, y, toothWidth, toothHeight);
+  // ctx.strokeRect(x, y, toothWidth, toothHeight);
+  let img = new Image();
+  if (tooth1.includes(label)) {
+    img.src = new URL(
+      "@/assets/images/Odontogram/teeth1.svg",
+      import.meta.url
+    ).href;
+  } else if (tooth2.includes(label)) {
+    img.src = new URL(
+      "@/assets/images/Odontogram/teeth2.svg",
+      import.meta.url
+    ).href;
+  } else if (tooth3.includes(label)) {
+    img.src = new URL(
+      "@/assets/images/Odontogram/teeth3.svg",
+      import.meta.url
+    ).href;
+  }
+  img.onload = () => {
+    ctx.drawImage(img, x, y, toothWidth, toothHeight);
+  };
 
   // Simpan posisi gigi dan labelnya
   teethPositions.value.push({
@@ -41,17 +70,17 @@ const drawTooth = (
   });
 
   // Label the tooth
-  ctx.font = `${12 * scale}px Arial`;
+  ctx.font = `${10 * scale}px Arial`;
   ctx.fillStyle = "#000";
   ctx.fillText(
     label.toString(),
-    x + toothWidth / 2 - 10 * scale,
-    y + toothHeight / 2 + 5 * scale
+    x + toothWidth / 2 - 6 * scale,
+    y + toothHeight / 2 - 25 * scale
   );
 };
 
 const drawOdontogram = (ctx: CanvasRenderingContext2D, scale: number) => {
-  const startX = 20 * scale;
+  const startX = 10 * scale;
   const startY = 20 * scale;
 
   const upperTeeth = [
