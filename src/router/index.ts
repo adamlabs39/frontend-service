@@ -9,6 +9,8 @@ import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
 import SettingView from "@/views/SettingPage/SettingView.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
+import AntrianView from "@/views/Antrian/AntrianView.vue";
+import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -50,10 +52,23 @@ import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsent
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
 
+// NOTE Page Antrian
+import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
+import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
+import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
+import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
+import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+
+// NOTE Page Laboratorium
+import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
+import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
+
+
 // !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
-import TestComponentAdam from "@/views/TestComponentAdam.vue";
+import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
+import SuperAdminPage from "@/views/Datamaster/SuperAdmin/SuperAdminPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -235,6 +250,12 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: GeneralConsentPage },
       component: DatamasterView,
     },
+    {
+      path: "/datamaster/super-admin/odontogram-gigi",
+      name: "datamaster-super-admin-odontogram",
+      meta: { layout: SidebarLayout, page: SuperAdminPage },
+      component: DatamasterView,
+    },
 
     // NOTE Admisi
     {
@@ -338,6 +359,122 @@ const router = createRouter({
       component: AdmisiView,
     },
 
+    // NOTE Antrian
+    {
+      path: "/antrian",
+      name: "antrian",
+      redirect: '/antrian/konfigurasi/jadwal-dokter'
+    },
+    {
+      path: "/antrian/konfigurasi/jadwal-dokter",
+      name: "antrian-konfigurasi-jadwal-dokter",
+      meta: { layout: SidebarLayout, page: KonfigurasiJadwalPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/konfigurasi/layar-antrian",
+      name: "antrian-konfigurasi-layar-antrian",
+      meta: { layout: SidebarLayout, page: KonfigurasiLayarPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/data-antrian",
+      name: "antrian-data-antrian",
+      meta: { layout: SidebarLayout, page: DataAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/monitoring-antrian",
+      name: "antrian-monitoring-antrian",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/layar",
+      name: "antrian-layar",
+      meta: { layout: SidebarLayout, page: LayarAntrianPage },
+      component: AntrianView,
+    },
+    {
+      path: "/antrian/apm",
+      name: "antrian-apm",
+      meta: { layout: SidebarLayout, page: ApmPage },
+      component: AntrianView,
+    },
+    
+    // NOTE Laboratorium
+    {
+      path: "/laboratorium",
+      name: "laboratorium",
+      redirect: '/laboratorium/order-lab'
+    },
+    {
+      path: "/laboratorium/order-lab",
+      name: "laboratorium-order-lab",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/hasil-pemeriksaan",
+      name: "laboratorium-hasil-pemeriksaan",
+      meta: { layout: SidebarLayout, page: HasilPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/expertise",
+      name: "laboratorium-expertise",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/kategori-pemeriksaan",
+      name: "laboratorium-datamaster/kategori-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/kelompok-pemeriksaan",
+      name: "laboratorium-datamaster/kelompok-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/item-pemeriksaan",
+      name: "laboratorium-datamaster/item-pemeriksaan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/spesimen",
+      name: "laboratorium-datamaster/spesimen",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/datamaster/tarif-lab",
+      name: "laboratorium-datamaster/tarif-lab",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/kunjungan",
+      name: "laboratorium-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/waktu-tunggu",
+      name: "laboratorium-laporan-waktu-tunggu",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+    {
+      path: "/laboratorium/laporan/rekap-jumlah",
+      name: "laboratorium-laporan-rekap-jumlah",
+      meta: { layout: SidebarLayout, page: OrderPage },
+      component: LaboratoriumView,
+    },
+
     // NOTE Test Component
     {
       path: "/component-naya",
@@ -346,10 +483,10 @@ const router = createRouter({
       component: TestComponentNaya,
     },
     {
-      path: "/component-adam",
+      path: "/component-adam-new",
       name: "component-adam",
       meta: { layout: DefaultLayout },
-      component: TestComponentAdam,
+      component: TestComponentAdamNew,
     },
   ],
 });

@@ -44,7 +44,7 @@ function closeDialog() {
           place-holder="Tipe Pegawai"
           class="col-span-12"
         />
-        <div class="font-semibold text-MD col-span-12 -mb-5">
+        <div class="font-semibold text-normal col-span-12 -mb-5">
           Nama Lengkap Pegawai
         </div>
         <CustomSelect label="" place-holder="Gelar Awal" class="col-span-4" />

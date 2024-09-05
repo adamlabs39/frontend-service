@@ -60,7 +60,7 @@ const openDialog = (method: any, title: any, data: any = null) => {
 // Handle closing of the dialog
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
-}
+};
 
 // Toggle detail dialog visibility
 const handleRowSelect = (data: any) => {
@@ -76,14 +76,30 @@ const openPemeriksaanDialog = (data: any) => {
 </script>
 
 <template>
-  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
     <template #header>
-      <HeaderFilter page-type="praktisi" @tambah-data="openDialog('add', 'Tambah Data')" />
+      <HeaderFilter
+        page-type="praktisi"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
     <template #content>
-      <DataTable :value="products" tableStyle="min-width: 50rem" class="text-xs" selectionMode="single"
-        :metaKeySelection="metaKey" v-model:selection="selectedDokter" stripedRows @rowSelect="handleRowSelect"
-        scrollable scrollHeight="flex">
+      <DataTable
+        :value="products"
+        tableStyle="min-width: 50rem"
+        class="text-xs"
+        selectionMode="single"
+        :metaKeySelection="metaKey"
+        v-model:selection="selectedDokter"
+        stripedRows
+        @rowSelect="handleRowSelect"
+        scrollable
+        scrollHeight="flex"
+      >
         <Column headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center">No.</div>
@@ -94,11 +110,27 @@ const openPemeriksaanDialog = (data: any) => {
             </div>
           </template>
         </Column>
-        <Column field="code_bpjs" header="kode HFIS (BPJS)" headerClass="bg-adameds-50"></Column>
-        <Column field="SIP" header="Kode SIP" headerClass="bg-adameds-50"></Column>
+        <Column
+          field="code_bpjs"
+          header="kode HFIS (BPJS)"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="SIP"
+          header="Kode SIP"
+          headerClass="bg-adameds-50"
+        ></Column>
         <Column field="STR" header="STR" headerClass="bg-adameds-50"></Column>
-        <Column field="code_antrian" header="Kode Antrian" headerClass="bg-adameds-50"></Column>
-        <Column field="name_dokter" header="Nama Praktisi" headerClass="bg-adameds-50"></Column>
+        <Column
+          field="code_antrian"
+          header="Kode Antrian"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name_dokter"
+          header="Nama Praktisi"
+          headerClass="bg-adameds-50"
+        ></Column>
         <Column field="telepon" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full text-center font-semibold text-SM">
@@ -113,43 +145,62 @@ const openPemeriksaanDialog = (data: any) => {
         </Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class=" w-full text-center font-semibold text-SM">
-              Status
-            </div>
+            <div class="w-full text-center font-semibold text-SM">Status</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              <CustomChip :label="slotProps.data.status" :textColor="slotProps.data.status === 'AKTIF'
-                  ? 'text-white'
-                  : 'text-[#80868d]'
-                " :bgColor="slotProps.data.status === 'AKTIF'
+              <CustomChip
+                :label="slotProps.data.status"
+                :textColor="
+                  slotProps.data.status === 'AKTIF'
+                    ? 'text-white'
+                    : 'text-[#80868d]'
+                "
+                :bgColor="
+                  slotProps.data.status === 'AKTIF'
                     ? 'bg-adameds-300'
                     : 'bg-white'
-                  " :borderColor="slotProps.data.status === 'AKTIF'
+                "
+                :borderColor="
+                  slotProps.data.status === 'AKTIF'
                     ? 'border-none'
                     : 'border-[#80868d]'
-                  " :icon-color="slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                  " customClass="text-xs font-semibold h-5 flex" />
+                "
+                :icon-color="
+                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                "
+                customClass="text-xs font-semibold h-5 flex"
+              />
             </div>
           </template>
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">
-              Action
-            </div>
+            <div class="w-full text-center font-semibold text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data')">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data')"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-adameds-300 rounded-lg" class="h-6 w-[26px] p-0"
-                @click="openPemeriksaanDialog(true)">
+              <CustomButton
+                label=""
+                background-color="bg-adameds-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="openPemeriksaanDialog(true)"
+              >
                 <img src="@/assets/icons/dokter.svg" alt="" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg" class="h-6 w-[26px] p-0">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
@@ -157,9 +208,15 @@ const openPemeriksaanDialog = (data: any) => {
         </Column>
       </DataTable>
       <!-- Dialog for Tambah Data Dokter -->
-      <TambahDataDokter v-model:isDialogVisible="isTambahDataDialogVisible" :title="dialogConfig.title"
-        :method="dialogConfig.method" @close="closeDialog" />
-      <DetailDokterDialog v-model:isDialogVisible="isDetailDokterDialogVisible" />
+      <TambahDataDokter
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        @close="closeDialog"
+      />
+      <DetailDokterDialog
+        v-model:isDialogVisible="isDetailDokterDialogVisible"
+      />
       <PemeriksaanDialog v-model:isDialogVisible="isPemeriksaanDialogVisible" />
     </template>
 
@@ -167,5 +224,4 @@ const openPemeriksaanDialog = (data: any) => {
       <Footer />
     </template>
   </Card>
-
 </template>

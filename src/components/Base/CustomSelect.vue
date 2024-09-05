@@ -84,7 +84,7 @@ const showClear = computed(() => {
   <div class="">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
@@ -95,7 +95,7 @@ const showClear = computed(() => {
         class="rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -121,22 +121,33 @@ const showClear = computed(() => {
         :showClear="showClear"
         :placeholder="placeHolder"
         :disabled="disabled"
-        class="h-10 rounded-lg"
+        class="h-10 rounded-lg text-SM"
         :class="[
           prependIcon ? 'border-l-0 rounded-l-none' : '',
           invalid ? 'border-danger-300 text-danger-300' : '',
-          disabled ? 'border-grey-200 bg-grey-100 text-grey-300' : 'border-grey-400',
+          disabled
+            ? ' bg-grey-100 text-grey-300'
+            : '',
+          !invalid && !disabled ? 'text-white' : '',
         ]"
         :invalid="invalid"
         fluid
         :filter="showFilter"
         filterPlaceholder="Search"
         pt:pcFilterIconContainer:class="flex items-center"
-        pt:pcFilter:root:class="border-grey-400"
+        pt:pcFilter:root:class="text-black border-grey-200 text-black text-SM"
+        :dt="{
+          placeholderColor: invalid ? '#e9594c' :'#90969E',
+          color: invalid ? '#e9594c' :'#000000',
+          borderColor: invalid ? '#000000' : '#D0D5DD',
+          focusBorderColor:'#D0D5DD',
+          hoverBorderColor:'#D0D5DD'
+        }"
       >
         <template #dropdownicon>
           <PhCaretDown
             weight="fill"
+            class="text-grey-300"
             :class="{
               'text-red-500': invalid,
               'text-black': modelValue,
@@ -146,6 +157,6 @@ const showClear = computed(() => {
         </template>
       </Select>
     </InputGroup>
-    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>

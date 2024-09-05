@@ -48,7 +48,7 @@ const props = defineProps({
   },
   maxLength: {
     type: Number,
-    default: 8, 
+    default: 8,
   }
 });
 
@@ -75,8 +75,8 @@ defineExpose({
   <div>
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px] truncate"
-      :class="{ 'text-grey-300': disabled }"
+      class="block font-semibold mb-[5px] truncate text-normal"
+      :class="{ 'text-grey-200': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
@@ -87,7 +87,7 @@ defineExpose({
         class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -111,13 +111,17 @@ defineExpose({
         <InputText
           :type="type"
           v-model="value"
-          class="h-10 pt-1 rounded-lg"
+          class="h-10 pt-1 rounded-lg text-black text-SM"
           :class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
-            'border-grey-400': !disabled && !invalid,
+            'border-grey-200': !disabled && !invalid,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
+          }"
+          :dt="{
+            // placeholderColor: '#90969E',
+            placeholderColor: invalid ? '#e9594c' : '#90969E',
           }"
           :disabled="disabled"
           fluid
@@ -144,13 +148,13 @@ defineExpose({
         class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-400 text-adameds-300': !disabled && !invalid,
+          'border-grey-200 text-adameds-300': !disabled && !invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
         }"
       >
         <slot name="appendText" />
       </div>
     </div>
-    <small v-if="invalid" class="text-danger-300">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-danger-300 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>

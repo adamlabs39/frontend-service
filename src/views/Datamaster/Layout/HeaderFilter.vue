@@ -5,6 +5,9 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import type { MenuItem } from "primevue/menuitem";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+
 
 const props = defineProps({
   pageType: {
@@ -13,6 +16,14 @@ const props = defineProps({
   },
   valueSearch: {
     type: String,
+  },
+  isSuperAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  dataBreadCrumb: {
+    type: Array as PropType<MenuItem[]>,
+    default: () => [],
   },
 });
 
@@ -90,7 +101,16 @@ const selectedTab = ref("0");
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
           <CustomButton icon="PhArrowClockwise" class="mr-5" />
-          <span class="leading-10 text-adameds-300 text-heading">
+          <CustomBreadCrumb
+            v-if="isSuperAdmin"
+            :home="{
+              label: 'Super Admin',
+              home: true,
+            }"
+            :model="dataBreadCrumb"
+            class=""
+          />
+          <span v-else class="leading-10 text-adameds-300 text-heading">
             {{ pageLabel }}
           </span>
         </div>
@@ -125,8 +145,8 @@ const selectedTab = ref("0");
         <div class="flex items-end justify-between gap-5">
           <CustomTextfield
             v-model="valueSearch"
-            :label="`Cari ${pageLabel}`"
-            :placeholder="`Cari ${pageLabel}`"
+            :label="isSuperAdmin ? 'Pencarian' : `Cari ${pageLabel}`"
+            :placeholder="isSuperAdmin ? 'Cari Nama Keadaan Gigi' : `Cari ${pageLabel}`"
             class="grow"
             prependIcon="PhMagnifyingGlass"
 

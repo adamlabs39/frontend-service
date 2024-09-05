@@ -12,12 +12,14 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "User",
         icon: "Datamaster",
-        type: linkType.LINK, url: '/datamaster/user'
+        type: linkType.LINK,
+        url: "/datamaster/user",
       },
       {
         name: "Role",
         icon: "Datamaster",
-        type: linkType.LINK, url: '/datamaster/role'
+        type: linkType.LINK,
+        url: "/datamaster/role",
       },
     ],
   },
@@ -25,20 +27,21 @@ const sidebarBodyList = ref<SidebarBody[]>([
     name: "2",
     type: linkType.SECTION,
     child: [
-    {
+      {
         name: "Pegawai",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/nakes',
+        type: linkType.LINK,
+        url: "/datamaster/nakes",
       },
-    {
+      {
         name: "Praktisioner",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/dokter',
+        type: linkType.LINK,
+        url: "/datamaster/dokter",
       },
-      
     ],
   },
-  
+
   {
     name: "3",
     type: linkType.SECTION,
@@ -46,12 +49,14 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Ruangan",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/ruangan'
+        type: linkType.LINK,
+        url: "/datamaster/ruangan",
       },
       {
         name: "Kategori Ruangan",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/kategori-ruangan'
+        type: linkType.LINK,
+        url: "/datamaster/kategori-ruangan",
       },
     ],
   },
@@ -59,25 +64,29 @@ const sidebarBodyList = ref<SidebarBody[]>([
     name: "4",
     type: linkType.SECTION,
     child: [
-    {
+      {
         name: "Diagnosis (ICD 10)",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/diagnosis-icd10',
+        type: linkType.LINK,
+        url: "/datamaster/diagnosis-icd10",
       },
       {
         name: "ICD 9 CM",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/icd9-cm',
+        type: linkType.LINK,
+        url: "/datamaster/icd9-cm",
       },
       {
         name: "Snomed CT",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/snomed-ct',
+        type: linkType.LINK,
+        url: "/datamaster/snomed-ct",
       },
       {
         name: "LOINC",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/loinc',
+        type: linkType.LINK,
+        url: "/datamaster/loinc",
       },
     ],
   },
@@ -88,12 +97,14 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Tarif",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/tarif'
+        type: linkType.LINK,
+        url: "/datamaster/tarif",
       },
       {
         name: "Tindakan",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/tindakan',
+        type: linkType.LINK,
+        url: "/datamaster/tindakan",
       },
     ],
   },
@@ -102,40 +113,65 @@ const sidebarBodyList = ref<SidebarBody[]>([
     name: "6",
     type: linkType.SECTION,
     child: [
-    {
+      {
         name: "Faskes",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/faskes',
+        type: linkType.LINK,
+        url: "/datamaster/faskes",
       },
       {
         name: "Organisasi",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/organisasi',
+        type: linkType.LINK,
+        url: "/datamaster/organisasi",
       },
       {
         name: "Lokasi",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/lokasi',
+        type: linkType.LINK,
+        url: "/datamaster/lokasi",
       },
       {
         name: "Penjamin",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/penjamin',
+        type: linkType.LINK,
+        url: "/datamaster/penjamin",
       },
       {
         name: "Voucher",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/voucher',
-      },  
+        type: linkType.LINK,
+        url: "/datamaster/voucher",
+      },
       {
         name: "General Consent",
         icon: "Datamaster",
-        type: linkType.LINK,url: '/datamaster/general-consent',
+        type: linkType.LINK,
+        url: "/datamaster/general-consent",
+      },
+    ],
+  },
+  {
+    name: "7",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Super Admin",
+        icon: "Datamaster",
+        type: linkType.DROPDOWN,
+        child: [
+          {
+            name: "Odontogram Gigi",
+            icon: "Datamaster",
+            type: linkType.LINK,
+            url: "/datamaster/super-admin/odontogram-gigi",
+          },
+        ],
       },
     ],
   },
 ]);
-const filter = ref('')
+const filter = ref("");
 </script>
 
 <template>

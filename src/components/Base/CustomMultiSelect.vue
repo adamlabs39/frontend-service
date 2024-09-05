@@ -15,6 +15,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  prependIcon: {
+    type: String,
+    default: "",
+  },
   invalid: {
     type: Boolean,
     default: false,
@@ -94,61 +98,106 @@ const removeSelect = (data: any) => {
   <div class="">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
     </label>
-    <MultiSelect
-      v-model="value2"
-      :options="options"
-      :optionLabel="optionLabel"
-      :optionValue="optionValue"
-      fluid
-      :filter="showFilter"
-      :disabled="disabled"
-      :invalid="invalid"
-      display="chip"
-      :placeholder="placeholder"
-      :maxSelectedLabels="maxSelectedLabels"
-      class="h-10 rounded-lg"
-      :class="{
-        'border-danger-300 text-danger-300': invalid,
-        'border-grey-200 bg-grey-100 text-grey-300': disabled,
-        'border-grey-400': !disabled && !invalid,
-      }"
-    >
-      <template
-        v-if="
-          props.maxSelectedLabels
-            ? value2.length > props.maxSelectedLabels
-            : false
-        "
-        #value
+    <InputGroup>
+      <InputGroupAddon
+        v-if="prependIcon"
+        class="rounded-l-lg"
+        :class="{
+          'text-danger-300 border-danger-300': invalid,
+          'border-grey-200': !disabled && !invalid,
+          'border-grey-200 bg-grey-100': disabled,
+        }"
       >
-        {{ value2.length }} item dipilih
-      </template>
-      <template #chip="{ value }">
-        <Chip
-          class="h-6 rounded-[50px] px-[10px] text-SM font-bold  py-2"
-          removable
+        <component
+          :is="prependIcon"
+          weight="bold"
+          :size="22"
+          class="cursor-pointer"
           :class="{
-            'bg-grey-300 text-grey-400': disabled,
-            'bg-adameds-300 text-white': !disabled && !invalid,
+            'text-danger-300': invalid,
+            'text-grey-300': disabled,
+            'text-black': !disabled && !invalid,
           }"
+        ></component>
+      </InputGroupAddon>
+      <MultiSelect
+        v-model="value2"
+        :options="options"
+        :optionLabel="optionLabel"
+        :optionValue="optionValue"
+        fluid
+        :filter="showFilter"
+        :disabled="disabled"
+        :invalid="invalid"
+        display="chip"
+        :placeholder="placeholder"
+        :maxSelectedLabels="maxSelectedLabels"
+        filterPlaceholder="Search"
+        pt:pcFilterIconContainer:class="flex items-center"
+        pt:pcFilter:root:class="text-black border-grey-200 text-black text-SM"
+        class="h-10 rounded-lg text-SM text-black"
+        :class="{
+          'border-l-0 rounded-l-none': prependIcon,
+          'border-danger-300 text-danger-300': invalid,
+          'border-grey-200 bg-grey-100 text-grey-300': disabled,
+          'border-grey-200': !disabled && !invalid,
+        }"
+        :dt="{
+          placeholderColor: invalid ? '#e9594c' : '#90969E',
+          borderColor: invalid ? '#e9594c' : '#D0D5DD',
+          focusBorderColor: '#D0D5DD',
+          hoverBorderColor: '#D0D5DD',
+        }"
+      >
+        <template
+          v-if="
+            props.maxSelectedLabels
+              ? value2.length > props.maxSelectedLabels
+              : false
+          "
+          #value
         >
-          {{ optionValue ? value : value[optionLabel] }}
-          <template #removeicon>
-            <PhX
-              class="cursor-pointer"
-              :size="16"
-              weight="bold"
-              @click="removeSelect(value)"
-            />
-          </template>
-        </Chip>
-      </template>
-    </MultiSelect>
+          {{ value2.length }} item dipilih
+        </template>
+        <template #chip="{ value }">
+          <Chip
+            class="h-6 rounded-[50px] px-[10px] text-SM font-bold py-2"
+            removable
+            :class="{
+              'bg-grey-300 text-grey-400': disabled,
+              'bg-adameds-300 text-white': !disabled && !invalid,
+            }"
+          >
+            {{ optionValue ? value : value[optionLabel] }}
+            <template #removeicon>
+              <PhX
+                class="cursor-pointer"
+                :size="16"
+                weight="bold"
+                @click="removeSelect(value)"
+              />
+            </template>
+          </Chip>
+        </template>
+        <template #dropdownicon>
+          <PhCaretDown
+            weight="fill"
+            class="text-grey-300"
+            :class="{
+              'text-red-500': invalid,
+              'text-black': modelValue,
+              'text-grey-300': disabled,
+            }"
+          />
+        </template>
+      </MultiSelect>
+    </InputGroup>
+
     <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
   </div>
 </template>

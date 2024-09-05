@@ -65,12 +65,10 @@ const testRadio = ref("");
         <div class="grid grid-cols-2 gap-5 items-end w-full col-span-6">
           <div class="col-span-2 font-semibold text-MD -mb-4">Tipe Voucher</div>
           <CustomRadio
-           label="Tipe Voucher"
             v-for="data in ['Persen (%)', 'Rupiah (RP)']"
             v-model="testRadio"
             :sideLabel="data"
             :value="data"
-            class="f"
           />
         </div>
         <div class="flex flex-col col-span-6">

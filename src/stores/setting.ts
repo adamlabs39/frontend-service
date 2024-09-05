@@ -20,6 +20,19 @@ export const useSettingStore = defineStore({
         },
         putProfilFaskesApi(payload = {}) {
             return apiSettingPut("setting/profil-faskes", payload);
+        },
+
+        // Print Out
+        getPrintOutApi(payload = {}) {
+            return apiSettingGet("setting/printer",payload)
+        },
+        putPrintOutApi(payload = {}) {
+            return apiSettingPut("setting/printer", payload);
+        },
+
+        // KonfigurasiIntegrasi 
+        getKonfigurasiIntegrasiApi(payload = {}) {
+            return apiSettingGet("setting/integrasi", payload);
         }
     },
 });

@@ -58,6 +58,11 @@ const handleProfilFaskesUpdate = (updatedProfile: any) => {
     fetchSettingProfilFaskesData();
 };
 
+const handleLogoWarnaUpdate = (updatedLogoWarna: any) => {
+    profilFaskesResponse.value = updatedLogoWarna
+    fetchSettingProfilFaskesData();
+}
+
 const isEditProfilFaskes = ref(false);
 const isEditLogoWarna = ref(false);
 
@@ -89,7 +94,7 @@ const editLogoWarna = () => {
                     <LogoWarna :profilFaskesResponse="profilFaskesResponse" :editHandler="editLogoWarna" />
             </template>
             <template v-else>
-                    <FormEditLogoWarna  :profilFaskesResponse="profilFaskesResponse" :isEditLogoWarna="isEditLogoWarna"  @update:is-edit-logo-warna="isEditLogoWarna = $event" />
+                    <FormEditLogoWarna  :profilFaskesResponse="profilFaskesResponse" :isEditLogoWarna="isEditLogoWarna"  @update:is-edit-logo-warna="isEditLogoWarna = $event" @update:after-edit-logo-warna="handleLogoWarnaUpdate" />
             </template>
 
         </template>

@@ -80,7 +80,7 @@ const value = computed({
   <div class="">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] truncate text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
@@ -112,13 +112,16 @@ const value = computed({
           fluid
           :pt:pcInput:root:class="{
             'border-danger-300 text-danger-300': invalid,
-            'border-grey-400': !disabled && !invalid,
+            'border-grey-200': !disabled && !invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
-            'w-full h-10 rounded-lg pl-10': true,
+            'w-full h-10 rounded-lg pl-10 text-SM text-black': true,
+          }"
+          :dt="{
+            placeholderColor: invalid ? '#e9594c' : '#90969E',
           }"
         />
       </IconField>
     </div>
-    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>
