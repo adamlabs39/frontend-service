@@ -193,7 +193,7 @@ onMounted(() => {
           <template #header> Tambah Tindakan Multiple </template>
           <template #body>
             <div class="flex flex-col gap-5 mt-5">
-              <div class="flex gap-5 items-end w-full">
+              <div class="flex items-end w-full gap-5">
                 <CustomSelect
                 prepend-icon="PhMagnifyingGlass"
                   label="Cari Item"

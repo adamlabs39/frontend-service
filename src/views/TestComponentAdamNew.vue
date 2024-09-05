@@ -4,6 +4,10 @@ import FormAsesmenNyeri from '@/components/RekamMedis/AsesmenNyeri/FormAsesmenNy
 import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vue';
 import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue';
 import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/FormDiagnosaDokterICD10.vue';
+import FormOrderObat from '@/components/RekamMedis/OrderObat/FormOrderObat.vue';
+import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vue';
+import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
+import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
 </script>
 
 <template>
@@ -13,5 +17,9 @@ import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/Form
          <FormAsesmenNyeri/>
          <FormCatatanPerawat/>
          <FormDiagnosaDokterICD10/>
+         <FormOrderObat/>
+         <FormOrderFisio/>
+         <FormOrderAlkes/>
+         <FormPersetujuanPasien/>
     </div>
 </template>

@@ -35,7 +35,7 @@ const status = ref();
             <div class="font-semibold mb-[5px]">Status</div>
             <div class="flex items-center gap-2">
                 <CustomSwitch v-model="status" label="" />
-                <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+                <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->
             </div>
         </div>
 
