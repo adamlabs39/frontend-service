@@ -10,7 +10,6 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 
 const products = ref<any[]>([]);
@@ -37,7 +36,7 @@ const tipePeriksa = ref();
         :value="products"
         tableStyle="min-width: 50rem"
         stripedRows
-        class="pt-5 text-xs"
+        class="mt-5 text-xs"
         scrollable
         scrollHeight="flex"
       >

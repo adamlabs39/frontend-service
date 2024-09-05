@@ -1,0 +1,45 @@
+<script lang="ts" setup>
+const props = defineProps({
+  cardPasien: {
+    type: Object as () => { keterangan: string},
+    default: () => ({ keterangan: '' }),
+  },
+});
+</script>
+
+<template>
+  <Card
+    style="width: full; overflow: hidden; height: full"
+    pt:body:class="p-0 bg-white"
+    pt:root:class="h-full"
+  >
+    <template #header> </template>
+    <template #content>
+      <div class="flex my-5">
+        <div
+          class="rounded-r-xl w-[100px] h-[100px] flex items-center justify-center bg-adameds-300"
+        >
+          <img
+            v-if="cardPasien.keterangan === 'Pasien JKN'"
+            src="@/assets/icons/sidebar-icon/BPJS.svg"
+            alt=""
+            class="w-[60px] h-[60px]"
+          />
+          <img
+            v-if="cardPasien.keterangan === 'Pasien Non-JKN'"
+            src="@/assets/icons/vector-plus.svg"
+            alt=""
+            class="w-[50px] h-[50px]"
+          />
+        </div>
+        <div class="items-center justify-center my-auto ml-5">
+          <div
+            class="font-extrabold text-[22px] text-adameds-300"
+          >
+            {{ cardPasien.keterangan }}
+          </div>
+        </div>
+      </div>
+    </template>
+  </Card>
+</template>

@@ -92,7 +92,9 @@ const testDialog = ref(false);
                   <div
                     class="flex max-w-fit h-[20px] items-center border border-adameds-300 rounded-[4px] overflow-hidden"
                   >
-                    <div class="px-2 font-semibold text-white bg-adameds-300">
+                    <div
+                      class="w-full h-full px-2 font-semibold text-white bg-adameds-300"
+                    >
                       PA
                     </div>
                     <div class="px-2 text-adameds-300">2</div>
@@ -100,7 +102,9 @@ const testDialog = ref(false);
                   <div
                     class="flex max-w-fit h-[20px] items-center border border-adameds-300 rounded-[4px] overflow-hidden"
                   >
-                    <div class="px-2 font-semibold text-white bg-adameds-300">
+                    <div
+                      class="w-full h-full px-2 font-semibold text-white bg-adameds-300"
+                    >
                       SI
                     </div>
                     <div class="px-2 text-adameds-300">2</div>
@@ -108,7 +112,9 @@ const testDialog = ref(false);
                   <div
                     class="flex max-w-fit h-[20px] items-center border border-adameds-300 rounded-[4px] overflow-hidden"
                   >
-                    <div class="px-2 font-semibold text-white bg-adameds-300">
+                    <div
+                      class="w-full h-full px-2 font-semibold text-white bg-adameds-300"
+                    >
                       SO
                     </div>
                     <div class="px-2 text-adameds-300">2</div>
@@ -116,7 +122,9 @@ const testDialog = ref(false);
                   <div
                     class="flex max-w-fit h-[20px] items-center border border-adameds-300 rounded-[4px] overflow-hidden"
                   >
-                    <div class="px-2 font-semibold text-white bg-adameds-300">
+                    <div
+                      class="w-full h-full px-2 font-semibold text-white bg-adameds-300"
+                    >
                       MA
                     </div>
                     <div class="px-2 text-adameds-300">2</div>
@@ -124,7 +132,9 @@ const testDialog = ref(false);
                   <div
                     class="flex max-w-fit h-[20px] items-center border border-adameds-300 rounded-[4px] overflow-hidden"
                   >
-                    <div class="px-2 font-semibold text-white bg-adameds-300">
+                    <div
+                      class="w-full h-full px-2 font-semibold text-white bg-adameds-300"
+                    >
                       KH
                     </div>
                     <div class="px-2 text-adameds-300">2</div>
@@ -199,9 +209,14 @@ const testDialog = ref(false);
                 </template>
               </Card>
               <div class="flex items-end gap-5">
-                <CustomDatePicker label="Jam Pemberian"/>
-                <CustomTextArea label="Catatan" class="grow" height="h-10"/>
-                <CustomButton label="Simpan Edit" background-color="bg-adameds-300" text-color="text-white" class="ml-2.5"/>
+                <CustomDatePicker label="Jam Pemberian" />
+                <CustomTextArea label="Catatan" class="grow" height="h-10" />
+                <CustomButton
+                  label="Simpan Edit"
+                  background-color="bg-adameds-300"
+                  text-color="text-white"
+                  class="ml-2.5"
+                />
               </div>
               <hr class="border-grey-200" />
               <CustomAccordion header-class="bg-adameds-50">
