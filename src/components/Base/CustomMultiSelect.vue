@@ -98,7 +98,7 @@ const removeSelect = (data: any) => {
   <div class="">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
@@ -137,12 +137,21 @@ const removeSelect = (data: any) => {
         display="chip"
         :placeholder="placeholder"
         :maxSelectedLabels="maxSelectedLabels"
-        class="h-10 rounded-lg"
+        filterPlaceholder="Search"
+        pt:pcFilterIconContainer:class="flex items-center"
+        pt:pcFilter:root:class="text-black border-grey-200 text-black text-SM"
+        class="h-10 rounded-lg text-SM text-black"
         :class="{
           'border-l-0 rounded-l-none': prependIcon,
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
           'border-grey-200': !disabled && !invalid,
+        }"
+        :dt="{
+          placeholderColor: invalid ? '#e9594c' : '#90969E',
+          borderColor: invalid ? '#e9594c' : '#D0D5DD',
+          focusBorderColor: '#D0D5DD',
+          hoverBorderColor: '#D0D5DD',
         }"
       >
         <template
@@ -174,6 +183,17 @@ const removeSelect = (data: any) => {
               />
             </template>
           </Chip>
+        </template>
+        <template #dropdownicon>
+          <PhCaretDown
+            weight="fill"
+            class="text-grey-300"
+            :class="{
+              'text-red-500': invalid,
+              'text-black': modelValue,
+              'text-grey-300': disabled,
+            }"
+          />
         </template>
       </MultiSelect>
     </InputGroup>

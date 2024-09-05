@@ -37,7 +37,7 @@ const selectRadio = (value: string) => {
 <template>
   <label
     v-if="label"
-    class="block font-semibold mb-[5px]"
+    class="block font-semibold mb-[5px] text-normal"
     :class="{ 'text-grey-300': disabled }"
     @click="() => {}"
   >
