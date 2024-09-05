@@ -93,7 +93,7 @@ defineExpose({
   <div>
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}<span v-if="required" class="text-danger-300">*</span>
@@ -128,7 +128,7 @@ defineExpose({
       <InputNumber
         buttonLayout="horizontal"
         v-model="value"
-        class=""
+        class="text-SM text-black"
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
@@ -157,6 +157,9 @@ defineExpose({
             class: 'bg-adameds-300 text-white border-adameds-300',
           },
         }"
+        :dt="{
+            placeholderColor: invalid ? '#e9594c' :'#90969E',
+          }"
       >
         <template #incrementbuttonicon>
           <PhPlus :size="20" />
@@ -191,6 +194,6 @@ defineExpose({
         <slot name="appendText" />
       </div>
     </div>
-    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>

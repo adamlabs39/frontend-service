@@ -57,7 +57,7 @@ const value = computed({
   <div>
     <label
       v-if="props.showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold mb-[5px] text-normal"
       :class="{ 'text-grey-300': props.disabled }"
     >
       {{ props.label
@@ -69,15 +69,18 @@ const value = computed({
       fluid
       :disabled="props.disabled"
       :invalid="props.invalid"
-      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] w-full"
+      class="pt-2 pl-3 pb-0 rounded-lg border-[1px] w-full text-SM text-black"
       :class="{
         'border-danger-300 text-danger-300': props.invalid,
         'border-grey-200 bg-grey-100 text-grey-300': props.disabled,
         'border-grey-200': !props.disabled && !props.invalid,
         [props.height]: true,
       }"
+      :dt="{
+        placeholderColor: invalid ? '#e9594c' : '#90969E',
+      }"
     />
-    <small v-if="props.invalid" class="text-danger-300">{{
+    <small v-if="props.invalid" class="text-danger-300 text-XS">{{
       props.invalidMessage
     }}</small>
   </div>
