@@ -37,7 +37,7 @@ const pernahDirawat = ref();
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Anamnesis</template>
     <template #content>
-      <div v-if="props.method=='form'" class="grid grid-cols-2 gap-x-8 gap-y-5 py-5">
+      <div v-if="props.method=='form'" class="grid grid-cols-2 py-5 gap-x-8 gap-y-5">
         <CustomSelect
           v-model="anamnesis"
           label="Anamnesis"
@@ -63,7 +63,7 @@ const pernahDirawat = ref();
             <div class="block font-semibold mb-[11px]">
               Riwayat Penyakit Keluarga
             </div>
-            <div class="grid grid-rows-4 grid-flow-col gap-4">
+            <div class="grid grid-flow-col grid-rows-4 gap-4">
               <div
                 v-for="category of categories"
                 :key="category.key"
