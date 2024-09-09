@@ -6,68 +6,75 @@ import CustomAutoComplete from "../Base/CustomAutoComplete.vue";
 import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
-const data = ref([{ komponenTarif: "", persen: "", rupiah: "", action: "" }]);
+import CustomInputNumber from "../Base/CustomInputNumber.vue";
+const data = ref([{ komponenTarif: "", rupiah: "", action: "" }]);
 const addRow = () => {
   data.value.push({
     komponenTarif: "",
-    persen: "",
-    rupiah:"",
-     action: ""
+    rupiah: "",
+    action: "",
   });
 };
 </script>
 
 <template>
-  <div>
-    <DataTable
-      :value="data"
-      tableStyle="min-width: 50rem"
-      class="text-xs bg-adameds-50"
-    >
-      <Column headerClass="bg-adameds-300 text-white" class="w-1/2">
-        <template #header>
-          <div>Komponen Tarif</div>
-        </template>
-        <template #body>
-          <CustomSelect label="" place-holder="Pilih Komponen Tarif" />
-        </template>
-      </Column>
-      <Column header="Persen (%)" headerClass="bg-adameds-300 text-white">
-        <template #body>
-          <CustomTextfield class="text-[20px]" label="" placeholder="0">
-            <template #appendText>
-              <div
-                class="font-semibold text-MD leading-7 text-[#494E56] mr-2.5 flex items-center justify-center"
-              >
-                %
-              </div>
-            </template>
-          </CustomTextfield>
-        </template>
-      </Column>
-      <Column header="Rupiah (Rp)" headerClass="bg-adameds-300 text-white">
-        <template #body>
-          <CustomTextfield pr label="" placeholder="0">
-            <template #prependText>
-              <div
-              class="font-semibold text-MD leading-7 text-adameds-300 flex items-center justify-center border-r px-3 bg-adameds-300 text-white rounded-l-md overflow-hidden"
-              >
-                Rp.
-              </div>
-            </template>
-          </CustomTextfield>
-        </template>
-      </Column>
-      <Column header="Action" headerClass="bg-adameds-300 text-white">
-        <template #body="slotProps">
-          <CustomButton label="" background-color="bg-danger-300 rounded-lg">
-            <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+  <Card
+    pt:root:class="border rounded-lg shadow border-adameds-300 shadow-inherit"
+    pt:body:class="h-full p-5"
+  >
+    <template #content>
+      <div class="flex flex-col gap-5">
+        <div class="flex items-end">
+          <CustomButton label="1" class="w-10 h-10" />
+          <CustomSelect label=""  class="grow ml-2.5 mr-[30px]"/>
+          <CustomButton
+            background-color="bg-danger-300 rounded-lg"
+          >
+            <img src="@/assets/icons/delete.svg" alt="" width="15px" />Hapus
           </CustomButton>
-        </template>
-      </Column>
-    </DataTable>
-    <div class="flex w-full gap-5 p-5">
-      <div class="w-1/2 pr-2.5">
+        </div>
+        <DataTable
+          :value="data"
+          tableStyle="min-width: 50rem"
+          class="overflow-hidden text-xs rounded-lg bg-adameds-50"
+        >
+          <Column headerClass="bg-adameds-300 text-white" class="w-4/6">
+            <template #header>
+              <div>Komponen Tarif</div>
+            </template>
+            <template #body>
+              <CustomSelect label="" place-holder="Pilih Komponen Tarif" />
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-300 ">
+            <template #header>
+              <div class="w-full text-xs font-semibold text-white text-end">
+                Rupiah (Rp)
+              </div>
+            </template>
+            <template #body>
+              <CustomInputNumber label="" align-number="text-end">
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD text-adameds-300 bg-adameds-300 rounded-l-md"
+                  >
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </template>
+          </Column>
+          <Column header="Action" headerClass="bg-adameds-300 text-white">
+            <template #body="slotProps">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+              >
+                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+              </CustomButton>
+            </template>
+          </Column>
+        </DataTable>
         <div
           class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
         >
@@ -81,19 +88,6 @@ const addRow = () => {
           />
         </div>
       </div>
-      <div class="flex flex-col grow gap-1.5">
-        <div class="font-semibold text-MD">Tipe Input Harga</div>
-        <div class="flex gap-2.5">
-          <div class="p-2 flex gap-2.5">
-            <CustomSwitch :show-label="false"/>
-            <div class="flex items-center text-[#6B7280]">Persen (%)</div>
-          </div>
-          <div class="p-2 flex gap-2.5">
-            <CustomSwitch :show-label="false" />
-            <div class="flex items-center text-[#6B7280]">Rupiah (Rp)</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </template>
+  </Card>
 </template>
