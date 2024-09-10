@@ -34,7 +34,7 @@ const value = computed({
   >
     <TabList :pt="{ tabList: 'h-10 text-SM' }">
       <Tab
-        v-if="selectedTab == '0'"
+        v-if="selectedTab == 'rekam-medis'"
         class="py-0 px-[10px]"
         value="non-sesi"
         :pt="{ root: 'rounded-t-lg' }"
@@ -42,7 +42,7 @@ const value = computed({
         Non-Sesi
       </Tab>
       <Tab
-        v-if="selectedTab == '0'"
+        v-if="selectedTab == 'rekam-medis'"
         class="px-0 py-0"
         value="-"
         :pt="{ root: 'rounded-t-lg' }"
@@ -60,7 +60,7 @@ const value = computed({
         {{ session }}
       </Tab>
       <Tab
-        v-if="selectedTab != '0'"
+        v-if="selectedTab != 'rekam-medis'"
         @click="emit('addSession')"
         class="py-0 px-[10px]"
         value="plus"

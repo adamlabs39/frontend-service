@@ -6,6 +6,8 @@ import DataPatient from "./DataPatient.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import SessionTab from "./Section/SessionTab.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
+import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("0");
@@ -117,12 +119,12 @@ defineExpose({ showDialogRM });
             <TabList :pt="{ tabList: 'h-10 text-SM' }">
               <Tab
                 class="py-0 px-[10px]"
-                value="0"
+                value="rekam-medis"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhListPlus
-                    v-if="selectedTab == '0'"
+                    v-if="selectedTab == 'rekam-medis'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -132,12 +134,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="1"
+                value="asesmen"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhListChecks
-                    v-if="selectedTab == '1'"
+                    v-if="selectedTab == 'asesmen'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -147,12 +149,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="2"
+                value="soap"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhStethoscope
-                    v-if="selectedTab == '2'"
+                    v-if="selectedTab == 'soap'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -162,12 +164,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="3"
+                value="alkes-penunjang"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhFirstAidKit
-                    v-if="selectedTab == '3'"
+                    v-if="selectedTab == 'alkes-penunjang'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -177,12 +179,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="4"
+                value="alkes"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhFirstAidKit
-                    v-if="selectedTab == '4'"
+                    v-if="selectedTab == 'alkes'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -192,12 +194,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="5"
+                value="inform-consent"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhFileText
-                    v-if="selectedTab == '5'"
+                    v-if="selectedTab == 'inform-consent'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -219,12 +221,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="6"
+                value="unggah-berkas"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <img
-                    v-if="selectedTab == '6'"
+                    v-if="selectedTab == 'unggah-berkas'"
                     class="h-[18px] mr-[10px]"
                     src="../../assets/icons/medical-record/UploadPicture.svg"
                   />
@@ -233,12 +235,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="7"
+                value="resume-discharge"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhListStar
-                    v-if="selectedTab == '7'"
+                    v-if="selectedTab == 'resume-discharge'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -248,12 +250,12 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
-                value="8"
+                value="cetak-hasil-surat"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
                   <PhEnvelopeSimple
-                    v-if="selectedTab == '8'"
+                    v-if="selectedTab == 'cetak-hasil-surat'"
                     :size="18"
                     weight="fill"
                     class="mr-[10px]"
@@ -282,7 +284,7 @@ defineExpose({ showDialogRM });
               />
             </div>
           </div>
-          <div v-if="selectedTab == '1'" class="mt-[10px]">
+          <div v-if="selectedTab == 'asesmen'" class="mt-[10px] mb-[10px]">
             <CustomChip
               v-for="(assesment, index) in assesmentList"
               :key="assesment + index"
@@ -300,7 +302,7 @@ defineExpose({ showDialogRM });
               @selected="onAssesmentSelect"
             />
           </div>
-          <div v-if="selectedTab == '2'" class="my-5">
+          <div v-if="selectedTab == 'soap'" class="my-5">
             <CustomButton
               v-for="(soapData, index) in soapList"
               @click="onSoapSelect(soapData)"
@@ -315,10 +317,14 @@ defineExpose({ showDialogRM });
               :outlined="!selectedSoap.includes(soapData)"
             />
           </div>
+
+          <PemeriksaanFisik v-if="selectedAssesment == 'Pemeriksaan Fisik'" />
+          <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
         </div>
       </template>
       <template #footer>3</template>
     </CustomDialog>
+    <!-- Dialog konfirmasi hapus sesi -->
     <CustomDialog
       class=""
       v-model:visible="deleteSessionDialog"

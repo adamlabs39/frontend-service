@@ -12,9 +12,9 @@ import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
-import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
+import CustomCanvasDrawer from "@/components/RekamMedis/PemeriksaanFisik/CustomCanvasDrawer.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
-import BurnInput from "@/components/Base/BurnInput.vue";
+import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
 
 const props = defineProps({
