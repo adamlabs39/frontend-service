@@ -1,47 +1,97 @@
 <script lang="ts" setup>
+import { ref, onBeforeMount } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { ref } from "vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 const props = defineProps({
   method: {
     type: String,
-    default: "form",
+    default: "detail",
   },
 });
 
-const categories = ref([
-  { name: "Hipertensi", key: "H" },
-  { name: "Penyakit Jantung", key: "PJ" },
-  { name: "Stroke", key: "S" },
-  { name: "TB Paru", key: "TBP" },
-  { name: "Diabetes Melitus", key: "DM" },
-  { name: "Asma", key: "A" },
-  { name: "Lain-lain", key: "dll" },
-  { name: "Tidak Ada", key: "null" },
+// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
+const isEditing = ref(props.method === "form");
+
+const anamnesisOption = ref([
+  { name: "Hipertensi" },
+  { name: "Penyakit Jantung" },
+  { name: "Stroke" },
+  { name: "TB Paru" },
+  { name: "Diabetes Melitus" },
+  { name: "Asma" },
+  { name: "Lain-lain" },
+  { name: "Tidak Ada" },
 ]);
-const anamnesis = ref();
-const keluhanUtama = ref();
-const riwayatPenyakit = ref();
-const riwayatPengobatan = ref();
-const catatan = ref();
-const riwayatKeluarga = ref();
-const pernahDirawat = ref();
+
+const riwayatPenyakitOption = ref([
+  { name: "Hipertensi" },
+  { name: "Penyakit Jantung" },
+  { name: "Stroke" },
+  { name: "TB Paru" },
+  { name: "Diabetes Melitus" },
+  { name: "Asma" },
+  { name: "Lain-lain" },
+  { name: "Tidak Ada" },
+]);
+
+const schema = toTypedSchema(
+  yup.object({
+    anamnesis: yup.string(),
+    keluhanUtama: yup.string(),
+    riwayatPenyakit: yup.string(),
+    riwayatPengobatan: yup.string(),
+    catatan: yup.string(),
+    riwayatKeluarga: yup.array().of(yup.string()),
+    pernahDirawat: yup.bool(),
+    petugas: yup.string().required(),
+  })
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+const [anamnesis] = defineField("anamnesis");
+const [keluhanUtama] = defineField("keluhanUtama");
+const [riwayatPenyakit] = defineField("riwayatPenyakit");
+const [riwayatPengobatan] = defineField("riwayatPengobatan");
+const [catatan] = defineField("catatan");
+const [riwayatKeluarga] = defineField("riwayatKeluarga");
+const [pernahDirawat] = defineField("pernahDirawat");
+const [petugas] = defineField("petugas");
+
+onBeforeMount(async () => {
+  setValues({ petugas: "Adam" });
+});
+
+const onSubmit = handleSubmit((values: any) => {
+  console.log("Adding new data:", values);
+});
+
+const toggleEdit = () => {
+  isEditing.value = true;
+};
 </script>
+
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Anamnesis</template>
     <template #content>
-      <div v-if="props.method=='form'" class="grid grid-cols-2 gap-x-8 gap-y-5 py-5">
+      <div v-if="isEditing" class="grid grid-cols-2 py-5 gap-x-8 gap-y-5">
         <CustomSelect
           v-model="anamnesis"
           label="Anamnesis"
           placeHolder="Pilih Anamnesis"
+          :options="anamnesisOption"
+          option-label="name"
+          option-value="name"
         />
         <CustomTextfield
           v-model="keluhanUtama"
@@ -63,29 +113,30 @@ const pernahDirawat = ref();
             <div class="block font-semibold mb-[11px]">
               Riwayat Penyakit Keluarga
             </div>
-            <div class="grid grid-rows-4 grid-flow-col gap-4">
+            <div class="grid grid-flow-col grid-rows-4 gap-4">
               <div
-                v-for="category of categories"
-                :key="category.key"
+                v-for="category of riwayatPenyakitOption"
+                :key="category.name"
                 class="flex items-center gap-2.5"
               >
                 <Checkbox
                   v-model="riwayatKeluarga"
-                  :inputId="category.key"
+                  :inputId="category.name"
                   name="category"
                   :value="category.name"
                   :dt="{
-                    checkedBackground: { class: 'bg-[#14B8A6]' },
-                    checkedHoverBackground: { class: 'bg-[#14B8A6]' },
+                    checkedBackground: '#14B8A6',
+                    checkedHoverBackground: '#14B8A6',
+                    borderColor: '#98A2B3',
                   }"
+                  
                 />
-                <label :for="category.key">{{ category.name }}</label>
+                <label :for="category.name" class="text-SM font-normal text-grey-400">{{ category.name }}</label>
               </div>
             </div>
           </div>
           <div class="basis-1/3">
-            <CustomSwitch v-model="pernahDirawat"
-            label="Pernah Dirawat" />
+            <CustomSwitch v-model="pernahDirawat" label="Pernah Dirawat" />
           </div>
         </div>
         <CustomTextArea
@@ -94,31 +145,34 @@ const pernahDirawat = ref();
           placeholder="Catatan"
         />
       </div>
-      <div v-if="props.method=='detail'" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Anamnesis" value="Auto Anamnesis"/>
+      <div v-else class="py-5 flex flex-col gap-[19px]">
+        <CustomInfoRow label="Anamnesis" value="Auto Anamnesis" />
         <CustomInfoRow label="Keluhan Utama" value="Sakit Mata" />
         <CustomInfoRow label="Riwayat Penyakit" value="Asma" />
         <CustomInfoRow label="Tingkat Keparahan" value="Tidak terlalu parah" />
         <CustomInfoRow label="Pernah Dirawat" value="Tidak" />
         <CustomInfoRow label="Riwayat Pengobatan" value="Tidak ada" />
         <CustomInfoRow label="Riwayat Penyakit Keluarga" value="Tidak ada" />
-        <CustomInfoRow label="Pengetahuan Tentang Penyakit Saat Ini" value="Tidak ada" />
-        <hr class="border-grey-200">
+        <CustomInfoRow
+          label="Pengetahuan Tentang Penyakit Saat Ini"
+          value="Tidak ada"
+        />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
       </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
-        v-if="props.method=='form'"
+          v-if="isEditing"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton v-if="props.method=='form'" label="Simpan" />
-        <CustomButton v-if="props.method=='detail'" label="Edit" />
-
+        <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+        <CustomButton v-else label="Edit" @click="toggleEdit" />
       </div>
     </template>
   </CustomAccordion>

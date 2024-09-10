@@ -28,7 +28,7 @@ const testCheckbox = ref(false);
     <template #header>Order Lab</template>
     <template #content>
       <div class="flex flex-col gap-5 pt-5">
-        <CustomDatePicker label="Tgl. Pemeriksaan Lab" />
+        <CustomDatePicker label="Tgl. Pemeriksaan Lab" class="w-1/4"/>
         <div class="mt-5 font-semibold text-MD">Tarif Pemeriksaan</div>
         <hr class="border-grey-200" />
         <CustomAccordion headerClass="bg-adameds-50" initial-state="0">

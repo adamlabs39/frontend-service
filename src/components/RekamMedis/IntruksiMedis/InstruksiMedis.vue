@@ -1,11 +1,24 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onBeforeMount } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import dokterPerempuan from "@/assets/icons/Avatar/avatar_dokter_perempuan.svg";
 import dokterLaki from "@/assets/icons/Avatar/avatar_dokter_laki.svg";
+
+const schema = toTypedSchema(
+  yup.object({
+    datas: yup.array().of(
+      yup.object({
+        instruksi: yup.string(),
+      })
+    ),
+  })
+);
 
 const messages = ref([
   {
@@ -61,7 +74,7 @@ const getAvatar = (gender: string) => {
           />
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
-              <div class="text-adameds-300 font-semibold text-SM">
+              <div class="font-semibold text-adameds-300 text-SM">
                 {{ message.role }}
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
