@@ -3,8 +3,61 @@ import { ref } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DataPatient from "./DataPatient.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import SessionTab from "./Section/SessionTab.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 
 const dialogRM = ref(false);
+const selectedTab = ref("0");
+const selectedSessionTab = ref("non-sesi");
+const deleteSessionDialog = ref(false);
+
+const assesmentList = ref([
+  "Alergi",
+  "Anamnesis",
+  "Tanda Vital",
+  "Antropometri",
+  "Asesmen Nyeri",
+  "Kesadaran",
+  "Pemeriksaan Fisik",
+  "Derajat Luka Bakar (RON)",
+  "Catatan Hasil Penunjang",
+  "Diagnosis Dokter",
+  "Asuhan Keperawatan",
+  "Catatan Perawat",
+  "Intruksi Medis",
+  "Pemeriksaan dan Tindakan",
+]);
+const selectedAssesment = ref("Alergi");
+const onAssesmentSelect = (label: string) => {
+  if (selectedAssesment.value != label) {
+    selectedAssesment.value = label;
+  }
+};
+
+const soapList = ref(["Subjective", "Objective", "Assesment", "Plan"]);
+const selectedSoap = ref("Subjective");
+const onSoapSelect = (label: string) => {
+  if (selectedSoap.value != label) {
+    selectedSoap.value = label;
+  }
+};
+
+const alkesList = ref(["Order Alkes", "Order Lab", "Order Fisio"]);
+const selectedAlkes = ref("Order Alkes");
+const onAlkesSelect = (label: string) => {
+  if (selectedAlkes.value != label) {
+    selectedAlkes.value = label;
+  }
+};
+
+const cetakSuratList = ref(["Cetak Hasil Pemeriksaan", "Surat Keterangan"]);
+const selectedSuratList = ref("Cetak Hasil Pemeriksaan");
+const onSuratListSelect = (label: string) => {
+  if (selectedSuratList.value != label) {
+    selectedSuratList.value = label;
+  }
+};
 
 const showDialogRM = () => {
   dialogRM.value = true;
@@ -14,34 +67,298 @@ defineExpose({ showDialogRM });
 </script>
 
 <template>
-  <CustomDialog v-model:visible="dialogRM" class="" fullScreen>
-    <template #header>
-      <div class="flex justify-between">
-        <div class="flex my-auto">
-          <span> Detail Pasien </span>
-          <span class="mx-[10px]"> | </span>
-          <span> Rawat Jalan </span>
-          <PhArrowRight :size="18" class="my-auto mx-[10px]" weight="bold" />
-          <div class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]">
-            00-00-00
+  <div>
+    <CustomDialog v-model:visible="dialogRM" class="" fullScreen>
+      <template #header>
+        <div class="flex justify-between">
+          <div class="flex my-auto">
+            <span> Detail Pasien </span>
+            <span class="mx-[10px]"> | </span>
+            <span> Rawat Jalan </span>
+            <PhArrowRight :size="18" class="my-auto mx-[10px]" weight="bold" />
+            <div
+              class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]"
+            >
+              00-00-00
+            </div>
+            Nama Lengkap Pasien
           </div>
-          Nama Lengkap Pasien
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak Label"
+            class="mr-5"
+            backgroundColor="bg-white"
+            textColor="text-adameds-300"
+          />
         </div>
-        <CustomButton
-          @click="() => {}"
-          icon="PhPrinter"
-          label="Cetak Label"
-          class="mr-5"
-          backgroundColor="bg-white"
-          textColor="text-adameds-300"
-        />
-      </div>
-    </template>
-    <template #body>
-      <div class="pt-[10px]">
-        <DataPatient />
-      </div>
-    </template>
-    <template #footer>3</template>
-  </CustomDialog>
+      </template>
+      <template #body>
+        <div class="pt-[10px]">
+          <DataPatient />
+          <div class="flex mb-4">
+            <PhStethoscope
+              :size="24"
+              weight="bold"
+              class="text-adameds-300 mr-[10px]"
+            />
+            <span class="font-semibold leading-6 text-grey-500 text-MD">
+              Pemeriksaan
+            </span>
+          </div>
+          <Tabs
+            v-model:value="selectedTab"
+            :dt="{
+              tabActiveBackground: '#E8F8F6',
+              tabActiveColor: '#14B8A6',
+              tabActiveBorderColor: '#14B8A6',
+            }"
+          >
+            <TabList :pt="{ tabList: 'h-10 text-SM' }">
+              <Tab
+                class="py-0 px-[10px]"
+                value="0"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhListPlus
+                    v-if="selectedTab == '0'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Rekam Medis
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="1"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhListChecks
+                    v-if="selectedTab == '1'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Asesmen
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="2"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhStethoscope
+                    v-if="selectedTab == '2'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  S.O.A.P
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="3"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhFirstAidKit
+                    v-if="selectedTab == '3'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Alkes & Penunjang
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="4"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhFirstAidKit
+                    v-if="selectedTab == '4'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Alkes
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="5"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhFileText
+                    v-if="selectedTab == '5'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Inform Consent
+                </div>
+              </Tab>
+              <Tab
+                class="px-0 py-0"
+                value="-"
+                :pt="{ root: 'rounded-t-lg' }"
+                disabled
+              >
+                <PhLineVertical
+                  :size="26"
+                  weight="bold"
+                  class="text-adameds-300"
+                />
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="6"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <img
+                    v-if="selectedTab == '6'"
+                    class="h-[18px] mr-[10px]"
+                    src="../../assets/icons/medical-record/UploadPicture.svg"
+                  />
+                  Unggah Berkas
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="7"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhListStar
+                    v-if="selectedTab == '7'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Resume & Discharge
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="8"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhEnvelopeSimple
+                    v-if="selectedTab == '8'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  Cetak Hasil & Surat
+                </div>
+              </Tab>
+            </TabList>
+          </Tabs>
+          <div class="flex">
+            <SessionTab
+              :key="selectedTab"
+              v-model="selectedSessionTab"
+              :selectedTab="selectedTab"
+              :dataSession="['Sesi 1', 'Sesi 2']"
+              class="mt-[10px] grow"
+            />
+            <div class="flex border-b border-grey-100">
+              <CustomButton
+                @click="deleteSessionDialog = true"
+                class="my-auto bg-danger-300 !rounded-md"
+                label="Hapus Sesi"
+                size="small"
+                icon="PhTrash"
+                iconType="fill"
+              />
+            </div>
+          </div>
+          <div v-if="selectedTab == '1'" class="mt-[10px]">
+            <CustomChip
+              v-for="(assesment, index) in assesmentList"
+              :key="assesment + index"
+              :label="assesment"
+              :showCheckedIcon="false"
+              :outlined="false"
+              class="mr-[10px] mb-[10px]"
+              customClass="h-6"
+              textSize="text-SM"
+              textColor="text-black"
+              selectedTextColor="text-white"
+              bgColor="bg-grey-75"
+              selectedColor="bg-adameds-300"
+              :isSelected="selectedAssesment.includes(assesment)"
+              @selected="onAssesmentSelect"
+            />
+          </div>
+          <div v-if="selectedTab == '2'" class="my-5">
+            <CustomButton
+              v-for="(soapData, index) in soapList"
+              @click="onSoapSelect(soapData)"
+              :label="soapData"
+              class="mr-[10px]"
+              borderColor="border-adameds-300"
+              :textColor="
+                selectedSoap.includes(soapData)
+                  ? 'text-white'
+                  : 'text-adameds-300'
+              "
+              :outlined="!selectedSoap.includes(soapData)"
+            />
+          </div>
+        </div>
+      </template>
+      <template #footer>3</template>
+    </CustomDialog>
+    <CustomDialog
+      class=""
+      v-model:visible="deleteSessionDialog"
+      headerBg="bg-danger-300"
+      width="600px"
+    >
+      <template #header>Hapus Sesi</template>
+      <template #body>
+        <div class="pt-5">
+          <CustomTextfield
+            label="Alasan Menghapus Sesi"
+            class="w-full mr-[30px]"
+            placeholder="Alasan Menghapus Sesi"
+          />
+          <div class="mt-5 text-normal">
+            <div>Seluruh data pemeriksaan pasien pada sesi akan terhapus.</div>
+            <div class="mt-1">
+              Anda yakin akan menghapus <span class="font-bold">Sesi 1</span> ?
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div>
+          <CustomButton
+            @click="() => {}"
+            label="Tidak"
+            outlined
+            class="mr-[10px]"
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+          />
+          <CustomButton
+            @click="() => {}"
+            class="my-auto bg-danger-300"
+            label="Iya, Hapus"
+            iconType="fill"
+          />
+        </div>
+      </template>
+    </CustomDialog>
+  </div>
 </template>
