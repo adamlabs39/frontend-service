@@ -3,7 +3,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { onBeforeMount, ref } from "vue";
-import { useForm, useFieldArray } from "vee-validate";
+import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
@@ -18,7 +18,7 @@ const schema = toTypedSchema(
     yup.object({
         datas: yup.array().of(
             yup.object({
-                primer: yup.string(),
+                primer: yup.string().required("tambahkan data COY"),
                 sekunder: yup.string(),
                 diagnosisDiferensial: yup.string(),
                 petugas: yup.string().required('Petugas is required'),
@@ -30,7 +30,7 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, resetForm, setValues } = useForm({
     validationSchema: schema,
     initialValues: {
-        datas: [{ primer: "", diagnosisDiferensial: "" , petugas: "MBOH" }],
+        datas: [{ primer: "", diagnosisDiferensial: "", petugas: "MBOH" }],
     },
 });
 
@@ -39,7 +39,7 @@ const { remove, push, fields } = useFieldArray("datas");
 const addDiagnosis = () => {
     // Type assertion untuk memastikan fields.value adalah array yang sesuai dengan schema
     const tipeFields = fields.value as Array<{ value: { sekunder?: string; diagnosisDiferensial?: string; petugas?: string } }>;
-    
+
     // Cek apakah ada field yang sudah diisi sebelumnya, gunakan petugas dari field pertama
     const petugas = tipeFields.length > 0 ? tipeFields[0].value.petugas : "Default Petugas";
 
@@ -96,27 +96,32 @@ const onReset = () => {
             <div v-for="(field, index) in fields" :key="index" class="flex flex-col gap-5 py-3">
                 <div v-if="index === 0" class="grid grid-cols-2 gap-5">
                     <CustomSelect label="Primer" v-model="field.value.primer" :options="diagnosaPrimers"
-                        optionValue="diagnosaPrimer" optionLabel="diagnosaPrimer" :isLoading="false" :invalid="false"
-                        invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
-                        customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass" />
-                   
+                        optionValue="diagnosaPrimer" optionLabel="diagnosaPrimer" :isLoading="false" :invalid="!!errors[`datas[${index}].primer`]"
+                        :invalidMessage="errors[`datas[${index}].primer`]" :disabled="false" placeHolder="Pilih Diagnosis"
+                        customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass">
+                    </CustomSelect>
+
+                    
                     <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensial"
-                        :options="diagnosaSekunders" optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder" :isLoading="false"
-                        :invalid="false" invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
-                        customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass" />
+                        :options="diagnosaSekunders" optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder"
+                        :isLoading="false" :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
+                        placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
+                        prependIcon="PhMagnifyingGlass" />
                 </div>
                 <div class="flex gap-[30px] w-full" v-if="index > 0">
                     <div class="basis-2/5">
                         <CustomSelect label="Sekunder" v-model="field.value.sekunder" :options="diagnosaSekunders"
                             optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder" :isLoading="false"
-                            :invalid="false" invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
-                            customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass" />
+                            :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
+                            placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
+                            prependIcon="PhMagnifyingGlass" />
                     </div>
                     <div class="grow">
                         <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensial"
                             :options="diagnosaDds" optionValue="diagnosaDd" optionLabel="diagnosaDd" :isLoading="false"
-                            :invalid="false" invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
-                            customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass" />
+                            :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
+                            placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
+                            prependIcon="PhMagnifyingGlass" />
                     </div>
                     <div class="flex items-end justify-start">
                         <CustomButton label="Hapus Diagnosa" textColor="text-white" backgroundColor="bg-danger-300"
