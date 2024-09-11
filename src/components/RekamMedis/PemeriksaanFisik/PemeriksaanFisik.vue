@@ -6,7 +6,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCanvasDrawer from "./CustomCanvasDrawer.vue";
 
-const keadaanUmum = ref();
+const keadaanUmum = ref('baik');
 
 const canvasKepala = ref<HTMLCanvasElement | null>(null);
 const canvasMata = ref<HTMLCanvasElement | null>(null);
