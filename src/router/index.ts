@@ -31,6 +31,7 @@ import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/Perm
 import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
 import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
+import SystemPage from "@/views/SettingPage/Template/System/SystemPage.vue";
 
 // NOTE Page View Datamaster
 import UserPage from "@/views/Datamaster/User/UserPage.vue";
@@ -132,6 +133,12 @@ const router = createRouter({
       name: "setting-profil-akun",
       meta: { layout: SidebarLayout, page: ProfilAkunPage },
       component: ProfilAkunView,
+    },
+    {
+      path: "/setting/system",
+      name: "setting-system",
+      meta: { layout: SidebarLayout, page: SystemPage },
+      component: SettingView
     },
 
     // NOTE Datamaster

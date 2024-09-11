@@ -1,92 +1,139 @@
-<script setup lang="ts">
-import type { PropType } from 'vue';
+<script setup>
+import { onBeforeUnmount, ref } from 'vue';
+import { usePrimeVue } from 'primevue/config';
+import { useToast } from "primevue/usetoast";
+import CustomButton from './CustomButton.vue';
+import { onMounted } from 'vue';
 
-const props = defineProps({
-    name: {
-        type: String,
-        default: ""
-    },
-    url: {
-        type: String,
-        default: ""
-    },
-    mode: {
-        type: String as PropType<"basic" | "advanced" | undefined>,
-        default: "basic"
-    },
-    accept: {
-        type: String,
-        default: "image/png"
-    },
-    maxFileSize: {
-        type: Number,
-        default: 0
-    },
-    fileLimit: {
-        type: Number,
-        default: 1
-    },
-    multiple: {
-        type: Boolean,
-        default: false
-    },
-    uploadLabel: {
-        type: String,
-        default: "Upload"
-    },
-    showUploadButton: {
-        type: Boolean,
-        default: true
-    },
-    chooseLabel: {
-        type: String,
-        default: "Choose"
-    },
-    showChooseLabel: {
-        type: Boolean,
-        default: true
-    },
-    showCancelButton: {
-        type: Boolean,
-        default: true
-    },
-    class: {
-        type: String,
-        default: ""
+const $primevue = usePrimeVue();
+const toast = useToast();
+
+const totalSize = ref(0);
+const totalSizePercent = ref(0);
+const files = ref([]);
+const dragActive = ref(false); // Untuk feedback visual drag
+
+const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
+    removeFileCallback(index);
+    totalSize.value -= parseInt(formatSize(file.size));
+    totalSizePercent.value = totalSize.value / 10;
+};
+
+const onClearTemplatingUpload = (clear) => {
+    clear();
+    totalSize.value = 0;
+    totalSizePercent.value = 0;
+};
+
+const onSelectedFiles = (event) => {
+    files.value = event.files;
+    files.value.forEach((file) => {
+        totalSize.value += parseInt(formatSize(file.size));
+    });
+};
+
+const uploadEvent = (callback) => {
+    totalSizePercent.value = totalSize.value / 10;
+    callback();
+};
+
+const onTemplatedUpload = () => {
+    toast.add({ severity: "info", summary: "Success", detail: "File Uploaded", life: 3000 });
+};
+
+const formatSize = (bytes) => {
+    const k = 1024;
+    const dm = 3;
+    const sizes = $primevue.config.locale.fileSizeTypes;
+
+    if (bytes === 0) {
+        return `0 ${sizes[0]}`;
     }
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+
+    return `${formattedSize} ${sizes[i]}`;
+};
+
+// Menangani event drag & drop
+const handleDragOver = (event) => {
+    event.preventDefault();
+    dragActive.value = true;
+};
+
+const handleDragLeave = () => {
+    dragActive.value = false;
+};
+
+const handleDrop = (event) => {
+    event.preventDefault();
+    dragActive.value = false;
+};
+
+const handleFileDrop = (event) => {
+    const droppedFiles = Array.from(event.dataTransfer.files);
+    files.value = droppedFiles;
+    droppedFiles.forEach((file) => {
+        totalSize.value += parseInt(formatSize(file.size));
+    });
+};
+
+onMounted(() => {
+    const dropArea = document.querySelector('.file-drop-area');
+    dropArea.addEventListener('dragover', handleDragOver);
+    dropArea.addEventListener('dragleave', handleDragLeave);
+    dropArea.addEventListener('drop', handleDrop);
+    dropArea.addEventListener('drop', handleFileDrop);
 });
 
-const emit = defineEmits(["upload"]);
-
-const onUploadedValue = (event: any) => {
-    emit("upload", event);
-};
+onBeforeUnmount(() => {
+    const dropArea = document.querySelector('.file-drop-area');
+    dropArea.removeEventListener('dragover', handleDragOver);
+    dropArea.removeEventListener('dragleave', handleDragLeave);
+    dropArea.removeEventListener('drop', handleDrop);
+    dropArea.removeEventListener('drop', handleFileDrop);
+});
 </script>
 
+
 <template>
-
-
-    <div class="flex items-center justify-center">
-        <div class="relative flex flex-col w-full p-8 text-center rounded-lg">
-            <div class="font-semibold font-poppins">Seret file ke sini</div>
-            <div class="text-[#9DA4B1] font-semibold leading-relaxed">atau</div>
-            <div class="flex items-center justify-center">
-                <FileUpload :name="name" :url="url" :mode="mode" :accept="accept" :upload-label="uploadLabel"
-                    :choose-label="chooseLabel" :max-file-size="maxFileSize" :multiple="multiple" :auto="true"
-                    :show-upload-button="showUploadButton" :show-cancel-button="showCancelButton" :class="class"
-                    @upload="onUploadedValue" pt:root:class="flex flex-col items-center bg-transparent border-none" pt:pcChooseButton:root:class="" >
-                </FileUpload>
+    <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="true" accept="image/*"
+        :maxFileSize="1000000" @select="onSelectedFiles">
+        <template
+            #header="{ chooseCallback, uploadCallback, clearCallback, filesuploadedFiles, removeUploadedFileCallback, removeFileCallback }">
+            <div 
+                class="flex flex-col items-center justify-center w-full p-6 mt-2 text-center border-2 border-dashed rounded-md file-drop-area"
+                :class="{'border-solid border-green-500': dragActive}"  <!-- Feedback visual saat drag -->
+                @dragover="handleDragOver"
+                @dragleave="handleDragLeave"
+                @drop="handleDrop"
+            >
+                <div class="flex flex-col gap-2">
+                    <p class="font-semibold text-black text-SM">Seret file ke sini</p>
+                    <p class="mb-4 text-gray-500 text-SM">atau</p>
+                    <CustomButton label="Cari File" @click="chooseCallback()"
+                        class="inline-flex items-center px-3 py-2 mb-4 transition text-XSwhite text- rounded-xl bg-adameds-300 hover:bg-adameds-400"
+                        :icon="iconButton" />
+                    <p class="text-gray-500 text-SM">File Type.....</p>
+                    
+                    <!-- Jika ada file, tampilkan informasi file -->
+                    <div v-if="files.length > 0">
+                        <h5>Pending</h5>
+                        <div class="flex flex-wrap gap-4">
+                            <div v-for="(file, index) of files" :key="file.name + file.type + file.size" class="flex flex-col items-center gap-4 p-8 border rounded-border border-surface">
+                                <div>
+                                    <img role="presentation" :alt="file.name" :src="file.objectURL" width="100" height="50" />
+                                </div>
+                                <span class="overflow-hidden font-semibold text-ellipsis max-w-60 whitespace-nowrap">{{ file.name }}</span>
+                                <div>{{ formatSize(file.size) }}</div>
+                                <Badge value="Pending" severity="warn" />
+                                <Button icon="pi pi-times" @click="onRemoveTemplatingFile(file, removeFileCallback, index)" outlined rounded severity="danger" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="italic text-gray-400">File .PNG</p>
-        </div>
-    </div>
+        </template>
+    </FileUpload>
 </template>
-
-<style>
-    .p-fileupload-content{
-        @apply w-full absolute z-10 top-0 left-0 right-0 h-1/2
-        
-    }
-
-  
-</style>

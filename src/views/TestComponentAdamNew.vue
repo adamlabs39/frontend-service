@@ -8,6 +8,8 @@ import FormOrderObat from '@/components/RekamMedis/OrderObat/FormOrderObat.vue';
 import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vue';
 import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
 import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
+import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBerkas.vue';
+import CustomUpload from '@/components/Base/CustomUpload.vue';
 </script>
 
 <template>
@@ -21,5 +23,7 @@ import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/For
          <FormOrderFisio/>
          <FormOrderAlkes/>
          <FormPersetujuanPasien/>
+         <FormUnggahBerkas/>
+         <!-- <CustomUpload/> -->
     </div>
 </template>

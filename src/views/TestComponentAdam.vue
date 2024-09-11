@@ -213,7 +213,6 @@ const onChipSelected = (label: string) => {
 
 
 
-
     <PopUpDownload/>
 
     <NewColorPicker @update:color="updateThemeColor" />

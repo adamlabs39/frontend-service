@@ -30,7 +30,7 @@ const props = defineProps({
     default: "label",
   },
   optionValue: {
-    type: String,
+    type: String ,
     default: null,
   },
   isLoading: {
@@ -135,7 +135,7 @@ const showClear = computed(() => {
         :filter="showFilter"
         filterPlaceholder="Search"
         pt:pcFilterIconContainer:class="flex items-center"
-        pt:pcFilter:root:class="text-black border-grey-200 text-black text-SM"
+        pt:pcFilter:root:class="text-black border-grey-200 text-SM"
         :dt="{
           placeholderColor: invalid ? '#e9594c' :'#90969E',
           color: invalid ? '#e9594c' :'#000000',

@@ -12,7 +12,7 @@ import CustomChip from '@/components/Base/CustomChip.vue';
 const props = defineProps({
     method: {
         type: String,
-        default: "detail",
+        default: "form",
     }
 })
 

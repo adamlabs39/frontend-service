@@ -14,6 +14,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'gear' },
           { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'gear' },
           { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:'gear' },
+          { name: "System", type: linkType.LINK, url:'/setting/system', icon:'gear' },
     ],
   },
 ]);
