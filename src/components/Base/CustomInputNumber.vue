@@ -131,14 +131,13 @@ defineExpose({
       <InputNumber
         buttonLayout="horizontal"
         v-model="value"
-        class="text-black text-SM"
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
           'border-grey-200': !disabled && !invalid,
           'rounded-r-none border-r-0': $slots.appendText,
           'rounded-l-none border-l-0': $slots.prependText,
-          'h-10 pt-1 text-black ': true,
+          'h-10 pt-1 text-black text-SM ': true,
           'text-center px-0': showButtons,
           'text-start ': !showButtons,
           [alignNumber]: true,
@@ -159,7 +158,7 @@ defineExpose({
           },
           decrementButton: {
             class: 'bg-adameds-300 text-white border-adameds-300',
-          },
+          }
         }"
         :dt="{
           placeholderColor: invalid ? '#e9594c' : '#90969E',

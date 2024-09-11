@@ -65,7 +65,6 @@ function handleDrop(event: any) {
 function loadImage(file: File) {
   const reader = new FileReader();
   reader.onload = (e) => {
-    imageSrc.value = e.target?.result as string;
   };
   reader.readAsDataURL(file);
 }

@@ -1,42 +1,51 @@
 <script setup lang="ts">
-import HeaderFilter from "../Layout/HeaderFilter.vue";
+import HeaderFilter from "../../Layout/HeaderFilter.vue";
 import { onMounted, ref } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import TambahDataOdontogramDialog from "./TambahDataOdontogramDialog.vue";
 
-
-const products = ref<any[]>([]);
+const payload = ref<any[]>([]);
 
 onMounted(() => {
-  products.value = [
+  payload.value = [
     {
-      nama_keadaan_gigi: "Partial Erupted",
+      system: "Surface[identifier] Tooth",
+      code: "343434",
+      display: "structur of permanent",
+      name: "Partial Erupted",
+      catatan:"",
       status: "AKTIF",
     },
     {
-      nama_keadaan_gigi: "Partial Erupted",
+      system: "Surface[identifier] Tooth",
+      code: "343434",
+      display: "structur of permanent",
+      name: "Karies Bukal",
+      catatan:"",
       status: "AKTIF",
     },
   ];
 });
+const selectedGigi = ref(null);
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
+const isDetailGigiDialogVisible = ref(false);
+const metaKey = ref(true);
 
 // Dialog Configuration
-const dialogConfig = ref<any>({
+const dialogConfig = ref({
   method: "add",
   title: "Tambah Data",
   data: null,
 });
-
-const openDialog = (method: string, title: string, data: any = null) => {
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
-
+// Handle closing of the dialog
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
 };
@@ -50,19 +59,28 @@ const closeDialog = () => {
   >
     <template #header>
       <HeaderFilter
-        pageType=""
+        pageType="item-gigi"
         isSuperAdmin
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
     <template #content>
       <DataTable
-        :value="products"
+        :value="payload"
+        v-model:selection="selectedGigi"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         class="text-xs"
+        @rowSelect="openDialog('detail', 'Detail Data')"
+        selectionMode="single"
+        :metaKeySelection="metaKey"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'rgba(0, 0, 0, 0)',
+          rowSelectedRingColor: '#000000',
+        }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
@@ -75,8 +93,13 @@ const closeDialog = () => {
           </template>
         </Column>
         <Column
-          field="nama_keadaan_gigi"
-          header="Nama Keadaan Gigi"
+          field="display"
+          header="Kategori Gigi"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name"
+          header="Item Gigi"
           class="w-full"
           headerClass="bg-adameds-50"
         ></Column>
@@ -126,15 +149,9 @@ const closeDialog = () => {
             <div class="flex items-center gap-2.5 justify-center">
               <CustomButton
                 label=""
-                background-color="bg-adameds-300 rounded-lg"
-                class="h-6 w-[26px] p-0"
-              >
-                <PhEye :size="13" weight="fill" />
-              </CustomButton>
-              <CustomButton
-                label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data')"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -149,13 +166,15 @@ const closeDialog = () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataOdontogramDialog
+      <TambahDataGigiDiaolog
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
         @close="closeDialog"
       />
+      <!-- <DetailGigiDialog
+      v-model:isDialogVisible="isDetailGigiDialogVisible"
+      /> -->
     </template>
     <template #footer>
       <Footer />

@@ -37,7 +37,7 @@ const testDialog = ref(false);
       <CustomDialog :full-screen="true" v-model:visible="testDialog" headerBg="bg-adameds-300">
         <template #header>Tambah Tarif</template>
         <template #body>
-         <div class="h-full overflow-hidden">
+         <div >
           <div v-if="selectedTab === '0'">
             <DetailTarifTindakan />
           </div>

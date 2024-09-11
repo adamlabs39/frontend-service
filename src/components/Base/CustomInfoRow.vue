@@ -5,13 +5,13 @@ const props = defineProps({
 });
 </script>
 <template>
-  <div class="flex gap-2.5 w-full">
-    <div class="flex justify-between basis-5/12 text-normal">
-      <div class="font-semibold">{{ label }}</div>
-      <div>:</div>
+  <div class="grid grid-cols-12 gap-2.5 w-full">
+    <div class="flex justify-between col-span-4 text-normal">
+      <div class="font-semibold ">{{ label }}</div>
+      <div >:</div>
     </div>
-    <div>
-      <slot name="value">
+    <div class="col-span-7">
+      <slot name="value" >
         {{ value }}
       </slot>
     </div>

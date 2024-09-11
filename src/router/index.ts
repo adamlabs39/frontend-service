@@ -51,6 +51,11 @@ import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
+import SuperAdminPage from "@/views/Datamaster/SuperAdmin/SuperAdminPage.vue";
+import GigiFDIPage from "@/views/Datamaster/SuperAdmin/GigiFDI/GigiFDIPage.vue";
+import KategoriGigi from "@/views/Datamaster/SuperAdmin/KategoriGigi/KategoriGigi.vue";
+import ItemGigiPage from "@/views/Datamaster/SuperAdmin/ItemGigi/ItemGigiPage.vue";
+import OklusiPage from "@/views/Datamaster/SuperAdmin/Oklusi/OklusiPage.vue";
 
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
@@ -68,7 +73,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
-import SuperAdminPage from "@/views/Datamaster/SuperAdmin/SuperAdminPage.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -256,7 +261,30 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: SuperAdminPage },
       component: DatamasterView,
     },
-
+    {
+      path: "/datamaster/super-admin/gigi-fdi",
+      name: "datamaster-super-admin-gigi-fdi",
+      meta: { layout: SidebarLayout, page: GigiFDIPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/kategori-gigi",
+      name: "datamaster-super-admin-kategori-gigi",
+      meta: { layout: SidebarLayout, page: KategoriGigi },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/item-gigi",
+      name: "datamaster-super-admin-item-gigi",
+      meta: { layout: SidebarLayout, page: ItemGigiPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/oklusi",
+      name: "datamaster-super-admin-oklusi",
+      meta: { layout: SidebarLayout, page: OklusiPage },
+      component: DatamasterView,
+    },
     // NOTE Admisi
     {
       path: "/admisi",

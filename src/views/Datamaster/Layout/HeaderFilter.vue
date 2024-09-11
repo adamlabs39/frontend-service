@@ -22,8 +22,7 @@ const props = defineProps({
     default: false,
   },
   dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
+    default: "",
   },
 });
 
@@ -72,6 +71,18 @@ const pageLabel = computed(() => {
     : "General Consent";
 });
 
+const dataBreadCrumb = ref([
+  {
+    label:
+      props.pageType === "gigi-fdi"
+        ? "Gigi FDI"
+        : props.pageType === "item-gigi"
+        ? "Item Gigi"
+        : props.pageType === "kategori-gigi"
+        ? "Kategori Gigi"
+        : "Oklusi",
+  },
+]);
 const valueSearch = ref(props.valueSearch);
 watch(valueSearch, (newValue) => {
   emit("update:valueSearch", newValue);
@@ -146,7 +157,7 @@ const selectedTab = ref("0");
           <CustomTextfield
             v-model="valueSearch"
             :label="isSuperAdmin ? 'Pencarian' : `Cari ${pageLabel}`"
-            :placeholder="isSuperAdmin ? 'Cari Nama Keadaan Gigi' : `Cari ${pageLabel}`"
+            :placeholder="isSuperAdmin ? 'Cari Display Gigi' : `Cari ${pageLabel}`"
             class="grow"
             prependIcon="PhMagnifyingGlass"
 
