@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import CustomButton from "./CustomButton.vue";
-import CustomTextArea from "./CustomTextArea.vue";
-import CustomAccordion from "./CustomAccordion.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 
 const props = defineProps({
   header: {
@@ -402,15 +402,32 @@ onMounted(() => {
 
 const getSVG = (svg: string) => {
   const imgUrl = new URL(
-    `../../assets/images/PhisicalExam/${svg}.svg`,
+    `../../../assets/images/PhisicalExam/${svg}.svg`,
     import.meta.url
   ).href;
   return imgUrl;
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
     <template #header>{{ header }}</template>
     <template #content>
       <div class="flex pt-5">
