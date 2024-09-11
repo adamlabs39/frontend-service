@@ -28,7 +28,7 @@ import { onBeforeMount } from "vue";
 const props = defineProps({
     method: {
         type: String,
-        default: "detail",
+        default: "form",
     }
 })
 

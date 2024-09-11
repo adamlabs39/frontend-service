@@ -6,16 +6,21 @@ import CustomTextArea from '@/components/Base/CustomTextArea.vue';
 import catatanPerawat01 from '@/assets/icons/Avatar/catatanPerawat01.svg';
 import catatanPerawatAnda from '@/assets/icons/Avatar/catatanPerawatAnda.svg';
 import { PhArrowUUpLeft, PhCalendarDots, PhClock, PhPencil } from '@phosphor-icons/vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import CustomChip from '@/components/Base/CustomChip.vue';
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+
 
 const props = defineProps({
     method: {
         type: String,
-        default: "form",
+        default: "detail",
     }
 })
 
+const currentMethod = ref(props.method);
 
 const messages = ref([
     {
@@ -43,8 +48,31 @@ const messages = ref([
     },
 ]);
 
+const schemaCatatanPerawat = computed(() =>
+    toTypedSchema(
+        yup.object({
+            catatanPerawat: yup.string(),
+        })
+    )
+);
 
-const catatanPerawat = ref("");
+const {
+    handleSubmit: handleSubmitCatatanPerawat,
+    defineField: defineFieldCatatanPerawat, 
+} = useForm({
+    validationSchema: schemaCatatanPerawat,
+});
+
+const [catatanPerawat] = defineFieldCatatanPerawat("catatanPerawat");
+
+const onSubmitCatatanPerawat = handleSubmitCatatanPerawat((values: any) => {
+    console.log("Adding new data", values);
+    currentMethod.value = 'detail'
+})
+
+const onEditClick = () => {
+    currentMethod.value = 'form';  // Mengubah method menjadi 'form'
+};
 </script>
 
 <template>
@@ -76,7 +104,7 @@ const catatanPerawat = ref("");
                             {{ message.text }}
                         </div>
                         <div :class="message.isSender ? 'justify-start' : 'justify-end'" class="flex gap-4">
-                            <button v-for="action in message.actions" :key="action.text" v-if="props.method == 'form'"
+                            <button v-for="action in message.actions" :key="action.text" v-if="currentMethod == 'form'"
                                 class="flex items-center gap-2 font-medium text-SM"
                                 :style="{ color: action.text === 'Edit' ? '#3D84E5' : '#14B8A6' }">
                                 <!-- Dynamically render the icon component -->
@@ -87,20 +115,22 @@ const catatanPerawat = ref("");
                     </div>
                 </div>
 
-                <hr class="border-grey-200 my-2.5" />
-                <div v-if="props.method == 'form'" class="space-y-2.5">
+                <hr class="border-grey-200 my-2.5" v-if="currentMethod == 'form'" />
+                <div v-if="currentMethod == 'form'" class="space-y-2.5">
                     <CustomChip label="Membalas Perawat01" selected-color="border-0 bg-[#14B8A6]"
                         :showCheckedIcon="false" bgColor="bg-adameds-300" textColor="text-white"
                         borderColor="border-transparent" customClass="h-5 pr-[6px]" />
                     <div class="space-y-2.5">
                         <CustomTextArea v-model="catatanPerawat" label="Catatan Antar Perawat"
                             placeholder="Ketik Catatan..." />
-                        <CustomButton :full="true" icon="PhPaperPlaneTilt" label="Kirim Catatan" />
+                        <CustomButton :full="true" icon="PhPaperPlaneTilt" label="Kirim Catatan" @click="onSubmitCatatanPerawat" />
                     </div>
                 </div>
-                <div>
-                    
-                </div>
+            </div>
+        </template>
+        <template #footer v-if="currentMethod == 'detail'">
+            <div class="flex items-end justify-end gap-3">
+                <CustomButton label="Edit" @click="onEditClick" />
             </div>
         </template>
     </CustomAccordion>

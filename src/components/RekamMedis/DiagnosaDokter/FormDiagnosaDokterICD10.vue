@@ -2,16 +2,15 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
-
 const props = defineProps({
     method: {
         type: String,
-        default: "form",
+        default: "detail",
     },
 });
 
@@ -22,7 +21,7 @@ const schema = toTypedSchema(
                 primer: yup.string(),
                 sekunder: yup.string(),
                 diagnosisDiferensial: yup.string(),
-                petugas: yup.string(),
+                petugas: yup.string().required('Petugas is required'),
             })
         ),
     })
@@ -31,14 +30,20 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, resetForm, setValues } = useForm({
     validationSchema: schema,
     initialValues: {
-        datas: [{ primer: "", diagnosisDiferensial: "" }],
+        datas: [{ primer: "", diagnosisDiferensial: "" , petugas: "MBOH" }],
     },
 });
 
 const { remove, push, fields } = useFieldArray("datas");
 
 const addDiagnosis = () => {
-    push({ sekunder: "", diagnosisDiferensial: "" });
+    // Type assertion untuk memastikan fields.value adalah array yang sesuai dengan schema
+    const tipeFields = fields.value as Array<{ value: { sekunder?: string; diagnosisDiferensial?: string; petugas?: string } }>;
+    
+    // Cek apakah ada field yang sudah diisi sebelumnya, gunakan petugas dari field pertama
+    const petugas = tipeFields.length > 0 ? tipeFields[0].value.petugas : "Default Petugas";
+
+    push({ sekunder: "", diagnosisDiferensial: "", petugas });
 };
 
 const diagnosaPrimers = ref([
@@ -67,14 +72,22 @@ const onSubmit = handleSubmit((values) => {
 });
 
 const onReset = () => {
+    const typedFields = fields.value as Array<{ value: { petugas: string } }>;
+
     resetForm({
         values: {
-            datas: [{ primer: "", diagnosisDiferensial: "" }],
+            datas: typedFields.map((field, index) => ({
+                primer: "",
+                sekunder: index > 0 ? "" : undefined,
+                diagnosisDiferensial: "",
+                petugas: field.value.petugas || "MBOH",
+            })),
         },
     });
 };
 
 </script>
+
 
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
@@ -86,6 +99,7 @@ const onReset = () => {
                         optionValue="diagnosaPrimer" optionLabel="diagnosaPrimer" :isLoading="false" :invalid="false"
                         invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
                         customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass" />
+                   
                     <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensial"
                         :options="diagnosaSekunders" optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder" :isLoading="false"
                         :invalid="false" invalidMessage="Wajib diisi" :disabled="false" placeHolder="Pilih Diagnosis"
