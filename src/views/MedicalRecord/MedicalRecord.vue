@@ -444,7 +444,7 @@ defineExpose({ showDialogRM });
         </div>
       </template>
       <template #customCloseIcon>
-        <MenuOpenIcon color="text-white" />
+        <MenuOpenIcon class="text-white" />
       </template>
     </CustomDialog>
   </div>

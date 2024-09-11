@@ -17,19 +17,26 @@ const toggle = () => {
   isOpen.value = !isOpen.value;
 };
 const getSVG = (svg: string) => {
-  const imgUrl = new URL(`../../assets/icons/sidebar-icon/${svg}.svg`, import.meta.url).href
-  return imgUrl
-}
+  const imgUrl = new URL(
+    `../../assets/icons/sidebar-icon/${svg}.svg`,
+    import.meta.url
+  ).href;
+  return imgUrl;
+};
 </script>
 
 <template>
   <div>
-    <div @click="toggle" class="flex justify-between font-bold m-[10px] my-[20px]">
+    <div
+      @click="toggle"
+      class="flex justify-between font-bold m-[10px] my-[20px]"
+    >
       <div class="flex">
-        <img
+        <component
           v-if="icon"
-          class="h-4 mr-[10px]"
-          :src="getSVG(icon)"
+          :is="icon"
+          :size="16"
+          class="text-white mr-[10px]"
         />
         <div>{{ props.title }}</div>
       </div>
