@@ -8,11 +8,14 @@ import SessionTab from "./Section/SessionTab.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
 import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
+import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const dialogRM = ref(false);
-const selectedTab = ref("0");
+const selectedTab = ref("rekam-medis");
 const selectedSessionTab = ref("non-sesi");
 const deleteSessionDialog = ref(false);
+const historyVisitDialog = ref(false);
 
 const assesmentList = ref([
   "Alergi",
@@ -61,6 +64,14 @@ const onSuratListSelect = (label: string) => {
   }
 };
 
+const rmDate = ref("");
+const rmDateList = ref([
+  "Jum’at, 19 Agustus 2024",
+  "Sabtu, 20 Agustus 2024",
+  "Minggu, 21 Agustus 2024",
+  "Senin, 22 Agustus 2024",
+]);
+
 const showDialogRM = () => {
   dialogRM.value = true;
 };
@@ -96,17 +107,36 @@ defineExpose({ showDialogRM });
         </div>
       </template>
       <template #body>
-        <div class="pt-[10px]">
+        <div class="pt-[10px] h-full">
           <DataPatient />
-          <div class="flex mb-4">
-            <PhStethoscope
-              :size="24"
-              weight="bold"
-              class="text-adameds-300 mr-[10px]"
+          <div class="flex justify-between mb-4">
+            <div class="flex mr-5">
+              <RMCustomSelect
+                v-model="rmDate"
+                :options="rmDateList"
+                class="mr-[10px]"
+                optionLabel=""
+                optionValue=""
+              />
+              <CustomButton icon="PhPlus" size="small" class="!rounded-md" />
+            </div>
+            <div class="flex">
+              <PhStethoscope
+                :size="24"
+                weight="bold"
+                class="text-adameds-300 mr-[10px]"
+              />
+              <span class="font-semibold leading-6 text-grey-500 text-MD">
+                Pemeriksaan
+              </span>
+            </div>
+            <CustomButton
+              @click="historyVisitDialog = true"
+              icon="PhClockCounterClockwise"
+              label="Riwayat"
+              size="small"
+              class="!rounded-md ml-auto"
             />
-            <span class="font-semibold leading-6 text-grey-500 text-MD">
-              Pemeriksaan
-            </span>
           </div>
           <Tabs
             v-model:value="selectedTab"
@@ -284,6 +314,7 @@ defineExpose({ showDialogRM });
               />
             </div>
           </div>
+
           <div v-if="selectedTab == 'asesmen'" class="mt-[10px] mb-[10px]">
             <CustomChip
               v-for="(assesment, index) in assesmentList"
@@ -318,11 +349,20 @@ defineExpose({ showDialogRM });
             />
           </div>
 
-          <PemeriksaanFisik v-if="selectedAssesment == 'Pemeriksaan Fisik'" />
-          <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
+          <div v-if="selectedTab == 'rekam-medis'" class="flex mt-5 h-3/5">
+            <NoData class="grow" title="Belum Ada Pemeriksaan" />
+            <div class="flex flex-col mx-[10px]">
+              <CustomButton icon="PhArrowsInLineVertical" class="mb-[10px]" />
+              <CustomButton icon="PhArrowsOutLineVertical" class="" />
+            </div>
+          </div>
+
+          <div v-if="selectedTab == 'asesmen'">
+            <PemeriksaanFisik v-if="selectedAssesment == 'Pemeriksaan Fisik'" />
+            <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
+          </div>
         </div>
       </template>
-      <template #footer>3</template>
     </CustomDialog>
     <!-- Dialog konfirmasi hapus sesi -->
     <CustomDialog
@@ -364,6 +404,47 @@ defineExpose({ showDialogRM });
             iconType="fill"
           />
         </div>
+      </template>
+    </CustomDialog>
+    <!-- Dialog history -->
+    <CustomDialog
+      class=""
+      v-model:visible="historyVisitDialog"
+      position="bottomright"
+      headerHeight="h-5"
+      width="350px"
+      closeIcon="PhTextIndent"
+    >
+      <template #header>
+        <div class="flex">
+          <PhClockCounterClockwise
+            color="white"
+            :size="20"
+            weight="bold"
+            class="my-auto"
+          />
+          <span class="ml-[10px] text-normal"> Riwayat Kujungan </span>
+        </div>
+      </template>
+      <template #body>
+        <div class="h-[60vh]">
+          <!-- <div>
+            <div>
+              Rawat Jalan - Poli Mata
+              <CustomChip
+                :showCheckedIcon="false"
+                label="BPJS"
+                bgColor="bg-warning-50"
+                textColor="text-warning-300"
+                borderColor="border-warning-300"
+                customClass="h-5 pr-[6px] mr-[5px]"
+              />
+            </div>
+          </div> -->
+        </div>
+      </template>
+      <template #customCloseIcon>
+        <MenuOpenIcon color="text-white" />
       </template>
     </CustomDialog>
   </div>
