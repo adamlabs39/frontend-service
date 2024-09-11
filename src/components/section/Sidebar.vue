@@ -131,10 +131,11 @@ const getSVG = (svg: string) => {
                   'bg-adameds-100 rounded-lg': route.path == row1.url,
                 }"
               >
-                <img
+                <component
                   v-if="row1.icon"
-                  class="h-4 mr-[10px]"
-                  :src="getSVG(row1.icon)"
+                  :is="row1.icon"
+                  :size="16"
+                  class="text-white mr-[10px]"
                 />
                 <div>
                   {{ row1.name }}
@@ -178,15 +179,16 @@ const getSVG = (svg: string) => {
               </Accordion>
             </div>
             <div v-else>
-              <img
+              <component
                 v-if="row1.icon"
+                :is="row1.icon"
+                :size="16"
+                class="mx-auto my-5 text-white"
                 @click="
                   row1.type == linkType.DROPDOWN
                     ? goToPage(row1.child ? row1.child[0].url ?? '' : '')
                     : goToPage(row1.url ?? '')
                 "
-                class="h-4 mx-auto my-5 cursor-pointer"
-                :src="getSVG(row1.icon)"
               />
             </div>
           </div>

@@ -8,6 +8,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -115,6 +116,18 @@ watch(
           :invalid="!!errors.permission"
           class="col-span-12"
         />
+        <!-- <CustomAccordion>
+          <template #header>
+            <div>
+              Modul
+            </div>
+          </template>
+          <template #content>
+            <div>
+              
+            </div>
+          </template>
+        </CustomAccordion> -->
         <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
           v-model="status"

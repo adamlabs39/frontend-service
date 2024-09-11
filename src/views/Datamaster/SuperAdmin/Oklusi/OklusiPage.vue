@@ -5,6 +5,7 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import DataOklusiDialog from "./DataOklusiDialog.vue";
 
 const payload = ref<any[]>([]);
 
@@ -13,15 +14,15 @@ onMounted(() => {
     {
       system: "Surface[identifier] Tooth",
       code: "343434",
-      display: "structur of permanent",
-      name: "Partial Erupted",
+      display: "No malocclusion",
+      name: "Normal Bite",
       status: "AKTIF",
     },
     {
       system: "Surface[identifier] Tooth",
       code: "343434",
-      display: "structur of permanent",
-      name: "Karies Bukal",
+      display: "No malocclusion",
+      name: "Normal Bite",
       status: "AKTIF",
     },
   ];
@@ -29,7 +30,6 @@ onMounted(() => {
 const selectedGigi = ref(null);
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
-const isDetailGigiDialogVisible = ref(false);
 const metaKey = ref(true);
 
 // Dialog Configuration
@@ -46,6 +46,10 @@ const openDialog = (method: any, title: any, data: any = null) => {
 // Handle closing of the dialog
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
+};
+const onRowSelect = (event: any) => {
+  selectedGigi.value = event.data;
+  openDialog('detail', 'Detail Data', selectedGigi);
 };
 </script>
 
@@ -71,13 +75,15 @@ const closeDialog = () => {
         scrollable
         scrollHeight="flex"
         class="text-xs"
-        @rowSelect="openDialog('detail', 'Detail Data')"
+        @rowSelect="onRowSelect"
         selectionMode="single"
         :metaKeySelection="metaKey"
-        :dt="{
+         :dt="{
           rowSelectedColor: '#000000',
-          rowSelectedBackground: 'rgba(0, 0, 0, 0)',
-          rowSelectedRingColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor:'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
         }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
@@ -98,7 +104,7 @@ const closeDialog = () => {
         <Column
           field="name"
           header="Oklusi"
-          class="w-full"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
@@ -164,10 +170,12 @@ const closeDialog = () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataGigiDiaolog
+      <DataOklusiDialog
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+
         @close="closeDialog"
       />
       <!-- <DetailGigiDialog

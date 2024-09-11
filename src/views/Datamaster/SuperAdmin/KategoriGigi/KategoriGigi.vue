@@ -5,22 +5,23 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import DataKategoriGigiDialog from "./DataKategoriGigiDialog.vue";
 
-const payload = ref<any[]>([]);
+const payload = ref<any>([]);
 
 onMounted(() => {
   payload.value = [
     {
-      system: "Surface[identifier] Tooth",
+      system: "structur of permanent",
       code: "343434",
-      display: "structur of permanent",
+      display: "Surface[identifier] Tooth",
       name: "permukaan gigi",
       status: "AKTIF",
     },
     {
-      system: "Surface[identifier] Tooth",
+      system: "structur of permanent",
       code: "343434",
-      display: "structur of permanent",
+      display: "Surface[identifier] Tooth",
       name: "Permukaan gigi",
       status: "AKTIF",
     },
@@ -29,7 +30,6 @@ onMounted(() => {
 const selectedGigi = ref(null);
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
-const isDetailGigiDialogVisible = ref(false);
 const metaKey = ref(true);
 
 // Dialog Configuration
@@ -46,6 +46,10 @@ const openDialog = (method: any, title: any, data: any = null) => {
 // Handle closing of the dialog
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
+};
+const onRowSelect = (event: any) => {
+  const selectedRowData = event.data;
+  openDialog('detail', 'Detail Data', selectedRowData);
 };
 </script>
 
@@ -71,13 +75,15 @@ const closeDialog = () => {
         scrollable
         scrollHeight="flex"
         class="text-xs"
-        @rowSelect="openDialog('detail', 'Detail Data')"
+        @rowSelect="onRowSelect"
         selectionMode="single"
         :metaKeySelection="metaKey"
         :dt="{
           rowSelectedColor: '#000000',
-          rowSelectedBackground: 'rgba(0, 0, 0, 0)',
-          rowSelectedRingColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor:'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
         }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
@@ -98,7 +104,7 @@ const closeDialog = () => {
         <Column
           field="name"
           header="Kategori Gigi"
-          class="w-full"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
@@ -149,7 +155,7 @@ const closeDialog = () => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data')"
+                @click="openDialog('edit', 'Edit Data',slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -164,10 +170,11 @@ const closeDialog = () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataGigiDiaolog
+      <DataKategoriGigiDialog
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
+         :payload="dialogConfig.data"
         @close="closeDialog"
       />
       <!-- <DetailGigiDialog

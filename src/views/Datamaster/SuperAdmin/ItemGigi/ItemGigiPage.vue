@@ -6,46 +6,36 @@ import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
-const payload = ref<any[]>([]);
+
+const products = ref<any[]>([]);
 
 onMounted(() => {
-  payload.value = [
+  products.value = [
     {
-      system: "Surface[identifier] Tooth",
-      code: "343434",
-      display: "structur of permanent",
-      name: "Partial Erupted",
-      catatan:"",
+      nama_keadaan_gigi: "Partial Erupted",
       status: "AKTIF",
     },
     {
-      system: "Surface[identifier] Tooth",
-      code: "343434",
-      display: "structur of permanent",
-      name: "Karies Bukal",
-      catatan:"",
+      nama_keadaan_gigi: "Partial Erupted",
       status: "AKTIF",
     },
   ];
 });
-const selectedGigi = ref(null);
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
-const isDetailGigiDialogVisible = ref(false);
-const metaKey = ref(true);
 
 // Dialog Configuration
-const dialogConfig = ref({
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
   data: null,
 });
-// Handle add and edit of the dialog
-const openDialog = (method: any, title: any, data: any = null) => {
+
+const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
-// Handle closing of the dialog
+
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
 };
@@ -59,27 +49,25 @@ const closeDialog = () => {
   >
     <template #header>
       <HeaderFilter
-        pageType="item-gigi"
+        pageType=""
         isSuperAdmin
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
     <template #content>
       <DataTable
-        :value="payload"
-        v-model:selection="selectedGigi"
+        :value="products"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         class="text-xs"
-        @rowSelect="openDialog('detail', 'Detail Data')"
-        selectionMode="single"
-        :metaKeySelection="metaKey"
         :dt="{
           rowSelectedColor: '#000000',
-          rowSelectedBackground: 'rgba(0, 0, 0, 0)',
-          rowSelectedRingColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor:'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
         }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
@@ -93,13 +81,8 @@ const closeDialog = () => {
           </template>
         </Column>
         <Column
-          field="display"
-          header="Kategori Gigi"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="name"
-          header="Item Gigi"
+          field="nama_keadaan_gigi"
+          header="Nama Keadaan Gigi"
           class="w-full"
           headerClass="bg-adameds-50"
         ></Column>
@@ -149,9 +132,15 @@ const closeDialog = () => {
             <div class="flex items-center gap-2.5 justify-center">
               <CustomButton
                 label=""
+                background-color="bg-adameds-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
+                <PhEye :size="13" weight="fill" />
+              </CustomButton>
+              <CustomButton
+                label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data')"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -166,15 +155,13 @@ const closeDialog = () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataGigiDiaolog
+      <TambahDataOdontogramDialog
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
+        :editData="dialogConfig.data"
         @close="closeDialog"
       />
-      <!-- <DetailGigiDialog
-      v-model:isDialogVisible="isDetailGigiDialogVisible"
-      /> -->
     </template>
     <template #footer>
       <Footer />

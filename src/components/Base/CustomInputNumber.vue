@@ -67,9 +67,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  alignNumber: {
-    type: String,
-    default: "text-start",
+  readOnly: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -131,6 +131,7 @@ defineExpose({
       <InputNumber
         buttonLayout="horizontal"
         v-model="value"
+        class="text-black text-SM"
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
@@ -140,7 +141,7 @@ defineExpose({
           'h-10 pt-1 text-black text-SM ': true,
           'text-center px-0': showButtons,
           'text-start ': !showButtons,
-          [alignNumber]: true,
+          'cursor-not-allowed': readOnly,
         }"
         :min="min"
         :max="max"
@@ -162,8 +163,8 @@ defineExpose({
         }"
         :dt="{
           placeholderColor: invalid ? '#e9594c' : '#90969E',
-          color:'#000000'
         }"
+        :readonly="readOnly"
       >
         <template #incrementbuttonicon>
           <PhPlus :size="20" />

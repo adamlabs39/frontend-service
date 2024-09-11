@@ -11,19 +11,19 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Rawat Jalan",
-        icon: "user-plus",
+        icon: "UserPlusIcon",
         type: linkType.LINK,
         url: "/admisi/rawat-jalan",
       },
       {
         name: "Rawat Inap",
-        icon: "user-plus",
+        icon: "UserPlusIcon",
         type: linkType.LINK,
         url: "/admisi/rawat-inap",
       },
       {
         name: "IGD",
-        icon: "user-plus",
+        icon: "UserPlusIcon",
         type: linkType.LINK,
         url: "/admisi/igd",
       },
@@ -35,7 +35,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "SEP",
-        icon: "BPJS",
+        icon: "BPJSIcon",
         type: linkType.DROPDOWN,
         child: [
           {
@@ -60,13 +60,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
       {
         name: "Data Pasien",
-        icon: "database-user",
+        icon: "DatabaseUserIcon",
         type: linkType.LINK,
         url: "/admisi/data-pasien",
       },
       {
         name: "Monitoring Kamar",
-        icon: "monitoring-bed",
+        icon: "MonitoringBedIcon",
         type: linkType.LINK,
         url: "/admisi/monitoring-kamar",
       },
@@ -78,7 +78,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Laporan",
-        icon: "Report",
+        icon: "FileReportIcon",
         type: linkType.DROPDOWN,
         child: [
           {

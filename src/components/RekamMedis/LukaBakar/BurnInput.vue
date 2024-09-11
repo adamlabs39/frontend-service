@@ -4,13 +4,13 @@ import AdultWomen from "./BurnSVG/AdultWomen.vue";
 import Child from "./BurnSVG/Child.vue";
 import ChildWomen from "./BurnSVG/ChildWomen.vue";
 import Baby from "./BurnSVG/Baby.vue";
-import CustomAccordion from "./CustomAccordion.vue";
-import CustomButton from "./CustomButton.vue";
-import CustomInputNumber from "./CustomInputNumber.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" initialState="0">
     <template #header>Derajat Luka Bakar</template>
     <template #content>
       <div class="flex justify-between pt-5">
@@ -35,11 +35,11 @@ import CustomInputNumber from "./CustomInputNumber.vue";
             </template>
           </CustomInputNumber>
         </div>
-        <!-- <Adult class="w-[800px]" /> -->
+        <Adult class="w-[800px]" />
         <!-- <AdultWomen class="w-[800px]" /> -->
         <!-- <Child class="w-[800px]" /> -->
         <!-- <ChildWomen class="w-[800px]" /> -->
-        <Baby class="w-[800px]" />
+        <!-- <Baby class="w-[800px]" /> -->
         <div class="font-semibold text-normal grow ml-[30px]">
           <div class="flex bg-adameds-50 rounded-[10px] h-10 w-full px-5">
             <span class="my-auto text-adameds-300"> Derajat Luka Bakar </span>

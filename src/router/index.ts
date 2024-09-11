@@ -51,7 +51,6 @@ import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
 import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
-import SuperAdminPage from "@/views/Datamaster/SuperAdmin/SuperAdminPage.vue";
 import GigiFDIPage from "@/views/Datamaster/SuperAdmin/GigiFDI/GigiFDIPage.vue";
 import KategoriGigi from "@/views/Datamaster/SuperAdmin/KategoriGigi/KategoriGigi.vue";
 import ItemGigiPage from "@/views/Datamaster/SuperAdmin/ItemGigi/ItemGigiPage.vue";
@@ -256,10 +255,9 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
-      path: "/datamaster/super-admin/odontogram-gigi",
-      name: "datamaster-super-admin-odontogram",
-      meta: { layout: SidebarLayout, page: SuperAdminPage },
-      component: DatamasterView,
+      path: "/datamaster/super-admin/",
+      name: "datamaster-super-admin",
+      redirect: "/datamaster/super-admin/gigi-fdi",
     },
     {
       path: "/datamaster/super-admin/gigi-fdi",

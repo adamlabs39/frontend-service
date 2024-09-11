@@ -79,9 +79,11 @@ const onRowSelect = (event: any) => {
         selectionMode="single"
         :metaKeySelection="metaKey"
         :dt="{
-          rowSelectedColor:'#000000',
-          rowSelectedBackground:'rgba(0, 0, 0, 0)',
-          rowSelectedRingColor:'#000000',
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor:'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
         }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">

@@ -11,13 +11,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "User",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/user",
       },
       {
         name: "Role",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/role",
       },
@@ -29,13 +29,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Pegawai",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/nakes",
       },
       {
         name: "Praktisioner",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/dokter",
       },
@@ -48,13 +48,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Ruangan",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/ruangan",
       },
       {
         name: "Kategori Ruangan",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/kategori-ruangan",
       },
@@ -66,25 +66,25 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Diagnosis (ICD 10)",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/diagnosis-icd10",
       },
       {
         name: "ICD 9 CM",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/icd9-cm",
       },
       {
         name: "Snomed CT",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/snomed-ct",
       },
       {
         name: "LOINC",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/loinc",
       },
@@ -96,13 +96,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Tarif",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/tarif",
       },
       {
         name: "Tindakan",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/tindakan",
       },
@@ -115,37 +115,37 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Faskes",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/faskes",
       },
       {
         name: "Organisasi",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/organisasi",
       },
       {
         name: "Lokasi",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/lokasi",
       },
       {
         name: "Penjamin",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/penjamin",
       },
       {
         name: "Voucher",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/voucher",
       },
       {
         name: "General Consent",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/general-consent",
       },
@@ -157,36 +157,26 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Super Admin",
-        icon: "Datamaster",
+        icon: "DatabaseFill",
         type: linkType.DROPDOWN,
         child: [
           {
-            name: "Odontogram Gigi",
-            icon: "Datamaster",
-            type: linkType.LINK,
-            url: "/datamaster/super-admin/odontogram-gigi",
-          },
-          {
             name: "Gigi FDI",
-            icon: "Datamaster",
             type: linkType.LINK,
             url: "/datamaster/super-admin/gigi-fdi",
           },
           {
             name: "Kategori Gigi",
-            icon: "Datamaster",
             type: linkType.LINK,
             url: "/datamaster/super-admin/kategori-gigi",
           },
           {
             name: "Item Gigi",
-            icon: "Datamaster",
             type: linkType.LINK,
             url: "/datamaster/super-admin/item-gigi",
           },
           {
             name: "Oklusi",
-            icon: "Datamaster",
             type: linkType.LINK,
             url: "/datamaster/super-admin/oklusi",
           },

@@ -34,9 +34,13 @@ const openedData = ref(props.initialState);
 const open = () => {
   openedData.value = "0";
 };
+const close = () => {
+  openedData.value = "null";
+};
 
 defineExpose({
   open,
+  close,
 });
 </script>
 
@@ -59,7 +63,7 @@ defineExpose({
       >
         <slot name="header" />
       </AccordionHeader>
-      <AccordionContent class="" pt:content:class="rounded-b-[10px]">
+      <AccordionContent class="" :pt:content:class="`rounded-b-[10px] ${noBorder ? '' : 'border-l border-r'}`">
         <slot name="content" />
         <div
           v-if="$slots.footer"

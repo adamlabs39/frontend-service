@@ -200,18 +200,20 @@ const showPatientData = ref(true);
       <div class="h-[1px] border border-grey-200 grow my-auto"></div>
       <div
         v-if="showPatientData"
+        @click="showPatientData = false"
         class="flex text-white bg-adameds-300 py-[5px] px-[10px] rounded-[50px] cursor-pointer mx-[10px]"
       >
         <PhCaretDoubleUp :size="14" weight="bold" />
-        <span @click="showPatientData = false" class="mx-2"> Sembunyikan </span>
+        <span class="mx-2"> Sembunyikan </span>
         <PhCaretDoubleUp :size="14" weight="bold" />
       </div>
       <div
         v-else
+        @click="showPatientData = true"
         class="flex text-white bg-adameds-300 py-[5px] px-[10px] rounded-[50px] cursor-pointer mx-[10px]"
       >
         <PhCaretDoubleDown :size="14" weight="bold" />
-        <span @click="showPatientData = true" class="mx-2"> Tampilkan </span>
+        <span class="mx-2"> Tampilkan </span>
         <PhCaretDoubleDown :size="14" weight="bold" />
       </div>
       <div class="h-[1px] border border-grey-200 grow my-auto"></div>

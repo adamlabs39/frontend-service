@@ -32,9 +32,10 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
+    system: yup.string().required("Referensi Sistem harus diisi"),
     code: yup.string().required("Kode SATUSEHAT harus diisi"),
     display: yup.string().required("Display SATUSEHAT harus diisi"),
-    name: yup.number().required("Nama Gigi harus diisi"),
+    name: yup.string().required("Nama Kategori harus diisi"),
     status: yup.bool().default(false),
   })
 );
@@ -43,6 +44,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
+const [system] = defineField("system");
 const [code] = defineField("code");
 const [display] = defineField("display");
 const [name] = defineField("name");
@@ -111,10 +113,17 @@ const handleEdit = () => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }} Oklusi</template>
     <template #body>
-      <div v-if="method !== 'detail'" class="flex flex-col gap-5 mt-5">
+      <div v-if="method !== 'detail'" class="grid grid-cols-2 gap-5 mt-5">
         <!-- Keadaan Gigi Input -->
+        <CustomTextfield
+          v-model="system"
+          label="Referensi Sistem SATUSEHAT"
+          placeholder="Masukkan Referensi Sistem SATUSEHAT"
+          :invalid="!!errors.system"
+          :invalidMessage="errors.system"
+        />
         <CustomTextfield
           v-model="code"
           label="Code SATUSEHAT"
@@ -129,10 +138,10 @@ const handleEdit = () => {
           :invalid="!!errors.display"
           :invalidMessage="errors.display"
         />
-        <CustomInputNumber
+        <CustomTextfield
           v-model="name"
-          label="Gigi"
-          placeholder="Masukkan Gigi"
+          label="Oklusi"
+          placeholder="Oklusi"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
         />
@@ -149,14 +158,16 @@ const handleEdit = () => {
         />
       </div>
       <div v-else class="flex flex-col gap-5 mt-5">
+        <CustomInfoRow label="Referensi Sistem SATUSEHAT" :value="system" />
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
-        <CustomInfoRow label="Gigi" :value="name" />
+        <CustomInfoRow label="Oklusi" :value="name" />
         <CustomInfoRow label="Status">
             <template #value>
                 <CustomChip :label="status" bg-color="bg-adameds-300" text-color="text-white" icon-color="" border-color="border-adameds-300" />
               </template>
         </CustomInfoRow>
+        
       </div>
     </template>
 
