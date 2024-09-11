@@ -76,33 +76,38 @@ const value2 = computed({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-const onSelect = (event: any) => {
-  if (!event) return;
-  emit("update:modelValue", event.target?.value);
-  emit("change", event.value);
-};
-
 const removeSelect = (data: any) => {
-  if (props.optionLabel) {
+  console.log("data", data);
+  console.log("value2", value2.value);
+
+  if (props.optionValue || !(data instanceof Object)) {
+    value2.value = value2.value.filter((selected: any) => selected != data);
+  } else {
     value2.value = value2.value.filter(
       (selected: any) => selected[props.optionLabel] != data[props.optionLabel]
     );
-  } else {
-    value2.value = value2.value.filter((selected: any) => selected != data);
   }
-  // emit("update:modelValue", value.value);
 };
 </script>
 
 <template>
   <div class="">
-    <label
-      v-if="showLabel"
-      class="block font-semibold mb-[5px] text-normal"
-      :class="{ 'text-grey-300': disabled }"
-    >
-      {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
-    </label>
+    <div class="flex justify-between">
+      <label
+        v-if="showLabel"
+        class="block font-semibold mb-[5px] text-normal"
+        :class="{ 'text-grey-300': disabled }"
+      >
+        {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
+      </label>
+      <span
+        @click="value2 = []"
+        class="font-semibold cursor-pointer text-XS"
+        :class="[value2.length ? 'text-adameds-300' : 'text-grey-400']"
+      >
+        Hapus semua
+      </span>
+    </div>
     <InputGroup>
       <InputGroupAddon
         v-if="prependIcon"
@@ -139,8 +144,9 @@ const removeSelect = (data: any) => {
         :maxSelectedLabels="maxSelectedLabels"
         filterPlaceholder="Search"
         pt:pcFilterIconContainer:class="flex items-center"
-        pt:pcFilter:root:class="text-black border-grey-200 text-black text-SM"
-        class="h-10 rounded-lg text-SM text-black"
+        pt:pcHeaderCheckbox:root:class="hidden"
+        pt:pcFilter:root:class="text-black border-grey-200 text-SM"
+        class="h-10 text-black rounded-lg text-SM"
         :class="{
           'border-l-0 rounded-l-none': prependIcon,
           'border-danger-300 text-danger-300': invalid,
@@ -173,7 +179,7 @@ const removeSelect = (data: any) => {
               'bg-adameds-300 text-white': !disabled && !invalid,
             }"
           >
-            {{ optionValue ? value : value[optionLabel] }}
+            {{ optionLabel ? value[optionLabel] : value }}
             <template #removeicon>
               <PhX
                 class="cursor-pointer"
@@ -197,7 +203,6 @@ const removeSelect = (data: any) => {
         </template>
       </MultiSelect>
     </InputGroup>
-
     <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
   </div>
 </template>

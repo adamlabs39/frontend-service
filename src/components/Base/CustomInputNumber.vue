@@ -67,7 +67,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-
+  readOnly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // const value = ref(props.modelValue);
@@ -128,7 +131,7 @@ defineExpose({
       <InputNumber
         buttonLayout="horizontal"
         v-model="value"
-        class="text-SM text-black"
+        class="text-black text-SM"
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
@@ -138,6 +141,7 @@ defineExpose({
           'h-10 pt-1 ': true,
           'text-center px-0': showButtons,
           'text-start ': !showButtons,
+          'cursor-not-allowed': readOnly,
         }"
         :min="min"
         :max="max"
@@ -158,8 +162,9 @@ defineExpose({
           },
         }"
         :dt="{
-            placeholderColor: invalid ? '#e9594c' :'#90969E',
-          }"
+          placeholderColor: invalid ? '#e9594c' : '#90969E',
+        }"
+        :readonly="readOnly"
       >
         <template #incrementbuttonicon>
           <PhPlus :size="20" />
@@ -194,6 +199,8 @@ defineExpose({
         <slot name="appendText" />
       </div>
     </div>
-    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>
