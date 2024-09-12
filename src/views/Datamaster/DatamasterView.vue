@@ -34,7 +34,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         url: "/datamaster/nakes",
       },
       {
-        name: "Praktisioner",
+        name: "Praktisi",
         icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/dokter",

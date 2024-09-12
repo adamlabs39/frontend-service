@@ -122,27 +122,20 @@ const openPemeriksaanDialog = (data: any) => {
         ></Column>
         <Column field="STR" header="STR" headerClass="bg-adameds-50"></Column>
         <Column
-          field="code_antrian"
-          header="Kode Antrian"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
           field="name_dokter"
           header="Nama Praktisi"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column field="telepon" headerClass="bg-adameds-50">
-          <template #header>
-            <div class="w-full text-center font-semibold text-SM">
-              No. Telepon
-            </div>
-          </template>
-          <template #body="slotProps">
-            <div class="w-full text-center">
-              {{ slotProps.data.telepon }}
-            </div>
-          </template>
-        </Column>
+        <Column
+          field="code_antrian"
+          header="Kode Antrian"
+          headerClass="bg-adameds-50"
+        >
+        <template #body="slotProps">
+          <CustomChip label="rr"/>
+        </template>
+      </Column>
+        
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full text-center font-semibold text-SM">Status</div>
@@ -187,14 +180,6 @@ const openPemeriksaanDialog = (data: any) => {
                 @click="openDialog('edit', 'Edit Data')"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-adameds-300 rounded-lg"
-                class="h-6 w-[26px] p-0"
-                @click="openPemeriksaanDialog(true)"
-              >
-                <img src="@/assets/icons/dokter.svg" alt="" />
               </CustomButton>
               <CustomButton
                 label=""

@@ -12,6 +12,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import NoData from "@/components/section/NoData.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const emit = defineEmits(["back"]);
 
@@ -209,8 +210,8 @@ watch(selectedRole, (newRole) => {
 <template>
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-hidden"
-    class="h-full"
+    pt:content:class="h-full overflow-auto"
+    class=""
   >
     <template #header>
       <div class="flex items-center justify-between gap-5 p-5">
@@ -231,270 +232,137 @@ watch(selectedRole, (newRole) => {
       </div>
     </template>
     <template #content>
-      <div class="flex flex-row h-full pl-5 overflow-hidden grow">
-        <div class="basis-1/2 flex flex-col gap-2.5 overflow-hidden">
-          <CustomSelect
-            label="Role"
-            placeHolder="Pilih Role"
-            v-model="selectedRole"
-            :options="roleOptions"
-            :isLoading="false"
-            optionValue="value"
-            optionLabel="label"
+      <CustomAccordion no-border initial-state="0">
+        <template #header> Data User </template>
+        <template #content>
+          <div class="grid grid-cols-12 gap-5 mt-4">
+            <div class="flex col-span-12 gap-y-5 items-end">
+              <CustomSelect
+                label="Praktisi"
+                place-holder="Cari & Pilih Praktisi"
+                class="grow"
+              />
+              <CustomButton
+                label="Cara"
+                icon="PhMagnifyingGlass"
+                class="ml-5 mr-2.5"
+              />
+              <CustomButton
+                label="Reset"
+                background-color="bg-transparent"
+                border-color="border-adameds-300"
+                text-color="text-adameds-300"
+              />
+            </div>
+            <CustomInputNumber
+              label="No. Handphone"
+              placeholder="08xx-xxxx-xxxx"
+              class="col-span-6"
+            />
+            <CustomTextfield
+              label="Email"
+              placeholder="Email"
+              class="col-span-6"
+            />
+          </div>
+        </template>
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
           />
-          <div class="h-full overflow-auto">
-            <!-- Empty Role -->
-            <NoData v-if="!selectedRole" title="Pilih Role Terlebih Dahulu" />
-            <!-- Admin Role -->
-            <div
-              v-if="selectedRole === 'admin'"
-              class="flex flex-col w-full gap-3"
-            >
-              <CustomAccordion
-                headerClass="bg-adameds-50"
-                v-for="section in sections"
-                :key="section.name"
-              >
-                <template #header>{{ section.name }}</template>
-                <template #content>
-                  <CustomCheckBoxUser
-                    v-model="checkCategorie"
-                    :categories="section.items"
-                    custom-class="grid justify-center grid-cols-2 gap-4 pt-5"
-                  />
-                </template>
-              </CustomAccordion>
-            </div>
-            <!-- Dokter Role -->
-            <div
-              v-if="selectedRole === 'dokter'"
-              class="flex flex-col w-full gap-3"
-            >
-              <CustomAccordion
-                headerClass="bg-adameds-50"
-                v-for="section in sections"
-                :key="section.name"
-              >
-                <template #header>{{ section.name }}</template>
-                <template #content>
-                  <CustomCheckBoxUser
-                    v-model="checkCategorie"
-                    :categories="section.items"
-                    custom-class="grid justify-center grid-cols-2 gap-4 pt-5"
-                  />
-                </template>
-              </CustomAccordion>
-            </div>
-          </div>
-        </div>
-        <div class="basis-1/2 px-5 flex flex-col gap-2.5 overflow-hidden">
-          <div class="overflow-auto grow">
-            <div class="flex flex-col gap-5">
-              <CustomAccordion
-                v-if="selectedRole === 'superAdmin'"
-                headerClass=""
-                initialState="0"
-              >
-                <template #collapseIcon>
-                  <PhCaretUp :size="20" class="text-adameds-300" />
-                </template>
-                <template #expandIcon>
-                  <PhCaretDown :size="20" class="text-adameds-300" />
-                </template>
-                <template #header>Data Faskes</template>
-                <template #content>
-                  <CustomSelect
-                    label="Faskes"
-                    place-holder="Pilih Faskes"
-                    class="py-5"
-                  />
-                </template>
-              </CustomAccordion>
-              <CustomAccordion headerClass="" initialState="0">
-                <template #collapseIcon>
-                  <PhCaretUp :size="20" class="text-adameds-300" />
-                </template>
-                <template #expandIcon>
-                  <PhCaretDown :size="20" class="text-adameds-300" />
-                </template>
-                <template #header>Akun</template>
-                <template #content>
-                  <div class="flex flex-col gap-5 py-5">
-                    <CustomTextfield
-                      v-model="username"
-                      label="Username"
-                      placeholder="Username"
-                      :disabled="!selectedRole"
-                      :invalid="
-                        !selectedRole ? false : errors.username ? true : false
-                      "
-                      :invalidMessage="errors.username"
-                    />
-                    <CustomTextfield
-                      v-model="password"
-                      label="Password"
-                      placeholder="********"
-                      :disabled="!selectedRole"
-                      :type="showPassword ? 'text' : 'password'"
-                      :invalid="
-                        !selectedRole ? false : errors.password ? true : false
-                      "
-                      :invalidMessage="!selectedRole ? '' : errors.password"
-                      :appendIcon="showPassword ? 'PhEyeSlash' : 'PhEye'"
-                      @clickAppend="showPassword = !showPassword"
-                    />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+      </CustomAccordion>
+      <CustomAccordion no-border initial-state="0">
+        <template #header> Akun </template>
+        <template #content>
+          <div class="grid grid-cols-12 gap-5 mt-5">
+            <CustomTextfield
+              v-model="username"
+              label="Username"
+              placeholder="Username"
+              :invalid="errors.username ? true : false"
+              :invalidMessage="errors.username"
+              class="col-span-4"
+            />
 
-                    <CustomTextfield
-                      v-model="confirmPassword"
-                      label="Verify Password"
-                      placeholder="********"
-                      :disabled="!selectedRole"
-                      :type="showConfirmPassword ? 'text' : 'password'"
-                      :invalid="
-                        !selectedRole
-                          ? false
-                          : errors.confirmPassword
-                          ? true
-                          : false
-                      "
-                      :invalidMessage="errors.confirmPassword"
-                      :appendIcon="showConfirmPassword ? 'PhEyeSlash' : 'PhEye'"
-                      @clickAppend="showConfirmPassword = !showConfirmPassword"
-                    />
-                  </div>
-                </template>
-              </CustomAccordion>
-              <CustomAccordion headerClass="" initialState="0">
-                <template #collapseIcon>
-                  <PhCaretUp :size="20" class="text-adameds-300" />
-                </template>
-                <template #expandIcon>
-                  <PhCaretDown :size="20" class="text-adameds-300" />
-                </template>
-                <template #header>
-                  <div>
-                    {{
-                      selectedRole === "dokter"
-                        ? "Data User Dokter"
-                        : "Data User"
-                    }}
-                  </div>
-                </template>
-                <template #content>
-                  <div class="flex flex-col gap-5 py-5">
-                    <CustomTextfield
-                      v-if="selectedRole !== 'dokter'"
-                      v-model="namaLengkap"
-                      label="Nama Lengkap User"
-                      placeholder="Nama Lengkap User"
-                      :disabled="!selectedRole"
-                      :invalid="
-                        !selectedRole
-                          ? false
-                          : errors.namaLengkap
-                          ? true
-                          : false
-                      "
-                      :invalidMessage="errors.namaLengkap"
-                    />
-                    <CustomSelect
-                      v-if="selectedRole === 'dokter'"
-                      :options="dokterOptions"
-                      v-model="selectedDokter"
-                      :isLoading="false"
-                      label="Nama Lengkap Dokter"
-                      placeHolder="Nama Lengkap Dokter"
-                      :invalid="
-                        !selectedRole
-                          ? false
-                          : errors.selectedDokter
-                          ? true
-                          : false
-                      "
-                      :invalidMessage="errors.selectedDokter"
-                    />
-                    <div class="flex gap-5">
-                      <CustomTextfield
-                        v-model="phoneNumber"
-                        label="No. Handphone"
-                        placeholder="08xx-xxxx-xxxx"
-                        :disabled="!selectedRole"
-                        :invalid="
-                          !selectedRole
-                            ? false
-                            : errors.phoneNumber
-                            ? true
-                            : false
-                        "
-                        :invalidMessage="errors.phoneNumber"
-                      />
-                      <CustomTextfield
-                        label="Email"
-                        v-model="email"
-                        placeholder="Email"
-                        :disabled="!selectedRole"
-                        class="basis-5/6"
-                        :invalid="
-                          !selectedRole ? false : errors.email ? true : false
-                        "
-                        :invalidMessage="errors.email"
-                      />
-                    </div>
-                  </div>
-                </template>
-              </CustomAccordion>
-              <CustomAccordion v-if="selectedRole === 'admin'" headerClass="">
-                <template #collapseIcon>
-                  <PhCaretUp :size="20" class="text-adameds-300" />
-                </template>
-                <template #expandIcon>
-                  <PhCaretDown :size="20" class="text-adameds-300" />
-                </template>
-                <template #header>Hak Akses Verifikator</template>
-                <template #content>
-                  <div class="flex flex-col gap-5 py-5">
-                    <div class="flex flex-col gap-2.5">
-                      <div>Verifikator Pengadaan Barang Medis</div>
-                      <div class="flex w-full border rounded-lg p-2.5 gap-2.5">
-                        <CustomSwitch
-                          v-model="verifikatorMedis"
-                          :show-label="false"
-                        />
-                        <div>Penanggung Jawab</div>
-                      </div>
-                    </div>
-                    <div
-                      v-if="verifikatorMedis === true"
-                      class="flex flex-col gap-2.5"
-                    >
-                      <div>Verifikator Pengadaan Barang Non-Medis</div>
-                      <div class="flex w-full border rounded-lg p-2.5 gap-2.5">
-                        <CustomSwitch
-                          v-model="verifikatorNonMedis"
-                          :show-label="false"
-                        />
-                        <div>Penanggung Jawab</div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </CustomAccordion>
-              <div>
-                <div>Status</div>
-                <div class="w-full border rounded-lg p-2.5">
-                  <CustomSwitch
-                    v-model="status"
-                    :disabled="!selectedRole"
-                    :show-label="false"
-                    sideLabel="NON-AKTIF"
-                    sideLabelTrue="AKTIF"
-                  />
-                </div>
-              </div>
-            </div>
+            <CustomTextfield
+              v-model="password"
+              label="Password"
+              placeholder="****"
+              :type="showPassword ? 'text' : 'password'"
+              :invalid="errors.password ? true : false"
+              :invalidMessage=" errors.password"
+              :appendIcon="showPassword ? 'PhEyeSlash' : 'PhEye'"
+              @clickAppend="showPassword = !showPassword"
+              class="col-span-4"
+            />
+
+            <CustomTextfield
+              v-model="confirmPassword"
+              label="Verify Password"
+              placeholder="****"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              :invalid="
+                errors.confirmPassword ? true : false
+              "
+              :invalidMessage="errors.confirmPassword"
+              :appendIcon="showConfirmPassword ? 'PhEyeSlash' : 'PhEye'"
+              @clickAppend="showConfirmPassword = !showConfirmPassword"
+              class="col-span-4"
+            />
           </div>
-        </div>
-      </div>
+        </template>
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+      </CustomAccordion>
+      <CustomAccordion no-border initial-state="0">
+        <template #header> Modul & Permission </template>
+        <template #content>
+          <div class="grid grid-cols-12 gap-5 mt-5">
+            <CustomSelect
+              label="Role"
+              place-holder="Pilih Role"
+              class="col-span-12"
+            />
+            <NoData class="col-span-12" />
+          </div>
+        </template>
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+      </CustomAccordion>
     </template>
     <template #footer>
       <div class="flex justify-end gap-2.5 px-5 py-2.5">
