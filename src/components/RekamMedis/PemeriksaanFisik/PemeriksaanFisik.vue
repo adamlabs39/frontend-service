@@ -5,8 +5,9 @@ import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCanvasDrawer from "./CustomCanvasDrawer.vue";
+import OhisInput from "./OhisInput.vue";
 
-const keadaanUmum = ref('baik');
+const keadaanUmum = ref("baik");
 
 const canvasKepala = ref<HTMLCanvasElement | null>(null);
 const canvasMata = ref<HTMLCanvasElement | null>(null);
@@ -156,12 +157,17 @@ const closeAllCanvas = () => {
           type="Rongga Mulut"
           class="mb-[10px]"
         />
-        <CustomCanvasDrawer
+        <OhisInput
+          ref="canvasOHIS"
+          header="Oral Hyhiene Index Simplified (OHI-S)"
+          class="mb-[10px]"
+        />
+        <!-- <CustomCanvasDrawer
           ref="canvasOHIS"
           header="Oral Hyhiene Index Simplified (OHI-S)"
           type="Oral Hyhiene Index Simplified (OHI-S)"
           class="mb-[10px]"
-        />
+        /> -->
         <CustomCanvasDrawer
           ref="canvasTenggorkan"
           header="Tenggorokan"
