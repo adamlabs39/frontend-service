@@ -10,6 +10,16 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import dokterPerempuan from "@/assets/icons/Avatar/avatar_dokter_perempuan.svg";
 import dokterLaki from "@/assets/icons/Avatar/avatar_dokter_laki.svg";
 
+const props = defineProps({
+  method: {
+    type: String,
+    default: "detail",
+  },
+});
+
+// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
+const isEditing = ref(props.method === "form");
+
 const schema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
@@ -53,6 +63,9 @@ const newMessage = ref("");
 // Function to determine avatar based on gender
 const getAvatar = (gender: string) => {
   return gender === "female" ? dokterPerempuan : dokterLaki;
+};
+const toggleEdit = () => {
+  isEditing.value = true;
 };
 </script>
 
@@ -101,7 +114,7 @@ const getAvatar = (gender: string) => {
           </div>
         </div>
         <hr class="border-grey-200 my-2.5" />
-        <div class="flex gap-[30px]">
+        <div v-if="isEditing" class="flex gap-[30px]">
           <CustomSelect
             label="Dokter Pemberi Instruksi"
             place-holder="Pilih Dokter Pemberi Instruksi"
@@ -112,21 +125,20 @@ const getAvatar = (gender: string) => {
               label="Instruksi Medis"
               placeholder="Ketik Instruksi..."
             />
-            <CustomButton
-              :full="true"
-              class="w-full"
-              >
+            <CustomButton :full="true" class="w-full">
               <div class="flex items-center gap-2">
                 <PhPaperPlaneTilt :size="20" weight="fill" />
                 <div>Kirim Instruksi</div>
               </div>
             </CustomButton>
-              <!-- <template #icon>
+            <!-- <template #icon>
                 <PhPaperPlaneTilt :size="32" weight="fill" />
-
-
               </template -->
           </div>
+        </div>
+
+        <div v-else class="flex items-end justify-end gap-3">
+          <CustomButton label="Edit" @click="toggleEdit" />
         </div>
       </div>
     </template>
