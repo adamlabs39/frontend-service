@@ -7,14 +7,25 @@ import Baby from "./BurnSVG/Baby.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+
+const props = defineProps({
+  header: {
+    type: String,
+    default: 'Derajat Luka Bakar',
+  },
+  method: {
+    type: String,
+    default: "form",
+  },
+});
 </script>
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50" initialState="0">
-    <template #header>Derajat Luka Bakar</template>
+    <template #header>{{ header }}</template>
     <template #content>
       <div class="flex justify-between pt-5">
-        <div class="grow mr-[30px]">
+        <div v-if="method == 'form'" class="grow mr-[30px]">
           <CustomInputNumber
             label="Presentase Luka Bakar"
             placeholder="46"

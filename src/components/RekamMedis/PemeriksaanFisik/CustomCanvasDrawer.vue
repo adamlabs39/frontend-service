@@ -13,6 +13,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  method: {
+    type: String,
+    default: "form",
+  },
 });
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -449,7 +453,7 @@ defineExpose({
             class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
           ></canvas>
         </div>
-        <div class="px-[30px] grow">
+        <div v-if="method == 'form'" class="px-[30px] grow">
           <CustomButton
             @click="isStartPainting = true"
             class="w-full mb-[10px]"
@@ -540,6 +544,11 @@ defineExpose({
             height="h-10"
           />
         </div>
+      </div>
+    </template>
+    <template v-if="method != 'form'" #footer>
+      <div class="flex">
+        <CustomButton label="Edit" class="ml-auto" />
       </div>
     </template>
   </CustomAccordion>
