@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GearFillIcon from "@/components/icons/GearFillIcon.vue";
 import Sidebar from "@/components/section/Sidebar.vue";
 import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
@@ -10,11 +11,11 @@ const sidebarBodyList = ref<SidebarBody[]>([
     type: linkType.SECTION,
     child: [
       
-          { name: "Profil Faskes", type: linkType.LINK, url: '/setting/profil-faskes', icon:'gear' },
-          { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'gear' },
-          { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'gear' },
-          { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:'gear' },
-          { name: "System", type: linkType.LINK, url:'/setting/system', icon:'gear' },
+          { name: "Profil Faskes", type: linkType.LINK, url: '/setting/profil-faskes', icon:'GearFillIcon' },
+          { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'GearFillIcon' },
+          { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'GearFillIcon' },
+          { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:"GearFillIcon" },
+          { name: "System", type: linkType.LINK, url:'/setting/system', icon:'GearFillIcon' },
     ],
   },
 ]);

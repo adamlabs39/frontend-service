@@ -5,6 +5,7 @@ import BPJSIcon from "./BPJSIcon.vue";
 import DatabaseUserIcon from "./DatabaseUserIcon.vue";
 import MonitoringBedIcon from "./MonitoringBedIcon.vue";
 import FileReportIcon from "./FileReportIcon.vue";
+import GearFillIcon from "./GearFillIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -14,5 +15,6 @@ export default {
     app.component("DatabaseUserIcon", DatabaseUserIcon);
     app.component("MonitoringBedIcon", MonitoringBedIcon);
     app.component("FileReportIcon", FileReportIcon);
+    app.component("GearFillIcon", GearFillIcon);
   },
 };

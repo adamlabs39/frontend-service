@@ -2,10 +2,11 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { onBeforeMount, ref } from "vue";
-import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { ref } from "vue";
+import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 const props = defineProps({
     method: {
@@ -13,37 +14,39 @@ const props = defineProps({
         default: "detail",
     },
 });
+const currentMethod = ref(props.method);
 
-const schema = toTypedSchema(
-    yup.object({
-        datas: yup.array().of(
-            yup.object({
-                primer: yup.string().required("tambahkan data COY"),
-                sekunder: yup.string(),
-                diagnosisDiferensial: yup.string(),
-                petugas: yup.string().required('Petugas is required'),
-            })
-        ),
-    })
-);
 
-const { errors, handleSubmit, resetForm, setValues } = useForm({
+const schema = yup.object({
+    primer: yup.string().required('Primer is required'),
+    petugas: yup.string().required('Petugas is required'),
+    diagnosisDiferensial: yup.string(),
+    datas: yup.array().of(
+        yup.object({
+            sekunder: yup.string().required('Sekunder is required'),
+            diagnosisDiferensialDinamis: yup.string(),
+        })
+    ),
+});
+
+const { errors, handleSubmit, resetForm, defineField } = useForm({
     validationSchema: schema,
     initialValues: {
-        datas: [{ primer: "", diagnosisDiferensial: "", petugas: "MBOH" }],
+        primer: '',
+        petugas: 'MBOH',
+        diagnosisDiferensial: "",
+        datas: [], // Inisialisasi array kosong
     },
 });
+
+const [primer] = defineField('primer');
+const [petugas] = defineField('petugas');
+const [diagnosisDiferensial] = defineField('diagnosisDiferensial');
 
 const { remove, push, fields } = useFieldArray("datas");
 
 const addDiagnosis = () => {
-    // Type assertion untuk memastikan fields.value adalah array yang sesuai dengan schema
-    const tipeFields = fields.value as Array<{ value: { sekunder?: string; diagnosisDiferensial?: string; petugas?: string } }>;
-
-    // Cek apakah ada field yang sudah diisi sebelumnya, gunakan petugas dari field pertama
-    const petugas = tipeFields.length > 0 ? tipeFields[0].value.petugas : "Default Petugas";
-
-    push({ sekunder: "", diagnosisDiferensial: "", petugas });
+    push({ sekunder: '', diagnosisDiferensialDinamis: '' });
 };
 
 const diagnosaPrimers = ref([
@@ -68,62 +71,64 @@ const diagnosaDds = ref([
 ]);
 
 const onSubmit = handleSubmit((values) => {
-    console.log("Submitted with", values.datas);
+    console.log("Submitted with", values);
+    currentMethod.value = 'detail'
 });
 
+// Fungsi reset yang juga mengosongkan array
 const onReset = () => {
-    const typedFields = fields.value as Array<{ value: { petugas: string } }>;
-
     resetForm({
         values: {
-            datas: typedFields.map((field, index) => ({
-                primer: "",
-                sekunder: index > 0 ? "" : undefined,
-                diagnosisDiferensial: "",
-                petugas: field.value.petugas || "MBOH",
-            })),
+            primer: '',
+            petugas: 'MBOH',
+            diagnosisDiferensial: '',
         },
-    });
+    })
+};
+
+const onEditClick = () => {
+    currentMethod.value = 'form';  // Mengubah method menjadi 'form'
 };
 
 </script>
 
-
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
         <template #header>Diagnosa Dokter (ICD 10)</template>
-        <template #content>
-            <div v-for="(field, index) in fields" :key="index" class="flex flex-col gap-5 py-3">
-                <div v-if="index === 0" class="grid grid-cols-2 gap-5">
-                    <CustomSelect label="Primer" v-model="field.value.primer" :options="diagnosaPrimers"
-                        optionValue="diagnosaPrimer" optionLabel="diagnosaPrimer" :isLoading="false" :invalid="!!errors[`datas[${index}].primer`]"
-                        :invalidMessage="errors[`datas[${index}].primer`]" :disabled="false" placeHolder="Pilih Diagnosis"
-                        customSelectClass="border-[#C7CBD2]" prependIcon="PhMagnifyingGlass">
+        <template #content v-if="currentMethod == 'form'"> 
+            <div class="flex flex-col gap-5 py-3">
+                <div class="grid grid-cols-2 gap-5">
+                    <CustomSelect label="Primer" v-model:model-value="primer" :options="diagnosaPrimers"
+                        optionValue="diagnosaPrimer" optionLabel="diagnosaPrimer" :isLoading="false"
+                        :invalid="!!errors.primer" :invalidMessage="errors.primer" :disabled="false"
+                        placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
+                        prependIcon="PhMagnifyingGlass">
                     </CustomSelect>
 
-                    
-                    <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensial"
+                    <CustomSelect label="Diagnosis Diferensial" v-model="diagnosisDiferensial"
                         :options="diagnosaSekunders" optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder"
                         :isLoading="false" :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
                         placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
                         prependIcon="PhMagnifyingGlass" />
                 </div>
-                <div class="flex gap-[30px] w-full" v-if="index > 0">
+
+                <div class="flex gap-[30px] w-full" v-for="(field, index) in fields" :key="index">
                     <div class="basis-2/5">
                         <CustomSelect label="Sekunder" v-model="field.value.sekunder" :options="diagnosaSekunders"
                             optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder" :isLoading="false"
-                            :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
+                            :invalid="!!errors[`datas[${index}].sekunder`]"
+                            :invalidMessage="errors[`datas[${index}].sekunder`]" :disabled="false"
                             placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
                             prependIcon="PhMagnifyingGlass" />
                     </div>
                     <div class="grow">
-                        <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensial"
+                        <CustomSelect label="Diagnosis Diferensial" v-model="field.value.diagnosisDiferensialDinamis"
                             :options="diagnosaDds" optionValue="diagnosaDd" optionLabel="diagnosaDd" :isLoading="false"
                             :invalid="false" invalidMessage="Wajib diisi" :disabled="false"
                             placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
                             prependIcon="PhMagnifyingGlass" />
                     </div>
-                    <div class="flex items-end justify-start">
+                    <div class="flex items-center justify-start">
                         <CustomButton label="Hapus Diagnosa" textColor="text-white" backgroundColor="bg-danger-300"
                             @click="remove(index)" />
                     </div>
@@ -136,14 +141,28 @@ const onReset = () => {
                     textColor="text-adameds-300" backgroundColor="bg-white" @click="addDiagnosis" />
             </div>
         </template>
+
+        <template #content v-else>
+            <div class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Primer" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <CustomInfoRow label="Sekunder" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <CustomInfoRow label="Sekunder" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <hr class="border-grey-200">
+                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
+        </template>
+        
         <template #footer>
             <div class="flex items-end justify-end gap-3">
                 <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                    borderColor="border-2 border-[#9DA4B1]" @click="onReset" />
-                <CustomButton label="Simpan" @click="onSubmit" />
+                    borderColor="border-2 border-[#9DA4B1]" @click="onReset" v-if="currentMethod === 'form'" />
+                <CustomButton label="Simpan" @click="onSubmit" v-if="currentMethod === 'form'" />
+                <CustomButton v-if="currentMethod === 'detail'" label="Edit" @click="onEditClick" />
             </div>
-            {{ fields }}
-            <!-- {{ errors['datas.addresses[0]'] }} -->
+            <!-- {{ fields }} -->
         </template>
     </CustomAccordion>
 </template>
