@@ -14,6 +14,7 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
 import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
+import OdontogramInput from "@/components/Base/OdontogramInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 
 const props = defineProps({
@@ -105,6 +106,7 @@ const testSelectRM = ref();
 </script>
 <template>
   <div>
+    <OdontogramInput/>
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
