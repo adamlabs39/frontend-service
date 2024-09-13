@@ -1,11 +1,34 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onBeforeMount } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import dokterPerempuan from "@/assets/icons/Avatar/avatar_dokter_perempuan.svg";
 import dokterLaki from "@/assets/icons/Avatar/avatar_dokter_laki.svg";
+
+const props = defineProps({
+  method: {
+    type: String,
+    default: "detail",
+  },
+});
+
+// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
+const isEditing = ref(props.method === "form");
+
+const schema = toTypedSchema(
+  yup.object({
+    datas: yup.array().of(
+      yup.object({
+        instruksi: yup.string(),
+      })
+    ),
+  })
+);
 
 const messages = ref([
   {
@@ -41,6 +64,9 @@ const newMessage = ref("");
 const getAvatar = (gender: string) => {
   return gender === "female" ? dokterPerempuan : dokterLaki;
 };
+const toggleEdit = () => {
+  isEditing.value = true;
+};
 </script>
 
 <template>
@@ -61,7 +87,7 @@ const getAvatar = (gender: string) => {
           />
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
-              <div class="text-adameds-300 font-semibold text-SM">
+              <div class="font-semibold text-adameds-300 text-SM">
                 {{ message.role }}
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
@@ -88,7 +114,7 @@ const getAvatar = (gender: string) => {
           </div>
         </div>
         <hr class="border-grey-200 my-2.5" />
-        <div class="flex gap-[30px]">
+        <div v-if="isEditing" class="flex gap-[30px]">
           <CustomSelect
             label="Dokter Pemberi Instruksi"
             place-holder="Pilih Dokter Pemberi Instruksi"
@@ -99,21 +125,20 @@ const getAvatar = (gender: string) => {
               label="Instruksi Medis"
               placeholder="Ketik Instruksi..."
             />
-            <CustomButton
-              :full="true"
-              class="w-full"
-              >
+            <CustomButton :full="true" class="w-full">
               <div class="flex items-center gap-2">
                 <PhPaperPlaneTilt :size="20" weight="fill" />
                 <div>Kirim Instruksi</div>
               </div>
             </CustomButton>
-              <!-- <template #icon>
+            <!-- <template #icon>
                 <PhPaperPlaneTilt :size="32" weight="fill" />
-
-
               </template -->
           </div>
+        </div>
+
+        <div v-else class="flex items-end justify-end gap-3">
+          <CustomButton label="Edit" @click="toggleEdit" />
         </div>
       </div>
     </template>

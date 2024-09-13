@@ -1,5 +1,8 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref,onBeforeMount } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
@@ -44,19 +47,49 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 const props = defineProps({
   method: {
     type: String,
-    default: "form",
+    default: "detail",
   },
 });
+const isEditing = ref(props.method === "form");
 
-const selectedMata = ref<number | null>(null);
-const selectedMotorik = ref<number | null>(null);
-const selectedVerbal = ref<number | null>(null);
+const schema = toTypedSchema(
+  yup.object({
+    eye: yup.number(),
+    motorik: yup.number(),
+    verbal: yup.number(),
+    GCS_score: yup.number(),
+    GCS_kesimpulan: yup.string(),
+    petugas: yup.string().required(),
+  })
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+const [eye] = defineField("eye");
+const [motorik] = defineField("motorik");
+const [verbal] = defineField("verbal");
+const [GCS_score] = defineField("GCS_score");
+const [GCS_kesimpulan] = defineField("GCS_kesimpulan");
+const [petugas] = defineField("petugas");
+
+onBeforeMount(async () => {
+  setValues({ petugas: "Adam" });
+});
+
+const onSubmit = handleSubmit((values: any) => {
+  console.log("Adding new data:", values);
+});
+
+const toggleEdit = () => {
+  isEditing.value = true;
+};
+
 const lastClicked = ref<{ categoryIndex: number; responseIndex: number } | null>(null);
 
 const opsiKesadaran = [
   {
     title: "Mata (Respon Membuka Mata)",
-    selected: selectedMata,
+    selected: eye,
     response: [
       {
         label: "Spontan merespon",
@@ -82,7 +115,7 @@ const opsiKesadaran = [
   },
   {
     title: "Motorik (Respon Gerak)",
-    selected: selectedMotorik,
+    selected: motorik,
     response: [
       {
         label: "Mengikuti perintah",
@@ -118,7 +151,7 @@ const opsiKesadaran = [
   },
   {
     title: "Verbal (Respon Verbal)",
-    selected: selectedVerbal,
+    selected: verbal,
     response: [
       {
         label: "Orientasi baik",
@@ -161,13 +194,20 @@ const getImageSrc = (categoryIndex: number, responseIndex: number) => {
     ? opsiKesadaran[categoryIndex].response[responseIndex].selectedImage
     : opsiKesadaran[categoryIndex].response[responseIndex].defaultImage;
 };
+
+const kesimpulanOption = ref([
+  { name: "Sakit sedang" },
+  { name: "Sakit Ringan" },
+  { name: "Sakit Berat" },
+]);
+
 </script>
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Kesadaran</template>
     <template #content>
-      <div v-if="props.method=='form'" class="grid grid-cols-2 gap-6 pt-5">
+      <div  v-if="isEditing" class="grid grid-cols-2 gap-6 pt-5">
         <div
           v-for="(option, categoryIndex) in opsiKesadaran"
           :key="categoryIndex"
@@ -199,9 +239,9 @@ const getImageSrc = (categoryIndex: number, responseIndex: number) => {
             </div>
           </div>
         </div>
-        <CustomSelect label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS"/>
+        <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
       </div>
-      <div v-if="props.method=='detail'" class="py-5 flex flex-col gap-[19px]">
+      <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
         <CustomInfoRow label="Mata (Respon Membuka Mata)" value="Spontan merespon"/>
         <CustomInfoRow label="Motorik (Respon Gerakan)" value="Melokalisir nyeri" />
         <CustomInfoRow label="Verbal (Respon Verbal)" value="Tidak ada respon" />
@@ -213,15 +253,23 @@ const getImageSrc = (categoryIndex: number, responseIndex: number) => {
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
-        v-if="props.method=='form'"
+          v-if="isEditing"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton v-if="props.method=='form'" label="Simpan" />
-        <CustomButton v-if="props.method=='detail'" label="Edit" />
-
+        <CustomButton
+          v-if="isEditing"
+          label="Simpan"
+          @click="onSubmit"
+        />
+        <CustomButton
+          v-else
+          label="Edit"
+          @click="toggleEdit"
+        />
       </div>
     </template>
   </CustomAccordion>
