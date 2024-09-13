@@ -5,6 +5,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const statusPulang = ref([
   { status: "Pulang Atas Persetujuan Dokter" },
@@ -17,7 +18,6 @@ const statusPulang = ref([
 const selectedStatus = ref();
 const rujukan = ref();
 </script>
-
 <template>
   <CustomAccordion initial-state="0" header-class="bg-adameds-50">
     <template #header> Status Pulang </template>
@@ -61,26 +61,25 @@ const rujukan = ref();
               class="grow"
             />
             <CustomTextfield
-              label="Keterangan Rujukan Internal"
-              placeholder="Keterangan Rujukan Internal"
+              label="Instruksi Tindak Lanjut"
+              placeholder="Instruksi Tindak Lanjut"
               class="grow"
             />
           </div>
           <div class="flex gap-[30px]">
             <CustomSelect
-              label="Instruksi Kontrol Ke"
-              place-holder="Pilih Instruksi Kontrol Ke"
+              label="Tujuan Rujukan"
+              place-holder="Pilih Tujuan Rujuk"
               class="grow"
             />
             <CustomTextfield
-              label="Instruksi Kontrol Ke Lainnya"
-              placeholder="Instruksi Kontrol Ke Lainnya"
+              label="Keterangan"
+              placeholder="Keterangan"
               class="grow"
             />
-            <CustomDatePicker label="Tanggal Instruksi" />
           </div>
           <div class="flex gap-[30px]">
-            <CustomTextfield label="No. Darurat" class="grow" />
+            <CustomInputNumber label="No. Darurat" placeholder="08xxx-xxxx-xxxx"  class="grow" />
             <CustomSelect
               label="Transportasi"
               place-holder="Pilih Transportasi"

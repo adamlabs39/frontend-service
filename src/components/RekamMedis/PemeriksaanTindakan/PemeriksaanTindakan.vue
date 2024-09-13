@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeMount,computed } from "vue";
+import { ref, onMounted, onBeforeMount, computed,watch } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -34,7 +34,6 @@ const schema = toTypedSchema(
   })
 );
 
-
 const deletedData = ref<any[]>([]); // Array untuk menyimpan data yang dihapus
 
 const { errors, handleSubmit, resetForm, setValues } = useForm({
@@ -60,7 +59,7 @@ const myPushFunction = (index: any) => {
   push(newItem);
 };
 const onSubmit = handleSubmit((values: any) => {
-  const parseData= JSON.parse(JSON.stringify(deletedData.value));
+  const parseData = JSON.parse(JSON.stringify(deletedData.value));
   const allData = [...values.datas, ...parseData];
 
   console.log("Semua data:", allData);
@@ -93,19 +92,18 @@ const getModeTindakan = (namaTindakan: string) => {
 
 const handleRemove = (index: number) => {
   const item = fields.value[index].value;
-  const parseItem = JSON.parse(JSON.stringify(item)); 
-  
+  const parseItem = JSON.parse(JSON.stringify(item));
+
   // Check if the item is new
-  if ( parseItem.isNew) {
+  if (parseItem.isNew) {
     remove(index);
   } else {
-    const deletedItem = { ...parseItem, isDelete: true }; 
-    const parseDelete = JSON.parse(JSON.stringify(deletedItem)); 
-    deletedData.value.push(parseDelete); 
-    remove(index); 
+    const deletedItem = { ...parseItem, isDelete: true };
+    const parseDelete = JSON.parse(JSON.stringify(deletedItem));
+    deletedData.value.push(parseDelete);
+    remove(index);
   }
 };
-
 
 onBeforeMount(async () => {
   setValues({
@@ -126,16 +124,28 @@ onBeforeMount(async () => {
   });
 });
 
-const resetNewData = () => {
-  const allItems = fields.value.map(field => field.value);
+interface TindakanData {
+  namaTindakan: string;
+  hargaTindakan?: number;
+  qtyTindakan?: number;
+  petugas: (string | undefined)[];
+  isNew?: boolean;
+}
 
-  const newItems = allItems.filter(item => item.isNew);
+const resetNewData = () => {
+  // Cast fields.value to the proper type
+  const allItems = fields.value.map((field) => field.value as TindakanData);
+
+  // Filter the items where isNew is true
+  const newItems = allItems.filter((item) => item.isNew);
 
   if (newItems.length > 0) {
-    const updatedItems = allItems.filter(item => !item.isNew);
+    // Filter out items that are not new
+    const updatedItems = allItems.filter((item) => !item.isNew);
 
+    // Reset the form with the updated items
     resetForm({
-      values: { datas: updatedItems }
+      values: { datas: updatedItems },
     });
 
     console.log("Data yang di-reset:", newItems);
@@ -144,6 +154,46 @@ const resetNewData = () => {
   }
 };
 
+
+// Menyimpan data yang dipilih dari dialog multiple
+const selectedItems = ref<any[]>([]);
+const cariItemMultiple = ref();
+
+// Fungsi untuk menambah item ke dalam daftar multiple
+const addToSelectedItems = (item: any) => {
+  const selectedProduct = products.value.find(
+    (product) => product.nama === item
+  );
+  if (selectedProduct) {
+    selectedItems.value.push({
+      namaTindakan: selectedProduct.nama,
+      hargaTindakan: selectedProduct.harga,
+      qtyTindakan: selectedProduct.mode === "Single" ? 1 : 0,
+      petugas: [],
+      isNew: true,
+    });
+    cariItemMultiple.value="";
+  }
+};
+
+// Menghapus item dari daftar selectedItems
+const removeFromSelectedItems = (index: any) => {
+  selectedItems.value.splice(index, 1);
+};
+
+// Menambahkan item multiple ke dalam fields.datas
+const handleTambahMultiple = () => {
+  selectedItems.value.forEach((item) => {
+    push(item);
+  });
+  selectedItems.value = [];
+  tambahTindakan.value = false;
+};
+watch(cariItemMultiple , (newValue) => {
+  if (!newValue) {
+    cariItemMultiple.value = "";
+  }
+});
 
 </script>
 
@@ -253,7 +303,6 @@ const resetNewData = () => {
                 label=""
                 place-holder="Pilih Petugas"
                 :disabled="!slotProps.data.value.isNew"
-
               />
               <ErrorMessage
                 :name="`datas[${slotProps.index}].petugas`"
@@ -310,16 +359,20 @@ const resetNewData = () => {
               <div class="flex items-end w-full gap-5">
                 <CustomSelect
                   prepend-icon="PhMagnifyingGlass"
+                  :options="products"
+                  optionValue="nama"
+                  optionLabel="nama"
+                  v-model="cariItemMultiple"
                   label="Cari Item"
                   place-holder="Asuhan Keperawatan"
                   class="grow"
                 />
-                <CustomButton>
+                <CustomButton @click="addToSelectedItems(cariItemMultiple)">
                   <PhPlus :size="16" />
                 </CustomButton>
               </div>
               <DataTable
-                :value="products"
+                :value="selectedItems"
                 tableStyle="min-width: 40rem"
                 stripedRows
                 class="text-xs"
@@ -337,12 +390,12 @@ const resetNewData = () => {
                   </template>
                 </Column>
                 <Column
-                  field="nama"
+                  field="namaTindakan"
                   header="Nama Obat"
                   headerClass="bg-adameds-50"
                 ></Column>
                 <Column
-                  field="harga"
+                  field="hargaTindakan"
                   header="Harga"
                   headerClass="bg-adameds-50"
                 ></Column>
@@ -360,6 +413,7 @@ const resetNewData = () => {
                         label=""
                         background-color="bg-danger-300 rounded-lg"
                         class="h-6 w-[26px] p-0"
+                        @click="removeFromSelectedItems(slotProps.index)"
                       >
                         <img src="@/assets/icons/delete.svg" alt="" />
                       </CustomButton>
@@ -368,7 +422,9 @@ const resetNewData = () => {
                 </Column>
               </DataTable>
               <hr class="border-grey-200" />
-              <div class="font-semibold text-MD">Total Item Terpilih : 2</div>
+              <div class="font-semibold text-MD">
+                Total Item Terpilih : {{ selectedItems.length }}
+              </div>
             </div>
           </template>
           <template #footer>
@@ -380,9 +436,11 @@ const resetNewData = () => {
                   border-color="border-grey-200"
                   background-color="bg-white"
                   text-color="text-grey-300"
+                  @click="tambahTindakan = false"
                 >
                 </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
+                <CustomButton label="Simpan" @click="handleTambahMultiple">
+                </CustomButton>
               </div>
             </div>
           </template>
