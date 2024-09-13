@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import { nextTick, onBeforeUnmount, onMounted } from "vue";
 import { ref } from "vue";
 
@@ -96,7 +103,6 @@ const drawSymbol = (
   // ctx.strokeRect(x, y, toothWidth, toothHeight);
   let img = new Image();
   img.src = "data:image/svg+xml;base64," + symbol;
-  console.log(img.src);
   img.onload = () => {
     ctx.drawImage(img, x, y, symbolWidth, symbolHeight);
   };
@@ -248,6 +254,10 @@ const handleClick = (event: MouseEvent) => {
   }
 };
 
+const itemsOdontogram = ref([{ test: "" }]);
+const diastema = ref(false);
+const toothAnomaly = ref(false);
+
 onMounted(() => {
   nextTick(() => {
     if (canvas.value) {
@@ -263,5 +273,189 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <canvas ref="canvas" @click="handleClick"></canvas>
+  <CustomAccordion
+    ref="accordion"
+    headerClass="bg-adameds-50"
+    initialState="0"
+    @open="
+      nextTick(() => {
+        resizeCanvas();
+      })
+    "
+  >
+    <template #header>Odontogram</template>
+    <template #content>
+      <div class="pt-5">
+        <div class="border-2 border-adameds-75 rounded-[10px]">
+          <canvas ref="canvas" @click="handleClick"></canvas>
+        </div>
+        <div class="flex mt-5">
+          <CustomMultiSelect
+            class="grow mr-[30px]"
+            label="Gigi No."
+            placeholder="Gigi No."
+          />
+          <CustomButton
+            @click="() => {}"
+            class="mt-auto w-28"
+            icon="PhPlus"
+            label="Tambah"
+          />
+        </div>
+        <DataTable
+          :value="itemsOdontogram"
+          class="mt-5"
+          tableStyle="min-width: 50rem"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
+        >
+          <Column
+            field="nomor"
+            headerClass="bg-adameds-50"
+            headerStyle="width: 82px"
+          >
+            <template #header>
+              <div class="w-full font-semibold text-center">No. Gigi</div>
+            </template>
+            <template #body="slotProps">
+              <div class="text-center">
+                <div class="text-SM">{{ slotProps.data.toothNumber }}</div>
+              </div>
+            </template>
+          </Column>
+          <Column
+            field="keadaanGigi"
+            header="Keadaan Gigi"
+            headerClass="bg-adameds-50"
+          >
+            <template #body="slotProps">
+              <div></div>
+            </template>
+          </Column>
+          <Column
+            field="action"
+            headerClass="bg-adameds-50"
+            headerStyle="width: 85px"
+          >
+            <template #header>
+              <div class="w-full font-semibold text-center">Action</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex justify-center">
+                <CustomButton
+                  @click="() => {}"
+                  icon="PhTrash"
+                  label=""
+                  class="h-[30px]"
+                  backgroundColor="bg-danger-300"
+                  size="small"
+                />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+
+        <div class="grid grid-cols-3 gap-x-[30px] gap-y-5">
+          <CustomSelect
+            label="Oklusi"
+            placeHolder="Pilih Oklusi"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSelect
+            label="Torus Palatinus"
+            placeHolder="Pilih Torus Palatinus"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSelect
+            label="Torus Mandibularis"
+            placeHolder="Pilih Torus Mandibularis"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSelect
+            label="Palatum"
+            placeHolder="Pilih Palatum"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSelect
+            label="Frenulum Labalis"
+            placeHolder="Pilih Frenulum Labalis"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSelect
+            label="Frenulum Lingualis"
+            placeHolder="Pilih Frenulum Lingualis"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+          />
+          <CustomSwitch v-model="diastema" label="Diastema" />
+          <CustomTextArea
+            v-if="diastema"
+            label="Keterangan Diasterma"
+            class=""
+            placeholder="Masukkan Keterangan Diasterma"
+            height="h-10"
+          />
+          <CustomSwitch v-model="toothAnomaly" label="Gigi Anomali" />
+          <CustomTextArea
+            v-if="toothAnomaly"
+            label="Keterangan Gigi Anomali"
+            class=""
+            placeholder="Masukkan Keterangan Gigi Anomali"
+            height="h-10"
+          />
+          <div class="grid grid-cols-3 gap-4">
+            <CustomInputNumber label="Jml. Gigi Decayed" :show-buttons="true" />
+            <CustomInputNumber label="Jml. Gigi Missing" :show-buttons="true" />
+            <CustomInputNumber label="Jml. Gigi Filled" :show-buttons="true" />
+          </div>
+          <CustomTextArea
+            label="Temuan Lainnya"
+            placeholder="Masukkan Temuan Lainnya"
+            class="col-span-3"
+          />
+          <CustomTextArea
+            label="Keterangan Tindakan Gigi"
+            placeholder="Masukkan Keterangan Tindakan Gigi"
+            class="col-span-3"
+          />
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex items-end justify-end gap-3">
+        <CustomButton
+          label="Reset"
+          textColor="text-grey-300"
+          borderColor="border-2 border-grey-200"
+          outlined
+        />
+        <CustomButton label="Simpan" />
+        <!-- <CustomButton v-if="props.method=='detail'" label="Edit" /> -->
+      </div>
+    </template>
+  </CustomAccordion>
 </template>

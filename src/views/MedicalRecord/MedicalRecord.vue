@@ -10,6 +10,7 @@ import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/Pemeriksa
 import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
+import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/PemeriksaanGigi.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
@@ -25,6 +26,8 @@ const assesmentList = ref([
   "Asesmen Nyeri",
   "Kesadaran",
   "Pemeriksaan Fisik",
+  "Pemeriksaan Gigi",
+  "Pemeriksaan Mata",
   "Derajat Luka Bakar (RON)",
   "Catatan Hasil Penunjang",
   "Diagnosis Dokter",
@@ -359,6 +362,7 @@ defineExpose({ showDialogRM });
 
           <div v-if="selectedTab == 'asesmen'">
             <PemeriksaanFisik v-if="selectedAssesment == 'Pemeriksaan Fisik'" />
+            <PemeriksaanGigi v-if="selectedAssesment == 'Pemeriksaan Gigi'" />
             <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
           </div>
         </div>

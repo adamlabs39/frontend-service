@@ -252,9 +252,9 @@ const closeAllCanvas = () => {
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           label="Reset"
-          textColor="text-[#9DA4B1]"
-          backgroundColor="bg-transparent"
-          borderColor="border-2 border-[#9DA4B1]"
+          textColor="text-grey-300"
+          borderColor="border-2 border-grey-200"
+          outlined
         />
         <CustomButton label="Simpan" />
         <!-- <CustomButton v-if="props.method=='detail'" label="Edit" /> -->
