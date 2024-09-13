@@ -197,6 +197,21 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
+                value="soapier"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhStethoscope
+                    v-if="selectedTab == 'soapier'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  S.O.A.P.I.E.R
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
                 value="alkes-penunjang"
                 :pt="{ root: 'rounded-t-lg' }"
               >
@@ -254,14 +269,44 @@ defineExpose({ showDialogRM });
               </Tab>
               <Tab
                 class="py-0 px-[10px]"
+                value="fpo"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhPill
+                    v-if="selectedTab == 'fpo'"
+                    :size="18"
+                    weight="fill"
+                    class="mr-[10px]"
+                  />
+                  FPO
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
+                value="perpindahan"
+                :pt="{ root: 'rounded-t-lg' }"
+              >
+                <div class="flex">
+                  <PhArrowsClockwise
+                    v-if="selectedTab == 'perpindahan'"
+                    :size="18"
+                    weight="bold"
+                    class="mr-[10px]"
+                  />
+                  perpindahan
+                </div>
+              </Tab>
+              <Tab
+                class="py-0 px-[10px]"
                 value="unggah-berkas"
                 :pt="{ root: 'rounded-t-lg' }"
               >
                 <div class="flex">
-                  <img
+                  <UploadPictureIcon
                     v-if="selectedTab == 'unggah-berkas'"
-                    class="h-[18px] mr-[10px]"
-                    src="../../assets/icons/medical-record/UploadPicture.svg"
+                    :size="18"
+                    class="mr-[10px]"
                   />
                   Unggah Berkas
                 </div>

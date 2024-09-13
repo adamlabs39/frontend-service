@@ -106,7 +106,6 @@ const testSelectRM = ref();
 </script>
 <template>
   <div>
-    <OdontogramInput/>
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">

@@ -10,6 +10,7 @@ import TrainingIcon from "./TrainingIcon.vue";
 import DoubleBoxIcon from "./DoubleBoxIcon.vue";
 import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
 import GearFillIcon from "./GearFillIcon.vue";
+import UploadPictureIcon from "./UploadPictureIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -24,5 +25,6 @@ export default {
     app.component("DoubleBoxIcon", DoubleBoxIcon);
     app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
     app.component("GearFillIcon", GearFillIcon);
+    app.component("UploadPictureIcon", UploadPictureIcon);
   },
 };
