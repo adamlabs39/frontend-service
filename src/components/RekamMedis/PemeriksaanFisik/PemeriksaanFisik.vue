@@ -7,6 +7,17 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCanvasDrawer from "./CustomCanvasDrawer.vue";
 import OhisInput from "./OhisInput.vue";
 
+const props = defineProps({
+  header: {
+    type: String,
+    default: 'Pemeriksaan Fisik'
+  },
+  method: {
+    type: String,
+    default: "form",
+  },
+});
+
 const keadaanUmum = ref("baik");
 
 const canvasKepala = ref<HTMLCanvasElement | null>(null);
@@ -69,7 +80,7 @@ const closeAllCanvas = () => {
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50" initialState="0">
-    <template #header>Pemeriksaan Fisik</template>
+    <template #header>{{ header }}</template>
     <template #content>
       <div class="pt-5">
         <div class="font-semibold text-normal">Keadaan Umum</div>

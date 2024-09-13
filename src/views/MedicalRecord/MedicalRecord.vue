@@ -11,6 +11,7 @@ import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/PemeriksaanGigi.vue";
+import PemeriksaanMata from "@/components/RekamMedis/PemeriksaanMata/PemeriksaanMata.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
@@ -408,6 +409,7 @@ defineExpose({ showDialogRM });
           <div v-if="selectedTab == 'asesmen'">
             <PemeriksaanFisik v-if="selectedAssesment == 'Pemeriksaan Fisik'" />
             <PemeriksaanGigi v-if="selectedAssesment == 'Pemeriksaan Gigi'" />
+            <PemeriksaanMata v-if="selectedAssesment == 'Pemeriksaan Mata'" />
             <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
           </div>
         </div>
