@@ -9,6 +9,7 @@ import FisioIcon from "./FisioIcon.vue";
 import TrainingIcon from "./TrainingIcon.vue";
 import DoubleBoxIcon from "./DoubleBoxIcon.vue";
 import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
+import GearFillIcon from "./GearFillIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -22,5 +23,6 @@ export default {
     app.component("TrainingIcon", TrainingIcon);
     app.component("DoubleBoxIcon", DoubleBoxIcon);
     app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
+    app.component("GearFillIcon", GearFillIcon);
   },
 };

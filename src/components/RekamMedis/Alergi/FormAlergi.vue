@@ -4,31 +4,74 @@ import CustomButton from '@/components/Base/CustomButton.vue';
 import CustomDatePicker from '@/components/Base/CustomDatePicker.vue';
 import CustomInfoRow from '@/components/Base/CustomInfoRow.vue';
 import CustomTextfield from '@/components/Base/CustomTextfield.vue';
-import { ref } from 'vue';
+import { computed, ref, onBeforeMount } from 'vue';
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
 const props = defineProps({
     method: {
         type: String,
-        default: "form",
+        default: "detail",
     }
-})
+});
 
-const pemicuAlergi = ref<string>('');
-const namaAlergi = ref<string>('');
-const reaksiAlergi = ref<string>('');
-const tingkatKeparahanAlergi = ref<string>('');
-const efekSampingAlergi = ref<string>('');
+// Local state for method
+const currentMethod = ref(props.method);
 
+const schemaAlergi = computed(() =>
+    toTypedSchema(
+        yup.object({
+            isAlergi: yup.bool().default(true),
+            pemicuAlergi: yup.string(),
+            namaAlergi: yup.string(),
+            reaksiAlergi: yup.string(),
+            tingkatKeparahanAlergi: yup.string(),
+            efekSampingAlergi: yup.string(),
+            tanggalKejadianAlergi: yup.date(),
+            petugas: yup.string().required('Petugas alergi is required')
+        })
+    )
+);
 
-const tanggalKejadianAlergi = ref<Date>(new Date())
+const {
+    handleSubmit: handleSubmitAlergi,
+    defineField: defineFieldAlergi,
+    setValues
+} = useForm({
+    validationSchema: schemaAlergi,
+});
+
+const [pemicuAlergi] = defineFieldAlergi("pemicuAlergi");
+const [namaAlergi] = defineFieldAlergi("namaAlergi");
+const [reaksiAlergi] = defineFieldAlergi("reaksiAlergi");
+const [tingkatKeparahanAlergi] = defineFieldAlergi("tingkatKeparahanAlergi");
+const [efekSampingAlergi] = defineFieldAlergi("efekSampingAlergi");
+const [tanggalKejadianAlergi] = defineFieldAlergi("tanggalKejadianAlergi");
+const [petugas] = defineFieldAlergi("petugas");
+
+const onSubmitFormAlergi = handleSubmitAlergi((values: any) => {
+    console.log("Adding new data", values);
+    currentMethod.value = 'detail';
+});
+
+onBeforeMount(() => {
+    setValues({ petugas: "MBOH" });
+});
+
+// Method to handle edit button click
+const onEditClick = () => {
+    currentMethod.value = 'form';
+};
+
 </script>
 
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
         <template #header> Alergi</template>
         <template #content>
-
-            <div v-if="props.method == 'form'" class="grid grid-cols-2 gap-[30px] py-3">
+            <!-- Form Section -->
+            <div v-if="currentMethod === 'form'" class="grid grid-cols-2 gap-[30px] py-3">
                 <CustomTextfield label="Pemicu Alergi" placeholder="Masukkan Pemicu Alergi"
                     v-model:modelValue="pemicuAlergi" />
                 <CustomTextfield label="Nama/Jenis Alergi" placeholder="Masukkan Nama Alergi"
@@ -41,7 +84,8 @@ const tanggalKejadianAlergi = ref<Date>(new Date())
                 <CustomDatePicker v-model="tanggalKejadianAlergi" label="Tanggal Kejadian" />
             </div>
 
-            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
+            <!-- Detail Section -->
+            <div v-if="currentMethod === 'detail'" class="py-5 flex flex-col gap-[19px]">
                 <CustomInfoRow label="Pemicu Alergi" value="Makanan" />
                 <CustomInfoRow label="Nama / Jenis Alergi" value="Makanan sejenis ikan-ikanan" />
                 <CustomInfoRow label="Reaksi" value="Gatal-gatal" />
@@ -54,13 +98,11 @@ const tanggalKejadianAlergi = ref<Date>(new Date())
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Tidak Ada Alergi" textColor="text-adameds-300"
+                <CustomButton v-if="currentMethod === 'form'" label="Tidak Ada Alergi" textColor="text-adameds-300"
                     backgroundColor="bg-transparent" borderColor="border-2 border-adameds-300" />
-                <CustomButton  v-if="props.method=='form'"  label="Simpan" />
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+                <CustomButton v-if="currentMethod === 'form'" label="Simpan" @click="onSubmitFormAlergi" />
+                <CustomButton v-if="currentMethod === 'detail'" label="Edit" @click="onEditClick" />
             </div>
         </template>
     </CustomAccordion>
-
-
 </template>
