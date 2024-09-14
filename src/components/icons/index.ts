@@ -5,6 +5,9 @@ import BPJSIcon from "./BPJSIcon.vue";
 import DatabaseUserIcon from "./DatabaseUserIcon.vue";
 import MonitoringBedIcon from "./MonitoringBedIcon.vue";
 import FileReportIcon from "./FileReportIcon.vue";
+import FisioIcon from "./FisioIcon.vue";
+import TrainingIcon from "./TrainingIcon.vue";
+import DoubleBoxIcon from "./DoubleBoxIcon.vue";
 import DatabaseFill from "./DatabaseFill.vue";
 
 export default {
@@ -15,6 +18,9 @@ export default {
     app.component("DatabaseUserIcon", DatabaseUserIcon);
     app.component("MonitoringBedIcon", MonitoringBedIcon);
     app.component("FileReportIcon", FileReportIcon);
+    app.component("FisioIcon", FisioIcon);
+    app.component("TrainingIcon", TrainingIcon);
+    app.component("DoubleBoxIcon", DoubleBoxIcon);
     app.component("DatabaseFill", DatabaseFill);
   },
 };

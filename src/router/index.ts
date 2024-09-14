@@ -514,6 +514,8 @@ const router = createRouter({
       meta: { layout: DefaultLayout },
       component: TestComponentAdamNew,
     },
+
+    { path: "/:pathMatch(.*)*", redirect: '/dashboard' }
   ],
 });
 

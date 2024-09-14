@@ -119,68 +119,44 @@ const roleOptions = ref([
 console.log("text", selectedRole);
 
 const checkCategorie = ref();
-const sections = ref([
+const permission = ref([
   {
-    name: "Admisi",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
+    menu: "Dashboard",
+    subMenu: [
+      {
+        name: "Rawat Jalan",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
     ],
   },
   {
-    name: "Antrian",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
+    menu: "Datamaster",
+    subMenu: [
+      {
+        name: "User",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
+      {
+        name: "Role",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
+      {
+        name: "Pegawai",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
+      {
+        name: "Praktisi",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
     ],
   },
   {
-    name: "Rawat Jalan",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
-    ],
-  },
-  {
-    name: "Rawat Inap",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
-    ],
-  },
-  {
-    name: "IGD",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
-    ],
-  },
-  {
-    name: "Farmasi",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
-    ],
-  },
-  {
-    name: "Pembayaran",
-    items: [
-      { name: "Rawat Jalan", key: "RJ" },
-      { name: "SEP", key: "S" },
-      { name: "IGD", key: "I" },
-      { name: "Data Pasien", key: "DS" },
+    menu: "Antrian",
+    subMenu: [
+      {
+        name: "Jadwal Dokter",
+        actionPermission: ["Creat", "Read", "Update", "Delete"],
+      },
     ],
   },
 ]);
@@ -233,10 +209,34 @@ watch(selectedRole, (newRole) => {
     </template>
     <template #content>
       <CustomAccordion no-border initial-state="0">
+        <template #header> Data Faskes </template>
+        <template #content>
+          <CustomSelect
+            label="Faskes"
+            place-holder="Pilih Faskes"
+            class="mt-5"
+          />
+        </template>
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+      </CustomAccordion>
+      <CustomAccordion no-border initial-state="0">
         <template #header> Data User </template>
         <template #content>
           <div class="grid grid-cols-12 gap-5 mt-4">
-            <div class="flex col-span-12 gap-y-5 items-end">
+            <div class="flex items-end col-span-12 gap-y-5">
               <CustomSelect
                 label="Praktisi"
                 place-holder="Cari & Pilih Praktisi"
@@ -254,6 +254,27 @@ watch(selectedRole, (newRole) => {
                 text-color="text-adameds-300"
               />
             </div>
+            <div
+              class="grid grid-flow-col grid-cols-12 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
+            >
+              <div class="flex flex-col col-span-4">
+                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-normal text-normal">Nama Lengkap1</div>
+              </div>
+              <div class="flex flex-col col-span-4">
+                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-normal text-normal">Nama Lengkap2</div>
+              </div>
+              <div class="flex flex-col col-span-4">
+                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-normal text-normal">Nama Lengkap3</div>
+              </div>
+              <div class="flex flex-col col-span-4">
+                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-normal text-normal">Nama Lengkap4</div>
+              </div>
+            </div>
+
             <CustomInputNumber
               label="No. Handphone"
               placeholder="08xx-xxxx-xxxx"
@@ -300,7 +321,7 @@ watch(selectedRole, (newRole) => {
               placeholder="****"
               :type="showPassword ? 'text' : 'password'"
               :invalid="errors.password ? true : false"
-              :invalidMessage=" errors.password"
+              :invalidMessage="errors.password"
               :appendIcon="showPassword ? 'PhEyeSlash' : 'PhEye'"
               @clickAppend="showPassword = !showPassword"
               class="col-span-4"
@@ -311,9 +332,7 @@ watch(selectedRole, (newRole) => {
               label="Verify Password"
               placeholder="****"
               :type="showConfirmPassword ? 'text' : 'password'"
-              :invalid="
-                errors.confirmPassword ? true : false
-              "
+              :invalid="errors.confirmPassword ? true : false"
               :invalidMessage="errors.confirmPassword"
               :appendIcon="showConfirmPassword ? 'PhEyeSlash' : 'PhEye'"
               @clickAppend="showConfirmPassword = !showConfirmPassword"
@@ -363,10 +382,18 @@ watch(selectedRole, (newRole) => {
           />
         </template>
       </CustomAccordion>
+      <CustomSwitch
+        v-model="status"
+        :show-label="true"
+        label="Status"
+        sideLabel="NON-AKTIF"
+        sideLabelTrue="AKTIF"
+        class="col-span-12 ml-5"
+      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2.5 px-5 py-2.5">
-        <CustomButton label="Batal" @click="goBack" />
+        <CustomButton label="Batal" @click="emit('back')" />
         <CustomButton label="Simpan" @click="onSubmit" />
       </div>
     </template>
