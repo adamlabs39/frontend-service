@@ -60,6 +60,8 @@ import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
+import icons from "./components/icons";
+
 export const app = createApp(App);
 
 app.use(createPinia());
@@ -133,5 +135,7 @@ app.component("TabPanel", TabPanel);
 app.component("Slider", Slider);
 app.component("Toast", Toast);
 app.component("RadioButton", RadioButton);
+
+app.use(icons)
 
 app.mount("#app");

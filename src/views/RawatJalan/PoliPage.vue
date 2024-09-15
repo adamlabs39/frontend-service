@@ -12,10 +12,9 @@ import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
-import CustomCanvasDrawer from "@/components/Base/CustomCanvasDrawer.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
-import BurnInput from "@/components/Base/BurnInput.vue";
 import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
+import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 
 const props = defineProps({
   filter: {
@@ -100,13 +99,12 @@ const testEditor = ref("");
 const testRadio = ref("");
 const medicalRecord = ref<any>();
 const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM()
-}
+  medicalRecord.value?.showDialogRM();
+};
+const testSelectRM = ref();
 </script>
 <template>
   <div>
-    <BurnInput/>
-    <CustomCanvasDrawer header="Kepala" type="Kepala" />
     <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
     Filter = {{ props.filter }}
     <form class="w-[400px]">
@@ -204,5 +202,11 @@ const openDialogRM = () => {
     </div>
     <div @click="openDialogRM">Show Dialog RM</div>
     <MedicalRecord ref="medicalRecord" />
+    <RMCustomSelect
+      v-model="testSelectRM"
+      :options="['1', '2']"
+      optionLabel=""
+      optionValue=""
+    />
   </div>
 </template>

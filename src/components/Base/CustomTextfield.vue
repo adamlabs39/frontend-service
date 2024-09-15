@@ -46,6 +46,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  readOnly: {
+    type: Boolean,
+    default: false,
+  },
   maxLength: {
     type: Number,
     default: 8,
@@ -111,13 +115,14 @@ defineExpose({
         <InputText
           :type="type"
           v-model="value"
-          class="h-10 pt-1 rounded-lg text-black text-SM"
+          class="h-10 pt-1 text-black rounded-lg text-SM"
           :class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
             'border-grey-200': !disabled && !invalid,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
+            'cursor-not-allowed': readOnly,
           }"
           :dt="{
             // placeholderColor: '#90969E',
@@ -126,6 +131,7 @@ defineExpose({
           :disabled="disabled"
           fluid
           :placeholder="placeholder"
+          :readonly="readOnly"
         />
         <InputIcon v-if="appendIcon" class="-mt-[11px] -ml-[2px]">
           <component

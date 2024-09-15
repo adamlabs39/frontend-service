@@ -29,6 +29,10 @@ const props = defineProps({
     type: String,
     default: "bg-adameds-300",
   },
+  headerHeight: {
+    type: String,
+    default: "h-[60px]",
+  },
 });
 
 const dialog = ref();
@@ -47,7 +51,7 @@ const maximize = () => {
     @show="maximize"
     :maximizable="fullScreen"
     :position="position"
-    :pt:header:class="`h-[60px] rounded-t-[10px] ${headerBg}`"
+    :pt:header:class="`rounded-t-[10px] ${headerBg} ${headerHeight}`"
     pt:root:class="border-none"
     pt:pcCloseButton:root:class="hover:bg-transparent focus:outline-none"
     pt:pcMaximizeButton:root:class="hidden"
@@ -59,7 +63,10 @@ const maximize = () => {
       </div>
     </template>
     <template #closeicon class="hover:bg-none">
-      <PhXCircle :size="32" color="white" weight="fill" />
+      <div v-if="$slots.customCloseIcon">
+        <slot name="customCloseIcon" />
+      </div>
+      <PhXCircle v-else :size="32" color="white" weight="fill" />
     </template>
     <template #default>
       <slot name="body" />
