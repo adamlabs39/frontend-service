@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeMount, computed,watch } from "vue";
+import { ref, onMounted, onBeforeMount, computed, watch } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -20,14 +20,13 @@ const schema = toTypedSchema(
     datas: yup.array().of(
       yup.object({
         namaSurat: yup.string(),
-        dataSurat:yup.object()
+        dataSurat: yup.object(),
       })
     ),
   })
 );
 const { errors, handleSubmit, resetForm, setValues } = useForm({
   validationSchema: schema,
-  
 });
 const { remove, push, fields, update } = useFieldArray("datas");
 
@@ -39,7 +38,7 @@ const onSubmit = handleSubmit((values: any) => {
 const buatSurat = ref(false);
 const tipePeriksa = ref();
 const selectedSurat = ref<any[]>([]);
-const cariSurat=ref("")
+const cariSurat = ref("");
 const itemsSurat = ref([
   { name: "Surat Kontrol Rawat Jalan" },
   { name: "Surat Permohonan Rawat Inap (SPRI)" },
@@ -49,12 +48,11 @@ const itemsSurat = ref([
   { name: "Surat Keterangan Meninggal" },
 ]);
 
-
 onBeforeMount(async () => {
   setValues({
     datas: [
-    { namaSurat:"Surat Kontrol Rawat Jalan",dataSurat:{} },
-    { namaSurat:"Surat Kontrol Rawat Jalan",dataSurat:{} },
+      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
+      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
     ],
   });
 });
@@ -68,7 +66,7 @@ const addToSelectedItems = (item: any) => {
       namaSurat: selectedItemSurat.name,
       dataSurat: {},
     });
-    cariSurat.value="";
+    cariSurat.value = "";
   }
 };
 const removeFromSelectedItems = (index: any) => {
@@ -81,12 +79,9 @@ const handleTambahSurat = () => {
     push(item);
   });
   selectedSurat.value = [];
-  buatSurat.value=false
+  buatSurat.value = false;
 };
-
-
 </script>
-
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
@@ -111,12 +106,12 @@ const handleTambahSurat = () => {
           </template>
         </Column>
         <Column
-        field="value.namaSurat"
+          field="value.namaSurat"
           header="Nama Surat"
           headerClass="bg-adameds-50"
           class="w-full"
         >
-    </Column>
+        </Column>
         <Column headerClass="bg-adameds-50">
           <template #header>
             <div
@@ -140,6 +135,7 @@ const handleTambahSurat = () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="remove"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -178,9 +174,13 @@ const handleTambahSurat = () => {
                 place-holder="Cari & Pilih Surat"
                 class="grow"
               />
-              <CustomButton label="Buat" icon="PhPlus" @click="addToSelectedItems(cariSurat)" />
+              <CustomButton
+                label="Buat"
+                icon="PhPlus"
+                @click="addToSelectedItems(cariSurat)"
+              />
             </div>
-           
+
             <NoData
               v-if="selectedSurat.length === 0"
               title="Silahkan Pilih Surat Terlebih Dahulu"
@@ -453,7 +453,8 @@ const handleTambahSurat = () => {
                 @click="buatSurat = false"
               >
               </CustomButton>
-              <CustomButton label="Simpan" @click="handleTambahSurat"> </CustomButton>
+              <CustomButton label="Simpan" @click="handleTambahSurat">
+              </CustomButton>
             </div>
           </div>
         </template>
@@ -462,6 +463,7 @@ const handleTambahSurat = () => {
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"

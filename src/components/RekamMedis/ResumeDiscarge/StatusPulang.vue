@@ -35,8 +35,8 @@ const rujukan = ref();
           />
           <CustomTextfield
             v-if="selectedStatus === 'Lainnya'"
-            label="Lainnya"
-            placeholder="Lainnya"
+            label="Keterangan"
+            placeholder="Keterangan"
           />
           <CustomDatePicker label="Tanggal Discharge" class="col-span-1" />
         </div>
@@ -56,8 +56,15 @@ const rujukan = ref();
               />
             </div>
             <CustomSelect
+            v-if="rujukan==='Internal'"
               label="Rujukan Internal"
               place-holder="Pilih Rujukan Internal"
+              class="grow"
+            />
+            <CustomSelect
+            v-if="rujukan==='Eksternal'"
+              label="Rujukan Eksternal"
+              place-holder="Pilih Rujukan Eksternal"
               class="grow"
             />
             <CustomTextfield

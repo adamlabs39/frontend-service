@@ -78,7 +78,7 @@ const onSubmit = handleSubmit((values: any) => {
   const parseData = JSON.parse(JSON.stringify(deletedData.value));
   const allData = [...values.datas, ...parseData];
   console.log(allData);
-  
+
   isEditing.value = false;
 });
 
@@ -280,7 +280,10 @@ const toggleEdit = () => {
 
               <div v-else>
                 <CustomInputNumber
-                  v-if="isEditing"
+                  v-if="
+                    getModeTindakan(slotProps.data.value.namaTindakan) ===
+                      'Multiple' && isEditing
+                  "
                   :show-label="false"
                   v-model="slotProps.data.value.qtyTindakan"
                   :show-buttons="true"
@@ -487,7 +490,7 @@ const toggleEdit = () => {
         <CustomButton label="Simpan" @click="onSubmit" />
       </div>
       <div v-if="!isEditing" class="flex justify-between">
-        <CustomButton label="Detail" icon="" @click="detail = true" />
+        <CustomButton label="Detail" icon="DetailIcon" @click="detail = true" />
 
         <CustomButton label="Edit" @click="toggleEdit" />
         <CustomDialog
@@ -529,15 +532,24 @@ const toggleEdit = () => {
               ></Column>
               <Column headerClass="bg-adameds-50">
                 <template #header>
-                  <div
-                    class="flex items-center justify-center w-full font-semibold text-SM"
-                  >
+                  <div class="flex items-center w-full font-semibold text-SM">
                     Petugas
                   </div>
                 </template>
                 <template #body="slotProps">
-                  <div class="flex items-center gap-2.5 justify-center">
-                    <CustomChip label="pp" :show-checked-icon="false" bg-color="bg-adameds-300" border-color="boder-adameds-300" class="border-adameds-300" text-color="text-white"/>
+                  <div class="flex flex-wrap gap-2">
+                    <div
+                      v-for="items in slotProps.data.value.petugas"
+                      :key="items"
+                    >
+                      <CustomChip
+                        :label="items"
+                        :showCheckedIcon="false"
+                        border-color="border-none"
+                        bg-color="bg-adameds-300"
+                        customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+                      />
+                    </div>
                   </div>
                 </template>
               </Column>
