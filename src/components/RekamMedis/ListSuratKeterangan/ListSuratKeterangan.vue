@@ -1,8 +1,11 @@
 <script lang="ts" setup>
+import { ref, onMounted, onBeforeMount, computed,watch } from "vue";
+import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { ref, onMounted } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -12,12 +15,31 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
 
+const schema = toTypedSchema(
+  yup.object({
+    datas: yup.array().of(
+      yup.object({
+        namaSurat: yup.string(),
+        dataSurat:yup.object()
+      })
+    ),
+  })
+);
+const { errors, handleSubmit, resetForm, setValues } = useForm({
+  validationSchema: schema,
+  
+});
+const { remove, push, fields, update } = useFieldArray("datas");
+
+const onSubmit = handleSubmit((values: any) => {
+  console.log("Semua data:", values);
+});
+
 // Data array untuk ListSurat dan item Surat
-const ListSurat = ref<any[]>([]);
 const buatSurat = ref(false);
 const tipePeriksa = ref();
-const suratData = ref<any[]>([]);
-const selectedSurat = ref("");
+const selectedSurat = ref<any[]>([]);
+const cariSurat=ref("")
 const itemsSurat = ref([
   { name: "Surat Kontrol Rawat Jalan" },
   { name: "Surat Permohonan Rawat Inap (SPRI)" },
@@ -27,45 +49,42 @@ const itemsSurat = ref([
   { name: "Surat Keterangan Meninggal" },
 ]);
 
-// Pada mount, inisialisasi data default ke ListSurat
-onMounted(() => {
-  ListSurat.value = [
-    { nama: "Surat Kontrol Rawat Jalan", data: {} },
-    { nama: "Surat Kontrol Rawat Jalan", data: {} },
-  ];
+
+onBeforeMount(async () => {
+  setValues({
+    datas: [
+    { namaSurat:"Surat Kontrol Rawat Jalan",dataSurat:{} },
+    { namaSurat:"Surat Kontrol Rawat Jalan",dataSurat:{} },
+    ],
+  });
 });
 
-// Fungsi untuk menambahkan surat ke suratData
-const addSurat = () => {
-  if (cariSurat.value) {
-    suratData.value.push({
-      name: cariSurat.value,
-      data: {},
+const addToSelectedItems = (item: any) => {
+  const selectedItemSurat = itemsSurat.value.find(
+    (itemsSurat) => itemsSurat.name === item
+  );
+  if (selectedItemSurat) {
+    selectedSurat.value.push({
+      namaSurat: selectedItemSurat.name,
+      dataSurat: {},
     });
-    selectedSurat.value = cariSurat.value;
-    cariSurat.value = "";
+    cariSurat.value="";
   }
 };
-
-// Variabel untuk input cari surat
-const cariSurat = ref("");
-
-// Fungsi submit form yang memindahkan data dari suratData ke ListSurat
-const submitForm = () => {
-  if (suratData.value.length > 0) {
-    // Tambahkan data dari suratData ke ListSurat
-    ListSurat.value.push(...suratData.value);
-
-    // Pastikan Vue mendeteksi perubahan pada ListSurat
-    ListSurat.value = JSON.parse(JSON.stringify(ListSurat.value));
-
-    // Bersihkan form suratData setelah submit
-    suratData.value = [];
-
-    // Tutup dialog
-    buatSurat.value = false;
-  }
+const removeFromSelectedItems = (index: any) => {
+  selectedSurat.value.splice(index, 1);
 };
+
+// Menambahkan item multiple ke dalam fields.datas
+const handleTambahSurat = () => {
+  selectedSurat.value.forEach((item) => {
+    push(item);
+  });
+  selectedSurat.value = [];
+  buatSurat.value=false
+};
+
+
 </script>
 
 
@@ -74,7 +93,7 @@ const submitForm = () => {
     <template #header>List Surat Keterangan</template>
     <template #content>
       <DataTable
-        :value="ListSurat"
+        :value="fields"
         tableStyle="min-width: 50rem"
         stripedRows
         class="pt-5 text-xs"
@@ -92,11 +111,12 @@ const submitForm = () => {
           </template>
         </Column>
         <Column
-          field="nama"
+        field="value.namaSurat"
           header="Nama Surat"
           headerClass="bg-adameds-50"
           class="w-full"
-        ></Column>
+        >
+    </Column>
         <Column headerClass="bg-adameds-50">
           <template #header>
             <div
@@ -158,18 +178,18 @@ const submitForm = () => {
                 place-holder="Cari & Pilih Surat"
                 class="grow"
               />
-              <CustomButton label="Buat" icon="PhPlus" @click="addSurat" />
+              <CustomButton label="Buat" icon="PhPlus" @click="addToSelectedItems(cariSurat)" />
             </div>
            
             <NoData
-              v-if="suratData.length === 0"
+              v-if="selectedSurat.length === 0"
               title="Silahkan Pilih Surat Terlebih Dahulu"
             />
 
-            <div v-for="(surat, index) in suratData" :key="index">
+            <div v-for="(surat, index) in selectedSurat" :key="index">
               <!-- Surat Control Rawat Jalan -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Kontrol Rawat Jalan'"
+                v-if="surat.namaSurat === 'Surat Kontrol Rawat Jalan'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Kontrol Rawat Jalan</template>
@@ -200,7 +220,7 @@ const submitForm = () => {
               </CustomAccordion>
               <!-- Surat Permohonan Rawat Inap (SPRI) -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Permohonan Rawat Inap (SPRI)'"
+                v-if="surat.namaSurat === 'Surat Permohonan Rawat Inap (SPRI)'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Permohonan Rawat Inap (SPRI)</template>
@@ -231,7 +251,7 @@ const submitForm = () => {
               </CustomAccordion>
               <!-- Surat Keterangan Sakit -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Keterangan Sakit'"
+                v-if="surat.namaSurat === 'Surat Keterangan Sakit'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Keterangan Sakit</template>
@@ -265,7 +285,7 @@ const submitForm = () => {
               </CustomAccordion>
               <!-- Surat Keterangan Sehat -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Keterangan Sehat'"
+                v-if="surat.namaSurat === 'Surat Keterangan Sehat'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Keterangan Sehat</template>
@@ -318,7 +338,7 @@ const submitForm = () => {
               </CustomAccordion>
               <!-- Surat Rujukan -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Rujukan'"
+                v-if="surat.namaSurat === 'Surat Rujukan'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Rujukan</template>
@@ -384,7 +404,7 @@ const submitForm = () => {
               </CustomAccordion>
               <!-- Surat Keterangan Meninggal -->
               <CustomAccordion
-                v-if="surat.name === 'Surat Keterangan Meninggal'"
+                v-if="surat.namaSurat === 'Surat Keterangan Meninggal'"
                 headerClass="bg-adameds-50"
               >
                 <template #header>Surat Keterangan Meninggal</template>
@@ -433,7 +453,7 @@ const submitForm = () => {
                 @click="buatSurat = false"
               >
               </CustomButton>
-              <CustomButton label="Simpan" @click="submitForm"> </CustomButton>
+              <CustomButton label="Simpan" @click="handleTambahSurat"> </CustomButton>
             </div>
           </div>
         </template>
