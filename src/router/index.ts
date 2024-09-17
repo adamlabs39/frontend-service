@@ -68,6 +68,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
+import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 
 const router = createRouter({
@@ -487,6 +488,12 @@ const router = createRouter({
       name: "component-adam",
       meta: { layout: DefaultLayout },
       component: TestComponentAdamNew,
+    },
+    {
+      path: "/component-alex",
+      name: "component-alex",
+      meta: { layout: DefaultLayout },
+      component: TestComponentAlex,
     },
 
     { path: "/:pathMatch(.*)*", redirect: '/dashboard' }
