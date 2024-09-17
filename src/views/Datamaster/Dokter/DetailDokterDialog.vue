@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import InfoRow from "../../../components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomInfoRow from "../../../components/Base/CustomInfoRow.vue";
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -17,44 +18,49 @@ function updateVisibility(value: any) {
 <template>
   <CustomDialog
     width="800px"
-    :visible="isDialogVisible" @update:visible="updateVisibility"
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Detail Praktisi</template>
+    <template #header>Detail Data Praktisi</template>
     <template #body>
       <div class="flex flex-col mt-5 gap-5">
         <!-- Data Dokter -->
         <div class="flex flex-col gap-5">
-          <div class="my-2.5 font-bold text-heading leading-8">Data Praktisi</div>
+          <div class="font-bold text-heading">Data Praktisi</div>
           <hr class="border-grey-200" />
-          <div class="flex">
-            <div class="w-1/2 flex flex-col gap-5">
-              <InfoRow label="Kode HFIS (BPJS)" value="123" />
-              <InfoRow label="Kode Dokter" value="DTR" />
-              <InfoRow label="Nama Lengkap" value="dr. Spesialis Sp. A" />
-              <InfoRow label="Tanggal Lahir" value="01-01-2000" />
-            </div>
-            <div class="w-1/2 flex flex-col gap-5">
-              <InfoRow label="Kode SIP" value="827394" />
-              <InfoRow label="NIK" value="0000000000000000" />
-              <InfoRow label="STR" value="1000000000000000" />
-              <InfoRow label="Jenis Kelamin" value="Laki-laki" />
-            </div>
-          </div>
-        </div>
-        <!-- Data Poli -->
-        <div class="flex flex-col gap-5">
-          <div class="my-2.5 font-bold text-heading leading-8">Poli Anak</div>
-          <hr class="border-grey-200" />
-          <div class="flex">
-            <div class="w-1/2 flex flex-col gap-5">
-              <InfoRow label="Kuota JKN" value="20 Pasien" />
-              <InfoRow label="Waktu Pelayanan" value="09:00-13:00" />
-            </div>
-            <div class="w-1/2 flex flex-col gap-5">
-              <InfoRow label="kuota Non-JKN" value="10 Pasien" />
-              <InfoRow label="Durasi Pelayanan" value="20 Menit" />
-            </div>
+          <div class="flex flex-col gap-5">
+            <CustomInfoRow label="Nama Lengkap" value="dr. Spesialis Sp. A" />
+            <CustomInfoRow label="NIK" value="0000000000000000000000000" />
+            <CustomInfoRow label="Tanggal Lahir" value="01-01-2000" />
+            <CustomInfoRow label="Jenis Kelamin" value="Laki-laki" />
+            <CustomInfoRow label="Kode HFIS (BPJS)" value="123" />
+            <CustomInfoRow label="SIP" value="1234" />
+            <CustomInfoRow label="STR" value="1234" />
+            <CustomInfoRow label="Poli">
+              <template #value>
+                <CustomChip
+                  label="Anak"
+                  bg-color="bg-adameds-300"
+                  text-color="text-white"
+                  :showCheckedIcon="false"
+                  border-color="border-adameds-300"
+                />
+              </template>
+            </CustomInfoRow>
+            <CustomInfoRow label="Kode Antrian Dokter" value="01" />
+            <hr class="col-span-2 border-gray-200" />
+            <CustomInfoRow label="Status">
+              <template #value>
+                <CustomChip
+                  label="AKTIF"
+                  bg-color="bg-adameds-300"
+                  text-color="text-white"
+                  icon-color=""
+                  border-color="border-adameds-300"
+                />
+              </template>
+            </CustomInfoRow>
           </div>
         </div>
       </div>

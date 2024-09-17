@@ -5,6 +5,7 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import FormItemGigi from "./FormItemGigi.vue";
 
 
 const products = ref<any[]>([]);
@@ -49,7 +50,7 @@ const closeDialog = () => {
   >
     <template #header>
       <HeaderFilter
-        pageType=""
+        pageType="item-gigi"
         isSuperAdmin
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
@@ -155,7 +156,7 @@ const closeDialog = () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataOdontogramDialog
+      <FormItemGigi
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"

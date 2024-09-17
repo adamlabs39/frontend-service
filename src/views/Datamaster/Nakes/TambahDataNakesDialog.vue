@@ -42,16 +42,16 @@ function closeDialog() {
         <CustomSelect
           label="Tipe Pegawai"
           place-holder="Tipe Pegawai"
-          class="col-span-12"
+          class="col-span-6"
         />
+        <hr class="border-grey-200 col-span-12">
         <div class="font-semibold text-normal col-span-12 -mb-5">
           Nama Lengkap Pegawai
         </div>
         <CustomSelect label="" place-holder="Gelar Awal" class="col-span-4" />
         <CustomTextfield label="" placeholder="Nama Lengkap" class="col-span-4" />
         <CustomSelect label="" place-holder="Gelar Akhir" class="col-span-4"/>
-        <CustomTextfield label="NIK" placeholder="0" class="col-span-6" />
-        <CustomTextfield label="STR" placeholder="0" class="col-span-6" />
+        <CustomTextfield label="NIK" placeholder="0" class="col-span-12" />
         <CustomDatePicker class="col-span-6" label="Tanggal Lahir" />
         <CustomSelect
           label="Jenis Kelamin"

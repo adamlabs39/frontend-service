@@ -9,6 +9,7 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -23,11 +24,11 @@ const props = defineProps({
 });
 
 const itemsPermission = ref([
-  { name_mainMenu: "dashboard", code_mainMenu: "dashboard" },
-  { name_mainMenu: "pasien", code_mainMenu: "pasien" },
-  { name_mainMenu: "setting", code_mainMenu: "setting" },
-  { name_mainMenu: "profile", code_mainMenu: "profile" },
-  { name_mainMenu: "datamaster", code_mainMenu: "datamaster" },
+  { name_mainMenu: "dashboard" },
+  { name_mainMenu: "pasien" },
+  { name_mainMenu: "setting" },
+  { name_mainMenu: "profile" },
+  { name_mainMenu: "datamaster" },
 ]);
 
 const schema = toTypedSchema(
@@ -36,8 +37,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Role harus diisi"),
     permission: yup
       .array()
-      .of(yup.string())
-      .required("Menu Akses harus dipilih"),
+      .of(yup.string().required("Permission harus dipilih")),  // Validate that each permission is a string and required
     status: yup.bool(),
   })
 );
@@ -78,6 +78,7 @@ watch(
     }
   }
 );
+const cobaPermission=ref([])
 </script>
 
 <template>
@@ -93,7 +94,7 @@ watch(
         <CustomTextfield
           label="Kode"
           v-model="code"
-          placeholder="Kode"
+          placeholder="Kode Role"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-5"
@@ -107,27 +108,41 @@ watch(
           :invalidMessage="errors.name"
         />
         <hr class="border-grey-200 col-span-12" />
-        <CustomMultiSelect
-          v-model="permission"
-          :options="itemsPermission"
-          label="Menu Akses"
-          optionLabel="name_mainMenu"
-          optionValue="code_mainMenu"
-          :invalid="!!errors.permission"
-          class="col-span-12"
-        />
-        <!-- <CustomAccordion>
+        <CustomAccordion class="col-span-12" no-border initial-state="0" >
           <template #header>
-            <div>
-              Modul
-            </div>
+            <div>Modul</div>
           </template>
           <template #content>
-            <div>
-              
+            <div class="flex flex-wrap gap-2.5 pt-5">
+              <div
+              v-for="item of itemsPermission"
+              :key="item.name_mainMenu"
+            >
+              <CustomCheckbox
+                :value="item.name_mainMenu"
+                :title="item.name_mainMenu"
+                v-model="cobaPermission"
+                sub-title=""
+                 :binary="false"
+              />
+            </div>
             </div>
           </template>
-        </CustomAccordion> -->
+          <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-adameds-300"
+          />
+        </template>
+        </CustomAccordion>
         <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
           v-model="status"

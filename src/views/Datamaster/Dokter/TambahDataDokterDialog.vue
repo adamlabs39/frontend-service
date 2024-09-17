@@ -63,6 +63,7 @@ const isDokter = ref();
           place-holder="Cari & Pilih Pegawai"
           class="col-span-8"
         />
+        
         <div class="flex justify-between col-span-4 items-end">
           <CustomButton label="Cara" icon="PhMagnifyingGlass" />
           <CustomButton
@@ -71,6 +72,26 @@ const isDokter = ref();
             border-color="border-adameds-300"
             text-color="text-adameds-300"
           />
+        </div>
+        <div
+          class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
+        >
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Nama Pegawai</div>
+            <div class="font-normal text-normal">Nama Lengkap1</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Tanggal Lahir</div>
+            <div class="font-normal text-normal">01-01-2000</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Nik</div>
+            <div class="font-normal text-normal">1233456</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Jenis Kelamin</div>
+            <div class="font-normal text-normal">Laki-laki</div>
+          </div>
         </div>
         <CustomInputNumber
           v-if="isDokter"

@@ -10,12 +10,21 @@ import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import TableKomponenTarifV1 from "@/components/Datamaster/TableKomponenTarifV1.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+const data = ref([{ komponenTarif: "", rupiah: "", action: "" }]);
+const addRow = () => {
+  data.value.push({
+    komponenTarif: "",
+    rupiah: "",
+    action: "",
+  });
+};
 const metodeTarif = ref();
 const mcuLab = ref();
 </script>
 
 <template>
-  <div class="flex flex-col h-full gap-5">
+  <div class="flex flex-col h-full h-full min-h-screen  gap-5">
     <!-- Grid Section -->
     <div class="grid grid-cols-12 gap-x-[30px] gap-y-5 mt-5">
       <CustomSelect
@@ -57,11 +66,12 @@ const mcuLab = ref();
     </div>
 
     <!-- Accordion Section -->
-    <div class="h-[49vh] overflow-y-auto">
+    <div class="h-1/2 overflow-y-auto">
       <CustomAccordion
         class="col-span-12"
         initial-state="0"
         :open-with-header="false"
+        no-border
       >
         <template #header>
           <div class="flex items-end w-full">
@@ -107,20 +117,74 @@ const mcuLab = ref();
         class="col-span-12"
         initial-state="0"
         :open-with-header="false"
+        no-border
       >
-        <template #header>
+        <!-- <template #header>
           List Tindakan Laboratorium
+        </template> -->
+        <template #header>
+          <div class="flex justify-between w-full">
+            <div class="font-semibold text-heading">
+              List Tarif Laboratorium
+            </div>
+
+            <CustomButton icon="PhPlus" label="Tarif" />
+          </div>
         </template>
 
         <template #content>
-          <div class="flex items-center mt-5">
-            <div class="font-semibold text-heading grow">
-              Kelompok Pemeriksaan
+          <DataTable
+            :value="data"
+            tableStyle="min-width: 50rem"
+            class="overflow-hidden text-xs rounded-lg bg-adameds-50 mt-5"
+          >
+            <Column headerClass="bg-adameds-300 text-white" class="w-4/6">
+              <template #header>
+                <div>Komponen Tarif</div>
+              </template>
+              <template #body>
+                <CustomSelect label="" place-holder="Pilih Komponen Tarif" />
+              </template>
+            </Column>
+            <Column headerClass="bg-adameds-300 ">
+              <template #header>
+                <div class="w-full text-xs font-semibold text-white text-end">
+                  Rupiah (Rp)
+                </div>
+              </template>
+              <template #body>
+                <CustomInputNumber label="" align-number="text-end">
+                  <template #prependText>
+                    <div
+                      class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD text-adameds-300 bg-adameds-300 rounded-l-md"
+                    >
+                      Rp.
+                    </div>
+                  </template>
+                </CustomInputNumber>
+              </template>
+            </Column>
+            <Column header="Action" headerClass="bg-adameds-300 text-white">
+              <template #body="slotProps">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                </CustomButton>
+              </template>
+            </Column>
+          </DataTable>
+          <div class="flex items-center justify-end gap-5 mt-5">
+            <div class="py-2.5 pr-5 border-r border-grey-200 font-bold text-MD">
+              Grand Total
             </div>
-            <CustomButton icon="PhPlus" label="Kelompok" />
+            <div
+              class="min-w-[280px] p-2.5 flex justify-end rounded-lg text-MD font-bold"
+            >
+              Rp. 30,000
+            </div>
           </div>
-          <hr class="border-grey-200 mt-[12.5px]" />
-          <TableKomponenTarifV1 class="mt-5" />
         </template>
 
         <template #collapseIcon>

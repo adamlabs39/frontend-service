@@ -5,7 +5,7 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import TambahDataGigiDiaolog from "./DataGigiDiaolog.vue";
+import FormGigiFDI from "./FormGigiFDI.vue";
 
 const payload = ref<any[]>([]);
 
@@ -25,11 +25,9 @@ onMounted(() => {
     },
   ];
 });
-const selectedGigi = ref(null);
+const selectedGigi = ref();
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
-const isDetailGigiDialogVisible = ref(false);
-const metaKey = ref(true);
 
 // Dialog Configuration
 const dialogConfig = ref<any>({
@@ -46,11 +44,12 @@ const openDialog = (method: any, title: any, data: any = null) => {
 const closeDialog = () => {
   isTambahDataDialogVisible.value = false;
 };
-const onRowSelect = (event: any) => {
-  const selectedRowData = event.data;
-  openDialog('detail', 'Detail Data', selectedRowData);
-};
 
+const onRowSelect = (event: any) => {
+  selectedGigi.value = event.data;
+  openDialog("detail", "Detail Data", selectedGigi.value);
+};
+const metaKey = ref(true);
 </script>
 
 <template>
@@ -75,13 +74,13 @@ const onRowSelect = (event: any) => {
         scrollable
         scrollHeight="flex"
         class="text-xs"
-        @rowSelect="onRowSelect"
-        selectionMode="single"
         :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         :dt="{
           rowSelectedColor: '#000000',
-          rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor:'transparent',
+          rowSelectedBackground:  'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
           bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
           rowStripedBackground: '#F8F8F8',
         }"
@@ -166,12 +165,11 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataGigiDiaolog
+      <FormGigiFDI
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
-
         @close="closeDialog"
       />
     </template>

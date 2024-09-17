@@ -68,19 +68,29 @@ import CustomButton from "../Base/CustomButton.vue";
             </div>
           </div>
         </div>
-        <hr class="-mx-[18px]">
+        <hr class="-mx-[18px]" />
         <!-- tambah komponen tarif -->
-        <div class="border border-dashed border-adameds-300 rounded-lg flex items-center justify-center p-5">
-          <CustomButton icon="PhPlus" label="Komponen Tarif" borderColor="border-adameds-300" textColor="text-adameds-300" backgroundColor="bg-white" />
+        <div
+          class="border border-dashed border-adameds-300 rounded-lg flex items-center justify-center p-5"
+        >
+          <CustomButton
+            icon="PhPlus"
+            label="Komponen Tarif"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+          />
         </div>
-        <hr class="-mx-[18px]">
+        <hr class="-mx-[18px]" />
         <!-- grand total -->
-         <div class="flex items-center justify-end gap-5">
+        <div class="flex items-center justify-end gap-5">
           <div class="py-2.5 pr-5 border-r border-adameds-300">Grand Total</div>
-          <div class="min-w-[280px] bg-adameds-50 p-2.5 flex justify-end rounded-lg text-MD font-bold text-adameds-300">
+          <div
+            class="min-w-[280px] bg-adameds-50 p-2.5 flex justify-end rounded-lg text-MD font-bold text-adameds-300"
+          >
             Rp. 30,000
           </div>
-         </div>
+        </div>
       </div>
     </template>
   </CustomAccordion>

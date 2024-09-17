@@ -7,6 +7,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -90,21 +91,9 @@ const onSubmit = handleSubmit((values) => {
 const [username] = defineField("username");
 const [password] = defineField("password");
 const [confirmPassword] = defineField("confirmPassword");
-const [namaLengkap] = defineField("namaLengkap");
-const [email] = defineField("email");
-const [phoneNumber] = defineField("phoneNumber");
-const [selectedDokter] = defineField("selectedDokter");
 const [status] = defineField("status");
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
-
-const verifikatorMedis = ref();
-const verifikatorNonMedis = ref();
-const dokterOptions = ref([
-  { label: "dr.Budi", value: "dr.Budi" },
-  { label: "dr.Susi", value: "dr.Susi" },
-  { label: "dr.Adam", value: "dr.Adam" },
-]);
 
 const dataBreadHome = ref({ label: "User", home: true });
 const dataBreadCrumb = ref([{ label: "Tambah Data" }]);
@@ -358,13 +347,67 @@ watch(selectedRole, (newRole) => {
       <CustomAccordion no-border initial-state="0">
         <template #header> Modul & Permission </template>
         <template #content>
-          <div class="grid grid-cols-12 gap-5 mt-5">
+          <div class="grid grid-cols-12 gap-5 pt-5">
             <CustomSelect
               label="Role"
               place-holder="Pilih Role"
               class="col-span-12"
             />
-            <NoData class="col-span-12" />
+            <!-- <NoData class="col-span-12" /> -->
+            <div
+              v-for="(menuItem, menuIndex) in permission"
+              :key="menuIndex"
+              class="col-span-12"
+            >
+              <CustomAccordion
+                header-class="bg-adameds-50"
+                :open-with-header="false"
+              >
+                <template #header>
+                  <div class="flex items-center gap-2.5">
+                    <Checkbox :binary="true" />
+
+                    {{ menuItem.menu }}
+                  </div>
+                </template>
+                <template #content>
+                  <div
+                    v-for="(subMenuItem, subMenuIndex) in menuItem.subMenu"
+                    :key="subMenuIndex"
+                  >
+                    <CustomAccordion
+                      class="col-span-12 pt-5"
+                      header-class="bg-adameds-50"
+                      :open-with-header="false"
+                    >
+                      <template #header>
+                        <div class="flex items-center gap-2.5">
+                          <Checkbox :binary="true" />
+
+                          {{ subMenuItem.name }}
+                        </div>
+                      </template>
+                      <template #content>
+                        <div class="flex flex-wrap gap-2.5 pt-5">
+                          <div
+                            v-for="(
+                              action, actionIndex
+                            ) in subMenuItem.actionPermission"
+                            :key="actionIndex"
+                          >
+                          <CustomCheckbox
+                             :value="action"
+                             :title="action"
+                             sub-title=""
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </CustomAccordion>
+                  </div>
+                </template>
+              </CustomAccordion>
+            </div>
           </div>
         </template>
         <template #collapseIcon>

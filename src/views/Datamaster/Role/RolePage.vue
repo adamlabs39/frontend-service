@@ -93,6 +93,7 @@ const search = ref();
         scrollable
         scrollHeight="flex"
         class="text-xs"
+
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
@@ -118,7 +119,7 @@ const search = ref();
         ></Column>
         <Column
           field="permission"
-          header="Menu Akses"
+          header="Modul"
           class="w-6/12"
           headerClass="bg-adameds-50"
         >

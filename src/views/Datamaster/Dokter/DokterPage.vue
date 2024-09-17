@@ -29,8 +29,8 @@ function loadProducts() {
       code_bpjs: "001",
       SIP: "Cholera disease",
       STR: "10000000",
-      code_antrian: "UMUM",
-      name_dokter: "dr. Umum",
+      name_praktisi: "dr. Umum",
+      tipe_praktisi: "DOKTER",
       telepon: "087898765678",
       status: "AKTIF",
       action: "edit",
@@ -115,27 +115,29 @@ const openPemeriksaanDialog = (data: any) => {
           header="kode HFIS (BPJS)"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="SIP"
-          header="Kode SIP"
-          headerClass="bg-adameds-50"
-        ></Column>
+        <Column field="SIP" header="SIP" headerClass="bg-adameds-50"></Column>
         <Column field="STR" header="STR" headerClass="bg-adameds-50"></Column>
         <Column
-          field="name_dokter"
+          field="name_praktisi"
           header="Nama Praktisi"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="code_antrian"
-          header="Kode Antrian"
+          field="tipe_praktisi"
+          header="Tipe Praktisi"
           headerClass="bg-adameds-50"
         >
-        <template #body="slotProps">
-          <CustomChip label="rr"/>
-        </template>
-      </Column>
-        
+          <template #body="slotProps">
+            <CustomChip
+              :label="slotProps.data.tipe_praktisi"
+              :showCheckedIcon="false"
+              border-color="border-none"
+              bg-color="bg-adameds-300"
+              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+            />
+          </template>
+        </Column>
+
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full text-center font-semibold text-SM">Status</div>
