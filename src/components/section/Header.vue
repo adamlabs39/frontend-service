@@ -108,10 +108,10 @@ const showDialog = () => {
     class="flex justify-between gap-5 pr-5 mt-[10px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md mx-3"
   >
     <div
-      class="flex justify-between gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap h-[60px]"
+      class="flex justify-between gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap h-[60px] overflow-auto"
     >
       <div
-        class="flex gap-1 justify-center items-center px-2.5 rounded-xl shadow-sm bg-white"
+        class="grid grid-cols-[max-content_max-content_max-content] gap-1 justify-center items-center px-2.5 rounded-xl shadow-sm bg-white"
       >
         <img
           loading="lazy"

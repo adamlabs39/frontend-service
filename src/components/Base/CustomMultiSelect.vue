@@ -77,9 +77,6 @@ const value2 = computed({
 const emit = defineEmits(["update:modelValue", "change"]);
 
 const removeSelect = (data: any) => {
-  console.log("data", data);
-  console.log("value2", value2.value);
-
   if (props.optionValue || !(data instanceof Object)) {
     value2.value = value2.value.filter((selected: any) => selected != data);
   } else {
@@ -101,9 +98,11 @@ const removeSelect = (data: any) => {
         {{ props.label }}<span v-if="required" class="text-danger-300">*</span>
       </label>
       <span
-        @click="value2 = []"
+        @click="disabled ? () => {} : (value2 = [])"
         class="font-semibold cursor-pointer text-XS"
-        :class="[value2.length ? 'text-adameds-300' : 'text-grey-400']"
+        :class="[
+          value2.length == 0 || disabled ? 'text-grey-400' : 'text-adameds-300',
+        ]"
       >
         Hapus semua
       </span>
@@ -179,7 +178,7 @@ const removeSelect = (data: any) => {
               'bg-adameds-300 text-white': !disabled && !invalid,
             }"
           >
-            {{ optionLabel ? value[optionLabel] : value }}
+            {{ optionLabel && !optionValue ? value[optionLabel] : value }}
             <template #removeicon>
               <PhX
                 class="cursor-pointer"
