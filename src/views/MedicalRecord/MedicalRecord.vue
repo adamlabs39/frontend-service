@@ -14,6 +14,8 @@ import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/Pemeriksaan
 import PemeriksaanMata from "@/components/RekamMedis/PemeriksaanMata/PemeriksaanMata.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
+import AnamnesisIGD from "@/components/RekamMedis/AnamnesisIGD/AnamnesisIGD.vue";
+import Triase from "@/components/RekamMedis/Triase/Triase.vue";
 import FormTandaVital from "@/components/RekamMedis/TandaVital/FormTandaVital.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
 import FormAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/FormAsesmenNyeri.vue";
@@ -24,6 +26,9 @@ import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanK
 import FormCatatanPerawat from "@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue";
 import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis.vue";
 import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
+import FormImplementation from "@/components/Fisioterapi/Implementation/FormImplementation.vue";
+import FormEvaluation from "@/components/Fisioterapi/Evaluation/FormEvaluation.vue";
+import FormReassesment from "@/components/Fisioterapi/Reassesment/FormReassesment.vue";
 import FormOrderObat from "@/components/RekamMedis/OrderObat/FormOrderObat.vue";
 import FormOrderAlkes from "@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue";
 import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
@@ -68,6 +73,22 @@ const selectedSoap = ref("Subjective");
 const onSoapSelect = (label: string) => {
   if (selectedSoap.value != label) {
     selectedSoap.value = label;
+  }
+};
+
+const soapierList = ref([
+  "Subjective",
+  "Objective",
+  "Assesment",
+  "Plan",
+  "I",
+  "E",
+  "R",
+]);
+const selectedSoapier = ref("Subjective");
+const onSoapierSelect = (label: string) => {
+  if (selectedSoapier.value != label) {
+    selectedSoapier.value = label;
   }
 };
 
@@ -397,23 +418,80 @@ defineExpose({ showDialogRM });
               selectedTextColor="text-white"
               bgColor="bg-grey-75"
               selectedColor="bg-adameds-300"
-              :isSelected="selectedAssesment.includes(assesment)"
+              :isSelected="selectedAssesment == assesment"
               @selected="onAssesmentSelect"
             />
           </div>
           <div v-if="selectedTab == 'soap'" class="my-5">
+            <div class="flex">
+              <CustomButton
+                v-for="(soapData, index) in soapList"
+                @click="onSoapSelect(soapData)"
+                :label="soapData"
+                class="mr-[10px]"
+                borderColor="border-adameds-300"
+                :textColor="
+                  selectedSoap.includes(soapData)
+                    ? 'text-white'
+                    : 'text-adameds-300'
+                "
+                :outlined="!selectedSoap.includes(soapData)"
+              />
+              <div class="border-[0.5px] mr-[25px] ml-[15px]"></div>
+            </div>
+          </div>
+          <div v-if="selectedTab == 'soapier'" class="my-5">
             <CustomButton
-              v-for="(soapData, index) in soapList"
-              @click="onSoapSelect(soapData)"
-              :label="soapData"
+              v-for="(soapierData, index) in soapierList"
+              @click="onSoapierSelect(soapierData)"
+              :label="soapierData"
               class="mr-[10px]"
               borderColor="border-adameds-300"
               :textColor="
-                selectedSoap.includes(soapData)
+                selectedSoapier.includes(soapierData)
                   ? 'text-white'
                   : 'text-adameds-300'
               "
-              :outlined="!selectedSoap.includes(soapData)"
+              :outlined="!selectedSoapier.includes(soapierData)"
+            />
+          </div>
+          <div v-if="selectedTab == 'alkes'" class="mt-[10px] mb-[10px]">
+            <CustomChip
+              v-for="(penunjang, index) in alkesList"
+              :key="penunjang + index"
+              :label="penunjang"
+              :showCheckedIcon="false"
+              :outlined="false"
+              class="mr-[10px] mb-[10px]"
+              customClass="h-6"
+              textSize="text-SM"
+              textColor="text-black"
+              selectedTextColor="text-white"
+              bgColor="bg-grey-75"
+              selectedColor="bg-adameds-300"
+              :isSelected="selectedAlkes.includes(penunjang)"
+              @selected="onAlkesSelect"
+            />
+          </div>
+          <div
+            v-if="selectedTab == 'cetak-hasil-surat'"
+            class="mt-[10px] mb-[10px]"
+          >
+            <CustomChip
+              v-for="(action, index) in cetakSuratList"
+              :key="action + index"
+              :label="action"
+              :showCheckedIcon="false"
+              :outlined="false"
+              class="mr-[10px] mb-[10px]"
+              customClass="h-6"
+              textSize="text-SM"
+              textColor="text-black"
+              selectedTextColor="text-white"
+              bgColor="bg-grey-75"
+              selectedColor="bg-adameds-300"
+              :isSelected="selectedSuratList.includes(action)"
+              @selected="onSuratListSelect"
             />
           </div>
 
@@ -422,8 +500,8 @@ defineExpose({ showDialogRM });
             <div class="grid grid-cols-2 grow gap-2.5">
               <FormAlergi method="detail" />
               <Anamnesis method="detail" />
-              <div>Anamnesis IGD</div>
-              <div>Triase</div>
+              <AnamnesisIGD method="detail" />
+              <Triase method="detail" />
               <FormTandaVital method="detail" />
               <Antropometri method="detail" />
               <FormAsesmenNyeri method="detail" />
@@ -439,9 +517,9 @@ defineExpose({ showDialogRM });
               <InstruksiMedis method="detail" />
               <FormOrderObat method="detail" />
               <PemeriksaanTindakan method="detail" />
-              <div>Implementation</div>
-              <div>Evaluation</div>
-              <div>Reassesment</div>
+              <FormImplementation method="detail" />
+              <FormEvaluation method="detail" />
+              <FormReassesment method="detail" />
               <FormOrderAlkes method="detail" />
               <OrderLab method="detail" />
               <FormOrderFisio method="detail" />
@@ -461,6 +539,16 @@ defineExpose({ showDialogRM });
             />
             <Anamnesis
               v-if="selectedAssesment == 'Anamnesis'"
+              method="form"
+              initialState="0"
+            />
+            <AnamnesisIGD
+              v-if="selectedAssesment == 'Anamnesis IGD'"
+              method="form"
+              initialState="0"
+            />
+            <Triase
+              v-if="selectedAssesment == 'Triase'"
               method="form"
               initialState="0"
             />
@@ -518,6 +606,74 @@ defineExpose({ showDialogRM });
             <PemeriksaanGigi v-if="selectedAssesment == 'Pemeriksaan Gigi'" />
             <PemeriksaanMata v-if="selectedAssesment == 'Pemeriksaan Mata'" />
             <BurnInput v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'" />
+          </div>
+
+          <div
+            v-if="selectedTab == 'soap' || selectedTab == 'soapier'"
+            class="flex mt-5 h-3/5"
+          >
+            <div class="grow">
+              <div
+                v-if="
+                  (selectedTab == 'soap' && selectedSoap == 'Subjective') ||
+                  (selectedTab == 'soapier' && selectedSoapier == 'Subjective')
+                "
+              >
+                <FormAlergi method="form" class="mb-[10px]" />
+                <Anamnesis method="form" class="" />
+              </div>
+
+              <div
+                v-if="
+                  (selectedTab == 'soap' && selectedSoap == 'Objective') ||
+                  (selectedTab == 'soapier' && selectedSoapier == 'Objective')
+                "
+              >
+                <FormTandaVital method="form" class="mb-[10px]" />
+                <Antropometri method="form" class="mb-[10px]" />
+                <FormAsesmenNyeri method="form" class="mb-[10px]" />
+                <Kesadaran method="form" class="mb-[10px]" />
+                <PemeriksaanFisik class="mb-[10px]" />
+                <CatatanHasilPenunjang method="form" class="" />
+              </div>
+
+              <div
+                v-if="
+                  (selectedTab == 'soap' && selectedSoap == 'Assesment') ||
+                  (selectedTab == 'soapier' && selectedSoapier == 'Assesment')
+                "
+              >
+                <FormDiagnosaDokterICD10 method="form" class="mb-[10px]" />
+                <AsuhanKeperawatan method="form" class="" />
+              </div>
+
+              <div
+                v-if="
+                  (selectedTab == 'soap' && selectedSoap == 'Plan') ||
+                  (selectedTab == 'soapier' && selectedSoapier == 'Plan')
+                "
+              >
+                <InstruksiMedis method="form" class="mb-[10px]" />
+                <FormCatatanPerawat method="form" class="mb-[10px]" />
+                <FormOrderObat method="form" class="" />
+              </div>
+
+              <div v-if="selectedTab == 'soapier' && selectedSoapier == 'I'">
+                <FormImplementation method="form" />
+              </div>
+
+              <div v-if="selectedTab == 'soapier' && selectedSoapier == 'E'">
+                <FormEvaluation method="form" />
+              </div>
+
+              <div v-if="selectedTab == 'soapier' && selectedSoapier == 'R'">
+                <FormReassesment method="form" />
+              </div>
+            </div>
+            <div class="flex flex-col mx-[10px]">
+              <CustomButton icon="PhArrowsInLineVertical" class="mb-[10px]" />
+              <CustomButton icon="PhArrowsOutLineVertical" class="" />
+            </div>
           </div>
         </div>
       </template>

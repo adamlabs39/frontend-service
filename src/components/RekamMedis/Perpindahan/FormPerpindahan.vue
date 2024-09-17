@@ -4,7 +4,7 @@ import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
+import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -97,7 +97,7 @@ const selectedKategori = ref("");
                   :key="items.key"
                   class="flex items-center gap-2.5"
                 >
-                  <CustomRadioButton
+                  <CustomRadio
                     v-model="radioPerpindahan"
                     :value="items.key"
                     :title="items.name"
