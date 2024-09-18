@@ -789,11 +789,19 @@ defineExpose({ showDialogRM });
               />
               <PemeriksaanFisik
                 v-if="selectedAssesment == 'Pemeriksaan Fisik'"
+                initialState="0"
               />
-              <PemeriksaanGigi v-if="selectedAssesment == 'Pemeriksaan Gigi'" />
-              <PemeriksaanMata v-if="selectedAssesment == 'Pemeriksaan Mata'" />
+              <PemeriksaanGigi
+                v-if="selectedAssesment == 'Pemeriksaan Gigi'"
+                initialState="0"
+              />
+              <PemeriksaanMata
+                v-if="selectedAssesment == 'Pemeriksaan Mata'"
+                initialState="0"
+              />
               <BurnInput
                 v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"
+                initialState="0"
               />
             </div>
 

@@ -18,7 +18,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" initialState="0">
+  <CustomAccordion headerClass="bg-adameds-50">
     <template #header>{{ header }}</template>
     <template #content>
       <div class="pt-5">
