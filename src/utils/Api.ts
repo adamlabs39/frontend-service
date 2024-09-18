@@ -78,8 +78,44 @@ baseInstance.interceptors.response.use(
   }
 );
 
-// Setting
+// login
+const authInstance = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_AUTH,
+});
 
+authInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+
+  if (!token) {
+    config.headers["Authorization"] = "";
+  } else {
+    config.headers["Authorization"] = `${token}`;
+  }
+  if (config.data) {
+    config.data = toSnakeCase(config.data);
+  }
+
+  return config;
+});
+
+authInstance.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Setting
 const settingInstance = axios.create({
   headers: {
     common: {
@@ -161,4 +197,4 @@ baseInstanceDatamaster.interceptors.response.use(
   }
 );
 
-export { baseInstance, settingInstance, baseInstanceDatamaster };
+export { baseInstance, authInstance, settingInstance, baseInstanceDatamaster };
