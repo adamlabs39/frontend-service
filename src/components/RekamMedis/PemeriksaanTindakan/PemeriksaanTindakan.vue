@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeMount,computed } from "vue";
+import { ref, onMounted, onBeforeMount, computed, watch } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -9,17 +9,31 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import { log } from "console";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   method: {
     type: String,
-    default: "form",
+    default: "detail",
   },
 });
 
 const isEditing = ref(props.method === "form");
 const tambahTindakan = ref();
+const detail = ref();
+
+const deletedData = ref<any[]>([]);
+const selectedItems = ref<any[]>([]);
+const cariItemMultiple = ref();
+const itemsPetugas = ref([{ name: "dr.Spesialis Sp. M" }, { name: "Perawat" }]);
+const products = ref<any[]>([]);
+onMounted(() => {
+  products.value = [
+    { nama: "Pemeriksaan Poli Umum", harga: 100000, mode: "Single" },
+    { nama: "Pemeriksaan Poli Gigi", harga: 50000, mode: "Multiple" },
+    { nama: "Pemeriksaan Poli Mata", harga: 50000, mode: "Single" },
+  ];
+});
 
 const schema = toTypedSchema(
   yup.object({
@@ -28,14 +42,15 @@ const schema = toTypedSchema(
         namaTindakan: yup.string().required("List tindakan harus dipilih"),
         hargaTindakan: yup.number(),
         qtyTindakan: yup.number(),
-        petugas: yup.array().of(yup.string()).required("Petugas harus dipilih"),
+        petugas: yup
+          .array()
+          .of(yup.string())
+          .min(1, "Petugas harus dipilih")
+          .required("Petugas harus dipilih"),
       })
     ),
   })
 );
-
-
-const deletedData = ref<any[]>([]); // Array untuk menyimpan data yang dihapus
 
 const { errors, handleSubmit, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -45,8 +60,7 @@ const { errors, handleSubmit, resetForm, setValues } = useForm({
     ],
   },
 });
-
-const { remove, push, fields, update } = useFieldArray("datas");
+const { remove, push, fields } = useFieldArray("datas");
 
 const myPushFunction = (index: any) => {
   const newItem = {
@@ -60,22 +74,12 @@ const myPushFunction = (index: any) => {
   push(newItem);
 };
 const onSubmit = handleSubmit((values: any) => {
-  const parseData= JSON.parse(JSON.stringify(deletedData.value));
+  const parseData = JSON.parse(JSON.stringify(deletedData.value));
   const allData = [...values.datas, ...parseData];
+  console.log(allData);
 
-  console.log("Semua data:", allData);
+  isEditing.value = false;
 });
-
-const products = ref<any[]>([]);
-onMounted(() => {
-  products.value = [
-    { nama: "Pemeriksaan Poli Umum", harga: 100000, mode: "Single" },
-    { nama: "Pemeriksaan Poli Gigi", harga: 50000, mode: "Multiple" },
-    { nama: "Pemeriksaan Poli Mata", harga: 50000, mode: "Single" },
-  ];
-});
-
-const itemsPetugas = ref([{ name: "dr.Spesialis Sp. M" }, { name: "Perawat" }]);
 
 const getHargaTindakan = (namaTindakan: string) => {
   const tindakan = products.value.find(
@@ -93,19 +97,17 @@ const getModeTindakan = (namaTindakan: string) => {
 
 const handleRemove = (index: number) => {
   const item = fields.value[index].value;
-  const parseItem = JSON.parse(JSON.stringify(item)); 
-  
-  // Check if the item is new
-  if ( parseItem.isNew) {
+  const parseItem = JSON.parse(JSON.stringify(item));
+
+  if (parseItem.isNew) {
     remove(index);
   } else {
-    const deletedItem = { ...parseItem, isDelete: true }; 
-    const parseDelete = JSON.parse(JSON.stringify(deletedItem)); 
-    deletedData.value.push(parseDelete); 
-    remove(index); 
+    const deletedItem = { ...parseItem, isDelete: true };
+    const parseDelete = JSON.parse(JSON.stringify(deletedItem));
+    deletedData.value.push(parseDelete);
+    remove(index);
   }
 };
-
 
 onBeforeMount(async () => {
   setValues({
@@ -118,48 +120,82 @@ onBeforeMount(async () => {
       },
       {
         namaTindakan: "Pemeriksaan Poli Mata",
-        hargaTindakan: 0,
-        qtyTindakan: 0,
+        hargaTindakan: 100000,
+        qtyTindakan: 1,
         petugas: ["dr.Spesialis Sp. M"],
       },
     ],
   });
 });
 
-const resetNewData = () => {
-  const allItems = fields.value.map(field => field.value);
+interface TindakanData {
+  namaTindakan: string;
+  hargaTindakan?: number;
+  qtyTindakan?: number;
+  petugas: (string | undefined)[];
+  isNew?: boolean;
+}
 
-  const newItems = allItems.filter(item => item.isNew);
+const resetNewData = () => {
+  const allItems = fields.value.map((field) => field.value as TindakanData);
+  const newItems = allItems.filter((item) => item.isNew);
 
   if (newItems.length > 0) {
-    const updatedItems = allItems.filter(item => !item.isNew);
-
+    const updatedItems = allItems.filter((item) => !item.isNew);
     resetForm({
-      values: { datas: updatedItems }
+      values: { datas: updatedItems },
     });
-
     console.log("Data yang di-reset:", newItems);
   } else {
     console.log("Tidak ada data yang perlu di-reset.");
   }
 };
 
-
+const addToSelectedItems = (item: any) => {
+  const selectedProduct = products.value.find(
+    (product) => product.nama === item
+  );
+  if (selectedProduct) {
+    selectedItems.value.push({
+      namaTindakan: selectedProduct.nama,
+      hargaTindakan: selectedProduct.harga,
+      qtyTindakan: selectedProduct.mode === "Single" ? 1 : 0,
+      petugas: [],
+      isNew: true,
+    });
+    cariItemMultiple.value = "";
+  }
+};
+const removeFromSelectedItems = (index: any) => {
+  selectedItems.value.splice(index, 1);
+};
+const handleTambahMultiple = () => {
+  selectedItems.value.forEach((item) => {
+    push(item);
+  });
+  selectedItems.value = [];
+  tambahTindakan.value = false;
+};
+watch(tambahTindakan, (newValue) => {
+  if (!newValue) {
+    cariItemMultiple.value = "";
+    selectedItems.value = [];
+  }
+});
+const toggleEdit = () => {
+  isEditing.value = true;
+};
 </script>
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Pemeriksaan dan Tindakan</template>
     <template #content>
-      <div v-if="isEditing" class="pt-5">
-        <DataTable
-          :value="fields"
-          tableStyle="min-width: 50rem"
-          class="text-xs bg-adameds-50"
-        >
+      <div class="pt-5">
+        <DataTable :value="fields" class="text-xs bg-adameds-50">
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="flex items-center">No.</div>
+              <div class="w-full text-center">No.</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
@@ -167,12 +203,16 @@ const resetNewData = () => {
               </div>
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50" class="w-2/6">
+          <Column
+            headerClass="bg-adameds-50"
+            :class="isEditing ? 'w-2/6' : 'w-3/4'"
+          >
             <template #header>
               <div class="font-semibold">List Tindakan</div>
             </template>
             <template #body="slotProps">
               <CustomSelect
+                v-if="isEditing"
                 prepend-icon="PhMagnifyingGlass"
                 v-model="slotProps.data.value.namaTindakan"
                 :options="products"
@@ -184,18 +224,22 @@ const resetNewData = () => {
                   slotProps.data.value.qtyTindakan =
                     getModeTindakan(slotProps.data.value.namaTindakan) ===
                     'Single'
-                      ? 0
+                      ? 1
                       : slotProps.data.value.qtyTindakan
                 "
                 :disabled="!slotProps.data.value.isNew"
+                :invalid="!slotProps.data.value.namaTindakan"
               />
               <ErrorMessage
                 :name="`datas[${slotProps.index}].namaTindakan`"
-                class="text-danger-300"
+                class="pt-10 text-danger-300 text-XS"
               />
+              <div v-if="!isEditing">
+                {{ slotProps.data.value.namaTindakan }}
+              </div>
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50">
+          <Column v-if="isEditing" headerClass="bg-adameds-50">
             <template #header>
               <div class="font-semibold">Harga</div>
             </template>
@@ -223,23 +267,36 @@ const resetNewData = () => {
               <div
                 v-if="
                   getModeTindakan(slotProps.data.value.namaTindakan) ===
-                  'Single'
+                    'Single' && isEditing
                 "
                 class="w-full text-center"
               >
                 <span> {{ (slotProps.data.value.qtyTindakan = 1) }}</span>
               </div>
+              <div v-if="!isEditing" class="w-full text-center">
+                <span> {{ slotProps.data.value.qtyTindakan }}</span>
+              </div>
+
               <div v-else>
                 <CustomInputNumber
+                  v-if="
+                    getModeTindakan(slotProps.data.value.namaTindakan) ===
+                      'Multiple' && isEditing
+                  "
                   :show-label="false"
                   v-model="slotProps.data.value.qtyTindakan"
                   :show-buttons="true"
                   :disabled="!slotProps.data.value.isNew"
+                  @change="
+                    slotProps.data.value.namaTindakan === null
+                      ? 0
+                      : slotProps.data.value.qtyTindakan
+                  "
                 />
               </div>
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50" class="w-2/6">
+          <Column v-if="isEditing" headerClass="bg-adameds-50" class="w-2/6">
             <template #header>
               <div class="w-full font-semibold text-center">Petugas</div>
             </template>
@@ -253,15 +310,15 @@ const resetNewData = () => {
                 label=""
                 place-holder="Pilih Petugas"
                 :disabled="!slotProps.data.value.isNew"
-
+                :invalid="!slotProps.data.value.petugas"
               />
               <ErrorMessage
                 :name="`datas[${slotProps.index}].petugas`"
-                class="text-danger-300"
+                class="pt-10 text-danger-300 text-XS"
               />
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50">
+          <Column v-if="isEditing" headerClass="bg-adameds-50">
             <template #header>
               <div class="w-full font-semibold text-center">Action</div>
             </template>
@@ -277,8 +334,30 @@ const resetNewData = () => {
               </div>
             </template>
           </Column>
+          <Column v-if="!isEditing" headerClass="bg-adameds-50" class="w-1/4">
+            <template #header>
+              <div class="font-semibold w-full text-end">Harga</div>
+            </template>
+            <template #body="slotProps">
+              <div
+                :class="{
+                  'text-grey-300':
+                    getHargaTindakan(slotProps.data.value.namaTindakan) === 0,
+                }"
+                class="w-full text-end"
+              >
+                Rp.
+                {{
+                  (slotProps.data.value.hargaTindakan = getHargaTindakan(
+                    slotProps.data.value.namaTindakan
+                  ))
+                }}
+              </div>
+            </template>
+          </Column>
         </DataTable>
         <div
+          v-if="isEditing"
           class="flex items-center justify-center p-5 m-5 border border-dashed rounded-lg border-adameds-300 gap-2.5"
         >
           <CustomButton
@@ -310,16 +389,20 @@ const resetNewData = () => {
               <div class="flex items-end w-full gap-5">
                 <CustomSelect
                   prepend-icon="PhMagnifyingGlass"
+                  :options="products"
+                  optionValue="nama"
+                  optionLabel="nama"
+                  v-model="cariItemMultiple"
                   label="Cari Item"
                   place-holder="Asuhan Keperawatan"
                   class="grow"
                 />
-                <CustomButton>
+                <CustomButton @click="addToSelectedItems(cariItemMultiple)">
                   <PhPlus :size="16" />
                 </CustomButton>
               </div>
               <DataTable
-                :value="products"
+                :value="selectedItems"
                 tableStyle="min-width: 40rem"
                 stripedRows
                 class="text-xs"
@@ -337,12 +420,12 @@ const resetNewData = () => {
                   </template>
                 </Column>
                 <Column
-                  field="nama"
-                  header="Nama Obat"
+                  field="namaTindakan"
+                  header="List Tindakan"
                   headerClass="bg-adameds-50"
                 ></Column>
                 <Column
-                  field="harga"
+                  field="hargaTindakan"
                   header="Harga"
                   headerClass="bg-adameds-50"
                 ></Column>
@@ -360,6 +443,7 @@ const resetNewData = () => {
                         label=""
                         background-color="bg-danger-300 rounded-lg"
                         class="h-6 w-[26px] p-0"
+                        @click="removeFromSelectedItems(slotProps.index)"
                       >
                         <img src="@/assets/icons/delete.svg" alt="" />
                       </CustomButton>
@@ -368,7 +452,9 @@ const resetNewData = () => {
                 </Column>
               </DataTable>
               <hr class="border-grey-200" />
-              <div class="font-semibold text-MD">Total Item Terpilih : 2</div>
+              <div class="font-semibold text-MD">
+                Total Item Terpilih : {{ selectedItems.length }}
+              </div>
             </div>
           </template>
           <template #footer>
@@ -380,9 +466,11 @@ const resetNewData = () => {
                   border-color="border-grey-200"
                   background-color="bg-white"
                   text-color="text-grey-300"
+                  @click="tambahTindakan = false"
                 >
                 </CustomButton>
-                <CustomButton label="Simpan"> </CustomButton>
+                <CustomButton label="Simpan" @click="handleTambahMultiple">
+                </CustomButton>
               </div>
             </div>
           </template>
@@ -390,16 +478,83 @@ const resetNewData = () => {
       </div>
     </template>
     <template #footer>
-      <div class="flex items-end justify-end gap-3">
+      <div v-if="isEditing" class="flex items-end justify-end gap-3">
         <CustomButton
-          v-if="isEditing"
           @click="resetNewData()"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+        <CustomButton label="Simpan" @click="onSubmit" />
+      </div>
+      <div v-if="!isEditing" class="flex justify-between">
+        <CustomButton label="Detail" icon="DetailIcon" @click="detail = true" />
+
+        <CustomButton label="Edit" @click="toggleEdit" />
+        <CustomDialog
+          headerBg="bg-adameds-300"
+          width="800px"
+          v-model:visible="detail"
+        >
+          <template #header>
+            <div>Detail Pemeriksaan dan Tindakan</div>
+          </template>
+          <template #body>
+            <DataTable
+              :value="fields"
+              tableStyle="min-width: 40rem"
+              stripedRows
+              class="text-xs mt-5"
+              scrollable
+              scrollHeight="flex"
+            >
+              <Column headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="w-full font-semibold text-center">No.</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    {{ slotProps.index + 1 }}
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="value.namaTindakan"
+                header="List Tindakan"
+                headerClass="bg-adameds-50"
+              ></Column>
+              <Column
+                field="value.hargaTindakan"
+                header="Harga"
+                headerClass="bg-adameds-50"
+              ></Column>
+              <Column headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="flex items-center w-full font-semibold text-SM">
+                    Petugas
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex flex-wrap gap-2">
+                    <div
+                      v-for="items in slotProps.data.value.petugas"
+                      :key="items"
+                    >
+                      <CustomChip
+                        :label="items"
+                        :showCheckedIcon="false"
+                        border-color="border-none"
+                        bg-color="bg-adameds-300"
+                        customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </template>
+        </CustomDialog>
       </div>
     </template>
   </CustomAccordion>

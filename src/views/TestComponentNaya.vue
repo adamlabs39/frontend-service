@@ -37,7 +37,9 @@ import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
 import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
 import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue";
-
+import SuratControlRawatJalan from "@/components/RekamMedis/ListSuratKeterangan/SuratControlRawatJalan.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import Prognosis from "@/components/RekamMedis/ResumeDiscarge/Prognosis.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -132,6 +134,12 @@ const handlePageUpdate = (page: number) => {
 // };
 const handlePage = (page: number) => {
   console.log("Page updated:", page);
+};
+const controlRawatJalanRef=ref()
+const submitChildForm = () => {
+  if (controlRawatJalanRef.value) {
+    controlRawatJalanRef.value.submitForm();
+  }
 };
 </script>
 
@@ -281,6 +289,7 @@ const handlePage = (page: number) => {
     <TandaVital/> <br>
     <AnamnesisResume/><br>
     <Edukasi/> <br>
+    <Prognosis/><br>
     <KeadaanWaktuPulang/><br>
     <StatusPulang/><br>
     <PemeriksaanFisik/> <br>
@@ -288,5 +297,10 @@ const handlePage = (page: number) => {
     <Tindakan/> <br>
     <Obat/> <br>
     <FormPemberianObat/>
+    <SuratControlRawatJalan
+      ref="controlRawatJalanRef"
+      />
+      <CustomButton label="Simpan" @click="submitChildForm" />
+
   </div>
 </template>

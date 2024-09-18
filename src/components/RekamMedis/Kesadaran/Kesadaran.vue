@@ -242,9 +242,9 @@ const kesimpulanOption = ref([
         <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Mata (Respon Membuka Mata)" value="Spontan merespon"/>
-        <CustomInfoRow label="Motorik (Respon Gerakan)" value="Melokalisir nyeri" />
-        <CustomInfoRow label="Verbal (Respon Verbal)" value="Tidak ada respon" />
+        <CustomInfoRow label="Mata" value="Spontan merespon"/>
+        <CustomInfoRow label="Motorik" value="Melokalisir nyeri" />
+        <CustomInfoRow label="Verbal" value="Tidak ada respon" />
         <CustomInfoRow label="Kesimpulan GCS" value="Sehat" />
         <hr class="border-grey-200">
         <CustomInfoRow label="Petugas Input" value="Nama Petugas" />

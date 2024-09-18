@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const products = ref<any[]>([]);
+const tindakan = ref<any[]>([]);
 
 onMounted(() => {
-  products.value = [
+  tindakan.value = [
     {
       namaTindakan: "SIMRS Admission",
       tipeTindakan: "Administrasi",
@@ -36,7 +36,7 @@ const selectedPemeriksaan = ref();
     <template #content>
       <DataTable
         v-model:selection="selectedPemeriksaan"
-        :value="products"
+        :value="tindakan"
         tableStyle="min-width: 50rem"
         stripedRows
         class="pt-5 text-xs"
@@ -79,11 +79,11 @@ const selectedPemeriksaan = ref();
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep .custom-checkbox .p-checkbox-checked .p-checkbox-box {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep .custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
   @apply text-white;
 }
 </style>

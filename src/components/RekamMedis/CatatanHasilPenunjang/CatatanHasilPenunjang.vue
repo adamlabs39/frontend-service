@@ -59,7 +59,7 @@ const toggleEdit = () => {
           v-if="!isEditing"
           class="py-5 flex flex-col gap-[19px]"
         >
-          <CustomInfoRow label="Catatan" value="Sehat sehat orang baik" />
+          <CustomInfoRow label="Catatan Hasil Penunjang" value="Sehat sehat orang baik" />
           <hr class="border-grey-200" />
           <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
         </div>
