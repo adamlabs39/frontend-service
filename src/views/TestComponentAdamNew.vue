@@ -9,7 +9,7 @@ import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vu
 import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
 import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
 import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBerkas.vue';
-import CustomUpload from '@/components/Base/CustomUpload.vue';
+
 </script>
 
 <template>

@@ -55,6 +55,10 @@ const tambahTindakan = ref(false);
 
 
 const dateFilter = ref<Date>(new Date())
+
+const onSubmit = handleSubmit((values) => {
+    console.log(values);
+}) 
 </script>
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
@@ -145,7 +149,7 @@ const dateFilter = ref<Date>(new Date())
             <div class="flex items-end justify-end gap-3">
                 <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
                     backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton v-if="props.method == 'form'" label="Simpan Order" />
+                <CustomButton v-if="props.method == 'form'" label="Simpan Order" @click="onSubmit"/>
                 <CustomButton v-if="props.method == 'detail'" label="Edit" />
             </div>
         </template>
