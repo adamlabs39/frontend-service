@@ -1,27 +1,27 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, computed, watch } from 'vue';
-import { useForm, useFieldArray, ErrorMessage } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/yup';
-import * as yup from 'yup';
-import CustomAccordion from '@/components/Base/CustomAccordion.vue';
-import CustomSelect from '@/components/Base/CustomSelect.vue';
-import CustomButton from '@/components/Base/CustomButton.vue';
-import CustomDialog from '@/components/Base/CustomDialog.vue';
-import NoData from '@/components/section/NoData.vue';
-import SuratControlRawatJalan from './SuratControlRawatJalan.vue';
-import SuratPermohonanRawatInap from './SuratPermohonanRawatInap.vue';
-import SuratKeteranganSakit from './SuratKeteranganSakit.vue';
-import SuratKeteranganSehat from './SuratKeteranganSehat.vue';
-import SuratRujukan from './SuratRujukan.vue';
-import SuratKeteranganMeninggal from './SuratKeteranganMeninggal.vue';
-import SuratResepKacamata from './SuratResepKacamata.vue';
+import { ref, onBeforeMount, computed, watch } from "vue";
+import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import NoData from "@/components/section/NoData.vue";
+import SuratControlRawatJalan from "./SuratControlRawatJalan.vue";
+import SuratPermohonanRawatInap from "./SuratPermohonanRawatInap.vue";
+import SuratKeteranganSakit from "./SuratKeteranganSakit.vue";
+import SuratKeteranganSehat from "./SuratKeteranganSehat.vue";
+import SuratRujukan from "./SuratRujukan.vue";
+import SuratKeteranganMeninggal from "./SuratKeteranganMeninggal.vue";
+import SuratResepKacamata from "./SuratResepKacamata.vue";
 
 // Schema validasi menggunakan yup
 const schema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
-        namaSurat: yup.string().required('Nama surat harus diisi'),
+        namaSurat: yup.string().required("Nama surat harus diisi"),
         dataSurat: yup.object().default({}),
       })
     ),
@@ -34,34 +34,34 @@ const { errors, handleSubmit, resetForm, setValues } = useForm({
 });
 
 // Field array untuk "datas"
-const { remove, push, fields, update } = useFieldArray('datas');
+const { remove, push, fields, update } = useFieldArray("datas");
 
 // Fungsi submit
 const onSubmit = handleSubmit((values: any) => {
-  console.log('Semua data:', values);
+  console.log("Semua data:", values);
 });
 
 // Data array untuk ListSurat dan item Surat
 const buatSurat = ref(false);
 const tipePeriksa = ref();
 const selectedSurat = ref<any[]>([]);
-const cariSurat = ref('');
+const cariSurat = ref("");
 const itemsSurat = ref([
-  { name: 'Surat Kontrol Rawat Jalan' },
-  { name: 'Surat Permohonan Rawat Inap (SPRI)' },
-  { name: 'Surat Keterangan Sakit' },
-  { name: 'Surat Keterangan Sehat' },
-  { name: 'Surat Rujukan' },
-  { name: 'Surat Keterangan Meninggal' },
-  { name: 'Surat Resep Kacamata' },
+  { name: "Surat Kontrol Rawat Jalan" },
+  { name: "Surat Permohonan Rawat Inap (SPRI)" },
+  { name: "Surat Keterangan Sakit" },
+  { name: "Surat Keterangan Sehat" },
+  { name: "Surat Rujukan" },
+  { name: "Surat Keterangan Meninggal" },
+  { name: "Surat Resep Kacamata" },
 ]);
 
 // Set data awal form saat mount
 onBeforeMount(() => {
   setValues({
     datas: [
-      { namaSurat: 'Surat Kontrol Rawat Jalan', dataSurat: {} },
-      { namaSurat: 'Surat Kontrol Rawat Jalan', dataSurat: {} },
+      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
+      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
     ],
   });
 });
@@ -76,7 +76,7 @@ const addToSelectedItems = (item: string) => {
       namaSurat: selectedItemSurat.name,
       dataSurat: {},
     });
-    cariSurat.value = '';
+    cariSurat.value = "";
   }
 };
 
@@ -88,7 +88,7 @@ const removeFromSelectedItems = (index: number) => {
 // Watcher untuk mereset `selectedSurat` dan `cariSurat` saat modal ditutup
 watch(buatSurat, (newValue) => {
   if (!newValue) {
-    cariSurat.value = '';
+    cariSurat.value = "";
     selectedSurat.value = [];
   }
 });
@@ -101,44 +101,45 @@ const resetData = () => {
     },
   });
   selectedSurat.value = []; // Reset `selectedSurat`
-  cariSurat.value = ''; // Reset `cariSurat`
+  cariSurat.value = ""; // Reset `cariSurat`
 };
 
-const tabs = ref([
-  { title: 'Pro login quitat', value: '0' },
-  { title: 'Pro Domo', value: '1' },
-  { title: 'Pro propin quitat', value: '2' },
-]);
 
-// Fungsi menambahkan item multiple ke dalam fields.datas
-const handleTambahSurat = () => {
+
+const handleRef = ref<any[]>([]);
+
+// Fungsi untuk submit semua form anak-anak
+const submitChildForm = () => {
+  handleRef.value.forEach((comp: any, index: number) => {
+    if (comp && comp.submitForm) {
+      comp.submitForm();
+    }
+  });
+
+  // Simpan dataSurat dari setiap form anak
+  handleRef.value.forEach((comp: any, index: number) => {
+    if (comp && comp.localDataSurat) {
+      selectedSurat.value[index].dataSurat = comp.localDataSurat.value;
+    }
+  });
+
+  console.log("selected:", selectedSurat.value);
+};
+
+const updateSuratData = (index: number, dataSurat: any) => {
+  selectedSurat.value[index].dataSurat = dataSurat;
+  console.log("data:", dataSurat);
+  console.log("selected:", selectedSurat.value);
+  // console.log(nonProxyData);
   selectedSurat.value.forEach((item) => {
     push(item);
   });
   selectedSurat.value = [];
   buatSurat.value = false;
+  const dataFormSurat = JSON.parse(JSON.stringify(fields));
+  console.log("fields",fields);
+  
 };
-
-const handleRef = ref<any[]>([]);
-const submitChildForm = () => {
-  handleRef.value.forEach((comp: any, index: number) => {
-    if (comp && comp.submitForm) {
-      comp.submitForm();
-      selectedSurat.value[index].dataSurat = comp.localDataSurat.value;
-    }
-  });
-  console.log('selected:', selectedSurat.value);
-};
-
-const updateSuratData = (index: number, dataSurat: any) => {
-  selectedSurat.value[index].dataSurat = dataSurat; // Update data di selectedSurat
-  console.log('data:', dataSurat);
-  console.log('selected:', selectedSurat.value);
-  const nonProxyData = JSON.parse(JSON.stringify(selectedSurat.value));
-console.log(nonProxyData);
-
-};
-
 </script>
 
 <template>
@@ -255,30 +256,53 @@ console.log(nonProxyData);
                 />
                 <!-- Surat Permohonan Rawat Inap (SPRI) -->
                 <SuratPermohonanRawatInap
-                  v-if="surat.namaSurat === 'Surat Permohonan Rawat Inap (SPRI)'"
+                  v-if="
+                    surat.namaSurat === 'Surat Permohonan Rawat Inap (SPRI)'
+                  "
                   @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
                   ref="handleRef"
                   :attr="index"
                 />
                 <!-- Surat Keterangan Sakit -->
                 <SuratKeteranganSakit
                   v-if="surat.namaSurat === 'Surat Keterangan Sakit'"
+                  @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
+                  ref="handleRef"
+                  :attr="index"
                 />
                 <!-- Surat Keterangan Sehat -->
                 <SuratKeteranganSehat
                   v-if="surat.namaSurat === 'Surat Keterangan Sehat'"
+                  @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
+                  ref="handleRef"
+                  :attr="index"
                 />
                 <!-- Surat Rujukan -->
                 <SuratRujukan
                   v-if="surat.namaSurat === 'Surat Rujukan'"
+                  @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
+                  ref="handleRef"
+                  :attr="index"
                 />
                 <!-- Surat Keterangan Meninggal -->
                 <SuratKeteranganMeninggal
                   v-if="surat.namaSurat === 'Surat Keterangan Meninggal'"
+                  @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
+                  ref="handleRef"
+                  :attr="index"
                 />
                 <!-- Surat Resep Kacamata -->
                 <SuratResepKacamata
                   v-if="surat.namaSurat === 'Surat Resep Kacamata'"
+                  @onDelete="() => removeFromSelectedItems(index)"
+                  @update:dataSurat="(data) => updateSuratData(index, data)"
+                  ref="handleRef"
+                  :attr="index"
                 />
               </div>
             </div>

@@ -8,33 +8,47 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-const emit = defineEmits(["onDelete"]);
+
+const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
 const schema = toTypedSchema(
   yup.object({
-    // tanggal: yup.string().required("Tanggal harus dippilih"),
-    poli: yup.string(),
-    dokter: yup.string(),
+    tanggalRawat:yup.date().required("Tanggal Rencana Rawat Inap harus dipilih"),
+    dokter: yup.string().required("Dokter harus dipilih"),
+    tujuan: yup.string().required("Tujuan Ruangan Rawat Inap harus dipilih"),
     keterangan: yup.string().required("Keterangan harus diisi"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
-const [poli] = defineField("poli");
+const [tanggalRawat] = defineField("tanggalRawat");
 const [dokter] = defineField("dokter");
+const [tujuan] = defineField("tujuan");
 const [keterangan] = defineField("keterangan");
+
+const itemsDokter = ref([
+  "Dokter Aminah",
+  "Dokter Siti",
+  "Dokter Adam",
+]);
+const itemsTujuan= ref([
+  "Oprasi",
+  "Rawat Inap",
+]);
+
+
 const submitForm = handleSubmit((values) => {
-  console.log("Form submitted successfully with values:", values);
+  console.log(values);
+  emit("update:dataSurat", values);
 });
+
 defineExpose({
   submitForm,
 });
 </script>
 <template>
-  <CustomAccordion
-    headerClass="bg-adameds-50"
-  >
+  <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Permohonan Rawat Inap (SPRI)
@@ -47,24 +61,39 @@ defineExpose({
         <CustomDatePicker
           label="Tanggal rencana Rawat Inap"
           class="col-span-6"
+          v-model="tanggalRawat"
+           :invalid="!!errors.tanggalRawat"
+          :invalidMessage="errors.tanggalRawat"
         />
         <CustomSelect
           label="Dokter"
+          v-model="dokter"
           place-holder="Pilih Poli"
+          :options="itemsDokter"
+          option-label=""
+          option-value=""
           class="col-span-7"
+           :invalid="!!errors.dokter"
+          :invalidMessage="errors.dokter"
         />
         <CustomSelect
           label="Tujuan Ruangan Rawat Inap"
+          v-model="tujuan"
           place-holder="Pilih Dokter"
+          :options="itemsTujuan"
+          option-label=""
+          option-value=""
           class="col-span-5"
+           :invalid="!!errors.tujuan"
+          :invalidMessage="errors.tujuan"
         />
         <CustomTextArea
           label="Keterangan / Catatan"
           v-model="keterangan"
           placeholder="Keterangan / Catatan ..."
           class="col-span-12"
-            :invalid="!!errors.keterangan"
-        :invalidMessage="errors.keterangan"
+          :invalid="!!errors.keterangan"
+          :invalidMessage="errors.keterangan"
         />
       </div>
     </template>

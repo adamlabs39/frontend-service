@@ -8,32 +8,59 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 const pemberianObat = ref<any[]>([]);
 
+// onMounted(() => {
+//   pemberianObat.value = [
+//     {
+//       nama_obat: "Paracetamol",
+//       sisa_stok: "2 Tab",
+//       qty_order: "10 Tablet",
+//       satuan_penggunaan: "",
+//       cara_pakai: "Setelah Makan",
+//       periode_unit: "",
+//       periode: "Sehari",
+//       frekuensi: "3",
+//       dokter_pemberi_resep: "dr. Spesialis Sp. D",
+//       pemberian: [
+//         {
+//           waktu_pemberian: "Pagi",
+//           jam_pemberia: "08:00",
+//           qty_pemberian: "",
+//           petugas_pemberian: "Bambang",
+//           catatan_pemberin: "Lorem Ipsum",
+//         },
+//         {
+//           waktu_pemberian: "Pagi",
+//           jam_pemberia: "08:00",
+//           qty_pemberian: "",
+//           petugas_pemberian: "Bambang",
+//           catatan_pemberin: "Lorem Ipsum",
+//         },
+//       ],
+//     },
+//   ];
+// });
 onMounted(() => {
   pemberianObat.value = [
     {
-      nama_obat: "Paracetamol",
-      sisa_stok: "2 Tab",
-      qty_order: "10 Tablet",
-      satuan_penggunaan: "",
-      cara_pakai: "Setelah Makan",
-      periode_unit: "",
-      periode: "Sehari",
-      frekuensi: "3",
-      dokter_pemberi_resep: "dr. Spesialis Sp. D",
-      pemberian: [
+      tanggal: "",
+      obat: [
         {
-          waktu_pemberian: "Pagi",
-          jam_pemberia: "08:00",
-          qty_pemberian: "",
-          petugas_pemberian: "Bambang",
-          catatan_pemberin: "Lorem Ipsum",
-        },
-        {
-          waktu_pemberian: "Pagi",
-          jam_pemberia: "08:00",
-          qty_pemberian: "",
-          petugas_pemberian: "Bambang",
-          catatan_pemberin: "Lorem Ipsum",
+          namaObat: "Paracetamol",
+          sisaStok: "2",
+          qtyOrder: "10",
+          satuanPenggunaan: "2",
+          caraPakai: "Setelah Makan",
+          periodeUnit: "",
+          periode: "",
+          frekuensi: "",
+          dokterPemberiResep: "",
+          pemberian: [
+            {
+              waktuPemberian: "08:00",
+              qtyPemberian: "",
+              petugasPemberian: "",
+            },
+          ],
         },
       ],
     },

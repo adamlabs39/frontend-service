@@ -39,6 +39,7 @@ import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue";
 import SuratControlRawatJalan from "@/components/RekamMedis/ListSuratKeterangan/SuratControlRawatJalan.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import Prognosis from "@/components/RekamMedis/ResumeDiscarge/Prognosis.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -288,6 +289,7 @@ const submitChildForm = () => {
     <TandaVital/> <br>
     <AnamnesisResume/><br>
     <Edukasi/> <br>
+    <Prognosis/><br>
     <KeadaanWaktuPulang/><br>
     <StatusPulang/><br>
     <PemeriksaanFisik/> <br>

@@ -1,36 +1,87 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+
+const emit = defineEmits(["onDelete", "update:dataSurat"]);
+
+const schema = toTypedSchema(
+  yup.object({
+    lamaIstirahat: yup.number().required("Lama Istirahat harus diisi"),
+    tanggalMulai: yup.date().required("Tanggal Mulai harus dipilih"),
+    larangan: yup.string().required("Larangan harus diisi"),
+    keterangan: yup.string().required("Keterangan Sakit harus diisi"),
+  })
+);
+
+const { errors, handleSubmit, defineField, resetForm } = useForm({
+  validationSchema: schema,
+});
+
+const [lamaIstirahat] = defineField("lamaIstirahat");
+const [tanggalMulai] = defineField("tanggalMulai");
+const [larangan] = defineField("larangan");
+const [keterangan] = defineField("keterangan");
+
+const submitForm = handleSubmit((values) => {
+  console.log(values);
+  emit("update:dataSurat", values);
+});
+
+defineExpose({
+  submitForm,
+});
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Keterangan Sakit
-        <PhX :size="20" @click="removeFromSelectedItems(index)" />
+        <PhX :size="20" @click="emit('onDelete')" />
       </div>
     </template>
     <template #content>
       <div class="grid grid-cols-12 gap-5 pt-5">
         <CustomTextfield label="No. Surat" class="col-span-6" />
-        <CustomInputNumber label="Istirahat Selama" class="col-span-6">
+        <CustomInputNumber
+          v-model="lamaIstirahat"
+          label="Istirahat Selama"
+          class="col-span-6"
+          :invalid="!!errors.lamaIstirahat"
+          :invalidMessage="errors.lamaIstirahat"
+        >
           <template #appendText>
             <div class="flex items-center mr-2.5">Hari</div>
           </template>
         </CustomInputNumber>
-        <CustomDatePicker label="Mulai dari Tanggal" class="col-span-7" />
+        <CustomDatePicker
+          v-model="tanggalMulai"
+          label="Mulai dari Tanggal"
+          class="col-span-7"
+          :invalid="!!errors.tanggalMulai"
+          :invalidMessage="errors.tanggalMulai"
+        />
         <CustomTextfield
+          v-model="larangan"
           label="Larangan"
           placeholder="Larangan"
           class="col-span-5"
+          :invalid="!!errors.larangan"
+          :invalidMessage="errors.larangan"
         />
         <CustomTextArea
+          v-model="keterangan"
           label="Keterangan Sakit"
           placeholder="Keterangan Sakit ..."
           class="col-span-12"
+          :invalid="!!errors.keterangan"
+          :invalidMessage="errors.keterangan"
         />
       </div>
     </template>

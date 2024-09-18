@@ -14,8 +14,9 @@ const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
 const schema = toTypedSchema(
   yup.object({
-    poli: yup.string(),
-    dokter: yup.string(),
+    tanggalPeriksa: yup.date().required("Tanggal Kontrol harus dipilih"),
+    poli: yup.string().required("Poli harus dipilih"),
+    dokter: yup.string().required("Dokter harus dipilih"),
     keterangan: yup.string().required("Keterangan harus diisi"),
   })
 );
@@ -24,23 +25,28 @@ const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
 
+const [tanggalPeriksa] = defineField("tanggalPeriksa");
 const [poli] = defineField("poli");
 const [dokter] = defineField("dokter");
 const [keterangan] = defineField("keterangan");
 
+const itemsPoli = ref(["Poli Gigi", "Poli Mata", "Poli Anak"]);
+const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
+
 const submitForm = handleSubmit((values) => {
   console.log(values);
-  
-  emit('update:dataSurat', values); // Emit data ketika submit
+  emit("update:dataSurat", values);
 });
 
 defineExpose({
   submitForm,
 });
+
+
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Kontrol Rawat Jalan
@@ -50,10 +56,19 @@ defineExpose({
     <template #content>
       <div class="grid grid-cols-12 gap-5 pt-5">
         <CustomTextfield label="No. Surat" class="col-span-6" />
-        <CustomDatePicker label="Tanggal Kontrol" class="col-span-6" />
+        <CustomDatePicker
+          v-model="tanggalPeriksa"
+          label="Tanggal Kontrol"
+          class="col-span-6"
+          :invalid="!!errors.tanggalPeriksa"
+          :invalidMessage="errors.tanggalPeriksa"
+        />
         <CustomSelect
           v-model="poli"
           label="Poli"
+          :options="itemsPoli"
+          option-label=""
+          option-value=""
           place-holder="Pilih Poli"
           class="col-span-7"
           :invalid="!!errors.poli"
@@ -62,6 +77,9 @@ defineExpose({
         <CustomSelect
           v-model="dokter"
           label="Dokter"
+          :options="itemsDokter"
+          option-label=""
+          option-value=""
           place-holder="Pilih Dokter"
           class="col-span-5"
           :invalid="!!errors.dokter"

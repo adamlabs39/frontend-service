@@ -1,12 +1,55 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-const emit = defineEmits(["onDelete"]);
+
+const emit = defineEmits(["onDelete", "update:dataSurat"]);
+
+const tabs = ref([
+  { title: "Pro login quitat", value: "0" },
+  { title: "Pro Domo", value: "1" },
+  { title: "Pro propin quitat", value: "2" },
+]);
+const schema = toTypedSchema(
+  yup.object({
+    pemeriksaan: yup.string().required("Pemeriksaan harus dipilih"),
+    distantVitror: yup.number(),
+    formaVitror: yup.number(),
+    colrVitror: yup.number()
+  })
+);
+
+const { errors, handleSubmit, defineField, resetForm } = useForm({
+  validationSchema: schema,
+});
+
+const [pemeriksaan] = defineField("pemeriksaan");
+const [distantVitror] = defineField("distantVitror");
+const [formaVitror] = defineField("formaVitror");
+const [colrVitror] = defineField("colrVitror");
+
+
+const itemsPoli = ref(["Poli Gigi", "Poli Mata", "Poli Anak"]);
+const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
+
+const submitForm = handleSubmit((values) => {
+  console.log(values);
+  emit("update:dataSurat", values);
+});
+
+defineExpose({
+  submitForm,
+});
+const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
+
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Resep Kacamata
@@ -23,6 +66,10 @@ const emit = defineEmits(["onDelete"]);
         </div>
         <CustomSelect
           label="Pemeriksaan"
+          v-model="pemeriksaan"
+          :options="optionsPemeriksaan"
+          option-label=""
+          option-value=""
           place-holder="Pilih Pemeriksaan"
           class="col-span-12"
         />
@@ -104,9 +151,9 @@ const emit = defineEmits(["onDelete"]);
             </TabPanels>
           </Tabs>
         </div>
-        <CustomInputNumber label="Distant Vitror" class="col-span-4 pr-5" />
-        <CustomInputNumber label="Forma Vitror" class="col-span-4 pr-5" />
-        <CustomInputNumber label="Colr Vitror" class="col-span-4" />
+        <CustomInputNumber v-model="distantVitror" label="Distant Vitror" class="col-span-4 pr-5" />
+        <CustomInputNumber v-model="formaVitror" label="Forma Vitror" class="col-span-4 pr-5" />
+        <CustomInputNumber v-model="colrVitror" label="Colr Vitror" class="col-span-4" />
       </div>
     </template>
   </CustomAccordion>
