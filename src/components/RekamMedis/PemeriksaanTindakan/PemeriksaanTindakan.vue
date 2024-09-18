@@ -9,7 +9,6 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import { log } from "console";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
