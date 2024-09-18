@@ -17,17 +17,20 @@ const props = defineProps({
 const currentMethod = ref(props.method);
 
 
-const schema = yup.object({
-    primer: yup.string().required('Primer is required'),
-    petugas: yup.string().required('Petugas is required'),
-    diagnosisDiferensial: yup.string(),
-    datas: yup.array().of(
+const schema =
+    toTypedSchema(
         yup.object({
-            sekunder: yup.string().required('Sekunder is required'),
-            diagnosisDiferensialDinamis: yup.string(),
+            primer: yup.string().required('Primer is required'),
+            petugas: yup.string().required('Petugas is required'),
+            diagnosisDiferensial: yup.string(),
+            datas: yup.array().of(
+                yup.object({
+                    sekunder: yup.string().required('Sekunder is required'),
+                    diagnosisDiferensialDinamis: yup.string(),
+                })
+            ),
         })
-    ),
-});
+)
 
 const { errors, handleSubmit, resetForm, defineField } = useForm({
     validationSchema: schema,
@@ -95,7 +98,7 @@ const onEditClick = () => {
 <template>
     <CustomAccordion headerClass="bg-adameds-50">
         <template #header>Diagnosa Dokter (ICD 10)</template>
-        <template #content v-if="currentMethod == 'form'"> 
+        <template #content v-if="currentMethod == 'form'">
             <div class="flex flex-col gap-5 py-3">
                 <div class="grid grid-cols-2 gap-5">
                     <CustomSelect label="Primer" v-model:model-value="primer" :options="diagnosaPrimers"
@@ -154,7 +157,7 @@ const onEditClick = () => {
                 <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
             </div>
         </template>
-        
+
         <template #footer>
             <div class="flex items-end justify-end gap-3">
                 <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"

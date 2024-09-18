@@ -10,6 +10,7 @@ import { ref } from 'vue';
 import { useForm} from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import CustomInfoRow from '@/components/Base/CustomInfoRow.vue';
 
 const props = defineProps({
     method: {
@@ -18,7 +19,7 @@ const props = defineProps({
     },
 });
 
-// const tglPersetujuan = ref(new Date());
+const currentMethod = ref(props.method);
 
 
 
@@ -97,8 +98,12 @@ const [saksi2] = defineField('saksi2');
 
 const onSubmit = handleSubmit((values) => {
     console.log("Submitted with", values);
-    // currentMethod.value = 'detail'
+    currentMethod.value = 'detail'
 });
+
+const onEditClick = () => {
+    currentMethod.value = 'form'; 
+};
 </script>
 
 <template>
@@ -106,7 +111,7 @@ const onSubmit = handleSubmit((values) => {
 
         <template #header>Persetujuan Pasien</template>
         <template #content>
-            <div class="flex flex-col gap-5 p-5">
+            <div class="flex flex-col gap-5 p-5" v-if="currentMethod == 'form'">
                 <div class="grid grid-cols-2 gap-[30px]">
                     <div>
                         <CustomSelect label="Dokter Pelaksana Tindakan" v-model:model-value="dokterPelaksana" placeHolder="Pilih Dokter Pelaksana Tindakan"
@@ -208,13 +213,24 @@ const onSubmit = handleSubmit((values) => {
                     </div>
                 </div>
             </div>
+
+            <div class="py-5 flex flex-col gap-[19px]" v-else>
+                <CustomInfoRow label="Primer" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <CustomInfoRow label="Sekunder" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <CustomInfoRow label="Sekunder" value="ICD-10" />
+                <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+                <hr class="border-grey-200">
+                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                <CustomButton v-if="currentMethod == 'form'" label="Reset" textColor="text-[#9DA4B1]"
                     backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" @click="resetForm" />
-                <CustomButton v-if="props.method == 'form'" label="Simpan" @click="onSubmit"/>
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+                <CustomButton v-if="currentMethod== 'form'" label="Simpan" @click="onSubmit"/>
+                <CustomButton v-if="currentMethod == 'detail'" label="Edit" @click="onEditClick"/>
             </div>
         </template>
     </CustomAccordion>
