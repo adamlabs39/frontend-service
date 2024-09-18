@@ -13,30 +13,27 @@ const props = defineProps({
 });
 
 const implementation = ref();
-
 </script>
 
 <template>
   <CustomAccordion headerClass="bg-adameds-50">
     <template #header>Implementation</template>
     <template #content>
-      <div
-        v-if="props.method == 'form'"
-        class="gap-[30px] py-3"
-      >
-      <CustomTextArea
-            v-model="implementation"
-            label="Implementasi"
-            placeholder="Ketik Implementasi ..."
-          />
+      <div v-if="props.method == 'form'" class="gap-[30px] py-3">
+        <CustomTextArea
+          v-model="implementation"
+          label="Implementasi"
+          placeholder="Ketik Implementasi ..."
+        />
       </div>
 
       <div
         v-if="props.method == 'detail'"
         class="py-5 flex flex-col gap-[19px]"
       >
-        <hr class="border-grey-200" />
         <CustomInfoRow label="Implementasi" value="Nama Implementasi" />
+        <hr class="border-grey-200" />
+        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
       </div>
     </template>
     <template #footer>
