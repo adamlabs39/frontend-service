@@ -68,6 +68,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
+import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -470,6 +471,12 @@ const router = createRouter({
 
     // NOTE Test Component
     {
+      path: "/component-fahmi",
+      name: "component-fahmi",
+      meta: { layout: DefaultLayout },
+      component: TestComponentFahmi,
+    },
+    {
       path: "/component-naya",
       name: "component-naya",
       meta: { layout: DefaultLayout },
@@ -481,6 +488,8 @@ const router = createRouter({
       meta: { layout: DefaultLayout },
       component: TestComponentAdamNew,
     },
+
+    { path: "/:pathMatch(.*)*", redirect: '/dashboard' }
   ],
 });
 

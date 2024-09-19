@@ -6,6 +6,9 @@ import DatabaseUserIcon from "./DatabaseUserIcon.vue";
 import MonitoringBedIcon from "./MonitoringBedIcon.vue";
 import FileReportIcon from "./FileReportIcon.vue";
 import GearFillIcon from "./GearFillIcon.vue";
+import FisioIcon from "./FisioIcon.vue";
+import TrainingIcon from "./TrainingIcon.vue";
+import DoubleBoxIcon from "./DoubleBoxIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -16,5 +19,8 @@ export default {
     app.component("MonitoringBedIcon", MonitoringBedIcon);
     app.component("FileReportIcon", FileReportIcon);
     app.component("GearFillIcon", GearFillIcon);
+    app.component("FisioIcon", FisioIcon);
+    app.component("TrainingIcon", TrainingIcon);
+    app.component("DoubleBoxIcon", DoubleBoxIcon);
   },
 };
