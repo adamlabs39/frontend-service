@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount } from "vue";
-import { useForm } from "vee-validate";
+import { useForm, useField, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -20,21 +20,12 @@ const props = defineProps({
 // Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
 
-const schema = toTypedSchema(
-  yup.object({
-    datas: yup.array().of(
-      yup.object({
-        instruksi: yup.string(),
-      })
-    ),
-  })
-);
-
 const messages = ref([
   {
     role: "Dokter Spesialis",
     text: "Lorem ipsum dolor sit amet consectetur.",
     date: "01 Januari 2024",
+    instruksiDokter: "Bambang",
     time: "10:01",
     isSender: false,
     gender: "female",
@@ -43,6 +34,8 @@ const messages = ref([
     role: "Dokter Spesialis",
     text: "Lorem ipsum dolor sit amet consecteturrrrrrrrrrrrrrrrrrrrr.",
     date: "01 Januari 2024",
+    instruksiDokter: "Bambang",
+
     time: "10:05",
     isSender: false,
     gender: "male",
@@ -51,19 +44,65 @@ const messages = ref([
     role: "Anda",
     text: "Lorem ipsum dolor sit amet consectetur.",
     date: "01 Januari 2024",
+    instruksiDokter: "Bambang",
+
     time: "10:10",
     isSender: true,
     gender: "female",
   },
 ]);
 
-const selectedDoctor = ref(null);
-const newMessage = ref("");
+const selectedDoctor = ref();
+const optionsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
 
 // Function to determine avatar based on gender
 const getAvatar = (gender: string) => {
   return gender === "female" ? dokterPerempuan : dokterLaki;
 };
+
+// Schema for validation
+const schema = yup.object({
+  instruksi: yup.string().required("Instruksi Medis tidak boleh kosong"),
+  dokter: yup.string().required("Dokter harus dipilih"),
+});
+
+// Use form with validation schema
+const { errors, handleSubmit, resetForm, defineField } = useForm({
+  validationSchema: schema,
+});
+
+const [instruksi] = defineField("instruksi");
+const [dokter] = defineField("dokter");
+
+const onSubmitInstruksiMedis = handleSubmit((values: any) => {
+  // Push new message to the messages array
+  messages.value.push({
+  role: "Anda",
+  text: values.instruksi,
+  instruksiDokter: values.dokter,
+  date: new Date().toLocaleDateString("id-ID", { 
+    day: "2-digit", 
+    month: "long", 
+    year: "numeric" 
+  }),
+  time: new Date().toLocaleTimeString("id-ID", { 
+    hour: "2-digit", 
+    minute: "2-digit" 
+  }),
+  isSender: true,
+  gender: "female", // Assuming the sender is always female in this context
+});
+
+
+  // Reset form after submission
+  resetForm();
+
+  // Switch back to detail mode
+  // isEditing.value = false;
+  console.log(instruksi);
+  console.log(messages);
+});
+
 const toggleEdit = () => {
   isEditing.value = true;
 };
@@ -117,23 +156,32 @@ const toggleEdit = () => {
         <div v-if="isEditing" class="flex gap-[30px]">
           <CustomSelect
             label="Dokter Pemberi Instruksi"
+            v-model="dokter"
             place-holder="Pilih Dokter Pemberi Instruksi"
+            :options="optionsDokter"
+            option-label=""
+            option-value=""
+            :invalid="!!errors.dokter"
+            :invalidMessage="errors.dokter"
           />
           <div class="flex flex-col grow gap-2.5">
             <CustomTextArea
-              v-model="newMessage"
+              v-model="instruksi"
               label="Instruksi Medis"
               placeholder="Ketik Instruksi..."
+              :invalid="!!errors.instruksi"
+              :invalidMessage="errors.instruksi"
             />
-            <CustomButton :full="true" class="w-full">
+            <CustomButton
+              :full="true"
+              class="w-full"
+              @click="onSubmitInstruksiMedis"
+            >
               <div class="flex items-center gap-2">
                 <PhPaperPlaneTilt :size="20" weight="fill" />
                 <div>Kirim Instruksi</div>
               </div>
             </CustomButton>
-            <!-- <template #icon>
-                <PhPaperPlaneTilt :size="32" weight="fill" />
-              </template -->
           </div>
         </div>
 

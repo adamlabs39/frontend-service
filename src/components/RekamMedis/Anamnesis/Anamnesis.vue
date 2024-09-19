@@ -68,11 +68,21 @@ const [pernahDirawat] = defineField("pernahDirawat");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({
+    anamnesis: "Penyakit Jantung",
+    keluhanUtama: "Sakit Dada",
+    riwayatPenyakit: "Asma",
+    riwayatPengobatan: "tidak ada",
+    catatan: "tidak ada",
+    riwayatKeluarga: ["Hipertensi", "Stroke"],
+    pernahDirawat: true,
+    petugas: "Adam",
+  });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  isEditing.value = false;
 });
 
 const toggleEdit = () => {
@@ -129,9 +139,12 @@ const toggleEdit = () => {
                     checkedHoverBackground: '#14B8A6',
                     borderColor: '#98A2B3',
                   }"
-                  
                 />
-                <label :for="category.name" class="text-SM font-normal text-grey-400">{{ category.name }}</label>
+                <label
+                  :for="category.name"
+                  class="text-SM font-normal text-grey-400"
+                  >{{ category.name }}</label
+                >
               </div>
             </div>
           </div>
@@ -146,19 +159,30 @@ const toggleEdit = () => {
         />
       </div>
       <div v-else class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Anamnesis" value="Auto Anamnesis" />
-        <CustomInfoRow label="Keluhan Utama" value="Sakit Mata" />
-        <CustomInfoRow label="Riwayat Penyakit" value="Asma" />
+        <CustomInfoRow label="Anamnesis" :value="anamnesis" />
+        <CustomInfoRow label="Keluhan Utama" :value="keluhanUtama" />
+        <CustomInfoRow label="Riwayat Penyakit" :value="riwayatPenyakit" />
         <CustomInfoRow label="Tingkat Keparahan" value="Tidak terlalu parah" />
         <CustomInfoRow label="Pernah Dirawat" value="Tidak" />
-        <CustomInfoRow label="Riwayat Pengobatan" value="Tidak ada" />
-        <CustomInfoRow label="Riwayat Penyakit Keluarga" value="Tidak ada" />
+        <CustomInfoRow label="Riwayat Pengobatan" :value="riwayatPengobatan" />
+        <CustomInfoRow label="Riwayat Penyakit Keluarga">
+          <template #value>
+            <span v-if="riwayatKeluarga?.length">
+              <span v-for="(penyakit, index) in riwayatKeluarga" :key="index">
+                {{ penyakit
+                }}<span v-if="index < riwayatKeluarga.length - 1">, </span>
+              </span>
+            </span>
+            <span v-else>Tidak ada riwayat penyakit keluarga</span>
+          </template>
+        </CustomInfoRow>
+
         <CustomInfoRow
           label="Pengetahuan Tentang Penyakit Saat Ini"
           value="Tidak ada"
         />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>

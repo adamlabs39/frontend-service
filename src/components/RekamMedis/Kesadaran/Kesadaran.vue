@@ -73,11 +73,20 @@ const [GCS_kesimpulan] = defineField("GCS_kesimpulan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    eye:2,
+    motorik:1,
+    verbal:0,
+    GCS_score:50,
+    GCS_kesimpulan:"Sakit sedang",
+    petugas: "Adam"
+   });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  isEditing.value = false;
+
 });
 
 const toggleEdit = () => {
@@ -200,6 +209,9 @@ const kesimpulanOption = ref([
   { name: "Sakit Ringan" },
   { name: "Sakit Berat" },
 ]);
+const getLabelFromValue = (value: number, responses: Array<{ label: string }>) => {
+  return responses[value]?.label || "Unknown";
+};
 
 </script>
 
@@ -242,12 +254,21 @@ const kesimpulanOption = ref([
         <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Mata" value="Spontan merespon"/>
-        <CustomInfoRow label="Motorik" value="Melokalisir nyeri" />
-        <CustomInfoRow label="Verbal" value="Tidak ada respon" />
-        <CustomInfoRow label="Kesimpulan GCS" value="Sehat" />
+        <!-- <CustomInfoRow label="Mata">
+          <template #value>
+            <div
+            v-if=""
+            >
+              
+            </div>
+          </template>
+        </CustomInfoRow> -->
+        <CustomInfoRow label="Mata" :value="getLabelFromValue(eye, opsiKesadaran[0].response)"/>
+        <CustomInfoRow label="Motorik" :value="getLabelFromValue(motorik, opsiKesadaran[1].response)"/>
+        <CustomInfoRow label="Verbal" :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"/>
+        <CustomInfoRow label="Kesimpulan GCS" :value="GCS_kesimpulan" />
         <hr class="border-grey-200">
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>

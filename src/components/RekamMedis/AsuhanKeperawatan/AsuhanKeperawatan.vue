@@ -31,11 +31,15 @@ const [diagnosaPerawat] = defineField("diagnosaPerawat");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    diagnosaPerawat:"DB/Tipes",
+    petugas: "Adam" });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  isEditing.value = false;
+
 });
 
 const toggleEdit = () => {
@@ -49,9 +53,9 @@ const toggleEdit = () => {
       <div class="pt-5">
         <CustomCkEditor v-if="isEditing" label="Diagnosis Perawat" v-model="diagnosaPerawat" />
         <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-          <CustomInfoRow label="Diagnosis Perawat" value="DB/Tipes" />
+          <CustomInfoRow label="Diagnosis Perawat" :value="diagnosaPerawat" />
           <hr class="border-grey-200" />
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow label="Petugas Input" :value="petugas" />
         </div>
       </div>
     </template>

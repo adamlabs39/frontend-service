@@ -33,11 +33,14 @@ const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    catatan:"Tidak Ada",
+    petugas: "Adam" });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  isEditing.value = false;
 });
 
 const toggleEdit = () => {
@@ -59,9 +62,9 @@ const toggleEdit = () => {
           v-if="!isEditing"
           class="py-5 flex flex-col gap-[19px]"
         >
-          <CustomInfoRow label="Catatan Hasil Penunjang" value="Sehat sehat orang baik" />
+          <CustomInfoRow label="Catatan Hasil Penunjang" :value="catatan" />
           <hr class="border-grey-200" />
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow label="Petugas Input" :value="petugas" />
         </div>
       </div>
     </template>

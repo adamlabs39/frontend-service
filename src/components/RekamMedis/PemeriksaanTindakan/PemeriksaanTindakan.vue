@@ -21,7 +21,6 @@ const props = defineProps({
 const isEditing = ref(props.method === "form");
 const tambahTindakan = ref();
 const detail = ref();
-
 const deletedData = ref<any[]>([]);
 const selectedItems = ref<any[]>([]);
 const cariItemMultiple = ref();
@@ -553,6 +552,11 @@ const toggleEdit = () => {
                 </template>
               </Column>
             </DataTable>
+          </template>
+          <template #footer>
+            <div>
+              <CustomButton label="Edit" @click="toggleEdit" />
+            </div>
           </template>
         </CustomDialog>
       </div>
