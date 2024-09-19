@@ -8,6 +8,9 @@ import FileReportIcon from "./FileReportIcon.vue";
 import FisioIcon from "./FisioIcon.vue";
 import TrainingIcon from "./TrainingIcon.vue";
 import DoubleBoxIcon from "./DoubleBoxIcon.vue";
+import CashRegisterIcon from "./CashRegisterIcon.vue";
+import PayMoneyIcon from "./PayMoneyIcon.vue";
+import ClosedBillIcon from "./ClosedBillIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -20,5 +23,8 @@ export default {
     app.component("FisioIcon", FisioIcon);
     app.component("TrainingIcon", TrainingIcon);
     app.component("DoubleBoxIcon", DoubleBoxIcon);
+    app.component("CashRegisterIcon", CashRegisterIcon);
+    app.component("PayMoneyIcon", PayMoneyIcon);
+    app.component("ClosedBillIcon", ClosedBillIcon);
   },
 };

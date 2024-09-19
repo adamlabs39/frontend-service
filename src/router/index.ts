@@ -9,6 +9,7 @@ import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
 import SettingView from "@/views/SettingPage/SettingView.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
+import PembayaranView from "@/views/Pembayaran/PembayaranView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 
@@ -19,6 +20,13 @@ import SEPAdmisiPage from "@/views/Admisi/SEPAdmisiPage.vue";
 import PatientDataPage from "@/views/Admisi/PatientDataPage.vue";
 import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
 import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
+
+// NOTE Pembayaran
+import KasirPage from "@/views/Pembayaran/KasirPage.vue";
+import TransaksiPage from "@/views/Pembayaran/TransaksiPage.vue";
+import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
+import PembayaranKunjunganPage from "@/views/Pembayaran/PembayaranKunjunganPage.vue";
+import ClosingKasirPage from "@/views/Pembayaran/ClosingKasirPage.vue";
 
 // NOTE Rawat Jalan
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
@@ -459,6 +467,43 @@ const router = createRouter({
       name: "laboratorium-laporan-rekap-jumlah",
       meta: { layout: SidebarLayout, page: OrderPage },
       component: LaboratoriumView,
+    },
+
+     // NOTE Pembayaran
+     {
+      path: "/pembayaran",
+      name: "pembayaran",
+      redirect: "/pembayaran/kasir",
+    },
+    {
+      path: "/pembayaran/kasir",
+      name: "pembayaran-kasir",
+      meta: { layout: SidebarLayout, page: KasirPage },
+      component: PembayaranView,
+    },
+    {
+      path: "/pembayaran/transaksi",
+      name: "pembayaran-transaksi",
+      meta: { layout: SidebarLayout, page: TransaksiPage },
+      component: PembayaranView,
+    },
+    {
+      path: "/pembayaran/closedbill",
+      name: "pembayaran-closedbill",
+      meta: { layout: SidebarLayout, page: ClosedBillPage },
+      component: PembayaranView,
+    },
+    {
+      path: "/pembayaran/laporan/pembayaran",
+      name: "pembayaran-laporan-pembayaran",
+      meta: { layout: SidebarLayout, page: PembayaranKunjunganPage },
+      component: PembayaranView,
+    },
+    {
+      path: "/pembayaran/laporan/closing",
+      name: "pembayaran-laporan-closing",
+      meta: { layout: SidebarLayout, page: ClosingKasirPage },
+      component: PembayaranView,
     },
 
     // NOTE Test Component

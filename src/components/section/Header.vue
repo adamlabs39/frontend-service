@@ -68,7 +68,7 @@ const listMenu = ref([
   {
     title: "Pembayaran",
     icon: "PhMoneyWavy",
-    url: "tbc",
+    url: "/pembayaran",
   },
   {
     title: "Inventory",
