@@ -142,146 +142,146 @@ const closeAllCanvas = () => {
           header="Kepala"
           type="Kepala"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasMata"
           header="Mata"
           type="Mata"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKanan"
           header="Telinga Kanan"
           type="Telinga Kanan"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKiri"
           header="Telinga Kiri"
           type="Telinga Kiri"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasHidung"
           header="Hidung"
           type="Hidung"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasMulut"
           header="Mulut"
           type="Mulut"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasRonggaMulut"
           header="Rongga Mulut"
           type="Rongga Mulut"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <OhisInput
           ref="canvasOHIS"
           header="Oral Hyhiene Index Simplified (OHI-S)"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasTenggorkan"
           header="Tenggorokan"
           type="Tenggorokan"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasLeher"
           header="Leher"
           type="Leher"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasLeherDepan"
           header="Leher Depan"
           type="Leher Depan"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasDada"
           header="Dada"
           type="Dada"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasJantung"
           header="Jantung"
           type="Jantung"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasParu"
           header="Paru"
           type="Paru"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasAbdomen"
           header="Abdomen"
           type="Abdomen"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasAnus"
           header="Anus"
           type="Anus"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasUrogenital"
           header="Urogenital"
           type="Urogenital"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremAtas"
           header="Ekstermitas Atas"
           type="Ekstermitas Atas"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremBawah"
           header="Ekstermitas Bawah"
           type="Ekstermitas Bawah"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasMuskuloskeletal"
           header="Muskuloskeletal"
           type="Muskuloskeletal"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasPemeriksaanLainya"
           header="Pemeriksaan Lainya"
           type="Pemeriksaan Lainya"
           class="mb-[10px]"
-          method="detail"
+          :method="method"
         />
       </div>
     </template>

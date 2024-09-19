@@ -253,16 +253,20 @@ const loadImage = () => {
 };
 
 onMounted(() => {
-  const canvasElement = document.getElementById("canvas");
-  canvas.value = canvasElement as HTMLCanvasElement;
-  ctx.value = canvas.value!.getContext("2d");
+  if (canvas.value) {
+    // const canvasElement = document.getElementById("canvas");
+    // canvas.value = canvasElement as HTMLCanvasElement;
+    ctx.value = canvas.value!.getContext("2d");
 
-  const canvasElement2 = document.getElementById("canvas2");
-  canvas2.value = canvasElement2 as HTMLCanvasElement;
-  ctx2.value = canvas2.value!.getContext("2d");
+    // Set default stroke color
+    ctx.value!.strokeStyle = `#${colors.value}`;
+  }
 
-  // Set default stroke color
-  ctx.value!.strokeStyle = `#${colors.value}`;
+  if (canvas2.value) {
+    // const canvasElement2 = document.getElementById("canvas2");
+    // canvas2.value = canvasElement2 as HTMLCanvasElement;
+    ctx2.value = canvas2.value!.getContext("2d");
+  }
 });
 
 const getSVG = (svg: string) => {
@@ -342,7 +346,9 @@ defineExpose({
               height="400"
               width="800"
               id="canvas"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+              ref="canvas"
+              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+              :class="[isStartPainting ? 'cursor-crosshair' : 'cursor-default']"
             ></canvas>
             <canvas
               height="400"
@@ -351,7 +357,9 @@ defineExpose({
               @mouseup="finishedPainting"
               @mousemove="drawing"
               id="canvas2"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+              ref="canvas2"
+              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+              :class="[isStartPainting ? 'cursor-crosshair' : 'cursor-default']"
             ></canvas>
           </div>
           <div class="px-[30px] grow">
@@ -418,70 +426,72 @@ defineExpose({
                   pt:range="rounded-lg bg-adameds-300"
                 />
               </div>
-              <div class="font-semibold text-normal">
-                Tidak Ada Hambatan Gerak
-              </div>
-              <div
-                class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
-              >
-                <div
-                  v-for="(list, index) in listTidakAdaHambatanGerak"
-                  @click="
-                    (selectedTool = list),
-                      (selectedArrow = 'TidakAdaHambatanGerak')
-                  "
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{
-                    'bg-adameds-75': selectedTool == list,
-                  }"
-                  :key="`${list}-${index}`"
-                >
-                  <img
-                    :src="getArrowSVG('TidakAdaHambatanGerak', list)"
-                    alt=""
-                  />
+              <div v-if="type == 'Oftalmologis'">
+                <div class="font-semibold text-normal">
+                  Tidak Ada Hambatan Gerak
                 </div>
-              </div>
-              <div class="font-semibold text-normal">
-                Terdapat Hambatan Gerak
-              </div>
-              <div
-                class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
-              >
                 <div
-                  v-for="(list, index) in listTerdapatHambatanGerak"
-                  @click="
-                    (selectedTool = list),
-                      (selectedArrow = 'TerdapatHambatanGerak')
-                  "
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{
-                    'bg-adameds-75': selectedTool == list,
-                  }"
-                  :key="`${list}-${index}`"
+                  class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
                 >
-                  <img
-                    :src="getArrowSVG('TerdapatHambatanGerak', list)"
-                    alt=""
-                  />
+                  <div
+                    v-for="(list, index) in listTidakAdaHambatanGerak"
+                    @click="
+                      (selectedTool = list),
+                        (selectedArrow = 'TidakAdaHambatanGerak')
+                    "
+                    class="p-2 m-auto rounded-full cursor-pointer"
+                    :class="{
+                      'bg-adameds-75': selectedTool == list,
+                    }"
+                    :key="`${list}-${index}`"
+                  >
+                    <img
+                      :src="getArrowSVG('TidakAdaHambatanGerak', list)"
+                      alt=""
+                    />
+                  </div>
                 </div>
-              </div>
-              <div class="font-semibold text-normal">Tidak Dapat Gerak</div>
-              <div
-                class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
-              >
+                <div class="font-semibold text-normal">
+                  Terdapat Hambatan Gerak
+                </div>
                 <div
-                  v-for="(list, index) in listTidakDapatGerak"
-                  @click="
-                    (selectedTool = list), (selectedArrow = 'TidakDapatGerak')
-                  "
-                  class="p-2 m-auto rounded-full cursor-pointer"
-                  :class="{
-                    'bg-adameds-75': selectedTool == list,
-                  }"
-                  :key="`${list}-${index}`"
+                  class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
                 >
-                  <img :src="getArrowSVG('TidakDapatGerak', list)" alt="" />
+                  <div
+                    v-for="(list, index) in listTerdapatHambatanGerak"
+                    @click="
+                      (selectedTool = list),
+                        (selectedArrow = 'TerdapatHambatanGerak')
+                    "
+                    class="p-2 m-auto rounded-full cursor-pointer"
+                    :class="{
+                      'bg-adameds-75': selectedTool == list,
+                    }"
+                    :key="`${list}-${index}`"
+                  >
+                    <img
+                      :src="getArrowSVG('TerdapatHambatanGerak', list)"
+                      alt=""
+                    />
+                  </div>
+                </div>
+                <div class="font-semibold text-normal">Tidak Dapat Gerak</div>
+                <div
+                  class="grid grid-cols-8 h-[54px] bg-adameds-50 rounded-[10px] mb-[10px]"
+                >
+                  <div
+                    v-for="(list, index) in listTidakDapatGerak"
+                    @click="
+                      (selectedTool = list), (selectedArrow = 'TidakDapatGerak')
+                    "
+                    class="p-2 m-auto rounded-full cursor-pointer"
+                    :class="{
+                      'bg-adameds-75': selectedTool == list,
+                    }"
+                    :key="`${list}-${index}`"
+                  >
+                    <img :src="getArrowSVG('TidakDapatGerak', list)" alt="" />
+                  </div>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-[10px]">
@@ -545,7 +555,9 @@ defineExpose({
               height="400"
               width="800"
               id="canvas"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+              ref="canvas"
+              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+              :class="[isStartPainting ? 'cursor-crosshair' : 'cursor-default']"
             ></canvas>
             <canvas
               height="400"
@@ -554,7 +566,9 @@ defineExpose({
               @mouseup="finishedPainting"
               @mousemove="drawing"
               id="canvas2"
-              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px] cursor-crosshair"
+              ref="canvas2"
+              class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+              :class="[isStartPainting ? 'cursor-crosshair' : 'cursor-default']"
             ></canvas>
           </div>
         </div>
