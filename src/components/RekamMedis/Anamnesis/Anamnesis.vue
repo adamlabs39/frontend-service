@@ -18,8 +18,8 @@ const props = defineProps({
   },
 });
 
-// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
 
 const anamnesisOption = ref([
   { name: "Hipertensi" },
@@ -82,16 +82,36 @@ onBeforeMount(async () => {
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
   isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
+
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Anamnesis</template>
     <template #content>
       <div v-if="isEditing" class="grid grid-cols-2 py-5 gap-x-8 gap-y-5">

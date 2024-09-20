@@ -16,6 +16,7 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
 
 const schema = toTypedSchema(
   yup.object({
@@ -38,16 +39,34 @@ onBeforeMount(async () => {
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
   isEditing.value = false;
-
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Asuhan Keperawatan</template>
     <template #content>
       <div class="pt-5">

@@ -19,6 +19,7 @@ const props = defineProps({
 
 // Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(["edit", "submit"]);
 
 const messages = ref([
   {
@@ -77,39 +78,54 @@ const [dokter] = defineField("dokter");
 const onSubmitInstruksiMedis = handleSubmit((values: any) => {
   // Push new message to the messages array
   messages.value.push({
-  role: "Anda",
-  text: values.instruksi,
-  instruksiDokter: values.dokter,
-  date: new Date().toLocaleDateString("id-ID", { 
-    day: "2-digit", 
-    month: "long", 
-    year: "numeric" 
-  }),
-  time: new Date().toLocaleTimeString("id-ID", { 
-    hour: "2-digit", 
-    minute: "2-digit" 
-  }),
-  isSender: true,
-  gender: "female", // Assuming the sender is always female in this context
-});
+    role: "Anda",
+    text: values.instruksi,
+    instruksiDokter: values.dokter,
+    date: new Date().toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }),
+    time: new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    isSender: true,
+    gender: "female", // Assuming the sender is always female in this context
+  });
+  emit("submit", values);
 
-
-  // Reset form after submission
   resetForm();
 
-  // Switch back to detail mode
-  // isEditing.value = false;
   console.log(instruksi);
   console.log(messages);
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit("edit");
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Instruksi Medis</template>
     <template #content>
       <div class="flex flex-col pt-5 gap-2.5">

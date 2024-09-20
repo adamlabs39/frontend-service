@@ -13,10 +13,26 @@ onMounted(() => {
     anamnesis: "Sakit Mata"
   };
 });
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50">
+  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
     <template #header>
       Ringkasan Riwayat Penyakit / Anamnesis
     </template>

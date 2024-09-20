@@ -18,6 +18,7 @@ const props = defineProps({
 });
 
 const orderLab = ref<any[]>([]);
+  const emit = defineEmits(['edit', 'submit']);
 
 onMounted(() => {
   orderLab.value = [
@@ -66,10 +67,27 @@ const testCheckboxMulti = ref([]);
 const testCheckbox = ref(false);
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>
       <div v-if="isEditing">Order Lab</div>
       <div v-if="!isEditing">Laboratorium</div>

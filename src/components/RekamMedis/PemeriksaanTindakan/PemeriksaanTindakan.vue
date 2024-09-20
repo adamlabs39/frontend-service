@@ -19,6 +19,8 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
+
 const tambahTindakan = ref();
 const detail = ref();
 const deletedData = ref<any[]>([]);
@@ -76,9 +78,14 @@ const onSubmit = handleSubmit((values: any) => {
   const parseData = JSON.parse(JSON.stringify(deletedData.value));
   const allData = [...values.datas, ...parseData];
   console.log(allData);
-
+  emit('submit', allData); 
   isEditing.value = false;
 });
+
+const toggleEdit = () => {
+  isEditing.value = true;
+  emit('edit');
+};
 
 const getHargaTindakan = (namaTindakan: string) => {
   const tindakan = products.value.find(
@@ -181,13 +188,27 @@ watch(tambahTindakan, (newValue) => {
     selectedItems.value = [];
   }
 });
-const toggleEdit = () => {
-  isEditing.value = true;
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
 };
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Pemeriksaan dan Tindakan</template>
     <template #content>
       <div class="pt-5">
