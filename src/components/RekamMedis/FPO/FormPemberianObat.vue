@@ -67,10 +67,26 @@ onMounted(() => {
   ];
 });
 const testDialog = ref(false);
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion header-class="bg-adameds-50" initial-state="0">
+  <CustomAccordion header-class="bg-adameds-50" initial-state="0" ref="accordion">
     <template #header> RSP.0001 </template>
     <template #content>
       <div class="grid grid-cols-2 gap-5 pt-5">

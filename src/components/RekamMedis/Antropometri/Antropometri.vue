@@ -16,6 +16,8 @@ const props = defineProps({
   },
 });
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
+
 const schema = toTypedSchema(
   yup.object({
     beratBadan: yup.number(),
@@ -35,20 +37,46 @@ const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    beratBadan:43,
+    tinggiBadan:155,
+    IMT:100,
+    catatan:"Normal",
+    petugas: "Adam" });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
+  isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
+
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Antropometri</template>
     <template #content>
       <div v-if="isEditing" class="flex gap-[30px] pt-5">
@@ -77,12 +105,24 @@ const toggleEdit = () => {
 
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Berat Badan" value="43 Kg"/>
-        <CustomInfoRow label="Tinggi Badan" value="155 Cm" />
-        <CustomInfoRow label="IMT" value="100 Kg/m²" />
-        <CustomInfoRow label="Catatan" value="Normal" />
+        <CustomInfoRow label="Berat Badan">
+          <template #value>
+            <div>{{ beratBadan }} Kg</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Tinggi Badan">
+          <template #value>
+            <div>{{ tinggiBadan }} Cm</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="IMT">
+          <template #value>
+            <div>{{ IMT }} Kg/m²</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Catatan" :value="catatan" />
         <hr class="border-grey-200">
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>

@@ -18,8 +18,8 @@ const props = defineProps({
   },
 });
 
-// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
 
 const anamnesisOption = ref([
   { name: "Hipertensi" },
@@ -68,20 +68,50 @@ const [pernahDirawat] = defineField("pernahDirawat");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({
+    anamnesis: "Penyakit Jantung",
+    keluhanUtama: "Sakit Dada",
+    riwayatPenyakit: "Asma",
+    riwayatPengobatan: "tidak ada",
+    catatan: "tidak ada",
+    riwayatKeluarga: ["Hipertensi", "Stroke"],
+    pernahDirawat: true,
+    petugas: "Adam",
+  });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
+  isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
+
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Anamnesis</template>
     <template #content>
       <div v-if="isEditing" class="grid grid-cols-2 py-5 gap-x-8 gap-y-5">
@@ -129,9 +159,12 @@ const toggleEdit = () => {
                     checkedHoverBackground: '#14B8A6',
                     borderColor: '#98A2B3',
                   }"
-                  
                 />
-                <label :for="category.name" class="text-SM font-normal text-grey-400">{{ category.name }}</label>
+                <label
+                  :for="category.name"
+                  class="text-SM font-normal text-grey-400"
+                  >{{ category.name }}</label
+                >
               </div>
             </div>
           </div>
@@ -146,19 +179,30 @@ const toggleEdit = () => {
         />
       </div>
       <div v-else class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Anamnesis" value="Auto Anamnesis" />
-        <CustomInfoRow label="Keluhan Utama" value="Sakit Mata" />
-        <CustomInfoRow label="Riwayat Penyakit" value="Asma" />
+        <CustomInfoRow label="Anamnesis" :value="anamnesis" />
+        <CustomInfoRow label="Keluhan Utama" :value="keluhanUtama" />
+        <CustomInfoRow label="Riwayat Penyakit" :value="riwayatPenyakit" />
         <CustomInfoRow label="Tingkat Keparahan" value="Tidak terlalu parah" />
         <CustomInfoRow label="Pernah Dirawat" value="Tidak" />
-        <CustomInfoRow label="Riwayat Pengobatan" value="Tidak ada" />
-        <CustomInfoRow label="Riwayat Penyakit Keluarga" value="Tidak ada" />
+        <CustomInfoRow label="Riwayat Pengobatan" :value="riwayatPengobatan" />
+        <CustomInfoRow label="Riwayat Penyakit Keluarga">
+          <template #value>
+            <span v-if="riwayatKeluarga?.length">
+              <span v-for="(penyakit, index) in riwayatKeluarga" :key="index">
+                {{ penyakit
+                }}<span v-if="index < riwayatKeluarga.length - 1">, </span>
+              </span>
+            </span>
+            <span v-else>Tidak ada riwayat penyakit keluarga</span>
+          </template>
+        </CustomInfoRow>
+
         <CustomInfoRow
           label="Pengetahuan Tentang Penyakit Saat Ini"
           value="Tidak ada"
         />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>

@@ -18,6 +18,7 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
 
 const schema = toTypedSchema(
   yup.object({
@@ -33,20 +34,41 @@ const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    catatan:"Tidak Ada",
+    petugas: "Adam" });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
+  isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
 
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Catatan Hasil Penunjang</template>
     <template #content>
       <div class="pt-5">
@@ -59,9 +81,9 @@ const toggleEdit = () => {
           v-if="!isEditing"
           class="py-5 flex flex-col gap-[19px]"
         >
-          <CustomInfoRow label="Catatan Hasil Penunjang" value="Sehat sehat orang baik" />
+          <CustomInfoRow label="Catatan Hasil Penunjang" :value="catatan" />
           <hr class="border-grey-200" />
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow label="Petugas Input" :value="petugas" />
         </div>
       </div>
     </template>

@@ -44,9 +44,25 @@ const tujuanRujukLainnya=ref()
 const instruksiNoDarurat=ref()
 const transportRujuk=ref()
 const transportRujukLainnya=ref()
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50">
+  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
     <template #header> Status Pulang </template>
     <template #content>
       <div class="flex flex-col gap-5 pt-5">

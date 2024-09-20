@@ -41,15 +41,29 @@ const submitForm = handleSubmit((values) => {
   console.log(values);
   emit("update:dataSurat", values);
 });
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
 
 defineExpose({
   submitForm,
+  open,
+  close,
 });
+
 const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
 
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
+  <CustomAccordion headerClass="bg-adameds-50" initial-state="0" ref="accordion">
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Resep Kacamata

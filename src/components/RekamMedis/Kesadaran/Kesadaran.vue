@@ -51,6 +51,7 @@ const props = defineProps({
   },
 });
 const isEditing = ref(props.method === "form");
+const emit = defineEmits(['edit', 'submit']);
 
 const schema = toTypedSchema(
   yup.object({
@@ -73,15 +74,26 @@ const [GCS_kesimpulan] = defineField("GCS_kesimpulan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  setValues({ 
+    eye:2,
+    motorik:1,
+    verbal:0,
+    GCS_score:50,
+    GCS_kesimpulan:"Sakit sedang",
+    petugas: "Adam"
+   });
 });
 
 const onSubmit = handleSubmit((values: any) => {
   console.log("Adding new data:", values);
+  emit('submit', values); 
+  isEditing.value = false;
+
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
+  emit('edit');
 };
 
 const lastClicked = ref<{ categoryIndex: number; responseIndex: number } | null>(null);
@@ -200,11 +212,30 @@ const kesimpulanOption = ref([
   { name: "Sakit Ringan" },
   { name: "Sakit Berat" },
 ]);
+const getLabelFromValue = (value: number, responses: Array<{ label: string }>) => {
+  return responses[value]?.label || "Unknown";
+};
 
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Kesadaran</template>
     <template #content>
       <div  v-if="isEditing" class="grid grid-cols-2 gap-6 pt-5">
@@ -242,12 +273,21 @@ const kesimpulanOption = ref([
         <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Mata" value="Spontan merespon"/>
-        <CustomInfoRow label="Motorik" value="Melokalisir nyeri" />
-        <CustomInfoRow label="Verbal" value="Tidak ada respon" />
-        <CustomInfoRow label="Kesimpulan GCS" value="Sehat" />
+        <!-- <CustomInfoRow label="Mata">
+          <template #value>
+            <div
+            v-if=""
+            >
+              
+            </div>
+          </template>
+        </CustomInfoRow> -->
+        <CustomInfoRow label="Mata" :value="getLabelFromValue(eye, opsiKesadaran[0].response)"/>
+        <CustomInfoRow label="Motorik" :value="getLabelFromValue(motorik, opsiKesadaran[1].response)"/>
+        <CustomInfoRow label="Verbal" :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"/>
+        <CustomInfoRow label="Kesimpulan GCS" :value="GCS_kesimpulan" />
         <hr class="border-grey-200">
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>
