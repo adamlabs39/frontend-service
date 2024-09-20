@@ -75,10 +75,29 @@ const deathOnArrival = ref();
 const suhu = ref<number | undefined>(undefined);
 const bloodOxygen = ref<number | undefined>(undefined);
 const CRT = ref(false);
+
+const emit = defineEmits(["edit"]);
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
     <template #header> Triase</template>
     <template #content>
       <div v-if="props.method == 'form'">
@@ -235,7 +254,9 @@ const CRT = ref(false);
                       checkedHoverBackground: { class: 'bg-[#14B8A6]' },
                     }"
                   />
-                  <label :for="items.key" class="text-sm">{{ items.name }}</label>
+                  <label :for="items.key" class="text-sm">{{
+                    items.name
+                  }}</label>
                 </div>
               </div>
             </div>
@@ -307,7 +328,11 @@ const CRT = ref(false);
           borderColor="border-2 border-[#9DA4B1]"
         />
         <CustomButton v-if="props.method == 'form'" label="Simpan" />
-        <CustomButton v-if="props.method == 'detail'" label="Edit" />
+        <CustomButton
+          v-if="props.method == 'detail'"
+          @click="emit('edit')"
+          label="Edit"
+        />
       </div>
     </template>
   </CustomAccordion>

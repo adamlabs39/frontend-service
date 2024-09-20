@@ -45,10 +45,28 @@ const selectedJenisKasus = ref("");
 const selectedKendaraan = ref("");
 const asalRujukan = ref<string>("");
 
+const emit = defineEmits(["edit"]);
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
     <template #header> Anamnesis IGD</template>
     <template #content>
       <div
@@ -143,7 +161,11 @@ const asalRujukan = ref<string>("");
           borderColor="border-2 border-adameds-300"
         />
         <CustomButton v-if="props.method == 'form'" label="Simpan" />
-        <CustomButton v-if="props.method == 'detail'" label="Edit" />
+        <CustomButton
+          v-if="props.method == 'detail'"
+          @click="emit('edit')"
+          label="Edit"
+        />
       </div>
     </template>
   </CustomAccordion>
