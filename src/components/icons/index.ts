@@ -8,6 +8,9 @@ import FileReportIcon from "./FileReportIcon.vue";
 import FisioIcon from "./FisioIcon.vue";
 import TrainingIcon from "./TrainingIcon.vue";
 import DoubleBoxIcon from "./DoubleBoxIcon.vue";
+import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
+import GearFillIcon from "./GearFillIcon.vue";
+import UploadPictureIcon from "./UploadPictureIcon.vue";
 import DetailIcon from "./DetailIcon.vue";
 
 export default {
@@ -21,6 +24,9 @@ export default {
     app.component("FisioIcon", FisioIcon);
     app.component("TrainingIcon", TrainingIcon);
     app.component("DoubleBoxIcon", DoubleBoxIcon);
+    app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
+    app.component("GearFillIcon", GearFillIcon);
+    app.component("UploadPictureIcon", UploadPictureIcon);
     app.component("DetailIcon", DetailIcon);
   },
 };
