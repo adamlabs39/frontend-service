@@ -19,25 +19,28 @@ const props = defineProps({
     }
 })
 
+const emit = defineEmits(['edit']);
+const currentMethod = ref(props.method)
+
 const criterias = ref([
     { id: 1, value: "PEWS" },
-    { id: "2", value: "SWEP" },
-    { id: "3", value: "WEPS" },
-    { id: "4", value: "WSEP" },
+    { id: 2, value: "SWEP" },
+    { id: 3, value: "WEPS" },
+    { id: 4, value: "WSEP" },
 ]);
 
 const respirasis = ref([
     { id: 1, value: "Normal" },
-    { id: "2", value: "Tidak Normal" },
+    { id: 2, value: "Tidak Normal" },
 ])
 
 const kardiovaskulers = ref([
     { id: 1, value: "Sianosis" },
-    { id: "2", value: "Tidak Sianosis" },
+    { id: 2, value: "Tidak Sianosis" },
 ])
 const keadaanUmums = ref([
     { id: 1, value: "Interaksi Biasa" },
-    { id: "2", value: "Interaksi Non Biasa" },
+    { id: 2, value: "Interaksi Non Biasa" },
 ])
 
 const schemaTandaVital = computed(() =>
@@ -89,20 +92,39 @@ const [petugas] = defineFieldTandaVital("petugas");
 
 const onSubmitTandaVital = handleSubmitTandaVital((values: any) => {
     console.log("Adding new data", values);
+    currentMethod.value = 'detail'
+    emit("edit");
 })
 
 onBeforeMount(async () => {
-    setValues({petugas:"MBOH"})
+    setValues({petugas:"NamaKu"})
 })
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 
 
 </script>
 
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
+    <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
         <template #header> Tanda Vital</template>
         <template #content>
-            <div v-if="props.method == 'form'">
+            <div v-if="currentMethod == 'form'">
                 <div class="grid grid-cols-4 gap-[30px] py-3">
                     <CustomSelect label="Kriteria Pemantauan" v-model="kriteriaPemantauan" :options="criterias"
                         optionValue="value" optionLabel="value" :isLoading="false" :invalid="false"
@@ -186,30 +208,30 @@ onBeforeMount(async () => {
                 </div>
             </div>
 
-            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="Kriteria Pemantauan" value="PEWS" />
-                <CustomInfoRow label="Waktu Asesmen" value="01-01-2024" />
-                <CustomInfoRow label="Frekuensi Napas" value="48 x/mnt" />
-                <CustomInfoRow label="Frekuensi Nadi" value="158 x/mnt" />
-                <CustomInfoRow label="Suhu" value="37 C" />
-                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" value="Tidak" />
-                <CustomInfoRow label="Blood Oxygen" value="98%" />
-                <CustomInfoRow label="Gula Darah" value="98%" />
-                <CustomInfoRow label="Oksigen Tambahan" value="Tidak" />
-                <CustomInfoRow label="Tekanan Darah" value="100 mmHg" />
-                <CustomInfoRow label="Respirasi Anak" value="Tidak Ada retraksi" />
-                <CustomInfoRow label="Kardiovaskuler Anak" value="Tidak Sianosis" />
-                <CustomInfoRow label="Keadaan Umum" value="Interaksi Biasa" />
+            <div v-if="currentMethod == 'detail'" class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Kriteria Pemantauan" :value="kriteriaPemantauan" />
+                <CustomInfoRow label="Waktu Asesmen" :value="waktuAsesmen" />
+                <CustomInfoRow label="Frekuensi Napas" :value="frekuensiNafas" />
+                <CustomInfoRow label="Frekuensi Nadi" :value="frekuensiNadi" />
+                <CustomInfoRow label="Suhu" :value="suhu" />
+                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" :value="CRT" />
+                <CustomInfoRow label="Blood Oxygen" :value="bloodOxygen" />
+                <CustomInfoRow label="Gula Darah" :value="gulaDarah" />
+                <CustomInfoRow label="Oksigen Tambahan" :value="oksigenTambahan" />
+                <CustomInfoRow label="Tekanan Darah" :value="tekananDarah" />
+                <CustomInfoRow label="Respirasi Anak" :value="respirasiAnak" />
+                <CustomInfoRow label="Kardiovaskuler Anak" :value="kardiovaskulerAnak" />
+                <CustomInfoRow label="Keadaan Umum" :value="keadaanUmum" />
                 <hr class="border-grey-200">
-                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+                <CustomInfoRow label="Petugas Input" :value="petugas" />
             </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                <CustomButton v-if="currentMethod == 'form'" label="Reset" textColor="text-[#9DA4B1]"
                     backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton  v-if="props.method=='form'"  label="Simpan" @click="onSubmitTandaVital"/>
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+                <CustomButton  v-if="currentMethod=='form'"  label="Simpan" @click="onSubmitTandaVital"/>
+                <CustomButton v-if="currentMethod == 'detail'" label="Edit" />
             </div>
         </template>
     </CustomAccordion>

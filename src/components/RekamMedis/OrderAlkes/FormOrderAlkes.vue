@@ -11,240 +11,384 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import DialogTambahAlkesMultiple from "./DialogTambahAlkesMultiple.vue";
 const props = defineProps({
-    method: {
-        type: String,
-        default: "form",
-    },
+  method: {
+    type: String,
+    default: "form",
+  },
+  formDetail: {
+    type: Array as () => Array<string>,
+    default: () => ["ORDER", "PROSES", "SELESAI"],
+  },
 });
 
-const selectedLokasiTujuanOrder = ref("")
-const listLokasiTujuanOrder = ref([
-    { id: "1", label: "Farmasi Rawat Inap" },
-    { id: "2", label: "Farmasi Rawat Jalan" },
-]);
+const orderAlkess = ref<any[]>([]);
 
-
-const satuanAlkes = ref([
-    { id: "1", value: "Gulung" },
-    { id: "2", value: "Kg" },
-    { id: "2", value: "Kodi" }
-])
-
-const schema = toTypedSchema(
-    yup.object({
-        datas: yup.array().of(
-            yup.object({
-                listAlkes: yup.string().required("List tindakan harus diisi"),
-                jumlah: yup.string(),
-                satuan: yup.string(),
-                sisaStok: yup.string(),
-                petugas: yup.string(),
-            })
-        ),
-    })
+const orderAlkesSchema = toTypedSchema(
+  yup.object({
+    selectedLokasiTujuanOrder: yup.string(),
+    petugas: yup.string().required("Petugas harus diisi"),
+  })
 );
 
-const { errors, handleSubmit, resetForm, setValues } = useForm({
-    validationSchema: schema,
-
-    initialValues: {
-        datas: [{ listAlkes: "", jumlah: "", satuan: "", sisaStok: "", petugas: "" }],
-    },
+const { handleSubmit, resetForm, defineField } = useForm({
+  validationSchema: orderAlkesSchema,
+  initialValues: {
+    selectedLokasiTujuanOrder: "",
+    petugas: "Nama Petugas",
+  },
 });
 
-const { remove, push, fields } = useFieldArray("datas");
+const [selectedLokasiTujuanOrder] = defineField("selectedLokasiTujuanOrder");
+const [petugas] = defineField("petugas");
 
-const myPushFunction = () => {
-    push({ listAlkes: "", jumlah: "", satuan: "", sisaStok: "", petugas: "" });
-};
-
-const listAlkesOptions = ref([
-    { id: "1", value: "Kasa" },
-    { id: "2", value: "Tisu Basah" },
-    { id: "3", value: "Tisu Kering" },
+const listLokasiTujuanOrder = ref([
+  { id: "1", value: "Farmasi Rawat Inap" },
+  { id: "2", value: "Farmasi Rawat Jalan" },
 ]);
 
-
-const tambahAlkesMultipleDialog = ref(false);
-
-const products = ref<any[]>([]);
 onMounted(() => {
-  products.value = [
+  orderAlkess.value = [
     {
-      nama: "Kasa",
-      sisaStok: "2000",
-    },
-    {
-      nama: "Perban",
-      sisaStok: "2000",
+      listAlkes: "Kasa",
+      jumlah: 2,
+      satuan: "Gulung",
+      sisaStok: 2000,
     },
   ];
 });
 
+const dialogTambahMultipleData = ref({
+  isVisible: false,
+  title: "Tambah Alkes Multiple",
+});
+
+const statusList = [
+  { label: "ORDER", bgColor: "bg-[#D4D8DC]", textColor: "text-[#687077]" },
+  {
+    label: "PROSES",
+    bgColor: "bg-blueJeans-75",
+    textColor: "text-blueJeans-400",
+  },
+  { label: "SELESAI", bgColor: "bg-mint-75", textColor: "text-mint-400" },
+];
+
+const listAlkes = ref([
+  { id: "1", value: "Kasa" },
+  { id: "2", value: "Perban" },
+  { id: "2", value: "Pil" },
+]);
+
+const satuanAlkes = ref([
+  { id: "1", value: "Gulung" },
+  { id: "2", value: "Kaleng" },
+  { id: "2", value: "Botol" },
+]);
+
+const myPushFunction = () => {
+  orderAlkess.value.push({
+    listAlkes: "",
+    jumlah: "",
+    satuan: "",
+    sisaStok: 100,
+  });
+};
+
+const onSubmit = handleSubmit((values) => {
+  const payload = {
+    ...values,
+    datas: JSON.parse(JSON.stringify(orderAlkess.value)), // Tambahkan data dari tabel
+  };
+  console.log("Submitted with", payload);
+});
+
+const deleteAlkes = (index: number) => {
+  orderAlkess.value.splice(index, 1);
+};
+
+const resetFormFields = () => {
+  orderAlkess.value = [];
+};
+
+function handleAddMultiple() {
+  dialogTambahMultipleData.value.isVisible = true;
+}
+
+function addToArray(newAlkes:any) {
+    orderAlkess.value.push(...newAlkes)
+    console.log(orderAlkess.value);
+}
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
 </script>
+
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
-        <template #header>Order Alkes</template>
-        <template #content>
+  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'" ref="accordion">
+    <template #header>Order Alkes</template>
+    <template #content>
+      <div class="flex flex-col gap-5 py-3">
+        <CustomSelect
+          prepend-icon="PhMagnifyingGlass"
+          v-model="selectedLokasiTujuanOrder"
+          :options="listLokasiTujuanOrder"
+          optionValue="value"
+          optionLabel="value"
+          label="Lokasi Tujuan Order"
+          place-holder="Pilih Lokasi Tujuan Order"
+          class="w-1/3"
+         
+        />
+        <DataTable
+          :value="orderAlkess"
+          tableStyle="min-width: 50rem"
+          class="overflow-hidden text-xs rounded-lg bg-adameds-50"
+        >
+          <Column
+            headerClass="bg-adameds-50 font-semibold text-SM"
+            class="w-[20px]"
+          >
+            <template #header>
+              <div class="flex items-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
+              </div>
+            </template>
+          </Column>
 
-            <div v-if="props.method == 'form'" class="flex flex-col gap-5 py-3">
-                <CustomSelect prepend-icon="PhMagnifyingGlass" v-model="selectedLokasiTujuanOrder"
-                    :options="listLokasiTujuanOrder" optionValue="label" optionLabel="label" label="Lokasi Tujuan Order"
-                    place-holder="Pilih Lokasi Tujuan Order" class="w-1/3" />
-                <DataTable :value="fields" tableStyle="min-width: 50rem"
-                    class="overflow-hidden text-xs rounded-lg bg-adameds-50">
-                    <Column headerClass="bg-adameds-50 font-semibold text-SM" class="w-[20px]">
-                        <template #header>
-                            <div class="flex items-center">No.</div>
-                        </template>
-                        <template #body="slotProps">
-                            <div class="flex items-center justify-center ">
-                                {{ slotProps.index + 1 }}
-                            </div>
-                        </template>
-                    </Column>
+          <Column headerClass="bg-adameds-50" class="w-1/2">
+            <template #header>
+              <div class="font-semibold">List Alkes</div>
+            </template>
+            <template #body="slotProps">
+              <CustomSelect
+                prepend-icon="PhMagnifyingGlass"
+                v-model="slotProps.data.listAlkes"
+                :options="listAlkes"
+                optionValue="value"
+                optionLabel="value"
+                label=""
+                place-holder="Cari & Pilih Tindakan"
+         
+              />
+            </template>
+          </Column>
 
-                    <Column headerClass="bg-adameds-50" class="w-1/2">
-                        <template #header>
-                            <div class="font-semibold">List Alkes</div>
-                        </template>
-                        <template #body="slotProps">
-                            <CustomSelect prepend-icon="PhMagnifyingGlass" v-model="slotProps.data.value.listAlkes"
-                                :options="listAlkesOptions" optionValue="value" optionLabel="value" label=""
-                                place-holder="Cari & Pilih Tindakan" />
-                            <ErrorMessage :name="`datas[${slotProps.index}].jenisPembayaran`" class="text-danger-300" />
-                        </template>
-                    </Column>
+          <Column headerClass="bg-adameds-50 " class="w-[150px]">
+            <template #header>
+              <div class="w-full font-semibold text-center">Jumlah</div>
+            </template>
+            <template #body="slotProps">
+              <CustomInputNumber
+                :show-label="false"
+                v-model="slotProps.data.jumlah"
+                :show-buttons="true"
+              />
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">Satuan</div>
+            </template>
+            <template #body="slotProps">
+              <CustomSelect
+                prepend-icon="PhMagnifyingGlass"
+                v-model="slotProps.data.satuan"
+                :options="satuanAlkes"
+                optionValue="value"
+                optionLabel="value"
+                label=""
+                place-holder="Pilih Satuan"
+              />
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">Sisa Stok</div>
+            </template>
+            <template #body="slotProps">
+              <div class="text-center">{{ slotProps.data.sisaStok }}</div>
+            </template>
+          </Column>
 
-                    <Column headerClass="bg-adameds-50 " class="w-[150px]">
-                        <template #header>
-                            <div class="w-full font-semibold text-center">Jumlah</div>
-                        </template>
-                        <template #body="slotProps">
-                            <CustomInputNumber :show-label="false" v-model="slotProps.data.value.jumlah"
-                                :show-buttons="true" />
-                        </template>
-                    </Column>
-                    <Column headerClass="bg-adameds-50">
-                        <template #header>
-                            <div class="w-full font-semibold text-center">Satuan</div>
-                        </template>
-                        <template #body="slotProps">
-                            <CustomSelect prepend-icon="PhMagnifyingGlass" v-model="slotProps.data.value.satuan"
-                                :options="satuanAlkes" optionValue="value" optionLabel="value" label=""
-                                place-holder="Pilih Satuan" />
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">Action</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="deleteAlkes(slotProps.index)"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                </CustomButton>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+        
+        <div
+          class="flex items-center justify-center p-5 m-5 border border-dashed rounded-lg border-adameds-300 gap-2.5"
+        >
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Alkes"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="myPushFunction"
+          />
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Alkes Multiple"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="handleAddMultiple"
+          />
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex items-end justify-end gap-3">
+        <CustomButton
+          v-if="props.method == 'form'"
+          label="Reset"
+          textColor="text-[#9DA4B1]"
+          backgroundColor="bg-transparent"
+          borderColor="border-2 border-[#9DA4B1]"
+          @click="resetForm"
+        />
+        <CustomButton
+          v-if="props.method == 'form'"
+          label="Simpan Order"
+          @click="onSubmit"
+        />
+        <CustomButton v-else label="Edit" />
+      </div>
+       <DialogTambahAlkesMultiple
+              v-model:isDialogVisible="dialogTambahMultipleData.isVisible"
+              :title="dialogTambahMultipleData.title"
+              @add-alkes="addToArray"
+            />
+    </template>
+  </CustomAccordion>
 
-                        </template>
-                    </Column>
-                    <Column headerClass="bg-adameds-50">
-                        <template #header>
-                            <div class="w-full font-semibold text-center">Sisa Stok</div>
-                        </template>
-                        <template #body="slotProps">
-                            <div class="text-center"> 2000</div>
-
-
-                        </template>
-                    </Column>
-
-                    <Column headerClass="bg-adameds-50">
-                        <template #header>
-                            <div class="w-full font-semibold text-center">Action</div>
-                        </template>
-                        <template #body="slotProps">
-                            <div class="flex items-center justify-center">
-                                <CustomButton label="" background-color="bg-danger-300 rounded-lg"
-                                    @click="remove(slotProps.index)">
-                                    <img src="@/assets/icons/delete.svg" alt="" width="15px" />
-                                </CustomButton>
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
-                <div
-                    class="flex items-center justify-center p-5 m-5 border border-dashed rounded-lg border-adameds-300 gap-2.5">
-                    <CustomButton icon="PhPlus" label="Tambah Alkes" borderColor="border-adameds-300"
-                        textColor="text-adameds-300" backgroundColor="bg-white" @click="myPushFunction" />
-                    <CustomButton icon="PhPlus" label="Tambah Alkes Multiple" borderColor="border-adameds-300"
-                        textColor="text-adameds-300" backgroundColor="bg-white"
-                        @click="tambahAlkesMultipleDialog = true" />
-                </div>
-                <CustomDialog width="800px" class="" v-model:visible="tambahAlkesMultipleDialog" headerBg="bg-adameds-300">
-                    <template #header> Tambah Tindakan Multiple </template>
-                    <template #body>
-                        <div class="flex flex-col gap-5 mt-5">
-                            <div class="flex items-end w-full gap-5">
-                                <CustomSelect prepend-icon="PhMagnifyingGlass" label="Cari Item"
-                                    place-holder="Kasa" class="grow" />
-                                <CustomButton>
-                                    <PhPlus :size="16" />
-                                </CustomButton>
-                            </div>
-                            <DataTable :value="products" tableStyle="min-width: 40rem" stripedRows class="text-xs"
-                                scrollable scrollHeight="flex">
-                                <Column headerClass="bg-adameds-50">
-                                    <template #header>
-                                        <div class="w-full font-semibold text-center">No.</div>
-                                    </template>
-                                    <template #body="slotProps">
-                                        <div class="flex items-center justify-center">
-                                            {{ slotProps.index + 1 }}
-                                        </div>
-                                    </template>
-                                </Column>
-                                <Column field="nama" header="Nama Obat" headerClass="bg-adameds-50" class="w-3/5 "></Column>
-                                <Column field="sisaStok" header="Sisa Stok" headerClass="bg-adameds-50 text-center"></Column>
-                                <Column headerClass="bg-adameds-50">
-                                    <template #header>
-                                        <div class="flex items-center justify-center w-full font-semibold text-SM">
-                                            Action
-                                        </div>
-                                    </template>
-                                    <template #body="slotProps">
-                                        <div class="flex items-center gap-2.5 justify-center">
-                                            <CustomButton label="" background-color="bg-danger-300 rounded-lg"
-                                                class="h-6 w-[26px] p-0">
-                                                <img src="@/assets/icons/delete.svg" alt="" />
-                                            </CustomButton>
-                                        </div>
-                                    </template>
-                                </Column>
-                            </DataTable>
-                            <hr class="border-grey-200" />
-                            <div class="font-semibold text-MD">Total Item Terpilih : 2</div>
-                        </div>
-                    </template>
-                    <template #footer>
-                        <div class="w-full">
-                            <hr class="-mx-5 border-grey-200" />
-                            <div class="mt-5 flex justify-end gap-2.5">
-                                <CustomButton label="Hapus Semua" border-color=" border-2 border-danger-300" background-color="bg-white"
-                                    text-color="text-danger-300">
-                                </CustomButton>
-                                <CustomButton label="Ambil Item"> </CustomButton>
-                            </div>
-                        </div>
-                    </template>
-                </CustomDialog>
+  <CustomAccordion v-else headerClass="bg-adameds-50">
+    <template #header>Alkes</template>
+    <template #content>
+      <div class="flex flex-col gap-2.5 pt-5">
+        <CustomAccordion
+          v-for="(status, index) in statusList"
+          :key="index"
+          headerClass="bg-adameds-50"
+        >
+          <template #header>
+            <div class="flex justify-between w-full">
+              <div class="flex justify-start gap-2.5 items-center">
+                <div>ORD1234</div>
+                <CustomChip
+                  :label="status.label"
+                  :show-checked-icon="false"
+                  :bgColor="status.bgColor"
+                  :textColor="status.textColor"
+                  customClass="h-6 pr-[6px] border-none w-auto"
+                />
+              </div>
+              <div>Tgl. Order : 01-01-2024</div>
             </div>
+          </template>
+          <template #content>
+            <div class="pt-5">
+              <DataTable class="text-xs">
+                <Column
+                  headerClass="bg-adameds-50 font-semibold text-SM"
+                  class="w-2 text-center"
+                >
+                  <template #header>
+                    <div class="text-center">No.</div>
+                  </template>
+                  <template #body="slotProps">
+                    <div class="flex items-center justify-center">
+                      {{ slotProps.index + 1 }}
+                    </div>
+                  </template>
+                </Column>
 
-            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="List Tindakan" value="Pemeriksaan Dokter Spesialis" />
-                <CustomInfoRow label="jumlah" value="Rp. 100,000" />
-                <CustomInfoRow label="satuan" value="1" />
-                <CustomInfoRow label="Petugas" value="dr. Spesialis Sp. M" />
-                <hr class="border-grey-200" />
-                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+                <Column
+                  headerClass="bg-adameds-50"
+                  class="max-w-[300px] text-left"
+                >
+                  <template #header>
+                    <div class="w-full font-semibold text-left">
+                      List Tindakan
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div>
+                      {{ slotProps.data.label }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column headerClass="bg-adameds-50" class="w-auto text-center">
+                  <template #header>
+                    <div class="w-full font-semibold">Jumlah</div>
+                  </template>
+                  <template #body="slotProps">
+                    {{ slotProps.data.jumlah }}
+                  </template>
+                </Column>
+                <Column headerClass="bg-adameds-50" class="w-auto text-center">
+                  <template #header>
+                    <div class="w-full font-semibold">Satuan</div>
+                  </template>
+                  <template #body="slotProps">
+                    {{ slotProps.data.satuan }}
+                  </template>
+                </Column>
+
+                <Column headerClass="bg-adameds-50" class="w-auto text-end">
+                  <template #header>
+                    <div class="w-full font-semibold">Harga</div>
+                  </template>
+                  <template #body="slotProps">
+                    {{ slotProps.data.harga }}
+                  </template>
+                </Column>
+              </DataTable>
+              <div class="pt-5">
+                <CustomInfoRow label="Petugas" value="Nama Petugas " />
+              </div>
             </div>
-        </template>
-        <template #footer>
-            <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
-                    backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton v-if="props.method == 'form'" label="Simpan Order" />
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+           
+          </template>
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <CustomButton
+                v-if="status.label === 'ORDER'"
+                label="Batal Order"
+                backgroundColor="bg-danger-300"
+              />
             </div>
-        </template>
-    </CustomAccordion>
+          </template>
+        </CustomAccordion>
+      </div>
+    </template>
+  </CustomAccordion>
 </template>
