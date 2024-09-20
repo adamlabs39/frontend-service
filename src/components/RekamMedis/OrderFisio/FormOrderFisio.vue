@@ -15,7 +15,7 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 const props = defineProps({
   method: {
     type: String,
-    default: "detail",
+    default: "form",
   },
   formDetail: {
     type: Array as () => Array<string>, // Mengubah menjadi array untuk iterasi
@@ -23,6 +23,7 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["edit"]);
 const statusList = [
   { label: "ORDER", bgColor: "bg-[#D4D8DC]", textColor: "text-[#687077]" },
   {
@@ -52,7 +53,7 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 
   initialValues: {
     petugas: "Nama Petugas",
-    datas: [{ listTindakan: "", harga: 0, jumlah: 0 }],
+    datas: [{ listTindakan: "", harga: 10000, jumlah: 0 }],
   },
 });
 
@@ -60,20 +61,38 @@ const [tanggalPemeriksaanFisio] = defineField("tanggalPemeriksaanFisio");
 const { remove, push, fields } = useFieldArray("datas");
 
 const myPushFunction = () => {
-  push({ listTindakan: "", harga: "", jumlah: "", petugas: "Nama Petugas" });
+  push({ listTindakan: "", harga: 10000, jumlah: "", petugas: "Nama Petugas" });
 };
 
 const listTindakanOptions = ref([
-  { label: "Fisio 1", value: "spesialis", harga: "Rp. 30.000", jumlah: 1 },
+  { label: "Fisio 1", value: "spesialis", harga:"Rp. 30.000", jumlah: 1 },
   { label: "Kurang Tau", value: "biasa", harga: "Rp. 50.000", jumlah: 1 },
 ]);
 
 const onSubmit = handleSubmit((values) => {
   console.log(values);
+  emit("edit", values);
+});
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
 });
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'">
+  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'" ref="accordion">
     <template #header>Order Fisio</template>
     <template #content>
       <div class="pt-5">
@@ -139,19 +158,8 @@ const onSubmit = handleSubmit((values) => {
               <div class="w-full font-semibold text-center">Harga</div>
             </template>
             <template #body="slotProps">
-              <CustomInputNumber
-                class=""
-                label=""
-                v-model:model-value="slotProps.data.value.harga"
-              >
-                <template #prependText>
-                  <div
-                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomInputNumber>
+              
+              <div class="text-center">{{ slotProps.data.value.harga }}</div>
             </template>
           </Column>
 

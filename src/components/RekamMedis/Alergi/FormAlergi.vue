@@ -9,10 +9,23 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
+const emit = defineEmits(['edit']);
+
+// const accordionRef = ref<InstanceType<typeof CustomAccordion> | null>(null); // Ref untuk mengakses metode `close`
+
+// Fungsi untuk menutup Accordion
+// const closeAccordion = () => {
+//     console.log("JOJ")
+//     if (accordionRef.value) {
+    
+//     accordionRef.value.checkOpen(); // Panggil metode close dari CustomAccordion
+//   }
+// };
+
 const props = defineProps({
     method: {
         type: String,
-        default: "detail",
+        default: "form",
     }
 });
 
@@ -23,7 +36,7 @@ const schemaAlergi = computed(() =>
     toTypedSchema(
         yup.object({
             isAlergi: yup.bool().default(true),
-            pemicuAlergi: yup.string(),
+            pemicuAlergi: yup.string(), 
             namaAlergi: yup.string(),
             reaksiAlergi: yup.string(),
             tingkatKeparahanAlergi: yup.string(),
@@ -53,10 +66,11 @@ const [petugas] = defineFieldAlergi("petugas");
 const onSubmitFormAlergi = handleSubmitAlergi((values: any) => {
     console.log("Adding new data", values);
     currentMethod.value = 'detail';
+    emit('edit'); 
 });
 
 onBeforeMount(() => {
-    setValues({ petugas: "MBOH" });
+    setValues({ petugas: "Nama Petugas" });
 });
 
 // Method to handle edit button click
@@ -64,10 +78,26 @@ const onEditClick = () => {
     currentMethod.value = 'form';
 };
 
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
+    <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
         <template #header> Alergi</template>
         <template #content>
             <!-- Form Section -->
@@ -86,14 +116,14 @@ const onEditClick = () => {
 
             <!-- Detail Section -->
             <div v-if="currentMethod === 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="Pemicu Alergi" value="Makanan" />
-                <CustomInfoRow label="Nama / Jenis Alergi" value="Makanan sejenis ikan-ikanan" />
-                <CustomInfoRow label="Reaksi" value="Gatal-gatal" />
-                <CustomInfoRow label="Tingkat Keparahan" value="Tidak terlalu parah" />
-                <CustomInfoRow label="Efek Samping" value="Kulit Memerah" />
-                <CustomInfoRow label="Tanggal Kejadian" value="01-01-2020" />
+                <CustomInfoRow label="Pemicu Alergi" :value="pemicuAlergi" />
+                <CustomInfoRow label="Nama / Jenis Alergi" :value="namaAlergi" />
+                <CustomInfoRow label="Reaksi" :value="reaksiAlergi" />
+                <CustomInfoRow label="Tingkat Keparahan" :value="tingkatKeparahanAlergi" />
+                <CustomInfoRow label="Efek Samping" :value="efekSampingAlergi" />
+                <CustomInfoRow label="Tanggal Kejadian" :value="tanggalKejadianAlergi" />
                 <hr class="border-grey-200">
-                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+                <CustomInfoRow label="Petugas Input" :value="petugas" />
             </div>
         </template>
         <template #footer>

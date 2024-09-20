@@ -25,9 +25,10 @@ import DialogDetailObat from "./DialogDetailObat.vue";
 const props = defineProps({
   method: {
     type: String,
-    default: "detail",
+    default: "form",
   },
 });
+const emit = defineEmits(["edit"]);
 const orderObats = ref<any[]>([]);
 
 const orderObatschema = toTypedSchema(
@@ -221,6 +222,8 @@ const onSubmit = handleSubmit((values) => {
     orderObats: JSON.parse(JSON.stringify(orderObats.value)), // Tambahkan data dari tabel
   };
 
+  emit("edit", payload);
+
   console.log("Submitted with", payload);
 });
 
@@ -228,10 +231,27 @@ const resetFormFields = () => {
   resetForm();
   orderObats.value = [];
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'">
+  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'" ref="accordion">
     <template #header>Order Obat</template>
     <template #content>
       <div class="flex flex-col gap-5 py-3">
@@ -532,6 +552,7 @@ const resetFormFields = () => {
               textColor="text-white"
               backgroundColor="bg-adameds-300"
               @click="handleDetail"
+              icon="DetailIcon"
             />
             <CustomButton label="Batal Order" backgroundColor="bg-danger-300" />
           </div>

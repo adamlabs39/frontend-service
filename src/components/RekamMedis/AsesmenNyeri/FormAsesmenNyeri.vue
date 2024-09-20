@@ -32,8 +32,8 @@ const props = defineProps({
     }
 })
 
-
-
+const emit = defineEmits(['edit']);
+const currentMethod = ref(props.method);
 
 const handleImageClick = (id: number) => {
     skalaNyeri.value = id;
@@ -63,8 +63,13 @@ const [petugas] = defineFieldAsesmenNyeri("petugas");
 
 const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri((values: any) => {
     console.log("Adding new data", values);
+    currentMethod.value = 'detail';
+    emit("edit");
 })
 
+const onEditClick = () => {
+    currentMethod.value = 'form';
+};
 
 
 const imagePengkajianNyeri = ref([
@@ -80,16 +85,36 @@ const imagePengkajianNyeri = ref([
     { id: 10, value: beratttt }
 ])
 
+const selectedImage = computed(() => {
+    return imagePengkajianNyeri.value.find(image => image.id === skalaNyeri.value)?.id;
+});
 onBeforeMount(async () => {
-    setValues({petugas:"MBOH"})
+    setValues({petugas:"Adam"})
 })
 
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
+    <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
         <template #header> Asesmen Nyeri</template>
         <template #content>
-            <div v-if="props.method == 'form'" class="grid grid-cols-2 py-5 gap-[30px] gap-y-5">
+            <div v-if="currentMethod == 'form'" class="grid grid-cols-2 py-5 gap-[30px] gap-y-5">
                 <div class="flex flex-col">
                     <div class="font-semibold text-normal">Pilih Pengkajian Nyeri</div>
                     <div class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4">
@@ -111,19 +136,19 @@ onBeforeMount(async () => {
                     <CustomTextfield label="Catatan" placeholder="Masukkan Catatan" v-model:modelValue="catatan" />
                 </div>
             </div>
-            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="Pengkajian Nyeri" value="2 (Ringan)" />
-                <CustomInfoRow label="Catatan" value="Minum Obat" />
+            <div v-if="currentMethod == 'detail'" class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Pengkajian Nyeri" :value="selectedImage" />
+                <CustomInfoRow label="Catatan" :value="catatan" />
                 <hr class="border-grey-200">
-                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+                <CustomInfoRow label="Petugas Input" :value="petugas" />
             </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                <CustomButton v-if="currentMethod == 'form'" label="Reset" textColor="text-[#9DA4B1]"
                     backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton  v-if="props.method=='form'"  label="Simpan" @click="onSubmitAsesmenNyeri"/>
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+                <CustomButton  v-if="currentMethod=='form'"  label="Simpan" @click="onSubmitAsesmenNyeri"/>
+                <CustomButton v-if="currentMethod == 'detail'" label="Edit" @click="onEditClick" />
             </div>
         </template>
     </CustomAccordion>
