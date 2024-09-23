@@ -13,7 +13,6 @@ import EKG from '@/assets/images/RekamMedis/UnggahBerkas/EKG.svg'
 import GatalPadaKulit from '@/assets/images/RekamMedis/UnggahBerkas/Gatal Pada Kulit.svg'
 import NamaFile from '@/assets/images/RekamMedis/UnggahBerkas/Nama File.svg'
 import { onMounted, ref } from 'vue';
-import CustomUpload from '@/components/Base/CustomUpload.vue';
 import { computed } from 'vue';
 import DataTable from 'primevue/datatable';
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";

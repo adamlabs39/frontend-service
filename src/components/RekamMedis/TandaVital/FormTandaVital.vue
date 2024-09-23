@@ -47,9 +47,9 @@ const schemaTandaVital = computed(() =>
     toTypedSchema(
         yup.object({
             kriteriaPemantauan: yup.string(),
-            respirasiAnak: yup.number(),
-            kardiovaskulerAnak: yup.number(),
-            keadaanUmum: yup.number(),
+            respirasiAnak: yup.string(),
+            kardiovaskulerAnak: yup.string(),
+            keadaanUmum: yup.string(),
             waktuAsesmen: yup.date(),
             frekuensiNafas: yup.number(),
             frekuensiNadi: yup.number(),
@@ -64,6 +64,7 @@ const schemaTandaVital = computed(() =>
     )
 );
 
+// respirasi,kardiovaskuler, keadaanumum
 
 const {
     handleSubmit: handleSubmitTandaVital,
@@ -90,8 +91,16 @@ const [tekananDarah] = defineFieldTandaVital("tekananDarah");
 const [petugas] = defineFieldTandaVital("petugas");
 
 
+
+// Do the same for other numeric fields as needed
+
+
+
 const onSubmitTandaVital = handleSubmitTandaVital((values: any) => {
     console.log("Adding new data", values);
+    values.kardiovaskulerAnak = Number(values.kardiovaskulerAnak);
+    values.keadaanUmum = Number(values.keadaanUmum);
+    values.respirasiAnak = Number(values.respirasiAnak);
     currentMethod.value = 'detail'
     emit("edit");
 })
@@ -189,7 +198,7 @@ defineExpose({
                         </CustomInputNumber>
                     </div>
                     <div class="grow">
-                        <CustomSelect label="Respirasi Anak" v-model:model-value="respirasiAnak" :options="respirasis"
+                        <CustomSelect label="Respirasi Anak" v-model="respirasiAnak" :options="respirasis"
                             optionValue="id" optionLabel="value" :isLoading="false" :invalid="false"
                             invalidMessage="Wajib diisi" :disabled="false" placeHolder="Tidak ada retraksi / RR Normal"
                             customSelectClass="border-[#C7CBD2]" />
@@ -210,18 +219,18 @@ defineExpose({
 
             <div v-if="currentMethod == 'detail'" class="py-5 flex flex-col gap-[19px]">
                 <CustomInfoRow label="Kriteria Pemantauan" :value="kriteriaPemantauan" />
-                <CustomInfoRow label="Waktu Asesmen" :value="waktuAsesmen" />
-                <CustomInfoRow label="Frekuensi Napas" :value="frekuensiNafas" />
-                <CustomInfoRow label="Frekuensi Nadi" :value="frekuensiNadi" />
-                <CustomInfoRow label="Suhu" :value="suhu" />
-                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" :value="CRT" />
-                <CustomInfoRow label="Blood Oxygen" :value="bloodOxygen" />
-                <CustomInfoRow label="Gula Darah" :value="gulaDarah" />
-                <CustomInfoRow label="Oksigen Tambahan" :value="oksigenTambahan" />
-                <CustomInfoRow label="Tekanan Darah" :value="tekananDarah" />
-                <CustomInfoRow label="Respirasi Anak" :value="respirasiAnak" />
-                <CustomInfoRow label="Kardiovaskuler Anak" :value="kardiovaskulerAnak" />
-                <CustomInfoRow label="Keadaan Umum" :value="keadaanUmum" />
+                <CustomInfoRow label="Waktu Asesmen" :value="`${waktuAsesmen}`" />
+                <CustomInfoRow label="Frekuensi Napas" :value="`${frekuensiNafas}`" />
+                <CustomInfoRow label="Frekuensi Nadi" :value="`${frekuensiNadi}`" />
+                <CustomInfoRow label="Suhu" :value="`${suhu}`" />
+                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" :value="`${CRT}`" />
+                <CustomInfoRow label="Blood Oxygen" :value="`${bloodOxygen}`"/>
+                <CustomInfoRow label="Gula Darah" :value="`${gulaDarah}`" />
+                <CustomInfoRow label="Oksigen Tambahan" :value="`${oksigenTambahan}`" />
+                <CustomInfoRow label="Tekanan Darah" :value="`${tekananDarah}`" />
+                <CustomInfoRow label="Respirasi Anak" :value="`${respirasiAnak}`" />
+                <CustomInfoRow label="Kardiovaskuler Anak" :value="`${kardiovaskulerAnak}`" />
+                <CustomInfoRow label="Keadaan Umum" :value="`${keadaanUmum}`" />
                 <hr class="border-grey-200">
                 <CustomInfoRow label="Petugas Input" :value="petugas" />
             </div>

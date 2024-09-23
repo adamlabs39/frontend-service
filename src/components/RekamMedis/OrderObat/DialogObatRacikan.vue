@@ -12,6 +12,10 @@ import { useFieldArray, useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
+type ObatRacikan = {
+    namaObat: string;
+    jumlahTotal: number;
+};
 const props = defineProps({
     isDialogVisible: {
         type: Boolean,
@@ -141,12 +145,12 @@ const satuanEmbalases = ref([
     { id: 3, satuanEmbalase: "Tablet" },
     { id: 4, satuanEmbalase: "Botol" }
 ])
-const { remove, push, fields } = useFieldArray("datas");
+const { remove, push, fields } = useFieldArray<ObatRacikan>("datas");
 
 const addObatRacikan = () => {
     push({
         namaObat: '',
-        jumlahTotal: '',
+        jumlahTotal: 0,
     })
 };
 
@@ -222,8 +226,8 @@ watch(() => sirup.value, (newVal) => {
                             <div class="min-w-[400px]">
                                 <CustomSelect :label="`Nama Obat - ${index + 1}`" v-model="field.value.namaObat"
                                     :options="namaObats" optionValue="namaObat" optionLabel="namaObat"
-                                    :invalid="!!errors[`datas[${index}].namaObats`]"
-                                    :invalidMessage="errors[`datas[${index}].namaObats`]" :disabled="false" />
+                                    :invalid="!!errors[`datas[${index}].namaObats` as keyof typeof errors]"
+                                    :invalidMessage="errors[`datas[${index}].namaObats` as keyof typeof errors]" :disabled="false" />
                             </div>
                             <div class="min-w-[130px]">
                                 <CustomInputNumber label="Jumlah Total" v-model="field.value.jumlahTotal"
