@@ -212,7 +212,7 @@ const kesimpulanOption = ref([
   { name: "Sakit Ringan" },
   { name: "Sakit Berat" },
 ]);
-const getLabelFromValue = (value: number, responses: Array<{ label: string }>) => {
+const getLabelFromValue = (value: any, responses: Array<{ label: string }>) => {
   return responses[value]?.label || "Unknown";
 };
 
@@ -273,15 +273,6 @@ defineExpose({
         <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <!-- <CustomInfoRow label="Mata">
-          <template #value>
-            <div
-            v-if=""
-            >
-              
-            </div>
-          </template>
-        </CustomInfoRow> -->
         <CustomInfoRow label="Mata" :value="getLabelFromValue(eye, opsiKesadaran[0].response)"/>
         <CustomInfoRow label="Motorik" :value="getLabelFromValue(motorik, opsiKesadaran[1].response)"/>
         <CustomInfoRow label="Verbal" :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"/>
