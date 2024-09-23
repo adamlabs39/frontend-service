@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeMount } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 const orderLab = ref<any[]>([]);
-  const emit = defineEmits(['edit', 'submit']);
+const emit = defineEmits(["edit", "submit"]);
 
 onMounted(() => {
   orderLab.value = [
@@ -49,27 +49,37 @@ onMounted(() => {
 });
 
 const isEditing = ref(props.method === "form");
-const detail = ref();
+const detail = ref(false);
 
-const pemeriksaan = ref([
-  { name: "Hipertensi", key: "H" },
-  { name: "Penyakit Jantung", key: "PJ" },
-  { name: "Stroke", key: "S" },
-]);
-const optionspemeriksaanPaket = ref([
-  { name: "", key: "H" },
-  { name: "", key: "PJ" },
-  { name: "", key: "S" },
-]);
-const pemeriksaanPaket = ref([{}]);
-const checkPemeriksaan = ref();
-const testCheckboxMulti = ref([]);
-const testCheckbox = ref(false);
-const toggleEdit = () => {
-  isEditing.value = true;
-  emit('edit');
+
+const selectedTarif=ref([]);
+const tglPemeriksaan=ref<Date>(new Date());
+
+const onSubmit= () => {
+
+  console.log(selectedTarif.value);
 };
+
+const itemPemeriksaan = ref([
+  {
+    kategori: "HEMATOLOGI",
+    item: ["Hematokrit", "Hematologi Lengkap", "Jumlah Leukosit"],
+  },
+  {
+    kategori: "KIMIA KLINIK",
+    item: ["Tes Faal Hati", "Tes Gula Darah", "Tes Faal Ginjal"],
+  },
+]);
+
+const pemeriksaanPaket = ref([
+  {
+    kategori: "MCU PT.WAHANA",
+    item: "Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT",
+  },
+]);
+
 const accordion = ref<HTMLCanvasElement | null>(null);
+
 const open = () => {
   if (accordion.value) {
     (accordion.value as any).open();
@@ -94,43 +104,44 @@ defineExpose({
     </template>
     <template #content>
       <div v-if="isEditing" class="flex flex-col gap-5 pt-5">
-        <CustomDatePicker label="Tgl. Pemeriksaan Lab" class="w-1/4" />
+        <CustomDatePicker v-model="tglPemeriksaan" label="Tgl. Pemeriksaan Lab" class="w-1/4" />
         <div class="mt-5 font-semibold text-MD">Tarif Pemeriksaan</div>
         <hr class="border-grey-200" />
-        <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
-          <template #header>HEMATOLOGI</template>
-          <template #content>
-            <div class="flex flex-wrap gap-2.5 pt-5">
-              <div v-for="pemeriksaan of pemeriksaan" :key="pemeriksaan.key">
-                <CustomCheckbox
-                  v-model="testCheckboxMulti"
-                  :binary="false"
-                  endText=""
-                  :value="pemeriksaan.name"
-                  :title="pemeriksaan.name"
-                  title-class="text-normal font-normal"
-                  sub-title=""
-                />
+        <div v-for="(pemeriksaan, index) in itemPemeriksaan" :key="index">
+          <CustomAccordion headerClass="bg-adameds-50" initial-state="0">
+            <template #header>{{ pemeriksaan.kategori }}</template>
+            <template #content>
+              <div class="flex flex-wrap gap-2.5 pt-5">
+                <div v-for="(item, idx) in pemeriksaan.item" :key="idx">
+                  <CustomCheckbox
+                    v-model="selectedTarif"
+                    :binary="false"
+                    :value="item"
+                    :title="item"
+                    sub-title=""
+                    title-class="text-normal font-normal"
+                  />
+                </div>
               </div>
-            </div>
-          </template>
-        </CustomAccordion>
+            </template>
+          </CustomAccordion>
+        </div>
+
         <div class="font-semibold text-MD">Tarif Pemeriksaan - Paket</div>
         <hr class="border-grey-200" />
 
         <div class="flex flex-wrap gap-2.5">
           <div
-            v-for="pemeriksaan of optionspemeriksaanPaket"
-            :key="pemeriksaan.key"
+            v-for="(paket, index) in pemeriksaanPaket"
+            :key="index"
           >
             <CustomCheckbox
-              v-model="pemeriksaanPaket"
+              v-model="selectedTarif"
               :binary="false"
-              endText=""
-              :value="pemeriksaan.name"
-              title="MCU PT. Wahana"
+              :value="paket.item"
+              :title="paket.kategori"
               title-class="text-normal font-semibold"
-              sub-title="Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT"
+              :sub-title="paket.item"
               sub-title-class="text-SM font-normal text-grey-400"
             />
           </div>
@@ -233,10 +244,10 @@ defineExpose({
                   @click="detail = true"
                   icon="DetailIcon"
                 />
-                <CustomButton
+                <!-- <CustomButton
                   label="Batal Order"
                   background-color="bg-danger-300"
-                />
+                /> -->
                 <CustomDialog
                   headerBg="bg-adameds-300"
                   width="800px"
@@ -441,12 +452,15 @@ defineExpose({
     <template v-if="isEditing" #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
+        @click="resetForm"
+
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
+
         />
-        <CustomButton label="Simpan" />
+        <CustomButton label="Simpan" @click="onSubmit" />
       </div>
     </template>
   </CustomAccordion>
