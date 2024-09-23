@@ -11,9 +11,11 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 const props = defineProps({
     method: {
         type: String,
-        default: "detail",
+        default: "form",
     },
 });
+
+const emit = defineEmits(["edit"]);
 const currentMethod = ref(props.method);
 
 
@@ -76,6 +78,7 @@ const diagnosaDds = ref([
 const onSubmit = handleSubmit((values) => {
     console.log("Submitted with", values);
     currentMethod.value = 'detail'
+    emit("edit");
 });
 
 // Fungsi reset yang juga mengosongkan array
@@ -93,10 +96,27 @@ const onEditClick = () => {
     currentMethod.value = 'form';  // Mengubah method menjadi 'form'
 };
 
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
+
 </script>
 
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
+    <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
         <template #header>Diagnosa Dokter (ICD 10)</template>
         <template #content v-if="currentMethod == 'form'">
             <div class="flex flex-col gap-5 py-3">

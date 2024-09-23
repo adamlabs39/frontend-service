@@ -77,10 +77,27 @@ const closeAllCanvas = () => {
     }
   });
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
     <template #header>{{ header }}</template>
     <template #content>
       <div class="pt-5">

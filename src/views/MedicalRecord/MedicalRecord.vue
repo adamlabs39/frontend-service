@@ -200,6 +200,55 @@ const onSuratListSelect = (label: string) => {
   }
 };
 
+const refs = {
+  alergi: ref<any>(null),
+  anamnesis: ref<any>(null),
+  anamnesisIGD: ref<any>(null),
+  triase: ref<any>(null),
+  tandaVital: ref<any>(null),
+  antropometri: ref<any>(null),
+  asesmenNyeri: ref<any>(null),
+  kesadaran: ref<any>(null),
+  pemeriksaanFisik: ref<any>(null),
+  pemeriksaanGigi: ref<any>(null),
+  pemeriksaanMata: ref<any>(null),
+  lukaBakar: ref<any>(null),
+  catatanHasilPenunjang: ref<any>(null),
+  diagnosisDokter: ref<any>(null),
+  asuhanKeperawatan: ref<any>(null),
+  catatanPerawat: ref<any>(null),
+  instruksiMedis: ref<any>(null),
+  orderObat: ref<any>(null),
+  pemeriksaanTindakan: ref<any>(null),
+  implementation: ref<any>(null),
+  evaluation: ref<any>(null),
+  reassessment: ref<any>(null),
+  orderAlkes: ref<any>(null),
+  orderLab: ref<any>(null),
+  orderFisio: ref<any>(null),
+  persetujuanPasien: ref<any>(null),
+  edukasi: ref<any>(null),
+  keadaanWaktuPulang: ref<any>(null),
+  statusPulang: ref<any>(null),
+};
+
+const toggleShowAllDetailMR = (method = "show") => {
+  // refs['pemeriksaanFisik'].value.open()
+  Object.keys(refs).forEach((key) => {
+    const refKey = key as keyof typeof refs; // pastikan key cocok dengan kunci refs
+
+    const element = refs[refKey].value; // akses elemen dari ref
+
+    if (element) {
+      if (method == "show") {
+        element.open?.();
+      } else {
+        element.close?.();
+      }
+    }
+  });
+};
+
 const showDialogRM = () => {
   dialogRM.value = true;
 };
@@ -683,36 +732,68 @@ defineExpose({ showDialogRM });
             >
               <!-- <NoData class="grow" title="Belum Ada Pemeriksaan" /> -->
               <div class="grid grid-cols-2 grow gap-2.5 overflow-x-hidden">
-                <FormAlergi method="detail" />
-                <Anamnesis method="detail" />
-                <AnamnesisIGD method="detail" />
-                <Triase method="detail" />
-                <FormTandaVital method="detail" />
-                <Antropometri method="detail" />
-                <FormAsesmenNyeri method="detail" />
-                <Kesadaran method="detail" />
-                <PemeriksaanFisik method="detail" />
-                <PemeriksaanGigi method="detail" />
-                <PemeriksaanMata method="detail" />
-                <BurnInput method="detail" />
-                <CatatanHasilPenunjang method="detail" />
-                <FormDiagnosaDokterICD10 method="detail" />
-                <AsuhanKeperawatan method="detail" />
-                <FormCatatanPerawat method="detail" />
-                <InstruksiMedis method="detail" />
-                <FormOrderObat method="detail" />
-                <PemeriksaanTindakan method="detail" />
-                <FormImplementation method="detail" />
-                <FormEvaluation method="detail" />
-                <FormReassesment method="detail" />
-                <FormOrderAlkes method="detail" />
-                <OrderLab method="detail" />
-                <FormOrderFisio method="detail" />
-                <FormPersetujuanPasien method="detail" />
+                <FormAlergi :ref="refs.alergi" method="detail" />
+                <Anamnesis :ref="refs.anamnesis" method="detail" />
+                <AnamnesisIGD :ref="refs.anamnesisIGD" method="detail" />
+                <Triase :ref="refs.triase" method="detail" />
+                <FormTandaVital :ref="refs.tandaVital" method="detail" />
+                <Antropometri :ref="refs.antropometri" method="detail" />
+                <FormAsesmenNyeri :ref="refs.asesmenNyeri" method="detail" />
+                <Kesadaran :ref="refs.kesadaran" method="detail" />
+                <PemeriksaanFisik
+                  :ref="refs.pemeriksaanFisik"
+                  method="detail"
+                />
+                <PemeriksaanGigi :ref="refs.pemeriksaanGigi" method="detail" />
+                <PemeriksaanMata :ref="refs.pemeriksaanMata" method="detail" />
+                <BurnInput :ref="refs.lukaBakar" method="detail" />
+                <CatatanHasilPenunjang
+                  :ref="refs.catatanHasilPenunjang"
+                  method="detail"
+                />
+                <FormDiagnosaDokterICD10
+                  :ref="refs.diagnosisDokter"
+                  method="detail"
+                />
+                <AsuhanKeperawatan
+                  :ref="refs.asuhanKeperawatan"
+                  method="detail"
+                />
+                <FormCatatanPerawat
+                  :ref="refs.catatanPerawat"
+                  method="detail"
+                />
+                <InstruksiMedis :ref="refs.instruksiMedis" method="detail" />
+                <FormOrderObat :ref="refs.orderObat" method="detail" />
+                <PemeriksaanTindakan
+                  :ref="refs.pemeriksaanTindakan"
+                  method="detail"
+                />
+                <FormImplementation
+                  :ref="refs.implementation"
+                  method="detail"
+                />
+                <FormEvaluation :ref="refs.evaluation" method="detail" />
+                <FormReassesment :ref="refs.reassessment" method="detail" />
+                <FormOrderAlkes :ref="refs.orderAlkes" method="detail" />
+                <OrderLab :ref="refs.orderLab" method="detail" />
+                <FormOrderFisio :ref="refs.orderFisio" method="detail" />
+                <FormPersetujuanPasien
+                  :ref="refs.persetujuanPasien"
+                  method="detail"
+                />
               </div>
               <div class="flex flex-col mx-[10px]">
-                <CustomButton icon="PhArrowsInLineVertical" class="mb-[10px]" />
-                <CustomButton icon="PhArrowsOutLineVertical" class="" />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('hide')"
+                  icon="PhArrowsInLineVertical"
+                  class="mb-[10px]"
+                />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('show')"
+                  icon="PhArrowsOutLineVertical"
+                  class=""
+                />
               </div>
             </div>
 
@@ -818,8 +899,18 @@ defineExpose({ showDialogRM });
                       selectedSoapier == 'Subjective')
                   "
                 >
-                  <FormAlergi id="Alergi" method="form" class="mb-[10px]" />
-                  <Anamnesis id="Anamnesis" method="form" class="" />
+                  <FormAlergi
+                    id="Alergi"
+                    :ref="refs.alergi"
+                    method="form"
+                    class="mb-[10px]"
+                  />
+                  <Anamnesis
+                    id="Anamnesis"
+                    :ref="refs.anamnesis"
+                    method="form"
+                    class=""
+                  />
                 </div>
 
                 <div
@@ -830,23 +921,36 @@ defineExpose({ showDialogRM });
                 >
                   <FormTandaVital
                     id="Tanda Vital"
+                    :ref="refs.tandaVital"
                     method="form"
                     class="mb-[10px]"
                   />
                   <Antropometri
                     id="Antropometri"
+                    :ref="refs.antropometri"
                     method="form"
                     class="mb-[10px]"
                   />
                   <FormAsesmenNyeri
                     id="Asesmen Nyeri"
+                    :ref="refs.asesmenNyeri"
                     method="form"
                     class="mb-[10px]"
                   />
-                  <Kesadaran id="Kesadaran" method="form" class="mb-[10px]" />
-                  <PemeriksaanFisik id="Pemeriksaan Fisik" class="mb-[10px]" />
+                  <Kesadaran
+                    id="Kesadaran"
+                    :ref="refs.kesadaran"
+                    method="form"
+                    class="mb-[10px]"
+                  />
+                  <PemeriksaanFisik
+                    id="Pemeriksaan Fisik"
+                    :ref="refs.pemeriksaanFisik"
+                    class="mb-[10px]"
+                  />
                   <CatatanHasilPenunjang
                     id="Catatan Hasil Penunjang"
+                    :ref="refs.catatanHasilPenunjang"
                     method="form"
                     class=""
                   />
@@ -860,11 +964,13 @@ defineExpose({ showDialogRM });
                 >
                   <FormDiagnosaDokterICD10
                     id="Diagnosis Dokter"
+                    :ref="refs.diagnosisDokter"
                     method="form"
                     class="mb-[10px]"
                   />
                   <AsuhanKeperawatan
                     id="Asuhan Keperawatan"
+                    :ref="refs.asuhanKeperawatan"
                     method="form"
                     class=""
                   />
@@ -878,41 +984,56 @@ defineExpose({ showDialogRM });
                 >
                   <InstruksiMedis
                     id="Instruksi Medis"
+                    :ref="refs.instruksiMedis"
                     method="form"
                     class="mb-[10px]"
                   />
                   <FormCatatanPerawat
                     id="Catatan Perawat"
+                    :ref="refs.catatanPerawat"
                     method="form"
                     class="mb-[10px]"
                   />
                   <FormOrderObat
                     id="Order Obat"
+                    :ref="refs.orderObat"
                     method="form"
                     class="mb-[10px]"
                   />
                   <PemeriksaanTindakan
                     id="Pemeriksaan dan Tindakan"
+                    :ref="refs.pemeriksaanTindakan"
                     method="form"
                     class=""
                   />
                 </div>
 
                 <div v-if="selectedTab == 'soapier' && selectedSoapier == 'I'">
-                  <FormImplementation method="form" />
+                  <FormImplementation
+                    :ref="refs.implementation"
+                    method="form"
+                  />
                 </div>
 
                 <div v-if="selectedTab == 'soapier' && selectedSoapier == 'E'">
-                  <FormEvaluation method="form" />
+                  <FormEvaluation :ref="refs.evaluation" method="form" />
                 </div>
 
                 <div v-if="selectedTab == 'soapier' && selectedSoapier == 'R'">
-                  <FormReassesment method="form" />
+                  <FormReassesment :ref="refs.reassessment" method="form" />
                 </div>
               </div>
               <div class="flex flex-col mx-[10px]">
-                <CustomButton icon="PhArrowsInLineVertical" class="mb-[10px]" />
-                <CustomButton icon="PhArrowsOutLineVertical" class="" />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('hide')"
+                  icon="PhArrowsInLineVertical"
+                  class="mb-[10px]"
+                />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('show')"
+                  icon="PhArrowsOutLineVertical"
+                  class=""
+                />
               </div>
             </div>
 
@@ -981,57 +1102,79 @@ defineExpose({ showDialogRM });
               <div class="overflow-auto grow">
                 <TandaVital
                   id="Tanda Vital"
+                  :ref="refs.tandaVital"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <AnamnesisDischarge
                   id="Ringkasan Riwayat Penyakit"
+                  :ref="refs.anamnesis"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <Edukasi
                   id="Edukasi"
+                  :ref="refs.edukasi"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <KeadaanWaktuPulang
                   id="Keadaan Waktu Pulang"
+                  :ref="refs.keadaanWaktuPulang"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <StatusPulang
                   id="Status Pulang"
+                  :ref="refs.statusPulang"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <PemeriksaanFisikDischarge
                   id="Pemeriksaan Fisik"
+                  :ref="refs.pemeriksaanFisik"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <Diagnosis
                   id="Diagnosis"
+                  :ref="refs.diagnosisDokter"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
                 <Tindakan
                   id="Tindakan"
+                  :ref="refs.pemeriksaanTindakan"
                   method="form"
                   initialState="0"
                   class="mb-[10px]"
                 />
-                <Obat id="Obat" method="form" initialState="0" class="" />
+                <Obat
+                  id="Obat"
+                  :ref="refs.orderObat"
+                  method="form"
+                  initialState="0"
+                  class=""
+                />
               </div>
               <div class="flex flex-col mx-[10px]">
-                <CustomButton icon="PhArrowsInLineVertical" class="mb-[10px]" />
-                <CustomButton icon="PhArrowsOutLineVertical" class="" />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('hide')"
+                  icon="PhArrowsInLineVertical"
+                  class="mb-[10px]"
+                />
+                <CustomButton
+                  @click="toggleShowAllDetailMR('hide')"
+                  icon="PhArrowsOutLineVertical"
+                  class=""
+                />
               </div>
             </div>
 

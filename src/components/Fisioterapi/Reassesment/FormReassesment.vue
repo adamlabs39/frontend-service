@@ -13,10 +13,29 @@ const props = defineProps({
 });
 
 const reassesment = ref();
+
+const emit = defineEmits(["edit"]);
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
     <template #header>Reassesment</template>
     <template #content>
       <div v-if="props.method == 'form'" class="gap-[30px] py-3">
@@ -46,7 +65,11 @@ const reassesment = ref();
           borderColor="border-2 border-adameds-300"
         />
         <CustomButton v-if="props.method == 'form'" label="Simpan" />
-        <CustomButton v-if="props.method == 'detail'" label="Edit" />
+        <CustomButton
+          v-if="props.method == 'detail'"
+          @click="emit('edit')"
+          label="Edit"
+        />
       </div>
     </template>
   </CustomAccordion>

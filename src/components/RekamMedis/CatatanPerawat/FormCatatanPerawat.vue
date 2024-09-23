@@ -19,12 +19,14 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['edit']);
+
 const currentMethod = ref(props.method);
 const modeChat = ref("");
 
 interface Message {
   role: string;
-  roleYangDibalas?:string,
+  roleYangDibalas?: string;
   text: string;
   textLama?: string;
   date: string;
@@ -81,7 +83,6 @@ const editMessageRole = ref<string | null>(null);
 const editMessageIndex = ref<number | null>(null);
 const textLama = ref("");
 
-
 const handleActionClick = (actionText: string, message: any, index: number) => {
   if (actionText === "Balas") {
     onReplyMessage(message);
@@ -109,34 +110,52 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat((values: any) => {
     messages.value[editMessageIndex.value].text = values.catatanPerawat;
     resetForm();
   } else if (modeChat.value === "Add") {
-    messages.value.push({
+    const newMessage = {
       role: "Anda",
       text: values.catatanPerawat,
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
+      time: new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       isSender: true,
       avatar: catatanPerawatAnda,
       actions: [
         { text: "Edit", icon: "PhPencil" },
         { text: "Balas", icon: "PhArrowUUpLeft" },
       ],
-    });
+    };
+    messages.value.push(newMessage);
+    emit("edit", newMessage);
     resetForm();
   } else if (modeChat.value === "Balas") {
-    messages.value.push({
+    const newReplyMessage ={
       role: "Anda",
       roleYangDibalas: replyMessageRole.value || "",
       text: values.catatanPerawat,
       textLama: textLama.value,
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
+      time: new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       isSender: true,
       avatar: catatanPerawatAnda,
       actions: [
         { text: "Edit", icon: "PhPencil" },
         { text: "Balas", icon: "PhArrowUUpLeft" },
       ],
-    });
+    };
+    messages.value.push(newReplyMessage);
+    emit("edit", newReplyMessage);
     resetForm();
   }
   currentMethod.value = "detail";
@@ -150,15 +169,36 @@ const onEditClick = () => {
   currentMethod.value = "form";
   modeChat.value = "Add";
 };
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion headerClass="bg-adameds-50">
+  <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Catatan Perawat</template>
     <template #content>
       <div class="pt-5 space-y-2.5">
-        <div v-for="(message, index) in messages" :key="index" class="flex items-start gap-2.5"
-          :class="{ 'flex-row-reverse': message.isSender }">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          class="flex items-start gap-2.5"
+          :class="{ 'flex-row-reverse': message.isSender }"
+        >
           <img :src="message.avatar" alt="Avatar" />
           <div class="space-y-2.5">
             <div class="flex items-center w-full gap-5">
@@ -176,16 +216,23 @@ const onEditClick = () => {
                 </div>
               </div>
             </div>
-            <div :class="[
-              message.isSender
-                ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
-              'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
-              message.textLama ? 'flex-col-reverse gap-4 py-4 justify-center' : 'items-center'
-            ]">
+            <div
+              :class="[
+                message.isSender
+                  ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
+                  : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
+                'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
+                message.textLama
+                  ? 'flex-col-reverse gap-4 py-4 justify-center'
+                  : 'items-center',
+              ]"
+            >
               {{ message.text }}
 
-              <div v-if="message.textLama" class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]">
+              <div
+                v-if="message.textLama"
+                class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
+              >
                 <div class="flex justify-start">
                   <span class="font-semibold text-[#14B8A6]">
                     {{ message.roleYangDibalas }}
@@ -194,14 +241,21 @@ const onEditClick = () => {
                 <hr class="border-t my-2 border-[#E2E8F0]" />
                 <div class="text-black">{{ message.textLama }}</div>
               </div>
-
             </div>
-            <div :class="message.isSender ? 'justify-start' : 'justify-end'" class="flex gap-4">
-              <button v-for="action in message.actions" :key="action.text" v-if="currentMethod == 'form'"
+            <div
+              :class="message.isSender ? 'justify-start' : 'justify-end'"
+              class="flex gap-4"
+            >
+              <button
+                v-for="action in message.actions"
+                :key="action.text"
+                v-if="currentMethod == 'form'"
                 class="flex items-center gap-2 font-medium text-SM"
-                @click="handleActionClick(action.text, message, index)" :style="{
+                @click="handleActionClick(action.text, message, index)"
+                :style="{
                   color: action.text === 'Edit' ? '#3D84E5' : '#14B8A6',
-                }">
+                }"
+              >
                 <component :is="action.icon" :size="16" />
                 {{ action.text }}
               </button>
@@ -211,14 +265,32 @@ const onEditClick = () => {
 
         <hr class="border-grey-200 my-2.5" v-if="currentMethod == 'form'" />
         <div v-if="currentMethod == 'form'" class="space-y-2.5">
-          <CustomChip v-if="replyMessageRole || editMessageRole" :label="modeChat === 'Balas'
-            ? `Membalas Pesan ${replyMessageRole}`
-            : `Edit Pesan ${editMessageRole}`
-            " selected-color="border-0 bg-[#14B8A6]" :showCheckedIcon="false" bgColor="bg-adameds-300"
-            textColor="text-white" borderColor="border-transparent" customClass="h-5 pr-[6px]" />
+          <CustomChip
+            v-if="replyMessageRole || editMessageRole"
+            :label="
+              modeChat === 'Balas'
+                ? `Membalas Pesan ${replyMessageRole}`
+                : `Edit Pesan ${editMessageRole}`
+            "
+            selected-color="border-0 bg-[#14B8A6]"
+            :showCheckedIcon="false"
+            bgColor="bg-adameds-300"
+            textColor="text-white"
+            borderColor="border-transparent"
+            customClass="h-5 pr-[6px]"
+          />
           <div class="space-y-2.5">
-            <CustomTextArea v-model="catatanPerawat" label="Catatan Antar Perawat" placeholder="Ketik Catatan..." />
-            <CustomButton :full="true" icon="PhPaperPlaneTilt" label="Kirim Catatan" @click="onSubmitCatatanPerawat" />
+            <CustomTextArea
+              v-model="catatanPerawat"
+              label="Catatan Antar Perawat"
+              placeholder="Ketik Catatan..."
+            />
+            <CustomButton
+              :full="true"
+              icon="PhPaperPlaneTilt"
+              label="Kirim Catatan"
+              @click="onSubmitCatatanPerawat"
+            />
           </div>
         </div>
       </div>
