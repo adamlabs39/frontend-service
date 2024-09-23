@@ -1,7 +1,5 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import * as vfsFonts from 'pdfmake/build/vfs_fonts';
-pdfMake.vfs = vfsFonts.pdfMake.vfs;
-
+import { customVfs } from "./customVfs";
 
 type PageSize =
   | "A4"
@@ -23,11 +21,25 @@ export function downloadPdf({
   page?: PageSize;
   orientation?: PageOrientation;
 }) {
+  pdfMake.vfs = customVfs.pdfMake.vfs;
+  
+  pdfMake.fonts = {
+    Arial: {
+      normal: "Arial.ttf",
+      bold: "Arial_Bold.ttf",
+      italics: "Arial_Italic.ttf",
+      bolditalics: "Arial_Bold_Italic.ttf",
+    },
+  };
+
   const docDefinition = {
     pageSize: page,
     pageOrientation: orientation,
-    content: [{ text: "Hello, PDFMake!", fontSize: 15 }],
+    defaultStyle: {
+      font: 'Arial', // Set font default ke Arial
+    },
+    content: [{ text: "Hello, PDFMake!", fontSize: 15, font: 'Arial' }],
   };
 
-  pdfMake.createPdf(docDefinition).download('Test');
+  pdfMake.createPdf(docDefinition).download("Test");
 }
