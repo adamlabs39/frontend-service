@@ -28,6 +28,10 @@ const props = defineProps({
         type: String,
         default: 'white'
     },
+    iconButton: {
+        type: String,
+        default:""
+    }
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -124,6 +128,18 @@ watch(() => props.modelValue, (newValue) => {
         fileName.value = null;
     }
 });
+
+// KALAU MAU MENGHAPUS FILE YANG SUDAH DIUPLOAD (BUKAN RESET)
+
+const clearFile = () => {
+    imageSrc.value = '';
+    fileName.value = null;
+    emit('update:modelValue', '');
+};
+
+defineExpose({
+  clearFile,
+});
 </script>
 
 <template>
@@ -135,7 +151,7 @@ watch(() => props.modelValue, (newValue) => {
             <p class="font-semibold text-black text-SM">Seret file ke sini</p>
             <p class="mb-4 text-gray-500 text-SM">atau</p>
             <CustomButton label="Cari File" @click="browseFile"
-                class="inline-flex items-center px-3 py-2 mb-4 transition text-XSwhite text- rounded-xl bg-adameds-300 hover:bg-adameds-400" />
+                class="inline-flex items-center px-3 py-2 mb-4 transition text-XSwhite text- rounded-xl bg-adameds-300 hover:bg-adameds-400" :icon="iconButton"/>
             <p class="text-gray-500 text-SM">File {{ allowedFileTypes.join(', ') }}</p>
             <input type="file" ref="fileInput" class="hidden" @change="onFileChange" />
             <!-- Menampilkan error message jika ada -->

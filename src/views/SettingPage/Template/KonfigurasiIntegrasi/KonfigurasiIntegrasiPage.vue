@@ -16,7 +16,18 @@ const konfigurasiIntegrasiResponse = ref({
     userKey: "",
     consId: "",
     secretKey: "",
-    PPK: ""
+    PPK: "",
+    apiKeyPost: "",
+    method: "",
+    endpoint: "",
+    header: "",
+    request: "",
+    response: "",
+    status: "",
+    clientSecret: "",
+    organizationId: "",
+    clientId: "",
+    statusSatuSehat: ""
 })
 
 const settingStore = useSettingStore();
@@ -25,6 +36,7 @@ const fetchKonfigurasiIntegrasiData = async () => {
         const response = await settingStore.getKonfigurasiIntegrasiApi();
         if (response && response.payload) {
             konfigurasiIntegrasiResponse.value = response.payload
+            console.log(konfigurasiIntegrasiResponse.value)
         } else {
             console.error("Unexpected response Structure", response);
         }
@@ -38,11 +50,10 @@ onMounted(() => {
     fetchKonfigurasiIntegrasiData();
     console.log(konfigurasiIntegrasiResponse.value)
 })
+
 const isEditKonfigurasiVCLAIM = ref(false);
 const isEditKonfigurasiLainnya = ref(false);
 const isEditKonfigurasiSatuSehat = ref(false);
-
-
 
 
 const editKonfigurasiVCLAIM = () => {
@@ -56,7 +67,23 @@ const editKonfigurasiLainnya = () => {
 };
 
 const editKonfigurasiSatuSehat = () => {
+    console.log("NININI")
     isEditKonfigurasiSatuSehat.value = !isEditKonfigurasiSatuSehat.value
+}
+
+
+// Setelah Edit 
+const handleKonfigurasiVCLAIM = (updatedKonfigurasiVCLAIM: any) => {
+    konfigurasiIntegrasiResponse.value = updatedKonfigurasiVCLAIM;
+    fetchKonfigurasiIntegrasiData();
+};
+const handleKonfigurasiLainnya = (updatedKonfigurasiLainnya: any) => {
+    konfigurasiIntegrasiResponse.value = updatedKonfigurasiLainnya;
+    fetchKonfigurasiIntegrasiData();
+};
+const handleKonfigurasiSatuSehat = (updatedKonfigurasiSatuSehat: any) => {
+    konfigurasiIntegrasiResponse.value = updatedKonfigurasiSatuSehat;
+    fetchKonfigurasiIntegrasiData()
 }
 </script>
 
@@ -72,44 +99,23 @@ const editKonfigurasiSatuSehat = () => {
                     :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse" />
             </template>
             <template v-else>
-                <GreenCard cardHeading="Konfigurasi VCLAIM" hr-enable-custom-class showButton labelButton="Batal Edit"
-                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
-                    :buttonClickHandler="editKonfigurasiVCLAIM">
-                    <FormEditKonfigurasiVCLAIM />
-                </GreenCard>
+                <FormEditKonfigurasiVCLAIM :isEditKonfigurasiVCLAIM="isEditKonfigurasiVCLAIM" :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse"  @update:isEditKonfigurasiVCLAIM="isEditKonfigurasiVCLAIM = $event" @update:after-edit-konfigurasi-v-c-l-a-i-m="handleKonfigurasiVCLAIM"/>
             </template>
 
             <template v-if="!isEditKonfigurasiSatuSehat">
-
-                <GreenCard cardHeading="Konfigurasi SATUSEHAT" hrEnableCustomClass showButton labelButton="Edit"
-                    :buttonClickHandler="editKonfigurasiSatuSehat">
-                    <KonfigurasiSatuSehat />
-                </GreenCard>
+                    <KonfigurasiSatuSehat :edit-handler="editKonfigurasiSatuSehat" :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse" />
             </template>
             <template v-else>
-                <GreenCard cardHeading="Konfigurasi SATUSEHAT" hrEnableCustomClass showButton labelButton="Batal Edit"
-                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
-                    :buttonClickHandler="editKonfigurasiSatuSehat">
-                    <FormEditKonfigurasiSatuSehat />
-                </GreenCard>
+                    <FormEditKonfigurasiSatuSehat :is-edit-konfigurasi-satu-sehat="isEditKonfigurasiSatuSehat" :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse" @update:is-edit-konfigurasi-satu-sehat="isEditKonfigurasiSatuSehat = $event" @update:after-edit-konfigurasi-satu-sehat="handleKonfigurasiSatuSehat" />
             </template>
 
             <!--  -->
             <template v-if="!isEditKonfigurasiLainnya">
-                <GreenCard cardHeading="Konfigurasi Lainnya" hrEnableCustomClass showButton labelButton="Edit"
-                    :buttonClickHandler="editKonfigurasiLainnya">
-                    <KonfigurasiLainnya />
-                </GreenCard>
+                    <KonfigurasiLainnya :edit-handler="editKonfigurasiLainnya" :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse"/>
             </template>
             <template v-else>
-                <GreenCard cardHeading="Konfigurasi Lainnya" hr-enable-custom-class showButton labelButton="Batal Edit"
-                    outlined borderColor="border-adameds-300" textColor="text-adameds-300"
-                    :buttonClickHandler="editKonfigurasiLainnya">
-                    <FormEditKonfigurasiLainnya />
-                </GreenCard>
+                    <FormEditKonfigurasiLainnya :is-edit-konfigurasi-lainnya="isEditKonfigurasiLainnya" :konfigurasi-integrasi-response="konfigurasiIntegrasiResponse" @update:is-edit-konfigurasi-lainnya="isEditKonfigurasiLainnya = $event" @update:after-edit-konfigurasi-lainnya="handleKonfigurasiLainnya"/>
             </template>
-
-
         </template>
     </Card>
 

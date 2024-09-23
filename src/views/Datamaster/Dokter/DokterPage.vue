@@ -140,7 +140,7 @@ const openPemeriksaanDialog = (data: any) => {
 
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class="w-full text-center font-semibold text-SM">Status</div>
+            <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
@@ -171,7 +171,7 @@ const openPemeriksaanDialog = (data: any) => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
@@ -208,7 +208,7 @@ const openPemeriksaanDialog = (data: any) => {
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

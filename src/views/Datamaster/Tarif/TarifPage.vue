@@ -60,7 +60,7 @@ const testDialog = ref(false);
       </CustomDialog>
     </template>
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

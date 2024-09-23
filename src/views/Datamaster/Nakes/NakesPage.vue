@@ -168,7 +168,7 @@ const handleRowSelect = (data: any) => {
         </Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full w-full text-center font-semibold text-SM">
+            <div class="w-full font-semibold text-center text-SM">
               Status
             </div>
           </template>
@@ -201,7 +201,7 @@ const handleRowSelect = (data: any) => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
@@ -235,7 +235,7 @@ const handleRowSelect = (data: any) => {
       <DetailNakesDialog v-model:isDialogVisible="isDetailNakesDialogVisible" />
     </template>
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

@@ -101,7 +101,7 @@ onMounted(() => {
     v-model:expandedRows="expandedRows"
     :value="products"
     tableStyle="min-width: 50rem"
-    class="text-xs -m-4"
+    class="-m-4 text-xs"
     stripedRows
     dataKey="id"
     scrollable
@@ -207,7 +207,7 @@ onMounted(() => {
           <CustomButton
             label=""
             background-color="bg-danger-300 rounded-lg"
-            @click="hapusDataDialog = true"
+            @click="()=>{}"
             class="h-6 w-[26px] p-0"
           >
             <img src="@/assets/icons/delete.svg" alt="" />

@@ -26,7 +26,7 @@ defineExpose({
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <img src="../../assets/images/BPJS.png" alt="" />
+          <img src="../../../assets/images/BPJS.png" alt="" />
         </div>
       </div>
     </template>

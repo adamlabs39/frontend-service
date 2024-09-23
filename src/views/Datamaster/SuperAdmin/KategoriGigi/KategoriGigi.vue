@@ -36,7 +36,7 @@ const metaKey = ref(true);
 const dialogConfig = ref({
   method: "add",
   title: "Tambah Data",
-  data: null,
+  data: [],
 });
 // Handle add and edit of the dialog
 const openDialog = (method: any, title: any, data: any = null) => {

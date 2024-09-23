@@ -27,7 +27,7 @@ function updateVisibility(value: any) {
   >
     <template #header>Kuota & Waktu Pemeriksaan</template>
     <template #body>
-      <div class="flex flex-col mt-5 gap-5">
+      <div class="flex flex-col gap-5 mt-5">
         <!-- Data Dokter -->
         <div class="flex flex-col gap-5">
           <div class="my-2.5 font-bold text-heading leading-8">
@@ -35,13 +35,13 @@ function updateVisibility(value: any) {
           </div>
           <hr class="border-grey-200" />
           <div class="flex">
-            <div class="w-1/2 flex flex-col gap-5">
+            <div class="flex flex-col w-1/2 gap-5">
               <InfoRow label="Kode HFIS (BPJS)" value="123" />
               <InfoRow label="Kode Dokter" value="DTR" />
               <InfoRow label="Nama Lengkap" value="dr. Spesialis Sp. A" />
               <InfoRow label="Tanggal Lahir" value="01-01-2000" />
             </div>
-            <div class="w-1/2 flex flex-col gap-5">
+            <div class="flex flex-col w-1/2 gap-5">
               <InfoRow label="Kode SIP" value="827394" />
               <InfoRow label="NIK" value="0000000000000000" />
               <InfoRow label="STR" value="1000000000000000" />

@@ -164,7 +164,7 @@ const handleEdit = () => {
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
-              :label="status"
+              :label="`${status}`"
               bg-color="bg-adameds-300"
               text-color="text-white"
               icon-color=""
@@ -172,7 +172,7 @@ const handleEdit = () => {
             />
           </template>
         </CustomInfoRow>
-        <CustomInfoRow label="Preview Gigi" :value="name" />
+        <CustomInfoRow label="Preview Gigi" :value="`${name}`" />
       </div>
     </template>
 

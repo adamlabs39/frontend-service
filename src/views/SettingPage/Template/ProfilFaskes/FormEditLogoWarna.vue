@@ -54,7 +54,7 @@ const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
 	try {
 		 console.log('bgWarna value before submission:', values.bgWarna);
 		const payload = {
-			logo: "TES234",
+			logo: values.logo,
 			bgWarna: values.bgWarna,
 			code: props.profilFaskesResponse.code,
 			name: props.profilFaskesResponse.name,
