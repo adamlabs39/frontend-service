@@ -13,7 +13,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["page","eksport","import"]);
+const emit = defineEmits(["page","export","import"]);
 
 const handlePage = (event: any) => {
   emit("page", event);
@@ -25,7 +25,7 @@ const handlePage = (event: any) => {
       <CustomButton label="Import"  @click="emit('import')">
         <img src="@/assets/icons/File Import.svg" alt="" />Import
       </CustomButton>
-      <CustomButton label="Eksport"  @click="emit('eksport')">
+      <CustomButton label="Eksport"  @click="emit('export')">
         <img src="@/assets/icons/File Import.svg" alt="" />Eksport
       </CustomButton>
     </div>

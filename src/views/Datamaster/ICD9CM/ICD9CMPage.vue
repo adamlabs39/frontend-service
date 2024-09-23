@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useIcd9Store } from "@/stores/datamaster/icd9";
 import { downloadPdf } from "@/utils/PdfMake";
+import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
@@ -94,6 +95,85 @@ const handleDelete = (dataItem: any) => {
         console.error("Failed to delete data", error);
         loading.value = false;
       });
+  }
+};
+
+const downloadExportExcel = async () => {
+  try {
+    const response = await icd9Store.exportApi();
+    const rows = response.payload; 
+    if (!rows || rows.length === 0) {
+      console.error('No data available for export');
+      return;
+    }
+
+    const title = ["REKAP DATA ICD9"];  
+    const data = [];
+    data.push({});  
+    data.push({ No: "No", Kode: "Kode", Nama: "Nama ICD 9 CM", Status: "Status" });  
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",  
+      });
+    }
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true }); 
+
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    worksheet["A1"].s = {
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+      },
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["!cols"] = [
+      { wch: 5 }, 
+      { wch: 10 },
+      { wch: 30 }, 
+      { wch: 10 }, 
+    ];
+
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || "A1:D1");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };  
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === 1 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        if (row === 1) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "a4c2f4" },
+          };
+        }
+      }
+    }
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data ICD9");
+
+    XLSX.writeFile(workbook, `Rekap Data ICD9.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
   }
 };
 
@@ -217,7 +297,7 @@ const handleDelete = (dataItem: any) => {
         :rows="icd9Properties.page_size"
         :totalRecords="icd9Properties.total"
         @page="handlePage"
-        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+        @export="downloadExportExcel"
       />
     </template>
   </Card>
