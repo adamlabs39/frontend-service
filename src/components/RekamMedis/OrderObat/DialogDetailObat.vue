@@ -3,6 +3,19 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 
+interface DetailObat {
+  racikan: boolean;
+  namaRacikan: string;
+  namaObat: string;
+  jumlahKonsumsi: number;
+  satuanDosis: string;
+  aturanPakai: string;
+  caraPakai: string;
+  rutePemberian: string;
+  obatPulang?: boolean;
+  obatKronis?: boolean;
+}
+
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -10,7 +23,10 @@ const props = defineProps({
   title: {
     type: String,
   },
-  obatDetail: Object,
+  obatDetail: {
+    type: Array as () => DetailObat[],
+    default: () => [],
+  },
   index: {
     type: Number,
     default: null,
