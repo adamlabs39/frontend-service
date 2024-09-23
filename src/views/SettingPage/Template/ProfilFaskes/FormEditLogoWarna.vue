@@ -2,7 +2,6 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomColorPicker from "@/components/Base/CustomColorPicker.vue";
 import CustomDragDrop from "@/components/Base/CustomDragDrop.vue";
-import CustomUpload from "@/components/Base/CustomUpload.vue";
 import { ref } from 'vue';
 import GreenCard from "../GreenCard.vue";
 import { PhHandTap } from "@phosphor-icons/vue";

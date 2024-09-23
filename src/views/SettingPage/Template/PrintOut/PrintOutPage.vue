@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CustomUpload from '@/components/Base/CustomUpload.vue';
 import MainHeaderSetting from '../MainHeaderSetting.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';
 import Card from 'primevue/card';
