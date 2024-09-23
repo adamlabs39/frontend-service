@@ -18,9 +18,49 @@ const tabs = ref([
 const schema = toTypedSchema(
   yup.object({
     pemeriksaan: yup.string().required("Pemeriksaan harus dipilih"),
+    odData: yup.object({
+      proLoginQuitat: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+      proDomo: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+      proPropinQuitat: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+    }),
+    osData: yup.object({
+      proLoginQuitat: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+      proDomo: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+      proPropinQuitat: yup.object({
+        vitrumSpher: yup.number(),
+        vitrumCylndr: yup.number(),
+        axis: yup.number(),
+        prismaBasis: yup.number(),
+      }),
+    }),
     distantVitror: yup.number(),
     formaVitror: yup.number(),
-    colrVitror: yup.number()
+    colrVitror: yup.number(),
   })
 );
 
@@ -33,6 +73,41 @@ const [distantVitror] = defineField("distantVitror");
 const [formaVitror] = defineField("formaVitror");
 const [colrVitror] = defineField("colrVitror");
 
+// Binding untuk OD proLoginQuitat
+const [odLoginSpher] = defineField("odData.proLoginQuitat.vitrumSpher");
+const [odLoginCylndr] = defineField("odData.proLoginQuitat.vitrumCylndr");
+const [odLoginAxis] = defineField("odData.proLoginQuitat.axis");
+const [odLoginPrisma] = defineField("odData.proLoginQuitat.prismaBasis");
+
+// Binding untuk OD proDomo
+const [odDomoSpher] = defineField("odData.proDomo.vitrumSpher");
+const [odDomoCylndr] = defineField("odData.proDomo.vitrumCylndr");
+const [odDomoAxis] = defineField("odData.proDomo.axis");
+const [odDomoPrisma] = defineField("odData.proDomo.prismaBasis");
+
+// Binding untuk OD proPropinQuitat
+const [odPropinSpher] = defineField("odData.proPropinQuitat.vitrumSpher");
+const [odPropinCylndr] = defineField("odData.proPropinQuitat.vitrumCylndr");
+const [odPropinAxis] = defineField("odData.proPropinQuitat.axis");
+const [odPropinPrisma] = defineField("odData.proPropinQuitat.prismaBasis");
+
+// Binding untuk OS proLoginQuitat
+const [osLoginSpher] = defineField("osData.proLoginQuitat.vitrumSpher");
+const [osLoginCylndr] = defineField("osData.proLoginQuitat.vitrumCylndr");
+const [osLoginAxis] = defineField("osData.proLoginQuitat.axis");
+const [osLoginPrisma] = defineField("osData.proLoginQuitat.prismaBasis");
+
+// Binding untuk OS proDomo
+const [osDomoSpher] = defineField("osData.proDomo.vitrumSpher");
+const [osDomoCylndr] = defineField("osData.proDomo.vitrumCylndr");
+const [osDomoAxis] = defineField("osData.proDomo.axis");
+const [osDomoPrisma] = defineField("osData.proDomo.prismaBasis");
+
+// Binding untuk OS proPropinQuitat
+const [osPropinSpher] = defineField("osData.proPropinQuitat.vitrumSpher");
+const [osPropinCylndr] = defineField("osData.proPropinQuitat.vitrumCylndr");
+const [osPropinAxis] = defineField("osData.proPropinQuitat.axis");
+const [osPropinPrisma] = defineField("osData.proPropinQuitat.prismaBasis");
 
 const itemsPoli = ref(["Poli Gigi", "Poli Mata", "Poli Anak"]);
 const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
@@ -59,11 +134,14 @@ defineExpose({
   close,
 });
 
-const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
-
+const optionsPemeriksaan = ref(["monofokus", "bifokus", "progressive"]);
 </script>
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" initial-state="0" ref="accordion">
+  <CustomAccordion
+    headerClass="bg-adameds-50"
+    initial-state="0"
+    ref="accordion"
+  >
     <template #header>
       <div class="flex items-center justify-between w-full pr-2.5">
         Surat Resep Kacamata
@@ -86,6 +164,8 @@ const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
           option-value=""
           place-holder="Pilih Pemeriksaan"
           class="col-span-12"
+          :invalid="!!errors.pemeriksaan"
+          :invalidMessage="errors.pemeriksaan"
         />
         <div class="col-span-6 border-r pr-5 boder-grey-200">
           <div class="font-semibold text-normal mb-2.5">Resep OD</div>
@@ -115,12 +195,57 @@ const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
               </Tab>
             </TabList>
             <TabPanels>
-              <TabPanel v-for="tab in tabs" :value="tab.value">
+              <TabPanel value="0">
                 <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
-                  <CustomInputNumber label="Vitrum Spher" />
-                  <CustomInputNumber label="Vitrum Cylndr" />
-                  <CustomInputNumber label="Axis" />
-                  <CustomInputNumber label="Prisma Basis" />
+                  <CustomInputNumber
+                    v-model="odLoginSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="odLoginCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="odLoginAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="odLoginPrisma"
+                    label="Prisma Basis"
+                  />
+                </div>
+              </TabPanel>
+
+              <TabPanel value="1">
+                <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
+                  <CustomInputNumber
+                    v-model="odDomoSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="odDomoCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="odDomoAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="odDomoPrisma"
+                    label="Prisma Basis"
+                  />
+                </div>
+              </TabPanel>
+
+              <TabPanel value="2">
+                <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
+                  <CustomInputNumber
+                    v-model="odPropinSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="odPropinCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="odPropinAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="odPropinPrisma"
+                    label="Prisma Basis"
+                  />
                 </div>
               </TabPanel>
             </TabPanels>
@@ -154,20 +279,77 @@ const optionsPemeriksaan=ref(["monofokus","bifokus","progressive"])
               </Tab>
             </TabList>
             <TabPanels>
-              <TabPanel v-for="tab in tabs" :value="tab.value">
+              <TabPanel value="0">
                 <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
-                  <CustomInputNumber label="Vitrum Spher" />
-                  <CustomInputNumber label="Vitrum Cylndr" />
-                  <CustomInputNumber label="Axis" />
-                  <CustomInputNumber label="Prisma Basis" />
+                  <CustomInputNumber
+                    v-model="osLoginSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="osLoginCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="osLoginAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="odLoginPrisma"
+                    label="Prisma Basis"
+                  />
+                </div>
+              </TabPanel>
+
+              <TabPanel value="1">
+                <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
+                  <CustomInputNumber
+                    v-model="osDomoSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="odDomoCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="osDomoAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="osDomoPrisma"
+                    label="Prisma Basis"
+                  />
+                </div>
+              </TabPanel>
+
+              <TabPanel value="2">
+                <div class="grid grid-cols-2 gap-x-5 gap-y-2.5">
+                  <CustomInputNumber
+                    v-model="osPropinSpher"
+                    label="Vitrum Spher"
+                  />
+                  <CustomInputNumber
+                    v-model="osPropinCylndr"
+                    label="Vitrum Cylndr"
+                  />
+                  <CustomInputNumber v-model="osPropinAxis" label="Axis" />
+                  <CustomInputNumber
+                    v-model="osPropinPrisma"
+                    label="Prisma Basis"
+                  />
                 </div>
               </TabPanel>
             </TabPanels>
           </Tabs>
         </div>
-        <CustomInputNumber v-model="distantVitror" label="Distant Vitror" class="col-span-4 pr-5" />
-        <CustomInputNumber v-model="formaVitror" label="Forma Vitror" class="col-span-4 pr-5" />
-        <CustomInputNumber v-model="colrVitror" label="Colr Vitror" class="col-span-4" />
+        <CustomInputNumber
+          v-model="distantVitror"
+          label="Distant Vitror"
+          class="col-span-4 pr-5"
+        />
+        <CustomInputNumber
+          v-model="formaVitror"
+          label="Forma Vitror"
+          class="col-span-4 pr-5"
+        />
+        <CustomInputNumber
+          v-model="colrVitror"
+          label="Colr Vitror"
+          class="col-span-4"
+        />
       </div>
     </template>
   </CustomAccordion>

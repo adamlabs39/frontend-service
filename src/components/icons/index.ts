@@ -28,5 +28,6 @@ export default {
     app.component("GearFillIcon", GearFillIcon);
     app.component("UploadPictureIcon", UploadPictureIcon);
     app.component("DetailIcon", DetailIcon);
+
   },
 };
