@@ -175,9 +175,8 @@ const getChipCustomClass = (status:string) => {
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >
-          Data Antrian
+          {{props.title}}
         </div>
-        <slot name="header"></slot>
       </div>
     </template>
     <template #content>
@@ -214,6 +213,7 @@ const getChipCustomClass = (status:string) => {
           class="mt-auto w-[70px]"
         />
       </div>
+      <slot name="content">jjoj</slot>
       <div class="font-semibold text-SM text-grey-300">
         <div class="flex mb-[10px] mt-[30px]">
           <div class="w-[15%]">Filter Status</div>

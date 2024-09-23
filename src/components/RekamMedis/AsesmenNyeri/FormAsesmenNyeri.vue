@@ -64,7 +64,7 @@ const imagePengkajianNyeri = ref([
                         </div>
                     </div>
                     <Scaler />
-                    <div class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2">
+                   <div class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2">
                         <div class="font-semibold text-normal">1-3 = <span class="text-success-300">Ringan</span></div>
                         <div class="font-semibold text-normal">4-6 = <span class="text-warning-300">Sedang</span></div>
                         <div class="font-semibold text-normal">7-10 = <span class="text-danger-300">Berat</span></div>

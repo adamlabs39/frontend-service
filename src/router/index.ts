@@ -21,7 +21,7 @@ import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
 import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 
 // NOTE Rawat Jalan
-import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+// import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
@@ -68,6 +68,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+import PoliPage from "@/views/RawatJalan/PoliPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -89,6 +90,8 @@ const router = createRouter({
       meta: { layout: SidebarLayout },
       component: DashboardView,
     },
+
+    // RAWAT JALAN
 
     {
       path: "/rawat-jalan",
