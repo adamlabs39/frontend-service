@@ -119,7 +119,7 @@ defineExpose({
                     :value="item"
                     :title="item"
                     sub-title=""
-                    title-class="text-normal font-normal"
+                    title-class="font-normal text-normal"
                   />
                 </div>
               </div>
@@ -140,9 +140,9 @@ defineExpose({
               :binary="false"
               :value="paket.item"
               :title="paket.kategori"
-              title-class="text-normal font-semibold"
+              title-class="font-semibold text-normal"
               :sub-title="paket.item"
-              sub-title-class="text-SM font-normal text-grey-400"
+              sub-title-class="font-normal text-SM text-grey-400"
             />
           </div>
         </div>
@@ -152,7 +152,7 @@ defineExpose({
           <CustomAccordion initial-state="0" header-class="bg-[#E8F8F6]">
             <template #header>
               <div class="flex items-center justify-between w-full">
-                <div class="font-normal text-MD flex items-center">
+                <div class="flex items-center font-normal text-MD">
                   {{ pemeriksaan.noOrder
                   }}<span
                     ><CustomChip
@@ -206,14 +206,14 @@ defineExpose({
                       </Column>
                       <Column field="result" class="text-center">
                         <template #header>
-                          <div class="font-semibold w-full text-center">
+                          <div class="w-full font-semibold text-center">
                             Hasil Pemeriksaan
                           </div>
                         </template>
                       </Column>
                       <Column>
                         <template #header>
-                          <div class="font-semibold w-full text-center">
+                          <div class="w-full font-semibold text-center">
                             Flags
                           </div></template
                         >
@@ -275,7 +275,7 @@ defineExpose({
                           </div>
                         </template>
                         <template #content>
-                          <div class="pt-5 flex flex-col">
+                          <div class="flex flex-col pt-5">
                             <CustomAccordion
                               header-class="bg-adameds-50"
                               initial-state="0"
@@ -307,7 +307,7 @@ defineExpose({
                                   <Column field="result" class="text-center">
                                     <template #header>
                                       <div
-                                        class="font-semibold w-full text-center"
+                                        class="w-full font-semibold text-center"
                                       >
                                         Hasil Pemeriksaan
                                       </div>
@@ -316,7 +316,7 @@ defineExpose({
                                   <Column field="metode" class="text-center">
                                     <template #header>
                                       <div
-                                        class="font-semibold w-full text-center"
+                                        class="w-full font-semibold text-center"
                                       >
                                         Metode
                                       </div>
@@ -328,7 +328,7 @@ defineExpose({
                                   >
                                     <template #header>
                                       <div
-                                        class="font-semibold w-full text-center"
+                                        class="w-full font-semibold text-center"
                                       >
                                         Nilai Rujukan
                                       </div>
@@ -343,7 +343,7 @@ defineExpose({
                                   <Column>
                                     <template #header>
                                       <div
-                                        class="font-semibold w-full text-center"
+                                        class="w-full font-semibold text-center"
                                       >
                                         Flags
                                       </div></template
@@ -362,7 +362,7 @@ defineExpose({
                                   <Column>
                                     <template #header>
                                       <div
-                                        class="font-semibold w-full text-center"
+                                        class="w-full font-semibold text-center"
                                       >
                                         Status Pemeriksaan
                                       </div></template
@@ -452,8 +452,6 @@ defineExpose({
     <template v-if="isEditing" #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
-        @click="resetForm"
-
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
