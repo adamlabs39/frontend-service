@@ -54,7 +54,7 @@ const value = computed({
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col">
     <label
       v-if="props.showLabel"
       class="block font-semibold mb-[5px] text-normal"

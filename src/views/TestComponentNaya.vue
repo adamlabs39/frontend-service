@@ -36,7 +36,10 @@ import PemeriksaanFisik from "@/components/RekamMedis/ResumeDiscarge/Pemeriksaan
 import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
 import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
 import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
-
+import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue";
+import SuratControlRawatJalan from "@/components/RekamMedis/ListSuratKeterangan/SuratControlRawatJalan.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import Prognosis from "@/components/RekamMedis/ResumeDiscarge/Prognosis.vue";
 import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 //For Test Selected Component
@@ -135,11 +138,17 @@ const handlePage = (page: number) => {
 };
 const selectedValue = ref();
 
+const controlRawatJalanRef=ref()
+const submitChildForm = () => {
+  if (controlRawatJalanRef.value) {
+    controlRawatJalanRef.value.submitForm();
+  }
+};
 </script>
 
 <template>
   <div class="h-screen mx-5 overflow-scroll">
-    <!-- <Select
+    <Select
       label="Choose a City"
       v-model="selectedItems"
       :options="items"
@@ -266,7 +275,7 @@ const selectedValue = ref();
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
-</Paginator> -->
+    </Paginator>
 
     <b>Component Rekam Medis</b>
     <Anamnesis /> <br>
@@ -280,19 +289,21 @@ const selectedValue = ref();
     <OrderLab /><br>
     <ListSuratKeterangan /> <br>
     <b>Form resume medis</b>
-    <TandaVital /> <br>
-    <AnamnesisResume /><br>
-    <Edukasi /> <br>
-    <KeadaanWaktuPulang /><br>
-    <StatusPulang /><br>
-    <PemeriksaanFisik /> <br>
-    <Diagnosis /> <br>
-    <Tindakan /> <br>
-    <Obat />
-    <!-- </Paginator> -->
-    <br>
-    {{ selectedValue }}
-    <CustomRadioButton v-model="selectedValue" value="1" label="Option 1" />
-    <CustomRadioButton v-model="selectedValue" value="2" label="Option 2" />
+    <TandaVital/> <br>
+    <AnamnesisResume/><br>
+    <Edukasi/> <br>
+    <Prognosis/><br>
+    <KeadaanWaktuPulang/><br>
+    <StatusPulang/><br>
+    <PemeriksaanFisik/> <br>
+    <Diagnosis/> <br>
+    <Tindakan/> <br>
+    <Obat/> <br>
+    <FormPemberianObat/>
+    <SuratControlRawatJalan
+      ref="controlRawatJalanRef"
+      />
+      <CustomButton label="Simpan" @click="submitChildForm" />
+
   </div>
 </template>
