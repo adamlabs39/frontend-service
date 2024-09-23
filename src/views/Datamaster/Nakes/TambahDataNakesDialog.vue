@@ -38,33 +38,35 @@ function closeDialog() {
   >
     <template #header>{{ title }} Pegawai</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <CustomSelect label="Tipe Pegawai" place-holder="Tipe Pegawai" class="w-full" />
-        <div class="flex flex-col gap-2.5">
-          <div class="font-semibold text-MD">Nama Lengkap Pegawai</div>
-          <div class="flex gap-2.5">
-            <CustomSelect label="" place-holder="Gelar Awal" />
-            <CustomTextfield label="" placeholder="Nama Lengkap" class="grow" />
-            <CustomSelect label="" place-holder="Gelar Akhir" />
-          </div>
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomSelect
+          label="Tipe Pegawai"
+          place-holder="Tipe Pegawai"
+          class="col-span-6"
+        />
+        <hr class="border-grey-200 col-span-12">
+        <div class="font-semibold text-normal col-span-12 -mb-5">
+          Nama Lengkap Pegawai
         </div>
-        <div class="flex gap-2.5">
-          <CustomTextfield label="NIK" placeholder="0" class="basis-1/2" />
-          <CustomTextfield label="STR" placeholder="0" class="basis-1/2" />
-        </div>
-        <div class="flex gap-2.5">
-          <CustomDatePicker class="basis-1/2" label="Tanggal Lahir" />
-          <CustomSelect
-            label="Jenis Kelamin"
-            place-holder="Pilih Jenis Kelamin"
-            class="basis-1/2"
-          />
-        </div>
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <CustomSelect label="" place-holder="Gelar Awal" class="col-span-4" />
+        <CustomTextfield label="" placeholder="Nama Lengkap" class="col-span-4" />
+        <CustomSelect label="" place-holder="Gelar Akhir" class="col-span-4"/>
+        <CustomTextfield label="NIK" placeholder="0" class="col-span-12" />
+        <CustomDatePicker class="col-span-6" label="Tanggal Lahir" />
+        <CustomSelect
+          label="Jenis Kelamin"
+          place-holder="Pilih Jenis Kelamin"
+          class="col-span-6"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>

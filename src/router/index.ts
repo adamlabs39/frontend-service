@@ -11,6 +11,7 @@ import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
+import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -51,6 +52,11 @@ import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
 import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
+import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
+import GigiFDIPage from "@/views/Datamaster/SuperAdmin/GigiFDI/GigiFDIPage.vue";
+import KategoriGigi from "@/views/Datamaster/SuperAdmin/KategoriGigi/KategoriGigi.vue";
+import ItemGigiPage from "@/views/Datamaster/SuperAdmin/ItemGigi/ItemGigiPage.vue";
+import OklusiPage from "@/views/Datamaster/SuperAdmin/Oklusi/OklusiPage.vue";
 
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
@@ -58,6 +64,11 @@ import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
+import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
+import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
+import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
+import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -70,6 +81,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -228,6 +240,12 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
+      path: "/datamaster/voucher",
+      name: "datamaster-voucher",
+      meta: { layout: SidebarLayout, page: VoucherPage },
+      component: DatamasterView,
+    },
+    {
       path: "/datamaster/faskes",
       name: "datamaster-faskes",
       meta: { layout: SidebarLayout, page: FaskesPage },
@@ -251,7 +269,35 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: GeneralConsentPage },
       component: DatamasterView,
     },
-
+    {
+      path: "/datamaster/super-admin/",
+      name: "datamaster-super-admin",
+      redirect: "/datamaster/super-admin/gigi-fdi",
+    },
+    {
+      path: "/datamaster/super-admin/gigi-fdi",
+      name: "datamaster-super-admin-gigi-fdi",
+      meta: { layout: SidebarLayout, page: GigiFDIPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/kategori-gigi",
+      name: "datamaster-super-admin-kategori-gigi",
+      meta: { layout: SidebarLayout, page: KategoriGigi },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/item-gigi",
+      name: "datamaster-super-admin-item-gigi",
+      meta: { layout: SidebarLayout, page: ItemGigiPage },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/oklusi",
+      name: "datamaster-super-admin-oklusi",
+      meta: { layout: SidebarLayout, page: OklusiPage },
+      component: DatamasterView,
+    },
     // NOTE Admisi
     {
       path: "/admisi",
@@ -395,6 +441,42 @@ const router = createRouter({
       name: "antrian-apm",
       meta: { layout: SidebarLayout, page: ApmPage },
       component: AntrianView,
+    },
+    {
+      path: "/antrian/apm/aktif",
+      name: "antrian-apm-aktif",
+      meta: { layout: DefaultLayout },
+      component: ApmAktifView,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/jkn",
+      name: "antrian-apm-aktif-pasien-jkn",
+      meta: { layout: DefaultLayout },
+      component: DaftarPasienPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn",
+      name: "antrian-apm-aktif-pasien-non-jkn",
+      meta: { layout: DefaultLayout },
+      component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin",
+      name: "antrian-apm-aktif-checkin",
+      meta: { layout: DefaultLayout },
+      component: CheckinPendaftaranPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin/berhasil",
+      name: "antrian-apm-aktif-checkin-berhasil",
+      meta: { layout: DefaultLayout },
+      component: CheckinBerhasilPage,
+    },
+    {
+      path: "/antrian/apm/aktif/print",
+      name: "antrian-apm-aktif-print",
+      meta: { layout: DefaultLayout },
+      component: PrintAntrianPage,
     },
     
     // NOTE Laboratorium

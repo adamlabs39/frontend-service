@@ -9,12 +9,12 @@ import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.v
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
-import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
+import VarianTarif from "@/components/Datamaster/VarianTarifV1.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
-import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
-import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
-import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
+// import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
+import TableTindakan from "@/components/Datamaster/TableTindakanV1.vue";
+import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBedV1.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
@@ -40,6 +40,7 @@ import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue
 import SuratControlRawatJalan from "@/components/RekamMedis/ListSuratKeterangan/SuratControlRawatJalan.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Prognosis from "@/components/RekamMedis/ResumeDiscarge/Prognosis.vue";
+import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -135,6 +136,8 @@ const handlePageUpdate = (page: number) => {
 const handlePage = (page: number) => {
   console.log("Page updated:", page);
 };
+const selectedValue = ref();
+
 const controlRawatJalanRef=ref()
 const submitChildForm = () => {
   if (controlRawatJalanRef.value) {
@@ -275,16 +278,16 @@ const submitChildForm = () => {
     </Paginator>
 
     <b>Component Rekam Medis</b>
-    <Anamnesis/> <br>
-    <Kesadaran/><br>
-    <Antropometri/> <br>
-    <CatatanHasilPenunjang/> <br>
-    <AsuhanKeperawatan/> <br>
-    <PemeriksaanTindakan/> <br>
-    <InstruksiMedis/>
+    <Anamnesis /> <br>
+    <Kesadaran /><br>
+    <Antropometri /> <br>
+    <CatatanHasilPenunjang /> <br>
+    <AsuhanKeperawatan /> <br>
+    <PemeriksaanTindakan /> <br>
+    <InstruksiMedis />
     <br>
-    <OrderLab/><br>
-    <ListSuratKeterangan/> <br>
+    <OrderLab /><br>
+    <ListSuratKeterangan /> <br>
     <b>Form resume medis</b>
     <TandaVital/> <br>
     <AnamnesisResume/><br>

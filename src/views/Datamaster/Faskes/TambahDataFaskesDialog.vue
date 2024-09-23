@@ -51,7 +51,6 @@ const onSubmit = handleSubmit(async (values: any) => {
 
       const response = await faskesStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
-
     } else if (props.method === "add") {
       console.log("Adding new data with values:", values);
 
@@ -90,7 +89,6 @@ watch(
     }
   }
 );
-
 </script>
 <template>
   <CustomDialog
@@ -101,24 +99,32 @@ watch(
   >
     <template #header>{{ title }} Faskes</template>
     <template #body>
-      <div class="mt-5 flex flex-col gap-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield label="Kode Faskes" v-model="code" placeholder="Kode Faskes" :invalid="!!errors.code"
-          :invalidMessage="errors.code" />
-          <CustomTextfield
-            label="Nama Faskes"
-            v-model="name"
-            placeholder="Nama Faskes"
-            class="basis-3/4"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-          />
-        </div>
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+      <div class="mt-5 grid grid-cols-12 gap-5">
+        <CustomTextfield
+          label="Kode Faskes"
+          v-model="code"
+          placeholder="Kode Faskes"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="Nama Faskes"
+          v-model="name"
+          placeholder="Nama Faskes"
+          class="col-span-8"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>

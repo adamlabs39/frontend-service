@@ -9,6 +9,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -30,65 +31,107 @@ function updateVisibility(value: any) {
 function closeDialog() {
   emit("close");
 }
+const tipePraktisi = ref([
+  { name: "Dokter", value: true },
+  { name: "Non-Dokter", value: false },
+]);
+
+const isDokter = ref();
 </script>
 <template>
   <CustomDialog
     width="600px"
-     :visible="isDialogVisible"
+    :visible="isDialogVisible"
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Dokter</template>
+    <template #header>{{ title }} Praktisi</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode HFIS (BPJS)"
-            placeholder="0000"
-            type="number"
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomSelect
+          v-model="isDokter"
+          label="Tipe Praktisi"
+          :options="tipePraktisi"
+          option-label="name"
+          option-value="value"
+          place-holder="Cari & Pilih Praktisi"
+          class="col-span-12 w-1/2"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSelect
+          label="Nama Pegawai"
+          place-holder="Cari & Pilih Pegawai"
+          class="col-span-8"
+        />
+        
+        <div class="flex justify-between col-span-4 items-end">
+          <CustomButton label="Cara" icon="PhMagnifyingGlass" />
+          <CustomButton
+            label="Reset"
+            background-color="bg-transparent"
+            border-color="border-adameds-300"
+            text-color="text-adameds-300"
           />
-          <CustomTextfield label="Kode SIP" placeholder="0000" type="number" />
-          <CustomTextfield label="Kode Dokter" placeholder="Kode Dokter" />
         </div>
-        <div class="flex flex-col">
-          <div class="font-semibold text-MD">Nama Lengkap Praktisioner</div>
-          <div class="flex gap-2.5 w-full">
-            <CustomSelect
-              label=""
-              place-holder="Gelar Awal"
-              class="basis-1/4"
-            />
-            <CustomTextfield
-              label=""
-              placeholder="Nama Lengkap"
-              class="basis-1/2"
-            />
-            <CustomSelect
-              label=""
-              place-holder="Gelar Akhir"
-              class="basis-1/4"
-            />
+        <div
+          class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
+        >
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Nama Pegawai</div>
+            <div class="font-normal text-normal">Nama Lengkap1</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Tanggal Lahir</div>
+            <div class="font-normal text-normal">01-01-2000</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Nik</div>
+            <div class="font-normal text-normal">1233456</div>
+          </div>
+          <div class="flex flex-col">
+            <div class="font-semibold underline text-SM">Jenis Kelamin</div>
+            <div class="font-normal text-normal">Laki-laki</div>
           </div>
         </div>
-        <div class="flex gap-2.5">
-          <CustomTextfield label="NIK" placeholder="0" class="basis-1/2" />
-          <CustomTextfield label="STR" placeholder="0" class="basis-1/2" />
-        </div>
-        <div class="flex gap-2.5">
-          <CustomDatePicker label="Tanggal Lahir" />
-          <CustomSelect
-            label="Jenis Kelamin"
-            place-holder="Pilih Jenis Kelamin"
-            class="w-full"
-          />
-        </div>
-        <hr />
-        <CustomMultiSelect label="Poli" placeholder="Pilih Poli" />
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <CustomInputNumber
+          v-if="isDokter"
+          label="Kode HFIS (BPJS)"
+          placeholder="000"
+          class="col-span-4"
+        />
+        <CustomInputNumber
+          v-if="isDokter"
+          label="SIP"
+          placeholder="000"
+          class="col-span-4"
+        />
+        <CustomInputNumber
+          v-if="isDokter"
+          label="STR"
+          placeholder="0"
+          class="col-span-4"
+        />
+        <CustomMultiSelect
+          v-if="isDokter"
+          label="Poli"
+          placeholder="Pilih Poli"
+          class="col-span-12"
+        />
+        <CustomInputNumber
+          v-if="!isDokter"
+          label="STR"
+          placeholder="0"
+          class="col-span-12"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>
@@ -100,7 +143,7 @@ function closeDialog() {
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-             @click="closeDialog"
+            @click="closeDialog"
           >
           </CustomButton>
 

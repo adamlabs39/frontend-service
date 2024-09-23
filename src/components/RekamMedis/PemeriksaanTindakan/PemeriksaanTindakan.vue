@@ -357,7 +357,7 @@ defineExpose({
           </Column>
           <Column v-if="!isEditing" headerClass="bg-adameds-50" class="w-1/4">
             <template #header>
-              <div class="font-semibold w-full text-end">Harga</div>
+              <div class="w-full font-semibold text-end">Harga</div>
             </template>
             <template #body="slotProps">
               <div
@@ -526,7 +526,7 @@ defineExpose({
               :value="fields"
               tableStyle="min-width: 40rem"
               stripedRows
-              class="text-xs mt-5"
+              class="mt-5 text-xs"
               scrollable
               scrollHeight="flex"
             >

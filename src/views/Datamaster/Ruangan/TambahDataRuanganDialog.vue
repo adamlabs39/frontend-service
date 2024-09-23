@@ -97,24 +97,21 @@ watch(
   >
     <template #header>{{ title }} Ruangan</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
+      <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode Ruangan"
             v-model="code"
             placeholder="Kode Ruangan"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
-            class="basis-2/6"
+            class="col-span-4"
           />
           <CustomTextfield
             label="Nama Ruangan"
             v-model="name"
             placeholder="Nama Ruangan"
-            class="basis-4/6"
+            class="col-span-8"
           />
-        </div>
-        <div class="flex gap-2.5">
           <CustomSelect
             label="Kategori Ruangan"
             v-model="kategoriRuangan"
@@ -122,7 +119,7 @@ watch(
             optionValue="code"
             optionLabel="name"
             placeholder="Kategori Ruangan"
-            class="basis-4/6"
+            class="col-span-8"
             :invalid="!!errors.kategoriRuangan"
             :invalidMessage="errors.kategoriRuangan"
           />
@@ -131,8 +128,9 @@ watch(
             v-model="no_room"
             :invalid="!!errors.no_room"
             :invalidMessage="errors.no_room"
+            class="col-span-4"
+
           />
-        </div>
 
         <CustomSelect
           label="Kelas Ruangan"
@@ -141,21 +139,20 @@ watch(
           optionValue="code"
           optionLabel="name"
           placeholder="Kelas Ruangan"
-          class="basis-4/6"
+          class="col-span-12"
           :invalid="!!errors.kelasRuangan"
           :invalidMessage="errors.kelasRuangan"
         />
 
-        <hr class="border-grey-200" />
-        <div class="flex gap-2.5 items-end">
-          <CustomSwitch
-            v-model="status"
-            :invalid="!!errors.status"
-            :invalidMessage="errors.status"
-            label="Status"
-          />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>
