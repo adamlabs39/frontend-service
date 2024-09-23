@@ -11,6 +11,7 @@ import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
+import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -62,6 +63,11 @@ import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
+import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
+import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
+import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
+import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -427,6 +433,42 @@ const router = createRouter({
       name: "antrian-apm",
       meta: { layout: SidebarLayout, page: ApmPage },
       component: AntrianView,
+    },
+    {
+      path: "/antrian/apm/aktif",
+      name: "antrian-apm-aktif",
+      meta: { layout: DefaultLayout },
+      component: ApmAktifView,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/jkn",
+      name: "antrian-apm-aktif-pasien-jkn",
+      meta: { layout: DefaultLayout },
+      component: DaftarPasienPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn",
+      name: "antrian-apm-aktif-pasien-non-jkn",
+      meta: { layout: DefaultLayout },
+      component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin",
+      name: "antrian-apm-aktif-checkin",
+      meta: { layout: DefaultLayout },
+      component: CheckinPendaftaranPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin/berhasil",
+      name: "antrian-apm-aktif-checkin-berhasil",
+      meta: { layout: DefaultLayout },
+      component: CheckinBerhasilPage,
+    },
+    {
+      path: "/antrian/apm/aktif/print",
+      name: "antrian-apm-aktif-print",
+      meta: { layout: DefaultLayout },
+      component: PrintAntrianPage,
     },
     
     // NOTE Laboratorium

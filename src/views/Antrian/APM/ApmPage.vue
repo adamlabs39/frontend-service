@@ -6,7 +6,13 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
-import ApmAktifPage from "./ApmAktifPage.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const handleAktif = () => {
+  router.push('/antrian/apm/aktif');
+};
 import NoData from "@/components/section/NoData.vue";
 
 const pageType = ref("");
@@ -56,13 +62,13 @@ const dialogData = ref({
   title: "Tambah",
 });
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah",
-  };
-}
+// function handleAdd() {
+//   dialogData.value = {
+//     isVisible: true,
+//     method: "add",
+//     title: "Tambah",
+//   };
+// }
 
 function handleEdit() {
   dialogData.value = {
@@ -173,7 +179,7 @@ const selectedPatient = ref([]);
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                @click="handleAdd"
+                @click="handleAktif"
                 :label="slotProps.data.status"
                 :textColor="
                   slotProps.data.status === 'AKTIF'
