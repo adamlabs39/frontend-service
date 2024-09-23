@@ -12,7 +12,7 @@ import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
 import VarianTarif from "@/components/Datamaster/VarianTarifV1.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
-import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
+// import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
 import TableTindakan from "@/components/Datamaster/TableTindakanV1.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBedV1.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
@@ -138,7 +138,7 @@ const selectedValue = ref();
 </script>
 
 <template>
-  <div class="h-screen overflow-scroll mx-5">
+  <div class="h-screen mx-5 overflow-scroll">
     <!-- <Select
       label="Choose a City"
       v-model="selectedItems"

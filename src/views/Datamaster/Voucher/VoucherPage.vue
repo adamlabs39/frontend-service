@@ -97,7 +97,7 @@ const closeDialog = () => {
         <Column field="tarif" header="Tarif Voucher" headerClass="bg-adameds-50"></Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class="w-full text-center font-semibold text-SM">
+            <div class="w-full font-semibold text-center text-SM">
               Status
             </div>
           </template>
@@ -119,7 +119,7 @@ const closeDialog = () => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">
+            <div class="w-full font-semibold text-center text-SM">
               Action
             </div>
           </template>
@@ -144,7 +144,7 @@ const closeDialog = () => {
       />
     </template>
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

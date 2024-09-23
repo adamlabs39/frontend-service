@@ -151,10 +151,10 @@ const handleEdit = () => {
       <div v-else class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
-        <CustomInfoRow label="Gigi" :value="name" />
+        <CustomInfoRow label="Gigi" :value="`${name}`" />
         <CustomInfoRow label="Status">
             <template #value>
-                <CustomChip :label="status" bg-color="bg-adameds-300" text-color="text-white" icon-color="" border-color="border-adameds-300" />
+                <CustomChip :label="`${status}`" bg-color="bg-adameds-300" text-color="text-white" icon-color="" border-color="border-adameds-300" />
               </template>
         </CustomInfoRow>
       </div>

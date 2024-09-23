@@ -21,10 +21,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  activeTab: {
-    type: String,
-    required: true,
-  },
+  // activeTab: {
+  //   type: String,
+  //   required: true,
+  // },
 });
 
 const selectedStatus = ref<any>();
