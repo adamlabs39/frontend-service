@@ -4,11 +4,11 @@ import TextArea from "@/components/Base/CustomTextArea.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
-import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
+// import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+// import CardPanggilanSelesai from "@/components/Base/CardPanggilanSelesai.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomUpload from "@/components/Base/CustomUpload.vue";
+// import CustomUpload from "@/components/Base/CustomUpload.vue";
 import PopUpDownload from "./Dashboard/Grafik/PopUpDownload.vue";
 // import NewColorPicker from "@/components/Base/newColorPicker.vue";
 
@@ -209,8 +209,7 @@ const onChipSelected = (label: string) => {
     </div>
 
     <!-- Custom Upload -->
-    <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false" :show-cancel-button="false" class="border-none bg-adameds-300" auto :maxFileSize="1000000"/>
-
+    <!-- <CustomUpload chooseLabel="Cari File" mode="advanced" :showUploadButton="false" :show-cancel-button="false" class="border-none bg-adameds-300" auto :maxFileSize="1000000"/> -->
 
 
 

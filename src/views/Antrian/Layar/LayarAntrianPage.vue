@@ -6,6 +6,7 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -239,19 +240,7 @@ const selectedPatient = ref([]);
         </Column>
       </DataTable>
 
-      <div
-        v-else
-        class="flex flex-col h-full border-2 border-dashed rounded-lg border-grey-100"
-      >
-        <div class="m-auto">
-          <img
-            src="../../assets/icons/no-data-icon.svg"
-            alt="no data"
-            class="mx-auto"
-          />
-          <div class="text-grey-200">No data available</div>
-        </div>
-      </div>
+      <NoData v-else />
     </template>
     <template #footer>
       <AntrianFooter />

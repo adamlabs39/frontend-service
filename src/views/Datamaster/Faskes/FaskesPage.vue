@@ -125,6 +125,8 @@ const handleDelete = (dataItem: any) => {
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
+        scrollable
+        scrollHeight="flex"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>

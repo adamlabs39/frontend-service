@@ -2,7 +2,6 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomColorPicker from "@/components/Base/CustomColorPicker.vue";
 import CustomDragDrop from "@/components/Base/CustomDragDrop.vue";
-import CustomUpload from "@/components/Base/CustomUpload.vue";
 import { ref } from 'vue';
 import GreenCard from "../GreenCard.vue";
 import { PhHandTap } from "@phosphor-icons/vue";
@@ -54,7 +53,7 @@ const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
 	try {
 		 console.log('bgWarna value before submission:', values.bgWarna);
 		const payload = {
-			logo: "TES234",
+			logo: values.logo,
 			bgWarna: values.bgWarna,
 			code: props.profilFaskesResponse.code,
 			name: props.profilFaskesResponse.name,

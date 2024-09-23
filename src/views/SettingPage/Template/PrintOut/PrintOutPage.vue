@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CustomUpload from '@/components/Base/CustomUpload.vue';
 import MainHeaderSetting from '../MainHeaderSetting.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';
 import Card from 'primevue/card';
@@ -51,22 +50,22 @@ const editPrintOut = () => {
 };
 
 const schemaPrintOut = computed(() =>
-	toTypedSchema(
-		yup.object({
-			header: yup.string().required("Harus Mengupload Foto"),
-			background: yup.string(),
-			footer: yup.string()
-		})
-	)
+    toTypedSchema(
+        yup.object({
+            header: yup.string().required("Harus Mengupload Foto"),
+            background: yup.string(),
+            footer: yup.string()
+        })
+    )
 );
 
 const { errors: printOutErrors, handleSubmit: handleSubmitPrintOut, defineField: defineFieldPrintOut, resetForm: resetPrintOutForm } = useForm({
-	validationSchema: schemaPrintOut,
-	initialValues: {
-		header: printOutResponse.value.header,
-		background: printOutResponse.value.background,
-		footer: printOutResponse.value.footer
-	},
+    validationSchema: schemaPrintOut,
+    initialValues: {
+        header: printOutResponse.value.header,
+        background: printOutResponse.value.background,
+        footer: printOutResponse.value.footer
+    },
 });
 
 const [header] = defineFieldPrintOut("header");
@@ -74,36 +73,58 @@ const [background] = defineFieldPrintOut("background");
 const [footer] = defineFieldPrintOut("footer");
 
 const onSubmitPrintOut = handleSubmitPrintOut(async (values) => {
-	try {
-		//  console.log('bgWarna value before submission:', values.bgWarna);
-		const payload = {
+    try {
+        //  console.log('bgWarna value before submission:', values.bgWarna);
+        const payload = {
             header: values.header,
-			background: values.background,
-			footer: values.footer,
-			
-		};
-		 console.log('Payload to be sent:', payload);
+            background: values.background,
+            footer: values.footer,
+
+        };
+        console.log('Payload to be sent:', payload);
         const response = await settingStore.putPrintOutApi(payload);
         if (response) {
-			await fetchPrintOutPData(); // Memanggil ulang data setelah simpan
-			isEditPrintOut.value = false; // Kembali ke tampilan non-edit setelah menyimpan
-		}
-	} catch (error) {
-		console.error("Error during submission:", error);
-	}
+            await fetchPrintOutPData(); // Memanggil ulang data setelah simpan
+            isEditPrintOut.value = false; // Kembali ke tampilan non-edit setelah menyimpan
+        }
+    } catch (error) {
+        console.error("Error during submission:", error);
+    }
 })
 
 
 const resetForm = () => {
     resetPrintOutForm({
-		values: {
-			header: '',
+        values: {
+            header: '',
             background: '',
-            footer:''
+            footer: ''
         },
     });
 };
 
+
+const headerUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
+const backgroundUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
+const footerUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
+
+
+const clearHeaderPreview = () => {
+    if (headerUpload.value) {
+        headerUpload.value.clearFile();
+    }
+};
+
+const clearBackgroundPreview = () => {
+    if (backgroundUpload.value) {
+        backgroundUpload.value.clearFile(); // Now this should work as expected
+    }
+};
+const clearFooterPreview = () => {
+    if (footerUpload.value) {
+        footerUpload.value.clearFile(); // Now this should work as expected
+    }
+};
 
 </script>
 
@@ -117,7 +138,7 @@ const resetForm = () => {
             <MainHeaderSetting v-else-if="isEditPrintOut" heading="Print Out" showButton labelButton="Batal Edit"
                 :buttonClickHandler="editPrintOut" outlined borderColor="border-adameds-300"
                 textColor="text-adameds-300" />
-                
+
             <div class="ml-5 mr-7 mt-2.5">
                 <div class="text-sm font-semibold font-poppins">Pengaturan Cetak Print</div>
                 <div class="py-2.5">
@@ -149,7 +170,8 @@ const resetForm = () => {
                 <Card class="border border-dashed border-[#d3e1e1] bg-[#eff8f6]">
                     <template #content>
                         <div class="flex items-center justify-center min-h-[600px]">
-                            <img :src="printOutResponse.background ? printOutResponse.background : backgroundDefaultImage" alt="">
+                            <img :src="printOutResponse.background ? printOutResponse.background : backgroundDefaultImage"
+                                alt="">
                         </div>
                     </template>
                 </Card>
@@ -173,27 +195,31 @@ const resetForm = () => {
                 <div class="flex items-center justify-between ">
                     <div class="font-semibold"> Preview Header</div>
                     <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300"
-                        icon="PhTrash" />
+                        icon="PhTrash" @click="clearHeaderPreview" />
                 </div>
                 <div>
-                    <CustomDragDrop v-model="header" class="h-auto text-center bg-adameds-50" :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']"/>
+                    <CustomDragDrop v-model="header" class="h-auto text-center bg-adameds-50"
+                        :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']" ref="headerUpload" />
                 </div>
+
                 <div class="flex items-center justify-between ">
                     <div class="font-semibold"> Preview Gambar</div>
                     <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300"
-                        icon="PhTrash" />
+                        icon="PhTrash"  @click="clearBackgroundPreview" />
                 </div>
                 <div class="">
-                    <CustomDragDrop v-model="background" class="text-center min-h-[600px] bg-adameds-50" :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']"/>
+                    <CustomDragDrop v-model="background" class="text-center min-h-[600px] bg-adameds-50"
+                        :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']" ref="backgroundUpload"/>
                 </div>
 
                 <div class="flex items-center justify-between ">
                     <div class="font-semibold"> Preview Footer</div>
                     <CustomButton label="Hapus Gambar" backgroundColor="bg-danger-50" textColor="text-danger-300"
-                        icon="PhTrash" />
+                        icon="PhTrash" @click="clearFooterPreview"  />
                 </div>
                 <div>
-                    <CustomDragDrop v-model="footer" class="h-auto bg-adameds-50" :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']"/>
+                    <CustomDragDrop v-model="footer" class="h-auto bg-adameds-50"
+                        :allowed-file-types="['image/png', 'image/jpeg', 'application/pdf']"  ref="footerUpload"/>
                 </div>
             </div>
 
@@ -204,7 +230,7 @@ const resetForm = () => {
                 <hr class="border-[#D9DCE1] border-1 -mx-5 mb-5  bg-slate-400" />
                 <div class="flex items-end justify-end gap-2.5 ">
                     <CustomButton label="Reset" textColor="text-[#9DA4B1]" backgroundColor="bg-transparent"
-                        borderColor="border-2 border-[#9DA4B1]" @click="resetForm"/>
+                        borderColor="border-2 border-[#9DA4B1]" @click="resetForm" />
                     <CustomButton label="Simpan" @click="onSubmitPrintOut" />
                 </div>
             </div>

@@ -20,6 +20,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["open"]);
+
 const checkOpen = (data: any) => {
   openedData.value = data;
 };
@@ -45,7 +47,7 @@ defineExpose({
 </script>
 
 <template>
-  <Accordion :value="openedData" @update:value="checkOpen" class="text-black">
+  <Accordion :value="openedData" @update:value="checkOpen" class="text-black" @tab-open="emit('open')">
     <AccordionPanel
       class="rounded-[10px]"
       :class="{ 'border-none': noBorder }"

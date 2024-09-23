@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const products = ref<any[]>([]);
+const tindakan = ref<any[]>([]);
 
 onMounted(() => {
-  products.value = [
+  tindakan.value = [
     {
       namaTindakan: "SIMRS Admission",
       tipeTindakan: "Administrasi",
@@ -28,18 +28,34 @@ onMounted(() => {
   ];
 });
 const selectedPemeriksaan = ref();
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50">
+  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
     <template #header> Tindakan </template>
     <template #content>
       <DataTable
         v-model:selection="selectedPemeriksaan"
-        :value="products"
+        :value="tindakan"
         tableStyle="min-width: 50rem"
         stripedRows
-        class="text-xs pt-5"
+        class="pt-5 text-xs"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -67,6 +83,7 @@ const selectedPemeriksaan = ref();
           selectionMode="multiple"
           headerClass="bg-adameds-50 w-[15rem]"
           class="custom-checkbox"
+          
         >
           <template #header>
             <div class="font-semibold">Tampilkan Di Cetak Print</div>
@@ -78,11 +95,11 @@ const selectedPemeriksaan = ref();
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-::v-deep .custom-checkbox .p-checkbox-checked .p-checkbox-box {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-::v-deep .custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
   @apply text-white;
 }
 </style>

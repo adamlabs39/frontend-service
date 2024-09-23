@@ -11,6 +11,7 @@ import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
+import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -28,9 +29,10 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
-import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue";
-import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue";
+import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
+import SystemPage from "@/views/SettingPage/Template/System/SystemPage.vue";
 
 // NOTE Page View Datamaster
 import UserPage from "@/views/Datamaster/User/UserPage.vue";
@@ -50,6 +52,11 @@ import FaskesPage from "@/views/Datamaster/Faskes/FaskesPage.vue";
 import LokasiPage from "@/views/Datamaster/Lokasi/LokasiPage.vue";
 import GeneralConsentPage from "@/views/Datamaster/GeneralConsent/GeneralConsentPage.vue";
 import TindakanPage from "@/views/Datamaster/Tindakan/TindakanPage.vue";
+import VoucherPage from "@/views/Datamaster/Voucher/VoucherPage.vue";
+import GigiFDIPage from "@/views/Datamaster/SuperAdmin/GigiFDI/GigiFDIPage.vue";
+import KategoriGigi from "@/views/Datamaster/SuperAdmin/KategoriGigi/KategoriGigi.vue";
+import ItemGigiPage from "@/views/Datamaster/SuperAdmin/ItemGigi/ItemGigiPage.vue";
+import OklusiPage from "@/views/Datamaster/SuperAdmin/Oklusi/OklusiPage.vue";
 
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
@@ -57,16 +64,24 @@ import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
+import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
+import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
+import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
+import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
+
 // !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
+import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -98,42 +113,26 @@ const router = createRouter({
     {
       path: "/bpjs/monitoring-kunjungan",
       name: "bpjs-monitoring-kunjungan",
-      meta: {
-        layout: SidebarLayout,
-        page: BPJSPageMonitoringKunjunganPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
       path: "/setting/profil-faskes",
       name: "setting-profil-faskes",
-      meta: {
-        layout: SidebarLayout,
-        page: ProfilFaskesPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: ProfilFaskesPage, requiresAuth: true },
       component: SettingView,
     },
 
     {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
-      meta: {
-        layout: SidebarLayout,
-        page: KonfigurasiIntegrasiPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: KonfigurasiIntegrasiPage, requiresAuth: true },
       component: SettingView,
     },
     {
       path: "/setting/permission-menu",
       name: "setting-permission-menu",
-      meta: {
-        layout: SidebarLayout,
-        page: PermissionMenuPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: PermissionMenuPage, requiresAuth: true },
       component: SettingView,
     },
 
@@ -148,6 +147,12 @@ const router = createRouter({
       name: "setting-profil-akun",
       meta: { layout: SidebarLayout, page: ProfilAkunPage, requiresAuth: true },
       component: ProfilAkunView,
+    },
+    {
+      path: "/setting/system",
+      name: "setting-system",
+      meta: { layout: SidebarLayout, page: SystemPage, requiresAuth: true },
+      component: SettingView
     },
 
     // NOTE Datamaster
@@ -177,11 +182,7 @@ const router = createRouter({
     {
       path: "/datamaster/kategori-ruangan",
       name: "datamaster-kategori-ruangan",
-      meta: {
-        layout: SidebarLayout,
-        page: KategoriRuanganPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: KategoriRuanganPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
@@ -217,11 +218,7 @@ const router = createRouter({
     {
       path: "/datamaster/diagnosis-icd10",
       name: "datamaster-diagnosis-icd10",
-      meta: {
-        layout: SidebarLayout,
-        page: DiagnosisICD10Page,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: DiagnosisICD10Page, requiresAuth: true },
       component: DatamasterView,
     },
     {
@@ -240,6 +237,12 @@ const router = createRouter({
       path: "/datamaster/penjamin",
       name: "datamaster-penjamin",
       meta: { layout: SidebarLayout, page: PenjaminPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/voucher",
+      name: "datamaster-voucher",
+      meta: { layout: SidebarLayout, page: VoucherPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
@@ -263,14 +266,38 @@ const router = createRouter({
     {
       path: "/datamaster/general-consent",
       name: "datamaster-general-consent",
-      meta: {
-        layout: SidebarLayout,
-        page: GeneralConsentPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: GeneralConsentPage, requiresAuth: true },
       component: DatamasterView,
     },
-
+    {
+      path: "/datamaster/super-admin/",
+      name: "datamaster-super-admin",
+      redirect: "/datamaster/super-admin/gigi-fdi",
+    },
+    {
+      path: "/datamaster/super-admin/gigi-fdi",
+      name: "datamaster-super-admin-gigi-fdi",
+      meta: { layout: SidebarLayout, page: GigiFDIPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/kategori-gigi",
+      name: "datamaster-super-admin-kategori-gigi",
+      meta: { layout: SidebarLayout, page: KategoriGigi, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/item-gigi",
+      name: "datamaster-super-admin-item-gigi",
+      meta: { layout: SidebarLayout, page: ItemGigiPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/super-admin/oklusi",
+      name: "datamaster-super-admin-oklusi",
+      meta: { layout: SidebarLayout, page: OklusiPage, requiresAuth: true },
+      component: DatamasterView,
+    },
     // NOTE Admisi
     {
       path: "/admisi",
@@ -316,21 +343,13 @@ const router = createRouter({
     {
       path: "/admisi/data-pasien",
       name: "admisi-data-pasien",
-      meta: {
-        layout: SidebarLayout,
-        page: PatientDataPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: PatientDataPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/monitoring-kamar",
       name: "admisi-monitoring-kamar",
-      meta: {
-        layout: SidebarLayout,
-        page: RoomMonitoringPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: RoomMonitoringPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
@@ -341,71 +360,43 @@ const router = createRouter({
     {
       path: "/admisi/laporan/kunjungan",
       name: "admisi-laporan-kunjungan",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/penjamin",
       name: "admisi-laporan-penjamin",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/batal-kunjungan",
       name: "admisi-laporan-batal-kunjungan",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/status-kamar",
       name: "admisi-laporan-status-kamar",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/keperawatan-inap-pasien",
       name: "admisi-laporan-keperawatan-inap-pasien",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/bayi-baru-lahir",
       name: "admisi-laporan-bayi-baru-lahir",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/rekap-pasien-bpjs",
       name: "admisi-laporan-rekap-pasien-bpjs",
-      meta: {
-        layout: SidebarLayout,
-        page: AdmisiReportPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
 
@@ -413,56 +404,36 @@ const router = createRouter({
     {
       path: "/antrian",
       name: "antrian",
-      redirect: "/antrian/konfigurasi/jadwal-dokter",
+      redirect: '/antrian/konfigurasi/jadwal-dokter'
     },
     {
       path: "/antrian/konfigurasi/jadwal-dokter",
       name: "antrian-konfigurasi-jadwal-dokter",
-      meta: {
-        layout: SidebarLayout,
-        page: KonfigurasiJadwalPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: KonfigurasiJadwalPage, requiresAuth: true },
       component: AntrianView,
     },
     {
       path: "/antrian/konfigurasi/layar-antrian",
       name: "antrian-konfigurasi-layar-antrian",
-      meta: {
-        layout: SidebarLayout,
-        page: KonfigurasiLayarPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: KonfigurasiLayarPage, requiresAuth: true },
       component: AntrianView,
     },
     {
       path: "/antrian/data-antrian",
       name: "antrian-data-antrian",
-      meta: {
-        layout: SidebarLayout,
-        page: DataAntrianPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: DataAntrianPage, requiresAuth: true },
       component: AntrianView,
     },
     {
       path: "/antrian/monitoring-antrian",
       name: "antrian-monitoring-antrian",
-      meta: {
-        layout: SidebarLayout,
-        page: LayarAntrianPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: LayarAntrianPage, requiresAuth: true },
       component: AntrianView,
     },
     {
       path: "/antrian/layar",
       name: "antrian-layar",
-      meta: {
-        layout: SidebarLayout,
-        page: LayarAntrianPage,
-        requiresAuth: true,
-      },
+      meta: { layout: SidebarLayout, page: LayarAntrianPage, requiresAuth: true },
       component: AntrianView,
     },
     {
@@ -471,12 +442,48 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: ApmPage, requiresAuth: true },
       component: AntrianView,
     },
-
+    {
+      path: "/antrian/apm/aktif",
+      name: "antrian-apm-aktif",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: ApmAktifView,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/jkn",
+      name: "antrian-apm-aktif-pasien-jkn",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: DaftarPasienPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn",
+      name: "antrian-apm-aktif-pasien-non-jkn",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin",
+      name: "antrian-apm-aktif-checkin",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: CheckinPendaftaranPage,
+    },
+    {
+      path: "/antrian/apm/aktif/checkin/berhasil",
+      name: "antrian-apm-aktif-checkin-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: CheckinBerhasilPage,
+    },
+    {
+      path: "/antrian/apm/aktif/print",
+      name: "antrian-apm-aktif-print",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PrintAntrianPage,
+    },
+    
     // NOTE Laboratorium
     {
       path: "/laboratorium",
       name: "laboratorium",
-      redirect: "/laboratorium/order-lab",
+      redirect: '/laboratorium/order-lab'
     },
     {
       path: "/laboratorium/order-lab",
@@ -564,6 +571,12 @@ const router = createRouter({
       meta: { layout: DefaultLayout },
       component: TestComponentAdamNew,
     },
+    {
+      path: "/component-alex",
+      name: "component-alex",
+      meta: { layout: DefaultLayout },
+      component: TestComponentAlex,
+    },
 
     { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
   ],
@@ -574,8 +587,6 @@ function isAuthenticated() {
 }
 
 router.beforeEach((to, from, next) => {
-  console.log('masuk');
-  
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!isAuthenticated()) {
       next({
