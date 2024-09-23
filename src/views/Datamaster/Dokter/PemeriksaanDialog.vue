@@ -30,7 +30,9 @@ function updateVisibility(value: any) {
       <div class="flex flex-col mt-5 gap-5">
         <!-- Data Dokter -->
         <div class="flex flex-col gap-5">
-          <div class="my-2.5 font-bold text-heading leading-8">Data Praktisioner</div>
+          <div class="my-2.5 font-bold text-heading leading-8">
+            Data Praktisi
+          </div>
           <hr class="border-grey-200" />
           <div class="flex">
             <div class="w-1/2 flex flex-col gap-5">
@@ -48,47 +50,45 @@ function updateVisibility(value: any) {
           </div>
         </div>
         <!-- Data Poli -->
-        <CustomAccordion headerClass="">
+        <CustomAccordion headerClass="" initialState="0">
           <template #header>
             <div class="-ml-4 font-bold text-heading">Poli Anak</div>
           </template>
           <template #content>
-            <div class="flex flex-col gap-5 pt-5 -mx-4">
-              <div class="flex gap-2.5">
-                <CustomInputNumber label="Kuota JKN"
-                  placeholder="0"
-                  class="basis-1/2">
-                  <template #appendText>
-                    <div class="flex justfy-center items-center m-2.5">
-                      Pasien
-                    </div>
-                  </template>
-                </CustomInputNumber>
-                <CustomInputNumber  label="Kuota Non-JKN"
-                  placeholder="0"
-                  class="basis-1/2">
-                  <template #appendText>
-                    <div class="flex justfy-center items-center m-2.5">
-                      Pasien
-                    </div>
-                  </template>
-                </CustomInputNumber>
-              </div>
-              <div class="flex gap-2.5 justify-between">
-                <CustomDatePicker :time-only="true" class="basis-1/2" />
-                <CustomTextfield
-                  label="Durasi Pelayanan"
-                  placeholder="00:00"
-                  type="number"
-                  class="basis-1/2"
-                >
-                  <template #appendText>
-                    <div class="flex justfy-center items-center m-2.5">
-                      Menit
-                    </div>
-                  </template>
-                </CustomTextfield>
-              </div>
+            <div class="grid grid-cols-12 gap-5 pt-5 -mx-4">
+              <CustomInputNumber
+                label="Kuota JKN"
+                placeholder="0"
+                class="col-span-6"
+              >
+                <template #appendText>
+                  <div class="flex justfy-center items-center m-2.5">
+                    Pasien
+                  </div>
+                </template>
+              </CustomInputNumber>
+              <CustomInputNumber
+                label="Kuota Non-JKN"
+                placeholder="0"
+                class="col-span-6"
+              >
+                <template #appendText>
+                  <div class="flex justfy-center items-center m-2.5">
+                    Pasien
+                  </div>
+                </template>
+              </CustomInputNumber>
+              <CustomDatePicker :time-only="true" class="col-span-6" />
+              <CustomTextfield
+                label="Durasi Pelayanan"
+                placeholder="00:00"
+                type="number"
+                class="col-span-6"
+              >
+                <template #appendText>
+                  <div class="flex justfy-center items-center m-2.5">Menit</div>
+                </template>
+              </CustomTextfield>
             </div>
           </template>
         </CustomAccordion>

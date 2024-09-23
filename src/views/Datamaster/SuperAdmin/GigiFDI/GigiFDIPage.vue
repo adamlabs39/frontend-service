@@ -1,74 +1,55 @@
-<script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import CustomChip from "@/components/Base/CustomChip.vue";
+<script setup lang="ts">
+import HeaderFilter from "../../Layout/HeaderFilter.vue";
+import { onMounted, ref } from "vue";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/FooterPaginator.vue";
-import TambahDataRoleDialog from "./TambahDataRoleDialog.vue";
-import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
+import CustomChip from "@/components/Base/CustomChip.vue";
+import FormGigiFDI from "./FormGigiFDI.vue";
+
+const payload = ref<any[]>([]);
 
 onMounted(() => {
-  products.value = [
+  payload.value = [
     {
-      id: "1",
-      code: "SAD",
-      name: "Admin",
-      permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
+      code: "343434",
+      display: "structur of permanent",
+      name: "11",
       status: "AKTIF",
     },
     {
-      no: "2",
-      code: "ADM",
-      name: "Admin",
-      permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      status: "AKTIF",
-    },
-    {
-      no: "3",
-      code: "DKT",
-      name: "Admin",
-      permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      status: "AKTIF",
-    },
-    {
-      no: "4",
-      code: "RRW",
-      name: "Admin",
-      permission: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
+      code: "3433434",
+      display: "structur of permanent",
+      name: "12",
       status: "AKTIF",
     },
   ];
 });
+const selectedGigi = ref();
+// Dialog States
+const isTambahDataDialogVisible = ref(false);
 
-const dialogData = ref({
-  isVisible: false,
+// Dialog Configuration
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
+  data: null,
 });
+// Handle add and edit of the dialog
+const openDialog = (method: any, title: any, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+// Handle closing of the dialog
+const closeDialog = () => {
+  isTambahDataDialogVisible.value = false;
+};
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah Data",
-  };
-}
-
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit Data",
-  };
-}
-
-function handleClose() {
-  dialogData.value.isVisible = false;
-}
-
-const search = ref();
+const onRowSelect = (event: any) => {
+  selectedGigi.value = event.data;
+  openDialog("detail", "Detail Data", selectedGigi.value);
+};
+const metaKey = ref(true);
 </script>
 
 <template>
@@ -79,21 +60,30 @@ const search = ref();
   >
     <template #header>
       <HeaderFilter
-        page-type="role"
-        @tambah-data="handleAdd"
-        v-model:value-search="search"
+        pageType="gigi-fdi"
+        isSuperAdmin
+        @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
-
     <template #content>
       <DataTable
-        :value="products"
+        :value="payload"
+        v-model:selection="selectedGigi"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         class="text-xs"
-
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground:  'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
@@ -105,38 +95,13 @@ const search = ref();
             </div>
           </template>
         </Column>
+        <Column field="name" header="Gigi" headerClass="bg-adameds-50"></Column>
         <Column
-          field="code"
-          header="Kode Role"
-          class="w-2/12"
+          field="display"
+          header="Display SATUSEHAT"
+          class="w-full"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="name"
-          header="Nama Role"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="permission"
-          header="Modul"
-          class="w-6/12"
-          headerClass="bg-adameds-50"
-        >
-          <template #body="slotProps">
-            <div class="flex flex-wrap gap-2">
-              <div v-for="items in slotProps.data.permission" :key="items">
-                <CustomChip
-                  :label="items"
-                  :showCheckedIcon="false"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
-                />
-              </div>
-            </div>
-          </template>
-        </Column>
         <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
@@ -184,8 +149,8 @@ const search = ref();
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit"
                 class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -200,14 +165,14 @@ const search = ref();
           </template>
         </Column>
       </DataTable>
-      <TambahDataRoleDialog
-        v-model:isDialogVisible="dialogData.isVisible"
-        :title="dialogData.title"
-        :method="dialogData.method"
-        @close="handleClose"
+      <FormGigiFDI
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+        @close="closeDialog"
       />
     </template>
-
     <template #footer>
       <Footer />
     </template>

@@ -9,12 +9,12 @@ import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.v
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
-import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
+import VarianTarif from "@/components/Datamaster/VarianTarifV1.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
 import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
-import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
-import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
+import TableTindakan from "@/components/Datamaster/TableTindakanV1.vue";
+import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBedV1.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
@@ -37,6 +37,7 @@ import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
 import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
 import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 
+import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -132,6 +133,8 @@ const handlePageUpdate = (page: number) => {
 const handlePage = (page: number) => {
   console.log("Page updated:", page);
 };
+const selectedValue = ref();
+
 </script>
 
 <template>
@@ -263,28 +266,33 @@ const handlePage = (page: number) => {
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
-    </Paginator> -->
+</Paginator> -->
 
     <b>Component Rekam Medis</b>
-    <Anamnesis/> <br>
-    <Kesadaran/><br>
-    <Antropometri/> <br>
-    <CatatanHasilPenunjang/> <br>
-    <AsuhanKeperawatan/> <br>
-    <PemeriksaanTindakan/> <br>
-    <InstruksiMedis/>
+    <Anamnesis /> <br>
+    <Kesadaran /><br>
+    <Antropometri /> <br>
+    <CatatanHasilPenunjang /> <br>
+    <AsuhanKeperawatan /> <br>
+    <PemeriksaanTindakan /> <br>
+    <InstruksiMedis />
     <br>
-    <OrderLab/><br>
-    <ListSuratKeterangan/> <br>
+    <OrderLab /><br>
+    <ListSuratKeterangan /> <br>
     <b>Form resume medis</b>
-    <TandaVital/> <br>
-    <AnamnesisResume/><br>
-    <Edukasi/> <br>
-    <KeadaanWaktuPulang/><br>
-    <StatusPulang/><br>
-    <PemeriksaanFisik/> <br>
-    <Diagnosis/> <br>
-    <Tindakan/> <br>
-    <Obat/>
+    <TandaVital /> <br>
+    <AnamnesisResume /><br>
+    <Edukasi /> <br>
+    <KeadaanWaktuPulang /><br>
+    <StatusPulang /><br>
+    <PemeriksaanFisik /> <br>
+    <Diagnosis /> <br>
+    <Tindakan /> <br>
+    <Obat />
+    <!-- </Paginator> -->
+    <br>
+    {{ selectedValue }}
+    <CustomRadioButton v-model="selectedValue" value="1" label="Option 1" />
+    <CustomRadioButton v-model="selectedValue" value="2" label="Option 2" />
   </div>
 </template>

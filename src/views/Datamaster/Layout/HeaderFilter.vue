@@ -5,6 +5,9 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import type { MenuItem } from "primevue/menuitem";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+
 
 const props = defineProps({
   pageType: {
@@ -13,6 +16,13 @@ const props = defineProps({
   },
   valueSearch: {
     type: String,
+  },
+  isSuperAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  dataBreadCrumb: {
+    default: "",
   },
 });
 
@@ -44,12 +54,14 @@ const pageLabel = computed(() => {
     ? "Loinc"
     : props.pageType === "diagnosis"
     ? "Diagnosis (ICD 10)"
-    : props.pageType === "praktisioner"
-    ? "Praktisioner"
+    : props.pageType === "praktisi"
+    ? "Praktisi"
     : props.pageType === "pegawai"
     ? "Pegawai"
     : props.pageType === "penjamin"
     ? "Penjamin"
+    : props.pageType === "voucher"
+    ? "Voucher"
     : props.pageType === "faskes"
     ? "Faskes"
     : props.pageType === "lokasi"
@@ -59,6 +71,18 @@ const pageLabel = computed(() => {
     : "General Consent";
 });
 
+const dataBreadCrumb = ref([
+  {
+    label:
+      props.pageType === "gigi-fdi"
+        ? "Gigi FDI"
+        : props.pageType === "item-gigi"
+        ? "Item Gigi"
+        : props.pageType === "kategori-gigi"
+        ? "Kategori Gigi"
+        : "Oklusi",
+  },
+]);
 const valueSearch = ref(props.valueSearch);
 watch(valueSearch, (newValue) => {
   emit("update:valueSearch", newValue);
@@ -83,12 +107,21 @@ const tabs = ref([
 const selectedTab = ref("0");
 </script>
 <template>
-  <CustomAccordion :openWithHeader="false" noBorder>
+  <CustomAccordion :openWithHeader="false" noBorder  initialState="0" >
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
           <CustomButton icon="PhArrowClockwise" class="mr-5" />
-          <span class="leading-10 text-adameds-300 text-heading">
+          <CustomBreadCrumb
+            v-if="isSuperAdmin"
+            :home="{
+              label: 'Super Admin',
+              home: true,
+            }"
+            :model="dataBreadCrumb"
+            class=""
+          />
+          <span v-else class="leading-10 text-adameds-300 text-heading">
             {{ pageLabel }}
           </span>
         </div>
@@ -123,8 +156,8 @@ const selectedTab = ref("0");
         <div class="flex items-end justify-between gap-5">
           <CustomTextfield
             v-model="valueSearch"
-            :label="`Cari ${pageLabel}`"
-            :placeholder="`Cari ${pageLabel}`"
+            :label="isSuperAdmin ? 'Pencarian' : `Cari ${pageLabel}`"
+            :placeholder="isSuperAdmin ? 'Cari Display Gigi' : `Cari ${pageLabel}`"
             class="grow"
             prependIcon="PhMagnifyingGlass"
 

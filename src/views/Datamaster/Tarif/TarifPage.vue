@@ -37,12 +37,14 @@ const testDialog = ref(false);
       <CustomDialog :full-screen="true" v-model:visible="testDialog" headerBg="bg-adameds-300">
         <template #header>Tambah Tarif</template>
         <template #body>
-          <div v-if="selectedTab === '0'">
+         <div class="flex flex-col h-full overflow-hidden">
+          <div v-if="selectedTab === '0'" class="flex-1 overflow-hidden">
             <DetailTarifTindakan />
           </div>
           <div v-if="selectedTab === '1'">
             <DetailTarifRuangan />
           </div>
+         </div>
         </template>
         <template #footer>
           <div class="w-full">
