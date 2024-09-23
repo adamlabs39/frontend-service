@@ -7,7 +7,6 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { computed, ref } from "vue";
-import Scaler from "./Scaler.vue";
 import sangatRingan from "@/assets/images/RekamMedis/AsesmenNyeri/1sangatRingan.svg"
 import agakRingan from "@/assets/images/RekamMedis/AsesmenNyeri/2agakRingan.svg"
 import lumayanRingan from "@/assets/images/RekamMedis/AsesmenNyeri/3lumayanRingan.svg"
@@ -23,6 +22,8 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { onBeforeMount } from "vue";
+import Scaler from "@/components/RekamMedis/AsesmenNyeri/Scaler.vue"
+
 
 
 const props = defineProps({
@@ -125,7 +126,7 @@ defineExpose({
                             <img :src="image.value" :alt="'Image ' + image.id" class="w-full h-auto" />
                         </div>
                     </div>
-                    <Scaler />
+                    <Scaler/>
                     <div class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2">
                         <div class="font-semibold text-normal">1-3 = <span class="text-success-300">Ringan</span></div>
                         <div class="font-semibold text-normal">4-6 = <span class="text-warning-300">Sedang</span></div>
@@ -137,7 +138,7 @@ defineExpose({
                 </div>
             </div>
             <div v-if="currentMethod == 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="Pengkajian Nyeri" :value="selectedImage" />
+                <CustomInfoRow label="Pengkajian Nyeri" :value="`${selectedImage}`" />
                 <CustomInfoRow label="Catatan" :value="catatan" />
                 <hr class="border-grey-200">
                 <CustomInfoRow label="Petugas Input" :value="petugas" />
