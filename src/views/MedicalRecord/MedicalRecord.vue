@@ -1173,7 +1173,7 @@ defineExpose({ showDialogRM });
                   class="mb-[10px]"
                 />
                 <CustomButton
-                  @click="toggleShowAllDetailMR('hide')"
+                  @click="toggleShowAllDetailMR('show')"
                   icon="PhArrowsOutLineVertical"
                   class=""
                 />
