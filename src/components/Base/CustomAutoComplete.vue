@@ -91,6 +91,9 @@ const search = (event: any) => {
       @update:model-value="updateModalValue"
       @complete="search"
       @keydown.enter="onEnter"
+      :dt="{
+            placeholderColor: '#90969E',
+          }"
     >
       <template #chip="{ value }">
         <Chip

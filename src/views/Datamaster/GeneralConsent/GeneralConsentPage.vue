@@ -77,7 +77,7 @@ const status = ref();
         </Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class="w-full text-center h-full font-semibold text-SM">
+            <div class="w-full h-full font-semibold text-center text-SM">
               Status
             </div>
           </template>
@@ -99,7 +99,7 @@ const status = ref();
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">
+            <div class="w-full font-semibold text-center text-SM">
               Action
             </div>
           </template>
@@ -135,7 +135,7 @@ const status = ref();
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

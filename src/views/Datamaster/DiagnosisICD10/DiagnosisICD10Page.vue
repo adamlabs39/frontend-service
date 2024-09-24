@@ -96,6 +96,8 @@ const handleDelete = (dataItem: any) => {
       });
   }
 };
+
+
 </script>
 
 <template>

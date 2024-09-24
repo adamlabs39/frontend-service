@@ -71,66 +71,65 @@ const editorConfig = {
 };
 </script>
 <template>
-  <div class="mt-5 flex flex-col gap-5">
-    <div class="flex w-full gap-2.5 items-end">
-      <CustomTextfield label="Kode" placeholder="Kode" />
-      <CustomTextfield
-        label="Kategori General Consent"
-        placeholder="Kategori General Consent"
-        class="w-1/3"
-      />
-      <CustomMultiSelect label="Lokasi Pelayanan" v-model="lokasiPelayanan" placeholder="Pilih Lokasi Pelayanan" class="grow" />
-
-    </div>
+  <div class="mt-5 grid grid-cols-12 gap-5">
+    <CustomTextfield label="Kode" placeholder="Kode" class="col-span-2" />
+    <CustomTextfield
+      label="Kategori General Consent"
+      placeholder="Kategori General Consent"
+      class="col-span-4"
+    />
+    <CustomMultiSelect
+      label="Lokasi Pelayanan"
+      v-model="lokasiPelayanan"
+      placeholder="Pilih Lokasi Pelayanan"
+      class="col-span-6"
+    />
     <CustomTextfield
       label="Nama General Consent"
       placeholder="Nama General Consent"
+      class="col-span-12"
     />
-    <CustomAccordion>
+    <CustomAccordion initialState="0" class="col-span-12">
       <template #header> <div class="-ml-4">Text Formating</div></template>
       <template #content>
-        <div class="flex justify-between bg-adameds-50 mt-2.5 p-4 rounded-[10px] -m-4 gap-40">
+        <div
+          class="flex justify-between bg-adameds-50 mt-2.5 p-4 rounded-[10px] -m-4 gap-40"
+        >
           <div class="w-1/2">
             <div class="mb-2">
               Field dinamis diharap menggunakan penanda
-              
-              <span v-pre class="font-bold">{{ }}</span>, contoh :
-              <hr class="border-grey-200 my-2.5">
+
+              <span v-pre class="font-bold">{{}}</span>, contoh :
+              <hr class="border-grey-200 my-2.5" />
             </div>
-            <div v-pre>Nama : {{Nama}}</div>
-            <div v-pre>Alamat : {{Alamat}}</div>
-            <div v-pre>No. Telepon : {{Telepon}}</div>
+            <div v-pre>Nama : {{ Nama }}</div>
+            <div v-pre>Alamat : {{ Alamat }}</div>
+            <div v-pre>No. Telepon : {{ Telepon }}</div>
           </div>
           <div class="w-1/2">
             <div class="">list data dinamis</div>
-            <hr class="border-grey-200 my-2.5">
+            <hr class="border-grey-200 my-2.5" />
             <div class="flex gap">
-              <ul class="basis-1/3" >
-              <li>1. nama</li>
-              <li>2. alamat</li>
-              <li>3. umur</li>
-              <li>4. tindakan</li>
-            </ul>
-            <ul >
-              <li>5. nama_wali</li>
-              <li>6. jenis_kelamin_wali</li>
-              <li>7. alamat_wali</li>
-              <li>8. hubungan_dengan_pasien</li>
-            </ul>
+              <ul class="basis-1/3">
+                <li>1. nama</li>
+                <li>2. alamat</li>
+                <li>3. umur</li>
+                <li>4. tindakan</li>
+              </ul>
+              <ul>
+                <li>5. nama_wali</li>
+                <li>6. jenis_kelamin_wali</li>
+                <li>7. alamat_wali</li>
+                <li>8. hubungan_dengan_pasien</li>
+              </ul>
             </div>
-            
           </div>
         </div>
       </template>
     </CustomAccordion>
-    <div>
-      <div class="font-semibold text-MD">Isi General Consent</div>
-      <CustomCkEditor/>
-    </div>
-    <hr />
-    <div class="flex items-end gap-2.5">
-      <CustomSwitch v-model="status" label="Status" />
-      <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-    </div>
+    <div class="font-semibold text-MD col-span-12 -mb-2">Isi General Consent</div>
+    <CustomCkEditor class="col-span-12" />
+    <hr class="border-grey-200 col-span-12" />
+      <CustomSwitch v-model="status" label="Status" class="col-span-12" />
   </div>
 </template>

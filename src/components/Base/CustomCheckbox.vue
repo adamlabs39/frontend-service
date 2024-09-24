@@ -17,6 +17,10 @@ const props = defineProps({
     type: String,
     default: "#14B8A6",
   },
+  borderColor:{
+    type: String,
+    default: "#14B8A6",
+  },
   label: {
     type: String,
     default: "",
@@ -25,13 +29,25 @@ const props = defineProps({
     type: String,
     default: "Aktif",
   },
+  titleClass: {
+    type: String,
+    default: "font-semibold text-SM",
+  },
   subTitle: {
     type: String,
     default: "Subtext",
   },
+  subTitleClass: {
+    type: String,
+    default: "text-XS text-adameds-300",
+  },
   endText: {
     type: String,
     default: "",
+  },
+  endTextClass: {
+    type: String,
+    default: "font-semibold text-SM",
   },
   disabled: {
     type: Boolean,
@@ -82,7 +98,7 @@ const test = (data: any) => {
 <template>
   <label
     v-if="label"
-    class="block font-semibold mb-[5px]"
+    class="block font-semibold mb-[5px] text-normal"
     :class="{ 'text-grey-300': disabled }"
     @click="toggleCheckbox"
   >
@@ -109,24 +125,19 @@ const test = (data: any) => {
       :dt="{
         checkedBackground: bgSwitch,
         checkedHoverBackground: bgSwitch,
+        borderColor:borderColor,
       }"
     />
-    <div class="ml-[10px] flex flex-col justify-between">
-      <div class="font-semibold text-SM" :class="{ 'text-grey-300': disabled }">
+    <div class="ml-[10px] flex flex-col justify-center">
+      <div :class="[titleClass, { 'text-grey-300': disabled }]">
         {{ title }}
       </div>
-      <div
-        class="text-XS text-adameds-300"
-        :class="{ 'text-grey-400': disabled }"
-      >
+      <div :class="[subTitleClass, { 'text-grey-400': disabled }]">
         {{ subTitle }}
       </div>
     </div>
     <div v-if="endText" class="flex ml-auto">
-      <span
-        class="my-auto font-semibold text-SM"
-        :class="{ 'text-grey-400': disabled }"
-      >
+      <span :class="[endTextClass, { 'text-grey-400': disabled }]">
         {{ endText }}
       </span>
     </div>

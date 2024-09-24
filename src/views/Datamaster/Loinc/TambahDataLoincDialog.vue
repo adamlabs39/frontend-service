@@ -98,29 +98,33 @@ watch(
   >
     <template #header>{{ title }} Loinc</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
+      <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode LOINC"
             v-model="code"
             placeholder="Kode LOINC"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
+            class="col-span-4"
           />
           <CustomTextfield
             label="Nama Loinc"
             v-model="name"
             placeholder="Nama Loinc"
-            class="basis-3/4"
+            class="col-span-8"
             :invalid="!!errors.name"
             :invalidMessage="errors.name"
           />
-        </div>
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+
+        />
       </div>
     </template>
     <template #footer>

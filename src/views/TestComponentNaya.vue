@@ -9,16 +9,38 @@ import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.v
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
-import VarianTarif from "@/components/Datamaster/VarianTarif.vue";
+import VarianTarif from "@/components/Datamaster/VarianTarifV1.vue";
 import Kelas from "@/components/Datamaster/Kelas.vue";
-import DetailTarifTindakan from "./Datamaster/Tarif/DetailTarifTindakan.vue";
-import DetailTarifRuangan from "./Datamaster/Tarif/DetailTarifRuangan.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
-import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
-import TableTindakan from "@/components/Datamaster/TableTindakan.vue";
-import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBed.vue";
+// import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
+import TableTindakan from "@/components/Datamaster/TableTindakanV1.vue";
+import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBedV1.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
+import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
+import Kesadaran from "@/components/RekamMedis/Kesadaran/Kesadaran.vue";
+import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
+import CatatanHasilPenunjang from "@/components/RekamMedis/CatatanHasilPenunjang/CatatanHasilPenunjang.vue";
+import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanKeperawatan.vue";
+import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
+import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
+import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/ListSuratKeterangan.vue";
+import TandaVital from "@/components/RekamMedis/ResumeDiscarge/TandaVital.vue";
+import AnamnesisResume from "@/components/RekamMedis/ResumeDiscarge/Anamnesis.vue";
+import Edukasi from "@/components/RekamMedis/ResumeDiscarge/Edukasi.vue";
+import KeadaanWaktuPulang from "@/components/RekamMedis/ResumeDiscarge/KeadaanWaktuPulang.vue";
+import StatusPulang from "@/components/RekamMedis/ResumeDiscarge/StatusPulang.vue";
+import PemeriksaanFisik from "@/components/RekamMedis/ResumeDiscarge/PemeriksaanFisik.vue";
+import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
+import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
+import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
+import FormPemberianObat from "@/components/RekamMedis/FPO/FormPemberianObat.vue";
+import SuratControlRawatJalan from "@/components/RekamMedis/ListSuratKeterangan/SuratControlRawatJalan.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import Prognosis from "@/components/RekamMedis/ResumeDiscarge/Prognosis.vue";
+import CustomRadioButton from "@/components/Base/CustomRadioButton.vue";
 
 //For Test Selected Component
 const selectedItems = ref();
@@ -114,10 +136,18 @@ const handlePageUpdate = (page: number) => {
 const handlePage = (page: number) => {
   console.log("Page updated:", page);
 };
+const selectedValue = ref();
+
+const controlRawatJalanRef=ref()
+const submitChildForm = () => {
+  if (controlRawatJalanRef.value) {
+    controlRawatJalanRef.value.submitForm();
+  }
+};
 </script>
 
 <template>
-  <div class="h-screen overflow-scroll">
+  <div class="h-screen mx-5 overflow-scroll">
     <Select
       label="Choose a City"
       v-model="selectedItems"
@@ -246,5 +276,34 @@ const handlePage = (page: number) => {
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
     </Paginator>
+
+    <b>Component Rekam Medis</b>
+    <Anamnesis /> <br>
+    <Kesadaran /><br>
+    <Antropometri /> <br>
+    <CatatanHasilPenunjang /> <br>
+    <AsuhanKeperawatan /> <br>
+    <PemeriksaanTindakan /> <br>
+    <InstruksiMedis />
+    <br>
+    <OrderLab /><br>
+    <ListSuratKeterangan /> <br>
+    <b>Form resume medis</b>
+    <TandaVital/> <br>
+    <AnamnesisResume/><br>
+    <Edukasi/> <br>
+    <Prognosis/><br>
+    <KeadaanWaktuPulang/><br>
+    <StatusPulang/><br>
+    <PemeriksaanFisik/> <br>
+    <Diagnosis/> <br>
+    <Tindakan/> <br>
+    <Obat/> <br>
+    <FormPemberianObat/>
+    <SuratControlRawatJalan
+      ref="controlRawatJalanRef"
+      />
+      <CustomButton label="Simpan" @click="submitChildForm" />
+
   </div>
 </template>

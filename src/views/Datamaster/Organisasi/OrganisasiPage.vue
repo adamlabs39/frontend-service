@@ -110,7 +110,7 @@ const onRowSelect = (event: any) => {
         <Column field="email" header="Email" class="w-3/12" headerClass="bg-adameds-50"></Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class="w-full text-center font-semibold text-SM">
+            <div class="w-full font-semibold text-center text-SM">
               Status
             </div>
           </template>
@@ -158,7 +158,7 @@ const onRowSelect = (event: any) => {
     </template>
 
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

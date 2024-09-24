@@ -12,6 +12,10 @@ const props = defineProps({
     type: String as () => "left" | "right" | "top" | "bottom",
     default: "left",
   },
+  iconType: {
+    type: String as () => "bold" | "fill",
+    default: "bold",
+  },
   loading: {
     type: Boolean,
     default: false,
@@ -48,10 +52,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  
 });
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(["click"]);
 </script>
 
 <template>
@@ -68,17 +71,13 @@ const emit = defineEmits(['click'])
       textColor ? textColor : 'text-white',
       borderColor ? borderColor : 'border-none',
       outlined ? `bg-transparent border-2` : '',
-      size == 'small' ? 'h-[21px] text-XS' : 'h-10',
-      disabled && outlined
-        ? 'border-grey-200 text-grey-200'
-        : '',
-      disabled && !outlined
-        ? 'bg-grey-200 text-grey-400Active border-none'
-        : '',
+      size == 'small' ? 'h-6 text-XS' : 'h-10',
+      disabled && outlined ? 'border-grey-200 text-grey-200' : '',
+      disabled && !outlined ? 'bg-grey-200 text-grey-400 border-none' : '',
     ]"
     :fluid="full"
-    @click = "emit('click')"
-    pt:label:class="font-semibold text-normal"
+    @click="emit('click')"
+    :pt:label:class="`font-semibold ${size == 'small' ? 'text-XS' : 'text-normal'}`"
   >
     <template #default>
       <slot />
@@ -86,7 +85,7 @@ const emit = defineEmits(['click'])
     <template #icon="slotProps" v-if="icon">
       <component
         :is="icon"
-        weight="bold"
+        :weight="iconType"
         :size="size == 'small' ? 14 : 20"
         :class="slotProps.class"
       />

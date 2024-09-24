@@ -86,48 +86,52 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{title}} Tindakan</template>
+    <template #header>{{ title }} Tindakan</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode Ruangan"
-            v-model="code"
-            placeholder="Kode Ruangan"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-            class="basis-2/6"
-          />          
-          <CustomTextfield
-            label="Nama Tindakan"
-            v-model="name"
-            placeholder="Nama Tindakan"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-            class="basis-3/4"
-          />
-        </div>
-        <CustomSelect 
-        label="Snomed CT" 
-        place-holder="Pilih Snomed CT"
-        v-model="snomedCt"
-        :options="itemsSnomedCt"
-        optionValue="code"
-        optionLabel="name"
-         />
-        <CustomSelect 
-        label="ICD-9 CM" 
-        place-holder="Pilih ICD-9 CM" 
-        v-model="icd9"
-        :options="itemsIcd9"
-        optionValue="code"
-        optionLabel="name"
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode Ruangan"
+          v-model="code"
+          placeholder="Kode Ruangan"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-4"
         />
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+        <CustomTextfield
+          label="Nama Tindakan"
+          v-model="name"
+          placeholder="Nama Tindakan"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+          class="col-span-8"
+        />
+        <CustomSelect
+          label="Snomed CT"
+          place-holder="Pilih Snomed CT"
+          v-model="snomedCt"
+          :options="itemsSnomedCt"
+          optionValue="code"
+          optionLabel="name"
+          class="col-span-12"
+        />
+        <CustomSelect
+          label="ICD-9 CM"
+          place-holder="Pilih ICD-9 CM"
+          v-model="icd9"
+          :options="itemsIcd9"
+          optionValue="code"
+          optionLabel="name"
+          class="col-span-12"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>

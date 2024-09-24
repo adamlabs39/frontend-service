@@ -66,7 +66,7 @@ const emit = defineEmits(["update:modelValue", "change"]);
   <div class="flex flex-col">
     <label
       v-if="showLabel"
-      class="block font-semibold mb-[11px]"
+      class="block font-semibold mb-[11px] text-normal"
       :class="{ 'text-grey-300': disabled }"
     >
       {{ label }}
@@ -99,6 +99,6 @@ const emit = defineEmits(["update:modelValue", "change"]);
         {{ checked ? sideLabelTrue : sideLabel }}
       </div>
     </div>
-    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>

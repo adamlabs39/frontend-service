@@ -27,10 +27,6 @@ const props = defineProps({
 		type: String,
 		default: "border-[#D9DCE1] border-1 mr-[87px] my-[10px]",
 	},
-	showChip: {
-		type: Boolean,
-		default: false,
-	},
 	buttonClickHandler: {
 		type: Function as () => any,
 		default: () => { }
@@ -57,14 +53,12 @@ const props = defineProps({
 				{{ props.cardHeading }}
 			</div>
 			<div class="flex items-center gap-3 font-poppins" v-if="showButton">
-				<CustomChip label="AKTIF" v-if="showChip" bg-color="bg-adameds-300" border-color="border-transparent"
-					text-color="text-white" icon-color="text-white" />
 				<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm"
 					@click="buttonClickHandler" :outlined="props.outlined" :border-color="props.borderColor" :text-color="props.textColor" />
 			</div>
 		</div>
 
-		<hr :class="hrEnableCustomClass ? props.hrCustomClass : props.hrDefaultClass" />
+		<hr :class="hrEnableCustomClass ? props.hrCustomClass : props.hrDefaultClass">
 		<slot></slot>
 	</div>
 </template>

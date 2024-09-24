@@ -48,14 +48,21 @@ import Carousel from "primevue/carousel";
 import Editor from "primevue/editor";
 
 import Tabs from "primevue/tabs";
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
 import Slider from 'primevue/slider';
+import Toast from 'primevue/toast';
+import ToastService from 'primevue/toastservice';
+import RadioButton from 'primevue/radiobutton';
 import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
-const app = createApp(App);
+import icons from "./components/icons";
+
+export const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
@@ -73,6 +80,7 @@ const myPreset = definePreset(Aura, {
   },
 });
 app.use(CkeditorPlugin)
+app.use(ToastService);
 
 app.use(PrimeVue, {
   theme: {
@@ -105,7 +113,6 @@ app.component("Button", Button);
 app.directive("tooltip", Tooltip);
 app.component("Select", Select);
 app.component("DatePicker", DatePicker);
-
 app.component("ToggleSwitch", ToggleSwitch);
 app.component("FileUpload", FileUpload);
 app.component("ColorPicker", ColorPicker);
@@ -121,8 +128,14 @@ app.component("InputGroup", InputGroup);
 app.component("InputGroupAddon", InputGroupAddon);
 app.component("Editor", Editor);
 app.component("Tabs", Tabs);
+app.component("TabList", TabList);
+app.component("Tab", Tab);
 app.component("TabPanels", TabPanels);
 app.component("TabPanel", TabPanel);
 app.component("Slider", Slider);
+app.component("Toast", Toast);
+app.component("RadioButton", RadioButton);
+
+app.use(icons)
 
 app.mount("#app");
