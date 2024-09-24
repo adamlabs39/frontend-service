@@ -5,6 +5,13 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import { nextTick, onBeforeUnmount, onMounted } from "vue";
 import { ref } from "vue";
 
+const props = defineProps({
+  method: {
+    type: String,
+    default: "form",
+  },
+});
+
 const canvas = ref<HTMLCanvasElement | null>(null);
 const teethPositions = ref<
   {
@@ -264,6 +271,24 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resizeCanvas);
 });
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
@@ -280,26 +305,33 @@ onBeforeUnmount(() => {
     <template #header>Odontogram</template>
     <template #content>
       <div class="pt-5">
-        <div class="border-2 border-adameds-75 rounded-[10px]">
+        <div
+          v-if="
+            method == 'form' || method == 'detail-gigi' || method == 'print'
+          "
+          class="border-2 border-adameds-75 rounded-[10px]"
+        >
           <canvas ref="canvas" @click="handleClick"></canvas>
         </div>
-        <div class="flex mt-5">
-          <CustomMultiSelect
-            class="grow mr-[30px]"
-            label="Gigi No."
-            placeholder="Gigi No."
-          />
-          <CustomButton
-            @click="() => {}"
-            class="mt-auto w-28"
-            icon="PhPlus"
-            label="Tambah"
-          />
+        <div v-if="method == 'form'">
+          <div class="flex mt-5">
+            <CustomMultiSelect
+              class="grow mr-[30px]"
+              label="Gigi No."
+              placeholder="Gigi No."
+            />
+            <CustomButton
+              @click="() => {}"
+              class="mt-auto w-28"
+              icon="PhPlus"
+              label="Tambah"
+            />
+          </div>
         </div>
         <DataTable
           :value="itemsOdontogram"
           class="mt-5"
-          tableStyle="min-width: 50rem"
+          tableStyle=""
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
@@ -328,6 +360,7 @@ onBeforeUnmount(() => {
             </template>
           </Column>
           <Column
+            v-if="method == 'form'"
             field="action"
             headerClass="bg-adameds-50"
             headerStyle="width: 85px"
@@ -349,6 +382,11 @@ onBeforeUnmount(() => {
             </template>
           </Column>
         </DataTable>
+      </div>
+    </template>
+    <template #footer v-if="method == 'print'">
+      <div class="flex justify-end">
+        <CustomButton icon="PhPrinter" label="Cetak Hasil" />
       </div>
     </template>
   </CustomAccordion>

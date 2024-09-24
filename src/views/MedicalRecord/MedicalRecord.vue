@@ -48,6 +48,8 @@ import Diagnosis from "@/components/RekamMedis/ResumeDiscarge/Diagnosis.vue";
 import Tindakan from "@/components/RekamMedis/ResumeDiscarge/Tindakan.vue";
 import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/ListSuratKeterangan.vue";
+import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
+import PrintLab from "@/components/RekamMedis/OrderLab/PrintLab.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
@@ -1171,7 +1173,7 @@ defineExpose({ showDialogRM });
                   class="mb-[10px]"
                 />
                 <CustomButton
-                  @click="toggleShowAllDetailMR('hide')"
+                  @click="toggleShowAllDetailMR('show')"
                   icon="PhArrowsOutLineVertical"
                   class=""
                 />
@@ -1180,12 +1182,34 @@ defineExpose({ showDialogRM });
 
             <div
               v-if="selectedTab == 'cetak-hasil-surat'"
-              class="overflow-auto"
+              class="flex overflow-auto"
             >
+              <div
+                v-if="selectedSuratList == 'Cetak Hasil Pemeriksaan'"
+                class="flex overflow-auto grow"
+              >
+                <div class="overflow-auto grow">
+                  <OdontogramInput :ref="refs.pemeriksaanGigi" method="print" />
+                  <PrintLab :ref="refs.orderLab" class="mt-5" />
+                </div>
+                <div class="flex flex-col mx-[10px]">
+                  <CustomButton
+                    @click="toggleShowAllDetailMR('hide')"
+                    icon="PhArrowsInLineVertical"
+                    class="mb-[10px]"
+                  />
+                  <CustomButton
+                    @click="toggleShowAllDetailMR('show')"
+                    icon="PhArrowsOutLineVertical"
+                    class=""
+                  />
+                </div>
+              </div>
               <ListSuratKeterangan
                 v-if="selectedSuratList == 'Surat Keterangan'"
                 method="form"
                 initialState="0"
+                class="grow"
               />
             </div>
           </div>
