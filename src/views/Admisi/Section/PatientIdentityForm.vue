@@ -23,13 +23,16 @@ const props = defineProps({
   },
   patientData: {
     type: Object as PropType<any>,
-    required: true,
+    required: false,
   },
 });
 
 onMounted(() => {
-  if (props.formType == 'Daftar Bayi Baru Lahir' || props.patientData.is_newborn) {
-    newBorn.value = true
+  if (
+    props.formType == "Daftar Bayi Baru Lahir" ||
+    (props.patientData && props.patientData.is_newborn)
+  ) {
+    newBorn.value = true;
   }
 });
 
@@ -46,7 +49,7 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false">
+  <CustomAccordion :openWithHeader="false" initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
@@ -278,7 +281,7 @@ defineExpose({
           <CustomTextfield
             v-if="!noIdentity"
             label="Nama Ibu Kandung"
-            :class="[newBorn? 'col-span-2': 'col-span-3']"
+            :class="[newBorn ? 'col-span-2' : 'col-span-3']"
             placeholder="Nama Ibu Kandung"
             :disabled="isDetail"
           />

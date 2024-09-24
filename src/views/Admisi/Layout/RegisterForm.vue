@@ -11,7 +11,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import PatientIdentityForm from "../Section/PatientIdentityForm.vue";
-import DoctorVisitDetail from "../Section/DoctorVisitDetail.vue";
+import DoctorVisitDetail from "../Section/DoctorVisitDetailForm.vue";
 
 const props = defineProps({
   pageType: {

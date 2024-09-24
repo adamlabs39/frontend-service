@@ -143,7 +143,7 @@ const isDetail = () => {
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
+        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
