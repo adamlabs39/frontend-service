@@ -271,6 +271,24 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resizeCanvas);
 });
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
@@ -288,7 +306,9 @@ onBeforeUnmount(() => {
     <template #content>
       <div class="pt-5">
         <div
-          v-if="method == 'form' || method == 'detail-gigi'"
+          v-if="
+            method == 'form' || method == 'detail-gigi' || method == 'print'
+          "
           class="border-2 border-adameds-75 rounded-[10px]"
         >
           <canvas ref="canvas" @click="handleClick"></canvas>
@@ -362,6 +382,11 @@ onBeforeUnmount(() => {
             </template>
           </Column>
         </DataTable>
+      </div>
+    </template>
+    <template #footer v-if="method == 'print'">
+      <div class="flex justify-end">
+        <CustomButton icon="PhPrinter" label="Cetak Hasil" />
       </div>
     </template>
   </CustomAccordion>
