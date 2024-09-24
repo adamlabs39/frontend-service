@@ -356,7 +356,22 @@ defineExpose({
             headerClass="bg-adameds-50"
           >
             <template #body="slotProps">
-              <div></div>
+              <div class="flex">
+                <CustomChip
+                  label="Karies Bustal"
+                  :show-checked-icon="false"
+                  bg-color="bg-adameds-300"
+                  borderColor="border-none"
+                  text-color="text-white"
+                />
+                <CustomChip
+                  label="Karies Distal"
+                  :show-checked-icon="false"
+                  bg-color="bg-adameds-300"
+                  borderColor="border-none"
+                  text-color="text-white"
+                />
+              </div>
             </template>
           </Column>
           <Column
