@@ -33,6 +33,29 @@ onMounted(() => {
         },
       ],
     },
+    {
+      noOrder: "LAB4321",
+      namaTarif: "Nama Tarif",
+      tglOrder: "01-01-2024",
+      orderStatus: "ORDER",
+      petugasOrder: "Budi",
+      tarif: [
+        {
+          tarifName: "SGOT",
+          grandTotal: "10,000",
+          result: "32",
+          metode: "IFCC",
+          nilaiRujukan: 35,
+        },
+        {
+          tarifName: "SGPT",
+          grandTotal: "10,000",
+          result: "32",
+          metode: "IFCC",
+          nilaiRujukan: 35,
+        },
+      ],
+    },
   ];
 });
 
@@ -56,21 +79,48 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion ref="accordion" initial-state="0" header-class="bg-[#E8F8F6]">
-    <template #header> Laboratorium </template>
-    <template #content>
-      <div class="pt-5">
-        <div v-for="pemeriksaan of orderLab">
+  <div v-for="pemeriksaan of orderLab">
+    <CustomAccordion initial-state="0" header-class="bg-[#E8F8F6]" class="mt-5">
+      <template #header>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center font-normal text-MD">
+            {{ pemeriksaan.noOrder
+            }}<span
+              ><CustomChip
+                :label="pemeriksaan.orderStatus"
+                class="ml-2.5"
+                :show-checked-icon="false"
+                bg-color="bg-[#D4D8DC]"
+                border-color="border-grey-75"
+                text-color="text-[#687077]"
+            /></span>
+          </div>
+          <div class="mr-2.5 font-normal text-MD">
+            Tgl. Order: {{ pemeriksaan.tglOrder }}
+          </div>
+        </div>
+      </template>
+      <template #content>
+        <div class="pt-5">
           <CustomAccordion no-border initial-state="0">
             <template #header>
               <div class="flex justify-between w-full mr-2.5">
                 <div class="flex gap-2.5">
                   <div>List Order Lab</div>
-                </div>
-                <div class="flex items-center">
-                  <div>No. Order: LAB1234</div>
-                  <PhLineVertical :size="18" class="mx-2 text-adameds-300" />
-                  <div>Tgl. Order: 01-01-2024</div>
+                  <CustomChip
+                    label="Urine"
+                    :show-checked-icon="false"
+                    bg-color="bg-adameds-300"
+                    borderColor="border-none"
+                    text-color="text-white"
+                  />
+                  <CustomChip
+                    label="Darah"
+                    :show-checked-icon="false"
+                    bg-color="bg-adameds-300"
+                    borderColor="border-none"
+                    text-color="text-white"
+                  />
                 </div>
               </div>
             </template>
@@ -223,12 +273,12 @@ defineExpose({
             </template>
           </CustomAccordion>
         </div>
-      </div>
-    </template>
-    <template #footer>
-      <div class="flex">
-        <CustomButton label="Cetak Hasil" icon="PhPrinter" class="ml-auto" />
-      </div>
-    </template>
-  </CustomAccordion>
+      </template>
+      <template #footer>
+        <div class="flex justify-end w-full">
+          <CustomButton icon="PhPrinter" label="Cetak Hasil" />
+        </div>
+      </template>
+    </CustomAccordion>
+  </div>
 </template>
