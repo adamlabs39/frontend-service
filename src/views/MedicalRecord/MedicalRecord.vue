@@ -4,15 +4,10 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DataPatient from "./DataPatient.vue";
 import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
-import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
-import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/PemeriksaanGigi.vue";
-import PemeriksaanMata from "@/components/RekamMedis/PemeriksaanMata/PemeriksaanMata.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
-import AnamnesisIGD from "@/components/RekamMedis/AnamnesisIGD/AnamnesisIGD.vue";
-import Triase from "@/components/RekamMedis/Triase/Triase.vue";
 import FormTandaVital from "@/components/RekamMedis/TandaVital/FormTandaVital.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
 import FormAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/FormAsesmenNyeri.vue";
@@ -47,8 +42,10 @@ import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/ListSuratKeterangan.vue";
 import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
 import PrintLab from "@/components/RekamMedis/OrderLab/PrintLab.vue";
-import MedicalRecordTab from "./Section/MedicalRecordTab.vue";
-import MedicalRecordNavigation from "./Section/MedicalRecordNavigation.vue";
+import MedicalRecordTab from "./SectionNavigator/MedicalRecordTab.vue";
+import MedicalRecordNavigation from "./SectionNavigator/MedicalRecordNavigation.vue";
+import MedicalRecordDetail from "./SectionContent/MedicalRecordDetail.vue";
+import MedicalRecordAssesment from "./SectionContent/MedicalRecordAssesment.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
@@ -239,165 +236,9 @@ defineExpose({ showDialogRM });
               @resume-discharge-jump="resumeDischargeScrollController"
             />
 
-            <div
-              v-if="selectedTab == 'rekam-medis'"
-              class="flex mt-5 overflow-auto"
-            >
-              <!-- <NoData class="grow" title="Belum Ada Pemeriksaan" /> -->
-              <div class="grid grid-cols-2 grow gap-2.5 overflow-x-hidden">
-                <FormAlergi :ref="refs.alergi" method="detail" />
-                <Anamnesis :ref="refs.anamnesis" method="detail" />
-                <AnamnesisIGD :ref="refs.anamnesisIGD" method="detail" />
-                <Triase :ref="refs.triase" method="detail" />
-                <FormTandaVital :ref="refs.tandaVital" method="detail" />
-                <Antropometri :ref="refs.antropometri" method="detail" />
-                <FormAsesmenNyeri :ref="refs.asesmenNyeri" method="detail" />
-                <Kesadaran :ref="refs.kesadaran" method="detail" />
-                <PemeriksaanFisik
-                  :ref="refs.pemeriksaanFisik"
-                  method="detail"
-                />
-                <PemeriksaanGigi :ref="refs.pemeriksaanGigi" method="detail" />
-                <PemeriksaanMata :ref="refs.pemeriksaanMata" method="detail" />
-                <BurnInput :ref="refs.lukaBakar" method="detail" />
-                <CatatanHasilPenunjang
-                  :ref="refs.catatanHasilPenunjang"
-                  method="detail"
-                />
-                <FormDiagnosaDokterICD10
-                  :ref="refs.diagnosisDokter"
-                  method="detail"
-                />
-                <AsuhanKeperawatan
-                  :ref="refs.asuhanKeperawatan"
-                  method="detail"
-                />
-                <FormCatatanPerawat
-                  :ref="refs.catatanPerawat"
-                  method="detail"
-                />
-                <InstruksiMedis :ref="refs.instruksiMedis" method="detail" />
-                <FormOrderObat :ref="refs.orderObat" method="detail" />
-                <PemeriksaanTindakan
-                  :ref="refs.pemeriksaanTindakan"
-                  method="detail"
-                />
-                <FormImplementation
-                  :ref="refs.implementation"
-                  method="detail"
-                />
-                <FormEvaluation :ref="refs.evaluation" method="detail" />
-                <FormReassesment :ref="refs.reassessment" method="detail" />
-                <FormOrderAlkes :ref="refs.orderAlkes" method="detail" />
-                <OrderLab :ref="refs.orderLab" method="detail" />
-                <FormOrderFisio :ref="refs.orderFisio" method="detail" />
-                <FormPersetujuanPasien
-                  :ref="refs.persetujuanPasien"
-                  method="detail"
-                />
-              </div>
-              <div class="flex flex-col mx-[10px]">
-                <CustomButton
-                  @click="toggleShowAllDetailMR('hide')"
-                  icon="PhArrowsInLineVertical"
-                  class="mb-[10px]"
-                />
-                <CustomButton
-                  @click="toggleShowAllDetailMR('show')"
-                  icon="PhArrowsOutLineVertical"
-                  class=""
-                />
-              </div>
-            </div>
+            <MedicalRecordDetail v-if="selectedTab == 'rekam-medis'" />
 
-            <div v-if="selectedTab == 'asesmen'" class="overflow-auto">
-              <FormAlergi
-                v-if="selectedAssesment == 'Alergi'"
-                method="form"
-                initialState="0"
-              />
-              <Anamnesis
-                v-if="selectedAssesment == 'Anamnesis'"
-                method="form"
-                initialState="0"
-              />
-              <AnamnesisIGD
-                v-if="selectedAssesment == 'Anamnesis IGD'"
-                method="form"
-                initialState="0"
-              />
-              <Triase
-                v-if="selectedAssesment == 'Triase'"
-                method="form"
-                initialState="0"
-              />
-              <FormTandaVital
-                v-if="selectedAssesment == 'Tanda Vital'"
-                method="form"
-                initialState="0"
-              />
-              <Antropometri
-                v-if="selectedAssesment == 'Antropometri'"
-                method="form"
-                initialState="0"
-              />
-              <FormAsesmenNyeri
-                v-if="selectedAssesment == 'Asesmen Nyeri'"
-                method="form"
-                initialState="0"
-              />
-              <Kesadaran
-                v-if="selectedAssesment == 'Kesadaran'"
-                method="form"
-                initialState="0"
-              />
-              <CatatanHasilPenunjang
-                v-if="selectedAssesment == 'Catatan Hasil Penunjang'"
-                method="form"
-                initialState="0"
-              />
-              <FormDiagnosaDokterICD10
-                v-if="selectedAssesment == 'Diagnosis Dokter'"
-                method="form"
-                initialState="0"
-              />
-              <AsuhanKeperawatan
-                v-if="selectedAssesment == 'Asuhan Keperawatan'"
-                method="form"
-                initialState="0"
-              />
-              <FormCatatanPerawat
-                v-if="selectedAssesment == 'Catatan Perawat'"
-                method="form"
-                initialState="0"
-              />
-              <InstruksiMedis
-                v-if="selectedAssesment == 'Intruksi Medis'"
-                method="form"
-                initialState="0"
-              />
-              <PemeriksaanTindakan
-                v-if="selectedAssesment == 'Pemeriksaan dan Tindakan'"
-                method="form"
-                initialState="0"
-              />
-              <PemeriksaanFisik
-                v-if="selectedAssesment == 'Pemeriksaan Fisik'"
-                initialState="0"
-              />
-              <PemeriksaanGigi
-                v-if="selectedAssesment == 'Pemeriksaan Gigi'"
-                initialState="0"
-              />
-              <PemeriksaanMata
-                v-if="selectedAssesment == 'Pemeriksaan Mata'"
-                initialState="0"
-              />
-              <BurnInput
-                v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"
-                initialState="0"
-              />
-            </div>
+            <MedicalRecordAssesment v-if="selectedTab == 'asesmen'" :selectedAssesment="selectedAssesment" />
 
             <div
               v-if="selectedTab == 'soap' || selectedTab == 'soapier'"
