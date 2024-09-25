@@ -36,9 +36,9 @@ const getSVG = (svg: string) => {
           v-if="icon"
           :is="icon"
           :size="16"
-          class="text-white mr-[10px]"
+          class="text-white"
         />
-        <div>{{ props.title }}</div>
+        <div class="ml-[10px]">{{ props.title }}</div>
       </div>
       <PhCaretUp v-if="isOpen" :size="20" class="my-auto" />
       <PhCaretDown v-else :size="20" class="my-auto" />

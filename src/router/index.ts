@@ -394,8 +394,8 @@ const router = createRouter({
       component: AdmisiView,
     },
     {
-      path: "/admisi/laporan/rekap-pasien-bpjs",
-      name: "admisi-laporan-rekap-pasien-bpjs",
+      path: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
+      name: "admisi-laporan-rekap-jumlah-pasien-BPJS",
       meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
