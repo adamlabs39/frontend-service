@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DataPatient from "./DataPatient.vue";
-import CustomChip from "@/components/Base/CustomChip.vue";
-import SessionTab from "./Section/SessionTab.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
 import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
@@ -51,11 +48,11 @@ import ListSuratKeterangan from "@/components/RekamMedis/ListSuratKeterangan/Lis
 import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
 import PrintLab from "@/components/RekamMedis/OrderLab/PrintLab.vue";
 import MedicalRecordTab from "./Section/MedicalRecordTab.vue";
+import MedicalRecordNavigation from "./Section/MedicalRecordNavigation.vue";
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
 const selectedSessionTab = ref("non-sesi");
-const deleteSessionDialog = ref(false);
 const historyVisitDialog = ref(false);
 
 const rmDate = ref("");
@@ -231,6 +228,9 @@ defineExpose({ showDialogRM });
             <MedicalRecordTab
               v-model:selected-tab="selectedTab"
               v-model:selected-session-tab="selectedSessionTab"
+            />
+            <MedicalRecordNavigation
+              :selectedTab="selectedTab"
               v-model:selected-assesment="selectedAssesment"
               v-model:selected-soap="selectedSoap"
               v-model:selected-soapier="selectedSoapier"
