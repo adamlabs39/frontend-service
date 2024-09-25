@@ -56,7 +56,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.DROPDOWN,
         child: [
           { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/bpjs/monitoring-kunjungan'},
-          { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK },
+          { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK , url:'/bpjs/monitoring-riwayat-kunjungan'},
           { name: "Monitoring Obat Kunjungan", type: linkType.LINK },
         ],
       },

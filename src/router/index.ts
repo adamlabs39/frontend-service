@@ -69,6 +69,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+import BPJSPageMonitoringRiwayatKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringRiwayatKunjunganPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,6 +104,12 @@ const router = createRouter({
       path: "/bpjs/monitoring-kunjungan",
       name: "bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage },
+      component: RawatJalanView,
+    },
+    {
+      path: "/bpjs/monitoring-riwayat-kunjungan",
+      name: "bpjs-riwayat-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPageMonitoringRiwayatKunjunganPage },
       component: RawatJalanView,
     },
     {
