@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import { nextTick, onBeforeUnmount, onMounted } from "vue";
 import { ref } from "vue";
