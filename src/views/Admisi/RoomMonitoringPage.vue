@@ -206,7 +206,7 @@ const admisiRegistration = () => {
                     <CustomChip
                       :showCheckedIcon="false"
                       :label="data.kategoriRoom"
-                      bgColor="bg-grey-300"
+                      bgColor="bg-adameds-300"
                       textColor="text-white"
                       customClass="h-5 border-none"
                       class="mr-1"
@@ -239,7 +239,7 @@ const admisiRegistration = () => {
                       :bgColor="
                         data.status == 'PENUH'
                           ? 'bg-danger-300'
-                          : 'bg-adameds-300'
+                          : 'bg-success-300'
                       "
                       textColor="text-white"
                       customClass="h-5 pr-[6px] border-none"
@@ -301,16 +301,7 @@ const admisiRegistration = () => {
               class="absolute inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px]"
             >
               <MonitoringBedCard />
-              <EmptyMonitoringBedCard
-                @click="
-                  setSelectedRoomData({
-                    roomCategory: 'Rawatan Umum',
-                    roomClass: 'Kelas 2',
-                    room: 'Mawar',
-                    bed: 1,
-                  })
-                "
-              />
+              <EmptyMonitoringBedCard @click="() => {}" />
             </div>
           </div>
           <div
@@ -450,12 +441,14 @@ const admisiRegistration = () => {
               textColor="text-adameds-300"
             />
           </div>
+          <hr class="border-grey-200 mb-[30px]" />
+          <div class="font-semibold text-normal">Total Bed : 0</div>
         </div>
       </template>
       <template #footer>
         <CustomButton
           @click="roomSettingDialog = false"
-          label="Batal"
+          label="Reset"
           outlined
           class="mr-[10px]"
           borderColor="border-grey-200"

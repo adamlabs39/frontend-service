@@ -379,14 +379,14 @@ const isDetail = () => {
         </div>
       </template>
       <template #body>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]">
+        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
           <template #header>Riwayat Pemeriksaan</template>
           <template #content>
             <div class="pt-[10px]"></div>
             <ExaminationHistoryCard v-for="data in [1, 2]" class="mt-[10px]" />
           </template>
         </CustomAccordion>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]">
+        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
           <template #header>Riwayat Unggah Berkas Rekam Medis</template>
           <template #content>
             <DataTable
@@ -502,7 +502,7 @@ const isDetail = () => {
             </div>
           </template>
         </CustomAccordion>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]">
+        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
           <template #header>Data Lengkap Pasien</template>
           <template #content>
             <div class="grid grid-cols-2 gap-y-[10px] mt-5">

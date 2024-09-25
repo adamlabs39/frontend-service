@@ -109,7 +109,9 @@ defineExpose({
         <div
           class="grid gap-y-5 gap-x-[30px]"
           :class="[
-            patientData.is_newborn && pageType == 'rawat-inap'
+            patientData.is_newborn &&
+            formType == 'Daftar Bayi Baru Lahir' &&
+            pageType == 'rawat-inap'
               ? 'grid-cols-5'
               : 'grid-cols-2',
           ]"
@@ -128,7 +130,12 @@ defineExpose({
           <CustomSelect
             label="DPJP"
             placeHolder="Pilih DPJP"
-            :class="{ 'col-span-2': patientData.is_newborn && pageType == 'rawat-inap' }"
+            :class="{
+              'col-span-2':
+                patientData.is_newborn &&
+                formType == 'Daftar Bayi Baru Lahir' &&
+                pageType == 'rawat-inap',
+            }"
             optionLabel=""
             optionValue=""
             :showFilter="false"
@@ -139,20 +146,32 @@ defineExpose({
             v-if="pageType == 'igd' || pageType == 'rawat-inap'"
             label="Keluhan Utama"
             :class="{
-              'col-span-2': patientData.is_newborn && pageType == 'rawat-inap',
+              'col-span-2':
+                patientData.is_newborn &&
+                formType == 'Daftar Bayi Baru Lahir' &&
+                pageType == 'rawat-inap',
             }"
             placeholder="Keluhan Utama"
             :disabled="isDetail"
           />
           <CustomSwitch
-            v-if="patientData.is_newborn && pageType == 'rawat-inap'"
+            v-if="
+              patientData.is_newborn &&
+              formType == 'Daftar Bayi Baru Lahir' &&
+              pageType == 'rawat-inap'
+            "
             :disabled="!mergeBill || isDetail"
             label="Tagihan Keluarga"
             sideLabel="Iya"
           />
         </div>
         <div
-          v-if="!patientData.is_newborn && pageType == 'rawat-inap' || pageType != 'rawat-inap'"
+          v-if="
+            ((!patientData.is_newborn ||
+              formType != 'Daftar Bayi Baru Lahir') &&
+              pageType == 'rawat-inap') ||
+            pageType != 'rawat-inap'
+          "
           class="grid gap-y-5 gap-x-[30px] mt-5"
           :class="[pageType == 'rawat-inap' ? 'grid-cols-4' : 'grid-cols-5']"
         >
