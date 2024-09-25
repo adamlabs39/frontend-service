@@ -61,7 +61,7 @@ const detail = ref(false);
     :value="products"
     tableStyle="min-width: 50rem"
     stripedRows
-    class="text-xs -m-4"
+    class="-m-4 text-xs"
     scrollable
         scrollHeight="flex"
   >
@@ -128,10 +128,10 @@ const detail = ref(false);
     ></Column>
     <Column field="status" headerClass="bg-adameds-50 text-center">
       <template #header>
-        <div class="text-center w-full font-semibold">Status</div>
+        <div class="w-full font-semibold text-center">Status</div>
       </template>
       <template #body="slotProps">
-        <div class="flex justify-center items-center">
+        <div class="flex items-center justify-center">
           <CustomChip
             :label="slotProps.data.status"
             :textColor="
@@ -189,7 +189,7 @@ const detail = ref(false);
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <CustomTextfield label="Alasan Hapus Tarif" placeholder="Alasan Hapus Tarif" />
-        <div class="text-normal text-danger-300 italic">*Setelah hapus, data akan <span class="font-bold">terupdate</span> dan akan <span class="font-bold">mempengaruhi seluruh pelayanan</span></div>
+        <div class="italic text-normal text-danger-300">*Setelah hapus, data akan <span class="font-bold">terupdate</span> dan akan <span class="font-bold">mempengaruhi seluruh pelayanan</span></div>
       </div>
     </template>
     <template #footer>

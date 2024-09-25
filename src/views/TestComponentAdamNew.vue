@@ -4,6 +4,7 @@ import FormAsesmenNyeri from '@/components/RekamMedis/AsesmenNyeri/FormAsesmenNy
 import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vue';
 import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue';
 import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/FormDiagnosaDokterICD10.vue';
+
 </script>
 
 <template>
@@ -13,5 +14,6 @@ import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/Form
          <FormAsesmenNyeri/>
          <FormCatatanPerawat/>
          <FormDiagnosaDokterICD10/>
+         
     </div>
 </template>
