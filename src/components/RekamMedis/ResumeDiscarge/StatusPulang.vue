@@ -100,7 +100,7 @@ defineExpose({
                 v-for="data in optionsIsInternal"
                 v-model="isInternal"
                 :sideLabel="data.label"
-                :value="data.value"
+                :value="`${data.value}`"
               />
             </div>
             <CustomSelect

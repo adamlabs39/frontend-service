@@ -1,22 +1,32 @@
-import { baseInstance, settingInstance, baseInstanceDatamaster } from "./Api";
+import {
+  baseInstance,
+  settingInstance,
+  baseInstanceDatamaster,
+  authInstance,
+} from "./Api";
 import { app } from "@/main";
 
 const errorApiHandler = (error: any) => {
-  console.log(error);
-  
-  let tempSummary = ``
+  let tempSummary = ``;
   let tempDetail = ``;
   if (error.response) {
-    tempSummary = error.response.data.message
+    if (
+      error.response.data.message == "Token tidak valid atau telah kadaluarsa"
+    ) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("permission");
+      localStorage.removeItem("user");
+    }
+    tempSummary = error.response.data.message;
     error.response.data.errors.forEach((errorMsg: any, index: number) => {
-      if (error.errors.length == index + 1) {
-        tempDetail += "- " + errorMsg;
+      if (error.response.data.errors == index + 1) {
+        tempDetail += "- " + errorMsg.message;
       } else {
-        tempDetail += "- " + errorMsg + "\n";
+        tempDetail += "- " + errorMsg.message + "\n";
       }
     });
   } else {
-    tempSummary = error.message
+    tempSummary = error.message;
   }
 
   app.config.globalProperties.$toast.add({
@@ -25,6 +35,7 @@ const errorApiHandler = (error: any) => {
     detail: tempDetail,
     life: 3000,
   });
+  throw new Error(tempSummary);
 };
 
 const apiBasePost = async (url: string, data: object) => {
@@ -75,6 +86,36 @@ const apiBaseDelete = async (url: string, data: object) => {
   }
 };
 
+// Auth
+const apiAuthPost = async (url: string, data: object) => {
+  try {
+    let response = await authInstance.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAuthDelete = async (url: string, data: object) => {
+  try {
+    let response = await authInstance.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 // Setting
 const apiSettingPost = async (url: string, data: object) => {
   try {
@@ -110,7 +151,6 @@ const apiSettingDelete = async (url: string, data: object) => {
 };
 
 //Datamaster
-
 const apiDatamasterGet = async (url: string, data: object) => {
   try {
     let response = await baseInstanceDatamaster.get(url, data);
@@ -149,6 +189,8 @@ export {
   apiBaseGet,
   apiBasePut,
   apiBaseDelete,
+  apiAuthPost,
+  apiAuthDelete,
   apiSettingPost,
   apiSettingGet,
   apiSettingPut,

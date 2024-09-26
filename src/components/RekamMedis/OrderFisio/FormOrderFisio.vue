@@ -61,7 +61,7 @@ const [tanggalPemeriksaanFisio] = defineField("tanggalPemeriksaanFisio");
 const { remove, push, fields } = useFieldArray("datas");
 
 const myPushFunction = () => {
-  push({ listTindakan: "", harga: 10000, jumlah: "", petugas: "Nama Petugas" });
+  push({ listTindakan: "", harga: 10000, jumlah: 0, petugas: "Nama Petugas" });
 };
 
 const listTindakanOptions = ref([
@@ -133,9 +133,9 @@ defineExpose({
                 optionLabel="label"
                 label=""
                 place-holder="Cari & Pilih Tindakan"
-                :invalid="!!errors[`datas[${slotProps.index}].listTindakan`]"
+                :invalid="!!errors[`datas[${slotProps.index}].listTindakan`  as keyof typeof errors]"
                 :invalidMessage="
-                  errors[`datas[${slotProps.index}].listTindakan`]
+                  errors[`datas[${slotProps.index}].listTindakan`  as keyof typeof errors]
                 "
               />
             </template>

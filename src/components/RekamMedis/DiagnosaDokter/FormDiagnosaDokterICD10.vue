@@ -48,7 +48,8 @@ const [primer] = defineField('primer');
 const [petugas] = defineField('petugas');
 const [diagnosisDiferensial] = defineField('diagnosisDiferensial');
 
-const { remove, push, fields } = useFieldArray("datas");
+const { remove, push, fields } = useFieldArray<{ sekunder: string, diagnosisDiferensialDinamis: string }>("datas");
+
 
 const addDiagnosis = () => {
     push({ sekunder: '', diagnosisDiferensialDinamis: '' });
@@ -139,8 +140,8 @@ defineExpose({
                     <div class="basis-2/5">
                         <CustomSelect label="Sekunder" v-model="field.value.sekunder" :options="diagnosaSekunders"
                             optionValue="diagnosaSekunder" optionLabel="diagnosaSekunder" :isLoading="false"
-                            :invalid="!!errors[`datas[${index}].sekunder`]"
-                            :invalidMessage="errors[`datas[${index}].sekunder`]" :disabled="false"
+                            :invalid="!!errors[`datas[${index}].sekunder` as keyof typeof errors]"
+                            :invalidMessage="errors[`datas[${index}].sekunder` as keyof typeof errors]" :disabled="false"
                             placeHolder="Pilih Diagnosis" customSelectClass="border-[#C7CBD2]"
                             prependIcon="PhMagnifyingGlass" />
                     </div>

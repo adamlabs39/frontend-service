@@ -9,6 +9,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import HeaderFilter from "./Layout/HeaderFilter.vue";
 import RegisterForm from "./Layout/RegisterForm.vue";
 import NoData from "@/components/section/NoData.vue";
+import type { DataTableRowClickEvent } from "primevue/datatable";
 
 const storeUtils = utilsStore();
 
@@ -22,11 +23,15 @@ const resetFilter = () => {
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string) => {
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
   if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
+    dataBreadCrumb.value[0] = tempData;
   } else {
-    dataBreadCrumb.value.push({ label: label });
+    dataBreadCrumb.value.push(tempData);
   }
 };
 
@@ -48,12 +53,17 @@ onMounted(() => {
 
 const itemsPasien = ref([
   {
-    noRM: "123456",
+    noRM: "00-00-00",
+    noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
     tanggal_daftar: "10-10-2024 09:00",
     tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "",
     insurance_account_name: "TUNAI",
     polyclinic: "POLI ANAK",
@@ -65,14 +75,22 @@ const itemsPasien = ref([
     no_antrian: "1",
     new_patient: true,
     platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
   },
   {
-    noRM: "123456",
+    noRM: "00-00-00",
+    noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
     tanggal_daftar: "10-10-2024 09:00",
     tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "9999999999999999",
     insurance_account_name: "BPJS",
     polyclinic: "POLI KANDUNGAN",
@@ -84,14 +102,22 @@ const itemsPasien = ref([
     no_antrian: "2",
     new_patient: false,
     platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: true,
   },
   {
-    noRM: "123456",
+    noRM: "00-00-00",
+    noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
     tanggal_daftar: "10-10-2024 09:00",
     tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "",
     insurance_account_name: "TUNAI",
     polyclinic: "POLI ANAK",
@@ -102,14 +128,21 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: true,
     platform: "APM",
+    status_rj: "2",
+    status_ri: "2",
   },
   {
-    noRM: "123456",
+    noRM: "00-00-00",
+    noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
     tanggal_daftar: "10-10-2024 09:00",
     tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "",
     insurance_account_name: "TUNAI",
     polyclinic: "POLI ANAK",
@@ -120,14 +153,21 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: false,
     platform: "MOBILE APP",
+    status_rj: "2",
+    status_ri: "3",
   },
   {
-    noRM: "123456",
+    noRM: "00-00-00",
+    noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
     tanggal_daftar: "10-10-2024 09:00",
     tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "",
     insurance_account_name: "TUNAI",
     polyclinic: "POLI ANAK",
@@ -138,6 +178,8 @@ const itemsPasien = ref([
     no_antrian: null,
     new_patient: false,
     platform: "APM",
+    status_rj: "1",
+    status_ri: "3",
   },
 ]);
 const selectedPatient = ref([]);
@@ -145,8 +187,27 @@ const selectedPatient = ref([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
-const showPatientDetail = () => {
-  changeSection("Detail");
+const openedPatientData = ref<any>({});
+const showPatientDetail = (event: DataTableRowClickEvent) => {
+  openedPatientData.value = event.data;
+  if (pageType.value == "rawat-jalan") {
+    if (openedPatientData.value.status_rj == "1") {
+      changeSection("Checkin", { platform: openedPatientData.value.platform });
+    } else {
+      changeSection("Detail");
+    }
+  } else if (pageType.value == "rawat-inap") {
+    if (
+      openedPatientData.value.status_ri == "1" ||
+      openedPatientData.value.status_ri == "2"
+    ) {
+      changeSection("Daftar");
+    } else {
+      changeSection("Detail");
+    }
+  } else {
+    changeSection("Detail");
+  }
 };
 </script>
 
@@ -162,6 +223,7 @@ const showPatientDetail = () => {
         ref="headerFilterRef"
         :pageType="pageType"
         @daftar="changeSection('Daftar')"
+        @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
       />
     </template>
     <template #content>
@@ -181,13 +243,14 @@ const showPatientDetail = () => {
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
+              <div class="text-SM">{{ slotProps.data.noRM }}</div>
               <div
-                v-if="slotProps.data.no_antrian"
-                class="w-[21px] mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] text-SM font-semibold"
+                v-if="slotProps.data.no_antrian && pageType == 'rawat-jalan'"
+                class="w-min mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] px-2 leading-5 text-SM font-semibold px-"
               >
                 {{ slotProps.data.no_antrian }}
               </div>
+              <div class="text-SM">{{ slotProps.data.noReg }}</div>
             </div>
           </template>
         </Column>
@@ -248,7 +311,11 @@ const showPatientDetail = () => {
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.doctor }}</div>
+            <div class="flex mb-[5px] text-SM">
+              <div>{{ slotProps.data.doctorData.doctor }}</div>
+              <div class="border border-adameds-300 mx-[5px] my-1"></div>
+              <div>{{ slotProps.data.doctorData.schedule }}</div>
+            </div>
             <div class="flex flex-wrap">
               <CustomChip
                 :showCheckedIcon="false"
@@ -296,10 +363,59 @@ const showPatientDetail = () => {
           <template #body="slotProps">
             <div class="text-SM">
               <div
+                v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
               >
                 Daftar
-                <PhArrowRight
+                <ArrowRightBrokenIcon
+                  :size="18"
+                  class="my-auto mr-5 text-grey-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-jalan'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Jadwal
+                <ArrowRightBrokenIcon
+                  :size="18"
+                  class="my-auto mr-5 text-male-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-jalan'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Checkin
+                <ArrowRightBrokenIcon
+                  :size="18"
+                  class="my-auto mr-5 text-mint-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_checkin }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-inap'"
+                class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
+              >
+                SPRI
+                <ArrowRightBrokenIcon
+                  :size="18"
+                  class="my-auto mr-5 text-grey-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'rawat-inap'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Dirawat
+                <ArrowRightBrokenIcon
                   :size="18"
                   class="my-auto mr-5 text-info-300"
                   weight="bold"
@@ -307,15 +423,28 @@ const showPatientDetail = () => {
                 {{ slotProps.data.tanggal_daftar }}
               </div>
               <div
-                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+                v-if="pageType == 'igd'"
+                class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
               >
-                Jadwal
-                <PhArrowRight
+                Daftar
+                <ArrowRightBrokenIcon
                   :size="18"
-                  class="my-auto mr-5 text-sunFlower-300"
+                  class="my-auto mr-5 text-grey-300"
                   weight="bold"
                 />
-                {{ slotProps.data.tanggal_jadwal }}
+                {{ slotProps.data.tanggal_daftar }}
+              </div>
+              <div
+                v-if="pageType == 'igd'"
+                class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+              >
+                Dirawat
+                <ArrowRightBrokenIcon
+                  :size="18"
+                  class="my-auto mr-5 text-info-300"
+                  weight="bold"
+                />
+                {{ slotProps.data.tanggal_daftar }}
               </div>
             </div>
           </template>
@@ -377,12 +506,15 @@ const showPatientDetail = () => {
   </Card>
   <RegisterForm
     v-else-if="
+      dataBreadCrumb[0].label == 'Checkin' ||
       dataBreadCrumb[0].label == 'Daftar' ||
+      dataBreadCrumb[0].label == 'Daftar Bayi Baru Lahir' ||
       dataBreadCrumb[0].label == 'Detail' ||
       dataBreadCrumb[0].label == 'Detail Edit'
     "
     :dataBreadCrumb="dataBreadCrumb"
     :pageType="pageType"
+    :patientData="openedPatientData"
     @back="dataBreadCrumb.pop()"
     @goToDetail="dataBreadCrumb[0].label = 'Detail'"
     @goToEdit="dataBreadCrumb[0].label = 'Detail Edit'"

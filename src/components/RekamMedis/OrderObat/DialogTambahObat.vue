@@ -13,6 +13,21 @@ import * as yup from "yup";
 import DetailPasien from './DetailPasien.vue';
 import CustomSwitch from '@/components/Base/CustomSwitch.vue';
 
+type Obat = {
+    namaObat: string;
+    jumlahTotal: number ; // Menggunakan null jika ada kemungkinan tidak diisi
+    periode: string;
+    jumlahKonsumsi: number;
+    satuanDosis: string;
+    aturanPakai: string;
+    caraPakai: string;
+    rutePemberian: string;
+    obatPulang: boolean;
+    obatKronis: boolean;
+    catatan: string;
+};
+
+
 const props = defineProps({
     isDialogVisible: {
         type: Boolean,
@@ -97,7 +112,7 @@ const { errors, handleSubmit, resetForm } = useForm({
     },
 });
 
-const { remove, push, fields } = useFieldArray("datas");
+const { remove, push, fields } = useFieldArray<Obat>("datas");
 
 // Handler submit form
 const onSubmit = handleSubmit((values) => {
@@ -110,9 +125,9 @@ const onSubmit = handleSubmit((values) => {
 const addObat = () => {
     push({
         namaObat: '',
-        jumlahTotal: '',
+        jumlahTotal: 0,
         periode: '',
-        jumlahKonsumsi: '',
+        jumlahKonsumsi: 0,
         satuanDosis: '',
         aturanPakai: '',
         caraPakai: '',

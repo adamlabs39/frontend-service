@@ -108,7 +108,7 @@ const handleRemove = (index: number) => {
   if (parseItem.isNew) {
     remove(index);
   } else {
-    const deletedItem = { ...parseItem, isDelete: true };
+    const deletedItem = { ...parseItem, isDeleted: true };
     const parseDelete = JSON.parse(JSON.stringify(deletedItem));
     deletedData.value.push(parseDelete);
     remove(index);
@@ -182,6 +182,7 @@ const handleTambahMultiple = () => {
   selectedItems.value = [];
   tambahTindakan.value = false;
 };
+
 watch(tambahTindakan, (newValue) => {
   if (!newValue) {
     cariItemMultiple.value = "";

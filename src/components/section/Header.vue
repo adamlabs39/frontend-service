@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { PhCaretDown, PhHouse } from "@phosphor-icons/vue";
-import { ref } from "vue";
+import type { ListMenu, Module } from "@/utils/Interface";
+import { onMounted, ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
 import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
+
+interface userData {
+  name: string;
+  role: string;
+}
+
+const authStore = useAuthStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -11,7 +19,8 @@ const goToPage = (url: string) => {
   router.push(url);
 };
 
-const listMenu = ref([
+const listMenu = ref<ListMenu[]>([]);
+const templistMenu = ref<ListMenu[]>([
   {
     title: "Dashboard",
     icon: "PhChartLine",
@@ -101,6 +110,34 @@ const isDialogVisible = ref(false);
 const showDialog = () => {
   isDialogVisible.value = true;
 };
+
+const userData = ref<userData>();
+const logout = async () => {
+  try {
+    await authStore.logoutApi();
+    router.push("login");
+  } catch (error: any) {
+    console.log(error.message);
+  }
+};
+
+onMounted(() => {
+  listMenu.value.push(templistMenu.value[0]);
+  userData.value = JSON.parse(localStorage.getItem("user") ?? "");
+  const listPermissionStr = localStorage.getItem("permission");
+  if (listPermissionStr) {
+    const listPermission: Module[] = JSON.parse(listPermissionStr);
+    listPermission.forEach((module) => {
+      const listMenuFind = templistMenu.value.find(
+        (menu) => menu.title == module.module
+      );
+      if (listMenuFind) {
+        listMenu.value.push(listMenuFind);
+      }
+    });
+  }
+  console.log(listMenu.value);
+});
 </script>
 
 <template>
@@ -180,7 +217,9 @@ const showDialog = () => {
         >
           <template #container>
             <div class="p-2.5 rounded-2xl w-[180px]">
-              <div class="font-semibold text-black text-XS">NAMA AKUN</div>
+              <div class="font-semibold text-black text-XS">
+                {{ userData?.name }}
+              </div>
               <div class="text-[#79808F] text-[8px]">
                 Terakhir Login 4 Mar 2024 | 12:00
               </div>
@@ -188,9 +227,9 @@ const showDialog = () => {
                 class="flex items-center gap-1 p-2 my-2.5 rounded-md bg-adameds-75"
               >
                 <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
-                <span class="font-semibold text-adameds-300 text-[8px]"
-                  >Perawat</span
-                >
+                <span class="font-semibold text-adameds-300 text-[8px]">{{
+                  userData?.role
+                }}</span>
               </div>
               <hr class="border-[#D9DCE1] border-1" />
               <div class="flex flex-col items-start py-2">
@@ -217,6 +256,7 @@ const showDialog = () => {
 
               <div class="flex w-full gap-5 cursor-pointer">
                 <CustomButton
+                  @click="logout"
                   label="LOGOUT"
                   full
                   class="font-semibold"

@@ -8,7 +8,7 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomUpload from "@/components/Base/CustomUpload.vue";
+// import CustomUpload from "@/components/Base/CustomUpload.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 
 const props = defineProps({
@@ -256,14 +256,15 @@ function handleReset() {
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
             />
-            <CustomUpload
+            123
+            <!-- <CustomUpload
               v-if="layarModel === 'L-5'"
               label="Gambar"
               place-holder="File JPG / PNG"
               optionValue="code"
               optionLabel="name"
               class="w-full mt-4 mr-5 text-black"
-            />
+            /> -->
             <CustomMultiSelect
               label="Flash Text"
               placeholder="Flash Text"

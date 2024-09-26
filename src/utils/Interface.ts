@@ -14,3 +14,20 @@ export interface selectedBedType {
   room: string;
   bed: number;
 }
+
+export interface Module {
+  module: string;
+  subModule: SubModule[];
+}
+
+export interface SubModule {
+  name: string;
+  allows: [];
+}
+
+export interface ListMenu {
+  title: string;
+  icon: string;
+  iconWeight?: string;
+  url: string;
+}
