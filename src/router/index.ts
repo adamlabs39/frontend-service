@@ -131,7 +131,7 @@ const router = createRouter({
     {
       path: "/bpjs/monitoring-riwayat-kunjungan",
       name: "bpjs-riwayat-monitoring-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSPageMonitoringRiwayatKunjunganPage },
+      meta: { layout: SidebarLayout, page: BPJSPageMonitoringRiwayatKunjunganPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
