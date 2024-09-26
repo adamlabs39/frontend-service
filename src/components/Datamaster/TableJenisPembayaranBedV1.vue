@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref,computed,onBeforeMount } from "vue";
+import { ref, computed, onBeforeMount } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomTextfield from "../Base/CustomTextfield.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
 import CustomButton from "../Base/CustomButton.vue";
+import CustomInputNumber from "../Base/CustomInputNumber.vue";
 
 const schema = toTypedSchema(
   yup.object({
@@ -17,24 +18,22 @@ const schema = toTypedSchema(
           .required("Harga bed harus diisi")
           .matches(/^\d+$/, "Harga harus berupa angka"),
       })
-    )
-     
+    ),
   })
 );
 
 const { errors, handleSubmit, resetForm, setValues } = useForm({
   validationSchema: schema,
- 
-  initialValues: {
-    datas: [{ jenisPembayaran: '', harga: '' }],
-  },
 
+  initialValues: {
+    datas: [{ jenisPembayaran: "", harga: "" }],
+  },
 });
 
-const { remove, push, fields  } = useFieldArray('datas');
+const { remove, push, fields } = useFieldArray("datas");
 
 const myPushFunction = () => {
-  push({ jenisPembayaran: '', harga: '' });
+  push({ jenisPembayaran: "", harga: "" });
 };
 
 const onSubmit = handleSubmit((values) => {
@@ -43,7 +42,7 @@ const onSubmit = handleSubmit((values) => {
 
 onBeforeMount(async () => {
   setValues({
-    datas: [{ jenisPembayaran: 'tunai', harga: '30000' }]
+    datas: [{ jenisPembayaran: "tunai", harga: "30000" }],
   });
 });
 
@@ -51,8 +50,6 @@ const jenisBayarOptions = ref([
   { label: "Tunai", value: "tunai" },
   { label: "BPJS", value: "bpjs" },
 ]);
-
-
 </script>
 
 <template>
@@ -76,7 +73,10 @@ const jenisBayarOptions = ref([
             place-holder="Jenis Pembayaran Lain"
             :invalid="!slotProps.data.value.jenisPembayaran"
           />
-          <ErrorMessage :name="`datas[${slotProps.index}].jenisPembayaran`" class="text-danger-300" />
+          <ErrorMessage
+            :name="`datas[${slotProps.index}].jenisPembayaran`"
+            class="text-danger-300"
+          />
         </template>
       </Column>
       <Column headerClass="bg-adameds-300 text-white">
@@ -84,21 +84,24 @@ const jenisBayarOptions = ref([
           <div class="w-full font-semibold text-end">Harga Bed</div>
         </template>
         <template #body="slotProps">
-          <CustomTextfield
+          <CustomInputNumber
             v-model="slotProps.data.value.harga"
             label=""
-            placeholder="0"
+            align-number="text-end"
             :invalid="!slotProps.data.value.harga"
           >
             <template #prependText>
               <div
-                class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
+                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD text-adameds-300 bg-adameds-300 rounded-l-md"
               >
                 Rp.
               </div>
             </template>
-          </CustomTextfield>
-          <ErrorMessage :name="`datas[${slotProps.index}].harga`" class="text-danger-300"/>
+          </CustomInputNumber>
+          <ErrorMessage
+            :name="`datas[${slotProps.index}].harga`"
+            class="text-danger-300"
+          />
         </template>
       </Column>
       <Column headerClass="bg-adameds-300 text-white">

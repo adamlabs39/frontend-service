@@ -36,7 +36,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const diagnosisStore=useDiagnosisStore();
+const diagnosisStore = useDiagnosisStore();
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (props.method === "edit") {
@@ -54,7 +54,7 @@ const onSubmit = handleSubmit(async (values: any) => {
 
       const response = await diagnosisStore.postApi(values);
       console.log("Data added successfully:", response);
-      emit('data-updated');
+      emit("data-updated");
     }
     closeDialog();
   } catch (error) {
@@ -66,8 +66,7 @@ const [code] = defineField("code");
 const [name] = defineField("name");
 const [status] = defineField("status");
 
-
-const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
+const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -97,31 +96,34 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{title}} Diagnosis</template>
+    <template #header>{{ title }} Diagnosis</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode Diagnosis"
-            v-model="code"
-            placeholder="Kode Diagnosis"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-          />
-          <CustomTextfield
-            label="Nama Diagnosis (ICD 10)"
-            v-model="name"
-            placeholder="Nama Diagnosis (ICD 10)"
-            class="basis-3/4"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-          />
-        </div>
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+      <div class="grid grid-col-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode Diagnosis"
+          v-model="code"
+          placeholder="Kode Diagnosis"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="Nama Diagnosis (ICD 10)"
+          v-model="name"
+          placeholder="Nama Diagnosis (ICD 10)"
+          class="col-span-8"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>

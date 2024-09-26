@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  adameds_frontend:
+    container_name: adameds-frontend
+    image: adameds-frontend:dev
+    build: .
+    ports:
+      - 5520:5520
+    networks:
+      - adameds-bridge-networks
+networks:
+  adameds-bridge-networks:
+    driver: bridge

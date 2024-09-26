@@ -22,11 +22,11 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false" class="mt-[10px]">
+  <CustomAccordion :openWithHeader="false" class="mt-[10px]" initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <img src="../../assets/images/BPJS.png" alt="" />
+          <img src="../../../assets/images/BPJS.png" alt="" />
         </div>
       </div>
     </template>

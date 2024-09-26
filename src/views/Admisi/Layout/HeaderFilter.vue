@@ -25,7 +25,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["daftar"]);
+const emit = defineEmits(["daftar", "daftarBayi"]);
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -143,7 +143,7 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false" noBorder>
+  <CustomAccordion :openWithHeader="false" noBorder initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
@@ -169,9 +169,11 @@ defineExpose({
         </div>
         <CustomButton
           v-if="!isSEP"
-          @click="emit('daftar')"
+          @click="
+            pageType == 'rawat-inap' ? emit('daftarBayi') : emit('daftar')
+          "
           icon="PhPlus"
-          label="Daftar"
+          :label="pageType == 'rawat-inap' ? 'Bayi Baru Lahir' : 'Daftar'"
           class="mr-[10px]"
         />
       </div>

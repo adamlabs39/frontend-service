@@ -174,7 +174,7 @@ const resetFilter = () => {
         :method="dialogData.method" @close="handleClose" />
     </template>
     <template #footer>
-      <Footer />
+      <Footer :rows="1" :totalRecords="1" />
     </template>
   </Card>
 </template>

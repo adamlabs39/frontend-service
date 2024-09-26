@@ -13,6 +13,7 @@ onMounted(() => {
   products.value = [
     {
       id: "1",
+      kode:"123",
       nama_tarif: "Paket Pemeriksaan Poli Umum",
       pilihan_tarif: "Single",
       pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
@@ -23,6 +24,7 @@ onMounted(() => {
     },
     {
       id: "2",
+      kode:"123",
       nama_tarif: "Paket Pemeriksaan Poli Umum",
       pilihan_tarif: "Single",
       pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
@@ -33,6 +35,7 @@ onMounted(() => {
     },
     {
       id: "3",
+      kode:"123",
       nama_tarif: "Paket Pemeriksaan Poli Umum",
       pilihan_tarif: "Single",
       pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
@@ -43,6 +46,7 @@ onMounted(() => {
     },
     {
       id: "4",
+      kode:"123",
       nama_tarif: "Paket Pemeriksaan Poli Umum",
       pilihan_tarif: "Single",
       pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
@@ -72,6 +76,11 @@ const detail = ref(false);
         </div>
       </template>
     </Column>
+    <Column
+      field="kode"
+      header="Kode Tarif"
+      headerClass="bg-adameds-50"
+    ></Column>
     <Column
       field="nama_tarif"
       header="Nama Tarif"

@@ -6,7 +6,6 @@ import CustomAutoComplete from "../Base/CustomAutoComplete.vue";
 import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import CustomSelect from "../Base/CustomSelect.vue";
-import TableKomponenTarif from "./TableKomponenTarif.vue";
 const data = ref([{ no: 1, tindakan: "", action: "" }]);
 const addRow = () => {
   data.value.push({

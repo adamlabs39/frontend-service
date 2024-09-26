@@ -7,7 +7,10 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
 const props = defineProps({
     method: {
@@ -16,57 +19,124 @@ const props = defineProps({
     }
 })
 
+const emit = defineEmits(['edit']);
+const currentMethod = ref(props.method)
 
 const criterias = ref([
-    { id: "1", kriteriaPemantauan: "PEWS" },
-    { id: "2", kriteriaPemantauan: "SWEP" },
-    { id: "3", kriteriaPemantauan: "WEPS" },
-    { id: "4", kriteriaPemantauan: "WSEP" },
+    { id: 1, value: "PEWS" },
+    { id: 2, value: "SWEP" },
+    { id: 3, value: "WEPS" },
+    { id: 4, value: "WSEP" },
 ]);
 
 const respirasis = ref([
-    { id: "1", respirasiAnak: "Normal" },
-    { id: "2", respirasiAnak: "Tidak Normal" },
+    { id: 1, value: "Normal" },
+    { id: 2, value: "Tidak Normal" },
 ])
 
 const kardiovaskulers = ref([
-    { id: "1", kardiovaskulerAnak: "Sianosis" },
-    { id: "2", kardiovaskulerAnak: "Tidak Sianosis" },
+    { id: 1, value: "Sianosis" },
+    { id: 2, value: "Tidak Sianosis" },
 ])
 const keadaanUmums = ref([
-    { id: "1", keadaanUmum: "Interaksi Biasa" },
-    { id: "2", keadaanUmum: "Interaksi Non Biasa" },
+    { id: 1, value: "Interaksi Biasa" },
+    { id: 2, value: "Interaksi Non Biasa" },
 ])
 
+const schemaTandaVital = computed(() =>
+    toTypedSchema(
+        yup.object({
+            kriteriaPemantauan: yup.string(),
+            respirasiAnak: yup.string(),
+            kardiovaskulerAnak: yup.string(),
+            keadaanUmum: yup.string(),
+            waktuAsesmen: yup.date(),
+            frekuensiNafas: yup.number(),
+            frekuensiNadi: yup.number(),
+            suhu: yup.number().positive("Suhu must be positive"),
+            bloodOxygen: yup.number().positive("Blood Oxygen must be positive"),
+            gulaDarah: yup.number().positive("Gula Darah must be positive"),
+            CRT: yup.boolean().default(false),
+            oksigenTambahan: yup.boolean().default(false),
+            tekananDarah: yup.number().required("Tekanan Darah is required").positive("Tekanan Darah must be positive"),
+            petugas: yup.string().required('Petugas alergi is required')
+        })
+    )
+);
 
-const selectedCriteria = ref("");
-const selectedRespirasi = ref("");
-const selectedKardiovaskuler = ref("");
-const selectedKeadaanUmum = ref("");
+// respirasi,kardiovaskuler, keadaanumum
 
-const waktuAsesmen = ref<Date>(new Date());
-const frekuensiNafas = ref<number | undefined>(undefined);
-const frekuensiNadi = ref<number | undefined>(undefined);
+const {
+    handleSubmit: handleSubmitTandaVital,
+    defineField: defineFieldTandaVital, setValues
+} = useForm({
+    validationSchema: schemaTandaVital,
+});
 
 
-const suhu = ref<number | undefined>(undefined);
-const bloodOxygen = ref<number | undefined>(undefined);
-const gulaDarah = ref<number | undefined>(undefined);
-const CRT = ref(false);
-const oksigenTambahan = ref(false);
-const tekananDarah = ref<number | undefined>(undefined);
+const [kriteriaPemantauan] = defineFieldTandaVital("kriteriaPemantauan");
+const [respirasiAnak] = defineFieldTandaVital("respirasiAnak");
+const [kardiovaskulerAnak] = defineFieldTandaVital("kardiovaskulerAnak");
+const [keadaanUmum] = defineFieldTandaVital("keadaanUmum");
+
+const [waktuAsesmen] = defineFieldTandaVital("waktuAsesmen");
+const [frekuensiNafas] = defineFieldTandaVital("frekuensiNafas");
+const [frekuensiNadi] = defineFieldTandaVital("frekuensiNadi");
+const [suhu] = defineFieldTandaVital("suhu");
+const [bloodOxygen] = defineFieldTandaVital("bloodOxygen");
+const [gulaDarah] = defineFieldTandaVital("gulaDarah");
+const [CRT] = defineFieldTandaVital("CRT");
+const [oksigenTambahan] = defineFieldTandaVital("oksigenTambahan");
+const [tekananDarah] = defineFieldTandaVital("tekananDarah");
+const [petugas] = defineFieldTandaVital("petugas");
+
+
+
+// Do the same for other numeric fields as needed
+
+
+
+const onSubmitTandaVital = handleSubmitTandaVital((values: any) => {
+    console.log("Adding new data", values);
+    values.kardiovaskulerAnak = Number(values.kardiovaskulerAnak);
+    values.keadaanUmum = Number(values.keadaanUmum);
+    values.respirasiAnak = Number(values.respirasiAnak);
+    currentMethod.value = 'detail'
+    emit("edit");
+})
+
+onBeforeMount(async () => {
+    setValues({petugas:"NamaKu"})
+})
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 
 
 </script>
 
 <template>
-    <CustomAccordion headerClass="bg-adameds-50">
+    <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
         <template #header> Tanda Vital</template>
         <template #content>
-            <div v-if="props.method == 'form'">
+            <div v-if="currentMethod == 'form'">
                 <div class="grid grid-cols-4 gap-[30px] py-3">
-                    <CustomSelect label="Kriteria Pemantauan" v-model="selectedCriteria" :options="criterias"
-                        optionValue="id" optionLabel="kriteriaPemantauan" :isLoading="false" :invalid="false"
+                    <CustomSelect label="Kriteria Pemantauan" v-model="kriteriaPemantauan" :options="criterias"
+                        optionValue="value" optionLabel="value" :isLoading="false" :invalid="false"
                         invalidMessage="Wajib diisi" :disabled="false" placeHolder="PEWS"
                         customSelectClass="border-[#C7CBD2]" />
                     <CustomDatePicker v-model="waktuAsesmen" label="Waktu Asesmen" />
@@ -128,49 +198,49 @@ const tekananDarah = ref<number | undefined>(undefined);
                         </CustomInputNumber>
                     </div>
                     <div class="grow">
-                        <CustomSelect label="Respirasi Anak" v-model="selectedRespirasi" :options="respirasis"
-                            optionValue="id" optionLabel="respirasiAnak" :isLoading="false" :invalid="false"
+                        <CustomSelect label="Respirasi Anak" v-model="respirasiAnak" :options="respirasis"
+                            optionValue="id" optionLabel="value" :isLoading="false" :invalid="false"
                             invalidMessage="Wajib diisi" :disabled="false" placeHolder="Tidak ada retraksi / RR Normal"
                             customSelectClass="border-[#C7CBD2]" />
                     </div>
                 </div>
                 <!-- Baris Keempat -->
                 <div class="grid grid-cols-2 gap-[30px] py-3">
-                    <CustomSelect label="Kardiovaskuler Anak" v-model="selectedKardiovaskuler"
-                        :options="kardiovaskulers" optionValue="id" optionLabel="kardiovaskulerAnak" :isLoading="false"
+                    <CustomSelect label="Kardiovaskuler Anak" v-model="kardiovaskulerAnak"
+                        :options="kardiovaskulers" optionValue="id" optionLabel="value" :isLoading="false"
                         :invalid="false" invalidMessage="Wajib diisi" :disabled="false" placeHolder="Mungkin Sianosis"
                         customSelectClass="border-[#C7CBD2]" />
-                    <CustomSelect label="Keadaan Umum" v-model="selectedKeadaanUmum" :options="keadaanUmums"
-                        optionValue="id" optionLabel="keadaanUmum" :isLoading="false" :invalid="false"
+                    <CustomSelect label="Keadaan Umum" v-model="keadaanUmum" :options="keadaanUmums"
+                        optionValue="id" optionLabel="value" :isLoading="false" :invalid="false"
                         invalidMessage="Wajib diisi" :disabled="false" placeHolder="Interaksi Mungkin Biasa"
                         customSelectClass="border-[#C7CBD2]" />
                 </div>
             </div>
 
-            <div v-if="props.method == 'detail'" class="py-5 flex flex-col gap-[19px]">
-                <CustomInfoRow label="Kriteria Pemantauan" value="PEWS" />
-                <CustomInfoRow label="Waktu Asesmen" value="01-01-2024" />
-                <CustomInfoRow label="Frekuensi Napas" value="48 x/mnt" />
-                <CustomInfoRow label="Frekuensi Nadi" value="158 x/mnt" />
-                <CustomInfoRow label="Suhu" value="37 C" />
-                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" value="Tidak" />
-                <CustomInfoRow label="Blood Oxygen" value="98%" />
-                <CustomInfoRow label="Gula Darah" value="98%" />
-                <CustomInfoRow label="Oksigen Tambahan" value="Tidak" />
-                <CustomInfoRow label="Tekanan Darah" value="100 mmHg" />
-                <CustomInfoRow label="Respirasi Anak" value="Tidak Ada retraksi" />
-                <CustomInfoRow label="Kardiovaskuler Anak" value="Tidak Sianosis" />
-                <CustomInfoRow label="Keadaan Umum" value="Interaksi Biasa" />
+            <div v-if="currentMethod == 'detail'" class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Kriteria Pemantauan" :value="kriteriaPemantauan" />
+                <CustomInfoRow label="Waktu Asesmen" :value="`${waktuAsesmen}`" />
+                <CustomInfoRow label="Frekuensi Napas" :value="`${frekuensiNafas}`" />
+                <CustomInfoRow label="Frekuensi Nadi" :value="`${frekuensiNadi}`" />
+                <CustomInfoRow label="Suhu" :value="`${suhu}`" />
+                <CustomInfoRow label="Capillary Refill Time (CRT > 2 Detik)" :value="`${CRT}`" />
+                <CustomInfoRow label="Blood Oxygen" :value="`${bloodOxygen}`"/>
+                <CustomInfoRow label="Gula Darah" :value="`${gulaDarah}`" />
+                <CustomInfoRow label="Oksigen Tambahan" :value="`${oksigenTambahan}`" />
+                <CustomInfoRow label="Tekanan Darah" :value="`${tekananDarah}`" />
+                <CustomInfoRow label="Respirasi Anak" :value="`${respirasiAnak}`" />
+                <CustomInfoRow label="Kardiovaskuler Anak" :value="`${kardiovaskulerAnak}`" />
+                <CustomInfoRow label="Keadaan Umum" :value="`${keadaanUmum}`" />
                 <hr class="border-grey-200">
-                <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+                <CustomInfoRow label="Petugas Input" :value="petugas" />
             </div>
         </template>
         <template #footer>
             <div class="flex items-end justify-end gap-3">
-                <CustomButton v-if="props.method == 'form'" label="Reset" textColor="text-[#9DA4B1]"
+                <CustomButton v-if="currentMethod == 'form'" label="Reset" textColor="text-[#9DA4B1]"
                     backgroundColor="bg-transparent" borderColor="border-2 border-[#9DA4B1]" />
-                <CustomButton  v-if="props.method=='form'"  label="Simpan" />
-                <CustomButton v-if="props.method == 'detail'" label="Edit" />
+                <CustomButton  v-if="currentMethod=='form'"  label="Simpan" @click="onSubmitTandaVital"/>
+                <CustomButton v-if="currentMethod == 'detail'" label="Edit" />
             </div>
         </template>
     </CustomAccordion>

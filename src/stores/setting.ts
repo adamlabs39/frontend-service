@@ -33,6 +33,16 @@ export const useSettingStore = defineStore({
         // KonfigurasiIntegrasi 
         getKonfigurasiIntegrasiApi(payload = {}) {
             return apiSettingGet("setting/integrasi", payload);
+        },
+
+        putKonfigurasiVCLAIM(payload = {}) {
+            return apiSettingPut("setting/integrasi-vclaim", payload)
+        },
+        putKonfigurasiLainnya(payload = {}) {
+            return apiSettingPut("setting/integrasi-other", payload)
+        },
+        putKonfigurasiSatuSehat(payload = {}) {
+            return apiSettingPut("setting/integrasi-satu-sehat", payload)
         }
     },
 });

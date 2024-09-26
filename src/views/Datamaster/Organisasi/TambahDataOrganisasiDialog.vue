@@ -36,54 +36,64 @@ function closeDialog() {
   >
     <template #header>{{ title }} Organisasi</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield label="Kode Organisasi" placeholder="Kode Organisasi" />
-          <CustomTextfield
-            label="Nama Organisasi"
-            placeholder="Nama Organisasi"
-            class="basis-3/4"
-          />
-        </div>
-        <div class="flex gap-2.5">
-          <CustomTextfield label="No. Telepon" placeholder="0" />
-          <CustomTextfield
-            label="Email"
-            placeholder="Email"
-            class="basis-3/4"
-          />
-        </div>
-        <CustomTextfield label="URL" placeholder="URL" />
-        <div class="flex gap-2.5">
-          <CustomSelect label="Provinsi" place-holder="Pilih Provinsi" class="w-full" />
-          <CustomSelect
-            label="Kab/Kota"
-            place-holder="Pilih Kab/Kota"
-            class="w-full"
-          />
-        </div>
-        <div class="flex gap-2.5">
-          <CustomSelect label="Kecamatan" place-holder="Pilih Kecamatan" class="w-full" />
-          <CustomSelect
-            label="Kelurahan/Desa"
-            place-holder="Pilih Kelurahan/Desa"
-            class="w-full"
-          />
-        </div>
-        <div class="flex gap-2.5">
-          <CustomSelect label="Kode Pos" place-holder="Pilih Kode Pos" class="w-1/4" />
-          <CustomSelect
-            label="Alamat"
-            place-holder="Alamat"
-            class="w-3/4"
-          />
-        </div>
-        <CustomSelect label="Part Of" place-holder="Pilih Part Of" />
-        <hr />
-        <div class="flex items-end gap-2.5">
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-        </div>
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode Organisasi"
+          placeholder="Kode Organisasi"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="Nama Organisasi"
+          placeholder="Nama Organisasi"
+          class="col-span-8"
+        />
+        <CustomTextfield
+          label="No. Telepon"
+          placeholder="0"
+          class="col-span-4"
+        />
+        <CustomTextfield label="Email" placeholder="Email" class="col-span-8" />
+        <CustomTextfield label="URL" placeholder="URL" class="col-span-12" />
+        <CustomSelect
+          label="Provinsi"
+          place-holder="Pilih Provinsi"
+          class="col-span-6"
+        />
+        <CustomSelect
+          label="Kab/Kota"
+          place-holder="Pilih Kab/Kota"
+          class="col-span-6"
+        />
+        <CustomSelect
+          label="Kecamatan"
+          place-holder="Pilih Kecamatan"
+          class="col-span-6"
+        />
+        <CustomSelect
+          label="Kelurahan/Desa"
+          place-holder="Pilih Kelurahan/Desa"
+          class="col-span-6"
+        />
+        <CustomSelect
+          label="Kode Pos"
+          place-holder="Pilih Kode Pos"
+          class="col-span-4"
+        />
+        <CustomSelect label="Alamat" place-holder="Alamat" class="col-span-8" />
+        <CustomSelect
+          label="Part Of"
+          place-holder="Pilih Part Of"
+          class="col-span-12"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="NON-AKTIF"
+          sideLabelTrue="AKTIF"
+          class="col-span-12"
+        />
       </div>
     </template>
     <template #footer>
@@ -95,7 +105,7 @@ function closeDialog() {
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-             @click="closeDialog"
+            @click="closeDialog"
           >
           </CustomButton>
 

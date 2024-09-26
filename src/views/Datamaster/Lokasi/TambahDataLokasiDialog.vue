@@ -113,101 +113,96 @@ watch(
   >
     <template #header>{{ title }} Lokasi</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <div class="flex gap-2.5">
-          <CustomTextfield
-            label="Kode Lokasi"
-            v-model="code"
-            placeholder="Kode Lokasi"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-          />
-          <CustomTextfield
-            label="Nama Lokasi"
-            v-model="name"
-            placeholder="Nama Lokasi"
-            class="grow"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-          />
-        </div>
+      <div class="grid grid-cols-12 gap-5 mt-5">
+        <CustomTextfield
+          label="Kode Lokasi"
+          v-model="code"
+          placeholder="Kode Lokasi"
+          :invalid="!!errors.code"
+          :invalidMessage="errors.code"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="Nama Lokasi"
+          v-model="name"
+          placeholder="Nama Lokasi"
+          class="col-span-8"
+          :invalid="!!errors.name"
+          :invalidMessage="errors.name"
+        />
         <CustomTextfield
           v-model="description"
           label="Deskripsi"
           placeholder="Deskripsi"
           :invalid="!!errors.description"
           :invalidMessage="errors.description"
+          class="col-span-12"
         />
-        <div class="flex gap-2.5 justify-between">
-          <CustomTextfield
-            label="No. Telepon"
-            v-model="phone"
-            placeholder="08xx-xxxx-xxxx"
-            class="w-full"
-            :invalid="!!errors.phone"
-            :invalidMessage="errors.phone"
+        <CustomTextfield
+          label="No. Telepon"
+          v-model="phone"
+          placeholder="08xx-xxxx-xxxx"
+          class="col-span-6"
+          :invalid="!!errors.phone"
+          :invalidMessage="errors.phone"
+        />
+        <CustomTextfield
+          v-model="email"
+          label="Email"
+          placeholder="Email"
+          class="col-span-6"
+          :invalid="!!errors.email"
+          :invalidMessage="errors.email"
+        />
+        <CustomTextfield
+          label="URL Website"
+          v-model="url"
+          placeholder="URL Website"
+          class="col-span-6"
+        />
+        <CustomSelect
+          label="Tipe"
+          v-model="location_type"
+          place-holder="Pilih Tipe"
+          class="col-span-6"
+          :options="itemsTipe"
+          optionValue="code"
+          optionLabel="name"
+        />
+        <CustomSelect
+          label="Kelas"
+          v-model="class_name"
+          place-holder="Pilih Kelas"
+          class="col-span-6"
+          :options="itemsKelas"
+          optionValue="code"
+          optionLabel="name"
+        />
+        <CustomSelect
+          label="Part Of"
+          v-model="part_of"
+          place-holder="Pilih Part Of"
+          class="col-span-6"
+          :options="itemsPartOf"
+          optionValue="code"
+          optionLabel="name"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <div class="flex gap-5 col-span-12">
+          <CustomSwitch
+            v-model="status_operasional"
+            :show-label="true"
+            label="Status Operasional"
+            sideLabel="Non-Occupied"
+            sideLabelTrue="Occupied"
           />
-          <CustomTextfield
-            v-model="email"
-            label="Email"
-            placeholder="Email"
-            class="w-full"
-            :invalid="!!errors.email"
-            :invalidMessage="errors.email"
+          <CustomSwitch
+            v-model="status_operasional"
+            :show-label="true"
+            label="Status"
+            sideLabel="Non-Aktif"
+            sideLabelTrue="Aktif"
           />
-        </div>
-        <div class="flex gap-2.5 justify-between">
-          <CustomTextfield
-            label="URL Website"
-            v-model="url"
-            placeholder="URL Website"
-            class="w-full"
-          />
-          <CustomSelect
-            label="Tipe"
-            v-model="location_type"
-            place-holder="Pilih Tipe"
-            class="w-full"
-            :options="itemsTipe"
-            optionValue="code"
-            optionLabel="name"
-          />
-        </div>
-        <div class="flex gap-2.5 justify-between">
-          <CustomSelect
-            label="Kelas"
-            v-model="class_name"
-            place-holder="Pilih Kelas"
-            class="w-full"
-            :options="itemsKelas"
-            optionValue="code"
-            optionLabel="name"
-          />
-          <CustomSelect
-            label="Part Of"
-            v-model="part_of"
-            place-holder="Pilih Part Of"
-            class="w-full"
-            :options="itemsPartOf"
-            optionValue="code"
-            optionLabel="name"
-          />
-        </div>
-        <hr />
-        <div class="flex gap-2.5">
-          <div class="flex items-end gap-2.5 w-1/2">
-            <CustomSwitch
-              v-model="status_operasional"
-              label="Status Operasional"
-            />
-            <div class="-ml-24">
-              {{ status_operasional === true ? "Occupied" : "Non-Occupied" }}
-            </div>
-          </div>
-          <div class="flex items-end gap-2.5 w-1/2">
-            <CustomSwitch v-model="status" label="Status" />
-            <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
-          </div>
         </div>
       </div>
     </template>

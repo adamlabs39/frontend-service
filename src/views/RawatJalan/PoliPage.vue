@@ -13,6 +13,7 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
 import CustomRadio from "../../components/Base/CustomRadio.vue";
 import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
+import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import DataRawatJalanHeader from "./Layout/DataRawatJalanHeader.vue";
 import Pelayanan from "@/views/RawatJalan/Layout/DataPelayananRawatJalan.vue"
