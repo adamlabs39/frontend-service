@@ -138,6 +138,10 @@ onMounted(() => {
   }
 });
 
+const checkActiveTab = (url: string) => {
+  let split = route.path.split("/");
+  return `/${split[1]}` == url;
+};
 </script>
 
 <template>
@@ -169,10 +173,9 @@ onMounted(() => {
           @click="goToPage(menu.url)"
           class="cursor-pointer flex gap-2.5 justify-center bg-white rounded-xl h-8 px-3"
           :class="[
-           route.path.includes(menu.url)
+            checkActiveTab(menu.url)
               ? 'text-adameds-300 font-semibold'
               : 'bg-opacity-30',
-
           ]"
         >
           <component
