@@ -1,15 +1,16 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useIcd9Store } from "@/stores/datamaster/icd9";
-import { downloadPdf } from "@/utils/PdfMake";
 import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import TambahDataICD9CMDialog from "./TambahDataICD9CMDialog.vue";
+import FormICD9CM from "./FormICD9CM.vue";
 import NoData from "@/components/section/NoData.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import Footer from "../Layout/FooterPaginator.vue";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
+// State Management
 const icd9Store = useIcd9Store();
 const icd9Payload = ref<any[]>([]);
 const icd9Properties = ref({
@@ -17,9 +18,14 @@ const icd9Properties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
+
+// Loading State
 const loading = ref(true);
 
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch ICD9 Data from API
 const fetchIcd9Data = async () => {
   loading.value = true;
   try {
@@ -49,20 +55,31 @@ onMounted(() => {
   fetchIcd9Data();
 });
 
+// Handle Pagination
 const handlePage = (event: any) => {
   icd9Properties.value.page = event.page + 1;
   icd9Properties.value.page_size = event.rows;
   fetchIcd9Data();
 };
 
+// Check if Data Exists
 const hasData = computed(
   () => icd9Payload.value && icd9Payload.value.length > 0
 );
 
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
-// Dialog Configuration
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
 const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
@@ -74,109 +91,121 @@ const openDialog = (method: string, title: string, data: any = null) => {
   isTambahDataDialogVisible.value = true;
 };
 
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
-  fetchIcd9Data();
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
 };
 
-const handleDelete = (dataItem: any) => {
-  const confirmed = confirm(
-    `Are you sure you want to delete ${dataItem.name}?`
-  );
-
-  if (confirmed) {
+const confirmDelete = async (item: any) => {
+  if (item) {
     loading.value = true;
-    icd9Store
-      .deleteApi(dataItem.uuid)
-      .then(() => {
-        fetchIcd9Data();
-      })
-      .catch((error) => {
-        console.error("Failed to delete data", error);
-        loading.value = false;
-      });
+    try {
+      await icd9Store.deleteApi(item.uuid);
+      fetchIcd9Data();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      loading.value = false;
+      isDeleteDialogVisible.value = false;
+    }
   }
 };
 
+// Export Excel
 const downloadExportExcel = async () => {
   try {
     const response = await icd9Store.exportApi();
-    const rows = response.payload; 
+    const rows = response.payload;
     if (!rows || rows.length === 0) {
-      console.error('No data available for export');
+      console.error("No data available for export");
       return;
     }
 
-    const title = ["REKAP DATA ICD9"];  
+    // Prepare Data for Export
+    const title = ["DATAMASTER ICD-9 CM"];
     const data = [];
-    data.push({});  
-    data.push({ No: "No", Kode: "Kode", Nama: "Nama ICD 9 CM", Status: "Status" });  
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({}); 
+    data.push({}); 
+    data.push({
+      No: "No",
+      Kode: "Kode",
+      Nama: "Nama ICD-9 CM",
+      Status: "Status",
+    });
+
+    // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",  
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
+    // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true }); 
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
+    // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-
     worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
 
+    // Style Title
     worksheet["A1"].s = {
-      alignment: {
-        horizontal: "center",
-        vertical: "center",
-      },
+      alignment: { horizontal: "center", vertical: "center" },
       font: { bold: true, sz: 14 },
     };
-    worksheet["!cols"] = [
-      { wch: 5 }, 
-      { wch: 10 },
-      { wch: 30 }, 
-      { wch: 10 }, 
-    ];
 
-    const range = XLSX.utils.decode_range(worksheet['!ref'] || "A1:D1");
-    for (let row = range.s.r; row <= range.e.r; row++) {
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };  
-        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-        worksheet[cellAddress].s.border = {
-          top: { style: "thin" },
-          bottom: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-        };
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        if (row === 1 || col === 0) {
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
           worksheet[cellAddress].s.alignment = {
             horizontal: "center",
             vertical: "center",
           };
         }
 
-        if (row === 1) {
+        // Fill header with background color (row 3)
+        if (row === 2) {
           worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "a4c2f4" },
+            fgColor: { rgb: "9fe2db" },
           };
         }
       }
     }
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data ICD9");
-
-    XLSX.writeFile(workbook, `Rekap Data ICD9.xlsx`);
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
-
 </script>
 
 <template>
@@ -200,11 +229,22 @@ const downloadExportExcel = async () => {
       <DataTable
         v-else
         :value="icd9Payload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -223,13 +263,12 @@ const downloadExportExcel = async () => {
         <Column
           field="code"
           header="Kode"
-          class="w-2/12"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
           field="name"
           header="Nama ICD 9 CM"
-          class="w-3/12"
+          class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column field="status" headerClass="bg-adameds-50">
@@ -275,7 +314,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="handleDelete(slotProps.data)"
+                @click="deleteDialog('delete', 'ICD 9 CM', slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -283,15 +322,21 @@ const downloadExportExcel = async () => {
           </template>
         </Column>
       </DataTable>
-      <TambahDataICD9CMDialog
+      <FormICD9CM
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
-        @close="closeDialog"
+        :payload="dialogConfig.data"
         @data-updated="fetchIcd9Data"
       />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
+      />
     </template>
+
     <template #footer>
       <Footer
         :rows="icd9Properties.page_size"

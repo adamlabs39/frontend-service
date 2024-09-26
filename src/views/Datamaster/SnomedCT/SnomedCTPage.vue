@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
-import { downloadPdf } from "@/utils/PdfMake";
+import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Footer from "../Layout/FooterPaginator.vue";
-import TambahDataSnomedCTDialog from "./TambahDataSnomedCTDialog.vue";
+import FormSnomedCT from "./FormSnomedCT.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
 const snomedCTStore = useSnomedCTStore();
 const snomedPayload = ref<any[]>([]);
@@ -16,9 +17,14 @@ const snomedProperties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
+
+// Loading State
 const loading = ref(true);
 
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch Snomed Data from API
 const fetchSnomedData = async () => {
   try {
     const response = await snomedCTStore.getApi(
@@ -46,18 +52,30 @@ onMounted(() => {
   fetchSnomedData();
 });
 
+// Handle Pagination
 const handlePage = (event: any) => {
   snomedProperties.value.page = event.page + 1;
   snomedProperties.value.page_size = event.rows;
   fetchSnomedData();
 };
 
+// Check if Data Exists
 const hasData = computed(
   () => snomedPayload.value && snomedPayload.value.length > 0
 );
 
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
 // Dialog States
 const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
 
 // Dialog Configuration
 const dialogConfig = ref<any>({
@@ -71,28 +89,120 @@ const openDialog = (method: any, title: any, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
-// Handle closing of the dialog
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
-  fetchSnomedData();
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
 };
 
-const handleDelete = (dataItem: any) => {
-  const confirmed = confirm(
-    `Are you sure you want to delete ${dataItem.name}?`
-  );
-
-  if (confirmed) {
+const confirmDelete = async (item: any) => {
+  if (item) {
     loading.value = true;
-    snomedCTStore
-      .deleteApi(dataItem.uuid)
-      .then(() => {
-        fetchSnomedData();
-      })
-      .catch((error) => {
-        console.error("Failed to delete data", error);
-        loading.value = false;
+    try {
+      await snomedCTStore.deleteApi(item.uuid);
+      fetchSnomedData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      loading.value = false;
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await snomedCTStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER SNOMED CT"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({}); 
+    data.push({}); 
+    data.push({
+      No: "No",
+      Kode: "Kode",
+      Nama: "Nama Snomed CT",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Snomed CT");
+    XLSX.writeFile(workbook, `Datamaster Snomed CT.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
   }
 };
 </script>
@@ -119,11 +229,22 @@ const handleDelete = (dataItem: any) => {
       <DataTable
         v-else
         :value="snomedPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -186,21 +307,25 @@ const handleDelete = (dataItem: any) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="handleDelete(slotProps.data)"
-              >
+                @click="deleteDialog('delete', 'Snomed CT', slotProps.data)"              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <TambahDataSnomedCTDialog
+      <FormSnomedCT
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
-        @close="closeDialog"
+        :payload="dialogConfig.data"
         @data-updated="fetchSnomedData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
       />
     </template>
 
@@ -209,7 +334,7 @@ const handleDelete = (dataItem: any) => {
         :rows="snomedProperties.page_size"
         :totalRecords="snomedProperties.total"
         @page="handlePage"
-        @eksport="downloadPdf({ data: { nama: 'fahmi' } })"
+        @export="downloadExportExcel"
       />
     </template>
   </Card>

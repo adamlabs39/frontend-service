@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -18,33 +19,53 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama Role harus diisi"),
-    status: yup.bool(),
+    status: yup.bool().default(false)
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    // Logic to save edited data
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    // Logic to add new data
-    console.log("Adding new data:", values);
+const kategoriRuanganStore = useKategoriRuanganStore();
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await kategoriRuanganStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await kategoriRuanganStore.postApi(values);
+      console.log("Data added successfully:", response);
+      emit('data-updated');
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [status] = defineField("status");
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -52,10 +73,15 @@ function updateVisibility(value: any) {
 function closeDialog() {
   emit("close");
 }
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        ...props.editData,
+      });
+    } else if (!newValue) {
       resetForm();
     }
   }
@@ -88,7 +114,7 @@ watch(
           :invalidMessage="errors.name"
           class="col-span-8"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"

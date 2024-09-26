@@ -13,6 +13,7 @@ import DatabaseFill from "./DatabaseFill.vue";
 import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
 import UploadPictureIcon from "./UploadPictureIcon.vue";
 import DetailIcon from "./DetailIcon.vue";
+import FileImportIcon from "./FileImportIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -30,5 +31,6 @@ export default {
     app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
     app.component("UploadPictureIcon", UploadPictureIcon);
     app.component("DetailIcon", DetailIcon);
+    app.component("FileImportIcon", FileImportIcon);
   },
 };

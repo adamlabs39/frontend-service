@@ -5,8 +5,8 @@ const props = defineProps({
 });
 </script>
 <template>
-  <div class="grid grid-cols-12 gap-2.5 w-full">
-    <div class="flex justify-between col-span-4 text-normal">
+  <div class="grid grid-cols-12 gap-2.5 w-full text-normal">
+    <div class="flex justify-between col-span-4 ">
       <div class="font-semibold ">{{ label }}</div>
       <div >:</div>
     </div>

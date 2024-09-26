@@ -1,8 +1,10 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch,onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
+import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -20,55 +22,89 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-const itemsRuangan = ref([
-  { name: "Mawar", code: "MWR" },
-  { name: "Melati", code: "MLT" },
-  { name: "Anggrek", code: "AGR" },
-  { name: "Dahlia", code: "DHL" },
-]);
 
-const itemsKategori = ref([
-  { name: "Rawat Umum", code: "RU" },
-  { name: "VVIP", code: "VVIP" },
-  { name: "VIP", code: "VIP" },
+const kategoriRuanganStore = useKategoriRuanganStore();
+const ruanganStore = useRuanganStore();
+const kategoriRuanganPayload = ref<any[]>([]); 
+
+const fetchKategoriRuangan = async () => {
+  try {
+    const response = await kategoriRuanganStore.getApi();
+    if (response && response.payload) {
+      kategoriRuanganPayload.value = response.payload;
+    } else {
+      kategoriRuanganPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    kategoriRuanganPayload.value = [];
+  }
+};
+onMounted(() => {
+  fetchKategoriRuangan();
+});
+const opstionsKelas = ref([
+  { label: "kelas 1", value: 1 },
+  { label: "kelas 2", value: 2 },
+  { label: "kelas 3", value: 3 },
+  { label: "VIP", value: 4 },
+  { label: "VVIP", value: 5 },
 ]);
 
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string(),
-    kategoriRuangan: yup.string().required("Kategori ruangan harus dipilih"),
-    no_room: yup.number().required("Nomor kamar harus diisi"),
-    kelasRuangan: yup.string().required("Kelas ruangan harus dipilih"),
+    kategoriRuanganUuid: yup.string().required("Kategori ruangan harus dipilih"),
+    noRoom: yup.number().required("Nomor kamar harus diisi"),
+    kelasRuangan: yup.number().required("Kelas ruangan harus dipilih"),
     status: yup.bool(),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    // Logic to save edited data
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    // Logic to add new data
-    console.log("Adding new data:", values);
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (props.method === "edit") {
+      if (!props.editData || !props.editData.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+
+      const uuid = props.editData.uuid;
+      console.log("Editing data with UUID:", uuid, "and values:", values);
+
+      const response = await ruanganStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+
+      const response = await ruanganStore.postApi(values);
+      console.log("Data added successfully:", response);
+      emit('data-updated');
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-  closeDialog();
 });
 
 const [code] = defineField("code");
 const [name] = defineField("name");
-const [kategoriRuangan] = defineField("kategoriRuangan");
-const [no_room] = defineField("no_room");
+const [kategoriRuanganUuid] = defineField("kategoriRuanganUuid");
+const [noRoom] = defineField("noRoom");
 const [kelasRuangan] = defineField("kelasRuangan");
 const [status] = defineField("status");
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -81,7 +117,12 @@ function closeDialog() {
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (!newValue) {
+    if (newValue && props.method === "edit" && props.editData) {
+      setValues({
+        ...props.editData,
+        kategoriRuanganUuid: props.editData.kategoriRuanganUuid
+      });
+    } else if (!newValue) {
       resetForm();
     }
   }
@@ -97,6 +138,8 @@ watch(
   >
     <template #header>{{ title }} Ruangan</template>
     <template #body>
+      {{ props.editData }}
+
       <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode Ruangan"
@@ -114,37 +157,36 @@ watch(
           />
           <CustomSelect
             label="Kategori Ruangan"
-            v-model="kategoriRuangan"
-            :options="itemsKategori"
-            optionValue="code"
+            v-model="kategoriRuanganUuid"
+            :options="kategoriRuanganPayload"
+            optionValue="uuid"
             optionLabel="name"
             placeholder="Kategori Ruangan"
             class="col-span-8"
-            :invalid="!!errors.kategoriRuangan"
-            :invalidMessage="errors.kategoriRuangan"
+            :invalid="!!errors.kategoriRuanganUuid"
+            :invalidMessage="errors.kategoriRuanganUuid"
           />
           <CustomInputNumber
             label="Nomor Kamar"
-            v-model="no_room"
-            :invalid="!!errors.no_room"
-            :invalidMessage="errors.no_room"
+            v-model="noRoom"
+            :invalid="!!errors.noRoom"
+            :invalidMessage="errors.noRoom"
             class="col-span-4"
 
           />
-
         <CustomSelect
           label="Kelas Ruangan"
           v-model="kelasRuangan"
-          :options="itemsRuangan"
-          optionValue="code"
-          optionLabel="name"
+          :options="opstionsKelas"
+          optionValue="value"
+          optionLabel="label"
           placeholder="Kelas Ruangan"
           class="col-span-12"
           :invalid="!!errors.kelasRuangan"
           :invalidMessage="errors.kelasRuangan"
         />
 
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"

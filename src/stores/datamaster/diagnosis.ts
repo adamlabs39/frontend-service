@@ -23,5 +23,8 @@ export const useDiagnosisStore = defineStore({
       async deleteApi(uuid: string, payload = {}) {
         return apiDatamasterDelete(`/datamaster/diagnosis/${uuid}`, payload);
       },
+      async exportApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/diagnosis/export`, payload);
+      },
     },
   });

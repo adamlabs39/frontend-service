@@ -8,6 +8,8 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -19,7 +21,7 @@ const props = defineProps({
   method: {
     type: String,
   },
-  editData: {
+  payload: {
     type: Object,
     default: () => ({}),
   },
@@ -39,23 +41,26 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 
 const faskesStore = useFaskesStore();
 
+const [code] = defineField("code");
+const [name] = defineField("name");
+const [status] = defineField("status");
+
+const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
+
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (props.method === "edit") {
-      if (!props.editData || !props.editData.uuid) {
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
-
-      const uuid = props.editData.uuid;
-      console.log("Editing data with UUID:", uuid, "and values:", values);
-
+      const uuid = props.payload.uuid;
       const response = await faskesStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
-    } else if (props.method === "add") {
+      emit("data-updated");
+    } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-
       const response = await faskesStore.postApi(values);
-      console.log("Data added successfully:", response);
+      emit("data-updated");
     }
     closeDialog();
   } catch (error) {
@@ -63,29 +68,42 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 });
 
-const [code] = defineField("code");
-const [name] = defineField("name");
-const [status] = defineField("status");
-
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+const method = ref(props.method);
+const title = ref(props.title);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
 }
 
-function closeDialog() {
-  emit("close");
-}
+const resetDialogMode = () => {
+  method.value = props.method;
+  title.value = props.title;
+};
+
+const handleEdit = () => {
+  method.value = "edit";
+  title.value = "Edit Data";
+};
+
+const closeDialog = () => {
+  emit("update:isDialogVisible", false);
+  resetDialogMode();
+  resetForm();
+};
 
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (newValue && props.method === "edit" && props.editData) {
-      setValues({
-        ...props.editData,
-      });
-    } else if (!newValue) {
+    if (newValue) {
+      resetDialogMode();
+      if (props.method !== "add" && props.payload) {
+        setValues({
+          ...props.payload,
+        });
+      }
+    } else {
       resetForm();
+      resetDialogMode();
     }
   }
 );
@@ -99,7 +117,8 @@ watch(
   >
     <template #header>{{ title }} Faskes</template>
     <template #body>
-      <div class="mt-5 grid grid-cols-12 gap-5">
+      <!-- Form Input -->
+      <div v-if="method !== 'detail'" class="mt-5 grid grid-cols-12 gap-5">
         <CustomTextfield
           label="Kode Faskes"
           v-model="code"
@@ -126,20 +145,47 @@ watch(
           class="col-span-12"
         />
       </div>
+
+      <!-- Detail Data -->
+      <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
+        <CustomInfoRow label="Nama ICD 9 CM" :value="name" />
+        <CustomInfoRow label="Status">
+          <template #value>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
         <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Batal"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
             @click="closeDialog"
-          >
-          </CustomButton>
-          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+          />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>
