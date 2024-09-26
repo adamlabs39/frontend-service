@@ -8,7 +8,9 @@ import FormEditLogoWarna from "./FormEditLogoWarna.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useSettingStore } from "@/stores/setting";
 import ProfilFaskesTemplate from "./ProfilFaskesTemplate.vue";
+import { utilsStore } from "@/stores/utils";
 
+const useUtilsStore = utilsStore();
 
 const profilFaskesResponse = ref({
     code: "",
@@ -35,17 +37,21 @@ const profilFaskesResponse = ref({
 const settingStore = useSettingStore();
 
 const fetchSettingProfilFaskesData = async () => {
+    useUtilsStore.setLoading(true)
     try {
         const response = await settingStore.getProfilFaskesApi();
         if (response) {
             profilFaskesResponse.value = response;
             console.log(response)
+            useUtilsStore.setLoading(false)
         } else {
             console.error("Unexpected response Structure", response);
         }
+       
     } catch (error) {
         console.error("Failed to fetch data", error);
     }
+   
 };
 
 onMounted(() => {

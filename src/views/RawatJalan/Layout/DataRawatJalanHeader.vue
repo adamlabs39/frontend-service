@@ -21,6 +21,9 @@ const props = defineProps({
     type: Array as PropType<MenuItem[]>,
     default: () => [],
   },
+  currentRouteName: {
+    type: String, 
+  }
 });
 
 const startDateFilter = ref<Date>(new Date());
@@ -44,7 +47,7 @@ const onPoliSelect = (label: string) => {
   }
 };
 
-// CHIP UNTUK FILTER PEMBAYARAN
+// CHIP UNTUK FILTER PEMBAYARAN.
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -76,6 +79,7 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
+      {{ currentRouteName }}
       <div class="flex items-center w-full gap-5 mr-2.5">
         <CustomButton icon="PhArrowClockwise" />
         <div class="leading-10 text-adameds-300 text-heading">
@@ -91,7 +95,7 @@ defineExpose({
         </div>
       </div>
     </template>
-    <template #content>
+    <template #content  v-if="currentRouteName=='rawat-jalan'">
       <div class="flex mt-[10px] mb-2.5">
         <CustomTextfield
           v-model="searchPatientFilter"
@@ -179,6 +183,54 @@ defineExpose({
             />
           </div>
         </div>
+      </div>
+      <hr class="border-grey-200" />
+    </template>
+
+    <!-- ketika route di BPJS atau Laporan -->
+    <template #content v-else>
+      <div class="flex mt-[10px] mb-2.5">
+        <CustomTextfield
+          v-model="searchPatientFilter"
+          prependIcon="PhMagnifyingGlass"
+          label="Cari No Anggota"
+          placeholder="Cari Nama Pasien"
+          class="mr-5 grow"
+        />
+        <CustomSelect
+          v-model="searchDPJPFilter"
+          label="Jenis Pelayanan"
+          class="mr-5 grow"
+          optionLabel=""
+          optionValue=""
+          :options="['Semua', 'Beberapa', 'Banyak']"
+          prependIcon="PhMagnifyingGlass"
+        />
+        <!-- disini -->
+        <CustomDatePicker
+          v-model="startDateFilter"
+          label="Tanggal"
+          class="w-[200px]"
+        />
+        <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+        <CustomDatePicker
+          v-model="endDateFilter"
+          :showLabel="false"
+          class="mt-auto w-[200px]"
+        />
+        <CustomButton
+          icon="PhMagnifyingGlass"
+          label="Cari"
+          class="ml-5 mr-[10px] mt-auto w-[95px]"
+        />
+        <CustomButton
+          @click="resetFilter"
+          label="Reset"
+          outlined
+          borderColor="border-adameds-300"
+          textColor="text-adameds-300"
+          class="mt-auto w-[70px]"
+        />
       </div>
       <hr class="border-grey-200" />
     </template>

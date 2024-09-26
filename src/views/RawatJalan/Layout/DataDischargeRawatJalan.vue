@@ -4,18 +4,11 @@ import NoData from "@/components/section/NoData.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { ref } from "vue";
 
-const props = defineProps({
-  showCancelVisit: {
-    type: Boolean,
-    default:false
-  }
-})
 
 const medicalRecord = ref<any>();
 const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
-const selectedPatient = ref([]);
 const itemsPasien = ref([
   {
     noPendaftaran: "00-00-00",
@@ -25,6 +18,7 @@ const itemsPasien = ref([
     practicHour: "08:00 - 10:00",
     tanggalDaftar: "10-10-2024 09:00",
     tanggalJadwal: "10-10-2024 10:00",
+    tanggalDischarge: "10-10-2024 12:00",
     no_SEP: "",
     insuranceAccountName: "TUNAI",
     polyclinic: "POLI ANAK",
@@ -36,7 +30,7 @@ const itemsPasien = ref([
     noMT: "MT-01-01",
     noREG: "REG2407010049",
     newPatient: true,
-    statusPelayanan: "ANTRI",
+    statusPelayanan: "DISCHARGE",
     statusPembayaran: "Belum Lunas",
   },
   {
@@ -47,6 +41,7 @@ const itemsPasien = ref([
     practicHour: "08:00 - 10:00",
     tanggalDaftar: "10-10-2024 09:00",
     tanggalJadwal: "10-10-2024 10:00",
+    tanggalDischarge: "10-10-2024 12:00",
     no_SEP: "",
     insuranceAccountName: "TUNAI",
     polyclinic: "POLI MATA",
@@ -58,7 +53,7 @@ const itemsPasien = ref([
     noMT: "MT-01-02",
     noREG: "REG2407010049",
     newPatient: false,
-    statusPelayanan: "DIPERIKSA",
+    statusPelayanan: "DISCHARGE",
     statusPembayaran: "Belum Lunas",
   },
   {
@@ -69,6 +64,7 @@ const itemsPasien = ref([
     practicHour: "08:00 - 10:00",
     tanggalDaftar: "10-10-2024 09:00",
     tanggalJadwal: "10-10-2024 10:00",
+    tanggalDischarge: "10-10-2024 12:00",
     no_SEP: "9999999999999999",
     insuranceAccountName: "BPJS",
     polyclinic: "POLI ANAK",
@@ -80,8 +76,8 @@ const itemsPasien = ref([
     noMT: "MT-01-03",
     noREG: "REG2407010049",
     newPatient: true,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
+    statusPelayanan: "DISCHARGE",
+    statusPembayaran: "Lunas",
   },
   {
     noPendaftaran: "00-00-00",
@@ -91,6 +87,7 @@ const itemsPasien = ref([
     practicHour: "08:00 - 10:00",
     tanggalDaftar: "10-10-2024 09:00",
     tanggalJadwal: "10-10-2024 10:00",
+    tanggalDischarge: "10-10-2024 12:00",
     no_SEP: "9999999999999999",
     insuranceAccountName: "BPJS",
     polyclinic: "POLI MATA",
@@ -102,29 +99,8 @@ const itemsPasien = ref([
     noMT: "MT-01-04",
     noREG: "REG2407010049",
     newPatient: false,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
-  },
-   {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DIBATALKAN",
+    statusPelayanan: "DISCHARGE",
+    statusPembayaran: "Lunas",
   },
 ]);
 </script>
@@ -132,14 +108,13 @@ const itemsPasien = ref([
 <template>
   <DataTable
     v-if="itemsPasien.length"
-    v-model:selection="selectedPatient"
     :value="itemsPasien"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="flex"
     class="-m-4"
-    @row-click="openDialogRM"
+    scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
+    @row-click="openDialogRM"
   >
     <Column field="nomor" headerClass="bg-adameds-50">
       <template #header>
@@ -255,7 +230,6 @@ const itemsPasien = ref([
       header="Data Kunjungan"
       headerClass="bg-adameds-50"
       class="max-w-[240px]"
-      
     >
       <template #body="slotProps">
         <div class="text-SM">
@@ -281,6 +255,17 @@ const itemsPasien = ref([
             />
             {{ slotProps.data.tanggalJadwal }}
           </div>
+          <div
+            class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
+          >
+            Discharge
+            <PhArrowRight
+              :size="18"
+              class="my-auto mr-5 text-mint-300"
+              weight="bold"
+            />
+            {{ slotProps.data.tanggalDischarge }}
+          </div>
         </div>
       </template>
     </Column>
@@ -292,22 +277,18 @@ const itemsPasien = ref([
             :label="slotProps.data.statusPelayanan"
             customClass="h-5 pr-[5px] mr-[5px] border-none"
             :bgColor="
-              slotProps.data.statusPelayanan == 'DIPERIKSA'
-                ? 'bg-blueJeans-75'
-                : slotProps.data.statusPelayanan == 'ANTRI'
-                ? 'bg-grey-75'
+                slotProps.data.statusPelayanan == 'DISCHARGE'
+                ? 'bg-mint-75'
                 : 'bg-danger-75'
             "
             :textColor="
-              slotProps.data.statusPelayanan == 'DIPERIKSA'
-                ? 'text-blueJeans-300'
-                : slotProps.data.statusPelayanan == 'ANTRI'
-                ? 'text-grey-400'
+               slotProps.data.statusPelayanan == 'DISCHARGE'
+                ? 'text-mint-300'
                 : 'text-danger-300'
             "
           />
         </div>
-        <div v-if="slotProps.data.statusPembayaran">
+        <div>
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.statusPembayaran"
@@ -315,30 +296,22 @@ const itemsPasien = ref([
             :bgColor="
               slotProps.data.statusPembayaran == 'Belum Lunas'
                 ? 'bg-grey-100'
-                : 'bg-none'
+                : 'bg-success-75'
             "
             :textColor="
               slotProps.data.statusPembayaran == 'Belum Lunas'
                 ? 'text-grey-400'
-                : 'text-white'
+                : 'text-success-300'
             "
           />
         </div>
       </template>
     </Column>
-    <Column
-      v-if="props.showCancelVisit"
-      selectionMode="multiple"
-      headerStyle="width: 3rem"
-      headerClass="bg-adameds-50"
-      class="custom-checkbox"
-    ></Column>
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-   <MedicalRecord ref="medicalRecord" />
+  <MedicalRecord ref="medicalRecord" />
 </template>
-
 
 <style>
 /* TailwindCSS styles */

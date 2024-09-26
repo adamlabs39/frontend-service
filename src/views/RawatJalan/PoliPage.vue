@@ -20,7 +20,7 @@ import Pelayanan from "@/views/RawatJalan/Layout/DataPelayananRawatJalan.vue"
 import { useRoute } from 'vue-router';
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-
+import Discharge from "./Layout/DataDischargeRawatJalan.vue";
 
 
 
@@ -34,6 +34,14 @@ const value = ref("1");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
+
+const route = useRoute();
+const currentRouteName = ref("");
+
+onMounted(() => {
+  currentRouteName.value = route.name ? String(route.name) : ""; 
+});
+
 </script>
 <template>
   <Card
@@ -42,7 +50,7 @@ const cancelReason = ref<string>();
     class=""
   >
     <template #header>
-      <DataRawatJalanHeader :activeTab="value" :filter-menu="props.filter">
+      <DataRawatJalanHeader :activeTab="value" :filter-menu="props.filter" :current-route-name="currentRouteName">
         <template #content>
           <div class="flex items-center gap-2">
             <CustomButton
@@ -52,7 +60,7 @@ const cancelReason = ref<string>();
               text-color="text-adameds-300"
               border-color="border-adameds-300 border-2"
             />
-             Filter = {{ props.filter }}
+             <!-- Filter = {{ props.filter }} -->
             <CustomButton
               label="PELAYANAN"
               class="grow"
@@ -86,14 +94,14 @@ const cancelReason = ref<string>();
             <Pelayanan :show-cancel-visit="showCancelVisit" />
           </TabPanel>
           <TabPanel value="2">
-            <Ruangan />
+            <Discharge />
           </TabPanel>
         </TabPanels>
       </Tabs>
     </template>
     <template #footer>
-      <div class="flex justify-between">
-        <div class="flex">
+      <div  :class="value === '1' ? 'flex justify-between' : 'flex justify-end'">
+        <div class="flex" v-if="value=='1'">
           <CustomButton
             v-if="!showCancelVisit"
             @click="showCancelVisit = true"

@@ -22,7 +22,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             name: "Semua Poli",
             icon: "",
             type: linkType.LINK,
-            url: "/rawat-jalan",
+            url: "/rawat-jalan/poli",
           },
           {
             name: "Poli Umum",
@@ -55,8 +55,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "BPJS",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/bpjs/monitoring-kunjungan'},
-          { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK , url:'/bpjs/monitoring-riwayat-kunjungan'},
+          { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/rawat-jalan/bpjs/monitoring-kunjungan'},
+          { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK , url:'/rawat-jalan/bpjs/monitoring-riwayat-kunjungan'},
           { name: "Monitoring Obat Kunjungan", type: linkType.LINK },
         ],
       },
@@ -84,7 +84,7 @@ const updateFilterMenu = (newFilter: string) => {
 
 onMounted(() => {
   if (route.query.filter) {
-    router.replace({ path: "/rawat-jalan" });
+    router.replace({ path: "/rawat-jalan/poli" });
   }
 });
 </script>
@@ -93,7 +93,7 @@ onMounted(() => {
   <div class="flex h-full gap-3">
     <Sidebar
       sidebarTitle="Rawat Jalan"
-      sidebarTitleUrl="/rawat-jalan"
+      sidebarTitleUrl="/rawat-jalan/poli"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       showFilterPoli

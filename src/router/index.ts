@@ -117,20 +117,20 @@ const router = createRouter({
     // RAWAT JALAN
 
     {
-      path: "/rawat-jalan",
-      name: "rawat-jalan",
+      path: "/rawat-jalan/poli",
+      name: "rawat-jalan/poli",
       meta: { layout: SidebarLayout, page: PoliPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
-      path: "/bpjs/monitoring-kunjungan",
-      name: "bpjs-monitoring-kunjungan",
+      path: "/rawat-jalan/bpjs/monitoring-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
-      path: "/bpjs/monitoring-riwayat-kunjungan",
-      name: "bpjs-riwayat-monitoring-kunjungan",
+      path: "/rawat-jalan/bpjs/monitoring-riwayat-kunjungan",
+      name: "rawat-jalan-bpjs-riwayat-monitoring-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSPageMonitoringRiwayatKunjunganPage, requiresAuth: true },
       component: RawatJalanView,
     },
