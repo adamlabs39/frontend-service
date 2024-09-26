@@ -26,7 +26,7 @@ const handlePageUpdate = (page: number) => {
 <template>
   <div class="flex justify-between px-5 py-2.5">
     <CustomPaginator
-        class="ml-auto"
+      class="ml-auto"
       :rows="10"
       :totalRecords="100"
       :rowsPerPageOptions="[10, 20, 30]"
