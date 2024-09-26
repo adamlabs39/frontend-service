@@ -1,18 +1,30 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRoute } from "vue-router";
+import { utilsStore } from "@/stores/utils";
 import Footer from "./components/section/Footer.vue";
+import Loading from "./components/section/Loading.vue";
 
 const route = useRoute();
+
+const storeUtils = utilsStore();
 </script>
 
 <template>
-  <body :class="['flex flex-col min-h-screen', route.path.startsWith('/antrian/apm/aktif') ? 'bg-adameds-75' : 'bg-[#f2f8ff]']">
+  <body
+    :class="[
+      'flex flex-col min-h-screen',
+      route.path.startsWith('/antrian/apm/aktif')
+        ? 'bg-adameds-75'
+        : 'bg-[#f2f8ff]',
+    ]"
+  >
     <Toast />
     <component :is="$route.meta.layout || 'div'">
       <RouterView />
     </component>
     <!-- Conditionally show Footer based on the route path -->
     <Footer v-if="!route.path.startsWith('/antrian/apm/aktif')" />
+    <Loading v-if="storeUtils.isLoading" />
   </body>
 </template>
 

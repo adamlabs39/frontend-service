@@ -5,11 +5,15 @@ export const utilsStore = defineStore({
   id: "utils",
   state: () => ({
     selectedRoom: null as selectedBedType | null,
+    isLoading: false,
   }),
   getters: {},
   actions: {
     setSelectedRoom(roomData: selectedBedType | null) {
       this.selectedRoom = roomData;
+    },
+    setLoading(status: boolean) {
+      this.isLoading = status;
     },
   },
 });

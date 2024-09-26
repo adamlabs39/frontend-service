@@ -13,6 +13,9 @@ import DatabaseFill from "./DatabaseFill.vue";
 import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
 import UploadPictureIcon from "./UploadPictureIcon.vue";
 import DetailIcon from "./DetailIcon.vue";
+import CashRegisterIcon from "./CashRegisterIcon.vue";
+import PayMoneyIcon from "./PayMoneyIcon.vue";
+import ClosedBillIcon from "./ClosedBillIcon.vue";
 import FileImportIcon from "./FileImportIcon.vue";
 
 export default {
@@ -31,6 +34,10 @@ export default {
     app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
     app.component("UploadPictureIcon", UploadPictureIcon);
     app.component("DetailIcon", DetailIcon);
+
+    app.component("CashRegisterIcon", CashRegisterIcon);
+    app.component("PayMoneyIcon", PayMoneyIcon);
+    app.component("ClosedBillIcon", ClosedBillIcon);
     app.component("FileImportIcon", FileImportIcon);
   },
 };

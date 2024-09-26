@@ -32,17 +32,17 @@ const emits = defineEmits([
         content: {
           class: 'flex gap-0 p-0 m-0 h-[30px] items-center justify-center',
         },
-        first: { class: 'rounded-none h-full' },
-        prev: { class: 'rounded-none h-full' },
-        pages: { class: 'rounded-none h-full' },
+        first: { class: 'rounded h-full' },
+        prev: { class: 'rounded h-full' },
+        pages: { class: 'rounded h-full' },
         page: {
           class:
-            'rounded-none h-full bg-adameds-300 text-white w-10 h-10 flex items-center justify-center',
+            'rounded h-full bg-adameds-300 text-white w-10 h-10 flex items-center justify-center',
         },
-        next: { class: 'rounded-none h-full' },
-        last: { class: 'rounded-none h-full' },
+        next: { class: 'rounded h-full' },
+        last: { class: 'rounded h-full' },
         pcRowPerPageDropdown: {
-          root: 'border-b-2 rounded-none border-white border-b-grey-200 ml-5 h-full items-center justify-center',
+          root: 'border-b-2 rounded border-white border-b-grey-200 ml-5 h-full items-center justify-center',
         },
       }"
       @page="$emit('page', $event)"
