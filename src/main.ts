@@ -61,6 +61,7 @@ import { definePreset } from "@primevue/themes";
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
 
 import icons from "./components/icons";
+import Vue3Lottie from 'vue3-lottie'
 
 export const app = createApp(App);
 
@@ -137,5 +138,6 @@ app.component("Toast", Toast);
 app.component("RadioButton", RadioButton);
 
 app.use(icons)
+app.use(Vue3Lottie)
 
 app.mount("#app");
