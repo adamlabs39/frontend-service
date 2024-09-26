@@ -136,7 +136,6 @@ onMounted(() => {
       }
     });
   }
-  console.log(listMenu.value);
 });
 
 const checkActiveTab = (url: string) => {
