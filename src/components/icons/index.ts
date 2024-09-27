@@ -16,6 +16,7 @@ import DetailIcon from "./DetailIcon.vue";
 import CashRegisterIcon from "./CashRegisterIcon.vue";
 import PayMoneyIcon from "./PayMoneyIcon.vue";
 import ClosedBillIcon from "./ClosedBillIcon.vue";
+import UserDoctorIcon from "./UserDoctorIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -37,5 +38,6 @@ export default {
     app.component("CashRegisterIcon", CashRegisterIcon);
     app.component("PayMoneyIcon", PayMoneyIcon);
     app.component("ClosedBillIcon", ClosedBillIcon);
+    app.component("UserDoctorIcon", UserDoctorIcon);
   },
 };

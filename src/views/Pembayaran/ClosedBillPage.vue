@@ -9,12 +9,18 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import type { DataTableRowClickEvent } from "primevue/datatable";
+import ClosedBillDetailPage from "./layout/ClosedBillDetailPage.vue"
+import { utilsStore } from "@/stores/utils";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
+
+const pageType = ref("");
+const route = useRoute();
+
+const storeUtils = utilsStore();
 
 const filterPoliList = ref([
   "POLI UMUM",
@@ -168,19 +174,37 @@ const handlePageUpdate = (page: number) => {
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const showSEPDetail = (event: DataTableRowClickEvent) => {
-  let data = event.data;
-  dataBreadCrumb.value.push({
-    label: data.name,
-    noRM: data.noRM,
-    age: `(${data.age_year}Th ${data.age_month}Bln ${data.age_day}Hr)`,
-  });
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
 };
+
+const showPatientDetail = () => {
+  changeSection("Detail Transaksi Pasien");
+};
+
+const updatePageType = (path: string) => {
+  dataBreadCrumb.value = [];
+  let tempArrPath = path.split("/");
+  pageType.value = tempArrPath[2] ?? "";
+};
+
+onBeforeRouteLeave((to, from) => {
+  updatePageType(to.path);
+});
+
+onMounted(() => {
+  updatePageType(route.path);
+});
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
+      v-if="dataBreadCrumb.length == 0"
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
@@ -307,7 +331,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="showSEPDetail"
+          @rowClick="showPatientDetail"
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
@@ -456,5 +480,12 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
+    <ClosedBillDetailPage
+      v-else-if="dataBreadCrumb[0].label == 'Detail Transaksi Pasien'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      @back="dataBreadCrumb.pop()"
+      @goToDetail="dataBreadCrumb[0].label = 'Detail Transaksi Pasien'"
+    />
   </div>
 </template>
