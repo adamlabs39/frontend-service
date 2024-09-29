@@ -14,8 +14,175 @@ const props = defineProps({
   },
 });
 
-const segmentAnteriorKanan = ref("");
-const segmentAnteriorKiri = ref("");
+const listHasilPinhole = ref([
+  { code: "39021009", tampilan: "Kelainan refraksi", range: "6/12 - 6/6" },
+  { code: "OI000044", tampilan: "Kelainan organik", range: "3/60 - <6/12" },
+]);
+const hasilPihnhole = (mata: string) => {
+  let tempHasil = 0;
+  if (mata == "OD") {
+    tempHasil = odPinholeDenominator.value / odPinholeNumerat.value;
+  } else if (mata == "OS") {
+    tempHasil = osPinholeDenominator.value / osPinholeNumerat.value;
+  }
+
+  let tempHasilStr = "";
+  if (tempHasil >= 6 / 12 && tempHasil <= 1) {
+    tempHasilStr = listHasilPinhole.value[0].tampilan;
+  } else if (tempHasil >= 3 / 60 && tempHasil < 6 / 12) {
+    tempHasilStr = listHasilPinhole.value[1].tampilan;
+  }
+
+  if (mata == "OD") {
+    odHasilPinhole.value = tempHasilStr;
+  } else if (mata == "OS") {
+    osHasilPinhole.value = tempHasilStr;
+  }
+};
+
+const listFundus = ref([
+  { code: "1090009", tampilan: "Tingkat kekeruhan iris mata belum penuh" },
+  { code: "34071009", tampilan: "Tingkat kekeruhan iris mata penuh" },
+]);
+const listShadowTest = ref([
+  { code: "10828004", tampilan: "Tingkat kekeruhan iris mata belum penuh" },
+  { code: "260385009", tampilan: "Tingkat kekeruhan iris mata penuh" },
+]);
+const listHasilVisusTajam = ref([
+  { code: "45089002", tampilan: "Normal", range: "6/12 - 6/6" },
+  {
+    code: "397543001",
+    tampilan: "Gangguan Penglihatan Ringan",
+    range: " 6/18 - <6/12",
+  },
+  {
+    code: "397542006",
+    tampilan: "Gangguan Penglihatan Sedang",
+    range: "6/60 - <6/18",
+  },
+  {
+    code: "397541004",
+    tampilan: "Gangguan Penglihatan Berat",
+    range: "3/60 - <6/60",
+  },
+  { code: "274572000", tampilan: "Buta", range: "<3/60" },
+]);
+const hasilVisusTajam = (mata: string) => {
+  let tempHasil = 0;
+  if (mata == "OD") {
+    tempHasil = odVisusTajamDenominator.value / odVisusTajamNumerator.value;
+  } else if (mata == "OS") {
+    tempHasil = osVisusTajamDenominator.value / osVisusTajamNumerator.value;
+  }
+
+  let tempHasilStr = "";
+  if (tempHasil >= 6 / 12 && tempHasil <= 1) {
+    tempHasilStr = listHasilVisusTajam.value[0].tampilan;
+  } else if (tempHasil >= 6 / 18 && tempHasil < 6 / 12) {
+    tempHasilStr = listHasilVisusTajam.value[1].tampilan;
+  } else if (tempHasil >= 6 / 60 && tempHasil < 6 / 18) {
+    tempHasilStr = listHasilVisusTajam.value[1].tampilan;
+  } else if (tempHasil >= 3 / 60 && tempHasil < 6 / 60) {
+    tempHasilStr = listHasilVisusTajam.value[1].tampilan;
+  } else if (tempHasil < 3 / 60) {
+    tempHasilStr = listHasilVisusTajam.value[1].tampilan;
+  }
+
+  if (mata == "OD") {
+    odHasilVisusTajam.value = tempHasilStr;
+  } else if (mata == "OS") {
+    osHasilVisusTajam.value = tempHasilStr;
+  }
+};
+
+const listPemeriksaanLanjutan = ref([
+  { code: "422256009", tampilan: "Counts fingers - distance vision" },
+  { code: "260295004", tampilan: "Sees hand movements" },
+  { code: "260296003", tampilan: "Light perception" },
+  { code: "63063006", tampilan: "Visual acuity, no light perception" },
+]);
+
+const listHasilGlaukoma = ref([
+  { code: "N", tampilan: "Tidak Dicurigai Glaukoma", range: "10 - 21" },
+  { code: "23986001", tampilan: "Dicurigai Glaukoma", range: "> 21" },
+]);
+
+const countHasilGlaukoma = (mata: string) => {
+  let tempGlaukoma;
+  let tempHasilStr;
+  if (mata == "OD") {
+    tempGlaukoma = odGlaukoma.value;
+  } else if (mata == "OS") {
+    tempGlaukoma = osGlaukoma.value;
+  }
+
+  if (tempGlaukoma >= 10 && tempGlaukoma <= 21) {
+    tempHasilStr = listHasilGlaukoma.value[0].tampilan;
+  } else if (tempGlaukoma > 21) {
+    tempHasilStr = listHasilGlaukoma.value[1].tampilan;
+  }
+
+  if (mata == "OD") {
+    odHasilGlaukoma.value = tempHasilStr;
+  } else if (mata == "OS") {
+    osHasilGlaukoma.value = tempHasilStr;
+  }
+};
+
+// Kanan
+const odVisusDenominator = ref();
+const odVisusNumerat = ref();
+
+const odPinholeDenominator = ref();
+const odPinholeNumerat = ref();
+const odHasilPinhole = ref();
+const odPupilIskatarak = ref(true);
+const odSnomed = ref();
+const odSnomedUuid = ref();
+
+const odFundus = ref();
+const odShadowTest = ref();
+
+const odSphJauh = ref();
+const odCyl = ref();
+const odAxis = ref();
+const odVisusTajamDenominator = ref();
+const odVisusTajamNumerator = ref();
+const odHasilVisusTajam = ref();
+
+const odPemeriksaanLanjutan = ref();
+
+const odSphDekat = ref();
+const odGlaukoma = ref();
+const odHasilGlaukoma = ref();
+const odIsretinopati = ref(false);
+// Kiri
+const osVisusDenominator = ref();
+const osVisusNumerat = ref();
+
+const osPinholeDenominator = ref();
+const osPinholeNumerat = ref();
+const osHasilPinhole = ref();
+const osPupilIskatarak = ref(true);
+const osSnomed = ref();
+const osSnomedUuid = ref();
+
+const osFundus = ref();
+const osShadowTest = ref();
+
+const osSphJauh = ref();
+const osCyl = ref();
+const osAxis = ref();
+const osVisusTajamDenominator = ref();
+const osVisusTajamNumerator = ref();
+const osHasilVisusTajam = ref();
+
+const osPemeriksaanLanjutan = ref();
+
+const osSphDekat = ref();
+const osGlaukoma = ref();
+const osHasilGlaukoma = ref();
+const osIsretinopati = ref(false);
 </script>
 
 <template>
@@ -35,13 +202,27 @@ const segmentAnteriorKiri = ref("");
             v-if="method == 'form'"
             class="grid grid-cols-[1fr_min-content_1fr_min-content_1fr_min-content_1fr]"
           >
-            <CustomInputNumber label="Pemeriksaan Visus Kanan" />
+            <CustomInputNumber
+              v-model="odVisusDenominator"
+              label="Pemeriksaan Visus Kanan"
+            />
             <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-            <CustomInputNumber :showLabel="false" class="mt-auto" />
+            <CustomInputNumber
+              v-model="odVisusNumerat"
+              :showLabel="false"
+              class="mt-auto"
+            />
             <div class="border border-gray-200 mx-[35px]"></div>
-            <CustomInputNumber label="Pemeriksaan Visus Kiri" />
+            <CustomInputNumber
+              v-model="osVisusDenominator"
+              label="Pemeriksaan Visus Kiri"
+            />
             <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-            <CustomInputNumber :showLabel="false" class="mt-auto" />
+            <CustomInputNumber
+              v-model="osVisusNumerat"
+              :showLabel="false"
+              class="mt-auto"
+            />
           </div>
           <div v-else>
             <div class="flex flex-col gap-[19px]">
@@ -70,12 +251,23 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Pinhole Kanan
                 </label>
                 <div class="grid grid-cols-[1fr_min-content_1fr]">
-                  <CustomInputNumber :showLabel="false" class="" />
+                  <CustomInputNumber
+                    v-model="odPinholeDenominator"
+                    :showLabel="false"
+                    class=""
+                    @update:model-value="hasilPihnhole('OD')"
+                  />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-                  <CustomInputNumber :showLabel="false" class="mt-auto" />
+                  <CustomInputNumber
+                    v-model="odPinholeNumerat"
+                    :showLabel="false"
+                    class="mt-auto"
+                    @update:model-value="hasilPihnhole('OD')"
+                  />
                 </div>
               </div>
               <CustomTextfield
+                v-model="odHasilPinhole"
                 :showLabel="false"
                 placeholder="Hasil Pemeriksaan Pinhole Kanan"
                 class="mt-auto"
@@ -86,21 +278,23 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Segment Anterior (Pupil) Kanan
                 </label>
                 <div class="flex">
+                  <!-- OV000393 -->
                   <CustomRadio
-                    v-model="segmentAnteriorKanan"
-                    value="curigaKatarak"
+                    v-model="odPupilIskatarak"
+                    :value="true"
                     sideLabel="Curiga Katarak"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="segmentAnteriorKanan"
-                    value="lainya"
+                    v-model="odPupilIskatarak"
+                    :value="false"
                     sideLabel="Kelainan Mata Lainnya"
                   />
                 </div>
               </div>
               <CustomSelect
-                v-if="segmentAnteriorKanan == 'lainya'"
+                v-if="!odPupilIskatarak"
+                v-model="odSnomed"
                 :showLabel="false"
                 placeHolder="Kelainan Mata Lain (Snomed-CT)"
                 class="col-span-2"
@@ -116,13 +310,24 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Pinhole Kiri
                 </label>
                 <div class="grid grid-cols-[1fr_min-content_1fr]">
-                  <CustomInputNumber :showLabel="false" class="" />
+                  <CustomInputNumber
+                    v-model="osPinholeDenominator"
+                    :showLabel="false"
+                    class=""
+                    @update:model-value="hasilPihnhole('OS')"
+                  />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-                  <CustomInputNumber :showLabel="false" class="mt-auto" />
+                  <CustomInputNumber
+                    v-model="osPinholeNumerat"
+                    :showLabel="false"
+                    class="mt-auto"
+                    @update:model-value="hasilPihnhole('OS')"
+                  />
                 </div>
               </div>
               <CustomTextfield
                 :showLabel="false"
+                v-model="osHasilPinhole"
                 placeholder="Hasil Pemeriksaan Pinhole Kiri"
                 class="mt-auto"
                 readOnly
@@ -132,21 +337,23 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Segment Anterior (Pupil) Kiri
                 </label>
                 <div class="flex">
+                  <!-- OV000393 -->
                   <CustomRadio
-                    v-model="segmentAnteriorKiri"
-                    value="curigaKatarak"
+                    v-model="osPupilIskatarak"
+                    :value="true"
                     sideLabel="Curiga Katarak"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="segmentAnteriorKiri"
-                    value="lainya"
+                    v-model="osPupilIskatarak"
+                    :value="false"
                     sideLabel="Kelainan Mata Lainnya"
                   />
                 </div>
               </div>
               <CustomSelect
-                v-if="segmentAnteriorKiri == 'lainya'"
+                v-if="!osPupilIskatarak"
+                v-model="osSnomed"
                 :showLabel="false"
                 placeHolder="Kelainan Mata Lain (Snomed-CT)"
                 class="col-span-2"
@@ -188,39 +395,43 @@ const segmentAnteriorKiri = ref("");
           >
             <div>
               <CustomSelect
+                v-model="odFundus"
                 label="Pemeriksaan Refleks Fundus Kanan"
                 placeHolder="Pilih Pemeriksaan Refleks Fundus Kanan"
                 class="mb-5"
-                optionLabel=""
-                optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+                optionLabel="tampilan"
+                optionValue="code"
+                :options="listFundus"
               />
               <CustomSelect
+                v-model="odShadowTest"
                 label="Pemeriksaan Shadow Test Kanan"
                 placeHolder="Pilih Pemeriksaan Shadow Test Kanan"
                 class=""
-                optionLabel=""
-                optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+                optionLabel="tampilan"
+                optionValue="code"
+                :options="listShadowTest"
               />
             </div>
             <div class="border border-gray-200 mx-[35px]"></div>
             <div>
               <CustomSelect
+                v-model="osFundus"
                 label="Pemeriksaan Refleks Fundus Kiri"
                 placeHolder="Pilih Pemeriksaan Refleks Fundus Kiri"
                 class="mb-5"
-                optionLabel=""
-                optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+                optionLabel="tampilan"
+                optionValue="code"
+                :options="listFundus"
               />
               <CustomSelect
+                v-model="osShadowTest"
                 label="Pemeriksaan Shadow Test Kiri"
                 placeHolder="Pilih Pemeriksaan Shadow Test Kiri"
                 class=""
-                optionLabel=""
-                optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+                optionLabel="tampilan"
+                optionValue="code"
+                :options="listShadowTest"
               />
             </div>
           </div>
@@ -254,9 +465,9 @@ const segmentAnteriorKiri = ref("");
               <label class="block mb-5 font-semibold text-normal">
                 Pemeriksaan Refraksi Subjektif Jauh Mata Kanan
               </label>
-              <CustomInputNumber label="Sph" class="mb-5" />
-              <CustomInputNumber label="Cyl" class="mb-5" />
-              <CustomInputNumber label="Axis" class="mb-5" />
+              <CustomInputNumber v-model="odSphJauh" label="Sph" class="mb-5" />
+              <CustomInputNumber v-model="odCyl" label="Cyl" class="mb-5" />
+              <CustomInputNumber v-model="odAxis" label="Axis" class="mb-5" />
               <div class="grid grid-cols-2">
                 <label
                   class="block font-semibold mb-[5px] text-normal col-span-2"
@@ -264,11 +475,22 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Visus Tajam Penglihatan Jarak Jauh Mata Kanan
                 </label>
                 <div class="grid grid-cols-[1fr_min-content_1fr]">
-                  <CustomInputNumber :showLabel="false" class="" />
+                  <CustomInputNumber
+                    v-model="odVisusTajamDenominator"
+                    @update:model-value="hasilVisusTajam('OD')"
+                    :showLabel="false"
+                    class=""
+                  />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-                  <CustomInputNumber :showLabel="false" class="mt-auto" />
+                  <CustomInputNumber
+                    v-model="odVisusTajamNumerator"
+                    @update:model-value="hasilVisusTajam('OD')"
+                    :showLabel="false"
+                    class="mt-auto"
+                  />
                 </div>
                 <CustomTextfield
+                  v-model="odHasilVisusTajam"
                   :showLabel="false"
                   placeholder="Hasil Pemeriksaan Visus Tajam"
                   class="mt-auto ml-5"
@@ -281,9 +503,9 @@ const segmentAnteriorKiri = ref("");
               <label class="block mb-5 font-semibold text-normal">
                 Pemeriksaan Refraksi Subjektif Jauh Mata Kiri
               </label>
-              <CustomInputNumber label="Sph" class="mb-5" />
-              <CustomInputNumber label="Cyl" class="mb-5" />
-              <CustomInputNumber label="Axis" class="mb-5" />
+              <CustomInputNumber v-model="osSphJauh" label="Sph" class="mb-5" />
+              <CustomInputNumber v-model="osCyl" label="Cyl" class="mb-5" />
+              <CustomInputNumber v-model="osAxis" label="Axis" class="mb-5" />
               <div class="grid grid-cols-2">
                 <label
                   class="block font-semibold mb-[5px] text-normal col-span-2"
@@ -291,11 +513,22 @@ const segmentAnteriorKiri = ref("");
                   Pemeriksaan Visus Tajam Penglihatan Jarak Jauh Mata Kiri
                 </label>
                 <div class="grid grid-cols-[1fr_min-content_1fr]">
-                  <CustomInputNumber :showLabel="false" class="" />
+                  <CustomInputNumber
+                    v-model="osVisusTajamDenominator"
+                    @update:model-value="hasilVisusTajam('OS')"
+                    :showLabel="false"
+                    class=""
+                  />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-                  <CustomInputNumber :showLabel="false" class="mt-auto" />
+                  <CustomInputNumber
+                    v-model="osVisusTajamNumerator"
+                    @update:model-value="hasilVisusTajam('OS')"
+                    :showLabel="false"
+                    class="mt-auto"
+                  />
                 </div>
                 <CustomTextfield
+                  v-model="osHasilVisusTajam"
                   :showLabel="false"
                   placeholder="Hasil Pemeriksaan Visus Tajam"
                   class="mt-auto ml-5"
@@ -355,21 +588,23 @@ const segmentAnteriorKiri = ref("");
             class="grid grid-cols-[1fr_min-content_1fr]"
           >
             <CustomSelect
+              v-model="odPemeriksaanLanjutan"
               label="Pemeriksaan Lanjutan Jika Dinyatakan Buta Mata Kanan"
               placeHolder="Pilih Pemeriksaan Lanjutan Jika Dinyatakan Buta Mata Kanan"
               class="mb-5"
-              optionLabel=""
-              optionValue=""
-              :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+              optionLabel="tampilan"
+              optionValue="code"
+              :options="listPemeriksaanLanjutan"
             />
             <div class="border border-gray-200 mx-[35px]"></div>
             <CustomSelect
+              v-model="osPemeriksaanLanjutan"
               label="Pemeriksaan Lanjutan Jika Dinyatakan Buta Mata Kiri"
               placeHolder="Pilih Pemeriksaan Lanjutan Jika Dinyatakan Buta Mata Kiri"
               class="mb-5"
-              optionLabel=""
-              optionValue=""
-              :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+              optionLabel="tampilan"
+              optionValue="code"
+              :options="listPemeriksaanLanjutan"
             />
           </div>
           <div v-else>
@@ -404,6 +639,7 @@ const segmentAnteriorKiri = ref("");
                 Pemeriksaan Refraksi Dekat Mata Kanan
               </label>
               <CustomInputNumber
+                v-model="odSphDekat"
                 label="Koreksi Lensa addisi untuk penglihatan dekat (Sph +)"
                 class="mb-5"
               />
@@ -413,8 +649,14 @@ const segmentAnteriorKiri = ref("");
                 >
                   Dicurigai Glaukoma pada Mata Kanan
                 </label>
-                <CustomInputNumber :showLabel="false" class="" />
+                <CustomInputNumber
+                  v-model="odGlaukoma"
+                  @update:model-value="countHasilGlaukoma('OD')"
+                  :showLabel="false"
+                  class=""
+                />
                 <CustomTextfield
+                  v-model="odHasilGlaukoma"
                   :showLabel="false"
                   placeholder="Hasil Pemeriksaan Glukoma"
                   class="mt-auto"
@@ -426,9 +668,15 @@ const segmentAnteriorKiri = ref("");
                   Dicurigai Retinopati pada Mata Kanan
                 </label>
                 <div class="flex">
-                  <CustomRadio value="normal" sideLabel="Normal" class="mr-5" />
                   <CustomRadio
-                    value="suspekRetinopati"
+                    v-model="odIsretinopati"
+                    :value="false"
+                    sideLabel="Normal"
+                    class="mr-5"
+                  />
+                  <CustomRadio
+                    v-model="odIsretinopati"
+                    :value="true"
                     sideLabel="Suspek Retinopati"
                   />
                 </div>
@@ -440,6 +688,7 @@ const segmentAnteriorKiri = ref("");
                 Pemeriksaan Refraksi Dekat Mata Kiri
               </label>
               <CustomInputNumber
+                v-model="osSphDekat"
                 label="Koreksi Lensa addisi untuk penglihatan dekat (Sph +)"
                 class="mb-5"
               />
@@ -449,8 +698,14 @@ const segmentAnteriorKiri = ref("");
                 >
                   Dicurigai Glaukoma pada Mata Kiri
                 </label>
-                <CustomInputNumber :showLabel="false" class="" />
+                <CustomInputNumber
+                  v-model="osGlaukoma"
+                  @update:model-value="countHasilGlaukoma('OS')"
+                  :showLabel="false"
+                  class=""
+                />
                 <CustomTextfield
+                  v-model="osHasilGlaukoma"
                   :showLabel="false"
                   placeholder="Hasil Pemeriksaan Glukoma"
                   class="mt-auto"
@@ -462,9 +717,15 @@ const segmentAnteriorKiri = ref("");
                   Dicurigai Retinopati pada Mata Kiri
                 </label>
                 <div class="flex">
-                  <CustomRadio value="normal" sideLabel="Normal" class="mr-5" />
                   <CustomRadio
-                    value="suspekRetinopati"
+                    v-model="osIsretinopati"
+                    :value="false"
+                    sideLabel="Normal"
+                    class="mr-5"
+                  />
+                  <CustomRadio
+                    v-model="osIsretinopati"
+                    :value="true"
                     sideLabel="Suspek Retinopati"
                   />
                 </div>

@@ -8,6 +8,7 @@ import { computed, ref, onBeforeMount } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 
 const emit = defineEmits(["edit"]);
 
@@ -54,6 +55,15 @@ const {
 } = useForm({
   validationSchema: schemaAlergi,
 });
+
+const listPemicuAlergi = ref([
+  "Obat",
+  "Makanan",
+  "Lingkungan",
+  "Airbone",
+  "Sengatan Serangga",
+  "Lateks / Zat lain yang disentuh",
+]);
 
 const [pemicuAlergi] = defineFieldAlergi("pemicuAlergi");
 const [namaAlergi] = defineFieldAlergi("namaAlergi");
@@ -105,10 +115,17 @@ defineExpose({
         v-if="currentMethod === 'form'"
         class="grid grid-cols-2 gap-[30px] py-3"
       >
-        <CustomTextfield
+        <CustomSelect
           label="Pemicu Alergi"
-          placeholder="Masukkan Pemicu Alergi"
-          v-model:modelValue="pemicuAlergi"
+          placeHolder="Masukkan Pemicu Alergi"
+          v-model="pemicuAlergi"
+          :options="listPemicuAlergi"
+          optionValue=""
+          optionLabel=""
+          :isLoading="false"
+          :invalid="false"
+          invalidMessage="Wajib diisi"
+          customSelectClass="border-[#C7CBD2]"
         />
         <CustomTextfield
           label="Nama/Jenis Alergi"

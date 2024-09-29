@@ -36,7 +36,9 @@ const showPatientData = ref(true);
                 </div>
                 <div class="text-normal">
                   01-01-2000 |
-                  <span class="font-semibold text-adameds-300">24Th 0Bl 1Hr</span>
+                  <span class="font-semibold text-adameds-300"
+                    >24Th 0Bl 1Hr</span
+                  >
                 </div>
               </div>
             </div>
@@ -78,7 +80,9 @@ const showPatientData = ref(true);
                   label="TUNAI"
                   :bgColor="true ? 'bg-adameds-50' : 'bg-warning-50'"
                   :textColor="true ? 'text-adameds-300' : 'text-warning-300'"
-                  :borderColor="true ? 'border-adameds-300' : 'border-warning-300'"
+                  :borderColor="
+                    true ? 'border-adameds-300' : 'border-warning-300'
+                  "
                   customClass="h-5 ml-[5px]"
                 />
               </div>
@@ -155,6 +159,11 @@ const showPatientData = ref(true);
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
                     Tidak ada
                   </span>
+                </div>
+                <div
+                  :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[#14AC5B] text-white shadow-lg`"
+                >
+                  TRIASE
                 </div>
               </div>
             </div>

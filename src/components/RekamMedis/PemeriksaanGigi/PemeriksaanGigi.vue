@@ -25,8 +25,49 @@ const props = defineProps({
   },
 });
 
+const listTorusPalatinus = ref([
+  { code: "OV000074", tampilan: "Tidak Ada" },
+  { code: "OV000075", tampilan: "Kecil" },
+  { code: "OV000076", tampilan: "Sedang" },
+  { code: "OV000077", tampilan: "Besar" },
+  { code: "OV000078", tampilan: "Multiple" },
+]);
+const listTorusMandibularis = ref([
+  { code: "OV000079", tampilan: "Tidak Ada" },
+  { code: "OV000080", tampilan: "Sisi Kiri" },
+  { code: "OV000081", tampilan: "Sisi Kanan" },
+  { code: "OV000082", tampilan: "Kedua Sisi" },
+]);
+const listPalatum = ref([
+  { code: "OV000083", tampilan: "Dalam" },
+  { code: "OV000084", tampilan: "Sedang" },
+  { code: "OV000085", tampilan: "Rendah" },
+]);
+const listDiastema = ref([
+  { code: "OV000086", tampilan: "Tidak Ada Diastema" },
+  { code: "OV000087", tampilan: "Ada Diastema" },
+]);
+const listGigiAnomali = ref([
+  { code: "OV000088", tampilan: "Tidak Ada Gigi Anomali" },
+  { code: "OV000089", tampilan: "Ada Gigi Anomali" },
+]);
+const listFrenulumLabialisLingualis = ref(["normal", "tinggi", "rendah"]);
+
+const oklusiGigiUuid = ref();
+const torusPalatinus = ref();
+const torusMandibularis = ref();
+const palatum = ref();
 const diastema = ref(false);
-const toothAnomaly = ref(false);
+const diastemaKeterangan = ref();
+const gigiAnomali = ref();
+const gigiAnomaliKet = ref();
+const frenulumLabialis = ref();
+const frenulumLingualis = ref();
+const gigiDecayed = ref();
+const gigiMissing = ref();
+const gigiFilled = ref();
+const temuanLain = ref();
+const ketTindakanGigi = ref();
 const detailDialog = ref(false);
 </script>
 
@@ -40,6 +81,7 @@ const detailDialog = ref(false);
           <div v-if="method == 'form'">
             <div class="grid grid-cols-3 gap-x-[30px] gap-y-5 mt-[30px]">
               <CustomSelect
+                v-model="oklusiGigiUuid"
                 label="Oklusi"
                 placeHolder="Pilih Oklusi"
                 class=""
@@ -49,77 +91,101 @@ const detailDialog = ref(false);
                 :options="['KTP', 'Passport', 'SIM', 'Lainya']"
               />
               <CustomSelect
+                v-model="torusPalatinus"
                 label="Torus Palatinus"
                 placeHolder="Pilih Torus Palatinus"
                 class=""
-                optionLabel=""
-                optionValue=""
+                optionLabel="tampilan"
+                optionValue="code"
                 :showFilter="false"
-                :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                :options="listTorusPalatinus"
               />
               <CustomSelect
+                v-model="torusMandibularis"
                 label="Torus Mandibularis"
                 placeHolder="Pilih Torus Mandibularis"
                 class=""
-                optionLabel=""
-                optionValue=""
+                optionLabel="tampilan"
+                optionValue="code"
                 :showFilter="false"
-                :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                :options="listTorusMandibularis"
               />
               <CustomSelect
+                v-model="palatum"
                 label="Palatum"
                 placeHolder="Pilih Palatum"
                 class=""
-                optionLabel=""
-                optionValue=""
+                optionLabel="tampilan"
+                optionValue="code"
                 :showFilter="false"
-                :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                :options="listPalatum"
               />
               <CustomSelect
+                v-model="frenulumLabialis"
                 label="Frenulum Labalis"
                 placeHolder="Pilih Frenulum Labalis"
                 class=""
                 optionLabel=""
                 optionValue=""
                 :showFilter="false"
-                :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                :options="listFrenulumLabialisLingualis"
               />
               <CustomSelect
+                v-model="frenulumLingualis"
                 label="Frenulum Lingualis"
                 placeHolder="Pilih Frenulum Lingualis"
                 class=""
                 optionLabel=""
                 optionValue=""
                 :showFilter="false"
-                :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+                :options="listFrenulumLabialisLingualis"
               />
               <CustomSwitch v-model="diastema" label="Diastema" />
               <CustomTextArea
                 v-if="diastema"
+                v-model="diastemaKeterangan"
                 label="Keterangan Diasterma"
                 class=""
                 placeholder="Masukkan Keterangan Diasterma"
                 height="h-10"
               />
-              <CustomSwitch v-model="toothAnomaly" label="Gigi Anomali" />
+              <CustomSwitch v-model="gigiAnomali" label="Gigi Anomali" />
               <CustomTextArea
-                v-if="toothAnomaly"
+                v-if="gigiAnomali"
+                v-model="gigiAnomaliKet"
                 label="Keterangan Gigi Anomali"
                 class=""
                 placeholder="Masukkan Keterangan Gigi Anomali"
                 height="h-10"
               />
               <div class="grid grid-cols-3 gap-4">
-                <CustomInputNumber label="Jml. Gigi Decayed" showButtons />
-                <CustomInputNumber label="Jml. Gigi Filled" showButtons />
-                <CustomInputNumber label="Jml. Gigi Filled" showButtons />
+                <CustomInputNumber
+                  v-model="gigiDecayed"
+                  label="Jml. Gigi Decayed"
+                  :min="0"
+                  showButtons
+                />
+                <CustomInputNumber
+                  v-model="gigiMissing"
+                  label="Jml. Gigi Missing"
+                  :min="0"
+                  showButtons
+                />
+                <CustomInputNumber
+                  v-model="gigiFilled"
+                  label="Jml. Gigi Filled"
+                  :min="0"
+                  showButtons
+                />
               </div>
               <CustomTextArea
+                v-model="temuanLain"
                 label="Temuan Lainnya"
                 placeholder="Masukkan Temuan Lainnya"
                 class="col-span-3"
               />
               <CustomTextArea
+                v-model="ketTindakanGigi"
                 label="Keterangan Tindakan Gigi"
                 placeholder="Masukkan Keterangan Tindakan Gigi"
                 class="col-span-3"

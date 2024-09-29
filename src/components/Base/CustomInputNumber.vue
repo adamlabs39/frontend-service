@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { InputNumberInputEvent } from "primevue/inputnumber";
 import { computed, ref } from "vue";
 type FormatType = "decimal" | "currency" | undefined;
 
@@ -80,10 +81,16 @@ const value = computed({
 });
 
 const emit = defineEmits(["update:modelValue", "clickPrepend", "clickAppend"]);
-// const onInput = (event: any) => {
-//   if (!event) return;
-//   emit("update:modelValue", event.target?.value);
-// };
+const onInput = (event: InputNumberInputEvent) => {
+  emit(
+    "update:modelValue",
+    event.value != null && event.value != undefined
+      ? event.value
+      : props.min != null && props.min != undefined
+      ? props.min
+      : 0
+  );
+};
 
 const alerTest = () => {
   alert("masuk gan");
@@ -108,7 +115,8 @@ defineExpose({
         class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-200': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid && !readOnly,
+          'border-adameds-300': readOnly,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -132,10 +140,12 @@ defineExpose({
         buttonLayout="horizontal"
         v-model="value"
         class="text-black text-SM"
+        @input="onInput"
         :pt:pcInput:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
-          'border-grey-200': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid && !readOnly,
+          'border-adameds-300': readOnly,
           'rounded-r-none border-r-0': $slots.appendText,
           'rounded-l-none border-l-0': $slots.prependText,
           'h-10 pt-1 text-black text-SM ': true,
@@ -159,7 +169,7 @@ defineExpose({
           },
           decrementButton: {
             class: 'bg-adameds-300 text-white border-adameds-300',
-          }
+          },
         }"
         :dt="{
           placeholderColor: invalid ? '#e9594c' : '#90969E',
@@ -192,7 +202,9 @@ defineExpose({
         class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-200 text-adameds-300': !disabled && !invalid,
+          'border-grey-200 text-adameds-300':
+            !disabled && !invalid && !readOnly,
+          'border-adameds-300 text-adameds-300': readOnly,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
         }"
       >
