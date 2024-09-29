@@ -3,14 +3,14 @@ import { computed } from "vue";
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Boolean],
   },
   sideLabel: {
     type: String,
     default: "",
   },
   value: {
-    type: String,
+    type: [String, Boolean],
     default: "",
   },
   label: {
@@ -29,7 +29,7 @@ const checked = computed({
   set: (value: any) => emit("update:modelValue", value),
 });
 
-const selectRadio = (value: string) => {
+const selectRadio = (value: string | boolean) => {
   checked.value = value;
 };
 </script>

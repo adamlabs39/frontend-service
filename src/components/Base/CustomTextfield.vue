@@ -53,7 +53,7 @@ const props = defineProps({
   maxLength: {
     type: Number,
     default: 8,
-  }
+  },
 });
 
 // const value = ref(props.modelValue);
@@ -91,7 +91,8 @@ defineExpose({
         class="flex border border-r-0 border-solid rounded-l-lg cursor-pointer text-SM text-grey-300"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-200': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid && !readOnly,
+          'border-adameds-300': readOnly,
           'border-grey-200 bg-grey-100': disabled,
         }"
       >
@@ -119,7 +120,8 @@ defineExpose({
           :class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
-            'border-grey-200': !disabled && !invalid,
+            'border-grey-200': !disabled && !invalid && !readOnly,
+            'border-adameds-300': readOnly,
             'rounded-r-none border-r-0': $slots.appendText,
             'rounded-l-none border-l-0': $slots.prependText,
             'cursor-not-allowed': readOnly,
@@ -154,13 +156,16 @@ defineExpose({
         class="flex font-bold border border-l-0 border-solid rounded-r-lg cursor-pointer text-SM"
         :class="{
           'text-danger-300 border-danger-300': invalid,
-          'border-grey-200 text-adameds-300': !disabled && !invalid,
+          'border-grey-200': !disabled && !invalid && !readOnly,
+          'border-adameds-300': readOnly,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
         }"
       >
         <slot name="appendText" />
       </div>
     </div>
-    <small v-if="invalid" class="text-danger-300 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-danger-300 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>

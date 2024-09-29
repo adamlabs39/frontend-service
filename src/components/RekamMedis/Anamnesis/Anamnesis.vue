@@ -22,14 +22,8 @@ const isEditing = ref(props.method === "form");
 const emit = defineEmits(['edit', 'submit']);
 
 const anamnesisOption = ref([
-  { name: "Hipertensi" },
-  { name: "Penyakit Jantung" },
-  { name: "Stroke" },
-  { name: "TB Paru" },
-  { name: "Diabetes Melitus" },
-  { name: "Asma" },
-  { name: "Lain-lain" },
-  { name: "Tidak Ada" },
+  { name: "Auto Anamnesa" },
+  { name: "Allo Anamnesa" },
 ]);
 
 const riwayatPenyakitOption = ref([
@@ -69,7 +63,7 @@ const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
   setValues({
-    anamnesis: "Penyakit Jantung",
+    anamnesis: "Auto Anamnesa",
     keluhanUtama: "Sakit Dada",
     riwayatPenyakit: "Asma",
     riwayatPengobatan: "tidak ada",
@@ -162,7 +156,7 @@ defineExpose({
                 />
                 <label
                   :for="category.name"
-                  class="text-SM font-normal text-grey-400"
+                  class="font-normal text-SM text-grey-400"
                   >{{ category.name }}</label
                 >
               </div>

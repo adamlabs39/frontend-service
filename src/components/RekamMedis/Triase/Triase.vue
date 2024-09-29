@@ -7,6 +7,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -17,35 +18,53 @@ const props = defineProps({
 });
 
 const kasus = ref([
-  { id: "1", kasus: "Kasus 1" },
-  { id: "2", kasus: "kasus 2" },
-  { id: "3", kasus: "Kasus 3" },
-  { id: "4", kasus: "Kasus 4" },
+  { name: "Trauma" },
+  { name: "Non Trauma" },
+  { name: "Obstetri" },
+]);
+const caraDatang = ref([
+  { name: "Sendiri" },
+  { name: "Diantar Polisi" },
+  { name: "Diantar Keluarga" },
+  { name: "Lain - Lain" },
+]);
+const kendaraan = ref([
+  { name: "Ambulans" },
+  { name: "Lain - Lain" },
+]);
+const keadaanUmum = ref([
+  { name: "Baik" },
+  { name: "Ringan" },
+  { name: "Sedang" },
+  { name: "Buruk" },
 ]);
 const mata = ref([
-  { id: "1", mata: "Mata 1" },
-  { id: "2", mata: "Mata 2" },
-  { id: "3", mata: "Mata 3" },
-  { id: "4", mata: "Mata 4" },
+  { name: "Spontan Merespon" },
+  { name: "Ada Respon Dengan Rangsang Suara" },
+  { name: "Ada Respon Dengan Rangsang Nyeri" },
+  { name: "Tidak Ada Respon" },
 ]);
 const motorik = ref([
-  { id: "1", motorik: "Motorik 1" },
-  { id: "2", motorik: "Motorik 2" },
-  { id: "3", motorik: "Motorik 3" },
-  { id: "4", motorik: "Motorik 4" },
+  { name: "Mengikuti Perintah" },
+  { name: "Melokalisir Nyeri" },
+  { name: "Flexi Normal" },
+  { name: "Flexi Abnormal" },
+  { name: "Ekstensi Abnormal" },
+  { name: "Tadak Ada Respon" },
 ]);
 const verbal = ref([
-  { id: "1", verbal: "Verbal 1" },
-  { id: "2", verbal: "Verbal 2" },
-  { id: "3", verbal: "Verbal 3" },
-  { id: "4", verbal: "Verbal 4" },
+  { name: "Orientasi Balik" },
+  { name: "Binging Berbicara" },
+  { name: "Kata - Kata Tidak Jelas" },
+  { name: "Suara Tanpa Arti (Mengerang)" },
+  { name: "Tidak Ada Respon" },
 ]);
 
 const glasglow = ref([
-  { id: "1", glasglow: "Glasglow 1" },
-  { id: "2", glasglow: "Glasglow 2" },
-  { id: "3", glasglow: "Glasglow 3" },
-  { id: "4", glasglow: "Glasglow 4" },
+  { name: "Glasglow 1" },
+  { name: "Glasglow 2" },
+  { name: "Glasglow 3" },
+  { name: "Glasglow 4" },
 ]);
 
 const doa = ref([
@@ -55,22 +74,23 @@ const doa = ref([
 ]);
 
 const selectedKasus = ref("");
+const selectedCaraDatang = ref("");
+const selectedKendaraan = ref("");
+const selectedKeadaanUmum = ref("");
+const asalRujukan = ref<string>("");
+
 const selectedMata = ref("");
 const selectedMotorik = ref("");
 const selectedVerbal = ref("");
-
 const selectedGlasglow = ref("");
+
 const kesimpulanTriase = ref();
+const warnaTriase = ref("#3D84E5");
 
 const tekananDarahSistole = ref<number | undefined>(undefined);
 const tekananDarahDiastole = ref<number | undefined>(undefined);
 const frekuensiNafas = ref<number | undefined>(undefined);
 const frekuensiNadi = ref<number | undefined>(undefined);
-
-const waktuDOA = ref<Date>(new Date());
-const waktuMeninggal = ref<Date>(new Date());
-
-const deathOnArrival = ref();
 
 const suhu = ref<number | undefined>(undefined);
 const bloodOxygen = ref<number | undefined>(undefined);
@@ -106,23 +126,63 @@ defineExpose({
             label="Kasus"
             v-model="selectedKasus"
             :options="kasus"
-            optionValue="id"
-            optionLabel="kasus"
-            :isLoading="false"
-            :invalid="false"
+            option-label="name"
+            option-value="name"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Kasus"
             customSelectClass="border-[#C7CBD2]"
+            class="col-span-4"
           />
+          <CustomSelect
+            label="Cara Datang"
+            v-model="selectedCaraDatang"
+            :options="caraDatang"
+            option-label="name"
+            option-value="name"
+            invalidMessage="Wajib diisi"
+            :disabled="false"
+            placeHolder="Pilih Cara Datang"
+            customSelectClass="border-[#C7CBD2]"
+            class="col-span-2"
+          />
+          <CustomSelect
+            label="Kendaraan"
+            v-model="selectedKendaraan"
+            :options="kendaraan"
+            option-label="name"
+            option-value="name"
+            invalidMessage="Wajib diisi"
+            :disabled="false"
+            placeHolder="Pilih Kendaraan"
+            customSelectClass="border-[#C7CBD2]"
+            class="col-span-2"
+          />
+          <CustomSelect
+            label="Keadaan Umum"
+            v-model="selectedKeadaanUmum"
+            :options="keadaanUmum"
+            option-label="name"
+            option-value="name"
+            invalidMessage="Wajib diisi"
+            :disabled="false"
+            placeHolder="Pilih Keadaan Umum"
+            customSelectClass="border-[#C7CBD2]"
+            class="col-span-2"
+          />
+          <CustomTextfield
+            label="Asal Rujukan"
+            placeholder="Asal Rujukan"
+            v-model:modelValue="asalRujukan"
+            class="col-span-2"
+          />
+          <hr class="col-span-4" />
           <CustomSelect
             label="Mata (Respon Membuka Mata)"
             v-model="selectedMata"
             :options="mata"
-            optionValue="id"
-            optionLabel="mata"
-            :isLoading="false"
-            :invalid="false"
+            option-label="name"
+            option-value="name"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -132,10 +192,8 @@ defineExpose({
             label="Motorik (Respon Gerakan)"
             v-model="selectedMotorik"
             :options="motorik"
-            optionValue="id"
-            optionLabel="motorik"
-            :isLoading="false"
-            :invalid="false"
+            option-label="name"
+            option-value="name"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -145,33 +203,34 @@ defineExpose({
             label="Verbal (Respon Verbal)"
             v-model="selectedVerbal"
             :options="verbal"
-            optionValue="id"
-            optionLabel="verbal"
-            :isLoading="false"
-            :invalid="false"
+            option-label="name"
+            option-value="name"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
             customSelectClass="border-[#C7CBD2]"
           />
-
-          <!-- Merge Sistole / Diastole into a 2-column layout with adjusted column widths -->
+          <CustomSelect
+            label="Glasglow Coma Scale (GCS) Score"
+            v-model="selectedGlasglow"
+            :options="glasglow"
+            option-label="name"
+            option-value="name"
+            invalidMessage="Wajib diisi"
+            :disabled="false"
+            placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
+            customSelectClass="border-[#C7CBD2]"
+          />
           <div
-            class="grid items-center grid-cols-[2fr_auto_2fr] col-span-2 gap-10"
+            class="grid items-center grid-cols-[2fr_min-content_2fr] col-span-2"
           >
             <CustomInputNumber
-              label="Tekanan Darah (Sistole)"
+              label="Tekanan Darah (Sistole / Diastole)"
               placeholder="0"
               v-model:modelValue="tekananDarahSistole"
               type="number"
-            >
-              <template #appendText>
-                <div class="flex items-center mr-2">x/mnt</div>
-              </template>
-            </CustomInputNumber>
-
-            <div class="flex w-full h-full pt-9 text-adameds-200">/</div>
-
+            />
+            <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
             <CustomInputNumber
               label="Diastole"
               placeholder="0"
@@ -183,7 +242,6 @@ defineExpose({
               </template>
             </CustomInputNumber>
           </div>
-
           <CustomInputNumber
             label="Frekuensi Nafas"
             placeholder="0"
@@ -230,67 +288,81 @@ defineExpose({
               <div class="flex items-center mr-2">%</div>
             </template>
           </CustomInputNumber>
+          <hr class="col-span-3" />
         </div>
-
-        <div class="grid grid-cols-4 gap-[30px] py-3">
-          <div class="flex col-span-2">
-            <div>
-              <div class="block font-semibold mb-[11px]">
-                Death On Arrival (DOA)
-              </div>
-              <div class="grid grid-flow-col gap-4">
-                <div
-                  v-for="items of doa"
-                  :key="items.key"
-                  class="flex items-center gap-2.5"
-                >
-                  <Checkbox
-                    v-model="deathOnArrival"
-                    :inputId="items.key"
-                    name="items"
-                    :value="items.name"
-                    :dt="{
-                      checkedBackground: { class: 'bg-[#14B8A6]' },
-                      checkedHoverBackground: { class: 'bg-[#14B8A6]' },
-                    }"
-                  />
-                  <label :for="items.key" class="text-sm">{{
-                    items.name
-                  }}</label>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center ml-auto">
-              <div class="w-0.5 h-14 bg-grey-200"></div>
-            </div>
-          </div>
-
-          <CustomDatePicker v-model="waktuDOA" label="Waktu DOA" disabled />
-          <CustomDatePicker
-            v-model="waktuMeninggal"
-            label="Waktu Meninggal"
-            disabled
-          />
-        </div>
-        <div class="grid grid-cols-2 gap-[30px] py-3">
-          <CustomSelect
-            label="Glasglow Coma Scale (GCS) Score"
-            v-model="selectedGlasglow"
-            :options="glasglow"
-            optionValue="id"
-            optionLabel="glasglow"
-            :isLoading="false"
-            :invalid="false"
-            invalidMessage="Wajib diisi"
-            :disabled="false"
-            placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-            customSelectClass="border-[#C7CBD2]"
-          />
-          <CustomTextArea
+        <div class="flex gap-[24px] py-3">
+          <CustomTextfield
             v-model="kesimpulanTriase"
             label="Kesimpulan Triase"
             placeholder="Kesimpulan Triase"
+            class="grow"
           />
+          <div
+            @click="warnaTriase = '#3D84E5'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#3D84E5'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-white"
+            />
+          </div>
+          <div
+            @click="warnaTriase = '#E9594C'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-danger-300 rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#E9594C'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-white"
+            />
+          </div>
+          <div
+            @click="warnaTriase = '#E89F29'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-warning-300 rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#E89F29'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-white"
+            />
+          </div>
+          <div
+            @click="warnaTriase = '#14AC5B'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-success-300 rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#14AC5B'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-white"
+            />
+          </div>
+          <div
+            @click="warnaTriase = '#FFFFFF'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-white rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#FFFFFF'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-black"
+            />
+          </div>
+          <div
+            @click="warnaTriase = '#000000'"
+            class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-black rounded-md mt-auto flex"
+          >
+            <PhCheckCircle
+              v-if="warnaTriase == '#000000'"
+              :size="25"
+              weight="fill"
+              class="m-auto text-white"
+            />
+          </div>
         </div>
       </div>
 

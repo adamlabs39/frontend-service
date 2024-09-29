@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref,onBeforeMount } from "vue";
+import { ref, onBeforeMount } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -16,7 +16,7 @@ const props = defineProps({
   },
 });
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(['edit', 'submit']);
+const emit = defineEmits(["edit", "submit"]);
 
 const schema = toTypedSchema(
   yup.object({
@@ -37,24 +37,34 @@ const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ 
-    beratBadan:43,
-    tinggiBadan:155,
-    IMT:100,
-    catatan:"Normal",
-    petugas: "Adam" });
+  setValues({
+    beratBadan: 43,
+    tinggiBadan: 155,
+    IMT: 0,
+    catatan: "Normal",
+    petugas: "Adam",
+  });
+  calculateIMT()
 });
 
+const calculateIMT = () => {  
+  if (beratBadan.value && tinggiBadan.value) {
+    IMT.value = Number(
+      (beratBadan.value / (tinggiBadan.value / 100) ** 2).toFixed(2)
+    );
+  } else {
+    IMT.value = 0;
+  }
+};
+
 const onSubmit = handleSubmit((values: any) => {
-  console.log("Adding new data:", values);
-  emit('submit', values); 
+  emit("submit", values);
   isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
-  emit('edit');
-
+  emit("edit");
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -73,36 +83,48 @@ defineExpose({
   open,
   close,
 });
-
 </script>
 <template>
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Antropometri</template>
     <template #content>
       <div v-if="isEditing" class="flex gap-[30px] pt-5">
-        <CustomInputNumber v-model="beratBadan" label="Berat Badan">
-            <template #appendText>
-                <div class="flex items-center justify-center mr-2.5">
-                    Kg
-                </div>
-            </template>
+        <CustomInputNumber
+          v-model="beratBadan"
+          label="Berat Badan"
+          @update:model-value="calculateIMT"
+        >
+          <template #appendText>
+            <div class="flex items-center justify-center mr-2.5">Kg</div>
+          </template>
         </CustomInputNumber>
-        <CustomInputNumber v-model="tinggiBadan" label="Tinggi Badan">
-            <template #appendText>
-                <div class="flex items-center justify-center mr-2.5">
-                    Cm
-                </div>
-            </template>
+        <CustomInputNumber
+          v-model="tinggiBadan"
+          label="Tinggi Badan"
+          @update:model-value="calculateIMT"
+        >
+          <template #appendText>
+            <div class="flex items-center justify-center mr-2.5">Cm</div>
+          </template>
         </CustomInputNumber>
-        <CustomInputNumber v-model="IMT" label="IMT">
-            <template #appendText>
-                <div class="flex items-center justify-center mr-2.5">
-                    Kg/m²
-                </div>
-            </template>
+        <CustomInputNumber
+          v-model="IMT"
+          label="IMT"
+          placeholder="0"
+          class=""
+          readOnly
+        >
+          <template #appendText>
+            <div class="flex items-center justify-center mr-2.5">Kg/m²</div>
+          </template>
         </CustomInputNumber>
-        <CustomTextArea v-model="catatan" class="grow" label="Catatan" placeholder="Catatan" height="h-10" />
-
+        <CustomTextArea
+          v-model="catatan"
+          class="grow"
+          label="Catatan"
+          placeholder="Catatan"
+          height="h-10"
+        />
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
         <CustomInfoRow label="Berat Badan">
@@ -121,7 +143,7 @@ defineExpose({
           </template>
         </CustomInfoRow>
         <CustomInfoRow label="Catatan" :value="catatan" />
-        <hr class="border-grey-200">
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
@@ -135,16 +157,8 @@ defineExpose({
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton
-          v-if="isEditing"
-          label="Simpan"
-          @click="onSubmit"
-        />
-        <CustomButton
-          v-else
-          label="Edit"
-          @click="toggleEdit"
-        />
+        <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+        <CustomButton v-else label="Edit" @click="toggleEdit" />
       </div>
     </template>
   </CustomAccordion>
