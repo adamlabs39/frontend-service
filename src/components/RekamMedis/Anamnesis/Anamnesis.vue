@@ -325,13 +325,6 @@ defineExpose({
               backgroundColor="bg-transparent"
               borderColor="border-2 border-grey-200"
             />
-            <CustomButton
-              v-if="isEditing"
-              label="Tidak Ada Alergi"
-              textColor="text-adameds-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-adameds-300"
-            />
             <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
             <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
           </div>

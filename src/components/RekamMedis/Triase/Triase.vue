@@ -382,24 +382,41 @@ defineExpose({
         v-if="props.method == 'detail'"
         class="py-5 flex flex-col gap-[19px]"
       >
-        <CustomInfoRow label="Kriteria Pemantauan" value="PEWS" />
-        <CustomInfoRow label="Waktu Asesmen" value="01-01-2024" />
-        <CustomInfoRow label="Frekuensi Napas" value="48 x/mnt" />
-        <CustomInfoRow label="Frekuensi Nadi" value="158 x/mnt" />
-        <CustomInfoRow label="Suhu" value="37 C" />
+        <CustomInfoRow label="Kasus" value="Kasus" />
+        <CustomInfoRow label="Cara Datang" value="Cara Datang" />
+        <CustomInfoRow label="Kendaraan" value="Kendaraan" />
+        <CustomInfoRow label="Keadaan Umum" value="Keadaan Umum" />
+        <CustomInfoRow label="Asal Rujukan" value="-" />
+        <hr class="border-grey-200" />
+        <CustomInfoRow label="Mata" value="Respon" />
+        <CustomInfoRow label="Motorik" value="Respon" />
+        <CustomInfoRow label="Verbal" value="Respon" />
+        <CustomInfoRow label="Glasglow Coma Scale (GCS) Score" value="score" />
+        <CustomInfoRow label="Tekanan Darah" value="0/0 mmHg" />
+        <CustomInfoRow label="Frekuensi Nafas" value="0 x/mnt" />
+        <CustomInfoRow label="Frekuensi Nadi" value="0 x/mnt" />
         <CustomInfoRow
-          label="Capillary Refill Time (CRT > 2 Detik)"
+          label="Capillary Refill Time (CRT > 2 detik)"
           value="Tidak"
         />
-        <CustomInfoRow label="Blood Oxygen" value="98%" />
-        <CustomInfoRow label="Gula Darah" value="98%" />
-        <CustomInfoRow label="Oksigen Tambahan" value="Tidak" />
-        <CustomInfoRow label="Tekanan Darah" value="100 mmHg" />
-        <CustomInfoRow label="Respirasi Anak" value="Tidak Ada retraksi" />
-        <CustomInfoRow label="Kardiovaskuler Anak" value="Tidak Sianosis" />
-        <CustomInfoRow label="Keadaan Umum" value="Interaksi Biasa" />
+        <CustomInfoRow label="Suhu" value="0 °C" />
+        <CustomInfoRow label="Blood Oxygen" value="0 %" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Kesimpulan Triase" value="-" />
+        <div
+          class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
+        >
+          <PhCheckCircle :size="25" weight="fill" class="m-auto text-white" />
+        </div>
+        <hr class="border-grey-200" />
+        <div class="flex justify-between">
+          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow
+            label="Jam Input"
+            :value="`petugas`"
+            alignment="right"
+          />
+        </div>
       </div>
 
       <!-- Dialog compare -->
@@ -692,13 +709,6 @@ defineExpose({
               textColor="text-grey-300"
               backgroundColor="bg-transparent"
               borderColor="border-2 border-grey-200"
-            />
-            <CustomButton
-              v-if="method === 'form'"
-              label="Tidak Ada Alergi"
-              textColor="text-adameds-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-adameds-300"
             />
             <CustomButton
               v-if="method === 'form'"

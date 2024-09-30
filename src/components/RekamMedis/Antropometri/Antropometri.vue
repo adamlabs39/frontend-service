@@ -8,6 +8,8 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriAntropometri from "@/components/RekamMedis/Antropometri/HistoriAntropometri.vue";
 
 const props = defineProps({
   method: {
@@ -44,10 +46,10 @@ onBeforeMount(async () => {
     catatan: "Normal",
     petugas: "Adam",
   });
-  calculateIMT()
+  calculateIMT();
 });
 
-const calculateIMT = () => {  
+const calculateIMT = () => {
   if (beratBadan.value && tinggiBadan.value) {
     IMT.value = Number(
       (beratBadan.value / (tinggiBadan.value / 100) ** 2).toFixed(2)
@@ -65,6 +67,11 @@ const onSubmit = handleSubmit((values: any) => {
 const toggleEdit = () => {
   isEditing.value = true;
   emit("edit");
+};
+
+const compareDialog = ref(false);
+const showDialogCompare = () => {
+  compareDialog.value = true;
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -88,6 +95,16 @@ defineExpose({
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Antropometri</template>
     <template #content>
+      <div v-if="isEditing" class="flex flex-col">
+        <CustomButton
+          @click="showDialogCompare"
+          class="!rounded-md my-[10px] ml-auto"
+          label="Mode Compare"
+          size="small"
+          icon="LayoutIcon"
+        />
+        <hr class="mb-[30px]" />
+      </div>
       <div v-if="isEditing" class="flex gap-[30px] pt-5">
         <CustomInputNumber
           v-model="beratBadan"
@@ -146,6 +163,100 @@ defineExpose({
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
+      <!-- Dialog compare -->
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+        <template #header>Alergi</template>
+        <template #body>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div>
+              <div class="mb-[18px] flex justify-between">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-[1fr_min-content_1fr]">
+                <HistoriAntropometri />
+                <div class="border border-adameds-300 mx-[15px]"></div>
+                <HistoriAntropometri />
+              </div>
+            </div>
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <div class="flex flex-col gap-y-5">
+              <div class="grid grid-cols-3 gap-5">
+                <CustomInputNumber
+                  v-model="beratBadan"
+                  label="Berat Badan"
+                  @update:model-value="calculateIMT"
+                >
+                  <template #appendText>
+                    <div class="flex items-center justify-center mr-2.5">
+                      Kg
+                    </div>
+                  </template>
+                </CustomInputNumber>
+                <CustomInputNumber
+                  v-model="tinggiBadan"
+                  label="Tinggi Badan"
+                  @update:model-value="calculateIMT"
+                >
+                  <template #appendText>
+                    <div class="flex items-center justify-center mr-2.5">
+                      Cm
+                    </div>
+                  </template>
+                </CustomInputNumber>
+                <CustomInputNumber
+                  v-model="IMT"
+                  label="IMT"
+                  placeholder="0"
+                  class=""
+                  readOnly
+                >
+                  <template #appendText>
+                    <div class="flex items-center justify-center mr-2.5">
+                      Kg/m²
+                    </div>
+                  </template>
+                </CustomInputNumber>
+              </div>
+              <CustomTextArea
+                v-model="catatan"
+                class="grow"
+                label="Catatan"
+                placeholder="Catatan"
+                height="h-10"
+              />
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex items-end justify-end gap-3">
+            <CustomButton
+              v-if="isEditing"
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">

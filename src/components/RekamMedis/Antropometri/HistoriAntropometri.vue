@@ -8,32 +8,22 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
     <template #header>01 Jan 2024</template>
     <template #content>
       <div class="py-5 flex flex-col gap-[10px]">
-        <CustomInfoRow
-          label="Pemicu Alergi"
-          :value="`pemicuAlergi`"
-          type="vertical"
-        />
-        <CustomInfoRow
-          label="Nama / Jenis Alergi"
-          :value="`namaAlergi`"
-          type="vertical"
-        />
-        <CustomInfoRow label="Reaksi" :value="`reaksiAlergi`" type="vertical" />
-        <CustomInfoRow
-          label="Tingkat Keparahan"
-          :value="`tingkatKeparahanAlergi`"
-          type="vertical"
-        />
-        <CustomInfoRow
-          label="Efek Samping"
-          :value="`efekSampingAlergi`"
-          type="vertical"
-        />
-        <CustomInfoRow
-          label="Tanggal Kejadian"
-          :value="`${`tanggalKejadianAlergi`}`"
-          type="vertical"
-        />
+        <CustomInfoRow label="Berat Badan" type="vertical">
+          <template #value>
+            <div>{{ `beratBadan` }} Kg</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Tinggi Badan" type="vertical">
+          <template #value>
+            <div>{{ `tinggiBadan` }} Cm</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="IMT" type="vertical">
+          <template #value>
+            <div>{{ `IMT` }} Kg/m²</div>
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Catatan" :value="`catatan`" type="vertical" />
         <hr class="border-grey-200" />
         <div class="flex justify-between">
           <CustomInfoRow
