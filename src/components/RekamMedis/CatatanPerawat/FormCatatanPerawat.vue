@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import catatanPerawat01 from "@/assets/icons/Avatar/catatanPerawat01.svg";
 import catatanPerawatAnda from "@/assets/icons/Avatar/catatanPerawatAnda.svg";
