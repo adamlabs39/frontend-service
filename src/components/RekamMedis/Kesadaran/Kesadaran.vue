@@ -43,6 +43,8 @@ import mengerangOff from "@/assets/images/RekamMedis/Kesadaran/mengerangOff.svg"
 import verbalTidakResponOn from "@/assets/images/RekamMedis/Kesadaran/verbalTidakResponOn.svg";
 import verbalTidakResponOff from "@/assets/images/RekamMedis/Kesadaran/verbalTidakResponOff.svg";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriKesadaran from "@/components/RekamMedis/Kesadaran/HistoriKesadaran.vue";
 
 const props = defineProps({
   method: {
@@ -82,7 +84,7 @@ onBeforeMount(async () => {
     GCS_kesimpulan: "",
     petugas: "Adam",
   });
-  countKesimpulan()
+  countKesimpulan();
 });
 
 const onSubmit = handleSubmit((values: any) => {
@@ -199,7 +201,7 @@ const opsiKesadaran = [
 const selectOption = (categoryIndex: number, responseIndex: number) => {
   opsiKesadaran[categoryIndex].selected.value = responseIndex + 1;
   lastClicked.value = { categoryIndex, responseIndex };
-  countKesimpulan()
+  countKesimpulan();
 };
 
 const getImageSrc = (categoryIndex: number, responseIndex: number) => {
@@ -243,6 +245,11 @@ const countKesimpulan = () => {
   }
 };
 
+const compareDialog = ref(false);
+const showDialogCompare = () => {
+  compareDialog.value = true;
+};
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -265,6 +272,16 @@ defineExpose({
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Kesadaran</template>
     <template #content>
+      <div v-if="isEditing" class="flex flex-col">
+        <CustomButton
+          @click="showDialogCompare"
+          class="!rounded-md my-[10px] ml-auto"
+          label="Mode Compare"
+          size="small"
+          icon="LayoutIcon"
+        />
+        <hr class="mb-[30px]" />
+      </div>
       <div v-if="isEditing" class="grid grid-cols-2 gap-6 pt-5">
         <div
           v-for="(option, categoryIndex) in opsiKesadaran"
@@ -322,6 +339,96 @@ defineExpose({
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
+      <!-- Dialog compare -->
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+        <template #header>Kesadaran</template>
+        <template #body>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div>
+              <div class="mb-[18px] flex justify-between">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-[1fr_min-content_1fr]">
+                <HistoriKesadaran />
+                <div class="border border-adameds-300 mx-[15px]"></div>
+                <HistoriKesadaran />
+              </div>
+            </div>
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <div class="flex flex-col gap-y-5">
+              <div
+                v-for="(option, categoryIndex) in opsiKesadaran"
+                :key="categoryIndex"
+              >
+                <div class="flex flex-col gap-5">
+                  <div class="font-semibold text-md">{{ option.title }}</div>
+                  <div
+                    :class="{
+                      'grid grid-cols-4': option.title.includes('Mata'),
+                      'grid grid-cols-6': option.title.includes('Motorik'),
+                      'grid grid-cols-5': option.title.includes('Verbal'),
+                    }"
+                  >
+                    <div
+                      v-for="(response, responseIndex) in option.response"
+                      :key="responseIndex"
+                    >
+                      <div
+                        class="flex flex-col gap-2.5 items-center text-center justify-center cursor-pointer"
+                        @click="selectOption(categoryIndex, responseIndex)"
+                      >
+                        <img
+                          :src="getImageSrc(categoryIndex, responseIndex)"
+                          alt="Response Image"
+                        />
+                        <div class="font-normal text-SM">
+                          {{ response.label }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <CustomTextfield
+                v-model="GCS_kesimpulan"
+                label="Kesimpulan GCS"
+                placeholder="Pilih Kesimpulan GCS"
+                class=""
+                readOnly
+              />
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex items-end justify-end gap-3">
+            <CustomButton
+              v-if="isEditing"
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
