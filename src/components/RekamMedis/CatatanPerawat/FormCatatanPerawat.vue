@@ -11,6 +11,8 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriCatatanPerawat from "@/components/RekamMedis/CatatanPerawat/HistoriCatatanPerawat.vue";
 
 const props = defineProps({
   method: {
@@ -19,7 +21,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['edit']);
+const emit = defineEmits(["edit"]);
 
 const currentMethod = ref(props.method);
 const modeChat = ref("");
@@ -133,7 +135,7 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat((values: any) => {
     emit("edit", newMessage);
     resetForm();
   } else if (modeChat.value === "Balas") {
-    const newReplyMessage ={
+    const newReplyMessage = {
       role: "Anda",
       roleYangDibalas: replyMessageRole.value || "",
       text: values.catatanPerawat,
@@ -170,6 +172,11 @@ const onEditClick = () => {
   modeChat.value = "Add";
 };
 
+const compareDialog = ref(false);
+const showDialogCompare = () => {
+  compareDialog.value = true;
+};
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -192,6 +199,16 @@ defineExpose({
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Catatan Perawat</template>
     <template #content>
+      <div v-if="currentMethod == 'form'" class="flex flex-col">
+        <CustomButton
+          @click="showDialogCompare"
+          class="!rounded-md my-[10px] ml-auto"
+          label="Mode Compare"
+          size="small"
+          icon="LayoutIcon"
+        />
+        <hr class="mb-[30px]" />
+      </div>
       <div class="pt-5 space-y-2.5">
         <div
           v-for="(message, index) in messages"
@@ -234,7 +251,7 @@ defineExpose({
                 class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
               >
                 <div class="flex justify-start">
-                  <span class="font-semibold text-[#14B8A6]">
+                  <span class="font-semibold text-adameds-300">
                     {{ message.roleYangDibalas }}
                   </span>
                 </div>
@@ -251,10 +268,10 @@ defineExpose({
                 :key="action.text"
                 v-if="currentMethod == 'form'"
                 class="flex items-center gap-2 font-medium text-SM"
+                :class="[
+                  action.text === 'Edit' ? 'text-info-300' : 'text-adameds-300',
+                ]"
                 @click="handleActionClick(action.text, message, index)"
-                :style="{
-                  color: action.text === 'Edit' ? '#3D84E5' : '#14B8A6',
-                }"
               >
                 <component :is="action.icon" :size="16" />
                 {{ action.text }}
@@ -272,7 +289,7 @@ defineExpose({
                 ? `Membalas Pesan ${replyMessageRole}`
                 : `Edit Pesan ${editMessageRole}`
             "
-            selected-color="border-0 bg-[#14B8A6]"
+            selected-color="border-0 bg-adameds-300"
             :showCheckedIcon="false"
             bgColor="bg-adameds-300"
             textColor="text-white"
@@ -294,6 +311,165 @@ defineExpose({
           </div>
         </div>
       </div>
+      <!-- Dialog compare -->
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+        <template #header>Catatan Perawat</template>
+        <template #body>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div>
+              <div class="mb-[18px] flex justify-between">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <HistoriCatatanPerawat />
+            </div>
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <div class="flex flex-col gap-y-5">
+              <div
+                v-for="(message, index) in messages"
+                :key="index"
+                class="flex items-start gap-2.5"
+                :class="{ 'flex-row-reverse': message.isSender }"
+              >
+                <img :src="message.avatar" alt="Avatar" />
+                <div class="space-y-2.5">
+                  <div class="flex items-center w-full gap-5">
+                    <div class="font-semibold text-adameds-300 text-SM">
+                      {{ message.role }}
+                    </div>
+                    <div class="flex gap-2.5 font-medium text-SM text-grey-400">
+                      <div class="flex items-center gap-[2px]">
+                        <PhCalendarDots :size="12" weight="fill" />
+                        {{ message.date }}
+                      </div>
+                      <div class="flex items-center gap-[2px]">
+                        <PhClock :size="12" weight="fill" />
+                        {{ message.time }}
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    :class="[
+                      message.isSender
+                        ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
+                        : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
+                      'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
+                      message.textLama
+                        ? 'flex-col-reverse gap-4 py-4 justify-center'
+                        : 'items-center',
+                    ]"
+                  >
+                    {{ message.text }}
+
+                    <div
+                      v-if="message.textLama"
+                      class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
+                    >
+                      <div class="flex justify-start">
+                        <span class="font-semibold text-adameds-300">
+                          {{ message.roleYangDibalas }}
+                        </span>
+                      </div>
+                      <hr class="border-t my-2 border-[#E2E8F0]" />
+                      <div class="text-black">{{ message.textLama }}</div>
+                    </div>
+                  </div>
+                  <div
+                    :class="message.isSender ? 'justify-start' : 'justify-end'"
+                    class="flex gap-4"
+                  >
+                    <button
+                      v-for="action in message.actions"
+                      :key="action.text"
+                      v-if="currentMethod == 'form'"
+                      class="flex items-center gap-2 font-medium text-SM"
+                      :class="[
+                        action.text === 'Edit'
+                          ? 'text-info-300'
+                          : 'text-adameds-300',
+                      ]"
+                      @click="handleActionClick(action.text, message, index)"
+                    >
+                      <component :is="action.icon" :size="16" />
+                      {{ action.text }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <hr
+                class="border-grey-200 my-2.5"
+                v-if="currentMethod == 'form'"
+              />
+              <div v-if="currentMethod == 'form'" class="space-y-2.5">
+                <CustomChip
+                  v-if="replyMessageRole || editMessageRole"
+                  :label="
+                    modeChat === 'Balas'
+                      ? `Membalas Pesan ${replyMessageRole}`
+                      : `Edit Pesan ${editMessageRole}`
+                  "
+                  selected-color="border-0 bg-adameds-300"
+                  :showCheckedIcon="false"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  borderColor="border-transparent"
+                  customClass="h-5 pr-[6px]"
+                />
+                <div class="space-y-2.5">
+                  <CustomTextArea
+                    v-model="catatanPerawat"
+                    label="Catatan Antar Perawat"
+                    placeholder="Ketik Catatan..."
+                  />
+                  <CustomButton
+                    :full="true"
+                    icon="PhPaperPlaneTilt"
+                    label="Kirim Catatan"
+                    @click="onSubmitCatatanPerawat"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex items-end justify-end gap-3">
+            <CustomButton
+              v-if="currentMethod == 'form'"
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton
+              v-if="currentMethod == 'form'"
+              label="Simpan"
+              @click="() => {}"
+            />
+            <CustomButton
+              v-if="currentMethod == 'detail'"
+              label="Edit"
+              @click="onEditClick"
+            />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer v-if="currentMethod == 'detail'">
       <div class="flex items-end justify-end gap-3">
