@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
-import AnamnesisIGD from "@/components/RekamMedis/AnamnesisIGD/AnamnesisIGD.vue";
 import Triase from "@/components/RekamMedis/Triase/Triase.vue";
 import FormTandaVital from "@/components/RekamMedis/TandaVital/FormTandaVital.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
@@ -35,11 +34,6 @@ const props = defineProps({
     />
     <Anamnesis
       v-if="selectedAssesment == 'Anamnesis'"
-      method="form"
-      initialState="0"
-    />
-    <AnamnesisIGD
-      v-if="selectedAssesment == 'Anamnesis IGD'"
       method="form"
       initialState="0"
     />

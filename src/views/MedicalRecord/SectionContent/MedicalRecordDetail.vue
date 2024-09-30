@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
-import AnamnesisIGD from "@/components/RekamMedis/AnamnesisIGD/AnamnesisIGD.vue";
 import Triase from "@/components/RekamMedis/Triase/Triase.vue";
 import FormTandaVital from "@/components/RekamMedis/TandaVital/FormTandaVital.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
@@ -31,7 +30,6 @@ import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/For
 const refs = {
   alergi: ref<any>(null),
   anamnesis: ref<any>(null),
-  anamnesisIGD: ref<any>(null),
   triase: ref<any>(null),
   tandaVital: ref<any>(null),
   antropometri: ref<any>(null),
@@ -84,7 +82,6 @@ const toggleShowAllDetailMR = (method = "show") => {
     <div class="grid grid-cols-2 grow gap-2.5 overflow-x-hidden">
       <FormAlergi :ref="refs.alergi" method="detail" />
       <Anamnesis :ref="refs.anamnesis" method="detail" />
-      <AnamnesisIGD :ref="refs.anamnesisIGD" method="detail" />
       <Triase :ref="refs.triase" method="detail" />
       <FormTandaVital :ref="refs.tandaVital" method="detail" />
       <Antropometri :ref="refs.antropometri" method="detail" />

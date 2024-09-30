@@ -15,7 +15,6 @@ const emit = defineEmits(["soapSoapierJump", "resumeDischargeJump"]);
 const assesmentList = ref([
   "Alergi",
   "Anamnesis",
-  "Anamnesis IGD",
   "Triase",
   "Tanda Vital",
   "Antropometri",
