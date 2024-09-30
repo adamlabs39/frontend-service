@@ -421,7 +421,7 @@ defineExpose({
 
       <!-- Dialog compare -->
       <CustomDialog class="" v-model:visible="compareDialog" width="80%">
-        <template #header>Alergi</template>
+        <template #header>Triase</template>
         <template #body>
           <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
             <div>

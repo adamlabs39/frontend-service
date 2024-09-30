@@ -19,6 +19,8 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { onBeforeMount } from "vue";
 import Scaler from "@/components/RekamMedis/AsesmenNyeri/Scaler.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/HistoriAsesmenNyeri.vue";
 
 const props = defineProps({
   method: {
@@ -97,6 +99,11 @@ onBeforeMount(async () => {
   setValues({ petugas: "Adam" });
 });
 
+const compareDialog = ref(false);
+const showDialogCompare = () => {
+  compareDialog.value = true;
+};
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -118,6 +125,16 @@ defineExpose({
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header> Asesmen Nyeri</template>
     <template #content>
+      <div v-if="currentMethod == 'form'" class="flex flex-col">
+        <CustomButton
+          @click="showDialogCompare"
+          class="!rounded-md my-[10px] ml-auto"
+          label="Mode Compare"
+          size="small"
+          icon="LayoutIcon"
+        />
+        <hr class="mb-[30px]" />
+      </div>
       <div
         v-if="currentMethod == 'form'"
         class="grid grid-cols-2 py-5 gap-[30px] gap-y-5"
@@ -170,11 +187,117 @@ defineExpose({
         v-if="currentMethod == 'detail'"
         class="py-5 flex flex-col gap-[19px]"
       >
-        <CustomInfoRow label="Pengkajian Nyeri" :value="getStringSkalaNyeri()" />
+        <CustomInfoRow
+          label="Pengkajian Nyeri"
+          :value="getStringSkalaNyeri()"
+        />
         <CustomInfoRow label="Catatan" :value="catatan" />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
+      <!-- Dialog compare -->
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+        <template #header>Antropometri</template>
+        <template #body>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div>
+              <div class="mb-[18px] flex justify-between">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-[1fr_min-content_1fr]">
+                <HistoriAsesmenNyeri />
+                <div class="border border-adameds-300 mx-[15px]"></div>
+                <HistoriAsesmenNyeri />
+              </div>
+            </div>
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <div class="flex flex-col gap-y-5">
+              <div class="flex flex-col">
+                <div class="font-semibold text-normal">
+                  Pilih Pengkajian Nyeri
+                </div>
+                <div
+                  class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4"
+                >
+                  <div
+                    v-for="(image, index) in imagePengkajianNyeri"
+                    :key="image.id"
+                    :class="[
+                      'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
+                      {
+                        'border-4 border-adameds-300': image.id === skalaNyeri,
+                      },
+                    ]"
+                    @click="handleImageClick(image.id)"
+                  >
+                    <img
+                      :src="image.value"
+                      :alt="'Image ' + image.id"
+                      class="w-full h-auto"
+                    />
+                  </div>
+                </div>
+                <Scaler />
+                <div
+                  class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2"
+                >
+                  <div class="font-semibold text-normal">
+                    1-3 = <span class="text-success-300">Ringan</span>
+                  </div>
+                  <div class="font-semibold text-normal">
+                    4-6 = <span class="text-warning-300">Sedang</span>
+                  </div>
+                  <div class="font-semibold text-normal">
+                    7-10 = <span class="text-danger-300">Berat</span>
+                  </div>
+                </div>
+              </div>
+              <CustomTextfield
+                label="Catatan"
+                placeholder="Masukkan Catatan"
+                v-model:modelValue="catatan"
+              />
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex items-end justify-end gap-3">
+            <CustomButton
+              v-if="currentMethod == 'form'"
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton
+              v-if="currentMethod == 'form'"
+              label="Simpan"
+              @click="onSubmitAsesmenNyeri"
+            />
+            <CustomButton
+              v-if="currentMethod == 'detail'"
+              label="Edit"
+              @click="onEditClick"
+            />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
