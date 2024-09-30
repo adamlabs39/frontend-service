@@ -42,10 +42,10 @@ const goToPage = (url: string) => {
 
 const goToFilteredPage = (poliName: string) => {
   router.push({
-    path: '/rawat-jalan/poli',
-    query: poliName === "Semua Poli" ? {} : { filter: poliName },
+    path: "/rawat-jalan/poli",
+    query: poliName === "Semua Poli" ? { } : { filter: poliName },
   });
-   emit("filterChanged", poliName);
+  emit("filterChanged", poliName);
 };
 
 // Update the filter and navigate to /rawat-jalan
@@ -141,7 +141,7 @@ const getSVG = (svg: string) => {
                     class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
                     :class="{
                       'bg-adameds-100 rounded-lg':
-                        (row1.name === 'Poli' && 
+                        (row1.name === 'Poli' &&
                           (route.query.filter === row2.name ||
                             (!route.query.filter &&
                               row2.name === 'Semua Poli'))) ||

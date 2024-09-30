@@ -9,6 +9,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import type { MenuItem } from "primevue/menuitem";
 import { useRoute } from "vue-router";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 
 
 
@@ -80,9 +81,10 @@ defineExpose({
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       {{ currentRouteName }}
+      
       <div class="flex items-center w-full gap-5 mr-2.5">
         <CustomButton icon="PhArrowClockwise" />
-        <div class="leading-10 text-adameds-300 text-heading">
+        <div class="leading-10 text-adameds-300 text-heading" v-if="currentRouteName=='rawat-jalan-poli'">
           {{
             filterMenu == "Semua Poli"
               ? "Semua Poli"
@@ -93,10 +95,20 @@ defineExpose({
               : "Poli Mata"
           }}
         </div>
+         <CustomBreadCrumb
+            v-else-if="currentRouteName && currentRouteName.includes('monitoring')"
+            :home="{
+              label: 'BPJS',
+              home: true,
+            }"
+            :model="dataBreadCrumb"
+            class=""
+          />
+          {{ filterMenu }}
       </div>
     </template>
     <template #content  v-if="currentRouteName=='rawat-jalan'">
-      <div class="flex mt-[10px] mb-2.5">
+      <div class="flex mt-[16px] mb-2.5">
         <CustomTextfield
           v-model="searchPatientFilter"
           prependIcon="PhMagnifyingGlass"
