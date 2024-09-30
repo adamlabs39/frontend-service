@@ -2,26 +2,31 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/FooterPaginator.vue";
-import TambahKategoriRuanganDialog from "./TambahKategoriRuanganDialog.vue";
+import FormKategoriRuangan from "./FormKategoriRuangan.vue";
 import NoData from "@/components/section/NoData.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
+// State Management
 const kategoriRuanganStore = useKategoriRuanganStore();
+const UseUtilsStore = utilsStore();
 const kategoriRuanganPayload = ref<any[]>([]);
 const kategoriRuanganProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
-const loading = ref(true);
 
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch Kategori Ruangan Data from API
 const fetchKategoriRuanganData = async () => {
-  loading.value = true;
+  UseUtilsStore.setLoading(true)
   try {
     const response = await kategoriRuanganStore.getApi(
       kategoriRuanganProperties.value.page,
@@ -39,7 +44,7 @@ const fetchKategoriRuanganData = async () => {
     console.error("Failed to fetch data", error);
     kategoriRuanganPayload.value = [];
   } finally {
-    loading.value = false;
+    UseUtilsStore.setLoading(false)
   }
 };
 
@@ -49,20 +54,31 @@ onMounted(() => {
   fetchKategoriRuanganData();
 });
 
+// Handle Pagination
 const handlePage = (event: any) => {
   kategoriRuanganProperties.value.page = event.page + 1;
   kategoriRuanganProperties.value.page_size = event.rows;
   fetchKategoriRuanganData();
 };
 
+// Check if Data Exists
 const hasData = computed(
   () => kategoriRuanganPayload.value && kategoriRuanganPayload.value.length > 0
 );
 
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
-// Dialog Configuration
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
 const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
@@ -74,27 +90,23 @@ const openDialog = (method: string, title: string, data: any = null) => {
   isTambahDataDialogVisible.value = true;
 };
 
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
-  fetchKategoriRuanganData();
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
 };
 
-const handleDelete = (dataItem: any) => {
-  const confirmed = confirm(
-    `Are you sure you want to delete ${dataItem.name}?`
-  );
-
-  if (confirmed) {
-    loading.value = true;
-    kategoriRuanganStore
-      .deleteApi(dataItem.uuid)
-      .then(() => {
-        fetchKategoriRuanganData();
-      })
-      .catch((error) => {
-        console.error("Failed to delete data", error);
-        loading.value = false;
-      });
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true)
+    try {
+      await kategoriRuanganStore.deleteApi(item.uuid);
+      fetchKategoriRuanganData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false)
+      isDeleteDialogVisible.value = false;
+    }
   }
 };
 
@@ -107,7 +119,7 @@ const downloadExportExcel = async () => {
       return;
     }
 
-    const title = ["REKAP DATA KATEGORI RUANGAN"];
+    const title = ["DATAMASTER KATEGORI RUANGAN"];
     const data = [];
     data.push({});
     data.push({
@@ -169,9 +181,9 @@ const downloadExportExcel = async () => {
       }
     }
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data Kategori Ruangan");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Kategori Ruangan");
 
-    XLSX.writeFile(workbook, `Rekap Data Kategori Ruangan.xlsx`);
+    XLSX.writeFile(workbook, `Datamaster Kategori Ruangan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -202,11 +214,22 @@ const downloadExportExcel = async () => {
       <DataTable
         v-else
         :value="kategoriRuanganPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -273,7 +296,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="handleDelete(slotProps.data)"
+                @click="deleteDialog('delete', 'Kategori Ruangan', slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -281,13 +304,18 @@ const downloadExportExcel = async () => {
           </template>
         </Column>
       </DataTable>
-      <TambahKategoriRuanganDialog
+      <FormKategoriRuangan
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
-        @close="closeDialog"
+        :payload="dialogConfig.data"
         @data-updated="fetchKategoriRuanganData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
       />
     </template>
 

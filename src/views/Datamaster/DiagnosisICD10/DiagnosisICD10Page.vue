@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
 import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Footer from "../Layout/FooterPaginator.vue";
@@ -12,6 +13,7 @@ import DialogDelete from "../Layout/DialogDelete.vue";
 
 // State Management
 const diagnosisStore = useDiagnosisStore();
+const UseUtilsStore = utilsStore();
 const diagnosisPayload = ref<any[]>([]);
 const diagnosisProperties = ref({
   page: 1,
@@ -19,15 +21,12 @@ const diagnosisProperties = ref({
   total: 0,
 });
 
-// Loading State
-const loading = ref(true);
-
 // Search Query
 const searchQuery = ref<string>("");
 
 // Fetch Diagnosis Data from API
 const fetchDiagnosisData = async () => {
-  loading.value = true;
+  UseUtilsStore.setLoading(true)
   try {
     const response = await diagnosisStore.getApi(
       diagnosisProperties.value.page,
@@ -45,7 +44,7 @@ const fetchDiagnosisData = async () => {
     console.error("Failed to fetch data", error);
     diagnosisPayload.value = [];
   } finally {
-    loading.value = false;
+    UseUtilsStore.setLoading(false)
   }
 };
 
@@ -99,14 +98,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    loading.value = true;
+    UseUtilsStore.setLoading(true)
     try {
       await diagnosisStore.deleteApi(item.uuid);
       fetchDiagnosisData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      loading.value = false;
+      UseUtilsStore.setLoading(false)
       isDeleteDialogVisible.value = false;
     }
   }
@@ -225,10 +224,7 @@ const downloadExportExcel = async () => {
     </template>
 
     <template #content>
-      <div v-if="loading" class="flex items-center justify-center h-full">
-        Loading...
-      </div>
-      <NoData v-else-if="!hasData" />
+      <NoData v-if="!hasData" />
       <DataTable
         v-else
         :value="diagnosisPayload"

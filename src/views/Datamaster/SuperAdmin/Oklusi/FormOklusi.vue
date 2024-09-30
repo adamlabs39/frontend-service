@@ -3,6 +3,7 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useOklusiGigiStore } from "@/stores/datamaster/oklusiGigi";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -44,6 +45,8 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
+const oklusiGigiStore = useOklusiGigiStore();
+
 const [system] = defineField("system");
 const [code] = defineField("code");
 const [display] = defineField("display");
@@ -52,41 +55,54 @@ const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await oklusiGigiStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await oklusiGigiStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
+
 const method = ref(props.method);
 const title = ref(props.title);
 
-const onSubmit = handleSubmit((values: any) => {
-  if (method.value === "edit") {
-    // Logic to save edited data
-    console.log("Editing data:", values);
-    emit("data-updated", values);
-  } else if (method.value === "add") {
-    // Logic to add new data
-    console.log("Adding new data:", values);
-    emit("data-updated", values);
-  }
-  closeDialog();
-});
-
-const updateVisibility = (value: any) => {
+const updateVisibility= (value: any) => {
   emit("update:isDialogVisible", value);
-};
+}
 
 const resetDialogMode = () => {
   method.value = props.method;
   title.value = props.title;
 };
 
+const handleEdit = () => {
+  method.value = "edit";
+  title.value = "Edit Data";
+};
+
 const closeDialog = () => {
-  emit("close");
+  emit("update:isDialogVisible", false);
   resetDialogMode();
+  resetForm();
 };
 
 watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
-      // Dialog is opened
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         setValues({
@@ -100,10 +116,6 @@ watch(
   }
 );
 
-const handleEdit = () => {
-  method.value = "edit";
-  title.value = "Edit Data";
-};
 </script>
 
 <template>
@@ -164,8 +176,14 @@ const handleEdit = () => {
         <CustomInfoRow label="Oklusi" :value="name" />
         <CustomInfoRow label="Status">
             <template #value>
-                <CustomChip :label="`${status}`" bg-color="bg-adameds-300" text-color="text-white" icon-color="" border-color="border-adameds-300" />
-              </template>
+              <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />              </template>
         </CustomInfoRow>
         
       </div>

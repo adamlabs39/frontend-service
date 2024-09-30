@@ -101,6 +101,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
         url: "/datamaster/tarif",
       },
       {
+        name: "Komponen Tarif",
+        icon: "DatabaseFill",
+        type: linkType.LINK,
+        url: "/datamaster/komponen-tarif",
+      },
+      {
         name: "Tindakan",
         icon: "DatabaseFill",
         type: linkType.LINK,

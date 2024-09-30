@@ -3,13 +3,15 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import { useIcd9Store } from "@/stores/datamaster/icd9";
+import { usePegawaiStore } from "@/stores/datamaster/pegawai";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -27,10 +29,22 @@ const props = defineProps({
   },
 });
 
+const optionsPegawai = ref([
+  { label: "NAKES", value: 1 },
+  { label: "NON NAKES", value: 2 },
+]);
+
+const optionsGender = ref(["Perempuan", "Laki-Laki"]);
+
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama ICD 9 CM harus diisi"),
+    name: yup.string().required("Nama Pegawai harus diisi"),
+    nik: yup.string().required("NIK harus diisi"),
+    tipe: yup.string().required("Tipe Pegawai harus diisi"),
+    firstTitle: yup.string(),
+    lastTitle: yup.string(),
+    gender: yup.string(),
+    tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir"),
     status: yup.bool().default(false),
   })
 );
@@ -39,10 +53,15 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const icd9Store = useIcd9Store();
+const pegawaiStore = usePegawaiStore();
 
-const [code] = defineField("code");
 const [name] = defineField("name");
+const [nik] = defineField("nik");
+const [tipe] = defineField("tipe");
+const [firstTitle] = defineField("firstTitle");
+const [lastTitle] = defineField("lastTitle");
+const [gender] = defineField("gender");
+const [tanggalLahir] = defineField("tanggalLahir");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -54,12 +73,12 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await icd9Store.putApi(uuid, values);
+      const response = await pegawaiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      const response = await icd9Store.postApi(values);
+      const response = await pegawaiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -71,9 +90,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -116,25 +135,66 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} ICD 9 CM</template>
+    <template #header>{{ title }} Pegawai</template>
     <template #body>
-      <!-- Form Input -->
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
+        <!-- Form Input -->
+        <CustomSelect
+          label="Tipe Pegawai"
+          v-model="tipe"
+          :options="optionsPegawai"
+          option-label="label"
+          option-value="value"
+          place-holder="Tipe Pegawai"
+          class="col-span-6"
+          :invalid="!!errors.tipe"
+          :invalidMessage="errors.tipe"
+        />
+        <hr class="border-grey-200 col-span-12" />
+        <div class="font-semibold text-normal col-span-12 -mb-5">
+          Nama Lengkap Pegawai
+        </div>
         <CustomTextfield
-          label="Kode"
-          v-model="code"
-          placeholder="Kode"
-          :invalid="!!errors.code"
-          :invalidMessage="errors.code"
+          v-model="firstTitle"
+          label=""
+          placeholder="Gelar Awal"
           class="col-span-4"
         />
         <CustomTextfield
-          label="Nama ICD 9 CM"
+          label=""
           v-model="name"
-          placeholder="Nama ICD 9 CM"
+          placeholder="Nama Lengkap"
+          class="col-span-4"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
-          class="col-span-8"
+        />
+        <CustomTextfield
+          label=""
+          v-model="lastTitle"
+          placeholder="Gelar Akhir"
+          class="col-span-4"
+        />
+        <CustomTextfield
+          label="NIK"
+          v-model="nik"
+          placeholder="0"
+          class="col-span-12"
+          :invalid="!!errors.nik"
+          :invalidMessage="errors.nik"
+        />
+        <CustomDatePicker
+          v-model="tanggalLahir"
+          class="col-span-6"
+          label="Tanggal Lahir"
+        />
+        <CustomSelect
+          label="Jenis Kelamin"
+          v-model="gender"
+          :options="optionsGender"
+          option-label=""
+          option-value=""
+          place-holder="Pilih Jenis Kelamin"
+          class="col-span-6"
         />
         <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
@@ -146,11 +206,24 @@ watch(
           class="col-span-12"
         />
       </div>
-
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
-        <CustomInfoRow label="Nama ICD 9 CM" :value="name" />
+        <div class="font-bold text-heading">
+          Data Pegawai -
+          {{
+            Number(tipe) === 1
+              ? "NAKES"
+              : Number(tipe) === 2
+              ? "NON NAKES"
+              : "Unknown"
+          }}
+        </div>
+        <hr class="border-grey-2 00" />
+        <CustomInfoRow label="Nama Lengkap" :value="name" />
+        <CustomInfoRow label="NIK" :value="nik" />
+        <CustomInfoRow label="Tanggal Lahir" :value="`${tanggalLahir}`" />
+        <CustomInfoRow label="Jenis Kelamin" :value="gender" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch,onMounted } from "vue";
+import { ref, watch,onMounted,computed } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -11,6 +11,8 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -22,7 +24,7 @@ const props = defineProps({
   method: {
     type: String,
   },
-  editData: {
+  payload: {
     type: Object,
     default: () => ({}),
   },
@@ -72,31 +74,6 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit(async (values: any) => {
-  try {
-    if (props.method === "edit") {
-      if (!props.editData || !props.editData.uuid) {
-        throw new Error("UUID is missing for edit operation");
-      }
-
-      const uuid = props.editData.uuid;
-      console.log("Editing data with UUID:", uuid, "and values:", values);
-
-      const response = await ruanganStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
-    } else if (props.method === "add") {
-      console.log("Adding new data with values:", values);
-
-      const response = await ruanganStore.postApi(values);
-      console.log("Data added successfully:", response);
-      emit('data-updated');
-    }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  }
-});
-
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [kategoriRuanganUuid] = defineField("kategoriRuanganUuid");
@@ -104,26 +81,73 @@ const [noRoom] = defineField("noRoom");
 const [kelasRuangan] = defineField("kelasRuangan");
 const [status] = defineField("status");
 
-const emit = defineEmits(["update:isDialogVisible", "close","data-updated"]);
+const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-function updateVisibility(value: any) {
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await ruanganStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await ruanganStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
+
+
+
+const method = ref(props.method);
+const title = ref(props.title);
+
+const updateVisibility= (value: any) => {
   emit("update:isDialogVisible", value);
 }
 
-function closeDialog() {
-  emit("close");
-}
+const resetDialogMode = () => {
+  method.value = props.method;
+  title.value = props.title;
+};
+
+const handleEdit = () => {
+  method.value = "edit";
+  title.value = "Edit Data";
+};
+
+const closeDialog = () => {
+  emit("update:isDialogVisible", false);
+  resetDialogMode();
+  resetForm();
+};
+
+const kelasRuanganLabel = computed(() => {
+  const selectedKelas = opstionsKelas.value.find(option => option.value === props.payload.kelasRuangan);
+  return selectedKelas ? selectedKelas.label : "";
+});
+
 
 watch(
   () => props.isDialogVisible,
   (newValue) => {
-    if (newValue && props.method === "edit" && props.editData) {
-      setValues({
-        ...props.editData,
-        kategoriRuanganUuid: props.editData.kategoriRuanganUuid
-      });
-    } else if (!newValue) {
+    if (newValue) {
+      resetDialogMode();
+      if (props.method !== "add" && props.payload) {
+        setValues({
+          ...props.payload,
+        });
+      }
+    } else {
       resetForm();
+      resetDialogMode();
     }
   }
 );
@@ -138,9 +162,8 @@ watch(
   >
     <template #header>{{ title }} Ruangan</template>
     <template #body>
-      {{ props.editData }}
-
-      <div class="grid grid-cols-12 gap-5 mt-5">
+       <!-- Form Input -->
+      <div  v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             label="Kode Ruangan"
             v-model="code"
@@ -161,7 +184,7 @@ watch(
             :options="kategoriRuanganPayload"
             optionValue="uuid"
             optionLabel="name"
-            placeholder="Kategori Ruangan"
+            place-holder="Pilih Kategori Ruangan"
             class="col-span-8"
             :invalid="!!errors.kategoriRuanganUuid"
             :invalidMessage="errors.kategoriRuanganUuid"
@@ -180,7 +203,7 @@ watch(
           :options="opstionsKelas"
           optionValue="value"
           optionLabel="label"
-          placeholder="Kelas Ruangan"
+          place-holder="Pilih Kelas Ruangan"
           class="col-span-12"
           :invalid="!!errors.kelasRuangan"
           :invalidMessage="errors.kelasRuangan"
@@ -196,19 +219,49 @@ watch(
           class="col-span-12"
         />
       </div>
+      <!-- Detail Data -->
+      <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <CustomInfoRow label="Kode Ruangan" :value="code" />
+        <CustomInfoRow label="Nama Ruangan" :value="name" />
+        <CustomInfoRow label="Kategori Ruangan" :value="payload.kategoriRuanganName" />
+        <CustomInfoRow label="Nomor Kamar" :value="`${noRoom}`" />
+        <CustomInfoRow label="Kelas Ruangan" :value="kelasRuanganLabel" />
+        <CustomInfoRow label="Status">
+          <template #value>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
         <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Batal"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
             @click="closeDialog"
           />
-          <CustomButton label="Simpan" @click="onSubmit" />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

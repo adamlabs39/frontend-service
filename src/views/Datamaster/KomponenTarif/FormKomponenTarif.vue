@@ -7,7 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useIcd9Store } from "@/stores/datamaster/icd9";
+import { useKomponenTarifStore } from "@/stores/datamaster/komponenTarif";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
@@ -39,7 +39,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const icd9Store = useIcd9Store();
+const komponenTarifStore = useKomponenTarifStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -54,12 +54,12 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await icd9Store.putApi(uuid, values);
+      const response = await komponenTarifStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      const response = await icd9Store.postApi(values);
+      const response = await komponenTarifStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -129,9 +129,9 @@ watch(
           class="col-span-4"
         />
         <CustomTextfield
-          label="Nama ICD 9 CM"
+          label="Nama Komponen Tarif"
           v-model="name"
-          placeholder="Nama ICD 9 CM"
+          placeholder="Nama Komponen Tarif"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
@@ -149,8 +149,8 @@ watch(
 
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
-        <CustomInfoRow label="Nama ICD 9 CM" :value="name" />
+        <CustomInfoRow label="Kode Komponen Tarif" :value="code" />
+        <CustomInfoRow label="Nama Komponen Tarif" :value="name" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

@@ -7,7 +7,7 @@ import {
 } from "@/utils/apiHandler";
 
 export const useSnomedCTStore = defineStore({
-    id: "snomedct",
+    id: "snomed",
     state: () => ({}),
     getters: {},
     actions: {

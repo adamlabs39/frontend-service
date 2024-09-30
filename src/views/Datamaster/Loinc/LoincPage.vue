@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useLoincStore } from "@/stores/datamaster/loinc";
 import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Footer from "../Layout/FooterPaginator.vue";
@@ -11,6 +12,7 @@ import NoData from "@/components/section/NoData.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
 
 const loincStore = useLoincStore();
+const UseUtilsStore = utilsStore();
 const loincPayload = ref<any[]>([]);
 const loincProperties = ref({
   page: 1,
@@ -18,15 +20,12 @@ const loincProperties = ref({
   total: 0,
 });
 
-// Loading State
-const loading = ref(true);
-
 // Search Query
 const searchQuery = ref<string>("");
 
 // Fetch LOINC Data from API
 const fetchLoincData = async () => {
-  loading.value = true;
+  UseUtilsStore.setLoading(true)
   try {
     const response = await loincStore.getApi(
       loincProperties.value.page,
@@ -43,7 +42,7 @@ const fetchLoincData = async () => {
     console.error("Failed to fetch data", error);
     loincPayload.value = [];
   } finally {
-    loading.value = false;
+    UseUtilsStore.setLoading(false)
   }
 };
 
@@ -97,14 +96,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    loading.value = true;
+    UseUtilsStore.setLoading(true)
     try {
       await loincStore.deleteApi(item.uuid);
       fetchLoincData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      loading.value = false;
+      UseUtilsStore.setLoading(false)
       isDeleteDialogVisible.value = false;
     }
   }
@@ -222,10 +221,7 @@ const downloadExportExcel = async () => {
     </template>
 
     <template #content>
-      <div v-if="loading" class="flex items-center justify-center h-full">
-        Loading...
-      </div>
-      <NoData v-else-if="!hasData" />
+      <NoData v-if="!hasData" />
       <DataTable
         v-else
         :value="loincPayload"

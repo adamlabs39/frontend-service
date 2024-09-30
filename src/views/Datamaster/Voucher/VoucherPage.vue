@@ -3,23 +3,29 @@ import { ref, onMounted, computed, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
+import { useVoucherStore } from "@/stores/datamaster/voucher";
 import Footer from "../Layout/FooterPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-import TambahDataVoucherDialog from "./TambahDataVoucherDialog.vue";
-import { useVoucherStore } from "@/stores/datamaster/voucher";
+import FormVoucher from "./FormVoucher.vue";
 import NoData from "@/components/section/NoData.vue";
+
+// State Management
 const voucherStore = useVoucherStore();
+const UseUtilsStore = utilsStore();
 const voucherPayload = ref<any[]>([]);
 const voucherProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
-const loading = ref(true);
 
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch Voucher Data from API
 const fetchVoucherData = async () => {
-  loading.value = true;
+  UseUtilsStore.setLoading(true)
   try {
     const response = await voucherStore.getApi(
       voucherProperties.value.page,
@@ -37,7 +43,7 @@ const fetchVoucherData = async () => {
     console.error("Failed to fetch data", error);
     voucherPayload.value = [];
   } finally {
-    loading.value = false;
+    UseUtilsStore.setLoading(false)
   }
 };
 
@@ -47,20 +53,31 @@ onMounted(() => {
   fetchVoucherData();
 });
 
+// Handle Pagination
 const handlePage = (event: any) => {
   voucherProperties.value.page = event.page + 1;
   voucherProperties.value.page_size = event.rows;
   fetchVoucherData();
 };
 
+// Check if Data Exists
 const hasData = computed(
   () => voucherPayload.value && voucherPayload.value.length > 0
 );
 
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
-// Dialog Configuration
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
 const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
@@ -72,27 +89,23 @@ const openDialog = (method: string, title: string, data: any = null) => {
   isTambahDataDialogVisible.value = true;
 };
 
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
-  fetchVoucherData();
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
 };
 
-const handleDelete = (dataItem: any) => {
-  const confirmed = confirm(
-    `Are you sure you want to delete ${dataItem.name}?`
-  );
-
-  if (confirmed) {
-    loading.value = true;
-    voucherStore
-      .deleteApi(dataItem.uuid)
-      .then(() => {
-        fetchVoucherData();
-      })
-      .catch((error) => {
-        console.error("Failed to delete data", error);
-        loading.value = false;
-      });
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true)
+    try {
+      await voucherStore.deleteApi(item.uuid);
+      fetchVoucherData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false)
+      isDeleteDialogVisible.value = false;
+    }
   }
 };
 
@@ -105,7 +118,7 @@ const downloadExportExcel = async () => {
       return;
     }
 
-    const title = ["REKAP DATA VOUCHER"];
+    const title = ["DATAMASTER VOUCHER"];
     const data = [];
     data.push({});
     data.push({
@@ -190,9 +203,9 @@ const downloadExportExcel = async () => {
       }
     }
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data Voucher");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Voucher");
 
-    XLSX.writeFile(workbook, `Rekap Data Voucher.xlsx`);
+    XLSX.writeFile(workbook, `Datamaster Voucher.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -214,17 +227,25 @@ const downloadExportExcel = async () => {
       />
     </template>
     <template #content>
-      <div v-if="loading" class="flex items-center justify-center h-full">
-        Loading...
-      </div>
-      <NoData v-else-if="!hasData" />
+      <NoData v-if="!hasData" />
       <DataTable
         :value="voucherPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
@@ -304,20 +325,18 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="handleDelete(slotProps.data)"
-              >
+                @click="deleteDialog('delete', 'Voucher', slotProps.data)"              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <TambahDataVoucherDialog
+      <FormVoucher
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :editData="dialogConfig.data"
-        @close="closeDialog"
         @data-updated="fetchVoucherData"
       />
     </template>

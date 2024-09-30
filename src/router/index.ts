@@ -89,6 +89,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
 
 
 const router = createRouter({
@@ -197,6 +198,12 @@ const router = createRouter({
       path: "/datamaster/tarif",
       name: "datamaster-tarif",
       meta: { layout: SidebarLayout, page: TarifPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
+      path: "/datamaster/komponen-tarif",
+      name: "datamaster-komponen-tarif",
+      meta: { layout: SidebarLayout, page: KomponenTarifPage, requiresAuth: true },
       component: DatamasterView,
     },
     {

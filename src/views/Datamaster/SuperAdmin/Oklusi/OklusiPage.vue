@@ -1,55 +1,208 @@
 <script setup lang="ts">
 import HeaderFilter from "../../Layout/HeaderFilter.vue";
-import { onMounted, ref } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
-import type { MenuItem } from "primevue/menuitem";
+import { ref, onMounted, computed, watch } from "vue";
+import { useOklusiGigiStore } from "@/stores/datamaster/oklusiGigi";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import DataOklusiDialog from "./DataOklusiDialog.vue";
+import FormOklusi from "./FormOklusi.vue";
+import NoData from "@/components/section/NoData.vue";
+import FooterPaginator from "../../Layout/FooterPaginator.vue";
 
-const payload = ref<any[]>([]);
+// State Management
+const oklusiStore = useOklusiGigiStore();
+const UseUtilsStore = utilsStore();
+const oklusiPayload = ref<any[]>([]);
+const oklusiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch Oklusi Data from API
+const fetchOklusiData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await oklusiStore.getApi(
+      oklusiProperties.value.page,
+      oklusiProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      oklusiProperties.value.total = response.properties.total;
+      oklusiPayload.value = response.payload;
+    } else {
+      oklusiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    oklusiPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+watch([searchQuery], fetchOklusiData);
 
 onMounted(() => {
-  payload.value = [
-    {
-      system: "Surface[identifier] Tooth",
-      code: "343434",
-      display: "No malocclusion",
-      name: "Normal Bite",
-      status: "AKTIF",
-    },
-    {
-      system: "Surface[identifier] Tooth",
-      code: "343434",
-      display: "No malocclusion",
-      name: "Normal Bite",
-      status: "AKTIF",
-    },
-  ];
+  fetchOklusiData();
 });
-const selectedGigi = ref(null);
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
-const metaKey = ref(true);
 
-// Dialog Configuration
-const dialogConfig = ref({
+// Handle Pagination
+const handlePage = (event: any) => {
+  oklusiProperties.value.page = event.page + 1;
+  oklusiProperties.value.page_size = event.rows;
+  fetchOklusiData();
+};
+
+// Check if Data Exists
+const hasData = computed(
+  () => oklusiPayload.value && oklusiPayload.value.length > 0
+);
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
-  data: [],
+  data: null,
 });
-// Handle add and edit of the dialog
-const openDialog = (method: any, title: any, data: any = null) => {
+
+const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
-// Handle closing of the dialog
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
 };
-const onRowSelect = (event: any) => {
-  selectedGigi.value = event.data;
-  openDialog('detail', 'Detail Data', selectedGigi);
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await oklusiStore.deleteApi(item.uuid);
+      fetchOklusiData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await oklusiStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER OKLUSI"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Display: "Display SATUSEHAT",
+      Nama: "Nama ICD-9 CM",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Display: rows[i].display,
+        Nama: rows[i].name,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 30 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Oklusi");
+    XLSX.writeFile(workbook, `Datamaster Oklusi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 </script>
 
@@ -63,13 +216,17 @@ const onRowSelect = (event: any) => {
       <HeaderFilter
         pageType="oklusi"
         isSuperAdmin
+         :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
     </template>
     <template #content>
+      <NoData v-if="!hasData" />
       <DataTable
-        :value="payload"
-        v-model:selection="selectedGigi"
+        v-else
+        :value="oklusiPayload"
+        v-model:selection="selectedData"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -78,10 +235,10 @@ const onRowSelect = (event: any) => {
         @rowSelect="onRowSelect"
         selectionMode="single"
         :metaKeySelection="metaKey"
-         :dt="{
+        :dt="{
           rowSelectedColor: '#000000',
           rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor:'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
           bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
           rowStripedBackground: '#F8F8F8',
         }"
@@ -97,7 +254,7 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
         <Column
-          field="display"
+          field="code"
           header="Display SATUSEHAT"
           headerClass="bg-adameds-50"
         ></Column>
@@ -117,25 +274,15 @@ const onRowSelect = (event: any) => {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>
@@ -163,6 +310,7 @@ const onRowSelect = (event: any) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="deleteDialog('delete', 'Oklusi Gigi', slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -170,20 +318,21 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
       </DataTable>
-      <DataOklusiDialog
+      <FormOklusi
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
-
-        @close="closeDialog"
+        @data-updated="fetchOklusiData"
       />
-      <!-- <DetailGigiDialog
-      v-model:isDialogVisible="isDetailGigiDialogVisible"
-      /> -->
     </template>
     <template #footer>
-      <Footer />
+      <FooterPaginator
+        :rows="oklusiProperties.page_size"
+        :totalRecords="oklusiProperties.total"
+        @page="handlePage"
+        @export="downloadExportExcel"
+      />
     </template>
   </Card>
 </template>

@@ -1,13 +1,16 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch,onMounted,computed } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useTindakanStore } from "@/stores/datamaster/tindakan";
+import { useIcd9Store } from "@/stores/datamaster/icd9";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useIcd9Store } from "@/stores/datamaster/icd9";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
@@ -27,11 +30,50 @@ const props = defineProps({
   },
 });
 
+const tindakanStore=useTindakanStore();
+const icd9Store=useIcd9Store();
+const snomedStore=useSnomedCTStore();
+const icd9Payload= ref<any[]>([]); 
+const snomedPayload= ref<any[]>([]); 
+
+const fetchIcd9 = async () => {
+  try {
+    const response = await icd9Store.getApi();
+    if (response && response.payload) {
+      icd9Payload.value = response.payload;
+    } else {
+      icd9Payload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    icd9Payload.value = [];
+  }
+};
+const fetchSnomed = async () => {
+  try {
+    const response = await snomedStore.getApi();
+    if (response && response.payload) {
+      snomedPayload.value = response.payload;
+    } else {
+      snomedPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    snomedPayload.value = [];
+  }
+};
+onMounted(() => {
+  fetchIcd9();
+  fetchSnomed();
+});
+
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama ICD 9 CM harus diisi"),
-    status: yup.bool().default(false),
+    name: yup.string().required("Nama tindakan harus diisi"),
+    snomedUuid: yup.string(),
+    icd9Uuid: yup.string(),
+    status: yup.bool(),
   })
 );
 
@@ -39,10 +81,10 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const icd9Store = useIcd9Store();
-
 const [code] = defineField("code");
 const [name] = defineField("name");
+const [snomedUuid] = defineField("snomedUuid");
+const [icd9Uuid] = defineField("icd9Uuid");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -54,12 +96,12 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await icd9Store.putApi(uuid, values);
+      const response = await tindakanStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      const response = await icd9Store.postApi(values);
+      const response = await tindakanStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -67,6 +109,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     console.error("Failed to process the data:", error);
   }
 });
+
 
 const method = ref(props.method);
 const title = ref(props.title);
@@ -91,6 +134,7 @@ const closeDialog = () => {
   resetForm();
 };
 
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -99,6 +143,8 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          snomedUuid: props.payload.snomedDetail.uuid,
+          icd9Uuid: props.payload.icd9Detail.uuid
         });
       }
     } else {
@@ -108,7 +154,6 @@ watch(
   }
 );
 </script>
-
 <template>
   <CustomDialog
     width="600px"
@@ -116,25 +161,43 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} ICD 9 CM</template>
+    <template #header>{{ title }} Tindakan</template>
     <template #body>
       <!-- Form Input -->
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
-          label="Kode"
+          label="Kode Tindakan"
           v-model="code"
-          placeholder="Kode"
+          placeholder="Kode Tindakan"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
         />
         <CustomTextfield
-          label="Nama ICD 9 CM"
+          label="Nama Tindakan"
           v-model="name"
-          placeholder="Nama ICD 9 CM"
+          placeholder="Nama Tindakan"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+        />
+        <CustomSelect
+          label="Snomed CT"
+          place-holder="Pilih Snomed CT"
+          v-model="snomedUuid"
+          :options="snomedPayload"
+          optionValue="uuid"
+          optionLabel="name"
+          class="col-span-12"
+        />
+        <CustomSelect
+          label="ICD-9 CM"
+          place-holder="Pilih ICD-9 CM"
+          v-model="icd9Uuid"
+          :options="icd9Payload"
+          optionValue="uuid"
+          optionLabel="name"
+          class="col-span-12"
         />
         <hr class="border-grey-200 col-span-12" />
         <CustomSwitch
@@ -146,11 +209,12 @@ watch(
           class="col-span-12"
         />
       </div>
-
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
-        <CustomInfoRow label="Nama ICD 9 CM" :value="name" />
+        <CustomInfoRow label="Kode Tindakan" :value="code" />
+        <CustomInfoRow label="Nama Tindaka" :value="name" />
+        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name" />
+        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

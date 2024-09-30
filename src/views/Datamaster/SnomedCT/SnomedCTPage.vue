@@ -9,8 +9,10 @@ import FormSnomedCT from "./FormSnomedCT.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
+import { utilsStore } from "@/stores/utils";
 
 const snomedCTStore = useSnomedCTStore();
+const UseUtilsStore = utilsStore();
 const snomedPayload = ref<any[]>([]);
 const snomedProperties = ref({
   page: 1,
@@ -18,14 +20,12 @@ const snomedProperties = ref({
   total: 0,
 });
 
-// Loading State
-const loading = ref(true);
-
 // Search Query
 const searchQuery = ref<string>("");
 
 // Fetch Snomed Data from API
 const fetchSnomedData = async () => {
+  UseUtilsStore.setLoading(true)
   try {
     const response = await snomedCTStore.getApi(
       snomedProperties.value.page,
@@ -42,7 +42,7 @@ const fetchSnomedData = async () => {
     console.error("Failed to fetch data", error);
     snomedPayload.value = [];
   } finally {
-    loading.value = false;
+    UseUtilsStore.setLoading(false)
   }
 };
 
@@ -97,14 +97,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    loading.value = true;
+    UseUtilsStore.setLoading(true)
     try {
       await snomedCTStore.deleteApi(item.uuid);
       fetchSnomedData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      loading.value = false;
+      UseUtilsStore.setLoading(false)
       isDeleteDialogVisible.value = false;
     }
   }
@@ -222,10 +222,7 @@ const downloadExportExcel = async () => {
       />
     </template>
     <template #content>
-      <div v-if="loading" class="flex items-center justify-center h-full">
-        Loading...
-      </div>
-      <NoData v-else-if="!hasData" />
+      <NoData v-if="!hasData" />
       <DataTable
         v-else
         :value="snomedPayload"

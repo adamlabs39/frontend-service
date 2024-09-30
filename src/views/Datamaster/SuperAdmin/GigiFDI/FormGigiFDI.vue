@@ -3,6 +3,7 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useGigiStore } from "@/stores/datamaster/gigiFDI";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -43,6 +44,8 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
+const gigiStore = useGigiStore();
+
 const [code] = defineField("code");
 const [display] = defineField("display");
 const [name] = defineField("name");
@@ -50,41 +53,55 @@ const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await gigiStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await gigiStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
+
+
 const method = ref(props.method);
 const title = ref(props.title);
 
-const onSubmit = handleSubmit((values: any) => {
-  if (method.value === "edit") {
-    // Logic to save edited data
-    console.log("Editing data:", values);
-    emit("data-updated", values);
-  } else if (method.value === "add") {
-    // Logic to add new data
-    console.log("Adding new data:", values);
-    emit("data-updated", values);
-  }
-  closeDialog();
-});
-
-const updateVisibility = (value: any) => {
+const updateVisibility= (value: any) => {
   emit("update:isDialogVisible", value);
-};
+}
 
 const resetDialogMode = () => {
   method.value = props.method;
   title.value = props.title;
 };
 
+const handleEdit = () => {
+  method.value = "edit";
+  title.value = "Edit Data";
+};
+
 const closeDialog = () => {
-  emit("close");
+  emit("update:isDialogVisible", false);
   resetDialogMode();
+  resetForm();
 };
 
 watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
-      // Dialog is opened
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         setValues({
@@ -98,10 +115,6 @@ watch(
   }
 );
 
-const handleEdit = () => {
-  method.value = "edit";
-  title.value = "Edit Data";
-};
 </script>
 
 <template>
