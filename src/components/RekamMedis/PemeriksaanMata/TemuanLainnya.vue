@@ -44,11 +44,16 @@ const showDialogCompare = () => {
       </div>
 
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Antropometri</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -68,18 +73,22 @@ const showDialogCompare = () => {
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriTemuanLainnya />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriTemuanLainnya />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <CustomTextArea
-                label="Temuan Lainnya"
-                placeholder="Masukkan Temuan Lainnya..."
-              />
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <CustomTextArea
+                  label="Temuan Lainnya"
+                  placeholder="Masukkan Temuan Lainnya..."
+                />
+              </div>
             </div>
           </div>
         </template>

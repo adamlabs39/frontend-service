@@ -196,11 +196,16 @@ defineExpose({
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Asesmen Nyeri</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -220,59 +225,63 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriAsesmenNyeri />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriAsesmenNyeri />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <div class="flex flex-col">
-                <div class="font-semibold text-normal">
-                  Pilih Pengkajian Nyeri
-                </div>
-                <div
-                  class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4"
-                >
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <div class="flex flex-col">
+                  <div class="font-semibold text-normal">
+                    Pilih Pengkajian Nyeri
+                  </div>
                   <div
-                    v-for="(image, index) in imagePengkajianNyeri"
-                    :key="image.id"
-                    :class="[
-                      'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
-                      {
-                        'border-4 border-adameds-300': image.id === skalaNyeri,
-                      },
-                    ]"
-                    @click="handleImageClick(image.id)"
+                    class="grid grid-cols-10 gap-1.5 py-3 justify-items-between gap-y-4"
                   >
-                    <img
-                      :src="image.value"
-                      :alt="'Image ' + image.id"
-                      class="w-full h-auto"
-                    />
+                    <div
+                      v-for="(image, index) in imagePengkajianNyeri"
+                      :key="image.id"
+                      :class="[
+                        'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
+                        {
+                          'border-4 border-adameds-300': image.id === skalaNyeri,
+                        },
+                      ]"
+                      @click="handleImageClick(image.id)"
+                    >
+                      <img
+                        :src="image.value"
+                        :alt="'Image ' + image.id"
+                        class="w-full h-auto"
+                      />
+                    </div>
+                  </div>
+                  <Scaler />
+                  <div
+                    class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2"
+                  >
+                    <div class="font-semibold text-normal">
+                      1-3 = <span class="text-success-300">Ringan</span>
+                    </div>
+                    <div class="font-semibold text-normal">
+                      4-6 = <span class="text-warning-300">Sedang</span>
+                    </div>
+                    <div class="font-semibold text-normal">
+                      7-10 = <span class="text-danger-300">Berat</span>
+                    </div>
                   </div>
                 </div>
-                <Scaler />
-                <div
-                  class="grid grid-cols-3 text-center border-y-2 border-[#D9DCE1] mt-2.5 p-2"
-                >
-                  <div class="font-semibold text-normal">
-                    1-3 = <span class="text-success-300">Ringan</span>
-                  </div>
-                  <div class="font-semibold text-normal">
-                    4-6 = <span class="text-warning-300">Sedang</span>
-                  </div>
-                  <div class="font-semibold text-normal">
-                    7-10 = <span class="text-danger-300">Berat</span>
-                  </div>
-                </div>
+                <CustomTextfield
+                  label="Catatan"
+                  placeholder="Masukkan Catatan"
+                  v-model:modelValue="catatan"
+                />
               </div>
-              <CustomTextfield
-                label="Catatan"
-                placeholder="Masukkan Catatan"
-                v-model:modelValue="catatan"
-              />
             </div>
           </div>
         </template>

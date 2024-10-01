@@ -420,11 +420,16 @@ defineExpose({
       </div>
 
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Triase</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -444,258 +449,262 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriTriase />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriTriase />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <CustomSelect
-                label="Kasus"
-                v-model="selectedKasus"
-                :options="kasus"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Kasus"
-                customSelectClass="border-[#C7CBD2]"
-                class="col-span-4"
-              />
-              <CustomSelect
-                label="Cara Datang"
-                v-model="selectedCaraDatang"
-                :options="caraDatang"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Cara Datang"
-                customSelectClass="border-[#C7CBD2]"
-                class="col-span-2"
-              />
-              <CustomSelect
-                label="Kendaraan"
-                v-model="selectedKendaraan"
-                :options="kendaraan"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Kendaraan"
-                customSelectClass="border-[#C7CBD2]"
-                class="col-span-2"
-              />
-              <CustomSelect
-                label="Keadaan Umum"
-                v-model="selectedKeadaanUmum"
-                :options="keadaanUmum"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Keadaan Umum"
-                customSelectClass="border-[#C7CBD2]"
-                class="col-span-2"
-              />
-              <CustomTextfield
-                label="Asal Rujukan"
-                placeholder="Asal Rujukan"
-                v-model:modelValue="asalRujukan"
-                class="col-span-2"
-              />
-              <hr class="col-span-4" />
-              <CustomSelect
-                label="Mata (Respon Membuka Mata)"
-                v-model="selectedMata"
-                :options="mata"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Respon"
-                customSelectClass="border-[#C7CBD2]"
-              />
-              <CustomSelect
-                label="Motorik (Respon Gerakan)"
-                v-model="selectedMotorik"
-                :options="motorik"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Respon"
-                customSelectClass="border-[#C7CBD2]"
-              />
-              <CustomSelect
-                label="Verbal (Respon Verbal)"
-                v-model="selectedVerbal"
-                :options="verbal"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Respon"
-                customSelectClass="border-[#C7CBD2]"
-              />
-              <CustomSelect
-                label="Glasglow Coma Scale (GCS) Score"
-                v-model="selectedGlasglow"
-                :options="glasglow"
-                option-label="name"
-                option-value="name"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-                customSelectClass="border-[#C7CBD2]"
-              />
-              <div class="grid grid-cols-2 gap-x-[30px]">
-                <div class="grid items-center grid-cols-[2fr_min-content_2fr]">
-                  <label
-                    class="block font-semibold mb-[5px] text-normal col-span-3"
-                  >
-                    Tekanan Darah (Sistole / Diastole)
-                  </label>
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <CustomSelect
+                  label="Kasus"
+                  v-model="selectedKasus"
+                  :options="kasus"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Kasus"
+                  customSelectClass="border-[#C7CBD2]"
+                  class="col-span-4"
+                />
+                <CustomSelect
+                  label="Cara Datang"
+                  v-model="selectedCaraDatang"
+                  :options="caraDatang"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Cara Datang"
+                  customSelectClass="border-[#C7CBD2]"
+                  class="col-span-2"
+                />
+                <CustomSelect
+                  label="Kendaraan"
+                  v-model="selectedKendaraan"
+                  :options="kendaraan"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Kendaraan"
+                  customSelectClass="border-[#C7CBD2]"
+                  class="col-span-2"
+                />
+                <CustomSelect
+                  label="Keadaan Umum"
+                  v-model="selectedKeadaanUmum"
+                  :options="keadaanUmum"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Keadaan Umum"
+                  customSelectClass="border-[#C7CBD2]"
+                  class="col-span-2"
+                />
+                <CustomTextfield
+                  label="Asal Rujukan"
+                  placeholder="Asal Rujukan"
+                  v-model:modelValue="asalRujukan"
+                  class="col-span-2"
+                />
+                <hr class="col-span-4" />
+                <CustomSelect
+                  label="Mata (Respon Membuka Mata)"
+                  v-model="selectedMata"
+                  :options="mata"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Respon"
+                  customSelectClass="border-[#C7CBD2]"
+                />
+                <CustomSelect
+                  label="Motorik (Respon Gerakan)"
+                  v-model="selectedMotorik"
+                  :options="motorik"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Respon"
+                  customSelectClass="border-[#C7CBD2]"
+                />
+                <CustomSelect
+                  label="Verbal (Respon Verbal)"
+                  v-model="selectedVerbal"
+                  :options="verbal"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Respon"
+                  customSelectClass="border-[#C7CBD2]"
+                />
+                <CustomSelect
+                  label="Glasglow Coma Scale (GCS) Score"
+                  v-model="selectedGlasglow"
+                  :options="glasglow"
+                  option-label="name"
+                  option-value="name"
+                  invalidMessage="Wajib diisi"
+                  :disabled="false"
+                  placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
+                  customSelectClass="border-[#C7CBD2]"
+                />
+                <div class="grid grid-cols-2 gap-x-[30px]">
+                  <div class="grid items-center grid-cols-[2fr_min-content_2fr]">
+                    <label
+                      class="block font-semibold mb-[5px] text-normal col-span-3"
+                    >
+                      Tekanan Darah (Sistole / Diastole)
+                    </label>
+                    <CustomInputNumber
+                      :showLabel="false"
+                      placeholder="0"
+                      v-model:modelValue="tekananDarahSistole"
+                      type="number"
+                    />
+                    <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
+                    <CustomInputNumber
+                      :showLabel="false"
+                      placeholder="0"
+                      v-model:modelValue="tekananDarahDiastole"
+                      type="number"
+                    >
+                      <template #appendText>
+                        <div class="flex items-center mr-2">mmHg</div>
+                      </template>
+                    </CustomInputNumber>
+                  </div>
                   <CustomInputNumber
-                    :showLabel="false"
+                    label="Frekuensi Nafas"
                     placeholder="0"
-                    v-model:modelValue="tekananDarahSistole"
-                    type="number"
-                  />
-                  <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
-                  <CustomInputNumber
-                    :showLabel="false"
-                    placeholder="0"
-                    v-model:modelValue="tekananDarahDiastole"
+                    v-model:modelValue="frekuensiNafas"
                     type="number"
                   >
                     <template #appendText>
-                      <div class="flex items-center mr-2">mmHg</div>
+                      <div class="flex items-center mr-2">x/mnt</div>
                     </template>
                   </CustomInputNumber>
                 </div>
-                <CustomInputNumber
-                  label="Frekuensi Nafas"
-                  placeholder="0"
-                  v-model:modelValue="frekuensiNafas"
-                  type="number"
-                >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">x/mnt</div>
-                  </template>
-                </CustomInputNumber>
-              </div>
-              <div class="grid grid-cols-2 gap-x-[30px] gap-y-5">
-                <CustomInputNumber
-                  label="Frekuensi Nadi"
-                  placeholder="0"
-                  v-model:modelValue="frekuensiNadi"
-                  type="number"
-                >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">x/mnt</div>
-                  </template>
-                </CustomInputNumber>
-                <CustomSwitch
-                  v-model="CRT"
-                  label=" Capillary Refill Time (CRT > 2 Detik)"
-                />
-                <CustomInputNumber
-                  label="Suhu"
-                  placeholder="0"
-                  v-model:modelValue="suhu"
-                  type="number"
-                >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">°C</div>
-                  </template>
-                </CustomInputNumber>
-                <CustomInputNumber
-                  label="Blood Oxygen"
-                  placeholder="0"
-                  v-model:modelValue="bloodOxygen"
-                  type="number"
-                >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">%</div>
-                  </template>
-                </CustomInputNumber>
-                <hr class="col-span-2" />
-                <CustomTextfield
-                  v-model="kesimpulanTriase"
-                  label="Kesimpulan Triase"
-                  placeholder="Kesimpulan Triase"
-                  class="col-span-2 grow"
-                />
-              </div>
-              <div class="flex gap-[24px] py-3">
-                <div
-                  @click="warnaTriase = '#3D84E5'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#3D84E5'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-white"
+                <div class="grid grid-cols-2 gap-x-[30px] gap-y-5">
+                  <CustomInputNumber
+                    label="Frekuensi Nadi"
+                    placeholder="0"
+                    v-model:modelValue="frekuensiNadi"
+                    type="number"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">x/mnt</div>
+                    </template>
+                  </CustomInputNumber>
+                  <CustomSwitch
+                    v-model="CRT"
+                    label=" Capillary Refill Time (CRT > 2 Detik)"
+                  />
+                  <CustomInputNumber
+                    label="Suhu"
+                    placeholder="0"
+                    v-model:modelValue="suhu"
+                    type="number"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">°C</div>
+                    </template>
+                  </CustomInputNumber>
+                  <CustomInputNumber
+                    label="Blood Oxygen"
+                    placeholder="0"
+                    v-model:modelValue="bloodOxygen"
+                    type="number"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">%</div>
+                    </template>
+                  </CustomInputNumber>
+                  <hr class="col-span-2" />
+                  <CustomTextfield
+                    v-model="kesimpulanTriase"
+                    label="Kesimpulan Triase"
+                    placeholder="Kesimpulan Triase"
+                    class="col-span-2 grow"
                   />
                 </div>
-                <div
-                  @click="warnaTriase = '#E9594C'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-danger-300 rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#E9594C'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-white"
-                  />
-                </div>
-                <div
-                  @click="warnaTriase = '#E89F29'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-warning-300 rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#E89F29'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-white"
-                  />
-                </div>
-                <div
-                  @click="warnaTriase = '#14AC5B'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-success-300 rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#14AC5B'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-white"
-                  />
-                </div>
-                <div
-                  @click="warnaTriase = '#FFFFFF'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-white rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#FFFFFF'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-black"
-                  />
-                </div>
-                <div
-                  @click="warnaTriase = '#000000'"
-                  class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-black rounded-md mt-auto flex"
-                >
-                  <PhCheckCircle
-                    v-if="warnaTriase == '#000000'"
-                    :size="25"
-                    weight="fill"
-                    class="m-auto text-white"
-                  />
+                <div class="flex gap-[24px] py-3">
+                  <div
+                    @click="warnaTriase = '#3D84E5'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#3D84E5'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-white"
+                    />
+                  </div>
+                  <div
+                    @click="warnaTriase = '#E9594C'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-danger-300 rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#E9594C'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-white"
+                    />
+                  </div>
+                  <div
+                    @click="warnaTriase = '#E89F29'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-warning-300 rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#E89F29'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-white"
+                    />
+                  </div>
+                  <div
+                    @click="warnaTriase = '#14AC5B'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-success-300 rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#14AC5B'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-white"
+                    />
+                  </div>
+                  <div
+                    @click="warnaTriase = '#FFFFFF'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-white rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#FFFFFF'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-black"
+                    />
+                  </div>
+                  <div
+                    @click="warnaTriase = '#000000'"
+                    class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-black rounded-md mt-auto flex"
+                  >
+                    <PhCheckCircle
+                      v-if="warnaTriase == '#000000'"
+                      :size="25"
+                      weight="fill"
+                      class="m-auto text-white"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

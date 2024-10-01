@@ -258,7 +258,7 @@ const deleteSessionDialog = ref(false);
         </div>
       </template>
       <template #footer>
-        <div>
+        <div class="flex justify-end">
           <CustomButton
             @click="() => {}"
             label="Tidak"

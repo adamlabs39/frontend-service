@@ -340,11 +340,16 @@ defineExpose({
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Kesadaran</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -364,54 +369,58 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriKesadaran />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriKesadaran />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <div
-                v-for="(option, categoryIndex) in opsiKesadaran"
-                :key="categoryIndex"
-              >
-                <div class="flex flex-col gap-5">
-                  <div class="font-semibold text-md">{{ option.title }}</div>
-                  <div
-                    :class="{
-                      'grid grid-cols-4': option.title.includes('Mata'),
-                      'grid grid-cols-6': option.title.includes('Motorik'),
-                      'grid grid-cols-5': option.title.includes('Verbal'),
-                    }"
-                  >
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <div
+                  v-for="(option, categoryIndex) in opsiKesadaran"
+                  :key="categoryIndex"
+                >
+                  <div class="flex flex-col gap-5">
+                    <div class="font-semibold text-md">{{ option.title }}</div>
                     <div
-                      v-for="(response, responseIndex) in option.response"
-                      :key="responseIndex"
+                      :class="{
+                        'grid grid-cols-4': option.title.includes('Mata'),
+                        'grid grid-cols-6': option.title.includes('Motorik'),
+                        'grid grid-cols-5': option.title.includes('Verbal'),
+                      }"
                     >
                       <div
-                        class="flex flex-col gap-2.5 items-center text-center justify-center cursor-pointer"
-                        @click="selectOption(categoryIndex, responseIndex)"
+                        v-for="(response, responseIndex) in option.response"
+                        :key="responseIndex"
                       >
-                        <img
-                          :src="getImageSrc(categoryIndex, responseIndex)"
-                          alt="Response Image"
-                        />
-                        <div class="font-normal text-SM">
-                          {{ response.label }}
+                        <div
+                          class="flex flex-col gap-2.5 items-center text-center justify-center cursor-pointer"
+                          @click="selectOption(categoryIndex, responseIndex)"
+                        >
+                          <img
+                            :src="getImageSrc(categoryIndex, responseIndex)"
+                            alt="Response Image"
+                          />
+                          <div class="font-normal text-SM">
+                            {{ response.label }}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+                <CustomTextfield
+                  v-model="GCS_kesimpulan"
+                  label="Kesimpulan GCS"
+                  placeholder="Pilih Kesimpulan GCS"
+                  class=""
+                  readOnly
+                />
               </div>
-              <CustomTextfield
-                v-model="GCS_kesimpulan"
-                label="Kesimpulan GCS"
-                placeholder="Pilih Kesimpulan GCS"
-                class=""
-                readOnly
-              />
             </div>
           </div>
         </template>

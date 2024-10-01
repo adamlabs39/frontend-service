@@ -223,11 +223,16 @@ defineExpose({
       </div>
 
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Instruksi Medis</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -247,79 +252,85 @@ defineExpose({
                   />
                 </div>
               </div>
-              <HistoriInstruksiMedis />
+              <div class="overflow-auto grow">
+                <HistoriInstruksiMedis />
+              </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <div
-                v-for="(message, index) in messages"
-                :key="index"
-                :class="{ 'justify-end': message.isSender }"
-                class="flex items-start gap-2.5"
-              >
-                <img
-                  :src="getAvatar(message.gender)"
-                  alt="Avatar"
-                  :class="message.isSender ? 'order-2' : ''"
-                />
-                <div class="flex flex-col gap-2.5">
-                  <div class="flex w-full gap-5">
-                    <div class="font-semibold text-adameds-300 text-SM">
-                      {{ message.role }}
-                    </div>
-                    <div class="flex gap-2.5 font-medium text-SM text-grey-400">
-                      <div class="flex items-center gap-[2px]">
-                        <PhCalendarDots :size="12" weight="fill" />
-                        {{ message.date }}
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <div
+                  v-for="(message, index) in messages"
+                  :key="index"
+                  :class="{ 'justify-end': message.isSender }"
+                  class="flex items-start gap-2.5"
+                >
+                  <img
+                    :src="getAvatar(message.gender)"
+                    alt="Avatar"
+                    :class="message.isSender ? 'order-2' : ''"
+                  />
+                  <div class="flex flex-col gap-2.5">
+                    <div class="flex w-full gap-5">
+                      <div class="font-semibold text-adameds-300 text-SM">
+                        {{ message.role }}
                       </div>
-                      <div class="flex items-center gap-[2px]">
-                        <PhClock :size="12" weight="fill" />
-                        {{ message.time }}
+                      <div
+                        class="flex gap-2.5 font-medium text-SM text-grey-400"
+                      >
+                        <div class="flex items-center gap-[2px]">
+                          <PhCalendarDots :size="12" weight="fill" />
+                          {{ message.date }}
+                        </div>
+                        <div class="flex items-center gap-[2px]">
+                          <PhClock :size="12" weight="fill" />
+                          {{ message.time }}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    :class="
-                      message.isSender
-                        ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                        : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                    "
-                    class="min-h-[45px] bg-adameds-50 flex items-center px-4 text-SM font-normal"
-                  >
-                    {{ message.text }}
+                    <div
+                      :class="
+                        message.isSender
+                          ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
+                          : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'
+                      "
+                      class="min-h-[45px] bg-adameds-50 flex items-center px-4 text-SM font-normal"
+                    >
+                      {{ message.text }}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <hr class="border-grey-200 my-2.5" />
-              <div v-if="isEditing" class="flex flex-col gap-[10px]">
-                <CustomSelect
-                  label="Dokter Pemberi Instruksi"
-                  v-model="dokter"
-                  place-holder="Pilih Dokter Pemberi Instruksi"
-                  :options="optionsDokter"
-                  option-label=""
-                  option-value=""
-                  :invalid="!!errors.dokter"
-                  :invalidMessage="errors.dokter"
-                />
-                <div class="flex flex-col grow gap-2.5">
-                  <CustomTextArea
-                    v-model="instruksi"
-                    label="Instruksi Medis"
-                    placeholder="Ketik Instruksi..."
-                    :invalid="!!errors.instruksi"
-                    :invalidMessage="errors.instruksi"
+                <hr class="border-grey-200 my-2.5" />
+                <div v-if="isEditing" class="flex flex-col gap-[10px]">
+                  <CustomSelect
+                    label="Dokter Pemberi Instruksi"
+                    v-model="dokter"
+                    place-holder="Pilih Dokter Pemberi Instruksi"
+                    :options="optionsDokter"
+                    option-label=""
+                    option-value=""
+                    :invalid="!!errors.dokter"
+                    :invalidMessage="errors.dokter"
                   />
-                  <CustomButton
-                    :full="true"
-                    class="w-full"
-                    @click="onSubmitInstruksiMedis"
-                  >
-                    <div class="flex items-center gap-2">
-                      <PhPaperPlaneTilt :size="20" weight="fill" />
-                      <div>Kirim Instruksi</div>
-                    </div>
-                  </CustomButton>
+                  <div class="flex flex-col grow gap-2.5">
+                    <CustomTextArea
+                      v-model="instruksi"
+                      label="Instruksi Medis"
+                      placeholder="Ketik Instruksi..."
+                      :invalid="!!errors.instruksi"
+                      :invalidMessage="errors.instruksi"
+                    />
+                    <CustomButton
+                      :full="true"
+                      class="w-full"
+                      @click="onSubmitInstruksiMedis"
+                    >
+                      <div class="flex items-center gap-2">
+                        <PhPaperPlaneTilt :size="20" weight="fill" />
+                        <div>Kirim Instruksi</div>
+                      </div>
+                    </CustomButton>
+                  </div>
                 </div>
               </div>
             </div>
