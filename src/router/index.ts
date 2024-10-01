@@ -55,8 +55,8 @@ import WaitingTimePage from "@/views/Farmasi/Report/WaitingTimePage.vue";
 import RevenueRecapPage from "@/views/Farmasi/Report/RevenueRecapPage.vue";
 
 // NOTE Rawat Jalan
-import PoliPage from "@/views/RawatJalan/PoliPage.vue";
-import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+// import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
 
@@ -115,6 +115,9 @@ import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
+import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+import BPJSPageMonitoringRiwayatKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringRiwayatKunjunganPage.vue";
+import BPJSMonitoringPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
 
 
 const router = createRouter({
@@ -138,16 +141,35 @@ const router = createRouter({
       component: DashboardView,
     },
 
+    // RAWAT JALAN
+
     {
       path: "/rawat-jalan",
       name: "rawat-jalan",
+      redirect: "/rawat-jalan/poli",
+    },
+    {
+      path: "/rawat-jalan/poli",
+      name: "rawat-jalan-poli",
       meta: { layout: SidebarLayout, page: PoliPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
-      path: "/bpjs/monitoring-kunjungan",
-      name: "bpjs-monitoring-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage, requiresAuth: true },
+      path: "/rawat-jalan/bpjs/monitoring-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/bpjs/monitoring-riwayat-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-riwayat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/bpjs/monitoring-obat-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-obat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {

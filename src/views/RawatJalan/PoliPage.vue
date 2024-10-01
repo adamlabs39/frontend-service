@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, onMounted, ref, watch } from "vue";
 import { useIndexStore } from "@/stores";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -16,198 +15,133 @@ import CustomRadio from "../../components/Base/CustomRadio.vue";
 import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
 import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
+import DataRawatJalanHeader from "./Layout/DataRawatJalanHeader.vue";
+import Pelayanan from "@/views/RawatJalan/Layout/DataPelayananRawatJalan.vue"
+import { useRoute } from 'vue-router';
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import Discharge from "./Layout/DataDischargeRawatJalan.vue";
+
+
 
 const props = defineProps({
   filter: {
     type: String,
-    default: "",
+    default: "Semua Poli",
   },
 });
+const value = ref("1");
 
-const indexStore = useIndexStore();
+const showCancelVisit = ref(false);
+const cancelReason = ref<string>();
 
-const schema = toTypedSchema(
-  yup.object({
-    email: yup
-      .string()
-      .email("Format email tidak sesuai")
-      .required("Email harus diisi"),
-    password: yup
-      .string()
-      .min(8, "Password minimal 8 digit")
-      .required("Password harus diisi"),
-    confirmPassword: yup
-      .string()
-      .min(8, "Password minimal 8 digit")
-      .required("Password harus diisi")
-      .oneOf([yup.ref("password")], "Password tidak sama"),
-  })
-);
+const route = useRoute();
+const currentRouteName = ref("");
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
-  validationSchema: schema,
+onMounted(() => {
+  currentRouteName.value = route.name ? String(route.name) : ""; 
 });
 
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-});
-
-const [email] = defineField("email");
-const [password] = defineField("password");
-const [confirmPassword] = defineField("confirmPassword");
-
-const testLog = () => {
-  console.log(email.value);
-};
-
-const dataApi = ref();
-const testAutoComplete = ref();
-const itemsAutoComplete = ref([
-  "Indonesia",
-  "Malaysia",
-  "Singapura",
-  "Timor Leste",
-  "Filipina",
-  "Thailand",
-]);
-// const itemsAutoComplete = ref([
-//   { name: "Indonesia", id: 1 },
-//   { name: "Malaysia", id: 2 },
-//   { name: "Singapura", id: 3 },
-//   { name: "Timor Leste", id: 4 },
-//   { name: "Filipina", id: 5 },
-//   { name: "Thailand", id: 6 },
-// ]);
-
-onBeforeMount(async () => {
-  setValues({ email: "fahminugroho@gmail.com" });
-  dataApi.value = await indexStore.getApi();
-});
-
-const testDialog = ref(false);
-const dataBreadHome = ref({ label: "Electronics", home: true });
-const dataBreadCrumb = ref([{ label: "Components" }, { label: "Components" }]);
-
-console.log(dataApi.value);
-
-const testRef = ref<any>(null);
-const testRefFunction = () => {
-  testRef.value?.alerTest();
-};
-const testCheckboxMulti = ref([]);
-const testCheckbox = ref(false);
-const testEditor = ref("");
-const testRadio = ref("");
-const medicalRecord = ref<any>();
-const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM();
-};
-const testSelectRM = ref();
 </script>
 <template>
-  <div>
-    <CustomBreadCrumb :home="dataBreadHome" :model="dataBreadCrumb" />
-    Filter = {{ props.filter }}
-    <form class="w-[400px]">
-      <CustomTextfield
-        ref="testRef"
-        v-model="email"
-        @input="testLog"
-        label="Email"
-        :invalid="errors.email ? true : false"
-        :invalidMessage="errors.email"
-      >
-      </CustomTextfield>
-      <CustomTextfield
-        v-model="password"
-        label="Password"
-        appendIcon="PhLock"
-        :invalid="errors.password ? true : false"
-        :invalidMessage="errors.password"
-      />
-      <CustomTextfield
-        v-model="confirmPassword"
-        label="Confirm Password"
-        appendIcon="PhLock"
-        :invalid="errors.confirmPassword ? true : false"
-        :invalidMessage="errors.confirmPassword"
-      />
-      <button @click="onSubmit">Submit</button>
-    </form>
-    <CustomAutoComplete
-      v-model="testAutoComplete"
-      :options="itemsAutoComplete"
-      label="AutoComplete"
-      multiple
-    />
-    <div>Data: {{ testAutoComplete }}</div>
-    <div @click="testDialog = true">Show</div>
-    <CustomDialog
-      class=""
-      v-model:visible="testDialog"
-      headerBg="bg-danger-300"
-    >
-      <template #header> 1 </template>
-      <template #body>2</template>
-      <template #footer>3</template>
-    </CustomDialog>
-    <div @click="testRefFunction">Semua Poli</div>
-    <div v-for="(data, index) in dataApi" :key="index">{{ data.title }}</div>
-    <div @click="downloadPdf({ data: { nama: 'fahmi' } })">Download PDF</div>
-    <CustomAccordion headerClass="">
-      <template #header> Ini adalah header </template>
-      <template #content>
-        <div>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem impedit
-          corrupti ad qui, ex atque dolore quidem suscipit? Pariatur sint in
-          deleniti laudantium alias voluptas sapiente veniam molestias eligendi
-          nihil.
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
+    <template #header>
+      <DataRawatJalanHeader :activeTab="value" :filter-menu="props.filter" :current-route-name="currentRouteName">
+        <template #content>
+          <div class="flex items-center gap-2">
+            <CustomButton
+              label=""
+              icon="PhListBullets"
+              class="w-[60px] bg-white"
+              text-color="text-adameds-300"
+              border-color="border-adameds-300 border-2"
+            />
+             <!-- Filter = {{ props.filter }} -->
+            <CustomButton
+              label="PELAYANAN"
+              class="grow"
+              :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
+              :border-color="
+                value === '1' ? 'border-none' : 'border-adameds-300'
+              "
+              :class="value === '1' ? 'bg-adameds-300' : 'bg-white'"
+              @click="value = '1'"
+              :outlined="value !== '1'"
+            />
+            <CustomButton
+              label="DISCHARGE"
+              class="grow"
+              :text-color="value === '2' ? 'text-white' : 'text-adameds-300'"
+              :border-color="
+                value === '2' ? 'border-none' : 'border-adameds-300'
+              "
+              :class="value === '2' ? 'bg-adameds-300' : 'bg-white'"
+              @click="value = '2'"
+              :outlined="value !== '2'"
+            />
+          </div>
+        </template>
+      </DataRawatJalanHeader>
+    </template>
+    <template #content>
+      <Tabs v-model:value="value">
+        <TabPanels>
+          <TabPanel value="1">
+            <Pelayanan :show-cancel-visit="showCancelVisit" />
+          </TabPanel>
+          <TabPanel value="2">
+            <Discharge />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </template>
+    <template #footer>
+      <div  :class="value === '1' ? 'flex justify-between' : 'flex justify-end'">
+        <div class="flex" v-if="value=='1'">
+          <CustomButton
+            v-if="!showCancelVisit"
+            @click="showCancelVisit = true"
+            class="my-auto bg-danger-300"
+            label="Batal Kunjungan"
+          />
+          <CustomButton
+            v-if="showCancelVisit"
+            @click="showCancelVisit = false"
+            class="my-auto mr-[10px]"
+            label="Batal"
+            outlined
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+          />
+          <CustomButton
+            v-if="showCancelVisit"
+            @click="showCancelVisit = true"
+            class="my-auto mr-5 bg-danger-300"
+            label="Iya, Batalkan"
+            :disabled="!cancelReason"
+          />
+          <CustomTextfield
+            v-if="showCancelVisit"
+            v-model="cancelReason"
+            :showLabel="false"
+            class="my-auto w-[400px]"
+            placeholder="Alasan Batal Kunjungan"
+          />
         </div>
-      </template>
-    </CustomAccordion>
-    <div>
-      {{ testCheckboxMulti }}
-      <CustomCheckbox
-        v-model="testCheckboxMulti"
-        :binary="false"
-        endText="Masuk"
-        value="1"
-      />
-      <CustomCheckbox
-        v-model="testCheckboxMulti"
-        :binary="false"
-        endText="Masuk"
-        value="2"
-      />
-      <CustomCheckbox
-        v-model="testCheckboxMulti"
-        :binary="false"
-        endText="Masuk"
-        value="3"
-        disabled
-      />
-    </div>
-    {{ testCheckbox }}
-    <CustomCheckbox v-model="testCheckbox" endText="Masuk" value="3" />
-    {{ testEditor }}
-    <div>
-      <CustomCkEditor v-model="testEditor" />
-    </div>
-    <div class="grid grid-cols-2">
-      <CustomRadio
-        v-for="data in ['Option 1', 'Option 2']"
-        v-model="testRadio"
-        :sideLabel="data"
-        :value="data"
-      />
-    </div>
-    <div @click="openDialogRM">Show Dialog RM</div>
-    <MedicalRecord ref="medicalRecord" />
-    <RMCustomSelect
-      v-model="testSelectRM"
-      :options="['1', '2']"
-      optionLabel=""
-      optionValue=""
-    />
-  </div>
+        <Paginator
+          :rows="10"
+          :totalRecords="120"
+          :rowsPerPageOptions="[10, 20, 30]"
+          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate="{currentPage}"
+        >
+          <template #start="slotProps">Total Data: 0</template>
+        </Paginator>
+      </div>
+    </template>
+  </Card>
 </template>

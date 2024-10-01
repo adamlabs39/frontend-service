@@ -46,6 +46,7 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+
   if (storeUtils.selectedRoom) {
     changeSection("Daftar");
   }

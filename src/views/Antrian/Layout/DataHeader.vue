@@ -187,7 +187,7 @@ const getChipCustomClass = (status:string) => {
           prependIcon="PhMagnifyingGlass"
           label="Cari Pasien"
           placeholder="Cari Nama Pasien"
-          class="mr-5 grow"
+          class="mr-5 grow" 
         />
         <CustomDatePicker
           v-model="startDateFilter"
