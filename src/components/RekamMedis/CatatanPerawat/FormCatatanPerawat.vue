@@ -311,11 +311,16 @@ defineExpose({
         </div>
       </div>
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Catatan Perawat</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -335,113 +340,117 @@ defineExpose({
                   />
                 </div>
               </div>
-              <HistoriCatatanPerawat />
+              <div class="overflow-auto grow">
+                <HistoriCatatanPerawat />
+              </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <div
-                v-for="(message, index) in messages"
-                :key="index"
-                class="flex items-start gap-2.5"
-                :class="{ 'flex-row-reverse': message.isSender }"
-              >
-                <img :src="message.avatar" alt="Avatar" />
-                <div class="space-y-2.5">
-                  <div class="flex items-center w-full gap-5">
-                    <div class="font-semibold text-adameds-300 text-SM">
-                      {{ message.role }}
-                    </div>
-                    <div class="flex gap-2.5 font-medium text-SM text-grey-400">
-                      <div class="flex items-center gap-[2px]">
-                        <PhCalendarDots :size="12" weight="fill" />
-                        {{ message.date }}
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <div
+                  v-for="(message, index) in messages"
+                  :key="index"
+                  class="flex items-start gap-2.5"
+                  :class="{ 'flex-row-reverse': message.isSender }"
+                >
+                  <img :src="message.avatar" alt="Avatar" />
+                  <div class="space-y-2.5">
+                    <div class="flex items-center w-full gap-5">
+                      <div class="font-semibold text-adameds-300 text-SM">
+                        {{ message.role }}
                       </div>
-                      <div class="flex items-center gap-[2px]">
-                        <PhClock :size="12" weight="fill" />
-                        {{ message.time }}
+                      <div class="flex gap-2.5 font-medium text-SM text-grey-400">
+                        <div class="flex items-center gap-[2px]">
+                          <PhCalendarDots :size="12" weight="fill" />
+                          {{ message.date }}
+                        </div>
+                        <div class="flex items-center gap-[2px]">
+                          <PhClock :size="12" weight="fill" />
+                          {{ message.time }}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    :class="[
-                      message.isSender
-                        ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                        : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
-                      'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
-                      message.textLama
-                        ? 'flex-col-reverse gap-4 py-4 justify-center'
-                        : 'items-center',
-                    ]"
-                  >
-                    {{ message.text }}
-
                     <div
-                      v-if="message.textLama"
-                      class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
-                    >
-                      <div class="flex justify-start">
-                        <span class="font-semibold text-adameds-300">
-                          {{ message.roleYangDibalas }}
-                        </span>
-                      </div>
-                      <hr class="border-t my-2 border-[#E2E8F0]" />
-                      <div class="text-black">{{ message.textLama }}</div>
-                    </div>
-                  </div>
-                  <div
-                    :class="message.isSender ? 'justify-start' : 'justify-end'"
-                    class="flex gap-4"
-                  >
-                    <button
-                      v-for="action in message.actions"
-                      :key="action.text"
-                      v-if="currentMethod == 'form'"
-                      class="flex items-center gap-2 font-medium text-SM"
                       :class="[
-                        action.text === 'Edit'
-                          ? 'text-info-300'
-                          : 'text-adameds-300',
+                        message.isSender
+                          ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
+                          : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
+                        'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
+                        message.textLama
+                          ? 'flex-col-reverse gap-4 py-4 justify-center'
+                          : 'items-center',
                       ]"
-                      @click="handleActionClick(action.text, message, index)"
                     >
-                      <component :is="action.icon" :size="16" />
-                      {{ action.text }}
-                    </button>
+                      {{ message.text }}
+  
+                      <div
+                        v-if="message.textLama"
+                        class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
+                      >
+                        <div class="flex justify-start">
+                          <span class="font-semibold text-adameds-300">
+                            {{ message.roleYangDibalas }}
+                          </span>
+                        </div>
+                        <hr class="border-t my-2 border-[#E2E8F0]" />
+                        <div class="text-black">{{ message.textLama }}</div>
+                      </div>
+                    </div>
+                    <div
+                      :class="message.isSender ? 'justify-start' : 'justify-end'"
+                      class="flex gap-4"
+                    >
+                      <button
+                        v-for="action in message.actions"
+                        :key="action.text"
+                        v-if="currentMethod == 'form'"
+                        class="flex items-center gap-2 font-medium text-SM"
+                        :class="[
+                          action.text === 'Edit'
+                            ? 'text-info-300'
+                            : 'text-adameds-300',
+                        ]"
+                        @click="handleActionClick(action.text, message, index)"
+                      >
+                        <component :is="action.icon" :size="16" />
+                        {{ action.text }}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <hr
-                class="border-grey-200 my-2.5"
-                v-if="currentMethod == 'form'"
-              />
-              <div v-if="currentMethod == 'form'" class="space-y-2.5">
-                <CustomChip
-                  v-if="replyMessageRole || editMessageRole"
-                  :label="
-                    modeChat === 'Balas'
-                      ? `Membalas Pesan ${replyMessageRole}`
-                      : `Edit Pesan ${editMessageRole}`
-                  "
-                  selected-color="border-0 bg-adameds-300"
-                  :showCheckedIcon="false"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  borderColor="border-transparent"
-                  customClass="h-5 pr-[6px]"
+  
+                <hr
+                  class="border-grey-200 my-2.5"
+                  v-if="currentMethod == 'form'"
                 />
-                <div class="space-y-2.5">
-                  <CustomTextArea
-                    v-model="catatanPerawat"
-                    label="Catatan Antar Perawat"
-                    placeholder="Ketik Catatan..."
+                <div v-if="currentMethod == 'form'" class="space-y-2.5">
+                  <CustomChip
+                    v-if="replyMessageRole || editMessageRole"
+                    :label="
+                      modeChat === 'Balas'
+                        ? `Membalas Pesan ${replyMessageRole}`
+                        : `Edit Pesan ${editMessageRole}`
+                    "
+                    selected-color="border-0 bg-adameds-300"
+                    :showCheckedIcon="false"
+                    bgColor="bg-adameds-300"
+                    textColor="text-white"
+                    borderColor="border-transparent"
+                    customClass="h-5 pr-[6px]"
                   />
-                  <CustomButton
-                    :full="true"
-                    icon="PhPaperPlaneTilt"
-                    label="Kirim Catatan"
-                    @click="onSubmitCatatanPerawat"
-                  />
+                  <div class="space-y-2.5">
+                    <CustomTextArea
+                      v-model="catatanPerawat"
+                      label="Catatan Antar Perawat"
+                      placeholder="Ketik Catatan..."
+                    />
+                    <CustomButton
+                      :full="true"
+                      icon="PhPaperPlaneTilt"
+                      label="Kirim Catatan"
+                      @click="onSubmitCatatanPerawat"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
+import HistoriSkriningMata from "@/components/RekamMedis/PemeriksaanMata/HistoriSkriningMata.vue";
 
 const props = defineProps({
   method: {
@@ -183,6 +186,11 @@ const osSphDekat = ref();
 const osGlaukoma = ref();
 const osHasilGlaukoma = ref();
 const osIsretinopati = ref(false);
+
+const historyDialog = ref(false);
+const showDialogHistory = () => {
+  historyDialog.value = true;
+};
 </script>
 
 <template>
@@ -190,6 +198,16 @@ const osIsretinopati = ref(false);
     <template #header>Skrining Mata</template>
     <template #content>
       <div class="pt-5">
+        <div v-if="method == 'form'" class="flex flex-col">
+          <CustomButton
+            @click="showDialogHistory"
+            class="!rounded-md my-[10px] ml-auto"
+            label="Riwayat Pemeriksaan"
+            size="small"
+            icon="PhClockCounterClockwise"
+          />
+          <hr class="mb-[30px]" />
+        </div>
         <!-- Tajam Penglihatan -->
         <div
           class="border-adameds-300 rounded-[10px] mb-[30px]"
@@ -769,6 +787,39 @@ const osIsretinopati = ref(false);
           </div>
         </div>
       </div>
+
+      <!-- Dialog History -->
+      <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+        <template #header>Pemeriksaan Fisik</template>
+        <template #body>
+          <div
+            class="pt-5 grid grid-cols-[1fr_min-content_1fr_min-content_1fr]"
+          >
+            <div class="mb-[18px] flex justify-between col-span-5">
+              <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+              <div class="flex">
+                <CustomButton
+                  @click="() => {}"
+                  class="!rounded-md mr-[10px]"
+                  size="small"
+                  icon="PhCaretLeft"
+                />
+                <CustomButton
+                  @click="() => {}"
+                  class="!rounded-md"
+                  size="small"
+                  icon="PhCaretRight"
+                />
+              </div>
+            </div>
+            <HistoriSkriningMata />
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <HistoriSkriningMata />
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <HistoriSkriningMata />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
   </CustomAccordion>
 </template>

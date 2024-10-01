@@ -33,6 +33,10 @@ const props = defineProps({
     type: String,
     default: "h-[60px]",
   },
+  noScroll: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const dialog = ref();
@@ -55,6 +59,7 @@ const maximize = () => {
     pt:root:class="border-none"
     pt:pcCloseButton:root:class="hover:bg-transparent focus:outline-none"
     pt:pcMaximizeButton:root:class="hidden"
+    :pt:content:class="noScroll ? 'flex flex-col overflow-hidden' : ''"
     :style="fullScreen ? '' : `width: ${width ? width : '400px'}`"
   >
     <template #header>
@@ -73,7 +78,7 @@ const maximize = () => {
     </template>
     <template v-if="$slots.footer" #footer>
       <div class="w-full">
-        <hr class="mb-5 -mx-5"/>
+        <hr class="mb-5 -mx-5" />
         <slot name="footer" />
       </div>
     </template>

@@ -20,7 +20,16 @@ const props = defineProps({
     type: String,
     default: "form",
   },
+  initialState: {
+    type: String,
+    default: "null",
+  },
 });
+
+const historyDialog = ref(false);
+const showDialogHistory = () => {
+  historyDialog.value = true;
+};
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -43,9 +52,23 @@ defineExpose({
 
 <template>
   <div>
-    <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
+    <CustomAccordion
+      ref="accordion"
+      headerClass="bg-adameds-50"
+      :initialState="initialState"
+    >
       <template #header>{{ header }}</template>
       <template #content>
+        <div v-if="method == 'form'" class="flex flex-col">
+          <CustomButton
+            @click="showDialogHistory"
+            class="!rounded-md my-[10px] ml-auto"
+            label="Riwayat Pemeriksaan"
+            size="small"
+            icon="PhClockCounterClockwise"
+          />
+          <hr class="mb-[30px]" />
+        </div>
         <div v-if="method == 'form'" class="flex justify-between pt-5">
           <div class="grow mr-[30px]">
             <CustomInputNumber
@@ -155,6 +178,52 @@ defineExpose({
       <template #footer>
         <div class="flex justify-end">
           <CustomButton label="Edit" />
+        </div>
+      </template>
+    </CustomDialog>
+    <!-- Dialog History -->
+    <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+      <template #header>Pemeriksaan Fisik</template>
+      <template #body>
+        <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+          <div class="mb-[18px] flex justify-between col-span-3">
+            <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+            <div class="flex">
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md mr-[10px]"
+                size="small"
+                icon="PhCaretLeft"
+              />
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md"
+                size="small"
+                icon="PhCaretRight"
+              />
+            </div>
+          </div>
+          <div>
+            <Adult class="w-[800px]" />
+            <div class="py-5 flex flex-col gap-[19px]">
+              <CustomInfoRow label="Presentase Luka Bakar" value="0 %" />
+              <CustomInfoRow label="LPT" value="0 M²" />
+              <hr class="border-grey-200" />
+              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+              <CustomInfoRow label="Jam Input" :value="`petugas`" />
+            </div>
+          </div>
+          <div class="border border-adameds-300 mx-[15px]"></div>
+          <div>
+            <Adult class="w-[800px]" />
+            <div class="py-5 flex flex-col gap-[19px]">
+              <CustomInfoRow label="Presentase Luka Bakar" value="0 %" />
+              <CustomInfoRow label="LPT" value="0 M²" />
+              <hr class="border-grey-200" />
+              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+              <CustomInfoRow label="Jam Input" :value="`petugas`" />
+            </div>
+          </div>
         </div>
       </template>
     </CustomDialog>

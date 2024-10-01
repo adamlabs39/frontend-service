@@ -216,11 +216,16 @@ defineExpose({
       </div>
 
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Anamnesis</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -240,79 +245,81 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto">
                 <HistoriAnamnesis />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriAnamnesis />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <CustomSelect
-                v-model="anamnesis"
-                label="Anamnesis"
-                placeHolder="Pilih Anamnesis"
-                :options="anamnesisOption"
-                option-label="name"
-                option-value="name"
-              />
-              <CustomTextfield
-                v-model="keluhanUtama"
-                label="Keluhan Utama"
-                placeholder="Keluhan Utama"
-              />
-              <CustomTextfield
-                v-model="riwayatPenyakit"
-                label="Riwayat Penyakit"
-                placeholder="Riwayat Penyakit"
-              />
-              <CustomTextfield
-                v-model="riwayatPengobatan"
-                label="Riwayat Pengobatan (Termasuk Obat Yang Sedang Dikonsumsi)"
-                placeholder="Riwayat Pengobatan"
-              />
-              <div class="flex">
-                <div class="basis-2/3">
-                  <div class="block font-semibold mb-[11px]">
-                    Riwayat Penyakit Keluarga
-                  </div>
-                  <div class="grid grid-flow-col grid-rows-4 gap-4">
-                    <div
-                      v-for="category of riwayatPenyakitOption"
-                      :key="category.name"
-                      class="flex items-center gap-2.5"
-                    >
-                      <Checkbox
-                        v-model="riwayatKeluarga"
-                        :inputId="category.name"
-                        name="category"
-                        :value="category.name"
-                        :dt="{
-                          checkedBackground: '#14B8A6',
-                          checkedHoverBackground: '#14B8A6',
-                          borderColor: '#98A2B3',
-                        }"
-                      />
-                      <label
-                        :for="category.name"
-                        class="font-normal text-SM text-grey-400"
-                        >{{ category.name }}</label
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <CustomSelect
+                  v-model="anamnesis"
+                  label="Anamnesis"
+                  placeHolder="Pilih Anamnesis"
+                  :options="anamnesisOption"
+                  option-label="name"
+                  option-value="name"
+                />
+                <CustomTextfield
+                  v-model="keluhanUtama"
+                  label="Keluhan Utama"
+                  placeholder="Keluhan Utama"
+                />
+                <CustomTextfield
+                  v-model="riwayatPenyakit"
+                  label="Riwayat Penyakit"
+                  placeholder="Riwayat Penyakit"
+                />
+                <CustomTextfield
+                  v-model="riwayatPengobatan"
+                  label="Riwayat Pengobatan (Termasuk Obat Yang Sedang Dikonsumsi)"
+                  placeholder="Riwayat Pengobatan"
+                />
+                <div class="flex">
+                  <div class="basis-2/3">
+                    <div class="block font-semibold mb-[11px]">
+                      Riwayat Penyakit Keluarga
+                    </div>
+                    <div class="grid grid-flow-col grid-rows-4 gap-4">
+                      <div
+                        v-for="category of riwayatPenyakitOption"
+                        :key="category.name"
+                        class="flex items-center gap-2.5"
                       >
+                        <Checkbox
+                          v-model="riwayatKeluarga"
+                          :inputId="category.name"
+                          name="category"
+                          :value="category.name"
+                          :dt="{
+                            checkedBackground: '#14B8A6',
+                            checkedHoverBackground: '#14B8A6',
+                            borderColor: '#98A2B3',
+                          }"
+                        />
+                        <label
+                          :for="category.name"
+                          class="font-normal text-SM text-grey-400"
+                          >{{ category.name }}</label
+                        >
+                      </div>
                     </div>
                   </div>
+                  <div class="basis-1/3">
+                    <CustomSwitch
+                      v-model="pernahDirawat"
+                      label="Pernah Dirawat"
+                    />
+                  </div>
                 </div>
-                <div class="basis-1/3">
-                  <CustomSwitch
-                    v-model="pernahDirawat"
-                    label="Pernah Dirawat"
-                  />
-                </div>
+                <CustomTextArea
+                  v-model="catatan"
+                  label="Catatan"
+                  placeholder="Catatan"
+                />
               </div>
-              <CustomTextArea
-                v-model="catatan"
-                label="Catatan"
-                placeholder="Catatan"
-              />
             </div>
           </div>
         </template>

@@ -164,11 +164,16 @@ defineExpose({
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Antropometri</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -188,58 +193,62 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriAntropometri />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriAntropometri />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <div class="grid grid-cols-3 gap-5">
-                <CustomInputNumber
-                  v-model="beratBadan"
-                  label="Berat Badan"
-                  @update:model-value="calculateIMT"
-                >
-                  <template #appendText>
-                    <div class="flex items-center justify-center mr-2.5">
-                      Kg
-                    </div>
-                  </template>
-                </CustomInputNumber>
-                <CustomInputNumber
-                  v-model="tinggiBadan"
-                  label="Tinggi Badan"
-                  @update:model-value="calculateIMT"
-                >
-                  <template #appendText>
-                    <div class="flex items-center justify-center mr-2.5">
-                      Cm
-                    </div>
-                  </template>
-                </CustomInputNumber>
-                <CustomInputNumber
-                  v-model="IMT"
-                  label="IMT"
-                  placeholder="0"
-                  class=""
-                  readOnly
-                >
-                  <template #appendText>
-                    <div class="flex items-center justify-center mr-2.5">
-                      Kg/m²
-                    </div>
-                  </template>
-                </CustomInputNumber>
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <div class="grid grid-cols-3 gap-5">
+                  <CustomInputNumber
+                    v-model="beratBadan"
+                    label="Berat Badan"
+                    @update:model-value="calculateIMT"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center justify-center mr-2.5">
+                        Kg
+                      </div>
+                    </template>
+                  </CustomInputNumber>
+                  <CustomInputNumber
+                    v-model="tinggiBadan"
+                    label="Tinggi Badan"
+                    @update:model-value="calculateIMT"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center justify-center mr-2.5">
+                        Cm
+                      </div>
+                    </template>
+                  </CustomInputNumber>
+                  <CustomInputNumber
+                    v-model="IMT"
+                    label="IMT"
+                    placeholder="0"
+                    class=""
+                    readOnly
+                  >
+                    <template #appendText>
+                      <div class="flex items-center justify-center mr-2.5">
+                        Kg/m²
+                      </div>
+                    </template>
+                  </CustomInputNumber>
+                </div>
+                <CustomTextArea
+                  v-model="catatan"
+                  class="grow"
+                  label="Catatan"
+                  placeholder="Catatan"
+                  height="h-10"
+                />
               </div>
-              <CustomTextArea
-                v-model="catatan"
-                class="grow"
-                label="Catatan"
-                placeholder="Catatan"
-                height="h-10"
-              />
             </div>
           </div>
         </template>

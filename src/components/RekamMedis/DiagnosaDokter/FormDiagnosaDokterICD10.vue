@@ -245,11 +245,16 @@ defineExpose({
         </div>
       </div>
       <!-- Dialog compare -->
-      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+      <CustomDialog
+        class=""
+        v-model:visible="compareDialog"
+        width="80%"
+        noScroll
+      >
         <template #header>Diagnosis Dokter (ICD-10)</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
-            <div>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
+            <div class="flex flex-col overflow-auto">
               <div class="mb-[18px] flex justify-between">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
@@ -269,77 +274,37 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr]">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriDiagnosaDokter />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriDiagnosaDokter />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <div class="flex flex-col gap-y-5">
-              <CustomSelect
-                label="Primer"
-                v-model:model-value="primer"
-                :options="diagnosaPrimers"
-                optionValue="diagnosaPrimer"
-                optionLabel="diagnosaPrimer"
-                :isLoading="false"
-                :invalid="!!errors.primer"
-                :invalidMessage="errors.primer"
-                :disabled="false"
-                placeHolder="Pilih Diagnosis"
-                customSelectClass="border-[#C7CBD2]"
-                prependIcon="PhMagnifyingGlass"
-              />
-              <CustomSelect
-                label="Diagnosis Diferensial"
-                v-model="diagnosisDiferensial"
-                :options="diagnosaSekunders"
-                optionValue="diagnosaSekunder"
-                optionLabel="diagnosaSekunder"
-                :isLoading="false"
-                :invalid="false"
-                invalidMessage="Wajib diisi"
-                :disabled="false"
-                placeHolder="Pilih Diagnosis"
-                customSelectClass="border-[#C7CBD2]"
-                prependIcon="PhMagnifyingGlass"
-              />
-              <div class="w-full" v-for="(field, index) in fields" :key="index">
-                <hr class="mb-5" />
-                <div class="flex grow">
-                  <CustomSelect
-                    label="Sekunder"
-                    v-model="field.value.sekunder"
-                    :options="diagnosaSekunders"
-                    class="grow"
-                    optionValue="diagnosaSekunder"
-                    optionLabel="diagnosaSekunder"
-                    :isLoading="false"
-                    :invalid="!!errors[`datas[${index}].sekunder` as keyof typeof errors]"
-                    :invalidMessage="errors[`datas[${index}].sekunder` as keyof typeof errors]"
-                    :disabled="false"
-                    placeHolder="Pilih Diagnosis"
-                    customSelectClass="border-[#C7CBD2]"
-                    prependIcon="PhMagnifyingGlass"
-                  />
-                  <CustomButton
-                    label=""
-                    icon="PhTrash"
-                    textColor="text-white"
-                    backgroundColor="bg-danger-300"
-                    class="ml-5"
-                    :class="[field.value.sekunder ? 'mt-auto' : 'my-auto']"
-                    @click="remove(index)"
-                  />
-                </div>
+            <div class="flex flex-col overflow-hidden">
+              <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
+                <CustomSelect
+                  label="Primer"
+                  v-model:model-value="primer"
+                  :options="diagnosaPrimers"
+                  optionValue="diagnosaPrimer"
+                  optionLabel="diagnosaPrimer"
+                  :isLoading="false"
+                  :invalid="!!errors.primer"
+                  :invalidMessage="errors.primer"
+                  :disabled="false"
+                  placeHolder="Pilih Diagnosis"
+                  customSelectClass="border-[#C7CBD2]"
+                  prependIcon="PhMagnifyingGlass"
+                />
                 <CustomSelect
                   label="Diagnosis Diferensial"
-                  v-model="field.value.diagnosisDiferensialDinamis"
-                  :options="diagnosaDds"
-                  class="mt-[10px]"
-                  optionValue="diagnosaDd"
-                  optionLabel="diagnosaDd"
+                  v-model="diagnosisDiferensial"
+                  :options="diagnosaSekunders"
+                  optionValue="diagnosaSekunder"
+                  optionLabel="diagnosaSekunder"
                   :isLoading="false"
                   :invalid="false"
                   invalidMessage="Wajib diisi"
@@ -348,18 +313,66 @@ defineExpose({
                   customSelectClass="border-[#C7CBD2]"
                   prependIcon="PhMagnifyingGlass"
                 />
-              </div>
-              <div
-                class="flex items-center justify-center p-5 my-7 border border-dashed rounded-lg border-adameds-300 gap-2.5"
-              >
-                <CustomButton
-                  icon="PhPlus"
-                  label="Diagnosis"
-                  borderColor="border-adameds-300"
-                  textColor="text-adameds-300"
-                  backgroundColor="bg-white"
-                  @click="addDiagnosis"
-                />
+                <div
+                  class="w-full"
+                  v-for="(field, index) in fields"
+                  :key="index"
+                >
+                  <hr class="mb-5" />
+                  <div class="flex grow">
+                    <CustomSelect
+                      label="Sekunder"
+                      v-model="field.value.sekunder"
+                      :options="diagnosaSekunders"
+                      class="grow"
+                      optionValue="diagnosaSekunder"
+                      optionLabel="diagnosaSekunder"
+                      :isLoading="false"
+                      :invalid="!!errors[`datas[${index}].sekunder` as keyof typeof errors]"
+                      :invalidMessage="errors[`datas[${index}].sekunder` as keyof typeof errors]"
+                      :disabled="false"
+                      placeHolder="Pilih Diagnosis"
+                      customSelectClass="border-[#C7CBD2]"
+                      prependIcon="PhMagnifyingGlass"
+                    />
+                    <CustomButton
+                      label=""
+                      icon="PhTrash"
+                      textColor="text-white"
+                      backgroundColor="bg-danger-300"
+                      class="ml-5"
+                      :class="[field.value.sekunder ? 'mt-auto' : 'my-auto']"
+                      @click="remove(index)"
+                    />
+                  </div>
+                  <CustomSelect
+                    label="Diagnosis Diferensial"
+                    v-model="field.value.diagnosisDiferensialDinamis"
+                    :options="diagnosaDds"
+                    class="mt-[10px]"
+                    optionValue="diagnosaDd"
+                    optionLabel="diagnosaDd"
+                    :isLoading="false"
+                    :invalid="false"
+                    invalidMessage="Wajib diisi"
+                    :disabled="false"
+                    placeHolder="Pilih Diagnosis"
+                    customSelectClass="border-[#C7CBD2]"
+                    prependIcon="PhMagnifyingGlass"
+                  />
+                </div>
+                <div
+                  class="flex items-center justify-center p-5 my-7 border border-dashed rounded-lg border-adameds-300 gap-2.5"
+                >
+                  <CustomButton
+                    icon="PhPlus"
+                    label="Diagnosis"
+                    borderColor="border-adameds-300"
+                    textColor="text-adameds-300"
+                    backgroundColor="bg-white"
+                    @click="addDiagnosis"
+                  />
+                </div>
               </div>
             </div>
           </div>
