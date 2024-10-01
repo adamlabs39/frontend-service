@@ -314,7 +314,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
                       selectedColor="bg-warning-300 border-warning-300"
                     />
                   </div>
-                </div>
+            </div>
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -465,7 +465,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
       @back="dataBreadCrumb.pop()"
-      @goToDetail="dataBreadCrumb[0].label = 'Detail Tagihan'"
     />
   </div>
 </template>

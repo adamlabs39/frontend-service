@@ -24,7 +24,7 @@ import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
 import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 
 // NOTE Pembayaran
-// import CashierPage from "@/views/Pembayaran/CashierPage.vue";
+import CashierPage from "@/views/Pembayaran/CashierPage.vue";
 import Cashier2Page from "@/views/Pembayaran/Cashier2Page.vue";
 import TransactionPage from "@/views/Pembayaran/TransactionPage.vue";
 import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
@@ -623,7 +623,7 @@ const router = createRouter({
     {
       path: "/pembayaran/kasir",
       name: "pembayaran-kasir",
-      meta: { layout: SidebarLayout, page: Cashier2Page, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: CashierPage, requiresAuth: true },
       component: PaymentView,
     },
     {

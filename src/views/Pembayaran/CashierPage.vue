@@ -15,9 +15,9 @@ const handleRowsUpdate = (rows: number) => {
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -54,6 +54,7 @@ const handleRowsUpdate = (rows: number) => {
               </CustomTextfield>
               <CustomSelect
                 label="Pilih Shift"
+                place-holder="Pilih Shift"
                 class="grow"
                 optionLabel=""
                 optionValue=""
@@ -88,17 +89,17 @@ const handleRowsUpdate = (rows: number) => {
           <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
             <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
               <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
+                <img
+                  src="../../assets/icons/no data icon.svg"
                   alt="no data"
                   class="mx-auto"
-                /> -->
+                />
                 <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
               </div>
             </div>
             
             <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
+            <div class="p-5 rounded-lg bg-adameds-50">
               <!-- Total Pembayaran -->
               <div class="flex items-center justify-between">
                 <div class="text-base font-bold font-poppins">
@@ -171,7 +172,7 @@ const handleRowsUpdate = (rows: number) => {
                   Rp, 0
                 </div>
               </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
+              <div class="">
                 <div class="flex">
                   <!-- <CustomButton
                     label="Bayar"
@@ -179,7 +180,7 @@ const handleRowsUpdate = (rows: number) => {
                   /> -->
                   <CustomButton
                     label="Bayar"
-                    class="w-full ml-4 mr-4"
+                    class="w-full mt-[70px]"
                     textColor = "text-slate-400"
                     backgroundColor="bg-slate-200"
                   />
