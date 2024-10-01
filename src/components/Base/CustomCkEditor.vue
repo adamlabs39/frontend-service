@@ -92,7 +92,7 @@ const value = computed({
 <template>
   <label
       v-if="props.showLabel"
-      class="block font-semibold mb-[5px]"
+      class="block font-semibold text-normal mb-[5px]"
     >
       {{ props.label }}
     </label>

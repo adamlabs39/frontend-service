@@ -76,8 +76,8 @@ import TarifPage from "@/views/Datamaster/Tarif/TarifPage.vue";
 import ICD9CMPage from "@/views/Datamaster/ICD9CM/ICD9CMPage.vue";
 import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
 import LoincPage from "@/views/Datamaster/Loinc/LoincPage.vue";
-import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
-import NakesPage from "@/views/Datamaster/Nakes/NakesPage.vue";
+import PraktisiPage from "@/views/Datamaster/Praktisi/PraktisiPage.vue";
+import PegawaiPage from "@/views/Datamaster/Pegawai/PegawaiPage.vue";
 import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
 import PenjaminPage from "@/views/Datamaster/Penjamin/PenjaminPage.vue";
 import OrganisasiPage from "@/views/Datamaster/Organisasi/OrganisasiPage.vue";
@@ -114,6 +114,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
 
 
 const router = createRouter({
@@ -225,6 +226,12 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
+      path: "/datamaster/komponen-tarif",
+      name: "datamaster-komponen-tarif",
+      meta: { layout: SidebarLayout, page: KomponenTarifPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
       path: "/datamaster/tindakan",
       name: "datamaster-tindakan",
       meta: { layout: SidebarLayout, page: TindakanPage, requiresAuth: true },
@@ -255,15 +262,15 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
-      path: "/datamaster/dokter",
-      name: "datamaster-dokter",
-      meta: { layout: SidebarLayout, page: DokterPage, requiresAuth: true },
+      path: "/datamaster/praktisi",
+      name: "datamaster-paktisi",
+      meta: { layout: SidebarLayout, page: PraktisiPage },
       component: DatamasterView,
     },
     {
-      path: "/datamaster/nakes",
-      name: "datamaster-nakes",
-      meta: { layout: SidebarLayout, page: NakesPage, requiresAuth: true },
+      path: "/datamaster/pegawai",
+      name: "datamaster-pegawai",
+      meta: { layout: SidebarLayout, page: PegawaiPage },
       component: DatamasterView,
     },
     {

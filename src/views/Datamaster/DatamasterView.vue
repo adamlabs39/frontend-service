@@ -31,13 +31,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Pegawai",
         icon: "DatabaseFill",
         type: linkType.LINK,
-        url: "/datamaster/nakes",
+        url: "/datamaster/pegawai",
       },
       {
         name: "Praktisi",
         icon: "DatabaseFill",
         type: linkType.LINK,
-        url: "/datamaster/dokter",
+        url: "/datamaster/praktisi",
       },
     ],
   },
@@ -99,6 +99,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "DatabaseFill",
         type: linkType.LINK,
         url: "/datamaster/tarif",
+      },
+      {
+        name: "Komponen Tarif",
+        icon: "DatabaseFill",
+        type: linkType.LINK,
+        url: "/datamaster/komponen-tarif",
       },
       {
         name: "Tindakan",

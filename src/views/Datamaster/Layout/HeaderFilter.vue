@@ -2,12 +2,9 @@
 import { ref, type PropType, computed, watch } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import type { MenuItem } from "primevue/menuitem";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-
 
 const props = defineProps({
   pageType: {
@@ -44,6 +41,8 @@ const pageLabel = computed(() => {
     ? "Kategori Ruangan"
     : props.pageType === "tarif"
     ? "Tarif"
+    : props.pageType === "komponen-tarif"
+    ? "Komponen Tarif"
     : props.pageType === "tindakan"
     ? "Tindakan"
     : props.pageType === "icd9-cm"
@@ -163,7 +162,7 @@ const selectedTab = ref("0");
 
           />
           <CustomSelect
-            v-if="['user', 'ruangan', 'tarif', 'tindakan'].includes(pageType)"
+            v-if="['user', 'ruangan', 'tarif'].includes(pageType)"
             class="grow"
             :label="
               props.pageType === 'user'
@@ -187,7 +186,7 @@ const selectedTab = ref("0");
             optionLabel="name"
           />
           <CustomSelect
-            v-if="['ruangan', 'tarif', 'tindakan'].includes(pageType)"
+            v-if="['ruangan', 'tarif'].includes(pageType)"
             class="grow"
             :label="
               props.pageType === 'ruangan'
@@ -208,7 +207,7 @@ const selectedTab = ref("0");
           />
           <div
             class="flex gap-2.5"
-            v-if="['user', 'ruangan', 'tarif', 'tindakan'].includes(pageType)"
+            v-if="['user', 'ruangan', 'tarif'].includes(pageType)"
           >
             <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
             <CustomButton
@@ -219,30 +218,6 @@ const selectedTab = ref("0");
             />
           </div>
         </div>
-        <!-- <div
-          v-if="['snomed-ct'].includes(pageType)"
-          class="flex items-center gap-2.5"
-        >
-          <div
-            class="min-w-32 border-r-[0.71px] font-semibold text-xs text-grey-300"
-          >
-            Filter Status
-          </div>
-          <CustomChip
-            v-for="(method, index) in filterAktif"
-            :key="method + index"
-            :label="method"
-            :showCheckedIcon="true"
-            borderColor="border-adameds-300"
-            icon-color="text-adameds-300"
-            textColor="text-adameds-300"
-            :iconSize="16"
-            selectedColor="bg-adameds-300 border-adameds-300"
-            customClass="h-5"
-            :isSelected="selectedFilterAktif.includes(method)"
-            @selected="onAktifSelect"
-          />
-        </div> -->
       </div>
     </template>
     <template #collapseIcon>

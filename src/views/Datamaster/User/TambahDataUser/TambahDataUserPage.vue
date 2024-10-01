@@ -315,7 +315,6 @@ watch(selectedRole, (newRole) => {
               @clickAppend="showPassword = !showPassword"
               class="col-span-4"
             />
-
             <CustomTextfield
               v-model="confirmPassword"
               label="Verify Password"

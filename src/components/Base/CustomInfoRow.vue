@@ -14,7 +14,7 @@ const props = defineProps({
 </script>
 <template>
   <div
-    class="grid w-full"
+    class="grid w-full text-normal"
     :class="[
       type == 'horizontal' ? 'grid-cols-12 gap-2.5' : 'grid-cols-1',
       alignment == 'right' ? 'text-right' : '',

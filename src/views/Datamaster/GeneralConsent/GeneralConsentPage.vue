@@ -1,80 +1,162 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed, watch } from "vue";
+import { useGeneralConsentStore } from "@/stores/datamaster/generalConsent";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
-import Footer from "../Layout/FooterPaginator.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import TambahGeneralConsent from "./TambahGeneralConsent.vue";
+import FormGeneralConsent from "./FormGeneralConsent.vue";
+import DialogDelete from "../Layout/DialogDelete.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
-const router = useRouter();
-
-onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode: "GC.01",
-      nama: "General Consent Umum-Rawat Jalan",
-      pelayanan: ["Rawat Jalan", "Rawat Inap", "IGD"],
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode: "GC.01",
-      nama: "General Consent Umum-Rawat Jalan",
-      pelayanan: ["Rawat Jalan", "Rawat Inap", "IGD"],
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode: "GC.01",
-      nama: "General Consent Umum-Rawat Jalan",
-      pelayanan: ["Rawat Jalan", "Rawat Inap", "IGD"],
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode: "GC.01",
-      nama: "General Consent Umum-Rawat Jalan",
-      pelayanan: ["Rawat Jalan", "Rawat Inap", "IGD"],
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+import NoData from "@/components/section/NoData.vue";
+import FooterPaginator from "../Layout/FooterPaginator.vue";
+// State Management
+const generalConsentStore = useGeneralConsentStore();
+const UseUtilsStore = utilsStore();
+const generalConsentPayload = ref<any[]>([]);
+const generalConsentProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
 
-const addDataPage = () => {
-  router.push({ name: "datamaster-user-tambah-data" });
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch generalConsent Data from API
+const fetchGeneralConsentData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await generalConsentStore.getApi(
+      generalConsentProperties.value.page,
+      generalConsentProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      generalConsentProperties.value.total = response.properties.total;
+      generalConsentPayload.value = response.payload;
+    } else {
+      generalConsentPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    generalConsentPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
-const testDialog = ref(false);
-const status = ref();
+
+watch([searchQuery], fetchGeneralConsentData);
+
+onMounted(() => {
+  fetchGeneralConsentData();
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  generalConsentProperties.value.page = event.page + 1;
+  generalConsentProperties.value.page_size = event.rows;
+  fetchGeneralConsentData();
+};
+
+// Check if Data Exists
+const hasData = computed(
+  () => generalConsentPayload.value && generalConsentPayload.value.length > 0
+);
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await generalConsentStore.deleteApi(item.uuid);
+      fetchGeneralConsentData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
 </script>
 
 <template>
-  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
     <template #header>
-      <HeaderFilter page-type="general" @tambah-data="testDialog = true" />
+      <HeaderFilter
+        page-type="general"
+        :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
 
     <template #content>
-      <DataTable :value="products" tableStyle="min-width: 50rem" stripedRows class="text-xs">
-        <Column field="kode" header="Kode General Consent" headerClass="bg-adameds-50"></Column>
-        <Column field="nama" header="Nama" headerClass="bg-adameds-50"></Column>
-        <Column field="pelayanan" header="Pelayanan" class="w-4/12" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="flex flex-wrap gap-2">
-              <div v-for="items in slotProps.data.pelayanan" :key="items">
-                <CustomChip :label="items" :showCheckedIcon="false" border-color="border-none" bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3" />
-              </div>
-            </div>
-          </template>
-        </Column>
+      <NoData v-if="!hasData" />
+      <DataTable
+        v-else
+        :value="generalConsentPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
+        tableStyle="min-width: 50rem"
+        stripedRows
+        class="text-xs"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
+      >
+        <Column
+          field="code"
+          header="Kode General Consent"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name"
+          header="Nama"
+          headerClass="bg-adameds-50"
+          class="w-1/2"
+        ></Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full h-full font-semibold text-center text-SM">
@@ -83,59 +165,72 @@ const status = ref();
           </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
-              <CustomChip :label="slotProps.data.status" :textColor="slotProps.data.status === 'AKTIF'
-                  ? 'text-white'
-                  : 'text-[#80868d]'
-                " :bgColor="slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                  " :borderColor="slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
-                  " :icon-color="slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                  " customClass="text-xs font-semibold h-5 flex" />
+              <CustomChip
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5 flex"
+              />
             </div>
           </template>
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full font-semibold text-center text-SM">
-              Action
-            </div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" class="h-6 w-[26px] p-0">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg" class="h-6 w-[26px] p-0">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="
+                  deleteDialog('delete', 'General Consent', slotProps.data)
+                "
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <CustomDialog v-model:visible="testDialog" headerBg="bg-adameds-300" :full-screen="true">
-        <template #header>Tambah General Consent</template>
-        <template #body>
-          <TambahGeneralConsent />
-        </template>
-        <template #footer>
-          <div class="w-full">
-            <hr class="-mx-5 border-grey-200" />
-            <div class="mt-5 flex justify-end gap-2.5">
-              <CustomButton label="Batal" border-color="border-grey-200" background-color="bg-white"
-                text-color="text-grey-300">
-              </CustomButton>
-              <CustomButton label="Simpan"> </CustomButton>
-            </div>
-          </div>
-        </template>
-      </CustomDialog>
+      <FormGeneralConsent
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+        @data-updated="fetchGeneralConsentData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
+      />
     </template>
 
     <template #footer>
-      <Footer :rows="1" :totalRecords="1" />
+      <FooterPaginator
+        :rows="generalConsentProperties.page_size"
+        :totalRecords="generalConsentProperties.total"
+        @page="handlePage"
+        :showExport="false"
+        :showImport="false"
+      />
     </template>
   </Card>
 </template>

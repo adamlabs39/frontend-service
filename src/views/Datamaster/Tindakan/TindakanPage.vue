@@ -1,120 +1,248 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed, watch } from "vue";
+import { useTindakanStore } from "@/stores/datamaster/tindakan";
+import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/FooterPaginator.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import TambahDataTindakanDialog from "./TambahDataTindakanDialog.vue";
+import FormTindakan from "./FormTindakan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-const products = ref<any[]>([]);
+import DialogDelete from "../Layout/DialogDelete.vue";
+import { utilsStore } from "@/stores/utils";
 
-const router = useRouter();
-const searchRoom = ref<any>();
-const selectedKategori = ref<any>();
-const selectedKelas = ref<any>();
-const itemKategori = ref([
-  { name: "Dokter", code: "DK" },
-  { name: "Admin", code: "AD" },
-  { name: "Perawat", code: "PR" },
-]);
-const itemKelas = ref([
-  { name: "Dokter", code: "DK" },
-  { name: "Admin", code: "AD" },
-  { name: "Perawat", code: "PR" },
-]);
-onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode_tindakan: "PDU",
-      nama_tindakan: "Pemeriksaan Dokter Umum",
-      snomed_icd: {
-        nama_snomed: "snomed-CT",
-        nama_tindakan: "Nama Tindakan Snomed-CT",
-      },
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode_tindakan: "PDU",
-      nama_tindakan: "Pemeriksaan Dokter Umum",
-      snomed_icd: {
-        nama_snomed: "snomed-CT",
-        nama_tindakan: "Nama Tindakan Snomed-CT",
-      },
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode_tindakan: "PDU",
-      nama_tindakan: "Pemeriksaan Dokter Umum",
-      snomed_icd: {
-        nama_snomed: "snomed-CT",
-        nama_tindakan: "Nama Tindakan Snomed-CT",
-      },
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode_tindakan: "PDU",
-      nama_tindakan: "Pemeriksaan Dokter Umum",
-      snomed_icd: {
-        nama_snomed: "snomed-CT",
-        nama_tindakan: "Nama Tindakan Snomed-CT",
-      },
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+// State Management
+const tindakanStore = useTindakanStore();
+const UseUtilsStore = utilsStore();
+const tindakanPayload = ref<any[]>([]);
+const tindakanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
-const dialogData = ref({
-  isVisible: false,
+
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch tindakan Data from API
+const fetchTindakanData = async () => {
+  UseUtilsStore.setLoading(true)
+  try {
+    const response = await tindakanStore.getApi(
+      tindakanProperties.value.page,
+      tindakanProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      tindakanProperties.value.total = response.properties.total;
+      tindakanPayload.value = response.payload;
+    } else {
+      tindakanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    tindakanPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false)
+  }
+};
+
+watch([searchQuery], fetchTindakanData);
+
+onMounted(() => {
+  fetchTindakanData();
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  tindakanProperties.value.page = event.page + 1;
+  tindakanProperties.value.page_size = event.rows;
+  fetchTindakanData();
+};
+
+// Check if Data Exists
+const hasData = computed(
+  () => tindakanPayload.value && tindakanPayload.value.length > 0
+);
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
+  data: null,
 });
 
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah Data",
-  };
-}
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
 
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit Data",
-  };
-}
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
 
-function handleClose() {
-  dialogData.value.isVisible = false;
-}
-const resetFilter = () => {
-  searchRoom.value = "";
-  selectedKategori.value = null;
-  selectedKelas.value = null;
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true)
+    try {
+      await tindakanStore.deleteApi(item.uuid);
+      fetchTindakanData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false)
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await tindakanStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER TINDAKAN"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Kode: "Kode Tindakan",
+      Nama: "Nama Tindakan",
+      SnomedIcd:"Snomed&ICD",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Tindakan");
+    XLSX.writeFile(workbook, `Datamaster Tindakan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 </script>
 
 <template>
-  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
     <template #header>
-      <HeaderFilter page-type="tindakan" @tambah-data="handleAdd" />
-
+      <HeaderFilter
+        page-type="tindakan"
+        :value-search="searchQuery"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+      />
     </template>
     <template #content>
-      <DataTable :value="products" tableStyle="min-width: 50rem" stripedRows class="text-xs" scrollable
-        scrollHeight="flex">
+      <NoData v-if="!hasData" />
+      <DataTable
+        v-else
+        :value="tindakanPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
+        tableStyle="min-width: 50rem"
+        stripedRows
+        class="text-xs"
+        scrollable
+        scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
+      >
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
@@ -122,59 +250,111 @@ const resetFilter = () => {
             </div>
           </template>
         </Column>
-        <Column field="kode_tindakan" header="Kode Tindakan" class="w-2/12" headerClass="bg-adameds-50"></Column>
-        <Column field="nama_tindakan" header="Nama Tindakan" class="w-3/12" headerClass="bg-adameds-50"></Column>
-        <Column field="snomed_icd" header="Snome & ICD" class="w-3/12" headerClass="bg-adameds-50">
+        <Column
+          field="code"
+          header="Kode Tindakan"
+          class="w-2/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name"
+          header="Nama Tindakan"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column header="Snome & ICD" class="w-3/12" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div class="underline">
-              {{ slotProps.data.snomed_icd.nama_snomed }}
+            <div class="underline">Snomed-CT</div>
+            <div class="mb-3 font-bold">
+              {{
+                slotProps.data.snomedDetail
+                  ? slotProps.data.snomedDetail.name
+                  : "Tidak ada data"
+              }}
             </div>
+            <div class="underline">ICD-9 CM</div>
             <div class="font-bold">
-              {{ slotProps.data.snomed_icd.nama_tindakan }}
+              {{
+                slotProps.data.icd9Detail
+                  ? slotProps.data.icd9Detail.name
+                  : "Tidak ada data"
+              }}
             </div>
           </template>
         </Column>
-        <Column field="status" header="Status" headerClass="bg-adameds-50 flex items-center justify-center">
+        <Column
+          field="status"
+          header="Status"
+          headerClass="bg-adameds-50 flex items-center justify-center"
+        >
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
-              <CustomChip :label="slotProps.data.status" :textColor="slotProps.data.status === 'AKTIF'
-                  ? 'text-white'
-                  : 'text-[#80868d]'
-                " :bgColor="slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                  " :borderColor="slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
-                  " :icon-color="slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                  " customClass="text-xs font-semibold h-5 flex" />
+              <CustomChip
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5 flex"
+              />
             </div>
           </template>
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="flex items-center justify-center w-full font-semibold text-SM">
+            <div
+              class="flex items-center justify-center w-full font-semibold text-SM"
+            >
               Action
             </div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
-              <CustomButton label="" background-color="bg-[#3D84E5] rounded-lg" @click="handleEdit"
-                class="h-6 w-[26px] p-0">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                class="h-6 w-[26px] p-0"
+              >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
-              <CustomButton label="" background-color="bg-danger-300 rounded-lg" class="h-6 w-[26px] p-0">
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+                @click="deleteDialog('delete', 'Tindakan', slotProps.data)"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
           </template>
         </Column>
       </DataTable>
-      <TambahDataTindakanDialog v-model:isDialogVisible="dialogData.isVisible" :title="dialogData.title"
-        :method="dialogData.method" @close="handleClose" />
+      <FormTindakan
+        v-model:isDialogVisible="isTambahDataDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+        @data-updated="fetchTindakanData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
+      />
     </template>
     <template #footer>
-      <Footer :rows="1" :totalRecords="1" />
+      <Footer
+        :rows="tindakanProperties.page_size"
+        :totalRecords="tindakanProperties.total"
+        @page="handlePage"
+        @export="downloadExportExcel"
+      />
     </template>
   </Card>
 </template>

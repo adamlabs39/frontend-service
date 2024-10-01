@@ -23,6 +23,7 @@ import ShoppingBagIcon from "./ShoppingBagIcon.vue";
 import UndoFillIcon from "./UndoFillIcon.vue";
 import SyringeFillIcon from "./SyringeFillIcon.vue";
 import HistoryIcon from "./HistoryIcon.vue";
+import FileImportIcon from "./FileImportIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -50,5 +51,6 @@ export default {
     app.component("UndoFillIcon", UndoFillIcon);
     app.component("SyringeFillIcon", SyringeFillIcon);
     app.component("HistoryIcon", HistoryIcon);
+    app.component("FileImportIcon", FileImportIcon);
   },
 };

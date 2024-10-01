@@ -23,5 +23,8 @@ export const useIcd9Store = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/icd9/${uuid}`, payload);
     },
+    async exportApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/icd9/export`, payload);
+    },
   },
 });

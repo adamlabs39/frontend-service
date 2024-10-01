@@ -23,5 +23,8 @@ export const useLoincStore = defineStore({
       async deleteApi(uuid: string, payload = {}) {
         return apiDatamasterDelete(`/datamaster/loinc/${uuid}`, payload);
       },
+      async exportApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/loinc/export`, payload);
+      },
     },
   });
