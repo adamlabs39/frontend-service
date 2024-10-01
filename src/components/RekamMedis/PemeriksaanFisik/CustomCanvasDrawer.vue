@@ -277,18 +277,6 @@ const getSVG = (svg: string) => {
   return imgUrl;
 };
 
-const accordion = ref<HTMLCanvasElement | null>(null);
-const open = () => {
-  if (accordion.value) {
-    (accordion.value as any).open();
-  }
-};
-const close = () => {
-  if (accordion.value) {
-    (accordion.value as any).close();
-  }
-};
-
 const listTidakAdaHambatanGerak = ref([
   "arrow-up-left-bold",
   "arrow-up-bold",
@@ -328,6 +316,23 @@ const getArrowSVG = (path: string, svg: string) => {
   return imgUrl;
 };
 
+const historyDialog = ref(false);
+const showDialogHistory = () => {
+  historyDialog.value = true;
+};
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
 defineExpose({
   open,
   close,
@@ -339,6 +344,16 @@ defineExpose({
     <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
       <template #header>{{ header }}</template>
       <template #content>
+        <div v-if="method == 'form'" class="flex flex-col">
+          <CustomButton
+            @click="showDialogHistory"
+            class="!rounded-md my-[10px] ml-auto"
+            label="Riwayat Pemeriksaan"
+            size="small"
+            icon="PhClockCounterClockwise"
+          />
+          <hr class="mb-[30px]" />
+        </div>
         <div v-if="method == 'form'" class="flex pt-5">
           <div class="relative h-[400px] w-[800px]">
             <img :src="getSVG(type)" alt="" />
@@ -543,7 +558,11 @@ defineExpose({
         >
           <CustomInfoRow label="Tanda Pada Gambar" value="Tidak Ada" />
           <div v-if="type == 'Anterior'">
-            <CustomInfoRow label="Keterangan Oculus Dextra" value="-" class="mb-[19px]" />
+            <CustomInfoRow
+              label="Keterangan Oculus Dextra"
+              value="-"
+              class="mb-[19px]"
+            />
             <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
           </div>
           <CustomInfoRow
@@ -597,6 +616,105 @@ defineExpose({
       <template #footer>
         <div class="flex justify-end">
           <CustomButton label="Edit" />
+        </div>
+      </template>
+    </CustomDialog>
+    <!-- Dialog History -->
+    <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+      <template #header>Pemeriksaan Fisik</template>
+      <template #body>
+        <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+          <div>
+            <div class="relative h-[400px] w-[800px]">
+              <img :src="getSVG(type)" alt="" />
+              <canvas
+                height="400"
+                width="800"
+                id="canvas"
+                ref="canvas"
+                class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+                :class="[
+                  isStartPainting ? 'cursor-crosshair' : 'cursor-default',
+                ]"
+              ></canvas>
+              <canvas
+                height="400"
+                width="800"
+                @mousedown="startPainting"
+                @mouseup="finishedPainting"
+                @mousemove="drawing"
+                id="canvas2"
+                ref="canvas2"
+                class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+                :class="[
+                  isStartPainting ? 'cursor-crosshair' : 'cursor-default',
+                ]"
+              ></canvas>
+            </div>
+            <div class="py-5 flex flex-col gap-[19px]">
+              <div v-if="type == 'Anterior'">
+                <CustomInfoRow
+                  label="Keterangan Oculus Dextra"
+                  value="-"
+                  class="mb-[19px]"
+                />
+                <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
+              </div>
+              <CustomInfoRow
+                v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
+                :label="`Keterangan ${type}`"
+                value="Nama Asesmen Ulang"
+              />
+              <hr class="border-grey-200" />
+              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
+          </div>
+          <div class="border border-adameds-300 mx-[15px]"></div>
+          <div>
+            <div class="relative h-[400px] w-[800px]">
+              <img :src="getSVG(type)" alt="" />
+              <canvas
+                height="400"
+                width="800"
+                id="canvas"
+                ref="canvas"
+                class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+                :class="[
+                  isStartPainting ? 'cursor-crosshair' : 'cursor-default',
+                ]"
+              ></canvas>
+              <canvas
+                height="400"
+                width="800"
+                @mousedown="startPainting"
+                @mouseup="finishedPainting"
+                @mousemove="drawing"
+                id="canvas2"
+                ref="canvas2"
+                class="absolute top-0 left-0 z-10 w-full border-2 border-adameds-75 rounded-[10px]"
+                :class="[
+                  isStartPainting ? 'cursor-crosshair' : 'cursor-default',
+                ]"
+              ></canvas>
+            </div>
+            <div class="py-5 flex flex-col gap-[19px]">
+              <div v-if="type == 'Anterior'">
+                <CustomInfoRow
+                  label="Keterangan Oculus Dextra"
+                  value="-"
+                  class="mb-[19px]"
+                />
+                <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
+              </div>
+              <CustomInfoRow
+                v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
+                :label="`Keterangan ${type}`"
+                value="Nama Asesmen Ulang"
+              />
+              <hr class="border-grey-200" />
+              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            </div>
+          </div>
         </div>
       </template>
     </CustomDialog>
