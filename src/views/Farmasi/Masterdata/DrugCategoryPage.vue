@@ -92,11 +92,11 @@ const handleRowsUpdate = (rows: number) => {
             class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg"
           >
             <div class="m-auto text-SM">
-              <img
+              <!-- <img
                 src="../../../../assets/icons/no-data-icon.svg"
                 alt="no data"
                 class="mx-auto"
-              />
+              /> -->
               <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
             </div>
           </div>

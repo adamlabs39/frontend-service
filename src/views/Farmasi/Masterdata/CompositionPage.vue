@@ -88,11 +88,11 @@ const handleRowsUpdate = (rows: number) => {
           <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
             <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
               <div class="m-auto text-SM">
-                <img
+                <!-- <img
                   src="../../../assets/icons/no-data-icon.svg"
                   alt="no data"
                   class="mx-auto"
-                />
+                /> -->
                 <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
               </div>
             </div>
