@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import OdontogramInput from "./OdontogramInput.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import { ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriOdontogram from "@/components/RekamMedis/PemeriksaanGigi/HistoriOdontogram.vue";
 
 const props = defineProps({
   header: {
@@ -69,6 +70,11 @@ const gigiFilled = ref();
 const temuanLain = ref();
 const ketTindakanGigi = ref();
 const detailDialog = ref(false);
+
+const historyDialog = ref(false);
+const showDialogHistory = () => {
+  historyDialog.value = true;
+};
 </script>
 
 <template>
@@ -77,6 +83,16 @@ const detailDialog = ref(false);
       <template #header>{{ header }}</template>
       <template #content>
         <div class="pt-5">
+          <div v-if="method == 'form'" class="flex flex-col">
+            <CustomButton
+              @click="showDialogHistory"
+              class="!rounded-md my-[10px] ml-auto"
+              label="Riwayat Pemeriksaan"
+              size="small"
+              icon="PhClockCounterClockwise"
+            />
+            <hr class="mb-[30px]" />
+          </div>
           <OdontogramInput :method="method" />
           <div v-if="method == 'form'">
             <div class="grid grid-cols-3 gap-x-[30px] gap-y-5 mt-[30px]">
@@ -250,6 +266,36 @@ const detailDialog = ref(false);
       <template #footer>
         <div class="flex justify-end">
           <CustomButton label="Edit" />
+        </div>
+      </template>
+    </CustomDialog>
+    <!-- Dialog History -->
+    <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+      <template #header>Pemeriksaan Gigi</template>
+      <template #body>
+        <div class="pt-5 grid grid-cols-[1fr_min-content_1fr_min-content_1fr]">
+          <div class="mb-[18px] flex justify-between col-span-5">
+            <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+            <div class="flex">
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md mr-[10px]"
+                size="small"
+                icon="PhCaretLeft"
+              />
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md"
+                size="small"
+                icon="PhCaretRight"
+              />
+            </div>
+          </div>
+          <HistoriOdontogram @showDetail="detailDialog = true" />
+          <div class="border border-adameds-300 mx-[15px]"></div>
+          <HistoriOdontogram @showDetail="detailDialog = true" />
+          <div class="border border-adameds-300 mx-[15px]"></div>
+          <HistoriOdontogram @showDetail="detailDialog = true" />
         </div>
       </template>
     </CustomDialog>

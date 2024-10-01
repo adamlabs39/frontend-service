@@ -624,6 +624,23 @@ defineExpose({
       <template #header>Pemeriksaan Fisik</template>
       <template #body>
         <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+          <div class="mb-[18px] flex justify-between col-span-3">
+            <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+            <div class="flex">
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md mr-[10px]"
+                size="small"
+                icon="PhCaretLeft"
+              />
+              <CustomButton
+                @click="() => {}"
+                class="!rounded-md"
+                size="small"
+                icon="PhCaretRight"
+              />
+            </div>
+          </div>
           <div>
             <div class="relative h-[400px] w-[800px]">
               <img :src="getSVG(type)" alt="" />

@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted } from "vue";
+import { ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import { nextTick, onBeforeUnmount, onMounted } from "vue";
-import { ref } from "vue";
 
 const props = defineProps({
   method: {
@@ -274,7 +274,6 @@ onBeforeUnmount(() => {
 });
 
 const accordion = ref<HTMLCanvasElement | null>(null);
-
 const open = () => {
   if (accordion.value) {
     (accordion.value as any).open();
