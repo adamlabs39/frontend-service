@@ -93,7 +93,7 @@ const handleRowsUpdate = (rows: number) => {
           >
             <div class="m-auto text-SM">
               <img
-                src="../../../assets/icons/no-data-icon.svg"
+                src="../../../../assets/icons/no-data-icon.svg"
                 alt="no data"
                 class="mx-auto"
               />

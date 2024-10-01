@@ -13,7 +13,7 @@ const props = defineProps({
   >
     <div class="m-auto">
       <img
-        src="../../assets/icons/no-data-icon.svg"
+        src="../../../assets/icons/no-data-icon.svg"
         alt="no data"
         class="mx-auto"
       />

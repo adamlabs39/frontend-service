@@ -86,10 +86,10 @@ const handleRowsUpdate = (rows: number) => {
       </template>
       <template #content>
           <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border border-[3px] border-dashed border-grey-300 rounded-lg">
+            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
               <div class="m-auto text-SM">
                 <img
-                  src="../../assets/icons/no-data-icon.svg"
+                  src="../../../assets/icons/no-data-icon.svg"
                   alt="no data"
                   class="mx-auto"
                 />
