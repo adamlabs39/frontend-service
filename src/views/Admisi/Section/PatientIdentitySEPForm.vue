@@ -8,7 +8,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false">
+  <CustomAccordion :openWithHeader="false" initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">

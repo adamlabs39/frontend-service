@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+
+const props = defineProps({
+  isDialogVisible: {
+    type: Boolean,
+    default: false,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  itemToDelete: {
+    type: Object,
+    required: false,
+  },
+});
+
+const emit = defineEmits(["update:isDialogVisible", "close", "delete"]);
+
+const updateVisibility = (value: any) => {
+  emit("update:isDialogVisible", value);
+};
+
+const closeDialog = () => {
+  emit("update:isDialogVisible", false);
+};
+
+const deleteData = () => {
+  emit("delete", props.itemToDelete);
+  emit("update:isDialogVisible", false);
+};
+</script>
+
+<template>
+  <CustomDialog
+    width="600px"
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    headerBg="bg-danger-300"
+  >
+    <template #header> Hapus {{ title }} </template>
+    <template #body>
+      <div class="text-normal font-normal pt-5">
+        Apakah Anda yakin ingin
+        <span class="font-bold">menghapus {{ title }} ini?</span>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <hr class="-mx-5 border-grey-200" />
+        <div class="mt-5 flex justify-end gap-2.5">
+          <CustomButton
+            label="Batal"
+            border-color="border-grey-200"
+            background-color="bg-white"
+            text-color="text-grey-300"
+            @click="closeDialog"
+          />
+          <CustomButton
+            label="Hapus"
+            backgroundColor="bg-danger-300"
+            @click="deleteData"
+          />
+        </div>
+      </div>
+    </template>
+  </CustomDialog>
+</template>

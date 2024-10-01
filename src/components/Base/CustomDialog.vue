@@ -72,7 +72,10 @@ const maximize = () => {
       <slot name="body" />
     </template>
     <template v-if="$slots.footer" #footer>
-      <slot name="footer" />
+      <div class="w-full">
+        <hr class="mb-5 -mx-5"/>
+        <slot name="footer" />
+      </div>
     </template>
   </Dialog>
 </template>

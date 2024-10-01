@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/FooterPaginator.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import Ruangan from "./Ruangan.vue";
-import Tindakan from "./Tindakan.vue";
+import TablesRuangan from "./TablesRuangan.vue";
+import TablesTindakan from "./TablesTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import DetailTarifTindakan from "./DetailTarifTindakan.vue";
-import DetailTarifRuangan from "./DetailTarifRuangan.vue";
+import FormTarifTindakan from "./FormTarifTindakan.vue";
+import FormTarifRuangan from "./FormTarifRuangan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 
 const selectedTab = ref("0");
@@ -27,24 +26,24 @@ const testDialog = ref(false);
       <Tabs v-model:value="selectedTab">
         <TabPanels>
           <TabPanel value="0">
-            <Tindakan />
+            <TablesTindakan />
           </TabPanel>
           <TabPanel value="1">
-            <Ruangan />
+            <TablesRuangan />
           </TabPanel>
         </TabPanels>
       </Tabs>
-      <CustomDialog :full-screen="true" v-model:visible="testDialog" headerBg="bg-adameds-300">
+      <CustomDialog width="1000px" v-model:visible="testDialog" headerBg="bg-adameds-300">
         <template #header>Tambah Tarif</template>
         <template #body>
-         <div class="flex flex-col h-full overflow-hidden">
-          <div v-if="selectedTab === '0'" class="flex-1 overflow-hidden">
-            <DetailTarifTindakan />
+          <div class="flex flex-col h-full overflow-hidden">
+            <div v-if="selectedTab === '0'" class="flex-1 overflow-hidden">
+              <FormTarifTindakan />
+            </div>
+            <div v-if="selectedTab === '1'">
+              <FormTarifRuangan />
+            </div>
           </div>
-          <div v-if="selectedTab === '1'">
-            <DetailTarifRuangan />
-          </div>
-         </div>
         </template>
         <template #footer>
           <div class="w-full">

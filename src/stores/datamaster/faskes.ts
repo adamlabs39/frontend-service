@@ -23,5 +23,8 @@ export const useFaskesStore = defineStore({
       async deleteApi(uuid: string, payload = {}) {
         return apiDatamasterDelete(`/datamaster/faskes/${uuid}`, payload);
       },
+      async exportApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/faskes/export`, payload);
+      },
     },
   });

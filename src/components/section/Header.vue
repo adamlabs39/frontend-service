@@ -40,7 +40,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Rawat Jalan",
     icon: "PhHospital",
-    url: "tbc",
+    url: "/rawat-jalan",
   },
   {
     title: "Rawat Inap",
@@ -56,7 +56,7 @@ const templistMenu = ref<ListMenu[]>([
     title: "Farmasi",
     icon: "PhAsclepius",
     iconWeight: "bold",
-    url: "tbc",
+    url: "/farmasi",
   },
   {
     title: "Lab",
@@ -77,7 +77,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Pembayaran",
     icon: "PhMoneyWavy",
-    url: "tbc",
+    url: "/pembayaran",
   },
   {
     title: "Inventory",
@@ -136,8 +136,12 @@ onMounted(() => {
       }
     });
   }
-  console.log(listMenu.value);
 });
+
+const checkActiveTab = (url: string) => {
+  let split = route.path.split("/");
+  return `/${split[1]}` == url;
+};
 </script>
 
 <template>
@@ -169,7 +173,7 @@ onMounted(() => {
           @click="goToPage(menu.url)"
           class="cursor-pointer flex gap-2.5 justify-center bg-white rounded-xl h-8 px-3"
           :class="[
-            route.path.includes(menu.url)
+            checkActiveTab(menu.url)
               ? 'text-adameds-300 font-semibold'
               : 'bg-opacity-30',
           ]"

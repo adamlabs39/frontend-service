@@ -16,9 +16,16 @@ const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
 const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[3] ?? "";
+  dataBreadCrumb.value = [
+    {
+      label: pageType.value
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+    },
+  ];
   reportType.value = pageType.value;
 };
 onBeforeRouteLeave((to, from) => {
@@ -57,7 +64,7 @@ defineExpose({
     class=""
   >
     <template #header>
-      <CustomAccordion :openWithHeader="false" noBorder>
+      <CustomAccordion :openWithHeader="false" noBorder initialState="0">
         <template #header>
           <div class="flex justify-between w-full align-middle">
             <div class="flex">

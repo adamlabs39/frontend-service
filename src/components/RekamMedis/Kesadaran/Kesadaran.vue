@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref,onBeforeMount } from "vue";
+import { ref, onBeforeMount } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -42,7 +42,9 @@ import mengerangOn from "@/assets/images/RekamMedis/Kesadaran/mengerangOn.svg";
 import mengerangOff from "@/assets/images/RekamMedis/Kesadaran/mengerangOff.svg";
 import verbalTidakResponOn from "@/assets/images/RekamMedis/Kesadaran/verbalTidakResponOn.svg";
 import verbalTidakResponOff from "@/assets/images/RekamMedis/Kesadaran/verbalTidakResponOff.svg";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import HistoriKesadaran from "@/components/RekamMedis/Kesadaran/HistoriKesadaran.vue";
 
 const props = defineProps({
   method: {
@@ -51,7 +53,7 @@ const props = defineProps({
   },
 });
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(['edit', 'submit']);
+const emit = defineEmits(["edit", "submit"]);
 
 const schema = toTypedSchema(
   yup.object({
@@ -74,29 +76,31 @@ const [GCS_kesimpulan] = defineField("GCS_kesimpulan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({ 
-    eye:2,
-    motorik:1,
-    verbal:0,
-    GCS_score:50,
-    GCS_kesimpulan:"Sakit sedang",
-    petugas: "Adam"
-   });
+  setValues({
+    eye: 1,
+    motorik: 1,
+    verbal: 1,
+    GCS_score: 50,
+    GCS_kesimpulan: "",
+    petugas: "Adam",
+  });
+  countKesimpulan();
 });
 
 const onSubmit = handleSubmit((values: any) => {
-  console.log("Adding new data:", values);
-  emit('submit', values); 
+  emit("submit", values);
   isEditing.value = false;
-
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
-  emit('edit');
+  emit("edit");
 };
 
-const lastClicked = ref<{ categoryIndex: number; responseIndex: number } | null>(null);
+const lastClicked = ref<{
+  categoryIndex: number;
+  responseIndex: number;
+} | null>(null);
 
 const opsiKesadaran = [
   {
@@ -195,14 +199,13 @@ const opsiKesadaran = [
 ];
 
 const selectOption = (categoryIndex: number, responseIndex: number) => {
-
-    opsiKesadaran[categoryIndex].selected.value = responseIndex;
-    lastClicked.value = { categoryIndex, responseIndex };
-
+  opsiKesadaran[categoryIndex].selected.value = responseIndex + 1;
+  lastClicked.value = { categoryIndex, responseIndex };
+  countKesimpulan();
 };
 
 const getImageSrc = (categoryIndex: number, responseIndex: number) => {
-  return opsiKesadaran[categoryIndex].selected.value === responseIndex
+  return opsiKesadaran[categoryIndex].selected.value === responseIndex + 1
     ? opsiKesadaran[categoryIndex].response[responseIndex].selectedImage
     : opsiKesadaran[categoryIndex].response[responseIndex].defaultImage;
 };
@@ -214,6 +217,37 @@ const kesimpulanOption = ref([
 ]);
 const getLabelFromValue = (value: any, responses: Array<{ label: string }>) => {
   return responses[value]?.label || "Unknown";
+};
+
+const countKesimpulan = () => {
+  if (eye.value && motorik.value && verbal.value) {
+    GCS_kesimpulan.value = "";
+
+    let totalSkor = eye.value + motorik.value + verbal.value;
+
+    GCS_score.value = totalSkor;
+
+    if (totalSkor == 3) {
+      GCS_kesimpulan.value = "Coma";
+    } else if (totalSkor == 4) {
+      GCS_kesimpulan.value = "Semi-coma";
+    } else if (totalSkor == 5 || totalSkor == 6) {
+      GCS_kesimpulan.value = "Sopor";
+    } else if (totalSkor > 6 && totalSkor <= 9) {
+      GCS_kesimpulan.value = "Somnolence";
+    } else if (totalSkor == 10 || totalSkor == 11) {
+      GCS_kesimpulan.value = "Delirium";
+    } else if (totalSkor == 12 || totalSkor == 13) {
+      GCS_kesimpulan.value = "Apatis";
+    } else if (totalSkor == 14 || totalSkor == 15) {
+      GCS_kesimpulan.value = "Compos Mentis";
+    }
+  }
+};
+
+const compareDialog = ref(false);
+const showDialogCompare = () => {
+  compareDialog.value = true;
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -238,7 +272,17 @@ defineExpose({
   <CustomAccordion headerClass="bg-adameds-50" ref="accordion">
     <template #header>Kesadaran</template>
     <template #content>
-      <div  v-if="isEditing" class="grid grid-cols-2 gap-6 pt-5">
+      <div v-if="isEditing" class="flex flex-col">
+        <CustomButton
+          @click="showDialogCompare"
+          class="!rounded-md my-[10px] ml-auto"
+          label="Mode Compare"
+          size="small"
+          icon="LayoutIcon"
+        />
+        <hr class="mb-[30px]" />
+      </div>
+      <div v-if="isEditing" class="grid grid-cols-2 gap-6 pt-5">
         <div
           v-for="(option, categoryIndex) in opsiKesadaran"
           :key="categoryIndex"
@@ -270,16 +314,121 @@ defineExpose({
             </div>
           </div>
         </div>
-        <CustomSelect v-model="GCS_kesimpulan" label="Kesimpulan GCS" placeHolder="Pilih Kesimpulan GCS" :options="kesimpulanOption" option-label="name" option-value="name"/>
+        <CustomTextfield
+          v-model="GCS_kesimpulan"
+          label="Kesimpulan GCS"
+          placeholder="Pilih Kesimpulan GCS"
+          class=""
+          readOnly
+        />
       </div>
       <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-        <CustomInfoRow label="Mata" :value="getLabelFromValue(eye, opsiKesadaran[0].response)"/>
-        <CustomInfoRow label="Motorik" :value="getLabelFromValue(motorik, opsiKesadaran[1].response)"/>
-        <CustomInfoRow label="Verbal" :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"/>
+        <CustomInfoRow
+          label="Mata"
+          :value="getLabelFromValue(eye, opsiKesadaran[0].response)"
+        />
+        <CustomInfoRow
+          label="Motorik"
+          :value="getLabelFromValue(motorik, opsiKesadaran[1].response)"
+        />
+        <CustomInfoRow
+          label="Verbal"
+          :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"
+        />
         <CustomInfoRow label="Kesimpulan GCS" :value="GCS_kesimpulan" />
-        <hr class="border-grey-200">
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
+      <!-- Dialog compare -->
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%">
+        <template #header>Kesadaran</template>
+        <template #body>
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div>
+              <div class="mb-[18px] flex justify-between">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-[1fr_min-content_1fr]">
+                <HistoriKesadaran />
+                <div class="border border-adameds-300 mx-[15px]"></div>
+                <HistoriKesadaran />
+              </div>
+            </div>
+            <div class="border border-adameds-300 mx-[15px]"></div>
+            <div class="flex flex-col gap-y-5">
+              <div
+                v-for="(option, categoryIndex) in opsiKesadaran"
+                :key="categoryIndex"
+              >
+                <div class="flex flex-col gap-5">
+                  <div class="font-semibold text-md">{{ option.title }}</div>
+                  <div
+                    :class="{
+                      'grid grid-cols-4': option.title.includes('Mata'),
+                      'grid grid-cols-6': option.title.includes('Motorik'),
+                      'grid grid-cols-5': option.title.includes('Verbal'),
+                    }"
+                  >
+                    <div
+                      v-for="(response, responseIndex) in option.response"
+                      :key="responseIndex"
+                    >
+                      <div
+                        class="flex flex-col gap-2.5 items-center text-center justify-center cursor-pointer"
+                        @click="selectOption(categoryIndex, responseIndex)"
+                      >
+                        <img
+                          :src="getImageSrc(categoryIndex, responseIndex)"
+                          alt="Response Image"
+                        />
+                        <div class="font-normal text-SM">
+                          {{ response.label }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <CustomTextfield
+                v-model="GCS_kesimpulan"
+                label="Kesimpulan GCS"
+                placeholder="Pilih Kesimpulan GCS"
+                class=""
+                readOnly
+              />
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex items-end justify-end gap-3">
+            <CustomButton
+              v-if="isEditing"
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+          </div>
+        </template>
+      </CustomDialog>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
@@ -291,16 +440,8 @@ defineExpose({
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton
-          v-if="isEditing"
-          label="Simpan"
-          @click="onSubmit"
-        />
-        <CustomButton
-          v-else
-          label="Edit"
-          @click="toggleEdit"
-        />
+        <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
+        <CustomButton v-else label="Edit" @click="toggleEdit" />
       </div>
     </template>
   </CustomAccordion>

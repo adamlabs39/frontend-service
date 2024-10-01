@@ -1,4 +1,4 @@
-<script setup lang="ts">
+d<script setup lang="ts">
 import GreenCard from '../GreenCard.vue';
 
 const props = defineProps({

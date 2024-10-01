@@ -15,6 +15,8 @@ const props = defineProps({
     default: "form",
   },
 });
+
+const emit = defineEmits(["edit"]);
 </script>
 
 <template>
@@ -22,7 +24,7 @@ const props = defineProps({
     <template #header>{{ header }}</template>
     <template #content>
       <div class="pt-5">
-        <div class="flex justify-end mb-5">
+        <div v-if="method == 'form'" class="flex justify-end mb-5">
           <div class="flex">
             <CustomButton
               @click="() => {}"
@@ -50,33 +52,41 @@ const props = defineProps({
           header="Oftalmologis"
           type="Oftalmologis"
           class="mb-[10px]"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasAnterior"
           header="Anterior"
           type="Anterior"
           class="mb-[10px]"
+          :method="method"
         />
         <CustomCanvasDrawer
           ref="canvasPosterior"
           header="Posterior"
           type="Posterior"
           class="mb-[10px]"
+          :method="method"
         />
-        <SkriningMata ref="skriningMata" class="mb-[10px]" />
-        <TemuanLainnya ref="temuanLainnya" class="mb-[10px]" />
+        <SkriningMata ref="skriningMata" class="mb-[10px]" :method="method" />
+        <TemuanLainnya ref="temuanLainnya" class="mb-[10px]" :method="method" />
       </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
+          v-if="method == 'form'"
           label="Reset"
           textColor="text-grey-300"
           borderColor="border-2 border-grey-200"
           outlined
         />
-        <CustomButton label="Simpan" />
-        <!-- <CustomButton v-if="props.method=='detail'" label="Edit" /> -->
+        <CustomButton v-if="method == 'form'" label="Simpan" />
+        <CustomButton
+          v-if="props.method == 'detail'"
+          @click="emit('edit')"
+          label="Edit"
+        />
       </div>
     </template>
   </CustomAccordion>

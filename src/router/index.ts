@@ -9,6 +9,8 @@ import RawatJalanView from "@/views/RawatJalan/RawatJalanView.vue";
 import SettingView from "@/views/SettingPage/SettingView.vue";
 import DatamasterView from "@/views/Datamaster/DatamasterView.vue";
 import AdmisiView from "@/views/Admisi/AdmisiView.vue";
+import PaymentView from "@/views/Pembayaran/PaymentView.vue";
+import PharmacyView from "@/views/Farmasi/PharmacyView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
@@ -21,9 +23,40 @@ import PatientDataPage from "@/views/Admisi/PatientDataPage.vue";
 import RoomMonitoringPage from "@/views/Admisi/RoomMonitoringPage.vue";
 import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 
+// NOTE Pembayaran
+// import CashierPage from "@/views/Pembayaran/CashierPage.vue";
+import Cashier2Page from "@/views/Pembayaran/Cashier2Page.vue";
+import TransactionPage from "@/views/Pembayaran/TransactionPage.vue";
+import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
+import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjunganPage.vue";
+import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
+
+// NOTE Farmasi
+import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescriptionPage.vue";
+import DrugSalesPage from "@/views/Farmasi/DrugSalesPage.vue";
+import DrugReturnsPage from "@/views/Farmasi/DrugReturnsPage.vue";
+import RoomPharmacyPage from "@/views/Farmasi/RoomPharmacyPage.vue";
+import TransactionHistoryPage from "@/views/Farmasi/TransactionHistoryPage.vue";
+// NOTE Farmasi/Datamaster
+import RulesOfUsePage from "@/views/Farmasi/Masterdata/RulesOfUsePage.vue";
+import UnitPage from "@/views/Farmasi/Masterdata/UnitPage.vue";
+import DosageFormPage from "@/views/Farmasi/Masterdata/DosageFormPage.vue";
+import DrugCategoryPage from "@/views/Farmasi/Masterdata/DrugCategoryPage.vue";
+import ManufacturingPage from "@/views/Farmasi/Masterdata/ManufacturingPage.vue";
+import StockTypePage from "@/views/Farmasi/Masterdata/StockTypePage.vue";
+import StockLocationPage from "@/views/Farmasi/Masterdata/StockLocationPage.vue";
+import MedicalItemPage from "@/views/Farmasi/Masterdata/MedicalItemPage.vue";
+import HowToUsePage from "@/views/Farmasi/Masterdata/HowToUsePage.vue";
+import CompositionPage from "@/views/Farmasi/Masterdata/CompositionPage.vue";
+import PriceConfigurationPage from "@/views/Farmasi/Masterdata/PriceConfigurationPage.vue";
+// NOTE Farmasi/Laporan
+import RevenuePage from "@/views/Farmasi/Report/RevenuePage.vue";
+import WaitingTimePage from "@/views/Farmasi/Report/WaitingTimePage.vue";
+import RevenueRecapPage from "@/views/Farmasi/Report/RevenueRecapPage.vue";
+
 // NOTE Rawat Jalan
-import PoliPage from "@/views/RawatJalan/PoliPage.vue";
-import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringKunjunganPage.vue";
+// import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
 
@@ -43,8 +76,8 @@ import TarifPage from "@/views/Datamaster/Tarif/TarifPage.vue";
 import ICD9CMPage from "@/views/Datamaster/ICD9CM/ICD9CMPage.vue";
 import SnomedCTPage from "@/views/Datamaster/SnomedCT/SnomedCTPage.vue";
 import LoincPage from "@/views/Datamaster/Loinc/LoincPage.vue";
-import DokterPage from "@/views/Datamaster/Dokter/DokterPage.vue";
-import NakesPage from "@/views/Datamaster/Nakes/NakesPage.vue";
+import PraktisiPage from "@/views/Datamaster/Praktisi/PraktisiPage.vue";
+import PegawaiPage from "@/views/Datamaster/Pegawai/PegawaiPage.vue";
 import DiagnosisICD10Page from "@/views/Datamaster/DiagnosisICD10/DiagnosisICD10Page.vue";
 import PenjaminPage from "@/views/Datamaster/Penjamin/PenjaminPage.vue";
 import OrganisasiPage from "@/views/Datamaster/Organisasi/OrganisasiPage.vue";
@@ -81,6 +114,10 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
+import PoliPage from "@/views/RawatJalan/PoliPage.vue";
+import BPJSPageMonitoringRiwayatKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringRiwayatKunjunganPage.vue";
+import BPJSMonitoringPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
 
 
 const router = createRouter({
@@ -104,16 +141,35 @@ const router = createRouter({
       component: DashboardView,
     },
 
+    // RAWAT JALAN
+
     {
       path: "/rawat-jalan",
       name: "rawat-jalan",
+      redirect: "/rawat-jalan/poli",
+    },
+    {
+      path: "/rawat-jalan/poli",
+      name: "rawat-jalan-poli",
       meta: { layout: SidebarLayout, page: PoliPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
-      path: "/bpjs/monitoring-kunjungan",
-      name: "bpjs-monitoring-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSPageMonitoringKunjunganPage, requiresAuth: true },
+      path: "/rawat-jalan/bpjs/monitoring-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/bpjs/monitoring-riwayat-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-riwayat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/bpjs/monitoring-obat-kunjungan",
+      name: "rawat-jalan-bpjs-monitoring-obat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
       component: RawatJalanView,
     },
     {
@@ -192,6 +248,12 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
+      path: "/datamaster/komponen-tarif",
+      name: "datamaster-komponen-tarif",
+      meta: { layout: SidebarLayout, page: KomponenTarifPage, requiresAuth: true },
+      component: DatamasterView,
+    },
+    {
       path: "/datamaster/tindakan",
       name: "datamaster-tindakan",
       meta: { layout: SidebarLayout, page: TindakanPage, requiresAuth: true },
@@ -222,15 +284,15 @@ const router = createRouter({
       component: DatamasterView,
     },
     {
-      path: "/datamaster/dokter",
-      name: "datamaster-dokter",
-      meta: { layout: SidebarLayout, page: DokterPage, requiresAuth: true },
+      path: "/datamaster/praktisi",
+      name: "datamaster-paktisi",
+      meta: { layout: SidebarLayout, page: PraktisiPage },
       component: DatamasterView,
     },
     {
-      path: "/datamaster/nakes",
-      name: "datamaster-nakes",
-      meta: { layout: SidebarLayout, page: NakesPage, requiresAuth: true },
+      path: "/datamaster/pegawai",
+      name: "datamaster-pegawai",
+      meta: { layout: SidebarLayout, page: PegawaiPage },
       component: DatamasterView,
     },
     {
@@ -394,8 +456,8 @@ const router = createRouter({
       component: AdmisiView,
     },
     {
-      path: "/admisi/laporan/rekap-pasien-bpjs",
-      name: "admisi-laporan-rekap-pasien-bpjs",
+      path: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
+      name: "admisi-laporan-rekap-jumlah-pasien-BPJS",
       meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
       component: AdmisiView,
     },
@@ -550,6 +612,168 @@ const router = createRouter({
       name: "laboratorium-laporan-rekap-jumlah",
       meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
       component: LaboratoriumView,
+    },
+
+     // NOTE Pembayaran
+    {
+      path: "/pembayaran",
+      name: "pembayaran",
+      redirect: "/pembayaran/kasir",
+    },
+    {
+      path: "/pembayaran/kasir",
+      name: "pembayaran-kasir",
+      meta: { layout: SidebarLayout, page: Cashier2Page, requiresAuth: true },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/transaksi",
+      name: "pembayaran-transaksi",
+      meta: { layout: SidebarLayout, page: TransactionPage, requiresAuth: true },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/closed-bill",
+      name: "pembayaran-closed-bill",
+      meta: { layout: SidebarLayout, page: ClosedBillPage, requiresAuth: true },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/laporan/pembayaran",
+      name: "pembayaran-laporan-pembayaran",
+      meta: { layout: SidebarLayout, page: PembayaranKunjunganPage, requiresAuth: true },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/laporan/closing",
+      name: "pembayaran-laporan-closing",
+      meta: { layout: SidebarLayout, page: ClosingCashierPage, requiresAuth: true },
+      component: PaymentView,
+    },
+
+     // NOTE Farmasi
+     {
+      path: "/farmasi",
+      name: "farmasi",
+      redirect: "/farmasi/resep-dokter",
+    },
+    {
+      path: "/farmasi/resep-dokter",
+      name: "farmasi-resep-dokter",
+      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/penjualan-obat",
+      name: "farmasi-penjualan-obat",
+      meta: { layout: SidebarLayout, page: DrugSalesPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/retur-obat-&-material",
+      name: "farmasi-retur-obat-&-material",
+      meta: { layout: SidebarLayout, page: DrugReturnsPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/farmasi-ruangan",
+      name: "farmasi-retur-ruangan",
+      meta: { layout: SidebarLayout, page: RoomPharmacyPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/riwayat-transaksi",
+      name: "farmasi-riwayat-transaksi",
+      meta: { layout: SidebarLayout, page: TransactionHistoryPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+
+    // NOTE Farmasi/Datamaster
+    {
+      path: "/farmasi/datamaster/aturan-pakai",
+      name: "farmasi-datamaster-aturan-pakai",
+      meta: { layout: SidebarLayout, page: RulesOfUsePage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/satuan",
+      name: "farmasi-datamaster-satuan",
+      meta: { layout: SidebarLayout, page: UnitPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/bentuk-sediaan",
+      name: "farmasi-datamaster-bentuk-sediaan",
+      meta: { layout: SidebarLayout, page: DosageFormPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/kategori-obat",
+      name: "farmasi-datamaster-kategori-obat",
+      meta: { layout: SidebarLayout, page: DrugCategoryPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/manufaktur",
+      name: "farmasi-datamaster-manufaktur",
+      meta: { layout: SidebarLayout, page: ManufacturingPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/jenis-stok",
+      name: "farmasi-datamaster-jenis-stok",
+      meta: { layout: SidebarLayout, page: StockTypePage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/lokasi-stok",
+      name: "farmasi-datamaster-lokasi-stok",
+      meta: { layout: SidebarLayout, page: StockLocationPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/item-medis",
+      name: "farmasi-datamaster-item-medis",
+      meta: { layout: SidebarLayout, page: MedicalItemPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/cara-pakai",
+      name: "farmasi-datamaster-cara-pakai",
+      meta: { layout: SidebarLayout, page: HowToUsePage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/komposisi",
+      name: "farmasi-datamaster-komposisi",
+      meta: { layout: SidebarLayout, page: CompositionPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/datamaster/konfigurasi-harga",
+      name: "farmasi-datamaster-konfigurasi-harga",
+      meta: { layout: SidebarLayout, page: PriceConfigurationPage, requiresAuth: true },
+      component: PharmacyView,
+    },
+
+    // NOTE Farmasi/Laporan
+    {
+      path: "/farmasi/laporan/pendapatan",
+      name: "farmasi-laporan-pendapatan",
+      meta: { layout: SidebarLayout, page: RevenuePage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/laporan/waktu-tunggu",
+      name: "farmasi-laporan-waktu-tunggu",
+      meta: { layout: SidebarLayout, page: WaitingTimePage, requiresAuth: true },
+      component: PharmacyView,
+    },
+    {
+      path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-dokter",
+      name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
+      meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
+      component: PharmacyView,
     },
 
     // NOTE Test Component

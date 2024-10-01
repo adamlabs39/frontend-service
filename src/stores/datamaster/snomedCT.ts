@@ -7,7 +7,7 @@ import {
 } from "@/utils/apiHandler";
 
 export const useSnomedCTStore = defineStore({
-    id: "snomedct",
+    id: "snomed",
     state: () => ({}),
     getters: {},
     actions: {
@@ -22,6 +22,9 @@ export const useSnomedCTStore = defineStore({
       },
       async deleteApi(uuid: string, payload = {}) {
         return apiDatamasterDelete(`/datamaster/snomed/${uuid}`, payload);
+      },
+      async exportApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/snomed/export`, payload);
       },
     },
   });

@@ -514,7 +514,22 @@ defineExpose({
                 />
               </div>
             </div>
+            <div v-if="type == 'Anterior'">
+              <CustomTextArea
+                label="Keterangan Oculus Dextra"
+                class="mt-[30px]"
+                placeholder="Keterangan oculus dextra"
+                height="h-10"
+              />
+              <CustomTextArea
+                label="Keterangan Oculus Sinistra"
+                class="mt-[30px]"
+                placeholder="Keterangan oculus sinistra"
+                height="h-10"
+              />
+            </div>
             <CustomTextArea
+              v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
               :label="'Keterangan ' + header"
               class="mt-[30px]"
               :placeholder="'Keterangan ' + header.toLowerCase()"
@@ -526,7 +541,13 @@ defineExpose({
           v-if="props.method == 'detail'"
           class="py-5 flex flex-col gap-[19px]"
         >
+          <CustomInfoRow label="Tanda Pada Gambar" value="Tidak Ada" />
+          <div v-if="type == 'Anterior'">
+            <CustomInfoRow label="Keterangan Oculus Dextra" value="-" class="mb-[19px]" />
+            <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
+          </div>
           <CustomInfoRow
+            v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
             :label="`Keterangan ${type}`"
             value="Nama Asesmen Ulang"
           />

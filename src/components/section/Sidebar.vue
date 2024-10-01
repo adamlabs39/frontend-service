@@ -4,7 +4,7 @@ import { linkType } from "@/utils/Enum";
 import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute } from "vue-router";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -32,12 +32,23 @@ const props = defineProps({
 
 const router = useRouter();
 const route = useRoute();
+
+const showSidebar = ref(true);
+const emit = defineEmits(["filterChanged"]);
+
 const goToPage = (url: string) => {
   router.push(url);
 };
 
-const filter = defineModel("filter");
-const showSidebar = ref(true);
+const goToFilteredPage = (poliName: string) => {
+  router.push({
+    path: "/rawat-jalan/poli",
+    query: poliName === "Semua Poli" ? { } : { filter: poliName },
+  });
+  emit("filterChanged", poliName);
+};
+
+// Update the filter and navigate to /rawat-jalan
 
 const getSVG = (svg: string) => {
   const imgUrl = new URL(
@@ -77,47 +88,7 @@ const getSVG = (svg: string) => {
           class="mx-auto cursor-pointer"
         />
         <!-- Filter Poli -->
-        <div v-if="showFilterPoli && showSidebar" class="text-SM">
-          <hr class="my-[20px]" />
-          <Accordion title="Poli" icon="stethoscope" class="cursor-pointer">
-            <div class="flex m-[10px]">
-              <PhMagnifyingGlass class="my-auto mr-2" size="20" />
-              <input
-                type="text"
-                class="w-full text-white bg-transparent"
-                placeholder="Cari Poli ..."
-              />
-            </div>
-            <div
-              class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Semua Poli' }"
-              @click="filter = 'Semua Poli'"
-            >
-              Semua Poli
-            </div>
-            <div
-              class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Umum' }"
-              @click="filter = 'Poli Umum'"
-            >
-              Poli Umum
-            </div>
-            <div
-              class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Anak' }"
-              @click="filter = 'Poli Anak'"
-            >
-              Poli Anak
-            </div>
-            <div
-              class="cursor-pointer mx-[10px] my-[5px] pl-[10px] px-[10px] py-[5px]"
-              :class="{ 'bg-adameds-100 rounded-lg': filter == 'Poli Mata' }"
-              @click="filter = 'Poli Mata'"
-            >
-              Poli Mata
-            </div>
-          </Accordion>
-        </div>
+
         <!-- body -->
         <div v-for="section in props.sidebarBodyList" class="text-SM">
           <hr class="my-[20px]" />
@@ -147,13 +118,34 @@ const getSVG = (svg: string) => {
                 :icon="row1.icon ? row1.icon : ''"
                 class="cursor-pointer"
               >
+                <div
+                  class="flex m-[10px]"
+                  v-if="showFilterPoli && row1.name === 'Poli'"
+                >
+                  <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+                  <input
+                    type="text"
+                    class="w-full text-white bg-transparent"
+                    placeholder="Cari Poli ..."
+                  />
+                </div>
+
                 <div v-for="row2 in row1.child" class="ml-[10px]">
                   <div
                     v-if="row2.type == linkType.LINK"
-                    @click="goToPage(row2.url ?? '')"
+                    @click="
+                      row1.name === 'Poli'
+                        ? goToFilteredPage(row2.name)
+                        : goToPage(row2.url ?? '')
+                    "
                     class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
                     :class="{
-                      'bg-adameds-100 rounded-lg': route.path == row2.url,
+                      'bg-adameds-100 rounded-lg':
+                        (row1.name === 'Poli' &&
+                          (route.query.filter === row2.name ||
+                            (!route.query.filter &&
+                              row2.name === 'Semua Poli'))) ||
+                        (row1.name !== 'Poli' && route.path === row2.url),
                     }"
                   >
                     {{ row2.name }}

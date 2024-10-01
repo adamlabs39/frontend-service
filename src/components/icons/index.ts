@@ -13,6 +13,17 @@ import DatabaseFill from "./DatabaseFill.vue";
 import ArrowRightBrokenIcon from "./ArrowRightBrokenIcon.vue";
 import UploadPictureIcon from "./UploadPictureIcon.vue";
 import DetailIcon from "./DetailIcon.vue";
+import CashRegisterIcon from "./CashRegisterIcon.vue";
+import PayMoneyIcon from "./PayMoneyIcon.vue";
+import ClosedBillIcon from "./ClosedBillIcon.vue";
+import LayoutIcon from "./LayoutIcon.vue";
+import UserDoctorIcon from "./UserDoctorIcon.vue";
+import PillFillIcon from "./PillFillIcon.vue";
+import ShoppingBagIcon from "./ShoppingBagIcon.vue";
+import UndoFillIcon from "./UndoFillIcon.vue";
+import SyringeFillIcon from "./SyringeFillIcon.vue";
+import HistoryIcon from "./HistoryIcon.vue";
+import FileImportIcon from "./FileImportIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -30,6 +41,16 @@ export default {
     app.component("ArrowRightBrokenIcon", ArrowRightBrokenIcon);
     app.component("UploadPictureIcon", UploadPictureIcon);
     app.component("DetailIcon", DetailIcon);
-
+    app.component("CashRegisterIcon", CashRegisterIcon);
+    app.component("PayMoneyIcon", PayMoneyIcon);
+    app.component("ClosedBillIcon", ClosedBillIcon);
+    app.component("LayoutIcon", LayoutIcon);
+    app.component("UserDoctorIcon", UserDoctorIcon);
+    app.component("PillFillIcon", PillFillIcon);
+    app.component("ShoppingBagIcon", ShoppingBagIcon);
+    app.component("UndoFillIcon", UndoFillIcon);
+    app.component("SyringeFillIcon", SyringeFillIcon);
+    app.component("HistoryIcon", HistoryIcon);
+    app.component("FileImportIcon", FileImportIcon);
   },
 };
