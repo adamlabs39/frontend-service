@@ -1,172 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import ScrollPanel from 'primevue/scrollpanel';
-import type { DataTableRowClickEvent } from "primevue/datatable";
-import type { MenuItem } from "primevue/menuitem";
-
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
-
-const filterPoliList = ref([
-  "POLI UMUM",
-  "POLI ANAK",
-  "POLI GIGI POLI MATA",
-  "APS",
-]);
-
-// Filter Menunggu Pembayaran
-const selectedPayType = ref<string>("MenungguPembayaran");
-
-const onSelectPayType = (label: string) => {
-  selectedPayType.value = label;
-  console.log(selectedPayType, 'selectedPayType');
-  
-};
-
-// Filter Pelayanan
-const selectedFilterPoli = ref<string[]>([]);
-const onPoliSelect = (label: string) => {
-  if (selectedFilterPoli.value.includes(label)) {
-    console.log(selectedFilterPoli, 'selectedFilterPoli');
-    
-    selectedFilterPoli.value = selectedFilterPoli.value.filter(
-      (item) => item != label
-    );
-  } else {
-    selectedFilterPoli.value.push(label);
-  }
-};
-
-// Filter Pembayaran
-const selectedPaymentMethod = ref<string[]>([]);
-const onPaymentMethodSelect = (label: string) => {
-  if (selectedPaymentMethod.value.includes(label)) {
-    selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
-      (item) => item != label
-    );
-  } else {
-    selectedPaymentMethod.value.push(label);
-  }
-};
-
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-]);
 
 const emits = defineEmits(['update:rows', 'update:current-page']);
 const handleRowsUpdate = (rows: number) => {
   console.log('Rows updated:', handleRowsUpdate);
-};
-const handlePageUpdate = (page: number) => {
-  console.log('Page updated:', handleRowsUpdate);
-};
-
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const showSEPDetail = (event: DataTableRowClickEvent) => {
-  let data = event.data;
-  dataBreadCrumb.value.push({
-    label: data.name,
-    noRM: data.noRM,
-    age: `(${data.age_year}Th ${data.age_month}Bln ${data.age_day}Hr)`,
-  });
 };
 </script>
 
@@ -198,8 +40,9 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
                 label="Pencarian Transaksi"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / address / No. RM"
-                class="w-2/4 mr-5"
+                class="w-[48%] mr-5"
               />
+              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
               <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
                 <template #prependText>
                   <div
@@ -242,9 +85,8 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
-        <!-- <ScrollPanel style="width: 100%; height: 200px"> -->
           <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border border-[1px] border-grey-300 rounded-lg">
+            <div class="flex flex-col text-center border border-[3px] border-dashed border-grey-300 rounded-lg">
               <div class="m-auto text-SM">
                 <img
                   src="../../assets/icons/no-data-icon.svg"
@@ -254,6 +96,8 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
                 <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
               </div>
             </div>
+            
+            <!-- Kolom Pembayaran -->
             <div class="relative p-5 rounded-lg bg-adameds-50">
               <!-- Total Pembayaran -->
               <div class="flex items-center justify-between">
@@ -317,7 +161,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
                   Rp, 0
                 </div>
               </div>
-              <hr class="mt-6 mb-2 border border-black"/>
+              <hr class="mt-6 mb-2 border-black border-1"/>
               <!-- Grand Total -->
               <div class="flex justify-between mt-6">
                 <div class="text-sm font-bold font-poppins">
@@ -334,7 +178,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
                     class="w-full mr-4"
                   /> -->
                   <CustomButton
-                    label="Close Bill"
+                    label="Bayar"
                     class="w-full ml-4 mr-4"
                     textColor = "text-slate-400"
                     backgroundColor="bg-slate-200"
@@ -343,7 +187,6 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
               </div>
             </div>
           </div>
-        <!-- </ScrollPanel> -->
       </template>
     </Card>
   </div>

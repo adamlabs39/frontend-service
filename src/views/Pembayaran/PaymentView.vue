@@ -25,7 +25,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Closed Bill",
         icon: "ClosedBillIcon",
         type: linkType.LINK,
-        url: "/pembayaran/closedbill",
+        url: "/pembayaran/closed-bill",
       },
     ],
   },
@@ -58,8 +58,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
 <template>
   <div class="flex h-full gap-3">
     <Sidebar
-      sidebarTitle="Admisi"
-      sidebarTitleUrl="/admisi"
+      sidebarTitle="Pembayaran"
+      sidebarTitleUrl="/pembayaran"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       showStockBtn

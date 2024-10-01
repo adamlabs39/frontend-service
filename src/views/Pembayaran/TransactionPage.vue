@@ -8,12 +8,14 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
+import TransactionDetailPage from "./layout/TransactionDetailPage.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
+const pageType = ref("");
 
 const filterPoliList = ref([
   "POLI UMUM",
@@ -162,19 +164,23 @@ const handlePageUpdate = (page: number) => {
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const showSEPDetail = (event: DataTableRowClickEvent) => {
-  let data = event.data;
-  dataBreadCrumb.value.push({
-    label: data.name,
-    noRM: data.noRM,
-    age: `(${data.age_year}Th ${data.age_month}Bln ${data.age_day}Hr)`,
-  });
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
+const showDetail = (event: DataTableRowClickEvent) => {
+  changeSection("Detail Tagihan");
 };
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
+      v-if="dataBreadCrumb.length == 0"
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
@@ -334,7 +340,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
-        @rowClick="showSEPDetail"
+        @rowClick="showDetail"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -445,7 +451,6 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
       <template #footer>
         <div class="flex justify-end">
           <CustomPaginator
-          
             :rows="10"
             :totalRecords="100"
             :rowsPerPageOptions="[10, 20, 30]"
@@ -455,5 +460,12 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
+    <TransactionDetailPage
+      v-else-if="dataBreadCrumb[0].label == 'Detail Tagihan'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      @back="dataBreadCrumb.pop()"
+      @goToDetail="dataBreadCrumb[0].label = 'Detail Tagihan'"
+    />
   </div>
 </template>

@@ -157,6 +157,10 @@ onMounted(() => {
                     home: true,
                   }"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Closing Kasir</p>
+                </div>
               </div>
             </div>
           </template>
