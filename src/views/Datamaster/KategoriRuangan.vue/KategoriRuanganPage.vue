@@ -207,10 +207,7 @@ const downloadExportExcel = async () => {
     </template>
 
     <template #content>
-      <div v-if="loading" class="flex items-center justify-center h-full">
-        Loading...
-      </div>
-      <NoData v-else-if="!hasData" />
+      <NoData v-if="!hasData" />
       <DataTable
         v-else
         :value="kategoriRuanganPayload"

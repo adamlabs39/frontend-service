@@ -1,11 +1,8 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/Header.vue";
 import Footer from "../Layout/FooterPaginator.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import TambahDataOrganisasiDialog from "./TambahDataOrganisasiDialog.vue";
 import DetailDataOrganisasi from "./DetailDataOrganisasi.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";

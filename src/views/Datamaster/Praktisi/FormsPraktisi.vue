@@ -76,9 +76,9 @@ onMounted(() => {
 const schema = toTypedSchema(
   yup.object({
     pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-    codeBpjs: yup.string(),
-    sip: yup.string(),
-    str: yup.string(),
+    codeBpjs: yup.number(),
+    sip: yup.number(),
+    str: yup.number(),
     isDokter: yup.boolean().required("Tipe Praktisi harus dipilih"),
     codeAntrianDokter: yup.string().required("Pegawai harus dipilih"),
     practisionerPoli: yup

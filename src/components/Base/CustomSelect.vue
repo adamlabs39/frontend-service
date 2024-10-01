@@ -19,6 +19,7 @@ const props = defineProps({
     default: "",
   },
   modelValue: {
+    type: [String, Number, Boolean],
     default: "",
   },
   options: {
@@ -30,7 +31,7 @@ const props = defineProps({
     default: "label",
   },
   optionValue: {
-    type: String ,
+    type: String,
     default: null,
   },
   isLoading: {
@@ -61,7 +62,7 @@ const props = defineProps({
 
 // const value = ref(props.modelValue);
 const value = computed({
-  get: () => props.modelValue,
+  get: () => props.modelValue as string,
   set: (value: string) => emit("update:modelValue", value),
 });
 
@@ -125,9 +126,7 @@ const showClear = computed(() => {
         :class="[
           prependIcon ? 'border-l-0 rounded-l-none' : '',
           invalid ? 'border-danger-300 text-danger-300' : '',
-          disabled
-            ? ' bg-grey-100 text-grey-300'
-            : '',
+          disabled ? ' bg-grey-100 text-grey-300' : '',
           !invalid && !disabled ? 'text-white' : '',
         ]"
         :invalid="invalid"
@@ -137,11 +136,11 @@ const showClear = computed(() => {
         pt:pcFilterIconContainer:class="flex items-center"
         pt:pcFilter:root:class="text-black border-grey-200 text-SM"
         :dt="{
-          placeholderColor: invalid ? '#e9594c' :'#90969E',
-          color: invalid ? '#e9594c' :'#000000',
+          placeholderColor: invalid ? '#e9594c' : '#90969E',
+          color: invalid ? '#e9594c' : '#000000',
           borderColor: invalid ? '#000000' : '#D0D5DD',
-          focusBorderColor:'#D0D5DD',
-          hoverBorderColor:'#D0D5DD'
+          focusBorderColor: '#D0D5DD',
+          hoverBorderColor: '#D0D5DD',
         }"
       >
         <template #dropdownicon>
@@ -157,6 +156,8 @@ const showClear = computed(() => {
         </template>
       </Select>
     </InputGroup>
-    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>
