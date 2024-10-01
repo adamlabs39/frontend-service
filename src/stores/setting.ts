@@ -43,6 +43,22 @@ export const useSettingStore = defineStore({
         },
         putKonfigurasiSatuSehat(payload = {}) {
             return apiSettingPut("setting/integrasi-satu-sehat", payload)
+        },
+
+        // System
+
+        getBiayaAdministrasi(payload = {}) {
+            return apiSettingGet("setting/biaya-administrasi", payload)
+        },
+        putBiayaAdministrasi(payload = {}) {
+            return apiSettingPut("setting/biaya-administrasi", payload)
+        },
+
+        getPPN(payload = {}) {
+            return apiSettingGet("setting/ppn",payload)
+        },
+        putPPN(payload = {}) {
+            return apiSettingPut("setting/ppn", payload)
         }
     },
 });
