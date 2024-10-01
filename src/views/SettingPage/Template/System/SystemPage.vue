@@ -10,6 +10,9 @@ import { useSettingStore } from "@/stores/setting";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { utilsStore } from "@/stores/utils";
+
+const useUtilsStore = utilsStore();
 
 // Initial Values
 const initialBiayaAdministrasi = ref(0);
@@ -80,12 +83,14 @@ const [statusPPN] = defineFieldPPN("statusPPN");
 const [biayaInputPPN] = defineFieldPPN("biayaInputPPN");
 
 const onSubmitPPN = handleSubmitPPN(async (values) => {
+  useUtilsStore.setLoading(true);
   try {
     const payload = {
       statusPpn: values.statusPPN,
       valuePpn: values.biayaInputPPN,
     };
     await settingStore.putPPN(payload);
+    useUtilsStore.setLoading(false);
   } catch (error) {
     console.error("Error during submission:", error);
   }
@@ -99,6 +104,7 @@ const biayaAdministrasiResponse = ref({
 
 // Fetch Data
 const fetchBiayaAdministrasiData = async () => {
+  useUtilsStore.setLoading(true);
   try {
     const response = await settingStore.getBiayaAdministrasi();
     if (response && response.payload) {
@@ -107,9 +113,7 @@ const fetchBiayaAdministrasiData = async () => {
       biayaInputAdministrasi.value =
         Number(response.payload.valueBiayaLain) || 0;
       statusBiayaAdministrasi.value = response.payload.statusBiayaLain || false;
-
-       console.log("Assigned to switch Biaya Administrasi (statusBiayaAdministrasi):", statusBiayaAdministrasi.value);
-      console.log("Assigned to InputNumber (biayaInputAdministrasi):", biayaInputAdministrasi.value);
+      useUtilsStore.setLoading(false);
     } else {
       console.error("Unexpected response Structure", response);
     }
@@ -119,26 +123,23 @@ const fetchBiayaAdministrasiData = async () => {
 };
 
 const biayaPPNResponse = ref({
-  statusPPN: false,
-  valuePPN: 0,
+  statusPpn: false,
+  valuePpn: 0,
 });
 
 // Fetch Data for PPN
 const fetchPPNData = async () => {
+  useUtilsStore.setLoading(true);
   try {
     const response = await settingStore.getPPN();
     if (response && response.payload) {
       biayaPPNResponse.value = response.payload;
       console.log("PPN Response Data:", response.payload);
       // Assign values to inputs based on response
-      biayaInputPPN.value = Number(response.payload.valuePPN) || 0;
-      statusPPN.value = response.payload.statusPPN || false;
+      biayaInputPPN.value = Number(response.payload.valuePpn) || 0;
+      statusPPN.value = response.payload.statusPpn || false;
 
-      console.log("Assigned to switch PPN (statusPPN):", statusPPN.value);
-      console.log(
-        "Assigned to InputNumber (biayaInputPPN):",
-        biayaInputPPN.value
-      );
+      useUtilsStore.setLoading(false);
     } else {
       console.error("Unexpected response Structure", response);
     }

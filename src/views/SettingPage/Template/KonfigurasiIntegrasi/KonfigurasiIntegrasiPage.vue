@@ -10,6 +10,9 @@ import KonfigurasiSatuSehat from './KonfigurasiSatuSehat.vue';
 import FormEditKonfigurasiSatuSehat from './FormEditKonfigurasiSatuSehat.vue';
 import KonfigurasiVCLAIM from './KonfigurasiVCLAIM.vue';
 import { useSettingStore } from '@/stores/setting';
+import { utilsStore } from "@/stores/utils";
+
+const useUtilsStore = utilsStore();
 
 const konfigurasiIntegrasiResponse = ref({
     baseUrl: "",
@@ -32,11 +35,13 @@ const konfigurasiIntegrasiResponse = ref({
 
 const settingStore = useSettingStore();
 const fetchKonfigurasiIntegrasiData = async () => {
+    useUtilsStore.setLoading(true);
     try {
         const response = await settingStore.getKonfigurasiIntegrasiApi();
         if (response && response.payload) {
             konfigurasiIntegrasiResponse.value = response.payload
-            console.log(konfigurasiIntegrasiResponse.value)
+            useUtilsStore.setLoading(false)
+            // console.log(konfigurasiIntegrasiResponse.value)
         } else {
             console.error("Unexpected response Structure", response);
         }

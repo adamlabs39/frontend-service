@@ -9,6 +9,9 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomDragDrop from '@/components/Base/CustomDragDrop.vue';
 import defaultImage from '@/assets/icons/noPicture.svg'
+import { utilsStore } from "@/stores/utils";
+
+const useUtilsStore = utilsStore();
 
 const printOutResponse = ref({
     header: "",
@@ -24,11 +27,13 @@ const settingStore = useSettingStore()
 
 
 const fetchPrintOutPData = async () => {
+    useUtilsStore.setLoading(true);
     try {
         const response = await settingStore.getPrintOutApi();
         if (response && response.payload) {
             printOutResponse.value = response.payload
-            console.log('Data printOutResponse:', printOutResponse.value);
+            // console.log('Data printOutResponse:', printOutResponse.value);
+            useUtilsStore.setLoading(false);
         } else {
             console.error("Unexpected response Structure", response);
         }
@@ -73,6 +78,7 @@ const [background] = defineFieldPrintOut("background");
 const [footer] = defineFieldPrintOut("footer");
 
 const onSubmitPrintOut = handleSubmitPrintOut(async (values) => {
+    useUtilsStore.setLoading(true);
     try {
         //  console.log('bgWarna value before submission:', values.bgWarna);
         const payload = {
@@ -83,9 +89,11 @@ const onSubmitPrintOut = handleSubmitPrintOut(async (values) => {
         };
         console.log('Payload to be sent:', payload);
         const response = await settingStore.putPrintOutApi(payload);
+        useUtilsStore.setLoading(false);
         if (response) {
             await fetchPrintOutPData(); // Memanggil ulang data setelah simpan
             isEditPrintOut.value = false; // Kembali ke tampilan non-edit setelah menyimpan
+           
         }
     } catch (error) {
         console.error("Error during submission:", error);
