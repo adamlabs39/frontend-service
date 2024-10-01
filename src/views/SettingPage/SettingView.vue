@@ -13,7 +13,6 @@ const sidebarBodyList = ref<SidebarBody[]>([
       
           { name: "Profil Faskes", type: linkType.LINK, url: '/setting/profil-faskes', icon:'GearFillIcon' },
           { name: "Konfigurasi Integrasi", type: linkType.LINK, url:'/setting/konfigurasi-integrasi', icon:'GearFillIcon' },
-          { name: "Permission Menu", type: linkType.LINK, url:'/setting/permission-menu', icon:'GearFillIcon' },
           { name: "Print Out", type: linkType.LINK, url:'/setting/print-out', icon:"GearFillIcon" },
           { name: "System", type: linkType.LINK, url:'/setting/system', icon:'GearFillIcon' },
     ],
