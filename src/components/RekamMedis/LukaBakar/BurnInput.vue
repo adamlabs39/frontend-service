@@ -20,6 +20,10 @@ const props = defineProps({
     type: String,
     default: "form",
   },
+  initialState: {
+    type: String,
+    default: "null",
+  },
 });
 
 const historyDialog = ref(false);
@@ -48,7 +52,11 @@ defineExpose({
 
 <template>
   <div>
-    <CustomAccordion ref="accordion" headerClass="bg-adameds-50">
+    <CustomAccordion
+      ref="accordion"
+      headerClass="bg-adameds-50"
+      :initialState="initialState"
+    >
       <template #header>{{ header }}</template>
       <template #content>
         <div v-if="method == 'form'" class="flex flex-col">

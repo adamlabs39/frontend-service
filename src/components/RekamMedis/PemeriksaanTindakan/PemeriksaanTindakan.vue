@@ -10,6 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import HistoriPemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/HistoriPemeriksaanTindakan.vue";
 
 const props = defineProps({
   method: {
@@ -19,7 +20,7 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(['edit', 'submit']);
+const emit = defineEmits(["edit", "submit"]);
 
 const tambahTindakan = ref();
 const detail = ref();
@@ -78,13 +79,13 @@ const onSubmit = handleSubmit((values: any) => {
   const parseData = JSON.parse(JSON.stringify(deletedData.value));
   const allData = [...values.datas, ...parseData];
   console.log(allData);
-  emit('submit', allData); 
+  emit("submit", allData);
   isEditing.value = false;
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
-  emit('edit');
+  emit("edit");
 };
 
 const getHargaTindakan = (namaTindakan: string) => {
@@ -190,6 +191,11 @@ watch(tambahTindakan, (newValue) => {
   }
 });
 
+const historyDialog = ref(false);
+const showDialogHistory = () => {
+  historyDialog.value = true;
+};
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -213,6 +219,16 @@ defineExpose({
     <template #header>Pemeriksaan dan Tindakan</template>
     <template #content>
       <div class="pt-5">
+        <div v-if="method == 'form'" class="flex flex-col">
+          <CustomButton
+            @click="showDialogHistory"
+            class="!rounded-md my-[10px] ml-auto"
+            label="Riwayat Pemeriksaan"
+            size="small"
+            icon="PhClockCounterClockwise"
+          />
+          <hr class="mb-[30px]" />
+        </div>
         <DataTable :value="fields" class="text-xs bg-adameds-50">
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -496,23 +512,6 @@ defineExpose({
             </div>
           </template>
         </CustomDialog>
-      </div>
-    </template>
-    <template #footer>
-      <div v-if="isEditing" class="flex items-end justify-end gap-3">
-        <CustomButton
-          @click="resetNewData()"
-          label="Reset"
-          textColor="text-[#9DA4B1]"
-          backgroundColor="bg-transparent"
-          borderColor="border-2 border-[#9DA4B1]"
-        />
-        <CustomButton label="Simpan" @click="onSubmit" />
-      </div>
-      <div v-if="!isEditing" class="flex justify-between">
-        <CustomButton label="Detail" icon="DetailIcon" @click="detail = true" />
-
-        <CustomButton label="Edit" @click="toggleEdit" />
         <CustomDialog
           headerBg="bg-adameds-300"
           width="800px"
@@ -575,12 +574,75 @@ defineExpose({
               </Column>
             </DataTable>
           </template>
-          <template #footer>
+          <template #footer v-if="!isEditing">
             <div>
               <CustomButton label="Edit" @click="toggleEdit" />
             </div>
           </template>
         </CustomDialog>
+        <!-- Dialog History -->
+        <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+          <template #header>Pemeriksaan Fisik</template>
+          <template #body>
+            <div
+              class="pt-5 grid grid-cols-[1fr_min-content_1fr_min-content_1fr]"
+            >
+              <div class="mb-[18px] flex justify-between col-span-5">
+                <div class="font-semibold text-grey-400">
+                  Riwayat Sebelumnya
+                </div>
+                <div class="flex">
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md mr-[10px]"
+                    size="small"
+                    icon="PhCaretLeft"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    class="!rounded-md"
+                    size="small"
+                    icon="PhCaretRight"
+                  />
+                </div>
+              </div>
+              <HistoriPemeriksaanTindakan
+                @showDetail="detail = true"
+                :fields="fields"
+                :product="products"
+              />
+              <div class="border border-adameds-300 mx-[15px]"></div>
+              <HistoriPemeriksaanTindakan
+                @showDetail="detail = true"
+                :fields="fields"
+                :product="products"
+              />
+              <div class="border border-adameds-300 mx-[15px]"></div>
+              <HistoriPemeriksaanTindakan
+                @showDetail="detail = true"
+                :fields="fields"
+                :product="products"
+              />
+            </div>
+          </template>
+        </CustomDialog>
+      </div>
+    </template>
+    <template #footer>
+      <div v-if="isEditing" class="flex items-end justify-end gap-3">
+        <CustomButton
+          @click="resetNewData()"
+          label="Reset"
+          textColor="text-[#9DA4B1]"
+          backgroundColor="bg-transparent"
+          borderColor="border-2 border-[#9DA4B1]"
+        />
+        <CustomButton label="Simpan" @click="onSubmit" />
+      </div>
+      <div v-if="!isEditing" class="flex justify-between">
+        <CustomButton label="Detail" icon="DetailIcon" @click="detail = true" />
+
+        <CustomButton label="Edit" @click="toggleEdit" />
       </div>
     </template>
   </CustomAccordion>
