@@ -129,7 +129,7 @@ const downloadExportExcel = async () => {
     data.push({}); 
     data.push({
       No: "No",
-      Kode: "Kode",
+      Kode: "Kode Snomed CT",
       Nama: "Nama Snomed CT",
       Status: "Status",
     });
@@ -159,7 +159,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -253,7 +253,7 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column field="code" header="Kode" headerClass="bg-adameds-50"></Column>
+        <Column field="code" header="Kode Snomed CT" headerClass="bg-adameds-50"></Column>
         <Column
           field="name"
           header="Nama Snomed CT"
@@ -304,7 +304,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Snomed CT', slotProps.data)"              >
+                @click="deleteDialog('delete', `Snomed CT ${slotProps.data.code}`, slotProps.data)"              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>

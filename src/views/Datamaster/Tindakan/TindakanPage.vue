@@ -128,8 +128,9 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Tindakan",
+      Nama: "Nama Tindakan",
+      SnomedIcd:"Snomed&ICD",
       Status: "Status",
     });
 
@@ -264,7 +265,7 @@ const downloadExportExcel = async () => {
         <Column header="Snome & ICD" class="w-3/12" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="underline">Snomed-CT</div>
-            <div class="font-bold mb-3">
+            <div class="mb-3 font-bold">
               {{
                 slotProps.data.snomedDetail
                   ? slotProps.data.snomedDetail.name

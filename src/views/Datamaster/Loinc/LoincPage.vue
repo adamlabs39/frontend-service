@@ -128,7 +128,7 @@ const downloadExportExcel = async () => {
     data.push({}); 
     data.push({
       No: "No",
-      Kode: "Kode",
+      Kode: "Kode LOINC",
       Nama: "Nama LOINC",
       Status: "Status",
     });
@@ -158,7 +158,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -252,16 +252,16 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column field="code" header="Kode" headerClass="bg-adameds-50"></Column>
+        <Column field="code" header="Kode LOINC" headerClass="bg-adameds-50"></Column>
         <Column
           field="name"
-          header="Nama Loinc"
+          header="Nama LOINC"
           class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
-            <div class="w-full text-center font-semibold text-SM">Status</div>
+            <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
@@ -282,7 +282,7 @@ const downloadExportExcel = async () => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
@@ -298,7 +298,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                 @click="deleteDialog('delete', 'LOINC', slotProps.data)"
+                 @click="deleteDialog('delete', `LOINC ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

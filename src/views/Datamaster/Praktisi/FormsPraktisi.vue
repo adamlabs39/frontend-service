@@ -39,14 +39,14 @@ const pegawaiPayload = ref<any[]>([]);
 const isSearchPerformed = ref(false); // New reactive property
 
 const selectedPegawai = computed(() => {
-  return pegawaiPayload.value.find(pegawai => pegawai.uuid === pegawaiUuid.value);
+  return pegawaiPayload.value.find(
+    (pegawai) => pegawai.uuid === pegawaiUuid.value
+  );
 });
 
 const fetchPegawai = async () => {
   try {
-    const response = await pegawaiStore.getApi(
-
-    );
+    const response = await pegawaiStore.getApi();
     if (response && response.payload) {
       pegawaiPayload.value = response.payload;
     } else {
@@ -224,7 +224,9 @@ watch(
           >
             <div class="flex flex-col">
               <div class="font-semibold underline text-SM">Nama Pegawai</div>
-              <div class="font-normal text-normal">{{ selectedPegawai.name }}</div>
+              <div class="font-normal text-normal">
+                {{ selectedPegawai.name }}
+              </div>
               <!-- Correctly access the name -->
             </div>
             <div class="flex flex-col">
@@ -236,7 +238,9 @@ watch(
             </div>
             <div class="flex flex-col">
               <div class="font-semibold underline text-SM">Nik</div>
-              <div class="font-normal text-normal">{{ selectedPegawai.nik }}</div>
+              <div class="font-normal text-normal">
+                {{ selectedPegawai.nik }}
+              </div>
               <!-- Replace with the correct field -->
             </div>
             <div class="flex flex-col">
@@ -268,14 +272,14 @@ watch(
           v-model="str"
           placeholder="0"
           :class="isDokter ? 'col-span-4' : 'col-span-12'"
-          />
-          <CustomTextfield
+        />
+        <CustomTextfield
           v-if="isDokter"
           label="Kode Antrian Dokter"
           v-model="codeAntrianDokter"
           placeholder="Kode Antrian Dokter"
           class="col-span-4"
-          />
+        />
         <CustomMultiSelect
           v-if="isDokter"
           label="Poli"
@@ -283,7 +287,7 @@ watch(
           placeholder="Pilih Poli"
           class="col-span-8"
         />
-        
+
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
@@ -296,14 +300,50 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <div class="font-bold text-heading">
+          Data Pegawai -
+          {{
+            Number(payload.detailPegawai.tipe) === 1
+              ? "DOKTER"
+              : Number(payload.detailPegawai.tipe) === 2
+              ? "NON DOKTER"
+              : "Unknown"
+          }}
+        </div>
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Nama Lengkap" :value="payload.name" />
         <CustomInfoRow label="NIK" :value="payload.nik" />
         <CustomInfoRow label="Tanggal Lahir" :value="payload.tanggalLahir" />
         <CustomInfoRow label="Jenis Kelamin" :value="payload.gender" />
-        <CustomInfoRow label="Kode HFIS (BPJS)" :value="payload.codeBpjs" />
-        <CustomInfoRow label="SIP" :value="sip" />
+        <CustomInfoRow
+          v-if="payload.detailPegawai.tipe === 1"
+          label="Kode HFIS (BPJS)"
+          :value="payload.codeBpjs"
+        />
+        <CustomInfoRow
+          v-if="payload.detailPegawai.tipe === 1"
+          label="SIP"
+          :value="sip"
+        />
         <CustomInfoRow label="STR" :value="str" />
-        <CustomInfoRow label="Kode Antrian Dokter" :value="codeAntrianDokter" />
+        <CustomInfoRow
+          v-if="payload.detailPegawai.tipe === 1"
+          label="Kode Antrian Dokter"
+          :value="codeAntrianDokter"
+        />
+        <CustomInfoRow v-if="payload.detailPegawai.tipe === 1" label="Poli">
+          <template #value>
+            <CustomChip
+              :label="practisionerPoli"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              :showCheckedIcon="false"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

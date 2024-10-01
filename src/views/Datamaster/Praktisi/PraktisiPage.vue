@@ -129,8 +129,8 @@ const downloadExportExcel = async () => {
     data.push({}); 
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Praktisi",
+      Nama: "Nama Praktisi",
       Status: "Status",
     });
 

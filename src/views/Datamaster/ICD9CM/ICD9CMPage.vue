@@ -129,7 +129,7 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
+      Kode: "Kode ICD-9 CM",
       Nama: "Nama ICD-9 CM",
       Status: "Status",
     });
@@ -159,7 +159,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -256,7 +256,7 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column field="code" header="Kode" headerClass="bg-adameds-50"></Column>
+        <Column field="code" header="Kode ICD 9 CM" headerClass="bg-adameds-50"></Column>
         <Column
           field="name"
           header="Nama ICD 9 CM"

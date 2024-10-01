@@ -127,14 +127,14 @@ watch(
           class="col-span-4"
         />
         <CustomTextfield
-          label="Nama Loinc"
+          label="Nama LOINC"
           v-model="name"
-          placeholder="Nama Loinc"
+          placeholder="Nama LOINC"
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"

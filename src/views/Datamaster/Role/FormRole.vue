@@ -107,13 +107,13 @@ const cobaPermission=ref([])
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomAccordion class="col-span-12" no-border initial-state="0" >
           <template #header>
-            <div>Modul</div>
+            <div class="-mx-4 text-normal">Modul</div>
           </template>
           <template #content>
-            <div class="flex flex-wrap gap-2.5 pt-5">
+            <div class="flex flex-wrap gap-2.5 pt-5 -mx-4">
               <div
               v-for="item of itemsPermission"
               :key="item.name_mainMenu"
@@ -133,6 +133,8 @@ const cobaPermission=ref([])
             icon="PhCaretUp"
             backgroundColor="bg-transparent"
             textColor="text-adameds-300"
+            class="-mr-5"
+
           />
         </template>
         <template #expandIcon>
@@ -140,10 +142,11 @@ const cobaPermission=ref([])
             icon="PhCaretDown"
             backgroundColor="bg-transparent"
             textColor="text-adameds-300"
+            class="-mr-5"
           />
         </template>
         </CustomAccordion>
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
