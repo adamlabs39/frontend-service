@@ -43,6 +43,11 @@ const props = defineProps({
 		type: String,
 		default: "",
 	},
+	disableLine: { // Properti untuk menonaktifkan <hr>
+		type: Boolean,
+		default: false,
+	},
+	
 });
 </script>
 
@@ -56,9 +61,9 @@ const props = defineProps({
 				<CustomButton :label="props.labelButton" class="px-5 py-[10px] font-poppins font-semibold text-sm"
 					@click="buttonClickHandler" :outlined="props.outlined" :border-color="props.borderColor" :text-color="props.textColor" />
 			</div>
+			<slot name="switch"></slot>
 		</div>
-
-		<hr :class="hrEnableCustomClass ? props.hrCustomClass : props.hrDefaultClass">
+		<hr :class="hrEnableCustomClass ? props.hrCustomClass : props.hrDefaultClass"  v-if="!disableLine">
 		<slot></slot>
 	</div>
 </template>
