@@ -24,6 +24,7 @@ import UndoFillIcon from "./UndoFillIcon.vue";
 import SyringeFillIcon from "./SyringeFillIcon.vue";
 import HistoryIcon from "./HistoryIcon.vue";
 import FileImportIcon from "./FileImportIcon.vue";
+import TrashFillIcon from "./TrashFillIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -52,5 +53,6 @@ export default {
     app.component("SyringeFillIcon", SyringeFillIcon);
     app.component("HistoryIcon", HistoryIcon);
     app.component("FileImportIcon", FileImportIcon);
+    app.component("TrashFillIcon", TrashFillIcon);
   },
 };

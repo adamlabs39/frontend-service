@@ -9,6 +9,7 @@ import FormTindakan from "./FormTindakan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
 import { utilsStore } from "@/stores/utils";
+import NoData from "@/components/section/NoData.vue";
 
 // State Management
 const tindakanStore = useTindakanStore();

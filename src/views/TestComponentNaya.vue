@@ -8,15 +8,11 @@ import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import CardRiwayatPemeriksaan from "@/components/Admisi/CardRiwayatPemeriksaan.vue";
 import CardMonitoringBed from "@/components/Admisi/CardMonitoringBed.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-import KomponenTarif from "@/components/Datamaster/KomponenTarifV1.vue";
-import VarianTarif from "@/components/Datamaster/VarianTarifV1.vue";
-import Kelas from "@/components/Datamaster/Kelas.vue";
 import CustomQuil from "@/components/Base/CustomQuil.vue";
 // import TableKomponenTarif from "@/components/Datamaster/TableKomponenTarif.vue";
-import TableTindakan from "@/components/Datamaster/TableTindakanV1.vue";
+import TableTindakan from "@/components/Datamaster/TableKomponenTarifTindakan.vue";
 import TableJenisPembayaranBed from "@/components/Datamaster/TableJenisPembayaranBedV1.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
 import Kesadaran from "@/components/RekamMedis/Kesadaran/Kesadaran.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
@@ -138,60 +134,38 @@ const handlePage = (page: number) => {
 };
 const selectedValue = ref();
 
-const controlRawatJalanRef=ref()
+const controlRawatJalanRef = ref();
 const submitChildForm = () => {
   if (controlRawatJalanRef.value) {
     controlRawatJalanRef.value.submitForm();
+  }
+};
+
+const listKomponenTarifRef = ref();
+const submitListKomponenSurat = () => {
+  if (listKomponenTarifRef.value) {
+    listKomponenTarifRef.value.onSubmit();
   }
 };
 </script>
 
 <template>
   <div class="h-screen mx-5 overflow-scroll">
-    <Select
-      label="Choose a City"
-      v-model="selectedItems"
-      :options="items"
-      optionValue="code"
-      optionLabel="name"
-      :isLoading="false"
-      :invalid="false"
-      invalidMessage="Wajib diisi"
-      :disabled="false"
-      @change="testLog"
-    />
+    <Select label="Choose a City" v-model="selectedItems" :options="items" optionValue="code" optionLabel="name"
+      :isLoading="false" :invalid="false" invalidMessage="Wajib diisi" :disabled="false" @change="testLog" />
     <p>Kota: {{ selectedItems }}</p>
     <br />
-    <DatePickers
-      label="Choose a Date"
-      v-model="selectedDate"
-      :invalid="false"
-      invalidMessage="Wajib diisi"
-      :disabled="false"
-      :maxDate="firstDayOfCurrentMonth"
-    />
+    <DatePickers label="Choose a Date" v-model="selectedDate" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" :maxDate="firstDayOfCurrentMonth" />
 
     <p>Date: {{ selectedDate }}</p>
     <br />
-    <DatePickers
-      label="Choose a Time"
-      timeOnly
-      v-model="selectedTime"
-      :invalid="false"
-      invalidMessage="Wajib diisi"
-      :disabled="false"
-      @date-select="testTime"
-    />
+    <DatePickers label="Choose a Time" timeOnly v-model="selectedTime" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" @date-select="testTime" />
     <p>Time: {{ selectedTime }}</p>
     <br />
-    <Switch
-      label="Switch"
-      v-model="toggleSwitch"
-      @input="testSwitch"
-      :invalid="false"
-      invalidMessage="Wajib diisi"
-      :disabled="false"
-    />
+    <Switch label="Switch" v-model="toggleSwitch" @input="testSwitch" :invalid="false" invalidMessage="Wajib diisi"
+      :disabled="false" />
     <p>Switch: {{ toggleSwitch }}</p>
     <br />
     <div class="w-[300px]">
@@ -239,71 +213,71 @@ const submitChildForm = () => {
     <TableJenisPembayaranBed />
     <br />
     <br />
-    <CustomPaginator
-      :rows="10"
-      :totalRecords="100"
-      :rowsPerPageOptions="[10, 20, 30]"
-      @update:rows="handleRowsUpdate"
-      @update:first="handlePageUpdate"
-      @page="handlePage"
-    />
-    <Paginator
-      :rows="20"
-      :totalRecords="0"
-      :rowsPerPageOptions="[10, 20, 30]"
-      :first=1
-      :pageLinkSize="1"
-      :pt="{
-        content: {
-          class: 'flex gap-0 p-0 m-0 h-[30px] items-center justify-center',
-        },
-        first: { class: 'rounded-none h-full' },
-        prev: { class: 'rounded-none h-full' },
-        pages: { class: 'rounded-none h-full' },
-        page: {
-          class:
-            'rounded-none h-full bg-adameds-300 text-white w-10 h-10 flex items-center justify-center',
-        },
-        next: { class: 'rounded-none h-full' },
-        last: { class: 'rounded-none h-full' },
-        pcRowPerPageDropdown: {
-          root: 'border-b-2 rounded-none border-white border-b-grey-200 ml-5 h-full items-center justify-center',
-        },
-      }"
-      @page="$emit('page', $event)"
-    >
+    <CustomPaginator :rows="10" :totalRecords="100" :rowsPerPageOptions="[10, 20, 30]" @update:rows="handleRowsUpdate"
+      @update:first="handlePageUpdate" @page="handlePage" />
+    <Paginator :rows="20" :totalRecords="0" :rowsPerPageOptions="[10, 20, 30]" :first="1" :pageLinkSize="1" :pt="{
+      content: {
+        class: 'flex gap-0 p-0 m-0 h-[30px] items-center justify-center',
+      },
+      first: { class: 'rounded-none h-full' },
+      prev: { class: 'rounded-none h-full' },
+      pages: { class: 'rounded-none h-full' },
+      page: {
+        class:
+          'rounded-none h-full bg-adameds-300 text-white w-10 h-10 flex items-center justify-center',
+      },
+      next: { class: 'rounded-none h-full' },
+      last: { class: 'rounded-none h-full' },
+      pcRowPerPageDropdown: {
+        root: 'border-b-2 rounded-none border-white border-b-grey-200 ml-5 h-full items-center justify-center',
+      },
+    }" @page="$emit('page', $event)">
       <template #rowsperpagedropdownicon>
         <PhCaretDown :size="20" weight="fill" class="text-grey-200" />
       </template>
     </Paginator>
 
     <b>Component Rekam Medis</b>
-    <Anamnesis /> <br>
-    <Kesadaran /><br>
-    <Antropometri /> <br>
-    <CatatanHasilPenunjang /> <br>
-    <AsuhanKeperawatan /> <br>
-    <PemeriksaanTindakan /> <br>
+    <Anamnesis /> <br />
+    <Kesadaran /><br />
+    <Antropometri /> <br />
+    <CatatanHasilPenunjang /> <br />
+    <AsuhanKeperawatan /> <br />
+    <PemeriksaanTindakan /> <br />
     <InstruksiMedis />
-    <br>
-    <OrderLab /><br>
-    <ListSuratKeterangan /> <br>
+    <br />
+    <OrderLab /><br />
+    <ListSuratKeterangan /> <br />
     <b>Form resume medis</b>
-    <TandaVital/> <br>
-    <AnamnesisResume/><br>
-    <Edukasi/> <br>
-    <Prognosis/><br>
-    <KeadaanWaktuPulang/><br>
-    <StatusPulang/><br>
-    <PemeriksaanFisik/> <br>
-    <Diagnosis/> <br>
-    <Tindakan/> <br>
-    <Obat/> <br>
-    <FormPemberianObat/>
-    <SuratControlRawatJalan
-      ref="controlRawatJalanRef"
-      />
-      <CustomButton label="Simpan" @click="submitChildForm" />
-
+    <TandaVital /> <br />
+    <AnamnesisResume /><br />
+    <Edukasi /> <br />
+    <Prognosis /><br />
+    <KeadaanWaktuPulang /><br />
+    <StatusPulang /><br />
+    <PemeriksaanFisik /> <br />
+    <Diagnosis /> <br />
+    <Tindakan /> <br />
+    <Obat /> <br />
+    <FormPemberianObat />
+    <SuratControlRawatJalan ref="controlRawatJalanRef" />
+    <CustomButton label="Simpan" @click="submitChildForm" />
+    <br /><br />
+    <TableTindakan ref="listKomponenTarifRef" />
+    <CustomButton label="Submit" @click="submitListKomponenSurat" />
+    <FileUpload
+        mode="basic"
+        accept=".xls,.xlsx"
+        :maxFileSize="1000000"
+        label="Import"
+        chooseLabel="Import"
+        auto
+        class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
+        @upload="emit('import')"
+      >
+        <template #uploadicon>
+          <FileImportIcon />
+        </template>
+      </FileUpload>
   </div>
 </template>
