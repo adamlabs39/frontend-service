@@ -52,7 +52,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "BPJS",
-        icon: "BPJS",
+        icon: "BPJSIcon",
         type: linkType.DROPDOWN,
         child: [
           { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/rawat-jalan/bpjs/monitoring-kunjungan'},
@@ -62,12 +62,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
       {
         name: "Laporan",
-        icon: "Report",
+        icon: "FileReportIcon",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Kunjungan Rawat Jalan", type: linkType.LINK },
-          { name: "Pembatalan Poli", type: linkType.LINK },
-          { name: "Rekap Tindakan Pasien", type: linkType.LINK },
+          { name: "Kunjungan Rawat Jalan", type: linkType.LINK, url:'/rawat-jalan/laporan/kunjungan-rawat-jalan' },
+          { name: "Pembatalan Poli", type: linkType.LINK, url:'/rawat-jalan/laporan/pembatalan-poli' },
+          { name: "Rekap Tindakan Pasien", type: linkType.LINK , url:'/rawat-jalan/laporan/rekap-tindakan-pasien'},
         ],
       },
     ],

@@ -56,7 +56,7 @@ import RevenueRecapPage from "@/views/Farmasi/Report/RevenueRecapPage.vue";
 
 // NOTE Rawat Jalan
 // import PoliPage from "@/views/RawatJalan/PoliPage.vue";
-import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
+import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
 
@@ -115,9 +115,9 @@ import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
-import PoliPage from "@/views/RawatJalan/PoliPage.vue";
-import BPJSPageMonitoringRiwayatKunjunganPage from "@/views/RawatJalan/BPJSPageMonitoringRiwayatKunjunganPage.vue";
-import BPJSMonitoringPage from "@/views/RawatJalan/BPJSMonitoringPage.vue";
+import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
+import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
+import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 
 
 const router = createRouter({
@@ -172,6 +172,25 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
       component: RawatJalanView,
     },
+    {
+      path: "/rawat-jalan/laporan/kunjungan-rawat-jalan",
+      name: "rawat-jalan-laporan-kunjungan-rawat-jalan",
+      meta: { layout: SidebarLayout, page: LaporanPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/laporan/pembatalan-poli",
+      name: "rawat-jalan-laporan-pembatalan-poli",
+      meta: { layout: SidebarLayout, page: LaporanPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+    {
+      path: "/rawat-jalan/laporan/rekap-tindakan-pasien",
+      name: "rawat-jalan-laporan-rekap-tindakan-pasien",
+      meta: { layout: SidebarLayout, page: LaporanPage, requiresAuth: true },
+      component: RawatJalanView,
+    },
+
     {
       path: "/setting/profil-faskes",
       name: "setting-profil-faskes",

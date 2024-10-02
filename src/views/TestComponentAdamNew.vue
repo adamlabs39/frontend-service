@@ -9,6 +9,7 @@ import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vu
 import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
 import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
 import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBerkas.vue';
+import PermissionMenuPage from './SettingPage/Template/PermissionMenu/PermissionMenuPage.vue';
 
 </script>
 
@@ -25,5 +26,6 @@ import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBer
          <FormPersetujuanPasien/>
          <FormUnggahBerkas/>
          <!-- <CustomUpload/> -->
+          <PermissionMenuPage/>
     </div>
 </template>
