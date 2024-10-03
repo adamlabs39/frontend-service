@@ -106,7 +106,7 @@ onMounted(() => {
       <!-- <NoData /> -->
        <DataKunjunganRawatJalan  v-if="pageType === 'kunjungan-rawat-jalan'"/>
        <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'"/>
-       <DataRekapTindakanPasien v-if="'rekap-tindakan-pasien'"/>
+       <DataRekapTindakanPasien v-if="pageType==='rekap-tindakan-pasien'"/>
     </template>
     <template #footer>
       <div class="flex justify-between">
