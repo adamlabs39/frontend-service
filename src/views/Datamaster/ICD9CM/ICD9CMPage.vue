@@ -33,8 +33,10 @@ const fetchIcd9Data = async () => {
       icd9Properties.value.page_size,
       searchQuery.value
     );
+    console.log("API Response:", response); 
 
     if (response && response.payload) {
+       console.log("Response contains payload:", response.payload);
       icd9Properties.value.total = response.properties.total;
       icd9Payload.value = response.payload;
     } else {
@@ -206,8 +208,18 @@ const downloadExportExcel = async () => {
   }
 };
 
-const handleFileUpload = (uploadedFiles:any) => {
-    console.log('Uploaded Files:', uploadedFiles);
+const handleFileUpload = async (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file);
+
+  try {
+    const response = await icd9Store.importApi(file); // Panggil fungsi importApi dengan formData
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+
+  
 };
 </script>
 

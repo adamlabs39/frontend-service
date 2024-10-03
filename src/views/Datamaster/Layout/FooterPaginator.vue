@@ -27,11 +27,15 @@ const handlePage = (event: any) => {
   emit("page", event);
 };
 
-const onUpload = (event:any) => {
-  const uploadedFiles = event.files;
-  console.log('Uploaded Files:', event);
-  emit('import', uploadedFiles);
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0].name; // Ambil file yang diunggah
+  console.log('Uploaded Files:', uploadedFiles); // Cetak file yang diunggah
+  emit('import', uploadedFiles); // Emit event import dengan file yang diunggah
+};
 
+
+const onError = (event: any) => {
+    console.error("File upload failed:", event);
 };
 </script>
 
@@ -49,10 +53,10 @@ const onUpload = (event:any) => {
         chooseLabel="Import"
         auto
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
-        @upload="onUpload"
-        name="demo[]"
-        url="/api/upload"
-
+        @uploader="onUpload"
+        custom-upload
+        @error="onError"
+        name="dems[]"
       >
         <template #uploadicon>
           <FileImportIcon />
@@ -76,3 +80,5 @@ const onUpload = (event:any) => {
     />
   </div>
 </template>
+
+

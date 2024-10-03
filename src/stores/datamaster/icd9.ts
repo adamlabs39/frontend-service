@@ -26,8 +26,8 @@ export const useIcd9Store = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/icd9/export`, payload);
     },
-    async importApi(payload = {}) {
-      return apiDatamasterPost("/datamaster/icd9/import", payload);
-    },
+  async importApi(payload = {}) {
+    return apiDatamasterPost("/datamaster/icd9/import", payload);
+  },
   },
 });
