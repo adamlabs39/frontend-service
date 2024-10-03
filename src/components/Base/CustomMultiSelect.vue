@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type PropType } from "vue";
 import { ref } from "vue";
 
 const props = defineProps({
   modelValue: {
-    type: Array,
+    type: Array as PropType<any[]>,
     default: () => [],
   },
   autoResize: {

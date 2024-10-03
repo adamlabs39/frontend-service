@@ -8,8 +8,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 
 const props = defineProps({
   payload: {
-    type: Object,
-    default: () => ({}),
+    type: Array,
+    default: () => ([]),
   },
 });
 const products = ref();

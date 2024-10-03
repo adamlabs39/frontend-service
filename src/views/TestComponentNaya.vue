@@ -273,7 +273,7 @@ const submitListKomponenSurat = () => {
         chooseLabel="Import"
         auto
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
-        @upload="emit('import')"
+        @upload="()=>{}"
       >
         <template #uploadicon>
           <FileImportIcon />

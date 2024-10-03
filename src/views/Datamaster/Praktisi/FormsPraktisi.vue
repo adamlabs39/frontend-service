@@ -325,9 +325,9 @@ watch(
         <CustomInfoRow
           v-if="payload.detailPegawai.tipe === 1"
           label="SIP"
-          :value="sip"
+          :value="`${sip}`"
         />
-        <CustomInfoRow label="STR" :value="str" />
+        <CustomInfoRow label="STR" :value="`${str}`" />
         <CustomInfoRow
           v-if="payload.detailPegawai.tipe === 1"
           label="Kode Antrian Dokter"
@@ -336,7 +336,8 @@ watch(
         <CustomInfoRow v-if="payload.detailPegawai.tipe === 1" label="Poli">
           <template #value>
             <CustomChip
-              :label="practisionerPoli"
+              v-for="poli in practisionerPoli"
+              :label="poli"
               textColor="text-white"
               bgColor="bg-adameds-300"
               borderColor="border-none"

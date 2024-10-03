@@ -36,7 +36,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Voucher harus diisi"),
     qty: yup.number().required("Jumlah Voucher harus diisi"),
     startDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
-    endtDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
+    endDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
     type: yup.string(),
     value: yup.number(),
     status: yup.bool().default(false),
@@ -88,7 +88,7 @@ const [code] = defineField("code");
 const [name] = defineField("name");
 const [qty] = defineField("qty");
 const [startDate] = defineField("startDate");
-const [endtDate] = defineField("endtDate");
+const [endDate] = defineField("endDate");
 const [type] = defineField("type");
 const [status] = defineField("status");
 
@@ -170,9 +170,9 @@ watch(
               v-model="startDate"
               :showLabel="false"
             />
-            <PhMinus class=" mt-auto mb-3 text-black" />
+            <PhMinus class="mt-auto mb-3 text-black " />
             <CustomDatePicker
-              v-model="endtDate"
+              v-model="endDate"
               :showLabel="false"
             />
           </div>
@@ -243,7 +243,7 @@ watch(
         <CustomInfoRow label="End Date" :value="`${endDate}`" />
         <CustomInfoRow label="Jumlah" :value="`${qty}`" />
         <CustomInfoRow label="Tipe Voucher" :value="type" />
-        <CustomInfoRow label="Tarif Voucher" :value="`${value}`" />
+        <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

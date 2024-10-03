@@ -107,8 +107,7 @@ const schema = toTypedSchema(
         yup.object({
           unitPelayanan: yup.number(),
         })
-      )
-      .nullable(),
+      ),
     penjamin: yup
       .array()
       .of(
@@ -227,6 +226,7 @@ const handlePushTarifLab = () => {
           :value="data"
         />
       </div>
+      {{ unitPelayanan }}
       <CustomMultiSelect
         label="Pelayanan"
         v-model="unitPelayanan"

@@ -7,8 +7,8 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const props = defineProps({
   payload: {
-    type: Object,
-    default: () => ({}),
+    type: Array,
+    default: () => ([]),
   },
 });
 

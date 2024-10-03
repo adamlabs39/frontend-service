@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import CustomTextfield from "../Base/CustomTextfield.vue";
-import KomponenTarif from "./KomponenTarifV1.vue";
 import CustomAutoComplete from "../Base/CustomAutoComplete.vue";
 import CustomSwitch from "../Base/CustomSwitch.vue";
 import CustomButton from "../Base/CustomButton.vue";
