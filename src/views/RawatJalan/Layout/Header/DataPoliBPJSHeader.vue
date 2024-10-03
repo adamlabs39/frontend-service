@@ -30,7 +30,10 @@ const props = defineProps({
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
-const searchDPJPFilter = ref<string>("");
+const searchNoAnggotaFilter = ref<string>("");
+const searchNamaObatFilter = ref<string>("");
+const searchDokterFilter = ref<string>("");
+const searchPelayananFilter = ref<string>("");
 
 // SECTION Rawat Jalan
 const filterPoliList = ref(["POLI MATA", "POLI ANAK", "POLI UMUM"]);
@@ -61,26 +64,50 @@ const onPaymentMethodSelect = (label: string) => {
 };
 
 
-const filters = [selectedFilterPoli, selectedPaymentMethod];
+// const filters = [selectedFilterPoli, selectedPaymentMethod];
 
 const resetFilter = () => {
-  filters.forEach((filter) => {
-    filter.value = [];
-  });
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
-  searchPatientFilter.value = "";
-  searchDPJPFilter.value = "";
+
+  switch (props.currentRouteName) {
+    case "rawat-jalan-poli":
+      searchPatientFilter.value = "";
+      searchDokterFilter.value = "";
+      selectedFilterPoli.value = [];
+      break;
+    case "monitoring-kunjungan":
+    case "monitoring-riwayat-kunjungan":
+      searchNoAnggotaFilter.value = "";
+      searchPelayananFilter.value = "";
+      break;
+    case "monitoring-obat-kunjungan":
+      searchNamaObatFilter.value = "";
+      searchPelayananFilter.value = "";
+      break;
+    default:
+      break;
+  }
+  // Resetting payment method for all routes
+  selectedPaymentMethod.value = [];
 };
 defineExpose({
   resetFilter,
 });
+
+const emit = defineEmits(['searchExecuted']);
+
+// Ketika tombol "Cari" diklik, emit event searchExecuted
+const executeSearch = () => {
+  // Emit event dengan nilai true
+  emit('searchExecuted', true);
+};
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
-      {{ currentRouteName }}
+      <!-- {{ currentRouteName }} -->
       
       <div class="flex items-center w-full gap-5 mr-2.5">
         <CustomButton icon="PhArrowClockwise" />
@@ -104,25 +131,55 @@ defineExpose({
             :model="dataBreadCrumb"
             class=""
           />
-          {{ filterMenu }}
+          <!-- {{ filterMenu }} -->
       </div>
     </template>
-    <template #content  v-if="currentRouteName=='rawat-jalan'">
+    <template #content>
       <div class="flex mt-[16px] mb-2.5">
-        <CustomTextfield
+       <CustomTextfield
+          v-if="currentRouteName === 'rawat-jalan-poli'"
           v-model="searchPatientFilter"
           prependIcon="PhMagnifyingGlass"
           label="Cari Pasien"
           placeholder="Cari Nama Pasien"
           class="mr-5 grow"
         />
+        <CustomTextfield
+          v-if="currentRouteName === 'monitoring-kunjungan' || currentRouteName === 'monitoring-riwayat-kunjungan'"
+          v-model="searchNoAnggotaFilter"
+          prependIcon="PhMagnifyingGlass"
+          label="Cari No. Anggota"
+          placeholder="Cari No. Anggota"
+          class="mr-5 grow"
+        />
+        <CustomTextfield
+          v-if="currentRouteName === 'monitoring-obat-kunjungan'"
+          v-model="searchNamaObatFilter"
+          prependIcon="PhMagnifyingGlass"
+          label="Cari Nama Obat"
+          placeholder="Cari Nama Obat"
+          class="mr-5 grow"
+        />
         <CustomSelect
-          v-model="searchDPJPFilter"
-          label="DPJP"
+        v-if="currentRouteName==='rawat-jalan-poli'"
+          v-model="searchDokterFilter"
+          label="Dokter"
           class="mr-5 grow"
           optionLabel=""
           optionValue=""
+          place-holder="Cari Dokter"
           :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+          prependIcon="PhMagnifyingGlass"
+        />
+        <CustomSelect
+        v-else
+          v-model="searchPelayananFilter"
+          label="Jenis Pelayanan"
+          class="mr-5 grow"
+          optionLabel=""
+          optionValue=""
+          place-holder="Pilih Jenis Pelayanan"
+          :options="['Semua', 'Beberapa', 'Banyak']"
           prependIcon="PhMagnifyingGlass"
         />
         <!-- disini -->
@@ -141,6 +198,7 @@ defineExpose({
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
+          @click="executeSearch"
         />
         <CustomButton
           @click="resetFilter"
@@ -152,7 +210,8 @@ defineExpose({
         />
       </div>
       <slot name="content"></slot>
-      <div class="font-semibold text-SM text-grey-300">
+      
+      <div class="font-semibold text-SM text-grey-300" v-if="currentRouteName === 'rawat-jalan-poli'">
         <div class="flex mb-[10px] mt-[10px]" v-if="props.filterMenu == 'Semua Poli'">
           <div class="w-[15%] flex items-center">Filter Poli</div>
           <div class="flex gap-2.5">
@@ -200,52 +259,7 @@ defineExpose({
     </template>
 
     <!-- ketika route di BPJS atau Laporan -->
-    <template #content v-else>
-      <div class="flex mt-[10px] mb-2.5">
-        <CustomTextfield
-          v-model="searchPatientFilter"
-          prependIcon="PhMagnifyingGlass"
-          label="Cari No Anggota"
-          placeholder="Cari Nama Pasien"
-          class="mr-5 grow"
-        />
-        <CustomSelect
-          v-model="searchDPJPFilter"
-          label="Jenis Pelayanan"
-          class="mr-5 grow"
-          optionLabel=""
-          optionValue=""
-          :options="['Semua', 'Beberapa', 'Banyak']"
-          prependIcon="PhMagnifyingGlass"
-        />
-        <!-- disini -->
-        <CustomDatePicker
-          v-model="startDateFilter"
-          label="Tanggal"
-          class="w-[200px]"
-        />
-        <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-        <CustomDatePicker
-          v-model="endDateFilter"
-          :showLabel="false"
-          class="mt-auto w-[200px]"
-        />
-        <CustomButton
-          icon="PhMagnifyingGlass"
-          label="Cari"
-          class="ml-5 mr-[10px] mt-auto w-[95px]"
-        />
-        <CustomButton
-          @click="resetFilter"
-          label="Reset"
-          outlined
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          class="mt-auto w-[70px]"
-        />
-      </div>
-      <hr class="border-grey-200" />
-    </template>
+    
     <template #collapseIcon>
       <CustomButton
         icon="PhCaretUp"
