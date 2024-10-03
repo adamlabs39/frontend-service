@@ -28,7 +28,7 @@ const handlePage = (event: any) => {
 };
 
 const onUpload = (event: any) => {
-  const uploadedFiles = event.files[0].name; // Ambil file yang diunggah
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
   console.log('Uploaded Files:', uploadedFiles); // Cetak file yang diunggah
   emit('import', uploadedFiles); // Emit event import dengan file yang diunggah
 };
@@ -53,9 +53,8 @@ const onError = (event: any) => {
         chooseLabel="Import"
         auto
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
-        @uploader="onUpload"
+        @select="onUpload"
         custom-upload
-        @error="onError"
         name="dems[]"
       >
         <template #uploadicon>

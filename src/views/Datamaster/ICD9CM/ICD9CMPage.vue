@@ -209,11 +209,16 @@ const downloadExportExcel = async () => {
 };
 
 const handleFileUpload = async (file: File) => {
-  const formData = new FormData()
-  formData.append('file', file);
+  console.log('123',file);
+  const dataUpload = new FormData()
+  console.log(dataUpload);
+  
+  dataUpload.append('file',file);
+  console.log('321', file);
+  console.log('test', dataUpload.get('file123'));
 
   try {
-    const response = await icd9Store.importApi(file); // Panggil fungsi importApi dengan formData
+    const response = await icd9Store.importApi(dataUpload); // Panggil fungsi importApi dengan formData
     console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
   } catch (error) {
     console.error('Error uploading file:', error); // Log error jika upload gagal
