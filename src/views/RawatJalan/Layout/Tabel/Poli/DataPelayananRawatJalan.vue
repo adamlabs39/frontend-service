@@ -136,7 +136,7 @@ const itemsPasien = ref([
     :value="itemsPasien"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="flex"
+    scrollHeight="240px"
     class="-m-4"
     @row-click="openDialogRM"
     :pt="{ headerRow: 'text-SM' }"

@@ -26,6 +26,13 @@ const emit = defineEmits(["page", "export", "import"]);
 const handlePage = (event: any) => {
   emit("page", event);
 };
+
+const onUpload = (event:any) => {
+  const uploadedFiles = event.files;
+  console.log('Uploaded Files:', event);
+  emit('import', uploadedFiles);
+
+};
 </script>
 
 <template>
@@ -42,7 +49,10 @@ const handlePage = (event: any) => {
         chooseLabel="Import"
         auto
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
-        @upload="emit('import')"
+        @upload="onUpload"
+        name="demo[]"
+        url="/api/upload"
+
       >
         <template #uploadicon>
           <FileImportIcon />

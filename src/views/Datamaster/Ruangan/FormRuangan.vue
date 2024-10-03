@@ -51,7 +51,7 @@ const fetchKategoriRuangan = async () => {
 onMounted(() => {
   fetchKategoriRuangan();
 });
-const opstionsKelas = ref([
+const optionsKelas = ref([
   { label: "kelas 1", value: 1 },
   { label: "kelas 2", value: 2 },
   { label: "kelas 3", value: 3 },
@@ -130,7 +130,7 @@ const closeDialog = () => {
 };
 
 const kelasRuanganLabel = computed(() => {
-  const selectedKelas = opstionsKelas.value.find(option => option.value === props.payload.kelasRuangan);
+  const selectedKelas = optionsKelas.value.find(option => option.value === props.payload.kelasRuangan);
   return selectedKelas ? selectedKelas.label : "";
 });
 
@@ -200,7 +200,7 @@ watch(
         <CustomSelect
           label="Kelas Ruangan"
           v-model="kelasRuangan"
-          :options="opstionsKelas"
+          :options="optionsKelas"
           optionValue="value"
           optionLabel="label"
           place-holder="Pilih Kelas Ruangan"

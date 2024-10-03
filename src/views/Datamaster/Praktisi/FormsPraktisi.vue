@@ -12,6 +12,8 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePegawaiStore } from "@/stores/datamaster/pegawai";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   isDialogVisible: {

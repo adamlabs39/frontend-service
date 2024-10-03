@@ -205,6 +205,10 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = (uploadedFiles:any) => {
+    console.log('Uploaded Files:', uploadedFiles);
+};
 </script>
 
 <template>
@@ -336,11 +340,12 @@ const downloadExportExcel = async () => {
     </template>
 
     <template #footer>
-      <Footer
+      <FooterPaginator
         :rows="icd9Properties.page_size"
         :totalRecords="icd9Properties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

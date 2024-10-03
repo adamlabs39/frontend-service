@@ -271,7 +271,7 @@ const downloadExportExcel = async () => {
         >
         <template #body="slotProps">
             <CustomChip
-            :label="slotProps.data.detailPegawai.tipe === 1 ? 'NAKES' : 'NON NAKES'"
+            :label="slotProps.data.detailPegawai.tipe === 1 ? 'DOKTOR' : 'NON-DOKTOR'"
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"

@@ -10,24 +10,24 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { downloadPdf } from "@/utils/PdfMake";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-import CustomCkEditor from "../../components/Base/CustomCkEditor.vue";
-import CustomRadio from "../../components/Base/CustomRadio.vue";
-import MedicalRecord from "../MedicalRecord/MedicalRecord.vue";
+import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
+import CustomRadio from "@/components/Base/CustomRadio.vue";
+import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
-import DataRawatJalanHeader from "./Layout/DataRawatJalanHeader.vue";
-import Pelayanan from "@/views/RawatJalan/Layout/DataPelayananRawatJalan.vue"
+import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
+import Pelayanan from "../Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import { useRoute } from 'vue-router';
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import Discharge from "./Layout/DataDischargeRawatJalan.vue";
+import Discharge from "../Layout/Tabel/Poli/DataDischargeRawatJalan.vue";
 
 
 
 const props = defineProps({
   filter: {
     type: String,
-    default: "Semua Poli",
+    default: "",
   },
 });
 const value = ref("1");
@@ -40,6 +40,7 @@ const currentRouteName = ref("");
 
 onMounted(() => {
   currentRouteName.value = route.name ? String(route.name) : ""; 
+  console.log("Current Route Name:", currentRouteName.value);
 });
 
 </script>
@@ -50,7 +51,7 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <DataRawatJalanHeader :activeTab="value" :filter-menu="props.filter" :current-route-name="currentRouteName">
+      <DataPoliBPJSHeader :activeTab="value" :filter-menu="props.filter" :current-route-name="currentRouteName">
         <template #content>
           <div class="flex items-center gap-2">
             <CustomButton
@@ -85,7 +86,7 @@ onMounted(() => {
             />
           </div>
         </template>
-      </DataRawatJalanHeader>
+      </DataPoliBPJSHeader>
     </template>
     <template #content>
       <Tabs v-model:value="value">

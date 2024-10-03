@@ -12,6 +12,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+import CustomDragDrop from "@/components/Base/CustomDragDrop.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -104,6 +105,15 @@ const handleEdit = () => {
   method.value = "edit";
   title.value = "Edit Data";
 };
+
+const itemGigi = ref();
+const backgroundUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
+
+const clearBackgroundPreview = () => {
+    if (backgroundUpload.value) {
+        backgroundUpload.value.clearFile(); // Now this should work as expected
+    }
+};
 </script>
 
 <template>
@@ -140,7 +150,24 @@ const handleEdit = () => {
             />
             <CustomTextArea label="Catatan" placeholder="Masukkan Catatan" />
           </div>
-          <div>upload dan preview</div>
+          <div>
+            <div class="flex"></div>
+            <div class="font-semibold text-normal">Upload & Preview</div>
+            <CustomButton
+              label="Hapus Gambar"
+              backgroundColor="bg-danger-50"
+              textColor="text-danger-300"
+              icon="PhTrash"
+              @click="clearBackgroundPreview"
+            />
+            <CustomDragDrop
+              v-model="itemGigi"
+              :allowed-file-types="['image/png']"
+              :class="itemGigi ? 'bg-adameds-300' : 'bg-white'"
+              class="h-full"
+            />
+            {{ itemGigi }}
+          </div>
         </div>
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
@@ -157,10 +184,10 @@ const handleEdit = () => {
       <div v-else class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kategori Gigi" :value="code" />
         <CustomInfoRow label="Referensi Sistem SATUSEHAT" :value="display" />
-        <CustomInfoRow label="Code SATUSEHAT"  />
-        <CustomInfoRow label="Display SATUSEHAT"  />
-        <CustomInfoRow label="Nama Item Gigi"  />
-        <CustomInfoRow label="Catatan"  />
+        <CustomInfoRow label="Code SATUSEHAT" />
+        <CustomInfoRow label="Display SATUSEHAT" />
+        <CustomInfoRow label="Nama Item Gigi" />
+        <CustomInfoRow label="Catatan" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
