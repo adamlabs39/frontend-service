@@ -15,7 +15,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Poli",
-        icon: "BPJS",
+        icon: "PhStethoscope",
         type: linkType.DROPDOWN,
         child: [
           {
