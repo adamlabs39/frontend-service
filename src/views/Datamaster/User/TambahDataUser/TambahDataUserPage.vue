@@ -6,7 +6,6 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-// import CustomCheckBoxUser from "@/components/Datamaster/CustomCheckBoxUser.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 import { useForm } from "vee-validate";
