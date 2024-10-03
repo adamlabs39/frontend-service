@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
+import { useTarifStore } from "@/stores/datamaster/tarif";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { utilsStore } from "@/stores/utils";
 import Footer from "../Layout/FooterPaginator.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import TablesRuangan from "./TablesRuangan.vue";
 import TablesTindakan from "./TablesTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -15,7 +16,59 @@ const handleSelectedTab = (newTab: any) => {
   selectedTab.value = newTab;
 };
 const testDialog = ref(false);
+
+const tarifStore = useTarifStore();
+const UseUtilsStore = utilsStore();
+const tarifPayload = ref<any[]>([]);
+const tindakanPayload = ref<any[]>([]);
+const ruanganPayload = ref<any[]>([]);
+
+const tarifProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+const fetchTarifData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await tarifStore.getApi(
+      tarifProperties.value.page,
+      tarifProperties.value.page_size,
+    );
+
+    if (response && response.payload) {
+      tarifProperties.value.total = response.properties.total;
+      
+      // Full payload
+      tarifPayload.value = response.payload;
+
+      // Filter tindakan and ruangan
+      tindakanPayload.value = tarifPayload.value.filter(
+        (item: any) => item.jenisTarif === "Tindakan"
+      );
+      ruanganPayload.value = tarifPayload.value.filter(
+        (item: any) => item.jenisTarif === "Ruangan"
+      );
+    } else {
+      tarifPayload.value = [];
+      tindakanPayload.value = [];
+      ruanganPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    tarifPayload.value = [];
+    tindakanPayload.value = [];
+    ruanganPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+onMounted(() => {
+  fetchTarifData();
+});
 </script>
+
 
 <template>
   <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
@@ -26,10 +79,10 @@ const testDialog = ref(false);
       <Tabs v-model:value="selectedTab">
         <TabPanels>
           <TabPanel value="0">
-            <TablesTindakan />
+            <TablesTindakan :payload="tindakanPayload" />
           </TabPanel>
           <TabPanel value="1">
-            <TablesRuangan />
+            <TablesRuangan :payload="ruanganPayload"/>
           </TabPanel>
         </TabPanels>
       </Tabs>

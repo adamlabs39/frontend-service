@@ -229,6 +229,7 @@ const downloadExportExcel = async () => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
+      v-else
         :value="voucherPayload"
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
