@@ -5,7 +5,6 @@ import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import FormGeneralConsent from "./FormGeneralConsent.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
@@ -48,7 +47,13 @@ const fetchGeneralConsentData = async () => {
   }
 };
 
-watch([searchQuery], fetchGeneralConsentData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchGeneralConsentData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchGeneralConsentData();
@@ -153,7 +158,7 @@ const confirmDelete = async (item: any) => {
         ></Column>
         <Column
           field="name"
-          header="Nama"
+          header="Nama General Consent"
           headerClass="bg-adameds-50"
           class="w-1/2"
         ></Column>
@@ -199,7 +204,7 @@ const confirmDelete = async (item: any) => {
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
                 @click="
-                  deleteDialog('delete', 'General Consent', slotProps.data)
+                  deleteDialog('delete', `General Consent ${slotProps.data.code}`, slotProps.data)
                 "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />

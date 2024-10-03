@@ -47,7 +47,13 @@ const fetchOklusiData = async () => {
   }
 };
 
-watch([searchQuery], fetchOklusiData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchOklusiData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchOklusiData();

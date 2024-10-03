@@ -48,7 +48,13 @@ const fetchDiagnosisData = async () => {
   }
 };
 
-watch([searchQuery], fetchDiagnosisData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchDiagnosisData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchDiagnosisData();

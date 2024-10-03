@@ -47,7 +47,13 @@ const fetchGigiData = async () => {
   }
 };
 
-watch([searchQuery], fetchGigiData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchGigiData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchGigiData();

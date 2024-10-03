@@ -48,7 +48,13 @@ const fetchKomponenTarifData = async () => {
   }
 };
 
-watch([searchQuery], fetchKomponenTarifData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchKomponenTarifData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchKomponenTarifData();
@@ -121,7 +127,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER KOMPONEN TARIF"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -199,8 +205,8 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Komponen Tarif");
+    XLSX.writeFile(workbook, `Datamaster Komponen Tarif.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }

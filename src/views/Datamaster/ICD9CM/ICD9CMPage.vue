@@ -48,7 +48,13 @@ const fetchIcd9Data = async () => {
   }
 };
 
-watch([searchQuery], fetchIcd9Data);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchIcd9Data();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchIcd9Data();

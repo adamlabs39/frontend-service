@@ -46,7 +46,13 @@ const fetchSnomedData = async () => {
   }
 };
 
-watch([searchQuery], fetchSnomedData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchSnomedData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchSnomedData();

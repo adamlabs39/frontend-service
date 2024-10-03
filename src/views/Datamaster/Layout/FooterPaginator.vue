@@ -27,18 +27,16 @@ const handlePage = (event: any) => {
   emit("page", event);
 };
 
-const onUpload = (event:any) => {
+const onUpload = (event: any) => {
   const uploadedFiles = event.files;
-  console.log('Uploaded Files:', event);
-  emit('import', uploadedFiles);
-
+  console.log("Uploaded Files:", event);
+  emit("import", uploadedFiles);
 };
 </script>
 
 <template>
   <div class="flex justify-between py-2.5">
-    <div class="flex items-center gap-2.5 ">
-      
+    <div class="flex items-center gap-2.5">
       <!-- Show Import Button if enabled via props -->
       <FileUpload
         v-if="showImport"
@@ -48,11 +46,17 @@ const onUpload = (event:any) => {
         label="Import"
         chooseLabel="Import"
         auto
+        :pt="{
+          pcButton: {
+            
+              class: 'font-back', // OR { class: 'w-64' }
+            
+          },
+        }"
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
         @upload="onUpload"
         name="demo[]"
         url="/api/upload"
-
       >
         <template #uploadicon>
           <FileImportIcon />

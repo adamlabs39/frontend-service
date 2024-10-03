@@ -48,7 +48,13 @@ const fetchRuanganData = async () => {
   }
 };
 
-watch([searchQuery], fetchRuanganData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchRuanganData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchRuanganData();

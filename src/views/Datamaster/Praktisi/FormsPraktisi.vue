@@ -38,13 +38,6 @@ const tipePraktisi = ref([
 const pegawaiStore = usePegawaiStore();
 const praktisiStore = usePraktisiStore();
 const pegawaiPayload = ref<any[]>([]);
-const isSearchPerformed = ref(false); // New reactive property
-
-const selectedPegawai = computed(() => {
-  return pegawaiPayload.value.find(
-    (pegawai) => pegawai.uuid === pegawaiUuid.value
-  );
-});
 
 const fetchPegawai = async () => {
   try {
@@ -55,25 +48,33 @@ const fetchPegawai = async () => {
       pegawaiPayload.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch kategori ruangan", error);
+    console.error("Failed to fetch data pegawai", error);
     pegawaiPayload.value = [];
   }
-};
-
-const searchPegawai = async () => {
-  // Call fetchKategoriRuangan when searching for employees
-  await fetchPegawai();
-  isSearchPerformed.value = true; // Set to true when search is performed
-};
-
-const resetSearch = () => {
-  pegawaiPayload.value = []; // Clear the payload
-  isSearchPerformed.value = false; // Reset the search state
 };
 
 onMounted(() => {
   fetchPegawai();
 });
+
+const selectedPegawai = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
+
+const searchPegawai = () => {
+  // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
+  selectedPegawai.value = pegawaiPayload.value.find(
+    (pegawai) => pegawai.uuid === pegawaiUuid.value
+  );
+
+  // Jika pegawai tidak ditemukan, bisa tambahkan logika penanganan di sini
+  if (!selectedPegawai.value) {
+    console.warn("Pegawai tidak ditemukan");
+  }
+};
+
+const resetSearch = () => {
+  pegawaiUuid.value = ""; // Reset pegawaiUuid
+  selectedPegawai.value = null; // Reset selectedPegawai
+};
 
 const schema = toTypedSchema(
   yup.object({
@@ -147,7 +148,6 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetDialogMode();
   resetForm();
-  resetSearch(); // Reset search when closing the dialog
 };
 
 watch(
@@ -163,7 +163,6 @@ watch(
     } else {
       resetForm();
       resetDialogMode();
-      resetSearch(); // Reset when dialog is closed
     }
   }
 );
@@ -218,10 +217,8 @@ watch(
             @click="resetSearch"
           />
         </div>
-        <div v-if="isSearchPerformed && selectedPegawai" class="col-span-12">
+        <div v-if="selectedPegawai" class="col-span-12">
           <div
-            v-for="pegawai in pegawaiPayload"
-            :key="pegawai.uuid"
             class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 p-5"
           >
             <div class="flex flex-col">
@@ -253,7 +250,6 @@ watch(
             </div>
           </div>
         </div>
-
         <CustomInputNumber
           v-if="isDokter"
           label="Kode HFIS (BPJS)"
@@ -313,10 +309,10 @@ watch(
           }}
         </div>
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Nama Lengkap" :value="payload.name" />
-        <CustomInfoRow label="NIK" :value="payload.nik" />
-        <CustomInfoRow label="Tanggal Lahir" :value="payload.tanggalLahir" />
-        <CustomInfoRow label="Jenis Kelamin" :value="payload.gender" />
+        <CustomInfoRow label="Nama Lengkap" :value="payload.detailPegawai.name" />
+        <CustomInfoRow label="NIK" :value="payload.detailPegawai.nik" />
+        <CustomInfoRow label="Tanggal Lahir" :value="payload.detailPegawai.tanggalLahir" />
+        <CustomInfoRow label="Jenis Kelamin" :value="payload.detailPegawai.gender" />
         <CustomInfoRow
           v-if="payload.detailPegawai.tipe === 1"
           label="Kode HFIS (BPJS)"

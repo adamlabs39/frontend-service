@@ -30,7 +30,7 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama ICD 9 CM harus diisi"),
+    name: yup.string().required("Nama Komponen Tarif harus diisi"),
     status: yup.bool().default(false),
   })
 );
@@ -116,12 +116,12 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} ICD 9 CM</template>
+    <template #header>{{ title }} Komponen Tarif</template>
     <template #body>
       <!-- Form Input -->
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
-          label="Kode"
+          label="Kode Komponen Tarif"
           v-model="code"
           placeholder="Kode"
           :invalid="!!errors.code"
@@ -136,7 +136,7 @@ watch(
           :invalidMessage="errors.name"
           class="col-span-8"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
