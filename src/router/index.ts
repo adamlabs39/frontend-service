@@ -642,7 +642,7 @@ const router = createRouter({
     {
       path: "/pembayaran/kasir",
       name: "pembayaran-kasir",
-      meta: { layout: SidebarLayout, page: CashierPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: Cashier2Page, requiresAuth: true },
       component: PaymentView,
     },
     {
