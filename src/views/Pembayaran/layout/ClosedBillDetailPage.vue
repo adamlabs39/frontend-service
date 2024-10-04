@@ -39,7 +39,6 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
               @click="emit('back')"
               icon="PhCaretLeft"
               label="Kembali"
-              class="mr-[10px]"
               outlined
               borderColor="border-adameds-300"
               textColor="text-adameds-300"

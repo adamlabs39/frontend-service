@@ -332,7 +332,14 @@ const itemsPasien = ref([
                 Rp, 0
               </div>
             </div>
-            <div class="mt-[110px]"></div>
+            <div class="mt-[70px]">
+              <div class="flex">
+                <CustomButton
+                  label="Bayar" 
+                  class="w-full"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </template>

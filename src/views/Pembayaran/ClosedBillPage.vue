@@ -324,6 +324,8 @@ onMounted(() => {
           </template>
         </CustomAccordion>
       </template>
+
+      <!-- Datatable -->
       <template #content>
         <DataTable
           v-if="itemsPasien.length"
@@ -438,9 +440,7 @@ onMounted(() => {
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header>
-              <div
-                class="flex items-center justify-center w-full font-semibold text-SM"
-              >
+              <div class="flex items-center justify-center w-full font-semibold text-SM">
                 Status
               </div>
             </template>

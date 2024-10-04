@@ -142,9 +142,9 @@ const itemsPasien = ref([
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -220,26 +220,26 @@ const itemsPasien = ref([
         </CustomAccordion>
       </template>
       <template #content>
-        <div class="grid grid-flow-col grid-rows-2 gap-2">
-          <div class="h-[21%] border-2 border-adameds-300 rounded-lg flex flex-row">
+        <div class="grid grid-cols-2 gap-2">
+          <div class="h-[21%] border-2 border-adameds-300 rounded-lg flex flex-row mr-[20px]">
             <div class="basis-1/2">
               <p class="font-bold text-MD mt-[15px] ml-[15px]">Nama lengkap pasien</p>
               <p class="ml-[15px] text-sm">REG1231235</p>
               <CustomButton class="w-20 h-5 text-xs ml-[15px]">00-00-00</CustomButton>
               <CustomChip
-                  :showCheckedIcon="false"
-                  label="Laki-laki"
-                  bgColor="bg-male-75"
-                  textColor="text-male-300"
-                  customClass="h-5 pr-[6px] border-none ml-[10px]"
+                :showCheckedIcon="false"
+                label="Laki-laki"
+                bgColor="bg-male-75"
+                textColor="text-male-300"
+                customClass="h-5 pr-[6px] border-none ml-[10px]"
               />                
-              <!-- <CustomChip
-              :showCheckedIcon="false"
-              label="Perempuan"
-              bgColor="bg-female-75"
-              textColor="text-female-300"
-              customClass="h-5 pr-[6px] border-none mr-[5px]"
-              /> -->
+              <CustomChip
+                :showCheckedIcon="false"
+                label="Perempuan"
+                bgColor="bg-female-75"
+                textColor="text-female-300"
+                customClass="h-5 pr-[6px] border-none mr-[5px]"
+              />
             </div>
             <div class="bg-mediumGrey-300 w-[1px] h-[74px] mr-[20px] mt-[15px]"></div>
             <div class="mt-[30px] mr-[40px]">
@@ -247,63 +247,7 @@ const itemsPasien = ref([
               <p class="">24Thn 2Bln 1Hari</p>
             </div>
           </div>
-          <!-- List Tagihan Pelayanan -->
-          <div class="mt-[-400px]">
-            <DataTable
-              :value="itemsPasien"
-              scrollable scrollHeight="390px"
-              class="overflow-hidden rounded-[10px]"
-              :pt="{ headerRow: 'text-SM' }"
-              @rowClick="listTagihanRIDialog = true"
-            >
-              <Column
-                field="no"
-                headerClass="bg-adameds-300 text-white"
-                bodyClass="text-SM"
-                style="width: 60px"
-              >
-                <template #header>
-                  <div class="w-full font-bold">List Tagihan Pelayanan</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex">
-                    <p class="font-bold text-normal">{{ slotProps.data.layanan}}</p>
-                    <CustomChip
-                      class="ml-2"
-                      :showCheckedIcon="false"
-                      label="TUNAI"
-                      bgColor="bg-adameds-50"
-                      textColor="text-adameds-300"
-                      borderColor="border-adameds-300"
-                    />
-                    <CustomChip
-                      class="ml-2"
-                      :showCheckedIcon="false"
-                      label="BPJS"
-                      bgColor="bg-warning-50"
-                      textColor="text-warning-300"
-                      borderColor="border-warning-300"
-                    />
-                  </div>
-                  <div class="flex">
-                    <UserDoctorIcon class="mt-2"/>
-                    <p class="mt-2 text-sm text-grey-400">{{ slotProps.data.doctor }}</p>
-                  </div>
-                  <div class="flex">
-                    <p class="text-sm">Tanggal</p>
-                    <PhArrowRight
-                      :size="18"
-                      class="my-auto ml-2 text-success-300"
-                      weight="bold"
-                    />
-                    <p class="ml-2 text-sm">{{  slotProps.data.tanggal_jadwal }}</p>
-                    <p class="ml-2 text-sm">{{  slotProps.data.no_time }}</p>
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-          
+                    
           <!-- Kolom Pembayaran -->
           <div class="p-5 rounded-lg bg-adameds-50">
             <!-- Total Pembayaran -->
@@ -383,7 +327,7 @@ const itemsPasien = ref([
               </div>
             </div>
             <!-- Button Bayar -->
-            <div class="mt-[70px]">
+            <div class="mt-[60px]">
               <div class="flex">
                 <CustomButton 
                   @click="pembayaranBPJSDialog = true"
@@ -392,7 +336,7 @@ const itemsPasien = ref([
                 />
               </div>
             </div>
-            <!-- <div class="mt-[70px]">
+            <!-- <div class="mt-[60px]">
               <div class="flex">
                 <CustomButton 
                   @click="closeBillDialog = true"
@@ -404,6 +348,63 @@ const itemsPasien = ref([
                 />
               </div>
             </div> -->
+          </div>
+
+          <!-- List Tagihan Pelayanan -->
+          <div class="mt-[-390px] mr-[20px]">
+            <DataTable
+              :value="itemsPasien"
+              scrollable scrollHeight="380px"
+              class="overflow-hidden rounded-[10px]"
+              :pt="{ headerRow: 'text-SM' }"
+              @rowClick="listTagihanRIDialog = true"
+            >
+              <Column
+                field="no"
+                headerClass="bg-adameds-300 text-white"
+                bodyClass="text-SM"
+                style="width: 60px"
+              >
+                <template #header>
+                  <div class="w-full font-bold">List Tagihan Pelayanan</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex">
+                    <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
+                    <CustomChip
+                      class="ml-2"
+                      :showCheckedIcon="false"
+                      label="TUNAI"
+                      bgColor="bg-adameds-50"
+                      textColor="text-adameds-300"
+                      borderColor="border-adameds-300"
+                    />
+                    <CustomChip
+                      class="ml-2"
+                      :showCheckedIcon="false"
+                      label="BPJS"
+                      bgColor="bg-warning-50"
+                      textColor="text-warning-300"
+                      borderColor="border-warning-300"
+                    />
+                  </div>
+                  <div class="flex">
+                    <UserDoctorIcon class="mt-2"/>
+                    <p class="mt-2 text-sm text-grey-400">{{ slotProps.data.doctor }}</p>
+                  </div>
+                  <div class="flex">
+                    <p class="text-sm">Tanggal</p>
+                    <PhArrowRight
+                      :size="18"
+                      class="my-auto ml-2 text-success-300"
+                      weight="bold"
+                    />
+                    <p class="ml-2 text-sm">{{  slotProps.data.tanggal_jadwal }}</p>
+                    <p class="ml-2 text-sm">{{  slotProps.data.no_time }}</p>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
           </div>
         </div>
       </template>
