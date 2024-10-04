@@ -47,7 +47,13 @@ const fetchKategoriGigiData = async () => {
   }
 };
 
-watch([searchQuery], fetchKategoriGigiData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchKategoriGigiData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchKategoriGigiData();

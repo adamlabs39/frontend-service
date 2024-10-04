@@ -48,7 +48,13 @@ const fetchPenjaminData = async () => {
   }
 };
 
-watch([searchQuery], fetchPenjaminData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchPenjaminData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchPenjaminData();
@@ -163,7 +169,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 15 },{ wch: 15 },{ wch: 15 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -316,7 +322,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Penjamin', slotProps.data)"
+                @click="deleteDialog('delete', `Penjamin ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

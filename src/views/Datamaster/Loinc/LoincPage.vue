@@ -46,7 +46,13 @@ const fetchLoincData = async () => {
   }
 };
 
-watch([searchQuery], fetchLoincData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchLoincData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchLoincData();

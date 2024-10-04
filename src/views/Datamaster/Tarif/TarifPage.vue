@@ -34,7 +34,7 @@ const fetchTarifData = async () => {
   try {
     const response = await tarifStore.getApi(
       tarifProperties.value.page,
-      tarifProperties.value.page_size,
+      tarifProperties.value.page_size,  
     );
 
     if (response && response.payload) {

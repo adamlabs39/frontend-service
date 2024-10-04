@@ -48,7 +48,13 @@ const fetchFaskesData = async () => {
   }
 };
 
-watch([searchQuery], fetchFaskesData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchFaskesData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchFaskesData();

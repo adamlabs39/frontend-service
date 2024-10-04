@@ -48,7 +48,13 @@ const fetchTindakanData = async () => {
   }
 };
 
-watch([searchQuery], fetchTindakanData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchTindakanData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchTindakanData();

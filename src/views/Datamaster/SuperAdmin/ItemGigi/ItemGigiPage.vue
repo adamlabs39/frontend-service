@@ -1,31 +1,90 @@
 <script setup lang="ts">
 import HeaderFilter from "../../Layout/HeaderFilter.vue";
-import { onMounted, ref } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
-import type { MenuItem } from "primevue/menuitem";
+import { onMounted, ref, watch, computed } from "vue";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
+import { useItemGigiStore } from "@/stores/datamaster/itemGigi";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import FormItemGigi from "./FormItemGigi.vue";
+import NoData from "@/components/section/NoData.vue";
+import FooterPaginator from "../../Layout/FooterPaginator.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 
+// State Management
+const itemGigiStore = useItemGigiStore();
+const UseUtilsStore = utilsStore();
+const itemGigiPayload = ref<any[]>([]);
+const itemGigiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
 
-const products = ref<any[]>([]);
+// Search Query
+const searchQuery = ref<string>("");
+
+// Fetch ItemGigi Data from API
+const fetchItemGigiData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await itemGigiStore.getApi(
+      itemGigiProperties.value.page,
+      itemGigiProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      itemGigiProperties.value.total = response.properties.total;
+      itemGigiPayload.value = response.payload;
+    } else {
+      itemGigiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    itemGigiPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchItemGigiData();
+  }, 500); 
+});
 
 onMounted(() => {
-  products.value = [
-    {
-      nama_keadaan_gigi: "Partial Erupted",
-      status: "AKTIF",
-    },
-    {
-      nama_keadaan_gigi: "Partial Erupted",
-      status: "AKTIF",
-    },
-  ];
+  fetchItemGigiData();
 });
-// Dialog States
-const isTambahDataDialogVisible = ref(false);
 
-// Dialog Configuration
+// Handle Pagination
+const handlePage = (event: any) => {
+  itemGigiProperties.value.page = event.page + 1;
+  itemGigiProperties.value.page_size = event.rows;
+  fetchItemGigiData();
+};
+
+// Check if Data Exists
+const hasData = computed(
+  () => itemGigiPayload.value && itemGigiPayload.value.length > 0
+);
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
 const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
@@ -37,8 +96,126 @@ const openDialog = (method: string, title: string, data: any = null) => {
   isTambahDataDialogVisible.value = true;
 };
 
-const closeDialog = () => {
-  isTambahDataDialogVisible.value = false;
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await itemGigiStore.deleteApi(item.uuid);
+      fetchItemGigiData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await itemGigiStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER ITEM GIGI"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Kategori: "Kategori Gigi",
+      Referensi: "Referensi Sistem SATUSEHAT",
+      Display: "Display SATUSEHAT",
+      Name:"Nama Item Gigi",
+      Catatan:"Catatan",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kategori: rows[i].kategori,
+        Referensi:rows[i].referensi,
+        Display:rows[i].display,
+        Nama: rows[i].name,
+        Catatan:rows[i].catatan,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Item Gigi");
+    XLSX.writeFile(workbook, `Datamaster Item Gigi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 </script>
 
@@ -56,8 +233,13 @@ const closeDialog = () => {
       />
     </template>
     <template #content>
+      <NoData v-if="!hasData" />
       <DataTable
-        :value="products"
+        v-else
+        :value="itemGigiPayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -66,7 +248,7 @@ const closeDialog = () => {
         :dt="{
           rowSelectedColor: '#000000',
           rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor:'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
           bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
           rowStripedBackground: '#F8F8F8',
         }"
@@ -82,9 +264,14 @@ const closeDialog = () => {
           </template>
         </Column>
         <Column
-          field="nama_keadaan_gigi"
-          header="Nama Keadaan Gigi"
-          class="w-full"
+          field="kategoriGigiName"
+          header="Kategori Gigi"
+          headerClass="bg-adameds-50"
+        ></Column>
+        <Column
+          field="name"
+          header="Item Gigi"
+          class="w-1/3"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
@@ -97,25 +284,15 @@ const closeDialog = () => {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>
@@ -142,6 +319,7 @@ const closeDialog = () => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -149,6 +327,13 @@ const closeDialog = () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Item Gigi ${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -160,12 +345,23 @@ const closeDialog = () => {
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
-        @close="closeDialog"
+        :payload="dialogConfig.data"
+        @data-updated="fetchItemGigiData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
       />
     </template>
     <template #footer>
-      <Footer />
+      <FooterPaginator
+        :rows="itemGigiProperties.page_size"
+        :totalRecords="itemGigiProperties.total"
+        @page="handlePage"
+        @export="downloadExportExcel"
+      />
     </template>
   </Card>
 </template>

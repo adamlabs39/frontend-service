@@ -48,7 +48,13 @@ const fetchPraktisiData = async () => {
   }
 };
 
-watch([searchQuery], fetchPraktisiData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchPraktisiData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchPraktisiData();

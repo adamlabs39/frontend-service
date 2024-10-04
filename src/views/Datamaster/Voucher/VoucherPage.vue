@@ -47,7 +47,13 @@ const fetchVoucherData = async () => {
   }
 };
 
-watch([searchQuery], fetchVoucherData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchVoucherData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchVoucherData();
@@ -326,7 +332,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Voucher', slotProps.data)"              >
+                @click="deleteDialog('delete', `Voucher ${slotProps.data.code}`, slotProps.data)"              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
