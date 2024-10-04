@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -9,6 +8,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
 import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
+import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
@@ -361,7 +361,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
-    <DetailDrugSalesPage
+    <DetailDrugSalesPage2
       v-else-if="dataBreadCrumb[0].label == 'Beli Obat'"
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"

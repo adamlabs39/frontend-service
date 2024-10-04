@@ -27,14 +27,77 @@ const onRecipeSelect = (label: string) => {
     selectedRecipe.value.push(label);
   }
 };
+
+const itemsPasien = ref([
+  {
+    layanan: "00-00-00",
+    name: "Abdi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "22-22-22",
+    name: "Anggi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+]);
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -151,7 +214,146 @@ const onRecipeSelect = (label: string) => {
         </CustomAccordion>
       </template>
       <template #content>
-          
+        <div class="grid grid-cols-3 gap-3">
+          <!-- Order masuk -->
+          <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+              
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Order Masuk</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'TUNAI'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >TUNAI</CustomButton>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'BPJS'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-warning-300"
+                        textColor="text-warning-300"
+                        >BPJS</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+
+           <!-- Sedang Disiapkan -->
+           <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Sedang Disiapkan</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >{{ slotProps.data.insurance_account_name }}</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+
+          <!-- Penyerahan Alkes/Obat -->
+          <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Penyerahan Alkes/Obat</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >{{ slotProps.data.insurance_account_name }}</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
       </template>
     </Card>
   </div>

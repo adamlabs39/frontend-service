@@ -1,192 +1,121 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import { onMounted, ref } from "vue";
+import type { MenuItem } from "primevue/menuitem";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import NoData from "@/components/section/NoData.vue";
+import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
+const reportType = ref("");
+const reportData = ref([1]);
+const expandedRows = ref();
+const pageType = ref("");
+const route = useRoute();
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', handleRowsUpdate);
+  console.log("Rows updated:", rows);
 };
+const handlePageUpdate = (page: number) => {
+  console.log("Page updated:", page);
+};
+
+const updatePageType = (path: string) => {
+  dataBreadCrumb.value = [];
+  let tempArrPath = path.split("/");
+  pageType.value = tempArrPath[3] ?? "";
+  reportType.value = pageType.value;
+};
+
+onBeforeRouteLeave((to, from) => {
+  updatePageType(to.path);
+});
+
+onMounted(() => {
+  updatePageType(route.path);
+});
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
+        <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Kasir',
+                    label: 'Laporan',
                     home: true,
                   }"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div>
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Rekap Pendapatan Resep Per Apotik</p>
+                </div>
               </div>
             </div>
           </template>
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomTextfield
-                label="Pencarian Transaksi"
-                prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
-              />
-              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
-              <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <CustomSelect
-                label="Pilih Shift"
-                class="grow"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-              />
-              <CustomButton
-                label="Open Kasir"
-                class="ml-5 mr-[10px] mt-auto"
-              />
+              <CustomSelect label="Metode Pembayaran" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" place-holder="Tunai" />
+              <CustomSelect label="Lokasi Stok" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" place-holder="Semua" />
             </div>
+
+            <!-- baris kedua -->
             <div class="flex mt-[10px]">
-              
+              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-9" />
+              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
+              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
+              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
+
       <template #content>
-          <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
-              <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
-                  alt="no data"
-                  class="mx-auto"
-                /> -->
-                <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
+        <DataTable v-if="reportData.length" :value="reportData" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }" class="text-SM">
+          <Column field="nomor" headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="text-center">
+                <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
               </div>
-            </div>
-            
-            <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
-              <!-- Total Pembayaran -->
-              <div class="flex items-center justify-between">
-                <div class="text-base font-bold font-poppins">
-                  Total Pembayaran
-                </div>
-              </div>
-              <hr class="mt-2 mb-2 border border-slate-300"/>
-              <!-- Biaya Administrasi -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm text-black font-poppins">
-                  Biaya Administrasi
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Tindakan -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Tindakan
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Obat -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Obat
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Kamar -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Kamar
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- PPN -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  PPN
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-4 border-dashed border-[1px] border-slate-300"/>
-              <!-- Diskon -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-poppins">
-                  Diskon
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-6 mb-2 border-black border-1"/>
-              <!-- Grand Total -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-bold font-poppins">
-                  Grand Total
-                </div>
-                <div class="text-sm font-bold font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
-                <div class="flex">
-                  <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                  <CustomButton
-                    label="Bayar"
-                    class="w-full ml-4 mr-4"
-                    textColor = "text-slate-400"
-                    backgroundColor="bg-slate-200"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+            </template>
+          </Column>
+          <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50"> </Column>
+          <Column field="stock_location" header="Lokasi Stok" headerClass="bg-adameds-50"> </Column>
+          <Column field="pembayaran" header="Metode Pembayaran" headerClass="bg-adameds-50"> </Column>
+          <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50"> </Column>
+        </DataTable>
+        <NoData />
+      </template>
+      <template #footer>
+        <div class="flex justify-between">
+          <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
+          <Paginator :rows="10" :totalRecords="120" :rowsPerPageOptions="[10, 20, 30]" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown" currentPageReportTemplate="{currentPage}">
+            <template #start="slotProps">Total Data: 0</template>
+          </Paginator>
+        </div>
       </template>
     </Card>
   </div>

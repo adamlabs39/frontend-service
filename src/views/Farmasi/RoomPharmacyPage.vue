@@ -5,19 +5,86 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
 
 const emits = defineEmits(['update:rows', 'update:current-page']);
 const handleRowsUpdate = (rows: number) => {
   console.log('Rows updated:', handleRowsUpdate);
 };
+
+const itemsPasien = ref([
+  {
+    layanan: "00-00-00",
+    name: "Abdi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "22-22-22",
+    name: "Anggi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+]);
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -27,9 +94,22 @@ const handleRowsUpdate = (rows: number) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Kasir',
+                    label: 'Farmasi Ruangan',
                     home: true,
                   }"
+                />
+              </div>
+              <div class="flex mr-[20px]">
+                <CustomDatePicker
+                  v-model="startDateFilter"
+                  :showLabel="false"
+                  class="w-[150px]"
+                />
+                <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+                <CustomDatePicker
+                  v-model="endDateFilter"
+                  :showLabel="false"
+                  class="w-[150px]"
                 />
               </div>
             </div>
@@ -37,36 +117,33 @@ const handleRowsUpdate = (rows: number) => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
-                label="Pencarian Transaksi"
+                label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
+                placeholder="Cari No. Resep / No. RM / Nama Pasien"
+                class="w-[70%] mr-5"
               />
-              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
-              <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
               <CustomSelect
-                label="Pilih Shift"
-                class="grow"
+                place-holder="Pilih Lokasi"
+                label="Lokasi"
+                class="mr-5 w-[30%]"
                 optionLabel=""
                 optionValue=""
                 :options="['Pagi', 'Siang', 'Sore', 'Malem']"
               />
               <CustomButton
-                label="Open Kasir"
-                class="ml-5 mr-[10px] mt-auto"
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto ml-[10px]"
               />
             </div>
-            <div class="flex mt-[10px]">
-              
-            </div>
+            <hr class="mt-5 border-[1px] border-grey-200">
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -85,108 +162,158 @@ const handleRowsUpdate = (rows: number) => {
         </CustomAccordion>
       </template>
       <template #content>
-          <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
-              <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
-                  alt="no data"
-                  class="mx-auto"
-                /> -->
-                <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
-              </div>
-            </div>
-            
-            <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
-              <!-- Total Pembayaran -->
-              <div class="flex items-center justify-between">
-                <div class="text-base font-bold font-poppins">
-                  Total Pembayaran
-                </div>
-              </div>
-              <hr class="mt-2 mb-2 border border-slate-300"/>
-              <!-- Biaya Administrasi -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm text-black font-poppins">
-                  Biaya Administrasi
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Tindakan -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Tindakan
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Obat -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Obat
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Kamar -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Kamar
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- PPN -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  PPN
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-4 border-dashed border-[1px] border-slate-300"/>
-              <!-- Diskon -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-poppins">
-                  Diskon
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-6 mb-2 border-black border-1"/>
-              <!-- Grand Total -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-bold font-poppins">
-                  Grand Total
-                </div>
-                <div class="text-sm font-bold font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
-                <div class="flex">
-                  <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                  <CustomButton
-                    label="Bayar"
-                    class="w-full ml-4 mr-4"
-                    textColor = "text-slate-400"
-                    backgroundColor="bg-slate-200"
-                  />
-                </div>
-              </div>
-            </div>
+        <div class="grid grid-cols-3 gap-3">
+          <!-- Order masuk -->
+          <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+              
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Order Masuk</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'TUNAI'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >TUNAI</CustomButton>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'BPJS'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-warning-300"
+                        textColor="text-warning-300"
+                        >BPJS</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
           </div>
+
+           <!-- Sedang Disiapkan -->
+           <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Sedang Disiapkan</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'TUNAI'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >TUNAI</CustomButton>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'BPJS'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-warning-300"
+                        textColor="text-warning-300"
+                        >BPJS</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+
+          <!-- Penyerahan Alkes/Obat -->
+          <div>
+            <DataTable
+              :value="itemsPasien"
+              scrollable 
+              scrollHeight="500px"
+              class="overflow-hidden rounded-[10px]"
+            >
+              <Column headerClass="bg-adameds-300 text-white">
+                <template #header>
+                  <div class="w-full font-bold">Penyerahan Alkes/Obat</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-between">
+                    <div>
+                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
+                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
+                      <CustomButton 
+                        class="h-[20px] w-[60px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-grey-300"
+                        textColor="text-grey-300"
+                        >{{ slotProps.data.kamar }}</CustomButton>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
+                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
+                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'TUNAI'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-adameds-300"
+                        textColor="text-adameds-300"
+                        >TUNAI</CustomButton>
+                      <CustomButton v-if="slotProps.data.insurance_account_name == 'BPJS'" 
+                        class="h-[20px] w-[50px] text-xs mt-[5px]"
+                        outlined
+                        borderColor="border-warning-300"
+                        textColor="text-warning-300"
+                        >BPJS</CustomButton>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
       </template>
     </Card>
   </div>
