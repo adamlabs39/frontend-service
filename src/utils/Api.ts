@@ -5,7 +5,7 @@ type AnyObject = { [key: string]: any };
 
 // Convert camelCase to snake_case
 const toSnakeCase = (obj: AnyObject | any[]): AnyObject | any[] => {
-  if (typeof obj !== "object" || obj === null) return obj;
+  if (typeof obj !== "object" || obj === null || obj instanceof FormData) return obj;
 
   if (Array.isArray(obj)) {
     return obj.map((item) => toSnakeCase(item));
@@ -23,7 +23,7 @@ const toSnakeCase = (obj: AnyObject | any[]): AnyObject | any[] => {
 
 // Convert snake_case to camelCase
 const toCamelCase = (obj: AnyObject | any[]): AnyObject | any[] => {
-  if (typeof obj !== "object" || obj === null) return obj;
+  if (typeof obj !== "object" || obj === null || obj instanceof FormData) return obj;
 
   if (Array.isArray(obj)) {
     return obj.map((item) => toCamelCase(item));
