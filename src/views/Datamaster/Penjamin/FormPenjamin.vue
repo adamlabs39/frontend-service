@@ -29,7 +29,7 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Penjamin harus diisi"),
-    name: yup.string().required("Nama Penjamin CM harus diisi"),
+    name: yup.string().required("Nama Penjamin harus diisi"),
     phone: yup.string(),
     address: yup.string(),
     status: yup.bool().default(false),
@@ -189,7 +189,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Batal"

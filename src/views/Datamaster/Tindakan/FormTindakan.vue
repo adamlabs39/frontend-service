@@ -69,8 +69,8 @@ onMounted(() => {
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama tindakan harus diisi"),
+    code: yup.string().required("Kode Tindakan harus diisi"),
+    name: yup.string().required("Nama Tindakan harus diisi"),
     snomedUuid: yup.string(),
     icd9Uuid: yup.string(),
     status: yup.bool(),
@@ -231,7 +231,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

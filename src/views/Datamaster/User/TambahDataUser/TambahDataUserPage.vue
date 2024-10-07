@@ -231,7 +231,7 @@ watch(selectedRole, (newRole) => {
                 class="grow"
               />
               <CustomButton
-                label="Cara"
+                label="Cari"
                 icon="PhMagnifyingGlass"
                 class="ml-5 mr-2.5"
               />

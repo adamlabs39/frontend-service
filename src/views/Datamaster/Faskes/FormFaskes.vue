@@ -29,7 +29,7 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
+    code: yup.string().required("Kode Faskes harus diisi"),
     name: yup.string().required("Nama Faskes harus diisi"),
     status: yup.bool().default(false),
   })
@@ -166,7 +166,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

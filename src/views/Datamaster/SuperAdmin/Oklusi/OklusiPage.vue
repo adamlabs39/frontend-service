@@ -9,7 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FormOklusi from "./FormOklusi.vue";
 import NoData from "@/components/section/NoData.vue";
 import FooterPaginator from "../../Layout/FooterPaginator.vue";
-
+import DialogDelete from "../../Layout/DialogDelete.vue";
 // State Management
 const oklusiStore = useOklusiGigiStore();
 const UseUtilsStore = utilsStore();
@@ -316,7 +316,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Oklusi Gigi', slotProps.data)"
+                @click="deleteDialog('delete', `Oklusi Gigi ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -330,6 +330,12 @@ const downloadExportExcel = async () => {
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
         @data-updated="fetchOklusiData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
       />
     </template>
     <template #footer>

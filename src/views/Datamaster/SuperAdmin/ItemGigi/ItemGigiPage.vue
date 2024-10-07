@@ -240,6 +240,7 @@ const downloadExportExcel = async () => {
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
         @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable

@@ -31,7 +31,7 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
+    code: yup.string().required("Kode General Consent harus diisi"),
     name: yup.string().required("Nama General Consent harus diisi"),
     isiSurat: yup.string().required("Isi General consent harus diisi"),
     status: yup.bool().default(false),
@@ -126,7 +126,7 @@ watch(
         <div class="mt-5 grid grid-cols-12 gap-5">
           <CustomTextfield
             v-model="code"
-            label="Kode"
+            label="Kode General Consent"
             placeholder="Kode General Consent"
             class="col-span-4"
             :invalid="!!errors.code"
@@ -206,8 +206,8 @@ watch(
 
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kode General Consent CM" :value="code" />
-        <CustomInfoRow label="Nama General Consent CM" :value="name" />
+        <CustomInfoRow label="Kode General Consent" :value="code" />
+        <CustomInfoRow label="Nama General Consent" :value="name" />
         <CustomInfoRow label="Isi General Consent" :value="isiSurat" />
         <CustomInfoRow label="Status">
           <template #value>
@@ -225,7 +225,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

@@ -13,6 +13,7 @@ import CustomRadio from "@/components/Base/CustomRadio.vue";
 import { useVoucherStore } from "@/stores/datamaster/voucher";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import { dateToEpoch, formatDate } from "@/utils/Helpers";
 
 const props = defineProps({
   isDialogVisible: {
@@ -65,6 +66,8 @@ const onSubmit = handleSubmit(async (values: any) => {
     } else if (values.type === "potongan") {
       values.value = potonganValue.value;
     }
+    values.startDate = dateToEpoch(new Date(values.startDate));
+    values.endDate = dateToEpoch(new Date(values.endDate));
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -166,15 +169,9 @@ watch(
         <div class="flex flex-col grid-cols-12 col-span-6 gap-1">
           <div class="col-span-12 font-semibold text-normal">Tanggal</div>
           <div class="flex justify-between items-center gap-2.5">
-            <CustomDatePicker
-              v-model="startDate"
-              :showLabel="false"
-            />
-            <PhMinus class="mt-auto mb-3 text-black " />
-            <CustomDatePicker
-              v-model="endDate"
-              :showLabel="false"
-            />
+            <CustomDatePicker v-model="startDate" :showLabel="false" />
+            <PhMinus class="mt-auto mb-3 text-black" />
+            <CustomDatePicker v-model="endDate" :showLabel="false" />
           </div>
         </div>
         <CustomInputNumber
@@ -237,12 +234,17 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kode Voucher" :value="code" />
-        <CustomInfoRow label="Nama Voucher" :value="name" />
-        <CustomInfoRow label="Start Date" :value="`${startDate}`" />
-        <CustomInfoRow label="End Date" :value="`${endDate}`" />
-        <CustomInfoRow label="Jumlah" :value="`${qty}`" />
-        <CustomInfoRow label="Tipe Voucher" :value="type" />
+        {{ payload }}
+        <CustomInfoRow label="Kode Voucher" :value="payload.code" />
+        <CustomInfoRow label="Nama Voucher" :value="payload.name" />
+        <CustomInfoRow
+          label="Waktu Voucher"
+          :value="`${startDate ? formatDate(startDate) : ''} - ${
+            endDate ? formatDate(endDate) : ''
+          }`"
+        />
+        <CustomInfoRow label="Jumlah" :value="payload.qty" />
+        <CustomInfoRow label="Tipe Voucher" :value="payload.type" />
         <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />
         <CustomInfoRow label="Status">
           <template #value>
@@ -260,7 +262,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

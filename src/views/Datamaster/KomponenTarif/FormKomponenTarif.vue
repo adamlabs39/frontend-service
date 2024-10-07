@@ -29,7 +29,7 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
+    code: yup.string().required("Kode Komponen harus diisi"),
     name: yup.string().required("Nama Komponen Tarif harus diisi"),
     status: yup.bool().default(false),
   })
@@ -123,7 +123,7 @@ watch(
         <CustomTextfield
           label="Kode Komponen Tarif"
           v-model="code"
-          placeholder="Kode"
+          placeholder="Kode Komponen"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
@@ -167,7 +167,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

@@ -9,6 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FormGigiFDI from "./FormGigiFDI.vue";
 import NoData from "@/components/section/NoData.vue";
 import FooterPaginator from "../../Layout/FooterPaginator.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 
 // State Management
 const gigiStore = useGigiStore();
@@ -235,6 +236,7 @@ const downloadExportExcel = async () => {
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
         @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -311,7 +313,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Gigi FDI', slotProps.data)"
+                @click="deleteDialog('delete', `Gigi FDI ${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

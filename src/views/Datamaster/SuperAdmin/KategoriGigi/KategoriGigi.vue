@@ -9,7 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FormKategoriGigi from "./FormKategoriGigi.vue";
 import FooterPaginator from "../../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-
+import DialogDelete from "../../Layout/DialogDelete.vue";
 // State Management
 const kategoriGigiStore = useKategoriGigiStore();
 const UseUtilsStore = utilsStore();
@@ -314,7 +314,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Kategori Ruagan', slotProps.data)"
+                @click="deleteDialog('delete', `Kategori Gigi ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
