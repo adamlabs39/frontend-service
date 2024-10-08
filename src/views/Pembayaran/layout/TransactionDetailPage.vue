@@ -174,7 +174,7 @@ const itemsPasien = ref([
             <div class="basis-1/2">
               <p class="font-bold text-MD mt-[15px] ml-[15px]">Nama lengkap pasien</p>
               <p class="ml-[15px] text-sm">REG1231235</p>
-              <CustomButton class="w-20 h-5 text-xs ml-[15px]">00-00-00</CustomButton>
+              <CustomButton class="h-5 text-xs ml-[15px]">00-00-00</CustomButton>
               <CustomChip
                 :showCheckedIcon="false"
                 label="Laki-laki"
