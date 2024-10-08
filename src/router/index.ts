@@ -14,6 +14,7 @@ import PharmacyView from "@/views/Farmasi/PharmacyView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
+import FisioterapiView from "@/views/Fisioterapi/FisioterapiView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -62,8 +63,8 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
-import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
-import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
+import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue";
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue";
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 import SystemPage from "@/views/SettingPage/Template/System/SystemPage.vue";
 
@@ -107,6 +108,11 @@ import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue"
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
+// NOTE FISIOTERAPI/LAPORAN
+import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
+import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
+import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerapiPage.vue";
+import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -118,7 +124,6 @@ import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPag
 import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
 import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -227,7 +232,7 @@ const router = createRouter({
       path: "/setting/system",
       name: "setting-system",
       meta: { layout: SidebarLayout, page: SystemPage, requiresAuth: true },
-      component: SettingView
+      component: SettingView,
     },
 
     // NOTE Datamaster
@@ -485,7 +490,7 @@ const router = createRouter({
     {
       path: "/antrian",
       name: "antrian",
-      redirect: '/antrian/konfigurasi/jadwal-dokter'
+      redirect: "/antrian/konfigurasi/jadwal-dokter",
     },
     {
       path: "/antrian/konfigurasi/jadwal-dokter",
@@ -559,12 +564,12 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintAntrianPage,
     },
-    
+
     // NOTE Laboratorium
     {
       path: "/laboratorium",
       name: "laboratorium",
-      redirect: '/laboratorium/order-lab'
+      redirect: "/laboratorium/order-lab",
     },
     {
       path: "/laboratorium/order-lab",
@@ -633,7 +638,7 @@ const router = createRouter({
       component: LaboratoriumView,
     },
 
-     // NOTE Pembayaran
+    // NOTE Pembayaran
     {
       path: "/pembayaran",
       name: "pembayaran",
@@ -670,8 +675,8 @@ const router = createRouter({
       component: PaymentView,
     },
 
-     // NOTE Farmasi
-     {
+    // NOTE Farmasi
+    {
       path: "/farmasi",
       name: "farmasi",
       redirect: "/farmasi/resep-dokter",
@@ -793,6 +798,47 @@ const router = createRouter({
       name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
       meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
       component: PharmacyView,
+    },
+
+    // NOTE FISIOTERAPI
+
+    {
+      path: "/fisioterapi",
+      name: "fisioterapi",
+      redirect: "/fisioterapi/order-fisioterapi",
+    },
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI LAPORAN
+
+    {
+      path: "/fisioterapi/laporan/kunjungan",
+      name: "fisioterapi-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: KunjunganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-kunjungan-jenis-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-kunjungan-jenis-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiKunjunganJenisFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-terapi",
+      name: "fisioterapi-laporan-rekapitulasi-terapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiTerapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-pendapatan-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-pendapatan-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiPendapatanFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
     },
 
     // NOTE Test Component
