@@ -4,7 +4,7 @@ import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
 import { ref } from "vue";
 
-const filter = ref("");
+const filter = ref("Semua Ruangan");
 
 const sidebarBodyList = ref<SidebarBody[]>([
   {
@@ -31,17 +31,17 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Monitoring Kunjungan",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/bpjs/monitoring-kunjungan",
           },
           {
             name: "Monitoring Riwayat Kunjungan",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/bpjs/monitoring-riwayat-kunjungan",
           },
           {
             name: "Monitoring Obat Kunjungan",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/bpjs/monitoring-obat-kunjungan",
           },
         ],
       },
@@ -86,12 +86,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
       :sidebar-body-list="sidebarBodyList"
       showFilterRuangan
       showStockBtn
-      v-model:filter="filter"
+      v-model:filterRuang="filter"
     />
     <component
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
-      :filter="filter"
+      :filterRuang="filter"
     ></component>
   </div>
 </template>

@@ -110,6 +110,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
+import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
 
 
 // !SECTION
@@ -809,6 +810,24 @@ const router = createRouter({
       path: "/rawat-inap/ruangan",
       name: "rawat-inap-ruangan",
       meta: { layout: SidebarLayout, page: RuanganRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/bpjs/monitoring-kunjungan",
+      name: "rawat-inap-bpjs-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/bpjs/monitoring-riwayat-kunjungan",
+      name: "rawat-inap-bpjs-monitoring-riwayat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/bpjs/monitoring-obat-kunjungan",
+      name: "rawat-inap-bpjs-monitoring-obat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
       component: RawatInapView,
     },
 

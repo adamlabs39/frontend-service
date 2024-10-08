@@ -3,7 +3,7 @@ import type { SidebarBody } from "@/utils/Interface";
 import { linkType } from "@/utils/Enum";
 import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter, useRoute, routerKey } from "vue-router";
 import { ref, watch } from "vue";
 
 const props = defineProps({
@@ -36,7 +36,7 @@ const props = defineProps({
 
 const router = useRouter();
 const route = useRoute();
-const filter = defineModel("filter");
+const filterRuang = defineModel("filterRuang");
 
 const showSidebar = ref(true);
 const emit = defineEmits(["filterChanged"]);
@@ -51,6 +51,12 @@ const goToFilteredPage = (poliName: string) => {
     query: poliName === "Semua Poli" ? {} : { filter: poliName },
   });
   emit("filterChanged", poliName);
+};
+
+const goToRuanganPage = () => {
+  router.push({
+    path: "/rawat-inap/ruangan",
+  });
 };
 
 // Update the filter and navigate to /rawat-jalan
@@ -95,38 +101,76 @@ const getSVG = (svg: string) => {
         <!-- Filter Poli -->
         <div v-if="showFilterRuangan && showSidebar" class="text-SM">
           <hr class="my-[20px]" />
-          <div class="flex m-[10px]">
-            <PhMagnifyingGlass class="my-auto mr-2" size="20" />
-            <input
-              type="text"
-              class="w-full text-white bg-transparent"
-              placeholder="Cari Ruangan ..."
-            />
-          </div>
-          <div
-            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
-            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Semua Ruangan' }"
-            @click="filter = 'Semua Ruangan'"
+          <Accordion
+            title="Ruang Rawatan"
+            icon="MonitoringBedIcon"
+            class="cursor-pointer"
           >
-            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
-            Semua Ruangan
-          </div>
-          <div
-            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
-            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Ruang Mawar' }"
-            @click="filter = 'Ruang Mawar'"
-          >
-            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
-            Ruang Mawar
-          </div>
-          <div
-            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
-            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Ruang Melati' }"
-            @click="filter = 'Ruang Melati'"
-          >
-            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
-            Ruang Melati
-          </div>
+            <div class="flex m-[10px]">
+              <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+              <input
+                type="text"
+                class="w-full text-white bg-transparent"
+                placeholder="Cari Ruangan ..."
+              />
+            </div>
+            <div
+              class="cursor-pointer my-[5px] px-[10px] py-[5px] flex pl-5"
+              :class="{
+                'bg-adameds-100 rounded-lg pl-[10px]':
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Semua Ruangan',
+              }"
+              @click="goToRuanganPage(), (filterRuang = 'Semua Ruangan')"
+            >
+              <MonitoringBedIcon
+                v-if="
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Semua Ruangan'
+                "
+                :size="16"
+                class="text-white mr-[10px]"
+              />
+              Semua Ruangan
+            </div>
+            <div
+              class="cursor-pointer my-[5px] px-[10px] py-[5px] flex pl-5"
+              :class="{
+                'bg-adameds-100 rounded-lg pl-[10px]':
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Ruang Mawar',
+              }"
+              @click="goToRuanganPage(), (filterRuang = 'Ruang Mawar')"
+            >
+              <MonitoringBedIcon
+                v-if="
+                  route.path == '/rawat-inap/ruangan' && filterRuang == 'Ruang Mawar'
+                "
+                :size="16"
+                class="text-white mr-[10px]"
+              />
+              Ruang Mawar
+            </div>
+            <div
+              class="cursor-pointer my-[5px] px-[10px] py-[5px] flex pl-5"
+              :class="{
+                'bg-adameds-100 rounded-lg pl-[10px]':
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Ruang Melati',
+              }"
+              @click="filterRuang = 'Ruang Melati'"
+            >
+              <MonitoringBedIcon
+                v-if="
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Ruang Melati'
+                "
+                :size="16"
+                class="text-white mr-[10px]"
+              />
+              Ruang Melati
+            </div>
+          </Accordion>
         </div>
 
         <!-- body -->
