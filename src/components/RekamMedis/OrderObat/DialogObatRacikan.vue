@@ -44,7 +44,6 @@ const schema =
             aturanPakai: yup.string().required("Aturan Pakai Harus diisi"),
             caraPakai: yup.string().required("Cara Pakai Harus diisi"),
             rutePemberian: yup.string().required("Rute Pemberian Harus diisi"),
-            obatPulang: yup.bool(),
             obatKronis: yup.bool(),
             catatan: yup.string(),
             racikan: yup.bool().required("Racikan Harus diisi"),
@@ -71,7 +70,6 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
         aturanPakai: "",
         caraPakai: "",
         rutePemberian: "",
-        obatPulang: false,
         obatKronis: false,
         catatan: "",
         racikan: true,
@@ -92,7 +90,6 @@ const [satuanDosis] = defineField('satuanDosis');
 const [aturanPakai] = defineField('aturanPakai');
 const [caraPakai] = defineField('caraPakai');
 const [rutePemberian] = defineField('rutePemberian');
-const [obatPulang] = defineField('obatPulang');
 const [obatKronis] = defineField('obatKronis');
 const [catatan] = defineField('catatan');
 const [racikan] = defineField('racikan');
@@ -205,7 +202,7 @@ watch(() => sirup.value, (newVal) => {
             <!--  -->
             <div class="flex my-5 gap-7">
                 <DetailPasien />
-                <hr class="h-auto border border-gray-300">
+                <hr class="h-auto border border-adameds-300">
                 <!-- {{ index }} -->
                 <div class="grow">
                     <div class="flex items-center justify-between">
@@ -293,14 +290,10 @@ watch(() => sirup.value, (newVal) => {
                                         :invalidMessage="errors.rutePemberian" />
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-7">
-                                <div class="grid grid-cols-2 gap-5">
-                                    <CustomSwitch label="Obat Pulang" v-model="obatPulang" />
+                            <div class="flex gap-7">
                                     <CustomSwitch label="Obat Kronis" v-model="obatKronis" />
-
                                     <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->
-                                </div>
-                                <div>
+                                <div class="grow">
                                     <CustomTextArea label="Catatan" placeholder="-" v-model="catatan" />
                                 </div>
                             </div>
