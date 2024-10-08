@@ -107,6 +107,8 @@ import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue"
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
+// NOTE Page Inventory
+import InventoryPurchasePage from "@/views/Inventory/Page/InventoryPurchasePage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -118,6 +120,7 @@ import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPag
 import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
 import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
+import InventoryView from "@/views/Inventory/InventoryView.vue";
 
 
 const router = createRouter({
@@ -793,6 +796,19 @@ const router = createRouter({
       name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
       meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
       component: PharmacyView,
+    },
+
+    // NOTE Inventory
+    {
+      path: "/inventory",
+      name: "inventory",
+      redirect: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+    },
+    {
+      path: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+      name: "inventory-pengadaan-barang-pembelian-barang-supplier",
+      meta: { layout: SidebarLayout, page: InventoryPurchasePage, requiresAuth: true },
+      component: InventoryView,
     },
 
     // NOTE Test Component
