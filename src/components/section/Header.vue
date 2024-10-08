@@ -45,7 +45,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Rawat Inap",
     icon: "PhHospital",
-    url: "tbc",
+    url: "/rawat-inap",
   },
   {
     title: "IGD",

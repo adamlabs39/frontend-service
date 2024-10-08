@@ -14,6 +14,7 @@ import PharmacyView from "@/views/Farmasi/PharmacyView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
+import RawatInapView from "@/views/RawatInap/RawatInapView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -106,6 +107,9 @@ import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue"
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
+
+// NOTE Page Rawat Inap
+import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
 
 
 // !SECTION
@@ -794,6 +798,20 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
       component: PharmacyView,
     },
+
+    // NOTE Rawat Inap
+    {
+      path: "/rawat-inap",
+      name: "rawat-inap",
+      redirect: "/rawat-inap/ruangan",
+    },
+    {
+      path: "/rawat-inap/ruangan",
+      name: "rawat-inap-ruangan",
+      meta: { layout: SidebarLayout, page: RuanganRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+
 
     // NOTE Test Component
     {

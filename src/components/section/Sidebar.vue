@@ -24,6 +24,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showFilterRuangan: {
+    type: Boolean,
+    default: false,
+  },
   showStockBtn: {
     type: Boolean,
     default: false,
@@ -32,6 +36,7 @@ const props = defineProps({
 
 const router = useRouter();
 const route = useRoute();
+const filter = defineModel("filter");
 
 const showSidebar = ref(true);
 const emit = defineEmits(["filterChanged"]);
@@ -43,7 +48,7 @@ const goToPage = (url: string) => {
 const goToFilteredPage = (poliName: string) => {
   router.push({
     path: "/rawat-jalan/poli",
-    query: poliName === "Semua Poli" ? { } : { filter: poliName },
+    query: poliName === "Semua Poli" ? {} : { filter: poliName },
   });
   emit("filterChanged", poliName);
 };
@@ -88,6 +93,41 @@ const getSVG = (svg: string) => {
           class="mx-auto cursor-pointer"
         />
         <!-- Filter Poli -->
+        <div v-if="showFilterRuangan && showSidebar" class="text-SM">
+          <hr class="my-[20px]" />
+          <div class="flex m-[10px]">
+            <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+            <input
+              type="text"
+              class="w-full text-white bg-transparent"
+              placeholder="Cari Ruangan ..."
+            />
+          </div>
+          <div
+            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
+            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Semua Ruangan' }"
+            @click="filter = 'Semua Ruangan'"
+          >
+            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
+            Semua Ruangan
+          </div>
+          <div
+            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
+            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Ruang Mawar' }"
+            @click="filter = 'Ruang Mawar'"
+          >
+            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
+            Ruang Mawar
+          </div>
+          <div
+            class="cursor-pointer my-[5px] px-[10px] py-[5px] flex"
+            :class="{ 'bg-adameds-100 rounded-lg': filter == 'Ruang Melati' }"
+            @click="filter = 'Ruang Melati'"
+          >
+            <MonitoringBedIcon :size="16" class="text-white mr-[10px]" />
+            Ruang Melati
+          </div>
+        </div>
 
         <!-- body -->
         <div v-for="section in props.sidebarBodyList" class="text-SM">
