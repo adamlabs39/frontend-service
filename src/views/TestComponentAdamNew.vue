@@ -4,12 +4,13 @@ import FormAsesmenNyeri from '@/components/RekamMedis/AsesmenNyeri/FormAsesmenNy
 import FormTandaVital from '@/components/RekamMedis/TandaVital/FormTandaVital.vue';
 import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue';
 import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/FormDiagnosaDokterICD10.vue';
-import FormOrderObat from '@/components/RekamMedis/OrderObat/FormOrderObat.vue';
+import AccordionOrderObat from '@/components/RekamMedis/OrderObat/AccordionOrderObat.vue';
 import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vue';
 import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
 import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
 import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBerkas.vue';
 import PermissionMenuPage from './SettingPage/Template/PermissionMenu/PermissionMenuPage.vue';
+
 
 </script>
 
@@ -20,12 +21,11 @@ import PermissionMenuPage from './SettingPage/Template/PermissionMenu/Permission
          <FormAsesmenNyeri/>
          <FormCatatanPerawat/>
          <FormDiagnosaDokterICD10/>
-         <FormOrderObat/>
+         <AccordionOrderObat/>
          <FormOrderFisio/>
          <FormOrderAlkes/>
          <FormPersetujuanPasien/>
          <FormUnggahBerkas/>
          <!-- <CustomUpload/> -->
-          <PermissionMenuPage/>
     </div>
 </template>
