@@ -144,7 +144,8 @@ const getSVG = (svg: string) => {
             >
               <MonitoringBedIcon
                 v-if="
-                  route.path == '/rawat-inap/ruangan' && filterRuang == 'Ruang Mawar'
+                  route.path == '/rawat-inap/ruangan' &&
+                  filterRuang == 'Ruang Mawar'
                 "
                 :size="16"
                 class="text-white mr-[10px]"
@@ -158,7 +159,7 @@ const getSVG = (svg: string) => {
                   route.path == '/rawat-inap/ruangan' &&
                   filterRuang == 'Ruang Melati',
               }"
-              @click="filterRuang = 'Ruang Melati'"
+              @click="goToRuanganPage(), (filterRuang = 'Ruang Melati')"
             >
               <MonitoringBedIcon
                 v-if="
