@@ -213,8 +213,8 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Tindakan" :value="code" />
         <CustomInfoRow label="Nama Tindaka" :value="name" />
-        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name" />
-        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name" />
+        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name ?? '-'" />
+        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name ?? '-'" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

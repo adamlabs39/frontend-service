@@ -195,6 +195,18 @@ const downloadExportExcel = async () => {
   }
 };
 
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
+
+  try {
+    const response = await kategoriRuanganStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchKategoriRuanganData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -328,6 +340,7 @@ const downloadExportExcel = async () => {
         :totalRecords="kategoriRuanganProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

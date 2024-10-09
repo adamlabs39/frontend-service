@@ -26,5 +26,8 @@ export const useFaskesStore = defineStore({
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/faskes/export`, payload);
       },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/faskes/import", payload);
+      },
     },
   });

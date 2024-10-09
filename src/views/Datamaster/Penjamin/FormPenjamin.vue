@@ -138,13 +138,7 @@ watch(
           :invalidMessage="errors.name"
           class="col-span-8"
         />
-        <!-- <CustomInputNumber
-        label="No. Telepon"
-          v-model="phone"
-          placeholder="0"
-          type="number"
-          class="col-span-4"
-        /> -->
+
         <CustomTextfield
           label="No. Telepon"
           v-model="phone"

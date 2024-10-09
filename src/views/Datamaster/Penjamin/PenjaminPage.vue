@@ -215,6 +215,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
+
+  try {
+    const response = await penjaminStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchPenjaminData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -350,6 +363,7 @@ const downloadExportExcel = async () => {
         :totalRecords="penjaminProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

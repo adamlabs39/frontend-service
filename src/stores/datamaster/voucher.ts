@@ -24,7 +24,10 @@ export const useVoucherStore = defineStore({
       return apiDatamasterDelete(`/datamaster/voucher/${uuid}`, payload);
     },
     async exportApi(payload = {}) {      
-      return apiDatamasterGet("/datamaster/voucher", payload);
+      return apiDatamasterGet("/datamaster/voucher/export", payload);
+    },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/voucher/import", payload);
     },
   },
 });

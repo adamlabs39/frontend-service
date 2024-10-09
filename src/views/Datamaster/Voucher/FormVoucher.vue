@@ -3,6 +3,8 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { dateToEpoch, formatDate } from "@/utils/Helpers";
+import { useVoucherStore } from "@/stores/datamaster/voucher";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -10,10 +12,8 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
-import { useVoucherStore } from "@/stores/datamaster/voucher";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import { dateToEpoch, formatDate } from "@/utils/Helpers";
 
 const props = defineProps({
   isDialogVisible: {
@@ -128,7 +128,16 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          startDate: new Date(props.payload.startDate),
+          endDate: new Date(props.payload.endDate),        
         });
+        if (props.payload.type === "persentase") {
+          persenValue.value = props.payload.value; 
+          potonganValue.value = 0; 
+        } else if (props.payload.type === "potongan") {
+          potonganValue.value = props.payload.value; 
+          persenValue.value = 0; 
+        }
       }
     } else {
       resetForm();
@@ -234,15 +243,22 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        {{ payload }}
         <CustomInfoRow label="Kode Voucher" :value="payload.code" />
         <CustomInfoRow label="Nama Voucher" :value="payload.name" />
-        <CustomInfoRow
+        <!-- <CustomInfoRow
           label="Waktu Voucher"
           :value="`${startDate ? formatDate(startDate) : ''} - ${
             endDate ? formatDate(endDate) : ''
           }`"
-        />
+        /> -->
+        <!-- <CustomInfoRow label="Waktu Voucher">
+          <template #value>
+            <div>
+              {{ formatDate(payload.startDate) }} -
+              {{ formatDate(payload.endDate) }}
+            </div>
+          </template>
+        </CustomInfoRow> -->
         <CustomInfoRow label="Jumlah" :value="payload.qty" />
         <CustomInfoRow label="Tipe Voucher" :value="payload.type" />
         <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />

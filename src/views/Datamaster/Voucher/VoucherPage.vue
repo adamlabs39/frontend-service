@@ -217,6 +217,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()  
+  dataUpload.append('file',file);
+
+  try {
+    const response = await voucherStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchVoucherData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -356,7 +369,7 @@ const downloadExportExcel = async () => {
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
+        :payload="dialogConfig.data"
         @data-updated="fetchVoucherData"
       />
       <DialogDelete
@@ -372,6 +385,7 @@ const downloadExportExcel = async () => {
         :totalRecords="voucherProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

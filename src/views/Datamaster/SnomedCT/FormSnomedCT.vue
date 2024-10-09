@@ -3,11 +3,11 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 

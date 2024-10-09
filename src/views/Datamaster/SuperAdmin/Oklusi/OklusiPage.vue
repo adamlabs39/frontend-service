@@ -134,8 +134,10 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
+      system:"Referensi Sistem SATUSEHAT",
+      code:"Code SATUSEHAT",
       Display: "Display SATUSEHAT",
-      Nama: "Nama ICD-9 CM",
+      Nama: "Oklusi",
       Status: "Status",
     });
 
@@ -155,7 +157,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -164,7 +166,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 30 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -208,6 +210,19 @@ const downloadExportExcel = async () => {
     XLSX.writeFile(workbook, `Datamaster Oklusi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()  
+  dataUpload.append('file',file);
+ 
+  try {
+    const response = await oklusiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchOklusiData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
   }
 };
 </script>
@@ -344,6 +359,7 @@ const downloadExportExcel = async () => {
         :totalRecords="oklusiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

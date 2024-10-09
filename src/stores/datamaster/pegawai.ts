@@ -26,5 +26,9 @@ export const usePegawaiStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/pegawai/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/pegawai/import", payload);
+    },
+    
   },
 });

@@ -122,7 +122,7 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }}</template>
     <template #body>
       <div v-if="method !== 'detail'" class="flex flex-col gap-5 mt-5">
         <!-- Keadaan Gigi Input -->

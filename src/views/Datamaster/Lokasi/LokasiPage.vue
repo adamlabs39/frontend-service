@@ -7,7 +7,6 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
 import FormLokasi from "./FormLokasi.vue";
-import DetailDataLokasi from "./DetailDataLokasi.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
@@ -130,7 +129,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER LOKASI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -138,8 +137,18 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode ICD-9 CM",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Lokasi",
+      Nama: "Nama Lokasi",
+      KodeAntrianPoli: "Kode Antrian Poli",
+      Description: "Deskripsi",
+      Phone: "No. Telephone",
+      Url: "URL",
+      Tipe: "Tipe",
+      Kelas: "Kelas",
+      PartOf: "Part Of ID",
+      PartOfName: "Part Of Name",
+      OrganisasiId: "Organization ID",
+      IdSatuSehat: "ID SATUSEHAT",
       Status: "Status",
     });
 
@@ -149,6 +158,17 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
+        KodeAntrianPoli: rows[i].codeAntrianPoli ?? '-',
+        description:rows[i].description,
+        Phone:rows[i].phone,
+        email:rows[i].email,
+        Url:rows[i].url,
+        Tipe:rows[i].type,
+        Kelas:rows[i].className ?? '-',
+        PartOf:rows[i].partOf ?? '-',
+        PartOfName:rows[i].partOfName ?? '-',
+        OrganisasiId:rows[i].OrganisasiId ?? '-',
+        IdSatuSehat:rows[i].satuSehatId ?? '-',
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -159,7 +179,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 13 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -168,7 +188,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -208,27 +228,23 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Lokasi");
+    XLSX.writeFile(workbook, `Datamaster Lokasi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
 
 const handleFileUpload = async (file: File) => {
-  console.log("123", file);
-  const dataUpload = new FormData();
-  console.log(dataUpload);
-
-  dataUpload.append("file", file);
-  console.log("321", file);
-  console.log("test", dataUpload.get("file123"));
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
 
   try {
     const response = await lokasiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+    fetchLokasiData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error("Error uploading file:", error); // Log error jika upload gagal
+    console.error('Error uploading file:', error); // Log error jika upload gagal
   }
 };
 </script>
@@ -284,7 +300,7 @@ const handleFileUpload = async (file: File) => {
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="codeSatuSehat"
+          field="satuSehatId"
           header="ID SATUSEHAT"
           class="w-2/12"
           headerClass="bg-adameds-50"
@@ -385,6 +401,7 @@ const handleFileUpload = async (file: File) => {
         :totalRecords="lokasiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

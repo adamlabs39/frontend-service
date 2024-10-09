@@ -48,7 +48,13 @@ const fetchRoleData = async () => {
   }
 };
 
-watch([searchQuery], fetchRoleData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchRoleData();
+  }, 500); 
+});
 
 onMounted(() => {
   fetchRoleData();
@@ -71,6 +77,8 @@ const metaKey = ref(true);
 const selectedData = ref();
 
 const onRowSelect = (event: any) => {
+  console.log('test');
+  
   selectedData.value = event.data;
   openDialog("detail", "Detail Data", selectedData.value);
 };
@@ -121,7 +129,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER ROLE"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -129,8 +137,8 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Role",
+      Nama: "Nama Role",
       Status: "Status",
     });
 
@@ -225,14 +233,24 @@ const downloadExportExcel = async () => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-      v-else
+        v-else
         :value="rolePayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         class="text-xs"
-
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>

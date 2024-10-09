@@ -26,5 +26,8 @@ export const useDiagnosisStore = defineStore({
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/diagnosis/export`, payload);
       },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/diagnosis/import", payload);
+      },
     },
   });

@@ -26,5 +26,8 @@ export const usePraktisiStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/practitioner/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/practitioner/import", payload);
+    },
   },
 });

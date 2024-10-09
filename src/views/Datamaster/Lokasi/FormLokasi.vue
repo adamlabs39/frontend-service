@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch,onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -29,6 +29,7 @@ const props = defineProps({
 });
 
 const lokasiStore = useLokasiStore();
+const lokasiPayload=ref<any[]>([]);
 const optionsTipe = ref(["Site", "Building", "Level", "Ward", "Room", "Bed"]);
 
 const optionsKelas = ref([
@@ -40,11 +41,23 @@ const optionsKelas = ref([
   { label: "Kelas Reguler", value: "reguler" },
   { label: "Kelas Eksekutif", value: "eksekutif" },
 ]);
-const itemsPartOf = ref([
-  { name: "Part1", code: "1" },
-  { name: "Part2", code: "2" },
-  { name: "Part3", code: "3" },
-]);
+const fetchLokasi = async () => {
+  try {
+    const response = await lokasiStore.getApi();
+    if (response && response.payload) {
+      lokasiPayload.value = response.payload;
+    } else {
+      lokasiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    lokasiPayload.value = [];
+  }
+};
+onMounted(() => {
+  fetchLokasi();
+
+});
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = toTypedSchema(
@@ -172,7 +185,8 @@ watch(
   >
     <template #header>{{ title }} Lokasi</template>
     <template #body>
-      <div class="grid grid-cols-12 gap-5 mt-5">
+       <!-- Form Input -->
+      <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
           label="Kode Lokasi"
           v-model="code"
@@ -259,11 +273,11 @@ watch(
           v-model="partOf"
           place-holder="Pilih Part Of"
           class="col-span-6"
-          :options="itemsPartOf"
+          :options="lokasiPayload"
           optionValue="code"
           optionLabel="name"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
           <CustomSwitch
             v-model="statusOperasional"
             :show-label="true"
@@ -280,6 +294,57 @@ watch(
             sideLabelTrue="Aktif"
             class="col-span-6"
           />
+      </div>
+      <!-- Detail Data -->
+      <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <CustomInfoRow label="Kode Lokasi" :value="code" />
+        <CustomInfoRow label="Nama Lokasi" :value="name" />
+        <CustomInfoRow label="Deskripsi" :value="description" />
+        <CustomInfoRow label="No. Telephone" :value="phone" />
+        <CustomInfoRow label="Url" :value="url" />
+        <CustomInfoRow label="Tipe" :value="payload.type" />
+        <CustomInfoRow label="Kelas" :value="payload.className ?? '-'" />
+        <CustomInfoRow label="Part of Id" :value="partOf ?? '-'" />
+        <CustomInfoRow label="Part of Name" :value="payload.partOfName ?? '-'" />
+        <CustomInfoRow label="Organization ID" :value="payload.OrganisasiId ?? '-'" />
+        <CustomInfoRow label="ID SATUSEHAT" :value="payload.satuSehatId ?? '-'" />
+        <hr class="border-grey-200">
+        <CustomInfoRow label="Status">
+          <template #value>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Status Operasional">
+          <template #value>
+            <CustomChip
+              :label="statusOperasional ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="statusOperasional ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="statusOperasional ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="statusOperasional ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="statusOperasional ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+        <CustomInfoRow label="Status SATUSEHAT">
+          <template #value>
+            <CustomChip
+              :label="payload.satuSehatId ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="payload.satuSehatId ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="payload.satuSehatId ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="payload.satuSehatId ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="payload.satuSehatId ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
       </div>
     </template>
     <template #footer>

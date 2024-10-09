@@ -3,11 +3,11 @@ import { onBeforeMount, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 

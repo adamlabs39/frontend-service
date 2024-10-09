@@ -152,8 +152,8 @@ watch(
           :invalid="!!errors.tipe"
           :invalidMessage="errors.tipe"
         />
-        <hr class="border-grey-200 col-span-12" />
-        <div class="font-semibold text-normal col-span-12 -mb-5">
+        <hr class="col-span-12 border-grey-200" />
+        <div class="col-span-12 -mb-5 font-semibold text-normal">
           Nama Lengkap Pegawai
         </div>
         <CustomTextfield
@@ -202,7 +202,7 @@ watch(
           :invalid="!!errors.gender"
           :invalidMessage="errors.gender"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -246,7 +246,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"
