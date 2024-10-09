@@ -28,11 +28,13 @@ const changeSection = (label: string, data: any = null) => {
   if (data) {
     tempData = { ...tempData, ...data };
   }
+    console.log(tempData);
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
     dataBreadCrumb.value.push(tempData);
   }
+  console.log(dataBreadCrumb.value.length);
 };
 
 const updatePageType = (path: string) => {
@@ -379,7 +381,7 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
-                Jadwal
+                Jadwal 
                 <ArrowRightBrokenIcon
                   :size="18"
                   class="my-auto mr-5 text-male-300"

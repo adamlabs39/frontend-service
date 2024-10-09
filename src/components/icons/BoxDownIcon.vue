@@ -15,6 +15,7 @@ const props = defineProps({
    <svg
     :width="size"
     :height="size"
+    :class="class"
     :viewBox="`0 0 20 20`"
     xmlns="http://www.w3.org/2000/svg"
   >

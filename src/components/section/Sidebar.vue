@@ -68,7 +68,7 @@ const getSVG = (svg: string) => {
         <!-- Title -->
         <div v-if="showSidebar" class="flex justify-between mb-7">
           <div
-            class="font-semibold cursor-pointer text-heading"
+            class="font-semibold cursor-pointer text-heading "
             @click="goToPage(sidebarTitleUrl)"
           >
             {{ sidebarTitle }}
@@ -90,7 +90,7 @@ const getSVG = (svg: string) => {
         <!-- Filter Poli -->
 
         <!-- body -->
-        <div v-for="section in props.sidebarBodyList" class="text-SM">
+        <div v-for="section in props.sidebarBodyList" class="text-SM ">
           <hr class="my-[20px]" />
           <div v-for="row1 in section.child">
             <div v-if="showSidebar">

@@ -108,7 +108,7 @@ import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
 // NOTE Page Inventory
-import InventoryPurchasePage from "@/views/Inventory/Page/InventoryPurchasePage.vue";
+import InventoryPurchasePage from "@/views/Inventory/Page/PengadaanBarang/InventoryPurchasePage.vue";
 
 // !SECTION
 // NOTE Test Component

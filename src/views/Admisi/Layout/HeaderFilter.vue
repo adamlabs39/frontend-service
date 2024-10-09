@@ -151,7 +151,7 @@ defineExpose({
           <span v-if="!isSEP" class="leading-10 text-adameds-300 text-heading">
             {{
               pageType == "rawat-jalan"
-                ? "Rawat Jalan"
+                ? "Rawat Jalan "
                 : pageType == "rawat-inap"
                 ? "Rawat Inap"
                 : "IGD"
