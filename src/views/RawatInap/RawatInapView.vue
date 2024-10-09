@@ -53,22 +53,22 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Kunjungan Rawat Inap",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/laporan/kunjungan-rawat-inap",
           },
           {
             name: "Perpindahan Pasien",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/laporan/perpindahan-pasien",
           },
           {
             name: "Pembatalan Dirawat",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/laporan/pembatalan-dirawat",
           },
           {
             name: "Rekap Tindakan Pasien",
             type: linkType.LINK,
-            url: "/",
+            url: "/rawat-inap/laporan/rekap-tindakan-pasien",
           },
         ],
       },

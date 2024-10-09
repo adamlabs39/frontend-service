@@ -22,13 +22,13 @@ const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchRMFilter = ref<string>("");
 const searchDokterDPJPFilter = ref<string>("");
+const searchPraktisiFilter = ref<string>("");
 const searchBulanFilter = ref<string>("");
 </script>
 
 <template>
   <CustomAccordion :open-with-header="false" initial-state="0" noBorder>
     <template #header>
-      <!-- {{ currentRouteName }} -->
       <div class="flex items-center w-full gap-5 mr-2.5">
         <CustomButton icon="PhArrowClockwise" />
         <CustomBreadCrumb
@@ -42,8 +42,15 @@ const searchBulanFilter = ref<string>("");
       </div>
     </template>
     <template #content>
-        <slot name="before-content"></slot>
-      <div class="flex mt-[12px] mb-2.5">
+      <slot name="before-content"></slot>
+      <div
+        class="grid mt-[12px] mb-2.5"
+        :class="[
+          currentRouteName != 'rekap-tindakan-pasien'
+            ? 'grid-cols-[1fr_min-content_min-content]'
+            : 'grid-cols-[1fr_1fr_1fr_min-content]',
+        ]"
+      >
         <CustomTextfield
           v-model="searchRMFilter"
           prependIcon="PhMagnifyingGlass"
@@ -51,23 +58,7 @@ const searchBulanFilter = ref<string>("");
           placeholder="Cari Nama / Alamat / No. RM"
           class="mr-5 grow"
         />
-        <CustomSelect
-          v-if="currentRouteName === 'kunjungan-rawat-jalan'"
-          v-model="searchDokterDPJPFilter"
-          label="Dokter DPJP"
-          class="mr-5"
-          optionLabel=""
-          optionValue=""
-          place-holder="Cari Dokter"
-          :options="['Semua', 'Beberapa', 'Banyak']"
-        />
-        <div
-          class="flex"
-          v-if="
-            currentRouteName === 'kunjungan-rawat-jalan' ||
-            currentRouteName === 'pembatalan-poli'
-          "
-        >
+        <div class="flex" v-if="currentRouteName != 'rekap-tindakan-pasien'">
           <CustomDatePicker
             v-model="startDateFilter"
             label="Tanggal"
@@ -83,26 +74,38 @@ const searchBulanFilter = ref<string>("");
 
         <CustomSelect
           v-if="currentRouteName === 'rekap-tindakan-pasien'"
+          v-model="searchPraktisiFilter"
+          label="Praktisi"
+          class="mr-5"
+          optionLabel=""
+          optionValue=""
+          place-holder="Pilih Dokter"
+          :options="['Semua', 'Beberapa', 'Banyak']"
+        />
+        <CustomSelect
+          v-if="currentRouteName === 'rekap-tindakan-pasien'"
           v-model="searchBulanFilter"
           label="Bulan"
-          class="w-1/4"
+          class=""
           optionLabel=""
           optionValue=""
           place-holder="Pilih Bulan"
           :options="['Januari', 'Februari', 'Maret']"
         />
-        <CustomButton
-          icon="PhMagnifyingGlass"
-          label="Cari"
-          class="ml-5 mr-[10px] mt-auto w-[95px]"
-        />
-        <CustomButton
-          label="Reset"
-          outlined
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          class="mt-auto w-[70px]"
-        />
+        <div class="flex">
+          <CustomButton
+            icon="PhMagnifyingGlass"
+            label="Cari"
+            class="ml-5 mr-[10px] mt-auto w-[95px]"
+          />
+          <CustomButton
+            label="Reset"
+            outlined
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            class="mt-auto w-[70px]"
+          />
+        </div>
       </div>
       <hr class="border-grey-200" />
     </template>

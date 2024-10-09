@@ -1,21 +1,23 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const pembatalanPoli = ref([
+const pembatalanRuangan = ref([
   {
     id: 1,
     tglRegistrasi: "10-10-2024 09:00",
     noRegistrasi: "2407010049",
     noRM: "00-00-00",
     namaPasien: "Nama Lengkap Pasien",
-    poli: "Poli Dalam",
+    ruangan: "Mawar 1A",
     dokter: "dr. Nama Dokter Sp. D",
     tglBatal: "10-10-2024 10:00",
     subMenu: [
       {
         id: 1,
+        kelas: "Kelas 1",
+        noBed: "2",
         petugas: "Nama Petugas",
-        alasanBatal: "Tidak Jadi",
+        alasanBatal: "Alasan Batal",
       },
     ],
   },
@@ -26,7 +28,7 @@ const expandedRows = ref<any[]>([]);
 
 <template>
   <DataTable
-    :value="pembatalanPoli"
+    :value="pembatalanRuangan"
     responsiveLayout="scroll"
     dataKey="id"
     :expandedRows="expandedRows"
@@ -72,8 +74,8 @@ const expandedRows = ref<any[]>([]);
     >
     </Column>
     <Column
-      field="poli"
-      header="Poli"
+      field="ruangan"
+      header="Ruangan"
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
@@ -81,7 +83,7 @@ const expandedRows = ref<any[]>([]);
     </Column>
     <Column
       field="dokter"
-      header="Dokter"
+      header="Dokter DPJP"
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
@@ -102,6 +104,20 @@ const expandedRows = ref<any[]>([]);
           :value="slotProps.data.subMenu"
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
+          <Column
+            field="kelas"
+            header="Kelas"
+            header-class="text-black bg-adameds-50"
+            class="p-5 text-black text-SM"
+            style="width: 300px"
+          ></Column>
+          <Column
+            field="noBed"
+            header="No. Bed"
+            header-class="text-black bg-adameds-50"
+            class="p-5 text-black text-SM"
+            style="width: 300px"
+          ></Column>
           <Column
             field="petugas"
             header="Petugas"

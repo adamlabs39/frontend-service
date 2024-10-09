@@ -111,7 +111,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
 import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
-
+import LaporanPageRI from "@/views/RawatInap/Page/LaporanPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -828,6 +828,30 @@ const router = createRouter({
       path: "/rawat-inap/bpjs/monitoring-obat-kunjungan",
       name: "rawat-inap-bpjs-monitoring-obat-kunjungan",
       meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/laporan/kunjungan-rawat-inap",
+      name: "rawat-inap-laporan-kunjungan-rawat-inap",
+      meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/laporan/perpindahan-pasien",
+      name: "rawat-inap-laporan-perpindahan-pasien",
+      meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/laporan/pembatalan-dirawat",
+      name: "rawat-inap-laporan-pembatalan-dirawat",
+      meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/laporan/rekap-tindakan-pasien",
+      name: "rawat-inap-laporan-rekap-tindakan-pasien",
+      meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
       component: RawatInapView,
     },
 

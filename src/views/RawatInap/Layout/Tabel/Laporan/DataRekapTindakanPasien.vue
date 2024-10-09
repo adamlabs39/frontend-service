@@ -20,7 +20,7 @@ const rekapTindakanPasien = ref([
     :value="rekapTindakanPasien"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="240px"
+    scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
   >
     <Column field="no" headerClass="bg-adameds-50" header="No" class="w-[10px]" >
@@ -34,7 +34,7 @@ const rekapTindakanPasien = ref([
       field="tindakan"
       header="Tindakan"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
+      class=""
     >
       <template #body="slotProps">
         <div class="text-SM">
@@ -46,7 +46,7 @@ const rekapTindakanPasien = ref([
       field="jumlah"
       header="Jumlah"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
+      class=""
     >
       <template #body="slotProps">
         <div class="text-SM">

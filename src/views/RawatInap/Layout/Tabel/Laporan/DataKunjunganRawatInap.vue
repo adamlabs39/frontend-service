@@ -1,17 +1,26 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const kunjunganRawatJalan = ref([
+const kunjunganRawatInap = ref([
   {
     id: 1,
     tglRegistrasi: "10-10-2024 09:00",
     noRegistrasi: "2407010049",
     noRM: "00-00-00",
     namaPasien: "Nama Lengkap Pasien",
-    poli: "Poli Dalam",
+    ruangan: "Mawar 1A",
     dokter: "dr. Nama Dokter Sp. D",
     subMenu: [
-      { id: 1, jenisKelamin: "L", tglLahir: "01-01-2000", umur: "24 Tahun 2 Bulan 4 Hari",alamat: "Jl. Ijo Abang no. 17", jenisID: "KTP", noIdentitas: "99999999999999999999" , statusKeluarPasien: "Atas Persetujuan Dokter" ,kondisiKeluar: "Stabil" },
+      {
+        id: 1,
+        jenisKelamin: "L",
+        tglLahir: "01-01-2000",
+        umur: "24 Tahun 2 Bulan 4 Hari",
+        alamat: "Jl. Ijo Abang no. 17",
+        statusKeluarPasien: "Atas Persetujuan Dokter",
+        kondisiKeluar: "Stabil",
+        noBed: "1",
+      },
     ],
   },
   {
@@ -20,7 +29,17 @@ const kunjunganRawatJalan = ref([
     noRegistrasi: "2407010049",
     noRM: "00-00-00",
     namaPasien: "Nama Lengkap Pasien",
-    poli: "-",
+    ruangan: "Mawar 1B",
+    dokter: "dr. Nama Dokter Sp. Og",
+    subMenu: [], // Add submenu items here if any
+  },
+  {
+    id: 3,
+    tglRegistrasi: "10-10-2024 09:00",
+    noRegistrasi: "2407010049",
+    noRM: "00-00-00",
+    namaPasien: "Nama Lengkap Pasien",
+    ruangan: "Melati",
     dokter: "dr. Nama Dokter Sp. Og",
     subMenu: [], // Add submenu items here if any
   },
@@ -31,7 +50,7 @@ const expandedRows = ref<any[]>([]);
 
 <template>
   <DataTable
-    :value="kunjunganRawatJalan"
+    :value="kunjunganRawatInap"
     responsiveLayout="scroll"
     dataKey="id"
     :expandedRows="expandedRows"
@@ -77,8 +96,8 @@ const expandedRows = ref<any[]>([]);
     >
     </Column>
     <Column
-      field="poli"
-      header="Poli"
+      field="ruangan"
+      header="Ruangan"
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
@@ -105,7 +124,6 @@ const expandedRows = ref<any[]>([]);
             header-class="text-black bg-adameds-50"
             class="p-5 text-black text-SM"
             style="width: 100px"
-             
           ></Column>
           <Column
             field="tglLahir"
@@ -126,26 +144,20 @@ const expandedRows = ref<any[]>([]);
             class="text-black text-SM"
           ></Column>
           <Column
-            field="jenisID"
-            header="Jenis ID"
-            header-class="text-black bg-adameds-50"
-            class="text-black text-SM"
-          ></Column>
-          <Column
-            field="noIdentitas"
-            header="No.Identitas"
-            header-class="text-black bg-adameds-50"
-            class="text-black text-SM"
-          ></Column>
-          <Column
             field="statusKeluarPasien"
-            header="Status Keluar Pasien"
+            header="Status Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           ></Column>
           <Column
             field="kondisiKeluar"
             header="Kondisi Keluar"
+            header-class="text-black bg-adameds-50"
+            class="text-black text-SM"
+          ></Column>
+          <Column
+            field="noBed"
+            header="No. Bed"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           ></Column>
