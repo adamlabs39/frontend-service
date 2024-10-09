@@ -101,13 +101,11 @@ const schema = toTypedSchema(
     mode: yup.string(),
     status: yup.bool().default(false),
     isMcu: yup.bool().default(false),
-    unitPelayanan: yup
-      .array()
-      .of(
-        yup.object({
-          unitPelayanan: yup.number(),
-        })
-      ),
+    unitPelayanan: yup.array().of(
+      yup.object({
+        unitPelayanan: yup.number(),
+      })
+    ),
     penjamin: yup
       .array()
       .of(
@@ -118,8 +116,15 @@ const schema = toTypedSchema(
       .nullable(),
     tindakanPoli: yup.array().of(
       yup.object({
-        tindakanUuid: yup.string(),
-        
+        tindakanUuid: yup.string().required("Tindakan harus diisi"),
+        listKomponenTarif: yup.array().of(
+          yup.object({
+            tarifKomponenUuid: yup
+              .string()
+              .required("Jenis pembayaran harus diisi"),
+            tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
+          })
+        ),
       })
     ),
     tarifLab: yup
@@ -127,7 +132,6 @@ const schema = toTypedSchema(
       .of(
         yup.object({
           tarifLabUuid: yup.string(),
-          
         })
       )
       .nullable(),
@@ -140,18 +144,54 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
     tindakanPoli: [
       {
         tindakanUuid: "",
-        
+        listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
       },
     ],
     tarifLab: [{ tarifLabUuid: "" }],
   },
 });
 
-const listKomponenTarifRef = ref();
+const listKomponenTarifRefs = ref<
+  Array<InstanceType<typeof TableKomponenTarifTindakan> | null>
+>([]);
 
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-  console.log(unitPelayananSelected.value);
+interface ListKomponenTarif {
+  tarifKomponenUuid: string;
+  tarifPerKomponen: number;
+}
+
+interface Tindakan {
+  tindakanUuid: string;
+  listKomponenTarif: Array<ListKomponenTarif>;
+}
+
+const {
+  remove: removeTindakan,
+  push: pushTindakan,
+  fields: fieldsTindakan,
+} = useFieldArray<Tindakan>("tindakanPoli");
+
+// Fungsi untuk menambah listKomponenTarif
+const addListKomponenTarif = (index: number) => {
+  fieldsTindakan.value[index].value.listKomponenTarif.push({
+    tarifKomponenUuid: "",
+    tarifPerKomponen: 0,
+  });
+};
+
+// Fungsi untuk menghapus listKomponenTarif
+const removeListKomponenTarif = (
+  tindakanIndex: number,
+  komponenIndex: number
+) => {
+  fieldsTindakan.value[tindakanIndex].value.listKomponenTarif.splice(
+    komponenIndex,
+    1
+  );
+};
+
+const onSubmit = handleSubmit(async (values) => {
+  console.log("Submitted luar with", values);
 });
 
 const [jenisTarif] = defineField("jenisTarif");
@@ -163,12 +203,6 @@ const [unitPelayanan] = defineField("unitPelayanan");
 const [status] = defineField("status");
 
 const unitPelayananSelected = ref();
-
-const {
-  remove: removeTindakan,
-  push: pushTindakan,
-  fields: fieldsTindakan,
-} = useFieldArray("tindakanPoli");
 
 const {
   remove: removePelayanan,
@@ -183,11 +217,18 @@ const {
 } = useFieldArray("tarifLab");
 
 const handlePushTindakan = () => {
-  pushTindakan({ tarifLabUuid: "" });
+  pushTindakan({
+    tindakanUuid: "",
+    listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
+  });
 };
 const handlePushTarifLab = () => {
   pushTarifLab({ tarifLabUuid: "" });
 };
+
+defineExpose({
+  onSubmit,
+});
 </script>
 
 <template>
@@ -279,15 +320,21 @@ const handlePushTarifLab = () => {
             <div
               class="flex flex-col gap-5 p-5 pt-5 mb-5 -mx-4 border border-adameds-300 rounded-xl"
             >
-              <div class="flex gap-2.5 items-end">
-                <CustomButton label="1" class="w-10 h-10 p-3 rounded" />
+              <div class="flex gap-2.5 items-start">
+                <CustomButton
+                  :label="`${idx + 1}`"
+                  class="w-10 h-10 p-3 rounded"
+                />
                 <CustomSelect
-                  label=""
+                  v-model="fieldTindakan.value.tindakanUuid"
+                  :showLabel="false"
                   place-holder="Tindakan"
                   :options="tindakanPayload"
                   option-label="name"
                   option-value="uuid"
                   class="w-full"
+                  :invalid="(errors as any)[`tindakanPoli[${idx}].tindakanUuid`] ? true: false"
+                  :invalidMessage="(errors as any)[`tindakanPoli[${idx}].tindakanUuid`]"
                 />
                 <CustomButton
                   background-color="bg-danger-300"
@@ -297,7 +344,93 @@ const handlePushTarifLab = () => {
                   <span class="font-semibold text-normal">Hapus</span>
                 </CustomButton>
               </div>
-              <TableKomponenTarifTindakan ref="listKomponenTarifRef" @update:list-komponen-tarif="" />
+              <div class="flex flex-col gap-1.5">
+                <DataTable
+                  :value="fieldTindakan.value.listKomponenTarif"
+                  tableStyle="min-width: 50rem"
+                  class="overflow-hidden text-xs rounded-lg bg-adameds-50"
+                >
+                  <Column
+                    headerClass="bg-adameds-300 text-white"
+                    class="w-8/12"
+                    bodyClass="align-top"
+                  >
+                    <template #header>
+                      <div>Komponen Tarif</div>
+                    </template>
+                    <template #body="slotProps">
+                      <CustomSelect
+                        v-model="slotProps.data.tarifKomponenUuid"
+                        label=""
+                        place-holder="Pilih Tindakan"
+                        :options="tindakanPayload"
+                        option-label="name"
+                        optionValue="uuid"
+                        :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true: false"
+                        :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`]"
+                      />
+                    </template>
+                  </Column>
+                  <Column
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #header>
+                      <div class="w-full font-semibold text-end">
+                        Rupiah (Rp)
+                      </div>
+                    </template>
+                    <template #body="slotProps">
+                      <CustomInputNumber
+                        v-model="slotProps.data.tarifPerKomponen"
+                        label=""
+                        align-number="text-end"
+                        :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`] ? true: false"
+                        :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`]"
+                      >
+                        <template #prependText>
+                          <div
+                            class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                          >
+                            Rp.
+                          </div>
+                        </template>
+                      </CustomInputNumber>
+                    </template>
+                  </Column>
+                  <Column
+                    header="Action"
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #body="slotProps">
+                      <CustomButton
+                        label=""
+                        background-color="bg-danger-300 rounded-lg"
+                        class="h-6 w-[26px] p-0 mt-3"
+                        @click="removeListKomponenTarif(idx, slotProps.index)"
+                      >
+                        <img src="@/assets/icons/delete.svg" alt="" />
+                      </CustomButton>
+                    </template>
+                  </Column>
+                </DataTable>
+                <div class="flex flex-col gap-5 p-5">
+                  <div
+                    class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
+                  >
+                    <CustomButton
+                      icon="PhPlus"
+                      label="Tindakan"
+                      borderColor="border-adameds-300"
+                      textColor="text-adameds-300"
+                      backgroundColor="bg-white"
+                      @click="addListKomponenTarif(idx)"
+                    />
+                  </div>
+                </div>
+                <!-- <CustomButton label="Submit" @click="onSubmit" /> -->
+              </div>
             </div>
           </div>
         </template>
@@ -369,7 +502,7 @@ const handlePushTarifLab = () => {
                 <CustomInputNumber label="" align-number="text-end">
                   <template #prependText>
                     <div
-                      class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD text-adameds-300 bg-adameds-300 rounded-l-md"
+                      class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
                     >
                       Rp.
                     </div>

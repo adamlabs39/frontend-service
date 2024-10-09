@@ -34,12 +34,12 @@ const fetchTarifData = async () => {
   try {
     const response = await tarifStore.getApi(
       tarifProperties.value.page,
-      tarifProperties.value.page_size,  
+      tarifProperties.value.page_size
     );
 
     if (response && response.payload) {
       tarifProperties.value.total = response.properties.total;
-      
+
       // Full payload
       tarifPayload.value = response.payload;
 
@@ -64,16 +64,34 @@ const fetchTarifData = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+const formTarifTindakanRef = ref<InstanceType<typeof FormTarifTindakan> | null>(
+  null
+);
+
+const onSubmit = () => {
+  if (formTarifTindakanRef.value) {
+    formTarifTindakanRef.value.onSubmit();
+  }
+};
+
 onMounted(() => {
   fetchTarifData();
 });
 </script>
 
-
 <template>
-  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto" class="">
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+    class=""
+  >
     <template #header>
-      <HeaderFilter page-type="tarif" @tambah-data="testDialog = true" @selected-tab="handleSelectedTab" />
+      <HeaderFilter
+        page-type="tarif"
+        @tambah-data="testDialog = true"
+        @selected-tab="handleSelectedTab"
+      />
     </template>
     <template #content>
       <Tabs v-model:value="selectedTab">
@@ -82,16 +100,20 @@ onMounted(() => {
             <TablesTindakan :payload="tindakanPayload" />
           </TabPanel>
           <TabPanel value="1">
-            <TablesRuangan :payload="ruanganPayload"/>
+            <TablesRuangan :payload="ruanganPayload" />
           </TabPanel>
         </TabPanels>
       </Tabs>
-      <CustomDialog width="1000px" v-model:visible="testDialog" headerBg="bg-adameds-300">
+      <CustomDialog
+        width="1000px"
+        v-model:visible="testDialog"
+        headerBg="bg-adameds-300"
+      >
         <template #header>Tambah Tarif</template>
         <template #body>
           <div class="flex flex-col h-full overflow-hidden">
             <div v-if="selectedTab === '0'" class="flex-1 overflow-hidden">
-              <FormTarifTindakan />
+              <FormTarifTindakan ref="formTarifTindakanRef" />
             </div>
             <div v-if="selectedTab === '1'">
               <FormTarifRuangan />
@@ -102,10 +124,14 @@ onMounted(() => {
           <div class="w-full">
             <hr class="-mx-5 border-grey-200" />
             <div class="mt-5 flex justify-end gap-2.5">
-              <CustomButton label="Batal" border-color="border-grey-200" background-color="bg-white"
-                text-color="text-grey-300">
+              <CustomButton
+                label="Batal"
+                border-color="border-grey-200"
+                background-color="bg-white"
+                text-color="text-grey-300"
+              >
               </CustomButton>
-              <CustomButton label="Simpan"> </CustomButton>
+              <CustomButton @click="onSubmit" label="Simpan" />
             </div>
           </div>
         </template>
