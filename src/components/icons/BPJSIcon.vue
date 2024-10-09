@@ -15,8 +15,9 @@ const props = defineProps({
   <svg
     :width="size"
     :height="size"
-    viewBox="0 0 20 20"
+    :viewBox="`0 0 20 20`"
     fill="none"
+    :class="class"
     xmlns="http://www.w3.org/2000/svg"
   >
     <g clip-path="url(#clip0_1790_1541)">
