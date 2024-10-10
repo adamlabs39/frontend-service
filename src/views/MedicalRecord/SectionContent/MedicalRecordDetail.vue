@@ -17,7 +17,7 @@ import FormDiagnosaDokterICD10 from "@/components/RekamMedis/DiagnosaDokter/Form
 import AsuhanKeperawatan from "@/components/RekamMedis/AsuhanKeperawatan/AsuhanKeperawatan.vue";
 import FormCatatanPerawat from "@/components/RekamMedis/CatatanPerawat/FormCatatanPerawat.vue";
 import InstruksiMedis from "@/components/RekamMedis/IntruksiMedis/InstruksiMedis.vue";
-import FormOrderObat from "@/components/RekamMedis/OrderObat/FormOrderObat.vue";
+import FormOrderObat from "@/components/RekamMedis/OrderObat/AccordionOrderObat.vue";
 import PemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/PemeriksaanTindakan.vue";
 import FormImplementation from "@/components/Fisioterapi/Implementation/FormImplementation.vue";
 import FormEvaluation from "@/components/Fisioterapi/Evaluation/FormEvaluation.vue";
