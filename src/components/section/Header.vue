@@ -2,6 +2,7 @@
 import type { ListMenu, Module } from "@/utils/Interface";
 import { onMounted, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { utilsStore } from "@/stores/utils";
 import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -12,6 +13,7 @@ interface userData {
 }
 
 const authStore = useAuthStore();
+const UseUtilsStore = utilsStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -113,11 +115,14 @@ const showDialog = () => {
 
 const userData = ref<userData>();
 const logout = async () => {
+  UseUtilsStore.setLoading(true);
   try {
     await authStore.logoutApi();
     router.push("login");
   } catch (error: any) {
     console.log(error.message);
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
 };
 

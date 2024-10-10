@@ -63,8 +63,8 @@ import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIn
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
-import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue"
-import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue"
+import PrintOutPage from "../views/SettingPage/Template/PrintOut/PrintOutPage.vue";
+import ProfilAkunPage from "../views/SettingPage/Template/ProfilAkun/ProfilAkunPage.vue";
 import ProfilAkunView from "@/views/SettingPage/ProfilAkunView.vue";
 import SystemPage from "@/views/SettingPage/Template/System/SystemPage.vue";
 
@@ -124,7 +124,6 @@ import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
 import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -162,19 +161,31 @@ const router = createRouter({
     {
       path: "/rawat-jalan/bpjs/monitoring-kunjungan",
       name: "rawat-jalan-bpjs-monitoring-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringPage,
+        requiresAuth: true,
+      },
       component: RawatJalanView,
     },
     {
       path: "/rawat-jalan/bpjs/monitoring-riwayat-kunjungan",
       name: "rawat-jalan-bpjs-monitoring-riwayat-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringPage,
+        requiresAuth: true,
+      },
       component: RawatJalanView,
     },
     {
       path: "/rawat-jalan/bpjs/monitoring-obat-kunjungan",
       name: "rawat-jalan-bpjs-monitoring-obat-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringPage,
+        requiresAuth: true,
+      },
       component: RawatJalanView,
     },
     {
@@ -199,20 +210,32 @@ const router = createRouter({
     {
       path: "/setting/profil-faskes",
       name: "setting-profil-faskes",
-      meta: { layout: SidebarLayout, page: ProfilFaskesPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ProfilFaskesPage,
+        requiresAuth: true,
+      },
       component: SettingView,
     },
 
     {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
-      meta: { layout: SidebarLayout, page: KonfigurasiIntegrasiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KonfigurasiIntegrasiPage,
+        requiresAuth: true,
+      },
       component: SettingView,
     },
     {
       path: "/setting/permission-menu",
       name: "setting-permission-menu",
-      meta: { layout: SidebarLayout, page: PermissionMenuPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PermissionMenuPage,
+        requiresAuth: true,
+      },
       component: SettingView,
     },
 
@@ -232,7 +255,7 @@ const router = createRouter({
       path: "/setting/system",
       name: "setting-system",
       meta: { layout: SidebarLayout, page: SystemPage, requiresAuth: true },
-      component: SettingView
+      component: SettingView,
     },
 
     // NOTE Datamaster
@@ -262,7 +285,11 @@ const router = createRouter({
     {
       path: "/datamaster/kategori-ruangan",
       name: "datamaster-kategori-ruangan",
-      meta: { layout: SidebarLayout, page: KategoriRuanganPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KategoriRuanganPage,
+        requiresAuth: true,
+      },
       component: DatamasterView,
     },
     {
@@ -274,7 +301,11 @@ const router = createRouter({
     {
       path: "/datamaster/komponen-tarif",
       name: "datamaster-komponen-tarif",
-      meta: { layout: SidebarLayout, page: KomponenTarifPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KomponenTarifPage,
+        requiresAuth: true,
+      },
       component: DatamasterView,
     },
     {
@@ -304,7 +335,11 @@ const router = createRouter({
     {
       path: "/datamaster/diagnosis-icd10",
       name: "datamaster-diagnosis-icd10",
-      meta: { layout: SidebarLayout, page: DiagnosisICD10Page, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DiagnosisICD10Page,
+        requiresAuth: true,
+      },
       component: DatamasterView,
     },
     {
@@ -352,7 +387,11 @@ const router = createRouter({
     {
       path: "/datamaster/general-consent",
       name: "datamaster-general-consent",
-      meta: { layout: SidebarLayout, page: GeneralConsentPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: GeneralConsentPage,
+        requiresAuth: true,
+      },
       component: DatamasterView,
     },
     {
@@ -429,13 +468,21 @@ const router = createRouter({
     {
       path: "/admisi/data-pasien",
       name: "admisi-data-pasien",
-      meta: { layout: SidebarLayout, page: PatientDataPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PatientDataPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/monitoring-kamar",
       name: "admisi-monitoring-kamar",
-      meta: { layout: SidebarLayout, page: RoomMonitoringPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RoomMonitoringPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
@@ -446,43 +493,71 @@ const router = createRouter({
     {
       path: "/admisi/laporan/kunjungan",
       name: "admisi-laporan-kunjungan",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/penjamin",
       name: "admisi-laporan-penjamin",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/batal-kunjungan",
       name: "admisi-laporan-batal-kunjungan",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/status-kamar",
       name: "admisi-laporan-status-kamar",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/keperawatan-inap-pasien",
       name: "admisi-laporan-keperawatan-inap-pasien",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/bayi-baru-lahir",
       name: "admisi-laporan-bayi-baru-lahir",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
     {
       path: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
       name: "admisi-laporan-rekap-jumlah-pasien-BPJS",
-      meta: { layout: SidebarLayout, page: AdmisiReportPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: AdmisiReportPage,
+        requiresAuth: true,
+      },
       component: AdmisiView,
     },
 
@@ -490,36 +565,56 @@ const router = createRouter({
     {
       path: "/antrian",
       name: "antrian",
-      redirect: '/antrian/konfigurasi/jadwal-dokter'
+      redirect: "/antrian/konfigurasi/jadwal-dokter",
     },
     {
       path: "/antrian/konfigurasi/jadwal-dokter",
       name: "antrian-konfigurasi-jadwal-dokter",
-      meta: { layout: SidebarLayout, page: KonfigurasiJadwalPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KonfigurasiJadwalPage,
+        requiresAuth: true,
+      },
       component: AntrianView,
     },
     {
       path: "/antrian/konfigurasi/layar-antrian",
       name: "antrian-konfigurasi-layar-antrian",
-      meta: { layout: SidebarLayout, page: KonfigurasiLayarPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KonfigurasiLayarPage,
+        requiresAuth: true,
+      },
       component: AntrianView,
     },
     {
       path: "/antrian/data-antrian",
       name: "antrian-data-antrian",
-      meta: { layout: SidebarLayout, page: DataAntrianPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DataAntrianPage,
+        requiresAuth: true,
+      },
       component: AntrianView,
     },
     {
       path: "/antrian/monitoring-antrian",
       name: "antrian-monitoring-antrian",
-      meta: { layout: SidebarLayout, page: LayarAntrianPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: LayarAntrianPage,
+        requiresAuth: true,
+      },
       component: AntrianView,
     },
     {
       path: "/antrian/layar",
       name: "antrian-layar",
-      meta: { layout: SidebarLayout, page: LayarAntrianPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: LayarAntrianPage,
+        requiresAuth: true,
+      },
       component: AntrianView,
     },
     {
@@ -564,12 +659,12 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintAntrianPage,
     },
-    
+
     // NOTE Laboratorium
     {
       path: "/laboratorium",
       name: "laboratorium",
-      redirect: '/laboratorium/order-lab'
+      redirect: "/laboratorium/order-lab",
     },
     {
       path: "/laboratorium/order-lab",
@@ -638,7 +733,7 @@ const router = createRouter({
       component: LaboratoriumView,
     },
 
-     // NOTE Pembayaran
+    // NOTE Pembayaran
     {
       path: "/pembayaran",
       name: "pembayaran",
@@ -653,7 +748,11 @@ const router = createRouter({
     {
       path: "/pembayaran/transaksi",
       name: "pembayaran-transaksi",
-      meta: { layout: SidebarLayout, page: TransactionPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: TransactionPage,
+        requiresAuth: true,
+      },
       component: PaymentView,
     },
     {
@@ -665,18 +764,26 @@ const router = createRouter({
     {
       path: "/pembayaran/laporan/pembayaran",
       name: "pembayaran-laporan-pembayaran",
-      meta: { layout: SidebarLayout, page: PembayaranKunjunganPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PembayaranKunjunganPage,
+        requiresAuth: true,
+      },
       component: PaymentView,
     },
     {
       path: "/pembayaran/laporan/closing",
       name: "pembayaran-laporan-closing",
-      meta: { layout: SidebarLayout, page: ClosingCashierPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ClosingCashierPage,
+        requiresAuth: true,
+      },
       component: PaymentView,
     },
 
-     // NOTE Farmasi
-     {
+    // NOTE Farmasi
+    {
       path: "/farmasi",
       name: "farmasi",
       redirect: "/farmasi/resep-dokter",
@@ -684,7 +791,11 @@ const router = createRouter({
     {
       path: "/farmasi/resep-dokter",
       name: "farmasi-resep-dokter",
-      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DoctorPrescriptionPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
@@ -696,19 +807,31 @@ const router = createRouter({
     {
       path: "/farmasi/retur-obat-&-material",
       name: "farmasi-retur-obat-&-material",
-      meta: { layout: SidebarLayout, page: DrugReturnsPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DrugReturnsPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/farmasi-ruangan",
       name: "farmasi-retur-ruangan",
-      meta: { layout: SidebarLayout, page: RoomPharmacyPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RoomPharmacyPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/riwayat-transaksi",
       name: "farmasi-riwayat-transaksi",
-      meta: { layout: SidebarLayout, page: TransactionHistoryPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: TransactionHistoryPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
 
@@ -734,13 +857,21 @@ const router = createRouter({
     {
       path: "/farmasi/datamaster/kategori-obat",
       name: "farmasi-datamaster-kategori-obat",
-      meta: { layout: SidebarLayout, page: DrugCategoryPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DrugCategoryPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/datamaster/manufaktur",
       name: "farmasi-datamaster-manufaktur",
-      meta: { layout: SidebarLayout, page: ManufacturingPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ManufacturingPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
@@ -752,13 +883,21 @@ const router = createRouter({
     {
       path: "/farmasi/datamaster/lokasi-stok",
       name: "farmasi-datamaster-lokasi-stok",
-      meta: { layout: SidebarLayout, page: StockLocationPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: StockLocationPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/datamaster/item-medis",
       name: "farmasi-datamaster-item-medis",
-      meta: { layout: SidebarLayout, page: MedicalItemPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: MedicalItemPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
@@ -770,13 +909,21 @@ const router = createRouter({
     {
       path: "/farmasi/datamaster/komposisi",
       name: "farmasi-datamaster-komposisi",
-      meta: { layout: SidebarLayout, page: CompositionPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: CompositionPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/datamaster/konfigurasi-harga",
       name: "farmasi-datamaster-konfigurasi-harga",
-      meta: { layout: SidebarLayout, page: PriceConfigurationPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PriceConfigurationPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
 
@@ -790,13 +937,21 @@ const router = createRouter({
     {
       path: "/farmasi/laporan/waktu-tunggu",
       name: "farmasi-laporan-waktu-tunggu",
-      meta: { layout: SidebarLayout, page: WaitingTimePage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: WaitingTimePage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
     {
       path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-dokter",
       name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
-      meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RevenueRecapPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
 
@@ -815,19 +970,31 @@ const router = createRouter({
     {
       path: "/rawat-inap/bpjs/monitoring-kunjungan",
       name: "rawat-inap-bpjs-monitoring-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringRIPage,
+        requiresAuth: true,
+      },
       component: RawatInapView,
     },
     {
       path: "/rawat-inap/bpjs/monitoring-riwayat-kunjungan",
       name: "rawat-inap-bpjs-monitoring-riwayat-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringRIPage,
+        requiresAuth: true,
+      },
       component: RawatInapView,
     },
     {
       path: "/rawat-inap/bpjs/monitoring-obat-kunjungan",
       name: "rawat-inap-bpjs-monitoring-obat-kunjungan",
-      meta: { layout: SidebarLayout, page: BPJSMonitoringRIPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BPJSMonitoringRIPage,
+        requiresAuth: true,
+      },
       component: RawatInapView,
     },
     {
@@ -854,7 +1021,6 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
       component: RawatInapView,
     },
-
 
     // NOTE Test Component
     {
@@ -896,6 +1062,16 @@ router.beforeEach((to, from, next) => {
       next({
         path: "/login",
         query: { redirect: to.fullPath },
+      });
+    } else {
+      next();
+    }
+  } else if (to.path == "/login") {
+    console.log("masuk");
+
+    if (isAuthenticated()) {
+      next({
+        path: "/dashboard",
       });
     } else {
       next();
