@@ -36,6 +36,7 @@ const perpindahanPasien = ref([
     responsiveLayout="scroll"
     dataKey="id"
     scrollable
+    stripedRows
     scrollHeight="flex"
     class="p-datatable-sm"
   >

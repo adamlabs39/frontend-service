@@ -15,7 +15,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Perpindahan Bangsal",
         icon: "HandshakeIcon",
         type: linkType.LINK,
-        url: "/",
+        url: "/rawat-inap/perpindahan-bangsal",
       },
     ],
   },

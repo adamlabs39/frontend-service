@@ -105,6 +105,12 @@ const executeSearch = () => {
           :model="dataBreadCrumb"
           class=""
         />
+        <div
+          class="leading-10 text-adameds-300 text-heading"
+          v-else-if="currentRouteName == 'rawat-inap-perpindahan-bangsal'"
+        >
+          {{ dataBreadCrumb[0].label }}
+        </div>
       </div>
     </template>
     <template #content>
@@ -189,7 +195,10 @@ const executeSearch = () => {
 
       <div
         class="font-semibold text-SM text-grey-300"
-        v-if="currentRouteName === 'rawat-inap-ruangan'"
+        v-if="
+          currentRouteName === 'rawat-inap-ruangan' ||
+          currentRouteName === 'rawat-inap-perpindahan-bangsal'
+        "
       >
         <div
           :class="[
