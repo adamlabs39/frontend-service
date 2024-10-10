@@ -3,6 +3,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { ref } from "vue";
+import SectionPerpindahanBangsal from "../../Section/SectionPerpindahanBangsal.vue";
 
 const medicalRecord = ref<any>();
 
@@ -117,6 +118,11 @@ const itemsPasien = ref([
     statusPembayaran: "Lunas",
   },
 ]);
+
+const sectionPerpindahanBangsal = ref<any>();
+const openDialogPerpindahanBangsal = () => {
+ sectionPerpindahanBangsal.value?.showDialogPerpindahanBangsal();
+};
 </script>
 
 <template>
@@ -130,7 +136,7 @@ const itemsPasien = ref([
     class=""
     scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
-    @row-click="() => {}"
+    @row-click="openDialogPerpindahanBangsal"
   >
     <Column field="nomor" headerClass="bg-adameds-50">
       <template #header>
@@ -308,4 +314,5 @@ const itemsPasien = ref([
   </DataTable>
   <!-- Else -->
   <NoData v-else />
+  <SectionPerpindahanBangsal ref="sectionPerpindahanBangsal" />
 </template>

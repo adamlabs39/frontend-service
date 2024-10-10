@@ -307,33 +307,130 @@ defineExpose({
       </div>
 
       <div
-        v-if="currentMethod == 'detail'"
-        class="py-5 flex flex-col gap-[19px]"
+        v-if="currentMethod == 'detail' || currentMethod == 'detailPerpindahan'"
+        class="py-5"
+        :class="[
+          currentMethod == 'detail'
+            ? 'flex flex-col gap-[19px]'
+            : 'grid grid-cols-4 gap-y-[30px]',
+        ]"
       >
         <CustomInfoRow
           label="Kriteria Pemantauan"
           :value="kriteriaPemantauan"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
         />
-        <CustomInfoRow label="Waktu Asesmen" :value="`${waktuAsesmen}`" />
-        <CustomInfoRow label="Frekuensi Napas" :value="`${frekuensiNafas}`" />
-        <CustomInfoRow label="Frekuensi Nadi" :value="`${frekuensiNadi}`" />
-        <CustomInfoRow label="Suhu" :value="`${suhu}`" />
+        <CustomInfoRow
+          label="Waktu Asesmen"
+          :value="`${waktuAsesmen}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
+        <CustomInfoRow
+          label="Frekuensi Napas"
+          :value="`${frekuensiNafas}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
+        <CustomInfoRow
+          label="Frekuensi Nadi"
+          :value="`${frekuensiNadi}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
+        <CustomInfoRow
+          label="Suhu"
+          :value="`${suhu}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
         <CustomInfoRow
           label="Capillary Refill Time (CRT > 2 Detik)"
           :value="`${CRT}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
         />
-        <CustomInfoRow label="Blood Oxygen" :value="`${bloodOxygen}`" />
-        <CustomInfoRow label="Gula Darah" :value="`${gulaDarah}`" />
-        <CustomInfoRow label="Oksigen Tambahan" :value="`${oksigenTambahan}`" />
-        <CustomInfoRow label="Tekanan Darah" :value="`${numerator}`" />
-        <CustomInfoRow label="Respirasi Anak" :value="`${respirasiAnak}`" />
+        <CustomInfoRow
+          label="Blood Oxygen"
+          :value="`${bloodOxygen}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
+        <CustomInfoRow
+          label="Gula Darah"
+          :value="`${gulaDarah}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+        />
+        <div
+          class="py-5"
+          :class="[
+            currentMethod == 'detail'
+              ? 'flex flex-col gap-[19px]'
+              : 'grid grid-cols-6 col-span-4',
+          ]"
+        >
+          <CustomInfoRow
+            label="Oksigen Tambahan"
+            :value="`${oksigenTambahan}`"
+            :type="
+              currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+            "
+            :class="{ 'col-span-2': currentMethod == 'detailPerpindahan' }"
+          />
+          <CustomInfoRow
+            label="Tekanan Darah"
+            :value="`${numerator}`"
+            :type="
+              currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+            "
+            :class="{ 'col-span-2': currentMethod == 'detailPerpindahan' }"
+          />
+          <CustomInfoRow
+            label="Respirasi Anak"
+            :value="`${respirasiAnak}`"
+            :type="
+              currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+            "
+            :class="{ 'col-span-2': currentMethod == 'detailPerpindahan' }"
+          />
+        </div>
         <CustomInfoRow
           label="Kardiovaskuler Anak"
           :value="`${kardiovaskulerAnak}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+          :class="{ 'col-span-2': currentMethod == 'detailPerpindahan' }"
         />
-        <CustomInfoRow label="Keadaan Umum" :value="`${keadaanUmum}`" />
-        <hr class="border-grey-200" />
-        <CustomInfoRow label="Petugas Input" :value="petugas" />
+        <CustomInfoRow
+          label="Keadaan Umum"
+          :value="`${keadaanUmum}`"
+          :type="
+            currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
+          "
+          :class="{ 'col-span-2': currentMethod == 'detailPerpindahan' }"
+        />
+        <hr v-if="currentMethod == 'detail'" class="border-grey-200" />
+        <CustomInfoRow
+          v-if="currentMethod == 'detail'"
+          label="Petugas Input"
+          :value="petugas"
+        />
+        <CustomInfoRow
+          v-if="currentMethod == 'detail'"
+          label="Jam Input"
+          :value="'Jam Input'"
+        />
       </div>
 
       <!-- Dialog compare -->

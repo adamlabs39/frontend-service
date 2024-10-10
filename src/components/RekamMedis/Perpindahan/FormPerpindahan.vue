@@ -75,7 +75,6 @@ const selectedKategori = ref("");
     <template #content>
       <div v-if="props.method == 'form'" class="gap-[30px] py-3">
         <div class="grid grid-cols-12 gap-2 py-4">
-
           <div class="flex items-start col-span-6 gap-4">
             <div class="mt-3">
               <div class="mb-2 text-xs font-semibold text-gray-600 underline">
@@ -123,32 +122,32 @@ const selectedKategori = ref("");
         <div v-if="radioPerpindahan === 'R'">
           <div class="grid grid-cols-5 gap-x-[30px] my-6">
             <CustomSelect
-            label="Kelas"
-            v-model="selectedKelas"
-            :options="kelas"
-            optionValue="id"
-            optionLabel="kelas"
-            :isLoading="false"
-            :invalid="false"
-            invalidMessage="Wajib diisi"
-            :disabled="false"
-            placeHolder="Pilih Kelas"
-            customSelectClass="border-[#C7CBD2]"
-          />
-          <CustomSelect
-            label="Kategori Ruangan"
-            v-model="selectedKategori"
-            :options="kategoriRuangan"
-            optionValue="id"
-            optionLabel="ruangan"
-            :isLoading="false"
-            :invalid="false"
-            invalidMessage="Wajib diisi"
-            :disabled="false"
-            placeHolder="Pilih Kategori Ruangan"
-            customSelectClass="border-[#C7CBD2]"
-            class="col-span-4"
-          />
+              label="Kelas"
+              v-model="selectedKelas"
+              :options="kelas"
+              optionValue="id"
+              optionLabel="kelas"
+              :isLoading="false"
+              :invalid="false"
+              invalidMessage="Wajib diisi"
+              :disabled="false"
+              placeHolder="Pilih Kelas"
+              customSelectClass="border-[#C7CBD2]"
+            />
+            <CustomSelect
+              label="Kategori Ruangan"
+              v-model="selectedKategori"
+              :options="kategoriRuangan"
+              optionValue="id"
+              optionLabel="ruangan"
+              :isLoading="false"
+              :invalid="false"
+              invalidMessage="Wajib diisi"
+              :disabled="false"
+              placeHolder="Pilih Kategori Ruangan"
+              customSelectClass="border-[#C7CBD2]"
+              class="col-span-4"
+            />
           </div>
         </div>
 
@@ -215,26 +214,37 @@ const selectedKategori = ref("");
         </div>
       </div>
 
-      <div
-        v-if="props.method == 'detail'"
-        class="py-5 flex flex-col gap-[19px]"
-      >
-        <hr class="border-grey-200" />
-        <CustomInfoRow label="" value="" />
+      <div v-if="props.method == 'detail'" class="grid grid-cols-4 pt-5">
+        <CustomInfoRow
+          label="Ruangan Saat Ini"
+          value="Melati - Kelas 3 - Bed 1"
+          type="vertical"
+        />
+        <CustomInfoRow
+          label="Masuk Ke"
+          value="Anggrek - Kelas 2 - Bed 2"
+          type="vertical"
+        />
+        <div class="flex col-span-2">
+          <div class="mr-5 border border-grey-200" />
+          <CustomInfoRow
+            label="Keterangan"
+            value="Permintaan Pasien"
+            type="vertical"
+          />
+        </div>
       </div>
     </template>
-    <!-- <template #footer>
+    <template #footer v-if="props.method == 'detail'">
       <div class="flex items-end justify-end gap-3">
         <CustomButton
-          v-if="props.method == 'form'"
-          label="Reset"
-          textColor="text-adameds-300"
+          label="Batal Terima"
+          textColor="text-danger-300"
           backgroundColor="bg-transparent"
-          borderColor="border-2 border-adameds-300"
+          borderColor="border-2 border-danger-300"
         />
-        <CustomButton v-if="props.method == 'form'" label="Simpan" />
-        <CustomButton v-if="props.method == 'detail'" label="Edit" />
+        <CustomButton label="Setuju & Terima" />
       </div>
-    </template> -->
+    </template>
   </CustomAccordion>
 </template>
