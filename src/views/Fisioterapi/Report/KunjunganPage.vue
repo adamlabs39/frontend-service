@@ -199,7 +199,7 @@ onMounted(() => {
           <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
              <CustomPaginator
             :rows="10"
-            :totalRecords="100"
+            :totalRecords=reportData.length
             :rowsPerPageOptions="[10, 20, 30]"
             @update:rows="handleRowsUpdate"
             @update:current-page="handlePageUpdate"

@@ -13,7 +13,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Order Fisioterapi",
         icon: "FisioIcon",
         type: linkType.LINK,
-        url: "/farmasi/resep-dokter",
+        url: "/fisioterapi/order-fisioterapi",
       },
       {
         name: "Penjadwalan Terapi",
@@ -53,7 +53,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Bed Ruangan",
             type: linkType.LINK,
-            url: "/farmasi/datamaster/aturan-pakai",
+            url: "/fisioterapi/datamaster/bed-ruangan",
           },
         ],
       },

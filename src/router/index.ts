@@ -108,6 +108,12 @@ import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue"
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
+// NOTE FISIOTERAPI DATAMASTER
+import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
+
+// NOTE ORDER FISIOTERAPI
+import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
+
 // NOTE FISIOTERAPI/LAPORAN
 import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
 import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
@@ -811,6 +817,22 @@ const router = createRouter({
       path: "/fisioterapi/order-fisioterapi",
       name: "fisioterapi-order-fisioterapi",
       meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI DATAMASTER
+    {
+      path: "/fisioterapi/datamaster/bed-ruangan",
+      name: "fisioterapi-datamaster-bed-ruangan",
+      meta: { layout: SidebarLayout, page: BedRuanganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE ORDER FISIOTERAPI
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
       component: FisioterapiView,
     },
 
