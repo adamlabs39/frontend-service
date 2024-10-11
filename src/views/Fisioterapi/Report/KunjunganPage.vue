@@ -197,13 +197,7 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between">
           <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
-             <CustomPaginator
-            :rows="10"
-            :totalRecords=reportData.length
-            :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
-          />
+          <CustomPaginator :rows="10" :totalRecords="reportData.length" :rowsPerPageOptions="[10, 20, 30]" @update:rows="handleRowsUpdate" @update:current-page="handlePageUpdate" />
         </div>
       </template>
     </Card>

@@ -9,6 +9,9 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import DaftarOrderFisioPage from "./Layout/DaftarOrderFisioPage.vue";
 
 import NoData from "@/components/section/NoData.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
@@ -18,6 +21,8 @@ const pageType = ref("");
 const route = useRoute();
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
@@ -40,6 +45,10 @@ const changeSection = (label: string, data: any = null) => {
   } else {
     dataBreadCrumb.value.push(tempData);
   }
+};
+
+const showDetail = (event: DataTableRowClickEvent) => {
+  changeSection("Daftar");
 };
 
 const updatePageType = (path: string) => {
@@ -193,11 +202,28 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
     changeSection("Detail");
   }
 };
+
+// Filter Pembayaran
+const selectedPaymentMethod = ref<string[]>([]);
+const onPaymentMethodSelect = (label: string) => {
+  if (selectedPaymentMethod.value.includes(label)) {
+    selectedPaymentMethod.value = selectedPaymentMethod.value.filter((item) => item != label);
+  } else {
+    selectedPaymentMethod.value.push(label);
+  }
+};
+const selectedStatus = ref<any>();
+const itemStatus = ref([
+  { name: "Semua", code: "S1" },
+  { name: "Belum Lunas", code: "S2" },
+  { name: "Batal Order", code: "S3" },
+]);
+const patientData = ref<any>({});
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -215,13 +241,51 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Bed Ruangan</p>
                 </div> -->
               </div>
-              <CustomButton icon="PhPlus" label="Order" class="mr-[10px]" />
+              <CustomButton @click="changeSection('Daftar')" icon="PhPlus" label="Daftar" class="mr-[10px]" />
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
-              <CustomTextfield label="Cari Ruangan" prependIcon="PhMagnifyingGlass" placeholder="Cari Nama Ruangan" class="" />
+            <div class="flex mt-[10px]">
+              <CustomTextfield label="Pencarian" prependIcon="PhMagnifyingGlass" placeholder="Cari Nama / Alamat / No. RM" class="mr-5 grow" />
+              <CustomSelect v-model="selectedStatus" :options="itemStatus" label="Status" class="mr-5 w-[150px]" optionLabel="name" optionValue="code" place-holder="Semua" />
+              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
+              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
+              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
             </div>
+
+            <div class="flex my-[10px] mt-5 font-semibold text-SM text-grey-300">
+              <div class="w-[15%]">Filter Pembayaran</div>
+              <div class="flex">
+                |
+                <CustomChip
+                  label="TUNAI"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('TUNAI')"
+                  @selected="onPaymentMethodSelect"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                />
+                <CustomChip
+                  label="ASURANSI"
+                  borderColor="border-warning-300"
+                  bgColor="bg-warning-50"
+                  iconColor="text-warning-300"
+                  textColor="text-warning-300"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('ASURANSI')"
+                  @selected="onPaymentMethodSelect"
+                  selectedColor="bg-warning-300 border-warning-300"
+                />
+              </div>
+            </div>
+            <hr class="mt-5 border-[1px] border-grey-200" />
           </template>
           <template #collapseIcon>
             <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
@@ -232,7 +296,7 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
-        <DataTable v-if="itemsPasien.length" v-model:selection="selectedPatient" :value="itemsPasien" tableStyle="min-width: 50rem" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }" @rowClick="showPatientDetail">
+        <DataTable v-if="itemsPasien.length" v-model:selection="selectedPatient" :value="itemsPasien" tableStyle="min-width: 50rem" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }" @rowClick="showDetail">
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
               <div class="w-full font-semibold text-center">Nomor</div>
@@ -345,5 +409,6 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
+    <DaftarOrderFisioPage v-else-if="dataBreadCrumb[0].label == 'Daftar'" :dataBreadCrumb="dataBreadCrumb" :pageType="pageType" :patientData="patientData" @back="dataBreadCrumb.pop()" />
   </div>
 </template>
