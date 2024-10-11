@@ -53,6 +53,12 @@ onMounted(() => {
 });
 
 
+const pembelianData = ref(null);  // Reaktif untuk menyimpan data yang diterima
+
+const handleSimpanPembelian = (data:any) => {
+  pembelianData.value = data;  // Simpan data yang diterima
+  dataBreadCrumb.value[0].label = 'Pembelian Barang Supplier';  // Kembali ke tab Pembelian Barang Supplier
+};
 
 </script>
 
@@ -113,7 +119,7 @@ onMounted(() => {
       <Tabs v-model:value="value">
         <TabPanels>
           <TabPanel value="1">
-            <PengajuanPembelian />
+            <PengajuanPembelian :pembelian-data = "pembelianData" />
           </TabPanel>
           <TabPanel value="2"> lmlm </TabPanel>
         </TabPanels>
@@ -140,5 +146,6 @@ onMounted(() => {
     :pageType="pageType"
     :dataBreadCrumb="dataBreadCrumb"
     @kembali="dataBreadCrumb[0].label = 'Pembelian Barang Supplier'"
+    @on-simpan-pembelian="handleSimpanPembelian"
   />
 </template>

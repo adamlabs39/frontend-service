@@ -3,6 +3,12 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import { ref } from "vue";
 
+const props = defineProps({
+  pembelianData: {
+    type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
+    default: null,
+  },
+});
 const selectedPengajuanPembelian = ref([]);
 const pengajuanPembelians = ref([
   {
@@ -29,6 +35,7 @@ const pengajuanPembelians = ref([
 </script>
 
 <template>
+  {{ pembelianData }}
   <DataTable
     v-if="pengajuanPembelians.length"
     v-model:selection="selectedPengajuanPembelian"

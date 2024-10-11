@@ -29,7 +29,8 @@ onMounted(() => {
   console.log(props.pageType);
 });
 
-const emit = defineEmits(["kembali"]);
+
+const emit = defineEmits(["kembali", "onSimpanPembelian"]);
 
 const dataPembelians = ref<any[]>([]);
 
@@ -162,7 +163,8 @@ const onSubmit = handleSubmit((values) => {
     datas: JSON.parse(JSON.stringify(dataPembelians.value)), // Tambahkan data dari tabel
     totalItem: dataPembelians.value.length,
   };
-  console.log("Submitted with", payload);
+    console.log("Submitted with", payload);
+  emit('onSimpanPembelian', payload)
 });
 
 const resetFormFields = () => {
