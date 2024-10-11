@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import type { MenuItem } from "primevue/menuitem";
-import type { PropType } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 
 const props = defineProps({
   pageType: {
@@ -16,6 +18,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["tambahPermintaan"]);
+const noPO = ref<string>("");
+
+onMounted(() => {
+  console.log(props.dataBreadCrumb)
+  // console.log("`page", props.pageType);
+})
 </script>
 
 <template>
@@ -24,32 +32,54 @@ const emit = defineEmits(["tambahPermintaan"]);
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
           <CustomButton icon="PhArrowClockwise" class="mr-5" />
-          <span class="leading-10 text-adameds-300 text-heading">
-            {{
-              pageType == "rawat-jalan"
-                ? "Rawat Jalan "
-                : pageType == "rawat-inap"
-                ? "Rawat Inap"
-                : "IGD"
-            }}
-          </span>
           <CustomBreadCrumb
             :home="{
-              label: 'SEP',
+              label: 'Pengadaan Barang',
               home: true,
             }"
             :model="dataBreadCrumb"
             class=""
-          />
+          >
+          </CustomBreadCrumb>
         </div>
         <CustomButton
+          v-if="pageType == 'pembelian-barang-supplier'"
           @click="
-            pageType == 'pembelian-barang-supplier' ? emit('tambahPermintaan') : ''"
+            pageType == 'pembelian-barang-supplier'
+              ? emit('tambahPermintaan')
+              : ''
+          "
           icon="PhPlus"
-          :label="pageType == 'pembelian-barang-supplier' ? 'Permintaan' : ''"
+          label="Permintaan"
           class="mr-[10px]"
         />
       </div>
+    </template>
+    <template #content>
+      <div class="mb-2.5">
+        <CustomTextfield
+          v-model="noPO"
+          prependIcon="PhMagnifyingGlass"
+          label="Pencarian"
+          placeholder="Cari Nama Pasien"
+          class="mr-5 grow"
+        />
+      </div>
+      <slot name="tabs"></slot>
+    </template>
+    <template #collapseIcon>
+      <CustomButton
+        icon="PhCaretUp"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
+    </template>
+    <template #expandIcon>
+      <CustomButton
+        icon="PhCaretDown"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
     </template>
   </CustomAccordion>
 </template>

@@ -28,7 +28,6 @@ const changeSection = (label: string, data: any = null) => {
   if (data) {
     tempData = { ...tempData, ...data };
   }
-    console.log(tempData);
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
