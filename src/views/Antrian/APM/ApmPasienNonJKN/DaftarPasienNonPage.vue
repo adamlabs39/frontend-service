@@ -8,6 +8,9 @@ const router = useRouter();
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
+const handleBerhasil = () => {
+  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+};
 
 const props = defineProps({
   isDialogVisible: {
@@ -88,9 +91,7 @@ const props = defineProps({
                 </div>
 
                 <!-- Text Container with Background -->
-                <div
-                  class="px-2 py-1 font-bold rounded-xl text-adameds-300"
-                >
+                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
                   Pasien Non-JKN
                 </div>
               </div>
@@ -111,7 +112,7 @@ const props = defineProps({
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="w-[120px]"
-                      @click="handleHome"
+                @click="handleHome"
               />
             </div>
           </div>
@@ -122,7 +123,11 @@ const props = defineProps({
               :placeholder="`Masukkan No. KTP`"
               class="w-2/5 mt-16 mr-5"
             ></CustomTextfield>
-            <CustomButton label="Lanjutkan" class="w-2/5 mt-10 mr-5" />
+            <CustomButton
+              label="Lanjutkan"
+              class="w-2/5 mt-10 mr-5"
+              @click="handleBerhasil"
+            />
           </div>
         </div>
       </div>

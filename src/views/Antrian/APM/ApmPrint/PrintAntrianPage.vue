@@ -8,6 +8,9 @@ const router = useRouter();
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
+const handleData = () => {
+  router.push("/antrian/apm/aktif/print/data");
+};
 
 const props = defineProps({
   isDialogVisible: {
@@ -122,7 +125,7 @@ const props = defineProps({
               :placeholder="`Masukkan No. Kode Booking`"
               class="w-2/5 mt-16 mr-5"
             ></CustomTextfield>
-            <CustomButton label="Print" class="w-2/5 mt-10 mr-5" />
+            <CustomButton label="Print" class="w-2/5 mt-10 mr-5" @click="handleData"/>
           </div>
         </div>
       </div>
