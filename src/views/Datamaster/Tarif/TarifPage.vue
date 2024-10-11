@@ -4,11 +4,11 @@ import { useTarifStore } from "@/stores/datamaster/tarif";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { utilsStore } from "@/stores/utils";
 import Footer from "../Layout/FooterPaginator.vue";
-import TablesRuangan from "./TablesRuangan.vue";
-import TablesTindakan from "./TablesTindakan.vue";
+import TablesRuangan from "./TarifRuangan/TablesRuangan.vue";
+import TablesTindakan from "./TarifTindakan/TablesTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import FormTarifTindakan from "./FormTarifTindakan.vue";
-import FormTarifRuangan from "./FormTarifRuangan.vue";
+import FormTarifTindakan from "./TarifTindakan/FormTarifTindakan.vue";
+import FormTarifRuangan from "./TarifRuangan/FormTarifRuangan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 
 const selectedTab = ref("0");
@@ -78,6 +78,35 @@ const onSubmit = () => {
 onMounted(() => {
   fetchTarifData();
 });
+
+const isTambahTindakanDialogVisible = ref(false);
+const isTambahRuanganDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+
+const FormTindakanDialog = (
+  method: string,
+  title: string,
+  data: any = null
+) => {
+  dialogConfig.value = { method, title, data };
+  isTambahTindakanDialogVisible.value = true;
+};
+
+const FormRUanganDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahRuanganDialogVisible.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
 </script>
 
 <template>
@@ -89,7 +118,8 @@ onMounted(() => {
     <template #header>
       <HeaderFilter
         page-type="tarif"
-        @tambah-data="testDialog = true"
+        @tambah-data="FormTindakanDialog('add', 'Tambah Data')"
+        @tarif-ruangan="FormRUanganDialog('add', 'Tambah Data')"
         @selected-tab="handleSelectedTab"
       />
     </template>
@@ -104,38 +134,20 @@ onMounted(() => {
           </TabPanel>
         </TabPanels>
       </Tabs>
-      <CustomDialog
-        width="1000px"
-        v-model:visible="testDialog"
-        headerBg="bg-adameds-300"
-      >
-        <template #header>Tambah Tarif</template>
-        <template #body>
-          <div class="flex flex-col h-full overflow-hidden">
-            <div v-if="selectedTab === '0'" class="flex-1 overflow-hidden">
-              <FormTarifTindakan ref="formTarifTindakanRef" />
-            </div>
-            <div v-if="selectedTab === '1'">
-              <FormTarifRuangan />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <div class="w-full">
-            <hr class="-mx-5 border-grey-200" />
-            <div class="mt-5 flex justify-end gap-2.5">
-              <CustomButton
-                label="Batal"
-                border-color="border-grey-200"
-                background-color="bg-white"
-                text-color="text-grey-300"
-              >
-              </CustomButton>
-              <CustomButton @click="onSubmit" label="Simpan" />
-            </div>
-          </div>
-        </template>
-      </CustomDialog>
+      <FormTarifTindakan
+        v-model:isDialogVisible="isTambahTindakanDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+        @data-updated="fetchTarifData"
+      />
+      <FormTarifRuangan
+        v-model:isDialogVisible="isTambahRuanganDialogVisible"
+        :title="dialogConfig.title"
+        :method="dialogConfig.method"
+        :payload="dialogConfig.data"
+        @data-updated="fetchTarifData"
+      />
     </template>
     <template #footer>
       <Footer :rows="1" :totalRecords="1" />

@@ -2,55 +2,16 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, onBeforeRouteLeave } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
+import { useUserStore } from "@/stores/user";
+import { utilsStore } from "@/stores/utils";
+import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import TambahDataUserPage from "./TambahDataUser/TambahDataUserPage.vue";
-
-const searchUser = ref<any>();
-const selectedUser = ref<any>();
-const itemSelectUser = ref([
-  { name: "Dokter", code: "DK" },
-  { name: "Admin", code: "AD" },
-  { name: "Perawat", code: "PR" },
-]);
-
-const dataUser = ref([
-  { name: "John Doe", role: "Admin", status: "AKTIF" },
-  { name: "Jane Smith", role: "User", status: "NON-AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary ", role: "User", status: "AKTIF" },
-  { name: "Mary ", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-  { name: "Mary Johnson", role: "User", status: "AKTIF" },
-]);
-
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
-
-const paginatedData = computed(() => {
-  const start = currentPage.value * rowsPerPage.value;
-  const end = start + rowsPerPage.value;
-  return dataUser.value.slice(start, end);
-});
-
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
-};
-
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
-};
+import FooterPaginator from "../Layout/FooterPaginator.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -59,7 +20,6 @@ const resetFilter = () => {
 
 const pageType = ref("");
 const route = useRoute();
-
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
 const changeSection = (label: string) => {
@@ -82,6 +42,41 @@ onBeforeRouteLeave((to, from) => {
 onMounted(() => {
   updatePageType(route.path);
 });
+
+const userStore = useUserStore();
+const UseUtilsStore = utilsStore();
+const userPayload = ref<any[]>([]);
+
+// Fetch User Data from API
+const fetchUserData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await userStore.getApi();
+    console.log("API Response:", response);
+
+    if (response && response.payload) {
+      console.log("Response contains payload:", response.payload);
+      userPayload.value = response.payload;
+    } else {
+      userPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    userPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const hasData = computed(
+  () => userPayload.value && userPayload.value.length > 0
+);
+
+console.log(userPayload.value);
+
+onMounted(() => {
+  fetchUserData();
+});
 </script>
 
 <template>
@@ -92,16 +87,13 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <HeaderFilter
-        page-type="user"
-        :value-search="searchUser"
-        @tambah-data="changeSection('Daftar')"
-      />
+      <HeaderFilter page-type="user" @tambah-data="changeSection('Daftar')" />
     </template>
     <template #content>
-      {{ searchUser }}
+      <NoData v-if="!hasData" />
       <DataTable
-        :value="paginatedData"
+        v-else
+        :value="userPayload"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
@@ -140,25 +132,15 @@ onMounted(() => {
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-5 flex"
               />
             </div>
@@ -166,11 +148,7 @@ onMounted(() => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div
-              class="w-full text-center font-semibold text-SM"
-            >
-              Action
-            </div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
@@ -194,23 +172,7 @@ onMounted(() => {
       </DataTable>
     </template>
     <template #footer>
-      <div class="flex justify-between px-5 py-2.5">
-        <div class="flex items-center gap-2.5">
-          <CustomButton label="Import">
-            <img src="@/assets/icons/File Import.svg" alt="" />Import
-          </CustomButton>
-          <CustomButton label="Eksport">
-            <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-          </CustomButton>
-        </div>
-        <CustomPaginator
-          :rows="rowsPerPage"
-          :totalRecords="dataUser.length"
-          :rowsPerPageOptions="[10, 20, 30]"
-          @update:rows="handleRowsUpdate"
-          @update:current-page="handlePageUpdate"
-        />
-      </div>
+      <FooterPaginator :rows="4" :totalRecords="5" />
     </template>
   </Card>
   <TambahDataUserPage
