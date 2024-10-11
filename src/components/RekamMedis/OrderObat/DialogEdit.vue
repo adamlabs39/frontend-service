@@ -95,7 +95,6 @@ const schema = toTypedSchema(
         aturanPakai: yup.string(),
         caraPakai: yup.string(),
         rutePemberian: yup.string(),
-        obatPulang: yup.bool(),
         obatKronis: yup.bool(),
         catatan: yup.string()
     })
@@ -114,7 +113,6 @@ const [satuanDosis] = defineField("satuanDosis");
 const [aturanPakai] = defineField("aturanPakai");
 const [caraPakai] = defineField("caraPakai");
 const [rutePemberian] = defineField("rutePemberian");
-const [obatPulang] = defineField("obatPulang");
 const [obatKronis] = defineField("obatKronis");
 const [catatan] = defineField("catatan");
 
@@ -136,7 +134,7 @@ const onSubmit = handleSubmit((values) => {
         <template #body>
             <div class="flex my-5 gap-7">
                 <DetailPasien />
-                <hr class="min-h-[440px] border border-gray-300">
+                <hr class="min-h-[440px] border border-adameds-300">
                 <div class="grow">
                     <Card pt:body:class="h-full p-0 overflow-auto" pt:content:class="h-full overflow-auto"
                         pt:root:class="shadow shadow-inherit">
@@ -192,13 +190,10 @@ const onSubmit = handleSubmit((values) => {
                                                 optionLabel="rutePemberian" />
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-7">
-                                        <div class="grid grid-cols-2 gap-5">
-                                            <CustomSwitch label="Obat Pulang" v-model:model-value="obatPulang" />
+                                    <div class="flex gap-7">
                                             <CustomSwitch label="Obat Kronis" v-model="obatKronis" />
                                             <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->
-                                        </div>
-                                        <div>
+                                        <div class="grow">
                                             <CustomTextArea label="Catatan" placeholder="-" v-model="catatan" />
                                         </div>
                                     </div>

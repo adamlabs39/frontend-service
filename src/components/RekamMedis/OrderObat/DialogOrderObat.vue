@@ -1,115 +1,30 @@
 <script lang="ts" setup>
-import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-
-import DataTable from "primevue/datatable";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import { onMounted, ref } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { onBeforeMount, ref } from "vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import Card from "primevue/card";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import DialogTambahObat from "./DialogTambahObat.vue";
-import { onMounted } from "vue";
 import DialogEdit from "./DialogEdit.vue";
 import DialogObatRacikan from "./DialogObatRacikan.vue";
-import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
-import DialogDetailObat from "./DialogDetailObat.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 
 const props = defineProps({
+  isDialogVisible: {
+    type: Boolean,
+    default: false,
+  },
+  title: {
+    type: String,
+    default: "Tambah",
+  },
   method: {
     type: String,
-    default: "form",
+    default: "add",
   },
-});
-const emit = defineEmits(["edit"]);
-const orderObats = ref<any[]>([]);
-
-const orderObatschema = toTypedSchema(
-  yup.object({
-    selectedLokasiTujuanOrder: yup.string(),
-  })
-);
-
-const { errors, handleSubmit, resetForm, defineField } = useForm({
-  validationSchema: orderObatschema,
-  initialValues: {
-    selectedLokasiTujuanOrder: "",
-  },
-});
-
-const [selectedLokasiTujuanOrder] = defineField("selectedLokasiTujuanOrder");
-
-const listLokasiTujuanOrder = ref([
-  { id: "1", label: "Farmasi Rawat Jalan" },
-  { id: "2", label: "Farmasi Rawat Inap" },
-]);
-
-onMounted(() => {
-  orderObats.value = [
-    {
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Rektal",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 1,
-      jumlahTotal: 1,
-      obatKronis: true,
-      obatPulang: true,
-      periode: "Minggu",
-    },
-    {
-      aturanPakai: "3x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Rektal",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 4,
-      jumlahTotal: 1,
-      obatKronis: false,
-      obatPulang: true,
-      periode: "Hari",
-    },
-    {
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Oral",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 1,
-      jumlahTotal: 1,
-      obatKronis: false,
-      obatPulang: false,
-      periode: "Minggu",
-    },
-    {
-      namaRacikan: "PuyerIndo",
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      rutePemberian: "Oral",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      datas: [{ namaObat: "Amoxan", jumlahTotal: 3 }],
-      jumlahKonsumsi: 1,
-      obatKronis: false,
-      obatPulang: false,
-      periode: "Minggu",
-      sirup: true,
-      racikan: true,
-      satuanEmbalase: "Tablet",
-      jumlahEmbalase: "1",
-    },
-  ];
 });
 
 const dialogTambahData = ref({
@@ -130,7 +45,94 @@ const dialogRacikanData = ref({
   obatToEdit: null as any | null,
 });
 
-// pas detail
+const emit = defineEmits(["update:isDialogVisible", "submitOrder"]);
+
+function updateVisibility(value: boolean) {
+  emit("update:isDialogVisible", value);
+}
+
+const orderObatschema = toTypedSchema(
+  yup.object({
+    selectedLokasiTujuanOrder: yup.string(),
+    obatPulang: yup.bool(),
+  })
+);
+
+const { errors, handleSubmit, resetForm, defineField } = useForm({
+  validationSchema: orderObatschema,
+  initialValues: {
+    selectedLokasiTujuanOrder: "",
+    obatPulang: false,
+  },
+});
+
+const [selectedLokasiTujuanOrder] = defineField("selectedLokasiTujuanOrder");
+const [obatPulang] = defineField("obatPulang");
+
+const listLokasiTujuanOrder = ref([
+  { id: "1", label: "Farmasi Rawat Jalan" },
+  { id: "2", label: "Farmasi Rawat Inap" },
+]);
+
+const orderObats = ref<any[]>([]);
+
+onMounted(() => {
+  orderObats.value = [
+    {
+      aturanPakai: "2x Sehari",
+      caraPakai: "Setelah Makan",
+      namaObat: "Paracetamol",
+      rutePemberian: "Rektal",
+      satuanDosis: "Sendok Makan",
+      catatan: "",
+      jumlahKonsumsi: 1,
+      jumlahTotal: 1,
+      obatKronis: true,
+      periode: "Minggu",
+    },
+    {
+      aturanPakai: "3x Sehari",
+      caraPakai: "Setelah Makan",
+      namaObat: "Paracetamol",
+      rutePemberian: "Rektal",
+      satuanDosis: "Sendok Makan",
+      catatan: "",
+      jumlahKonsumsi: 4,
+      jumlahTotal: 1,
+      obatKronis: false,
+      periode: "Hari",
+    },
+    {
+      aturanPakai: "2x Sehari",
+      caraPakai: "Setelah Makan",
+      namaObat: "Paracetamol",
+      rutePemberian: "Oral",
+      satuanDosis: "Sendok Makan",
+      catatan: "",
+      jumlahKonsumsi: 1,
+      jumlahTotal: 1,
+      obatKronis: false,
+      periode: "Minggu",
+    },
+    {
+      namaRacikan: "PuyerIndo",
+      aturanPakai: "2x Sehari",
+      caraPakai: "Setelah Makan",
+      rutePemberian: "Oral",
+      satuanDosis: "Sendok Makan",
+      catatan: "",
+      datas: [{ namaObat: "Amoxan", jumlahTotal: 3 }],
+      jumlahKonsumsi: 1,
+      obatKronis: false,
+      periode: "Minggu",
+      sirup: true,
+      racikan: true,
+      satuanEmbalase: "Tablet",
+      jumlahEmbalase: "1",
+    },
+  ];
+});
+
 const dialogDetailData = ref({
   isVisible: false,
   title: "",
@@ -143,6 +145,7 @@ const selectedObatIndex = ref(0);
 
 function handleAdd() {
   dialogTambahData.value.isVisible = true;
+  console.log("ononnon");
 }
 
 // Detail Dialog
@@ -222,7 +225,9 @@ const onSubmit = handleSubmit((values) => {
     orderObats: JSON.parse(JSON.stringify(orderObats.value)), // Tambahkan data dari tabel
   };
 
-  emit("edit", payload);
+  emit("submitOrder", payload);
+  resetFormFields();
+  emit("update:isDialogVisible", false);
 
   console.log("Submitted with", payload);
 });
@@ -231,40 +236,50 @@ const resetFormFields = () => {
   resetForm();
   orderObats.value = [];
 };
-
-const accordion = ref<HTMLCanvasElement | null>(null);
-const open = () => {
-  if (accordion.value) {
-    (accordion.value as any).open();
-  }
-};
-const close = () => {
-  if (accordion.value) {
-    (accordion.value as any).close();
-  }
-};
-
-defineExpose({
-  open,
-  close,
-});
 </script>
-
 <template>
-  <CustomAccordion headerClass="bg-adameds-50" v-if="props.method === 'form'" ref="accordion">
-    <template #header>Order Obat</template>
-    <template #content>
+  <CustomDialog
+    width="1000px"
+    :visible="isDialogVisible"
+    headerBg="bg-adameds-300"
+    @update:visible="updateVisibility"
+  >
+    <template #header>{{ title }}</template>
+    <template #body>
       <div class="flex flex-col gap-5 py-3">
-        <CustomSelect
-          prepend-icon="PhMagnifyingGlass"
-          v-model="selectedLokasiTujuanOrder"
-          :options="listLokasiTujuanOrder"
-          optionValue="label"
-          optionLabel="label"
-          label="Lokasi Tujuan Order"
-          place-holder="Pilih Lokasi Tujuan Order"
-          class="w-1/3"
-        />
+        <div class="flex gap-7">
+          <CustomSelect
+            prepend-icon="PhMagnifyingGlass"
+            v-model="selectedLokasiTujuanOrder"
+            :options="listLokasiTujuanOrder"
+            optionValue="label"
+            optionLabel="label"
+            label="Lokasi Tujuan Order"
+            place-holder="Pilih Lokasi Tujuan Order"
+            class="grow"
+          />
+
+          <CustomSwitch label="Obat Pulang" v-model="obatPulang" />
+          <hr class="h-auto border border-adameds-300" />
+
+          <div class="grid items-center grid-cols-3 gap-3">
+            <div>
+              <div class="font-semibold underline text-XS">Penulis Resep</div>
+              <div class="font-normal text-SM">-</div>
+            </div>
+            <div>
+              <div class="font-semibold underline text-XS">Tgl Order</div>
+              <div class="font-normal text-SM">-</div>
+            </div>
+            <div>
+              <div class="font-semibold underline text-XS">
+                Lokasi Tujuan Order
+              </div>
+              <div class="font-normal text-SM">-</div>
+            </div>
+          </div>
+        </div>
+
         <DataTable
           :value="orderObats"
           class="overflow-y-scroll text-xs bg-adameds-50 max-h-[300px]"
@@ -304,15 +319,7 @@ defineExpose({
                   label="RACIKAN"
                   bgColor="bg-none"
                   textColor="text-grass-300"
-                  customClass="h-5 pr-[6px] border-[#A0D468] border-1"
-                />
-                <CustomChip
-                  v-if="slotProps.data.obatPulang"
-                  :showCheckedIcon="false"
-                  label="OBAT PULANG"
-                  bgColor="bg-none"
-                  textColor="text-info-300"
-                  customClass="h-5 pr-[6px] border-info-300 min-w-[85px]"
+                  customClass="h-5 pr-[6px] border-grass-200 border-1"
                 />
                 <CustomChip
                   v-if="slotProps.data.obatKronis"
@@ -414,7 +421,6 @@ defineExpose({
           @click="handleAddRacikan"
         />
       </div>
-
       <!-- DialogTambahObat -->
       <DialogTambahObat
         v-model:isDialogVisible="dialogTambahData.isVisible"
@@ -442,127 +448,19 @@ defineExpose({
       />
     </template>
     <template #footer>
-      <div class="flex items-end justify-end gap-3">
-        <CustomButton
-          label="Reset"
-          textColor="text-[#9DA4B1]"
-          backgroundColor="bg-transparent"
-          borderColor="border-2 border-[#9DA4B1]"
-          @click="resetFormFields"
-        />
-        <CustomButton label="Simpan" @click="onSubmit" />
+      <div class="w-full">
+        <hr class="-mx-5 border-grey-200" />
+        <div class="mt-5 flex justify-end gap-2.5">
+          <CustomButton
+            label="Reset"
+            borderColor="border-2 border-[#9DA4B1]"
+            background-color="bg-transparent"
+            text-color="text-grey-300"
+            @click="resetFormFields"
+          />
+          <CustomButton label="Simpan" @click="onSubmit" />
+        </div>
       </div>
     </template>
-  </CustomAccordion>
-
-  <CustomAccordion v-else headerClass="bg-adameds-50">
-    <template #header>Obat</template>
-    <template #content>
-      <CustomAccordion headerClass="bg-adameds-50" class="p-5">
-        <template #header>
-          <div class="flex justify-between w-full">
-            <div>RSPK82L</div>
-            <div>Tgl. Order : 01-01-2024</div>
-          </div>
-        </template>
-        <template #content>
-          <div class="px-5 py-2.5">
-            <DataTable
-              :value="orderObats"
-              class="text-xs bg-adameds-50 min-h-[160px]"
-              scrollable
-              scrollHeight="flex"
-            >
-              <Column
-                headerClass="bg-adameds-50 font-semibold text-SM"
-                class="w-2 text-center"
-              >
-                <template #header>
-                  <div class="text-center">No.</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex items-center justify-center">
-                    {{ slotProps.index + 1 }}
-                  </div>
-                </template>
-              </Column>
-              <Column
-                headerClass="bg-adameds-50"
-                class="max-w-[300px] text-left"
-              >
-                <template #header>
-                  <div class="w-full font-semibold text-left">Nama Obat</div>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.racikan">
-                    {{ slotProps.data.namaRacikan }}
-                    <span v-if="slotProps.data.sirup">- Sirup</span>
-                  </div>
-                  <div v-else>
-                    {{ slotProps.data.namaObat }}
-                  </div>
-                  <div class="flex gap-1.5 justify-left">
-                    <CustomChip
-                      v-if="slotProps.data.racikan"
-                      :showCheckedIcon="false"
-                      label="RACIKAN"
-                      bgColor="bg-none"
-                      textColor="text-grass-300"
-                      customClass="h-5 pr-[6px] border-grass-300 "
-                    />
-                    <CustomChip
-                      v-if="slotProps.data.obatPulang"
-                      :showCheckedIcon="false"
-                      label="OBAT PULANG"
-                      bgColor="bg-none"
-                      textColor="text-info-300"
-                      customClass="h-5 pr-[6px] border-info-300 min-w-[85px]"
-                    />
-                    <CustomChip
-                      v-if="slotProps.data.obatKronis"
-                      :showCheckedIcon="false"
-                      label="OBAT KRONIS"
-                      bgColor="bg-none"
-                      textColor="text-sunFlower-300"
-                      customClass="h-5 border-sunFlower-300"
-                    />
-                  </div>
-                </template>
-              </Column>
-
-              <Column headerClass="bg-adameds-50" class="w-auto text-left">
-                <template #header>
-                  <div class="w-full font-semibold text-left">Aturan Pakai</div>
-                </template>
-                <template #body="slotProps">
-                  {{ slotProps.data.aturanPakai }}
-                </template>
-              </Column>
-            </DataTable>
-
-            <div class="pt-5">
-              <CustomInfoRow label="Petugas" value="Nama Petugas " />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <div class="flex justify-between gap-3">
-            <CustomButton
-              label="Detail"
-              textColor="text-white"
-              backgroundColor="bg-adameds-300"
-              @click="handleDetail"
-              icon="DetailIcon"
-            />
-            <CustomButton label="Batal Order" backgroundColor="bg-danger-300" />
-          </div>
-        </template>
-      </CustomAccordion>
-      <DialogDetailObat
-        v-model:is-dialog-visible="dialogDetailData.isVisible"
-        :title="dialogDetailData.title"
-        :obatDetail="dialogDetailData.obatDetail"
-      />
-    </template>
-  </CustomAccordion>
+  </CustomDialog>
 </template>

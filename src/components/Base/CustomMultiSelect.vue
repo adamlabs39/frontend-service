@@ -85,6 +85,11 @@ const removeSelect = (data: any) => {
     );
   }
 };
+
+const getLabel = (value: any) => {
+  const findData: any = props.options.find((data: any) => data.value == value);
+  return findData.label;
+};
 </script>
 
 <template>
@@ -178,7 +183,7 @@ const removeSelect = (data: any) => {
               'bg-adameds-300 text-white': !disabled && !invalid,
             }"
           >
-            {{ optionLabel && !optionValue ? value[optionLabel] : value }}
+            {{ optionLabel && optionValue ? getLabel(value) : value }}
             <template #removeicon>
               <PhX
                 class="cursor-pointer"

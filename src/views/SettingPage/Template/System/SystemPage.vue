@@ -54,6 +54,8 @@ const onSubmitBiayaAdministrasi = handleSubmitBiayaAdministrasi(
         valueBiayaLain: values.biayaInputAdministrasi,
       };
       await settingStore.putBiayaAdministrasi(payload);
+      fetchBiayaAdministrasiData();
+      initialBiayaAdministrasi.value = values.biayaInputAdministrasi;
       // Reload halaman setelah submit berhasil
     } catch (error) {
       console.error("Error during submission:", error);
@@ -83,14 +85,15 @@ const [statusPPN] = defineFieldPPN("statusPPN");
 const [biayaInputPPN] = defineFieldPPN("biayaInputPPN");
 
 const onSubmitPPN = handleSubmitPPN(async (values) => {
-  useUtilsStore.setLoading(true);
+
   try {
     const payload = {
       statusPpn: values.statusPPN,
       valuePpn: values.biayaInputPPN,
     };
     await settingStore.putPPN(payload);
-    useUtilsStore.setLoading(false);
+    fetchPPNData();
+    initialBiayaPPN.value = values.biayaInputPPN;
   } catch (error) {
     console.error("Error during submission:", error);
   }

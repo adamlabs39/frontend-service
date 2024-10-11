@@ -3,6 +3,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { utilsStore } from "@/stores/utils";
 import { useRouter } from "vue-router";
 
 import { useForm } from "vee-validate";
@@ -11,6 +12,7 @@ import * as yup from "yup";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const UseUtilsStore = utilsStore();
 
 const schema = toTypedSchema(
   yup.object({
@@ -23,11 +25,14 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 const onSubmit = handleSubmit(async (values) => {
+  UseUtilsStore.setLoading(true);
   try {
     await authStore.loginApi(values);
     router.push("dashboard");
   } catch (error: any) {
     console.log(error.message);
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
 });
 const [username] = defineField("username");
