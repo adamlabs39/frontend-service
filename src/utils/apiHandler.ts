@@ -11,11 +11,13 @@ const errorApiHandler = (error: any) => {
   let tempDetail = ``;
   if (error.response) {
     if (
-      error.response.data.message == "Token tidak valid atau telah kadaluarsa"
+      error.response.data.message == "Authentikasi gagal" &&
+      (error.response.data.errors[0].type == "Invalid token" || error.response.data.errors[0].type == "Invalid signature")
     ) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
+      window.location.reload()
     }
     tempSummary = error.response.data.message;
     error.response.data.errors.forEach((errorMsg: any, index: number) => {
