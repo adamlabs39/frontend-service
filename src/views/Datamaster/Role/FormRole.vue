@@ -42,9 +42,6 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode harus diisi"),
     name: yup.string().required("Nama Role harus diisi"),
-    permission: yup
-      .array()
-      .of(yup.string().required("Permission harus dipilih")), // Validate that each permission is a string and required
     status: yup.bool(),
   })
 );
@@ -59,8 +56,365 @@ const roleStore = useRoleStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
-const [permission] = defineField("permission");
 const [status] = defineField("status");
+
+const permissionsItem = ref([
+  {
+    module: "Antrian",
+    sub_modules: [
+      {
+        name: "Konfigurasi",
+        allows: ["READ", "CREATE", "UPDATE", "DELETE"],
+      },
+      {
+        name: "Data Antrian",
+        allows: ["READ"],
+      },
+      {
+        name: "Layar",
+        allows: ["READ"],
+      },
+      {
+        name: "Apm",
+        allows: [
+          "CREATE PASIEN JKN",
+          "CREATE PASIEN NON-JKN",
+          "CHECKIN",
+          "PRINT",
+        ],
+      },
+    ],
+  },
+  {
+    module: "Admisi",
+    sub_modules: [
+      {
+        name: "Antrian",
+        allows: ["PANGGIL", "LEWATI", "PROSES", "SELESAI", "CHECKIN"],
+      },
+      {
+        name: "RJ",
+        allows: [
+          "READ",
+          "CREATE PASIEN RJ",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI RJ",
+          "UPDATE GENERAl CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+          "BATAL RJ",
+        ],
+      },
+      {
+        name: "RI",
+        allows: [
+          "READ",
+          "CREATE BAYI BARU LAHIR",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI RI",
+          "UPDATE GENERAL CONSENT",
+          "BATAL REQUEST RI",
+          "CETAK GENERAL CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+        ],
+      },
+      {
+        name: "IGD",
+        allows: [
+          "READ",
+          "CREATE PASIEN IGD",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI IGD",
+          "UPDATE GENERAL CONSENT",
+          "BATAL IGD",
+          "CETAK GENERAL CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+        ],
+      },
+      {
+        name: "SEP",
+        allows: [
+          "READ",
+          "CREATE SEP",
+          "CREATE SEP MANUAL",
+          "DELETE SEP",
+          "SIMPAN SEP MANUAL",
+        ],
+      },
+      {
+        name: "Data Pasien",
+        allows: [
+          "READ",
+          "CREATE PASIEN",
+          "UPDATE BERKAS RM",
+          "UPDATE DATA PASIEN",
+          "DELETE PASIEN",
+          "DELETE BERKAS RM",
+          "IMPORT DATA PASIEN",
+          "CETAK KARTU PASIEN",
+          "UPLOAD BERKAS RM",
+          "PREVIEW BERKAS RM",
+          "GENERAL CONSENT",
+        ],
+      },
+      {
+        name: "Monitoring Kamar",
+        allows: ["READ", "SETTING BED", "CREATE BED", "DELETE BED"],
+      },
+    ],
+  },
+  {
+    module: "Rawat Jalan",
+    sub_modules: [
+      {
+        name: "Antrian",
+        allows: ["PANGGIL", "LEWATI", "PROSSES", "SELESAI"],
+      },
+      {
+        name: "Poli",
+        allows: ["READ", "BATAL KUNJUNGAN"],
+      },
+      {
+        name: "BPJS-PCARE",
+        features: [
+          {
+            name: "Monitoring Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+        ],
+      },
+      {
+        name: "Laporan Rawat Jalan",
+        features: [
+          {
+            name: "Pembatalan Poli",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "rekap Pembatalan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
+      {
+        name: "RME",
+        features: [
+          {
+            name: "Rekap Medis",
+            allows: [
+              "READ",
+              "UPDATE PEMERIKSAAN GIGI",
+              "UPDATE PEMERIKSAAN MATA",
+              "UPDATE PEMERIKSAAN FISIK",
+              "UPDATE DERAJAT LUKA BAKAR",
+              "UPDATE PEMERIKSAAN DAN TINDAKAN",
+              "UPDATE REKAM MEDIS",
+              "CETAK LABEL",
+              "TUTUP SEMUA FORM",
+              "BUKAN SEMUA FORM",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TAMPILKAN DETAIL PASIEN",
+            ],
+          },
+          {
+            name: "Asemen",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CREATE DIAGNOSIS",
+              "DELETE DIAGNOSIS",
+              "UPDATE CATATAN PERAWAT",
+              "BALAS CATATAN PERAWAT",
+              "KIRIM CATATAN",
+              "KIRIM INTRUKSI",
+              "CREATE TINDAKAN",
+              "CREATE MULTIPLE TINDAKAN",
+              "DELETE TINDAKAN",
+            ],
+          },
+          {
+            name: "SOAP",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DATA PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CREATE OBAT",
+              "CREATE RACIKAN OBAT",
+              "ITEM OBAT RACIKAN",
+              "UPDATE OBAT",
+              "DELETE OBAT",
+              "DELETE ITEM OBAT RACIKAN",
+            ],
+          },
+          {
+            name: "Akses Dan Penunjang",
+            allows: [
+              "READ",
+              "CREATE ALKES",
+              "CREATE MULTIPLE ALKES",
+              "DELETE LIST ALKES",
+              "DELETE MULTIPLE ITEM ALKES",
+              "DELETE SEMUA",
+              "CREATE TINDAKAN",
+              "DELETE LIST TINDAKAN",
+            ],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Unggah Berkas",
+            allows: ["READ", "UPDATE FILE", "DELETE FILE", ""],
+          },
+          {
+            name: "Resume Dan Discarge",
+            allows: ["READ"],
+          },
+          {
+            name: "Cetak Hasil Dan Surat",
+            allows: [
+              "READ",
+              "CREATE SURAT KETERANGAN",
+              "DELETE SURAT KETERANGAN",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    module: "Rawat Inap",
+    sub_modules: [
+      {
+        name: "Rawat Inap",
+        allows: ["READ"],
+      },
+      {
+        name: "Perpindahan Bangsal",
+        allows: ["READ", "BATAL TERIMA", "SETUJU DAN TERIMA"],
+      },
+      {
+        name: "BPJS-PCARE",
+        features: [
+          {
+            name: "Monitoring Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+        ],
+      },
+      {
+        name: "Laporan",
+        features: [
+          {
+            name: "Monitoring Rawat Inap",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Perpindahan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Pembatalan Berobat",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Rekap Tindakan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
+      {
+        name: "Detail Pasien",
+        features: [
+          {
+            name: "Rekam Medis",
+            allows: [
+              "READ",
+              "UPDATE PEMERIKSAAN FISIK",
+              "UPDATE DERAJAT LUKA BAKAR",
+              "UPDATE PEMERIKSAAN DAN TINDAKAN",
+              "UPDATE REKAM MEDIS",
+              "DELETE SESI",
+              "",
+            ],
+          },
+          {
+            name: "Asesmen",
+            allows: [
+              "READ",
+              "CREATE DIAGNOSIS",
+              "DELETE DIAGNOSIS",
+              "UPDATE CATATAN PERAWAT",
+              "BALAS CATATAN PERAWAT",
+              "KIRIM CATATAN PERAWAT",
+              "KIRIM INTERUKSI MEDIS",
+              "CREATE MULTIPLE TINDAKAN",
+              "DELETE TINDAKAN",
+              "DELETE MULTIPLE TINDAKAN",
+              "DELETE SEMUA",
+            ],
+          },
+          {
+            name: "SOAP Dokter",
+            allows: [
+              "READ",
+              "CREATE OBAT",
+              "CREATE RACIKAN",
+              "UPDATE OBAT",
+              "DELETE OBAT",
+              "DELETE ITEM OBAT RACIKAN",
+            ],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Alkes Dan Penunjang",
+            allows: [
+              "CREATE ALKES",
+              "CREATE MULTIPLE ALKES",
+              "DELETE ALKES",
+              "DELETE MULTIPLE ALKES",
+              "DELETE SEMUA",
+              "CREATE TINDAKAN",
+              "DELETE TINDAKAN",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -141,6 +495,7 @@ watch(
           placeholder="Kode Role"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
           class="col-span-5"
         />
         <CustomTextfield
@@ -150,6 +505,7 @@ watch(
           class="col-span-7"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomAccordion class="col-span-12" no-border initial-state="0">
@@ -157,7 +513,7 @@ watch(
             <div class="-mx-4 text-normal">Modul</div>
           </template>
           <template #content>
-            <div class="flex flex-wrap gap-2.5 pt-5 -mx-4">
+            <!-- <div class="flex flex-wrap gap-2.5 pt-5 -mx-4">
               <div v-for="item of itemsPermission" :key="item.name_mainMenu">
                 <CustomCheckbox
                   :value="item.name_mainMenu"
@@ -166,6 +522,14 @@ watch(
                   sub-title=""
                   :binary="false"
                 />
+              </div>
+            </div> -->
+            <div class="flex flex-wrap gap-2.5 pt-5">
+              <div
+                v-for="(menuItem, menuIndex) in permissionsItem"
+                :key="menuItem.module"
+              >
+                <CustomCheckbox :title="menuItem.module" subTitle="" />
               </div>
             </div>
           </template>
