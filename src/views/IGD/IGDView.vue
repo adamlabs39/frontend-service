@@ -40,8 +40,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "FileReportIcon",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Kunjungan IGD", type: linkType.LINK, url:'/igd/laporan/kunjungan-rawat-jalan' },
-          { name: "Pembatalan Dirawat", type: linkType.LINK, url:'/igd/laporan/pembatalan-poli' },
+          { name: "Kunjungan IGD", type: linkType.LINK, url:'/igd/laporan/kunjungan-igd' },
+          { name: "Pembatalan Dirawat", type: linkType.LINK, url:'/igd/laporan/pembatalan-dirawat' },
           { name: "Rekap Tindakan Pasien", type: linkType.LINK , url:'/igd/laporan/rekap-tindakan-pasien'},
         ],
       },
@@ -67,8 +67,8 @@ onMounted(() => {
 <template>
   <div class="flex h-full gap-3">
     <Sidebar
-      sidebarTitle="Rawat Jalan"
-      sidebarTitleUrl="/rawat-jalan/poli"
+      sidebarTitle="IGD"
+      sidebarTitleUrl="/igd/pasien-igd"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       showFilterPoli

@@ -12,7 +12,7 @@ import { useRoute } from "vue-router";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 
 const props = defineProps({
-  filterMenu: {
+  pageType: {
     type: String,
     default: "Semua Poli",
   },
@@ -34,7 +34,7 @@ const searchDokterFilter = ref<string>("");
 const searchPelayananFilter = ref<string>("");
 
 // SECTION Rawat Jalan
-const filterPoliList = ref(["POLI MATA", "POLI ANAK", "POLI UMUM"]);
+const filterDataPasien = ref(["DATA LENGKAP", "DATA TIDAK LENGKAP"]);
 
 // UNTUK CHIP DI FILTER POLI
 const selectedFilterPoli = ref<string[]>([]);
@@ -61,7 +61,7 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
-// const filters = [selectedFilterPoli, selectedPaymentMethod];
+const filters = [selectedFilterPoli, selectedPaymentMethod];
 
 const resetFilter = () => {
   startDateFilter.value = new Date();
@@ -92,102 +92,117 @@ defineExpose({
   resetFilter,
 });
 
-const emit = defineEmits(["searchExecuted"]);
+const emit = defineEmits(["searchExecuted", "selectedTab"]);
 
 // Ketika tombol "Cari" diklik, emit event searchExecuted
 const executeSearch = () => {
   // Emit event dengan nilai true
   emit("searchExecuted", true);
 };
+const selectedTab = ref("0");
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
-      <!-- {{ currentRouteName }} -->
-
       <div class="flex items-center w-full gap-5 mr-2.5">
         <CustomButton icon="PhArrowClockwise" />
-        <div
-          class="leading-10 text-adameds-300 text-heading"
-          v-if="currentRouteName == 'rawat-jalan-poli'"
-        >
-          {{
-            filterMenu == "pasien-igd"
-              ? "Pasien IGD"
-              : filterMenu == "bpjs"
-              ? "BPJS"
-              : filterMenu == "laporan"
-              ? "Laporan"
-              : ""
-          }}
-        </div>
         <CustomBreadCrumb
-          v-else-if="
-            currentRouteName && currentRouteName.includes('monitoring')
-          "
           :home="{
-            label: 'BPJS',
+            label:
+              pageType === 'pasien-igd'
+                ? 'Pasien IGD'
+                : pageType === 'monitoring-kunjungan' ||
+                  pageType === 'monitoring-riwayat-kunjungan' ||
+                  pageType === 'monitoring-obat-kunjungan'
+                ? 'BPJS'
+                : pageType === 'kunjungan-igd' ||
+                  pageType === 'pembatalan-dirawat' ||
+                  pageType === 'rekap-tindakan-pasien'
+                ? 'Laporan'
+                : '',
             home: true,
           }"
           :model="dataBreadCrumb"
           class=""
         />
-        <!-- {{ filterMenu }} -->
       </div>
     </template>
     <template #content>
       <div class="flex mt-[16px] mb-2.5">
+        <!-- Filter by search and slect -->
         <CustomTextfield
-          v-if="currentRouteName === 'rawat-jalan-poli'"
           v-model="searchPatientFilter"
           prependIcon="PhMagnifyingGlass"
-          label="Cari Pasien"
-          placeholder="Cari Nama Pasien"
-          class="mr-5 grow"
-        />
-        <CustomTextfield
-          v-if="
-            currentRouteName === 'monitoring-kunjungan' ||
-            currentRouteName === 'monitoring-riwayat-kunjungan'
+          :label="
+            props.pageType === 'pasien-igd'
+              ? 'Cari Pasien'
+              : pageType === 'monitoring-kunjungan' ||
+                pageType === 'monitoring-riwayat-kunjungan'
+              ? 'Cari No. Anggota'
+              : pageType === 'monitoring-obat-kunjungan'
+              ? 'Cari Nama Obat'
+              : pageType === 'kunjungan-igd' ||
+                pageType === 'pembatalan-dirawat' ||
+                pageType === 'rekap-tindakan-pasien'
+              ? 'Pencarian'
+              : ''
           "
-          v-model="searchNoAnggotaFilter"
-          prependIcon="PhMagnifyingGlass"
-          label="Cari No. Anggota"
-          placeholder="Cari No. Anggota"
-          class="mr-5 grow"
-        />
-        <CustomTextfield
-          v-if="currentRouteName === 'monitoring-obat-kunjungan'"
-          v-model="searchNamaObatFilter"
-          prependIcon="PhMagnifyingGlass"
-          label="Cari Nama Obat"
-          placeholder="Cari Nama Obat"
+          :placeholder="
+            props.pageType === 'pasien-igd'
+              ? 'Cari Nama / Alamat / No. RM'
+              : pageType === 'monitoring-kunjungan' ||
+                pageType === 'monitoring-riwayat-kunjungan'
+              ? 'Cari No. Anggota'
+              : pageType === 'monitoring-obat-kunjungan'
+              ? 'Cari Nama Obat'
+              : pageType === 'kunjungan-igd' ||
+                pageType === 'pembatalan-dirawat'
+              ? 'Cari Nama / Alamat / No. RM'
+              : pageType === 'rekap-tindakan-pasien'
+              ? 'Cari Nama Tindakan'
+              : ''
+          "
           class="mr-5 grow"
         />
         <CustomSelect
-          v-if="currentRouteName === 'rawat-jalan-poli'"
           v-model="searchDokterFilter"
-          label="Dokter"
+          :label="
+            props.pageType === 'pasien-igd' ||
+            pageType === 'monitoring-kunjungan'
+              ? 'Dokter'
+              : pageType === 'monitoring-riwayat-kunjungan' ||
+                pageType === 'monitoring-obat-kunjungan'
+              ? 'Jenis Pelayanan'
+              : pageType === 'kunjungan-igd' ||
+                pageType === 'pembatalan-dirawat'
+              ? 'Dokter DPJP'
+              : pageType === 'rekap-tindakan-pasien'
+              ? 'Praktisi'
+              : ''
+          "
           class="mr-5 grow"
           optionLabel=""
           optionValue=""
-          place-holder="Cari Dokter"
+          :place-holder="
+            props.pageType === 'pasien-igd' ||
+            pageType === 'monitoring-kunjungan'
+              ? 'Pilih Dokter'
+              : pageType === 'monitoring-riwayat-kunjungan' ||
+                pageType === 'monitoring-obat-kunjungan'
+              ? 'Pilih Jenis Pelayanan'
+              : pageType === 'kunjungan-igd' ||
+                pageType === 'pembatalan-dirawat'
+              ? 'Pilih Dokter DPJP'
+              : pageType === 'rekap-tindakan-pasien'
+              ? 'Pilih Praktisi'
+              : ''
+          "
           :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
           prependIcon="PhMagnifyingGlass"
         />
-        <CustomSelect
-          v-else
-          v-model="searchPelayananFilter"
-          label="Jenis Pelayanan"
-          class="mr-5 grow"
-          optionLabel=""
-          optionValue=""
-          place-holder="Pilih Jenis Pelayanan"
-          :options="['Semua', 'Beberapa', 'Banyak']"
-          prependIcon="PhMagnifyingGlass"
-        />
-        <!-- disini -->
+
+        <!-- DatePicker -->
         <CustomDatePicker
           v-model="startDateFilter"
           label="Tanggal"
@@ -199,6 +214,11 @@ const executeSearch = () => {
           :showLabel="false"
           class="mt-auto w-[200px]"
         />
+        <CustomDatePicker
+          v-model="endDateFilter"
+          label="Bulan"
+          class="mt-auto w-[200px]"
+        />
         <CustomButton
           icon="PhMagnifyingGlass"
           label="Cari"
@@ -206,7 +226,6 @@ const executeSearch = () => {
           @click="executeSearch"
         />
         <CustomButton
-          @click="resetFilter"
           label="Reset"
           outlined
           borderColor="border-adameds-300"
@@ -214,21 +233,57 @@ const executeSearch = () => {
           class="mt-auto w-[70px]"
         />
       </div>
-      <slot name="content"></slot>
-
+      <!-- Filter for pasien igd -->
       <div
-        class="font-semibold text-SM text-grey-300"
-        v-if="currentRouteName === 'rawat-jalan-poli'"
+        v-if="props.pageType === 'pasien-igd'"
+        class="flex items-center gap-2"
       >
-        <div
-          class="flex mb-[10px] mt-[10px]"
-          v-if="props.filterMenu == 'Semua Poli'"
-        >
-          <div class="w-[15%] flex items-center">Filter Poli</div>
+        <CustomButton
+          label=""
+          icon="PhListBullets"
+          class="w-[60px]"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
+        />
+        <!-- Filter = {{ props.filter }} -->
+        <CustomButton
+          label="PELAYANAN"
+          class="grow"
+          :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '1' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '1'))"
+          :outlined="selectedTab !== '1'"
+        />
+        <CustomButton
+          label="DISCHARGE"
+          class="grow"
+          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '2'))"
+          :outlined="selectedTab !== '2'"
+        />
+      </div>
+      <div
+        v-if="props.pageType === 'pasien-igd'"
+        class="font-semibold text-SM text-grey-300"
+      >
+        <div class="flex mb-[10px] mt-[10px]">
+          <div class="w-[15%] flex items-center">Filter Data Pasien</div>
           <div class="flex gap-2.5">
             <hr class="h-auto w-[1px] bg-grey-300" />
             <CustomChip
-              v-for="(option, index) in filterPoliList"
+              v-for="(option, index) in filterDataPasien"
               :key="option + index"
               :label="option"
               :isSelected="selectedFilterPoli.includes(option)"
@@ -237,12 +292,7 @@ const executeSearch = () => {
             </CustomChip>
           </div>
         </div>
-        <div
-          :class="[
-            'flex mb-[10px]',
-            { 'mt-[10px]': props.filterMenu !== 'Semua Poli' },
-          ]"
-        >
+        <div class="flex mb-[10px]">
           <div class="w-[15%] flex items-center">Filter Pembayaran</div>
           <div class="flex">
             <hr class="h-auto w-[1px] bg-grey-300" />
@@ -271,6 +321,7 @@ const executeSearch = () => {
           </div>
         </div>
       </div>
+     
       <hr class="border-grey-200" />
     </template>
 
