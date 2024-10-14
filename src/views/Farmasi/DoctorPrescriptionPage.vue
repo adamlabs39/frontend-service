@@ -93,12 +93,7 @@ const itemsPasien = ref([
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0"
-      pt:content:class="h-full"
-      class="h-full overflow-hidden overflow-y-auto"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -214,147 +209,179 @@ const itemsPasien = ref([
         </CustomAccordion>
       </template>
       <template #content>
-        <div class="grid grid-cols-3 gap-3">
-          <!-- Order masuk -->
-          <div>
-            <DataTable
-              :value="itemsPasien"
-              scrollable 
-              scrollHeight="500px"
-              class="overflow-hidden rounded-[10px]"
-              
-            >
-              <Column headerClass="bg-adameds-300 text-white">
-                <template #header>
-                  <div class="w-full font-bold">Order Masuk</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex justify-between">
+        <div class="grid grid-cols-3 gap-3 ">
+          <!-- Resep   masuk -->
+          <Card class="h-[500px] overflow-auto">
+            <template #header>
+              <div class="mt-[10px] p-4 rounded-t-xl bg-adameds-300">
+                <div class="flex">
+                    <p class="text-lg font-bold text-white font-poppins">Resep Masuk</p>
+                </div>
+              </div>
+            </template>
+            <template #content>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
                     <div>
-                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
-                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
-                      <CustomButton 
-                        class="h-[20px] w-[60px] text-xs mt-[5px]"
-                        outlined
+                      <CustomChip
+                        label="IGD"
                         borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
                         textColor="text-grey-300"
-                        >{{ slotProps.data.kamar }}</CustomButton>
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
-                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
-                      <CustomButton v-if="slotProps.data.insurance_account_name == 'TUNAI'" 
-                        class="h-[20px] w-[50px] text-xs mt-[5px]"
-                        outlined
-                        borderColor="border-adameds-300"
-                        textColor="text-adameds-300"
-                        >TUNAI</CustomButton>
-                      <CustomButton v-if="slotProps.data.insurance_account_name == 'BPJS'" 
-                        class="h-[20px] w-[50px] text-xs mt-[5px]"
-                        outlined
-                        borderColor="border-warning-300"
-                        textColor="text-warning-300"
-                        >BPJS</CustomButton>
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
                     </div>
                   </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-
-           <!-- Sedang Disiapkan -->
-           <div>
-            <DataTable
-              :value="itemsPasien"
-              scrollable 
-              scrollHeight="500px"
-              class="overflow-hidden rounded-[10px]"
-            >
-              <Column headerClass="bg-adameds-300 text-white">
-                <template #header>
-                  <div class="w-full font-bold">Sedang Disiapkan</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex justify-between">
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
                     <div>
-                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
-                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
-                      <CustomButton 
-                        class="h-[20px] w-[60px] text-xs mt-[5px]"
-                        outlined
-                        borderColor="border-grey-300"
-                        textColor="text-grey-300"
-                        >{{ slotProps.data.kamar }}</CustomButton>
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
-                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
-                      <CustomButton 
-                        class="h-[20px] w-[50px] text-xs mt-[5px]"
-                        outlined
+                      <CustomChip
+                        label="TUNAI"
                         borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
                         textColor="text-adameds-300"
-                        >{{ slotProps.data.insurance_account_name }}</CustomButton>
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
                     </div>
                   </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-
-          <!-- Penyerahan Alkes/Obat -->
-          <div>
-            <DataTable
-              :value="itemsPasien"
-              scrollable 
-              scrollHeight="500px"
-              class="overflow-hidden rounded-[10px]"
-            >
-              <Column headerClass="bg-adameds-300 text-white">
-                <template #header>
-                  <div class="w-full font-bold">Penyerahan Alkes/Obat</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex justify-between">
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
                     <div>
-                      <CustomButton class="h-5 text-xs">{{ slotProps.data.layanan }}</CustomButton>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.name }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">DPJP</p>
-                      <p class="mt-[5px]">{{ slotProps.data.doctor }}</p>
-                      <CustomButton 
-                        class="h-[20px] w-[60px] text-xs mt-[5px]"
-                        outlined
+                      <CustomChip
+                        label="IGD"
                         borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
                         textColor="text-grey-300"
-                        >{{ slotProps.data.kamar }}</CustomButton>
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold">{{ slotProps.data.noResep }}</p>
-                      <p class="font-bold text-sm mt-[5px]">{{ slotProps.data.noRegis }}</p>
-                      <p class="font-bold text-xs mt-[5px] underline underline-offset-2">Tgl. Order</p>
-                      <p class="mt-[5px]">{{ slotProps.data.tglJadwal }}</p>
-                      <CustomButton 
-                        class="h-[20px] w-[50px] text-xs mt-[5px]"
-                        outlined
-                        borderColor="border-adameds-300"
-                        textColor="text-adameds-300"
-                        >{{ slotProps.data.insurance_account_name }}</CustomButton>
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
                     </div>
                   </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
+                    <div>
+                      <CustomChip
+                        label="TUNAI"
+                        borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
+                        textColor="text-adameds-300"
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
+                    <div>
+                      <CustomChip
+                        label="IGD"
+                        borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grey-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
+                    <div>
+                      <CustomChip
+                        label="TUNAI"
+                        borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
+                        textColor="text-adameds-300"
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+            </template>
+          </Card>
         </div>
       </template>
     </Card>
-  </div>
 </template>

@@ -1,15 +1,35 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", handleRowsUpdate);
+const kategoriDialog = ref(false);
+const status = ref(false);
+const rowsPerPage = ref(10);
+const currentPage = ref(0);
+
+const handleRowsUpdate = (newRows: number) => {
+  rowsPerPage.value = newRows;
+  currentPage.value = 0;
 };
+
+const handlePageUpdate = (newPage: number) => {
+  currentPage.value = newPage;
+};
+
+const dataKategoriObat = ref([
+  { kodeKategoriObat: "BOX", namaKategoriObat: "Box", status:"AKTIF" },
+  { kodeKategoriObat: "PCS", namaKategoriObat: "Pcs", status:"AKTIF" },
+  { kodeKategoriObat: "TBLT", namaKategoriObat: "Tablet", status:"AKTIF" },
+  { kodeKategoriObat: "KPSL", namaKategoriObat: "Kapsul", status:"AKTIF" },
+  { kodeKategoriObat: "BOX", namaKategoriObat: "Box", status:"NON-AKTIF" },
+]);
 </script>
 
 <template>
@@ -27,48 +47,32 @@ const handleRowsUpdate = (rows: number) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Kasir',
+                    label: 'Datamaster',
                     home: true,
                   }"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Kategori Obat</p>
+                </div>
               </div>
+              <CustomButton
+                @click="kategoriDialog = true"
+                icon="PhPlus"
+                label="Beli"
+                class="mr-[10px]"
+              />
             </div>
           </template>
           <template #content>
-            <div class="flex mt-[10px]">
+            <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
-                label="Pencarian Transaksi"
+                label="Cari Kategori Obat"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
+                placeholder="Cari Kategori Obat"
+                class=""
               />
-              <div
-                class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"
-              ></div>
-              <CustomTextfield
-                pr
-                label="Saldo Awal"
-                placeholder="0"
-                class="mr-5"
-              >
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <CustomSelect
-                label="Pilih Shift"
-                class="grow"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-              />
-              <CustomButton label="Open Kasir" class="ml-5 mr-[10px] mt-auto" />
             </div>
-            <div class="flex mt-[10px]"></div>
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -87,85 +91,158 @@ const handleRowsUpdate = (rows: number) => {
         </CustomAccordion>
       </template>
       <template #content>
-        <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-          <div
-            class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg"
-          >
-            <div class="m-auto text-SM">
-              <!-- <img
-                src="../../../../assets/icons/no-data-icon.svg"
-                alt="no data"
-                class="mx-auto"
-              /> -->
-              <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
-            </div>
-          </div>
-
-          <!-- Kolom Pembayaran -->
-          <div class="relative p-5 rounded-lg bg-adameds-50">
-            <!-- Total Pembayaran -->
-            <div class="flex items-center justify-between">
-              <div class="text-base font-bold font-poppins">
-                Total Pembayaran
+        <DataTable
+          :value="dataKategoriObat"
+          tableStyle="min-width: 50rem"
+          stripedRows
+          class="text-xs"
+          scrollable
+          scrollHeight="flex"
+        >
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
               </div>
-            </div>
-            <hr class="mt-2 mb-2 border border-slate-300" />
-            <!-- Biaya Administrasi -->
-            <div class="flex justify-between mt-6">
-              <div class="text-sm text-black font-poppins">
-                Biaya Administrasi
-              </div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <!-- Biaya Tindakan -->
-            <div class="flex justify-between mt-4">
-              <div class="text-sm font-poppins">Biaya Tindakan</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <!-- Biaya Obat -->
-            <div class="flex justify-between mt-4">
-              <div class="text-sm font-poppins">Biaya Obat</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <!-- Biaya Kamar -->
-            <div class="flex justify-between mt-4">
-              <div class="text-sm font-poppins">Biaya Kamar</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <!-- PPN -->
-            <div class="flex justify-between mt-4">
-              <div class="text-sm font-poppins">PPN</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
-            <!-- Diskon -->
-            <div class="flex justify-between mt-6">
-              <div class="text-sm font-poppins">Diskon</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
-            </div>
-            <hr class="mt-6 mb-2 border-black border-1" />
-            <!-- Grand Total -->
-            <div class="flex justify-between mt-6">
-              <div class="text-sm font-bold font-poppins">Grand Total</div>
-              <div class="text-sm font-bold font-poppins">Rp, 0</div>
-            </div>
-            <div class="absolute inset-x-0 bottom-0 mb-4">
-              <div class="flex">
-                <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                <CustomButton
-                  label="Bayar"
-                  class="w-full ml-4 mr-4"
-                  textColor="text-slate-400"
-                  backgroundColor="bg-slate-200"
+            </template>
+          </Column>
+          <Column field="kodeKategoriObat" header="Kode Kategori" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="namaKategoriObat" header="Nama Kategori Obat" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="status" headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">Status</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex justify-center items-center min-w-[120px]">
+                <CustomChip
+                  :label="slotProps.data.status"
+                  :textColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'text-white'
+                      : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'bg-adameds-300'
+                      : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'border-none'
+                      : 'border-[#80868d]'
+                  "
+                  :icon-color="
+                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                  "
+                  customClass="text-xs font-semibold h-5 flex"
                 />
               </div>
-            </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header="slotProps">
+              <div
+                class="w-full font-semibold text-center text-SM"
+              >
+                Action
+              </div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center gap-2.5 justify-center">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/edit.svg" alt="" />
+                </CustomButton>
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" />
+                </CustomButton>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+      <template #footer>
+        <div class="flex justify-between px-5 py-2.5">
+          <div class="flex items-center gap-2.5">
+            <CustomButton label="Import">
+              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            </CustomButton>
+            <CustomButton label="Eksport">
+              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+            </CustomButton>
           </div>
+          <CustomPaginator
+            :rows="rowsPerPage"
+            :totalRecords="dataKategoriObat.length"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @update:rows="handleRowsUpdate"
+            @update:current-page="handlePageUpdate"
+          />
         </div>
       </template>
     </Card>
+
+    <!-- kategoriDialog -->
+    <CustomDialog v-model:visible="kategoriDialog" width="500px">
+      <template #header>
+        <div class="grid grid-cols-1">
+          <p>Tambah Kategori</p>
+        </div>
+      </template>
+      <template #body>
+        <div class="grid grid-cols-[30%,70%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Kode Kategori"
+              placeholder="Kode Kategori"
+              class="mr-2"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Nama Kategori"
+              placeholder="Nama Kategori"
+              class="ml-2"
+            />
+          </div>
+        </div>
+        <hr class="mt-[20px] border border-slate-300"/>
+        <div class="grid grid-cols-2 mt-[15px]">
+          <div>
+            <CustomSwitch
+              v-model="status"
+              :show-label="true"
+              label="Status"
+              sideLabel="NON-AKTIF"
+              sideLabelTrue="AKTIF"
+            />
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <!-- <hr class="-mx-5 border-grey-200" /> -->
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton label="Simpan"/>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
   </div>
 </template>
