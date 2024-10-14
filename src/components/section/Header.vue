@@ -84,7 +84,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Inventory",
     icon: "DoubleBoxIcon",
-    url: "tbc",
+    url: "/inventory",
   },
   {
     title: "Datamaster",

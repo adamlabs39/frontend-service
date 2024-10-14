@@ -26,6 +26,10 @@ import HistoryIcon from "./HistoryIcon.vue";
 import FileImportIcon from "./FileImportIcon.vue";
 import TrashFillIcon from "./TrashFillIcon.vue";
 import HandshakeIcon from "./HandshakeIcon.vue";
+import OpenBoxIcon from "./OpenBoxIcon.vue";
+import BoxPlusIcon from "./BoxPlusIcon.vue";
+import BoxUpIcon from "./BoxUpIcon.vue";
+import BoxDownIcon from "./BoxDownIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -56,5 +60,10 @@ export default {
     app.component("FileImportIcon", FileImportIcon);
     app.component("TrashFillIcon", TrashFillIcon);
     app.component("HandshakeIcon", HandshakeIcon);
+    // NOTE Inventory
+    app.component("OpenBoxIcon", OpenBoxIcon);
+    app.component("BoxPlusIcon", BoxPlusIcon);
+    app.component("BoxUpIcon", BoxUpIcon);
+    app.component("BoxDownIcon", BoxDownIcon);
   },
 };
