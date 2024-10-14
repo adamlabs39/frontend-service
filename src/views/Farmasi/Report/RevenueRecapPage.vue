@@ -66,9 +66,31 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+            <div class="grid grid-cols-2 gap-4 mt-[10px]">
+              <div>
+                <CustomSelect 
+                  label="Metode Pembayaran" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" 
+                  place-holder="Tunai" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Lokasi Stok" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" 
+                  place-holder="Semua" 
+                />
+              </div>
+            </div>
             <div class="flex mt-[10px]">
-              <CustomSelect label="Metode Pembayaran" class="mr-5 w-1/2" optionLabel="" optionValue="" :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" place-holder="Tunai" />
-              <CustomSelect label="Lokasi Stok" class="mr-5 w-1/2" optionLabel="" optionValue="" :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" place-holder="Semua" />
+              <CustomSelect label="Metode Pembayaran" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" place-holder="Tunai" />
+              <CustomSelect label="Lokasi Stok" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" place-holder="Semua" />
             </div>
 
             <!-- baris kedua -->

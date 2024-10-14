@@ -121,6 +121,38 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+            <div class="grid grid-cols-3 gap-3 mt-[10px]">
+              <div>
+                <CustomSelect 
+                  label="Jenis Pelayanan" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Metode Pembayaran" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Lunas', 'Piutang']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Pendapatan" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" 
+                  place-holder="Semua" 
+                />
+              </div>
+            </div>
             <div class="flex mt-[10px]">
               <CustomSelect label="Jenis Pelayanan" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
               <CustomSelect label="Metode Pembayaran" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Lunas', 'Piutang']" place-holder="Semua" />

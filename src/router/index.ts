@@ -993,13 +993,9 @@ const router = createRouter({
       component: PharmacyView,
     },
     {
-      path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-dokter",
-      name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
-      meta: {
-        layout: SidebarLayout,
-        page: RevenueRecapPage,
-        requiresAuth: true,
-      },
+      path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-apotik",
+      name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-apotik",
+      meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
       component: PharmacyView,
     },
 

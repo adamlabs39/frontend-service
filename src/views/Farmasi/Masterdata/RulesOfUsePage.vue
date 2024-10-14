@@ -1,15 +1,61 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const emits = defineEmits(['update:rows', 'update:current-page']);
-const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', handleRowsUpdate);
+const rulesDialog = ref(false);
+const rowsPerPage = ref(10);
+const currentPage = ref(0);
+
+const handleRowsUpdate = (newRows: number) => {
+  rowsPerPage.value = newRows;
+  currentPage.value = 0;
 };
+
+const handlePageUpdate = (newPage: number) => {
+  currentPage.value = newPage;
+};
+
+const schema = toTypedSchema(
+  yup.object({
+    code: yup.string().required("Kode harus diisi"),
+    name: yup.string().required("Nama Role harus diisi"),
+    permission: yup
+      .array()
+      .of(yup.string().required("Permission harus dipilih")),  // Validate that each permission is a string and required
+    status: yup.bool(),
+  })
+);
+
+const { errors, handleSubmit, defineField, resetForm } = useForm({
+  validationSchema: schema,
+});
+
+const [name] = defineField("name");
+const [code] = defineField("code");
+const [status] = defineField("status");
+
+const dataAturanPakai = ref([
+  { kodeAturan: "123", namaAturan: "Tiap 8 jam", status:"AKTIF" },
+  { kodeAturan: "321", namaAturan: "Tiap 7 hari", status:"AKTIF" },
+  { kodeAturan: "123", namaAturan: "3 x Sehari", status:"AKTIF" },
+  { kodeAturan: "321", namaAturan: "3 - 4 x Sehari", status:"AKTIF" },
+  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
+  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
+  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
+  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
+]);
 </script>
 
 <template>
@@ -27,45 +73,31 @@ const handleRowsUpdate = (rows: number) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Kasir',
+                    label: 'Datamaster',
                     home: true,
                   }"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Aturan Pakai</p>
+                </div>
               </div>
+              <CustomButton
+                @click="rulesDialog = true"
+                icon="PhPlus"
+                label="Beli"
+                class="mr-[10px]"
+              />
             </div>
           </template>
           <template #content>
-            <div class="flex mt-[10px]">
+            <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
-                label="Pencarian Transaksi"
+                label="Cari Aturan Pakai"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
+                placeholder="Cari Aturan Pakai"
+                class=""
               />
-              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
-              <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <CustomSelect
-                label="Pilih Shift"
-                class="grow"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-              />
-              <CustomButton
-                label="Open Kasir"
-                class="ml-5 mr-[10px] mt-auto"
-              />
-            </div>
-            <div class="flex mt-[10px]">
-              
             </div>
           </template>
           <template #collapseIcon>
@@ -85,109 +117,214 @@ const handleRowsUpdate = (rows: number) => {
         </CustomAccordion>
       </template>
       <template #content>
-          <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
-              <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
-                  alt="no data"
-                  class="mx-auto"
-                /> -->
-                <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
+        <DataTable
+          :value="dataAturanPakai"
+          tableStyle="min-width: 50rem"
+          stripedRows
+          class="text-xs"
+          scrollable
+          scrollHeight="flex"
+        >
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
               </div>
-            </div>
-            
-            <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
-              <!-- Total Pembayaran -->
-              <div class="flex items-center justify-between">
-                <div class="text-base font-bold font-poppins">
-                  Total Pembayaran
-                </div>
+            </template>
+          </Column>
+          <Column field="kodeAturan" header="Kode Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="namaAturan" header="Nama Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="status" headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">Status</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex justify-center items-center min-w-[120px]">
+                <CustomChip
+                  :label="slotProps.data.status"
+                  :textColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'text-white'
+                      : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'bg-adameds-300'
+                      : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'border-none'
+                      : 'border-[#80868d]'
+                  "
+                  :icon-color="
+                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                  "
+                  customClass="text-xs font-semibold h-5 flex"
+                />
               </div>
-              <hr class="mt-2 mb-2 border border-slate-300"/>
-              <!-- Biaya Administrasi -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm text-black font-poppins">
-                  Biaya Administrasi
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header="slotProps">
+              <div
+                class="w-full font-semibold text-center text-SM"
+              >
+                Action
               </div>
-              <!-- Biaya Tindakan -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Tindakan
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center gap-2.5 justify-center">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/edit.svg" alt="" />
+                </CustomButton>
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" />
+                </CustomButton>
               </div>
-              <!-- Biaya Obat -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Obat
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Kamar -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Kamar
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- PPN -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  PPN
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-4 border-dashed border-[1px] border-slate-300"/>
-              <!-- Diskon -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-poppins">
-                  Diskon
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-6 mb-2 border-black border-1"/>
-              <!-- Grand Total -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-bold font-poppins">
-                  Grand Total
-                </div>
-                <div class="text-sm font-bold font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
-                <div class="flex">
-                  <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                  <CustomButton
-                    label="Bayar"
-                    class="w-full ml-4 mr-4"
-                    textColor = "text-slate-400"
-                    backgroundColor="bg-slate-200"
-                  />
-                </div>
-              </div>
-            </div>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+      <template #footer>
+        <div class="flex justify-between px-5 py-2.5">
+          <div class="flex items-center gap-2.5">
+            <CustomButton label="Import">
+              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            </CustomButton>
+            <CustomButton label="Eksport">
+              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+            </CustomButton>
           </div>
+          <CustomPaginator
+            :rows="rowsPerPage"
+            :totalRecords="dataAturanPakai.length"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @update:rows="handleRowsUpdate"
+            @update:current-page="handlePageUpdate"
+          />
+        </div>
       </template>
     </Card>
+
+    <!-- rulesDialog -->
+    <CustomDialog v-model:visible="rulesDialog" width="600px">
+      <template #header>
+        <div class="grid grid-cols-1">
+          <p>Tambah Data Aturan Pakai</p>
+        </div>
+      </template>
+      <template #body>
+        <div class="grid grid-cols-[30%,70%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              v-model = "code"
+              :invalid="!!errors.code"
+              :invalidMessage="errors.code"
+              label="Kode Aturan Pakai"
+              placeholder="Kode Aturan Pakai"
+              class="mr-2"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextfield
+              v-model = "name"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+              label="Nama Aturan Pakai"
+              placeholder="Nama Aturan Pakai"
+              class="ml-2"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-[30%,30%,10%,30%] mt-[20px]">
+          <div class="">
+            <CustomSelect
+              label="Periode Unit"
+              class="mr-2"
+              optionLabel=""
+              optionValue=""
+              :options="['Pagi', 'Siang', 'Sore', 'Malem']"
+            />
+          </div>
+          <div class="ml-[10px]">
+            <CustomTextfield
+              label="Frekuensi"
+              placeholder="3"
+            />
+          </div>
+          <div class="text-center ml-[10px]">
+            <p class="font-bold mt-[30px]">X</p>
+          </div>
+          <div class="ml-[10px]">
+            <CustomTextfield
+              label="Periode"
+              placeholder="1"
+              class=""
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 p-3 rounded-lg bg-adameds-50 mt-[20px]">
+          <div>
+            <p>Contoh Pengisian Aturan Pakai :</p>
+          </div>
+          <hr class="mt-[10px] border border-slate-300"/>
+          <div class="grid grid-cols-[30%,30%,10%,30%] mt-[10px]">
+            <div>
+              <p class="text-xs font-bold underline underline-offset-2">Periode Unit</p>
+              <p class="">Hari</p>
+            </div>
+            <div class="ml-[10px]">
+              <p class="text-xs font-bold underline underline-offset-2">Frekuensi</p>
+              <p>3</p>
+            </div>
+            <div class="text-center ml-[10px]">
+              <p class="font-bold mt-[10px]">X</p>
+            </div>
+            <div class="ml-[10px]">
+              <p class="text-xs font-bold underline underline-offset-2">Periode</p>
+              <p>1</p>
+            </div>
+          </div>
+        </div>
+        <hr class="mt-[20px] border border-slate-300"/>
+        <div class="grid grid-cols-1 mt-[15px]">
+          <div>
+            <CustomSwitch
+              v-model="status"
+              :show-label="true"
+              label="Status"
+              sideLabel="NON-AKTIF"
+              sideLabelTrue="AKTIF"
+            />
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <!-- <hr class="-mx-5 border-grey-200" /> -->
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton label="Simpan"/>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
   </div>
 </template>

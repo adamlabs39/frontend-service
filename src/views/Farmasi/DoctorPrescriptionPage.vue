@@ -27,15 +27,73 @@ const onRecipeSelect = (label: string) => {
     selectedRecipe.value.push(label);
   }
 };
+
+const itemsPasien = ref([
+  {
+    layanan: "00-00-00",
+    name: "Abdi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "22-22-22",
+    name: "Anggi",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'TUNAI'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+  {
+    layanan: "33-33-33",
+    name: "Aldo",
+    doctor: "dr. Spesialis Sp. A",
+    tglJadwal: "10-10-2010",
+    noResep: "RSP1234",
+    noRegis: 'REG123456789',
+    kamar: 'Mawar',
+    insurance_account_name: 'BPJS'
+  },
+]);
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -151,8 +209,179 @@ const onRecipeSelect = (label: string) => {
         </CustomAccordion>
       </template>
       <template #content>
-          
+        <div class="grid grid-cols-3 gap-3 ">
+          <!-- Resep   masuk -->
+          <Card class="h-[500px] overflow-auto">
+            <template #header>
+              <div class="mt-[10px] p-4 rounded-t-xl bg-adameds-300">
+                <div class="flex">
+                    <p class="text-lg font-bold text-white font-poppins">Resep Masuk</p>
+                </div>
+              </div>
+            </template>
+            <template #content>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
+                    <div>
+                      <CustomChip
+                        label="IGD"
+                        borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grey-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
+                    <div>
+                      <CustomChip
+                        label="TUNAI"
+                        borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
+                        textColor="text-adameds-300"
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
+                    <div>
+                      <CustomChip
+                        label="IGD"
+                        borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grey-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
+                    <div>
+                      <CustomChip
+                        label="TUNAI"
+                        borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
+                        textColor="text-adameds-300"
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+              <div class="mb-[20px]">
+                <div class="grid grid-cols-2">
+                  <div class="grid justify-items-start">
+                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
+                    <p class="text-sm font-bold">Nama Pasien</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Penulis Resep</P>
+                    <p class="">dr. Nama Dokter</p>
+                    <P class="text-xs font-bold underline underline-offset-2">Lokasi Tujuan Order</P>
+                    <p class="">Farmasi IGD</p>
+                    <div>
+                      <CustomChip
+                        label="IGD"
+                        borderColor="border-grey-300"
+                        bgColor="bg-grey-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grey-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                        label="OBAT PULANG"
+                        borderColor="border-male-300"
+                        bgColor="bg-male-50"
+                        :showCheckedIcon="false"
+                        textColor="text-male-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  <div class="grid justify-items-end">
+                    <p class="text-sm font-bold">RSP123</p>
+                    <p class="text-sm font-bold mt-[5px]">REGISTER123</p>
+                    <p class="text-xs font-bold mt-[5px] underline underline-offset-2">Tgl. Order</p>
+                    <p class="mt-[5px]">11-10-2024</p>
+                    <p class=""></p>
+                    <p class=""></p>
+                    <div>
+                      <CustomChip
+                        label="TUNAI"
+                        borderColor="border-adameds-300"
+                        bgColor="bg-adameds-50"
+                        :showCheckedIcon="false"
+                        textColor="text-adameds-300"
+                        customClass="h-5"
+                        class="mt-[50px] mr-[5px]"
+                      />
+                    </div>
+                  </div>
+                  
+                </div>
+                <hr class="mt-5 border-[1px] border-grey-200">
+              </div>
+            </template>
+          </Card>
+        </div>
       </template>
     </Card>
-  </div>
 </template>

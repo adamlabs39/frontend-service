@@ -123,9 +123,9 @@ const sidebarBodyList = ref<SidebarBody[]>([
             url: "/farmasi/laporan/waktu-tunggu",
           },
           {
-            name: "Rekap Pendapatan Resep Per Dokter",
+            name: "Rekap Pendapatan Resep Per Apotik",
             type: linkType.LINK,
-            url: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-dokter",
+            url: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-apotik",
           },
         ],
       },

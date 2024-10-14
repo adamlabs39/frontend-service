@@ -67,11 +67,52 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+            <div class="grid grid-cols-4 gap-4 mt-[10px]">
+              <div>
+                <CustomSelect 
+                  label="Jenis Pelayanan" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Resep" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Racikan', 'Non-Racikan']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Asal Resep" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Poli', 'Ranap']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Pendapatan" 
+                  class="" optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" 
+                  place-holder="Semua" 
+                />
+              </div>
+            </div>
             <div class="flex mt-[10px]">
-              <CustomSelect label="Jenis Pelayanan" class="mr-5 w-1/4" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
-              <CustomSelect label="Resep" class="mr-5 w-1/4" optionLabel="" optionValue="" :options="['Semua', 'Racikan', 'Non-Racikan']" place-holder="Semua" />
-              <CustomSelect label="Asal Resep" class="mr-5 w-1/4" optionLabel="" optionValue="" :options="['Semua', 'Poli', 'Ranap']" place-holder="Semua" />
-              <CustomSelect label="Pendapatan" class="mr-5 w-1/4" optionLabel="" optionValue="" :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" place-holder="Semua" />
+              <CustomSelect label="Jenis Pelayanan" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
+              <CustomSelect label="Resep" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Racikan', 'Non-Racikan']" place-holder="Semua" />
+              <CustomSelect label="Asal Resep" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Poli', 'Ranap']" place-holder="Semua" />
+              <CustomSelect label="Pendapatan" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" place-holder="Semua" />
             </div>
 
             <!-- baris kedua -->
