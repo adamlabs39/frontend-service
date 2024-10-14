@@ -29,8 +29,8 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama Role harus diisi"),
+    code: yup.string().required("Kode Kategori Ruangan harus diisi"),
+    name: yup.string().required("Nama Kategori Ruangan harus diisi"),
     status: yup.bool().default(false),
   })
 );

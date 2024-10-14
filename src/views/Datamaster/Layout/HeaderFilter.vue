@@ -25,9 +25,10 @@ const props = defineProps({
 
 const emit = defineEmits([
   "tambah-data",
+  "tarif-ruangan",
   "update:valueSearch",
   "update:selectedRole",
-  "selectedTab"
+  "selectedTab",
 ]);
 
 const pageLabel = computed(() => {
@@ -106,7 +107,7 @@ const tabs = ref([
 const selectedTab = ref("0");
 </script>
 <template>
-  <CustomAccordion :openWithHeader="false" noBorder  initialState="0" >
+  <CustomAccordion :openWithHeader="false" noBorder initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
@@ -130,7 +131,7 @@ const selectedTab = ref("0");
             v-for="tab in tabs"
             :key="tab.title"
             :label="tab.title"
-            class="w-[320px]"
+            class="px-10"
             :text-color="
               selectedTab === tab.value ? 'text-white' : 'text-adameds-300'
             "
@@ -138,13 +139,22 @@ const selectedTab = ref("0");
               selectedTab === tab.value ? 'border-none' : 'border-adameds-300'
             "
             :class="selectedTab === tab.value ? 'bg-adameds-300' : 'bg-white'"
-            @click="$emit('selectedTab', selectedTab = tab.value)"
+            @click="$emit('selectedTab', (selectedTab = tab.value))"
             :outlined="selectedTab !== tab.value"
           />
+          <PhLineVertical v-if="['tarif'].includes(pageType)" :size="32" class="text-adameds-300" />
+
           <CustomButton
             @click="emit('tambah-data')"
             icon="PhPlus"
-            label="Data"
+            :label="props.pageType === 'tarif'?'Tarif Tindakan': 'Data'"
+            class="mr-[10px]"
+          />
+          <CustomButton
+            v-if="['tarif'].includes(pageType)"
+            @click="emit('tarif-ruangan')"
+            icon="PhPlus"
+            label="Tarif Ruangan"
             class="mr-[10px]"
           />
         </div>
@@ -156,10 +166,11 @@ const selectedTab = ref("0");
           <CustomTextfield
             v-model="valueSearch"
             :label="isSuperAdmin ? 'Pencarian' : `Cari ${pageLabel}`"
-            :placeholder="isSuperAdmin ? 'Cari Display Gigi' : `Cari ${pageLabel}`"
+            :placeholder="
+              isSuperAdmin ? 'Cari Display Gigi' : `Cari ${pageLabel}`
+            "
             class="grow"
             prependIcon="PhMagnifyingGlass"
-
           />
           <CustomSelect
             v-if="['user', 'ruangan', 'tarif'].includes(pageType)"

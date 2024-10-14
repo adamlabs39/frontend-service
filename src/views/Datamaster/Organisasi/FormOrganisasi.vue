@@ -306,6 +306,8 @@ watch(
           v-model="url"
           placeholder="URL"
           class="col-span-12"
+           :invalid="!!errors.url"
+          :invalidMessage="errors.url"
         />
         <CustomSelect
           label="Provinsi"

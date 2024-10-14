@@ -1,28 +1,44 @@
 <script lang="ts" setup>
-import { ref, watch, defineProps, computed } from "vue";
-import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-
+import { ref, watch, defineProps, computed, onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import NoData from "@/components/section/NoData.vue";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useFaskesStore } from "@/stores/datamaster/faskes";
+import { useRoleStore } from "@/stores/datamaster/role";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
+const praktisiStore = usePraktisiStore();
+const faskesStore = useFaskesStore();
+const roleStore = useFaskesStore();
+const praktisiPayload = ref<any[]>([]);
+const faskesPayload = ref<any[]>([]);
+const rolePayload = ref<any[]>([]);
 const emit = defineEmits(["back"]);
-
-const showSelected = ref(false);
-const showNama = ref(false);
 const phoneRegExp =
-  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+  /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = computed(() =>
   toTypedSchema(
     yup.object({
+      faskesUuid: yup.string(),
+      praktisiUuid: yup.string(),
+      phone: yup
+        .string()
+        .required("No. Handhpone harus diisi")
+        .matches(phoneRegExp, "Format tidak sesuai"),
+      email: yup
+        .string()
+        .required("Email harus diisi")
+        .email("Format email tidak sesuai")
+        .required("Email harus diisi"),
       username: yup.string().required("Username harus diisi"),
       password: yup
         .string()
@@ -59,22 +75,8 @@ const schema = computed(() =>
         )
         .required("Password harus diisi")
         .oneOf([yup.ref("password")], "Password tidak sama"),
-      namaLengkap: showNama
-        ? yup.string().required("Nama Lengkap harus diisi")
-        : yup.string().nullable(),
-      email: yup
-        .string()
-        .required("Email harus diisi")
-        .email("Format email tidak sesuai")
-        .required("Email harus diisi"),
-      phoneNumber: yup
-        .string()
-        .required("No. Handhpone harus diisi")
-        .matches(phoneRegExp, "Format tidak sesuai"),
-      selectedDokter: showSelected
-        ? yup.string().required("Nama Dokter harus diisi")
-        : yup.string().nullable(),
       status: yup.bool(),
+      permission: yup.bool(),
     })
   )
 );
@@ -83,99 +85,527 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-});
-
+const [faskesUuid] = defineField("faskesUuid");
+const [praktisiUuid] = defineField("praktisiUuid");
+const [phone] = defineField("phone");
+const [email] = defineField("email");
 const [username] = defineField("username");
 const [password] = defineField("password");
 const [confirmPassword] = defineField("confirmPassword");
 const [status] = defineField("status");
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
-
 const dataBreadHome = ref({ label: "User", home: true });
 const dataBreadCrumb = ref([{ label: "Tambah Data" }]);
 
-const selectedRole = ref();
-const roleOptions = ref([
-  { label: "Admin", value: "admin" },
-  { label: "Super Admin", value: "superAdmin" },
-  { label: "Dokter", value: "dokter" },
-  { label: "Perawat", value: "perawat" },
-]);
-console.log("text", selectedRole);
-
-const checkCategorie = ref();
-const permission = ref([
-  {
-    menu: "Dashboard",
-    subMenu: [
-      {
-        name: "Rawat Jalan",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-    ],
-  },
-  {
-    menu: "Datamaster",
-    subMenu: [
-      {
-        name: "User",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-      {
-        name: "Role",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-      {
-        name: "Pegawai",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-      {
-        name: "Praktisi",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-    ],
-  },
-  {
-    menu: "Antrian",
-    subMenu: [
-      {
-        name: "Jadwal Dokter",
-        actionPermission: ["Creat", "Read", "Update", "Delete"],
-      },
-    ],
-  },
-]);
-
-const categories = ref([
-  { name: "Accounting", key: "A" },
-  { name: "Marketing", key: "M" },
-  { name: "Production", key: "P" },
-  { name: "Research", key: "R" },
-]);
-
-// Watch for changes in selectedRole and reset form
-watch(selectedRole, (newRole) => {
-  resetForm(); // Reset the form
-
-  // You can also set the initial values for specific fields if needed
-  if (newRole === "dokter") {
-    showSelected.value = true;
-    showNama.value = false;
-  } else {
-    showSelected.value = false;
-    showNama.value = true;
+const fetchPraktisi = async () => {
+  try {
+    const response = await praktisiStore.getApi();
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload;
+    } else {
+      praktisiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch praktisi", error);
+    praktisiPayload.value = [];
   }
+};
+const fetchFaskes = async () => {
+  try {
+    const response = await faskesStore.getApi();
+    if (response && response.payload) {
+      faskesPayload.value = response.payload;
+    } else {
+      faskesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch faskes", error);
+    faskesPayload.value = [];
+  }
+};
+const fetchRole = async () => {
+  try {
+    const response = await roleStore.getApi();
+    if (response && response.payload) {
+      faskesPayload.value = response.payload;
+    } else {
+      faskesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch role", error);
+    faskesPayload.value = [];
+  }
+};
+
+onMounted(() => {
+  fetchPraktisi();
+  fetchFaskes();
+  fetchRole();
 });
+
+const permissionsItem = ref([
+  {
+    module: "Antrian",
+    sub_modules: [
+      {
+        name: "Konfigurasi",
+        allows: ["READ", "CREATE", "UPDATE", "DELETE"],
+      },
+      {
+        name: "Data Antrian",
+        allows: ["READ"],
+      },
+      {
+        name: "Layar",
+        allows: ["READ"],
+      },
+      {
+        name: "Apm",
+        allows: [
+          "CREATE PASIEN JKN",
+          "CREATE PASIEN NON-JKN",
+          "CHECKIN",
+          "PRINT",
+        ],
+      },
+    ],
+  },
+  {
+    module: "Admisi",
+    sub_modules: [
+      {
+        name: "Antrian",
+        allows: ["PANGGIL", "LEWATI", "PROSES", "SELESAI", "CHECKIN"],
+      },
+      {
+        name: "RJ",
+        allows: [
+          "READ",
+          "CREATE PASIEN RJ",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI RJ",
+          "UPDATE GENERAl CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+          "BATAL RJ",
+        ],
+      },
+      {
+        name: "RI",
+        allows: [
+          "READ",
+          "CREATE BAYI BARU LAHIR",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI RI",
+          "UPDATE GENERAL CONSENT",
+          "BATAL REQUEST RI",
+          "CETAK GENERAL CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+        ],
+      },
+      {
+        name: "IGD",
+        allows: [
+          "READ",
+          "CREATE PASIEN IGD",
+          "CREATE GENERAL CONSENT",
+          "UPDATE ADMISI IGD",
+          "UPDATE GENERAL CONSENT",
+          "BATAL IGD",
+          "CETAK GENERAL CONSENT",
+          "CETAK KUNJUNGAN",
+          "CETAK LABEL",
+        ],
+      },
+      {
+        name: "SEP",
+        allows: [
+          "READ",
+          "CREATE SEP",
+          "CREATE SEP MANUAL",
+          "DELETE SEP",
+          "SIMPAN SEP MANUAL",
+        ],
+      },
+      {
+        name: "Data Pasien",
+        allows: [
+          "READ",
+          "CREATE PASIEN",
+          "UPDATE BERKAS RM",
+          "UPDATE DATA PASIEN",
+          "DELETE PASIEN",
+          "DELETE BERKAS RM",
+          "IMPORT DATA PASIEN",
+          "CETAK KARTU PASIEN",
+          "UPLOAD BERKAS RM",
+          "PREVIEW BERKAS RM",
+          "GENERAL CONSENT",
+        ],
+      },
+      {
+        name: "Monitoring Kamar",
+        allows: ["READ", "SETTING BED", "CREATE BED", "DELETE BED"],
+      },
+    ],
+  },
+  {
+    module: "Rawat Jalan",
+    sub_modules: [
+      {
+        name: "Antrian",
+        allows: ["PANGGIL", "LEWATI", "PROSSES", "SELESAI"],
+      },
+      {
+        name: "Poli",
+        allows: ["READ", "BATAL KUNJUNGAN"],
+      },
+      {
+        name: "BPJS-PCARE",
+        features: [
+          {
+            name: "Monitoring Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+        ],
+      },
+      {
+        name: "Laporan Rawat Jalan",
+        features: [
+          {
+            name: "Pembatalan Poli",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "rekap Pembatalan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
+      {
+        name: "RME",
+        features: [
+          {
+            name: "Rekap Medis",
+            allows: [
+              "READ",
+              "UPDATE PEMERIKSAAN GIGI",
+              "UPDATE PEMERIKSAAN MATA",
+              "UPDATE PEMERIKSAAN FISIK",
+              "UPDATE DERAJAT LUKA BAKAR",
+              "UPDATE PEMERIKSAAN DAN TINDAKAN",
+              "UPDATE REKAM MEDIS",
+              "CETAK LABEL",
+              "TUTUP SEMUA FORM",
+              "BUKAN SEMUA FORM",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TAMPILKAN DETAIL PASIEN",
+            ],
+          },
+          {
+            name: "Asemen",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CREATE DIAGNOSIS",
+              "DELETE DIAGNOSIS",
+              "UPDATE CATATAN PERAWAT",
+              "BALAS CATATAN PERAWAT",
+              "KIRIM CATATAN",
+              "KIRIM INTRUKSI",
+              "CREATE TINDAKAN",
+              "CREATE MULTIPLE TINDAKAN",
+              "DELETE TINDAKAN",
+            ],
+          },
+          {
+            name: "SOAP",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DATA PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CREATE OBAT",
+              "CREATE RACIKAN OBAT",
+              "ITEM OBAT RACIKAN",
+              "UPDATE OBAT",
+              "DELETE OBAT",
+              "DELETE ITEM OBAT RACIKAN",
+            ],
+          },
+          {
+            name: "Akses Dan Penunjang",
+            allows: [
+              "READ",
+              "CREATE ALKES",
+              "CREATE MULTIPLE ALKES",
+              "DELETE LIST ALKES",
+              "DELETE MULTIPLE ITEM ALKES",
+              "DELETE SEMUA",
+              "CREATE TINDAKAN",
+              "DELETE LIST TINDAKAN",
+            ],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Unggah Berkas",
+            allows: ["READ", "UPDATE FILE", "DELETE FILE", ""],
+          },
+          {
+            name: "Resume Dan Discarge",
+            allows: ["READ"],
+          },
+          {
+            name: "Cetak Hasil Dan Surat",
+            allows: [
+              "READ",
+              "CREATE SURAT KETERANGAN",
+              "DELETE SURAT KETERANGAN",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    module: "Rawat Inap",
+    sub_modules: [
+      {
+        name: "Rawat Inap",
+        allows: ["READ","BATAL DIRAWAT"],
+      },
+      {
+        name: "Perpindahan Bangsal",
+        allows: ["READ", "BATAL TERIMA", "SETUJU DAN TERIMA"],
+      },
+      {
+        name: "BPJS-PCARE",
+        features: [
+          {
+            name: "Monitoring Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+        ],
+      },
+      {
+        name: "Laporan",
+        features: [
+          {
+            name: "Monitoring Rawat Inap",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Perpindahan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Pembatalan Berobat",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Rekap Tindakan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
+      {
+        name: "Detail Pasien",
+        features: [
+          {
+            name: "Rekam Medis",
+            allows: [
+              "READ",
+              "UPDATE PEMERIKSAAN FISIK",
+              "UPDATE DERAJAT LUKA BAKAR",
+              "UPDATE PEMERIKSAAN DAN TINDAKAN",
+              "UPDATE REKAM MEDIS",
+              "DELETE SESI",
+              "",
+            ],
+          },
+          {
+            name: "Asesmen",
+            allows: [
+              "READ",
+              "CREATE DIAGNOSIS",
+              "DELETE DIAGNOSIS",
+              "UPDATE CATATAN PERAWAT",
+              "BALAS CATATAN PERAWAT",
+              "KIRIM CATATAN PERAWAT",
+              "KIRIM INTERUKSI MEDIS",
+              "CREATE MULTIPLE TINDAKAN",
+              "DELETE TINDAKAN",
+              "DELETE MULTIPLE TINDAKAN",
+              "DELETE SEMUA",
+            ],
+          },
+          {
+            name: "SOAP Dokter",
+            allows: [
+              "READ",
+              "CREATE OBAT",
+              "CREATE RACIKAN",
+              "UPDATE OBAT",
+              "DELETE OBAT",
+              "DELETE ITEM OBAT RACIKAN",
+            ],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Inform Consent",
+            allows: ["READ"],
+          },
+          {
+            name: "Alkes Dan Penunjang",
+            allows: [
+              "CREATE ALKES",
+              "CREATE MULTIPLE ALKES",
+              "DELETE ALKES",
+              "DELETE MULTIPLE ALKES",
+              "DELETE SEMUA",
+              "CREATE TINDAKAN",
+              "DELETE TINDAKAN",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]);
+
+const permissions = ref(
+  permissionsItem.value.map((item) => ({
+    modul: item.module,
+    checked: false, // Track if the module is checked
+    sub_modules: item.sub_modules.map((subItem) => ({
+      name: subItem.name,
+      checked: false,
+      features: subItem.features
+        ? subItem.features.map((featureItem) => ({
+            name: featureItem.name,
+            checked: false,
+            allows: featureItem.allows.map((allow) => ({
+              name: allow,
+              checked: false,
+            })),
+          }))
+        : [], // If no features, set empty array
+      // If no features, map allows directly on the sub_module level
+      allows: subItem.allows
+        ? subItem.allows.map((allow) => ({
+            name: allow,
+            checked: false, // Track if the allow is checked
+          }))
+        : [], // If no allows, set empty array
+    })),
+  }))
+);
+
+// const onSubmit = handleSubmit(async (values: any) => {
+//   const selectedPermissions = permissions.value
+//     .filter((module) => module.checked) // Only selected modules
+//     .map((module) => ({
+//       modul: module.modul,
+//       sub_modules: module.sub_modules
+//         .filter((subModule) => subModule.checked) // Only selected sub_modules
+//         .map((subModule) => ({
+//           name: subModule.name,
+
+//           // If subModule has features, map selected features and their allows
+//           features: subModule.features
+//             ? subModule.features
+//                 .filter((feature) => feature.checked) // Only selected features
+//                 .map((feature) => ({
+//                   name: feature.name,
+//                   allows: feature.allows
+//                     .filter((allow) => allow.checked) // Only selected allows in features
+//                     .map((allow) => allow.name),
+//                 }))
+//             : [],
+
+//           // Map allows if there are no features
+//           allows: subModule.allows
+//             ? subModule.allows
+//                 .filter((allow) => allow.checked) // Only selected allows in sub_modules
+//                 .map((allow) => allow.name)
+//             : [],
+//         })),
+//     }));
+//     console.log([...values.datas, ...selectedPermissions])
+//     console.log(values);
+//     console.log(selectedPermissions);
+
+// });
+// Method to submit selected permissions
+const onSubmit = () => {
+   const selectedPermissions = permissions.value
+    .filter((module) => module.checked) // Only selected modules
+    .map((module) => ({
+      modul: module.modul,
+      sub_modules: module.sub_modules
+        .filter((subModule) => subModule.checked) // Only selected sub_modules
+        .map((subModule) => ({
+          name: subModule.name,
+
+          // If subModule has features, map selected features and their allows
+          features: subModule.features
+            ? subModule.features
+                .filter((feature) => feature.checked) // Only selected features
+                .map((feature) => ({
+                  name: feature.name,
+                  allows: feature.allows
+                    .filter((allow) => allow.checked) // Only selected allows in features
+                    .map((allow) => allow.name),
+                }))
+            : [],
+
+          // Map allows if there are no features
+          allows: subModule.allows
+            ? subModule.allows
+                .filter((allow) => allow.checked) // Only selected allows in sub_modules
+                .map((allow) => allow.name)
+            : [],
+        })),
+    }));
+
+  console.log(selectedPermissions); // Log the selected permissions for testing
+};
+
 </script>
 
 <template>
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
-    class=""
   >
     <template #header>
       <div class="flex items-center justify-between gap-5 p-5">
@@ -201,7 +631,11 @@ watch(selectedRole, (newRole) => {
         <template #content>
           <CustomSelect
             label="Faskes"
+            v-model="faskesUuid"
             place-holder="Pilih Faskes"
+            :options="faskesPayload"
+            option-label="name"
+            option-value="uuid"
             class="mt-5"
           />
         </template>
@@ -227,11 +661,15 @@ watch(selectedRole, (newRole) => {
             <div class="flex items-end col-span-12 gap-y-5">
               <CustomSelect
                 label="Praktisi"
+                v-model="praktisiUuid"
                 place-holder="Cari & Pilih Praktisi"
+                :options="praktisiPayload"
+                option-label="name"
+                option-value="uuid"
                 class="grow"
               />
               <CustomButton
-                label="Cara"
+                label="Cari"
                 icon="PhMagnifyingGlass"
                 class="ml-5 mr-2.5"
               />
@@ -250,28 +688,34 @@ watch(selectedRole, (newRole) => {
                 <div class="font-normal text-normal">Nama Lengkap1</div>
               </div>
               <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-semibold underline text-SM">NIK</div>
                 <div class="font-normal text-normal">Nama Lengkap2</div>
               </div>
               <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-semibold underline text-SM">Tanggal Lahir</div>
                 <div class="font-normal text-normal">Nama Lengkap3</div>
               </div>
               <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Nama Pegawai</div>
+                <div class="font-semibold underline text-SM">Jenis Kelamin</div>
                 <div class="font-normal text-normal">Nama Lengkap4</div>
               </div>
             </div>
 
             <CustomInputNumber
               label="No. Handphone"
+              v-model="phone"
               placeholder="08xx-xxxx-xxxx"
               class="col-span-6"
+              :invalid="!!errors.phone"
+              :invalidMessage="errors.phone"
             />
             <CustomTextfield
               label="Email"
+              v-model="email"
               placeholder="Email"
               class="col-span-6"
+              :invalid="!!errors.email"
+              :invalidMessage="errors.email"
             />
           </div>
         </template>
@@ -298,7 +742,7 @@ watch(selectedRole, (newRole) => {
               v-model="username"
               label="Username"
               placeholder="Username"
-              :invalid="errors.username ? true : false"
+              :invalid="!!errors.username"
               :invalidMessage="errors.username"
               class="col-span-4"
             />
@@ -306,7 +750,7 @@ watch(selectedRole, (newRole) => {
             <CustomTextfield
               v-model="password"
               label="Password"
-              placeholder="****"
+              placeholder="**"
               :type="showPassword ? 'text' : 'password'"
               :invalid="errors.password ? true : false"
               :invalidMessage="errors.password"
@@ -317,7 +761,7 @@ watch(selectedRole, (newRole) => {
             <CustomTextfield
               v-model="confirmPassword"
               label="Verify Password"
-              placeholder="****"
+              placeholder="**"
               :type="showConfirmPassword ? 'text' : 'password'"
               :invalid="errors.confirmPassword ? true : false"
               :invalidMessage="errors.confirmPassword"
@@ -342,37 +786,53 @@ watch(selectedRole, (newRole) => {
           />
         </template>
       </CustomAccordion>
+      <!-- Modul & Permission -->
       <CustomAccordion no-border initial-state="0">
         <template #header> Modul & Permission </template>
         <template #content>
           <div class="grid grid-cols-12 gap-5 pt-5">
+            <!-- Role Selection -->
             <CustomSelect
               label="Role"
               place-holder="Pilih Role"
               class="col-span-12"
             />
-            <!-- <NoData class="col-span-12" /> -->
+
+            <!-- Loop through all modules -->
             <div
-              v-for="(menuItem, menuIndex) in permission"
-              :key="menuIndex"
+              v-for="(menuItem, menuIndex) in permissions"
+              :key="menuItem.modul"
               class="col-span-12"
             >
+              <!-- Module level -->
               <CustomAccordion
                 header-class="bg-adameds-50"
                 :open-with-header="false"
               >
                 <template #header>
                   <div class="flex items-center gap-2.5">
-                    <Checkbox :binary="true" />
-
-                    {{ menuItem.menu }}
+                    <Checkbox
+                      v-model="menuItem.checked"
+                      :inputId="menuItem.modul"
+                      :value="menuItem.modul"
+                      name="menuItem"
+                      :dt="{
+                        checkedBackground: '#14B8A6',
+                        checkedHoverBackground: '#14B8A6',
+                        borderColor: '#98A2B3',
+                      }"
+                    />
+                    <label :for="menuItem.modul">{{ menuItem.modul }}</label>
                   </div>
                 </template>
+
                 <template #content>
+                  <!-- Loop through all sub-modules -->
                   <div
-                    v-for="(subMenuItem, subMenuIndex) in menuItem.subMenu"
-                    :key="subMenuIndex"
+                    v-for="(subMenuItem, subMenuIndex) in menuItem.sub_modules"
+                    :key="subMenuItem.name"
                   >
+                    <!-- Submodule level -->
                     <CustomAccordion
                       class="col-span-12 pt-5"
                       header-class="bg-adameds-50"
@@ -380,24 +840,104 @@ watch(selectedRole, (newRole) => {
                     >
                       <template #header>
                         <div class="flex items-center gap-2.5">
-                          <Checkbox :binary="true" />
-
-                          {{ subMenuItem.name }}
+                          <Checkbox
+                            v-model="subMenuItem.checked"
+                            :inputId="subMenuItem.name"
+                            :value="subMenuItem.name"
+                            name="subMenuItem"
+                            :dt="{
+                              checkedBackground: '#14B8A6',
+                              checkedHoverBackground: '#14B8A6',
+                              borderColor: '#98A2B3',
+                            }"
+                          />
+                          <label
+                            :for="subMenuItem.name"
+                            class="font-normal text-SM text-grey-400"
+                          >
+                            {{ subMenuItem.name }}
+                          </label>
                         </div>
                       </template>
+
                       <template #content>
-                        <div class="flex flex-wrap gap-2.5 pt-5">
+                        <!-- Check if the submodule has features -->
+                        <div
+                          v-if="
+                            subMenuItem.features && subMenuItem.features.length
+                          "
+                        >
+                          <!-- Loop through features -->
                           <div
                             v-for="(
-                              action, actionIndex
-                            ) in subMenuItem.actionPermission"
-                            :key="actionIndex"
+                              feature, featureIndex
+                            ) in subMenuItem.features"
+                            :key="feature.name"
                           >
-                          <CustomCheckbox
-                             :value="action"
-                             :title="action"
-                             sub-title=""
-                            />
+                            <CustomAccordion
+                              class="col-span-12 pt-5"
+                              header-class="bg-adameds-50"
+                              :open-with-header="false"
+                            >
+                              <template #header>
+                                <div class="flex items-center gap-2.5">
+                                  <Checkbox
+                                    v-model="feature.checked"
+                                    :inputId="feature.name"
+                                    :value="feature.name"
+                                    name="featureItem"
+                                    :dt="{
+                                      checkedBackground: '#14B8A6',
+                                      checkedHoverBackground: '#14B8A6',
+                                      borderColor: '#98A2B3',
+                                    }"
+                                  />
+                                  <label
+                                    :for="feature.name"
+                                    class="font-normal text-SM text-grey-400"
+                                  >
+                                    {{ feature.name }}
+                                  </label>
+                                </div>
+                              </template>
+
+                              <template #content>
+                                <!-- Actions level for each feature -->
+                                <div class="flex flex-wrap gap-2.5 pt-5">
+                                  <div
+                                    v-for="(
+                                      action, actionIndex
+                                    ) in feature.allows"
+                                    :key="action.name"
+                                  >
+                                    <CustomCheckbox
+                                      v-model="action.checked"
+                                      :title="action.name"
+                                      subTitle=""
+                                    />
+                                  </div>
+                                </div>
+                              </template>
+                            </CustomAccordion>
+                          </div>
+                        </div>
+
+                        <!-- If no features, show actions for submodule directly -->
+                        <div v-else>
+                          <!-- Render allows directly for submodules without features -->
+                          <div class="flex flex-wrap gap-2.5 pt-5">
+                            <div
+                              v-for="(
+                                action, actionIndex
+                              ) in subMenuItem.allows"
+                              :key="action.name"
+                            >
+                              <CustomCheckbox
+                                v-model="action.checked"
+                                :title="action.name"
+                                subTitle=""
+                              />
+                            </div>
                           </div>
                         </div>
                       </template>
@@ -408,6 +948,7 @@ watch(selectedRole, (newRole) => {
             </div>
           </div>
         </template>
+
         <template #collapseIcon>
           <CustomButton
             icon="PhCaretUp"
@@ -423,14 +964,6 @@ watch(selectedRole, (newRole) => {
           />
         </template>
       </CustomAccordion>
-      <CustomSwitch
-        v-model="status"
-        :show-label="true"
-        label="Status"
-        sideLabel="NON-AKTIF"
-        sideLabelTrue="AKTIF"
-        class="col-span-12 ml-5"
-      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2.5 px-5 py-2.5">

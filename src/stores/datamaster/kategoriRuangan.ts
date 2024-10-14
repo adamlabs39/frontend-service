@@ -26,5 +26,8 @@ export const useKategoriRuanganStore = defineStore({
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/kategori_ruangan/export`, payload);
       },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/kategori_ruangan/import", payload);
+      },
     },
   });

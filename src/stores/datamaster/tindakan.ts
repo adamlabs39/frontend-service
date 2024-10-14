@@ -26,5 +26,8 @@ export const useTindakanStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/tindakan/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/tindakan/import", payload);
+    },
   },
 });

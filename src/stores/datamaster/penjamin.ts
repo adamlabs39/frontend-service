@@ -26,5 +26,8 @@ export const usePenjaminStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/penjamin/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/penjamin/import", payload);
+    },
   },
 });

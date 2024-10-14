@@ -25,7 +25,7 @@ const searchQuery = ref<string>("");
 
 // Fetch Snomed Data from API
 const fetchSnomedData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await snomedCTStore.getApi(
       snomedProperties.value.page,
@@ -42,7 +42,7 @@ const fetchSnomedData = async () => {
     console.error("Failed to fetch data", error);
     snomedPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -51,7 +51,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchSnomedData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -103,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await snomedCTStore.deleteApi(item.uuid);
       fetchSnomedData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -131,8 +131,8 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Snomed CT",
@@ -211,6 +211,16 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await snomedCTStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchSnomedData();
+  } catch (error) {
+  }
+};
 </script>
 
 <template>
@@ -222,7 +232,7 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="snomed-ct"
-         :value-search="searchQuery"
+        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
       />
@@ -259,7 +269,11 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column field="code" header="Kode Snomed CT" headerClass="bg-adameds-50"></Column>
+        <Column
+          field="code"
+          header="Kode Snomed CT"
+          headerClass="bg-adameds-50"
+        ></Column>
         <Column
           field="name"
           header="Nama Snomed CT"
@@ -310,7 +324,14 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Snomed CT ${slotProps.data.code}`, slotProps.data)"              >
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Snomed CT ${slotProps.data.code}`,
+                    slotProps.data
+                  )
+                "
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
@@ -338,6 +359,7 @@ const downloadExportExcel = async () => {
         :totalRecords="snomedProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

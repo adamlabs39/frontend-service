@@ -26,5 +26,8 @@ export const useLoincStore = defineStore({
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/loinc/export`, payload);
       },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/loinc/import", payload);
+      },
     },
   });

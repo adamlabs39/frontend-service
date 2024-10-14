@@ -26,5 +26,8 @@ export const useOklusiGigiStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/oklusi_gigi/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/oklusi_gigi/import", payload);
+    },
   },
 });

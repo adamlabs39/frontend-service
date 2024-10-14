@@ -26,5 +26,8 @@ export const useKomponenTarifStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/komponen-tarif/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/komponen-tarif/import", payload);
+    },
   },
 });

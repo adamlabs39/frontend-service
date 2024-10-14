@@ -4,6 +4,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { usePegawaiStore } from "@/stores/datamaster/pegawai";
+import { dateToEpoch } from "@/utils/Helpers";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -40,11 +41,11 @@ const schema = toTypedSchema(
   yup.object({
     name: yup.string().required("Nama Pegawai harus diisi"),
     nik: yup.string().required("NIK harus diisi"),
-    tipe: yup.string().required("Tipe Pegawai harus diisi"),
+    tipe: yup.number().required("Tipe Pegawai harus diisi"),
     firstTitle: yup.string(),
     lastTitle: yup.string(),
-    gender: yup.string(),
-    tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir"),
+    gender: yup.string().required("Jenis Kelamin harus diisi"),
+    tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir harus diisi"),
     status: yup.bool().default(false),
   })
 );
@@ -68,6 +69,7 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    values.tanggalLahir = dateToEpoch(new Date(values.tanggalLahir)); 
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -150,8 +152,8 @@ watch(
           :invalid="!!errors.tipe"
           :invalidMessage="errors.tipe"
         />
-        <hr class="border-grey-200 col-span-12" />
-        <div class="font-semibold text-normal col-span-12 -mb-5">
+        <hr class="col-span-12 border-grey-200" />
+        <div class="col-span-12 -mb-5 font-semibold text-normal">
           Nama Lengkap Pegawai
         </div>
         <CustomTextfield
@@ -186,6 +188,8 @@ watch(
           v-model="tanggalLahir"
           class="col-span-6"
           label="Tanggal Lahir"
+          :invalid="!!errors.tanggalLahir"
+          :invalidMessage="errors.tanggalLahir"
         />
         <CustomSelect
           label="Jenis Kelamin"
@@ -195,8 +199,10 @@ watch(
           option-value=""
           place-holder="Pilih Jenis Kelamin"
           class="col-span-6"
+          :invalid="!!errors.gender"
+          :invalidMessage="errors.gender"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -240,7 +246,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

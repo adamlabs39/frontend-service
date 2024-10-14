@@ -26,5 +26,8 @@ export const useRuanganStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/ruangan/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/ruangan/import", payload);
+    },
   },
 });
