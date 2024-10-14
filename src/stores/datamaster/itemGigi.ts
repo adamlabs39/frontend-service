@@ -26,5 +26,8 @@ export const useItemGigiStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/item_gigi/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/item_gigi/import", payload);
+    },
   },
 });

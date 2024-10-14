@@ -61,11 +61,11 @@ const optionsKelas = ref([
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string(),
-    kategoriRuanganUuid: yup.string().required("Kategori ruangan harus dipilih"),
-    noRoom: yup.number().required("Nomor kamar harus diisi"),
-    kelasRuangan: yup.number().required("Kelas ruangan harus dipilih"),
+    code: yup.string().required("Kode Ruangan harus diisi"),
+    name: yup.string().required("Nama Ruangan harus diisi"),
+    kategoriRuanganUuid: yup.string().required("Kategori Ruangan harus dipilih"),
+    noRoom: yup.number().required("Nomor Kamar harus diisi"),
+    kelasRuangan: yup.number().required("Kelas Ruangan harus dipilih"),
     status: yup.bool(),
   })
 );
@@ -176,6 +176,8 @@ watch(
             label="Nama Ruangan"
             v-model="name"
             placeholder="Nama Ruangan"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
             class="col-span-8"
           />
           <CustomSelect

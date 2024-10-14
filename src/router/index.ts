@@ -15,6 +15,7 @@ import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
 import RawatInapView from "@/views/RawatInap/RawatInapView.vue";
+import FisioterapiView from "@/views/Fisioterapi/FisioterapiView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -103,6 +104,9 @@ import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasie
 import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
 import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
 import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
+import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
+import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
+import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -110,8 +114,33 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
+import PerpindahanBangsal from "@/views/RawatInap/Page/PerpindahanBangsal.vue";
 import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
 import LaporanPageRI from "@/views/RawatInap/Page/LaporanPage.vue";
+// NOTE Page IGD
+import IGDView from "@/views/IGD/IGDView.vue";
+import PasienIgdPage from "@/views/IGD/PasienIgd/PasienIgdPage.vue";
+import MonitoringKunjunganPage from "@/views/IGD/BPJS/MonitoringKunjungan.vue";
+import MonitoringRiwayatKunjunganPage from "@/views/IGD/BPJS/MonitoringRiwayatKunjungan.vue";
+import MonitoringObatKunjunganPage from "@/views/IGD/BPJS/MonitoringObatKunjungan.vue";
+import KunjunganIgdPage from "@/views/IGD/Laporan/KunjunganIgd.vue";
+import PembatalanDirawatPage from "@/views/IGD/Laporan/PembatalanDirawat.vue";
+import RekapTindakanPasien from "@/views/IGD/Laporan/RekapTindakanPasien.vue";
+import BPJSPage from "@/views/IGD/BPJS/BPJSPage.vue";
+import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
+// NOTE FISIOTERAPI DATAMASTER
+import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
+
+// NOTE ORDER FISIOTERAPI
+import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
+
+// NOTE FISIOTERAPI/LAPORAN
+import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
+import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
+import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerapiPage.vue";
+import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
+// NOTE Page Inventory
+import InventoryPurchasePage from "@/views/Inventory/Page/PengadaanBarang/InventoryPurchasePage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -123,6 +152,7 @@ import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPag
 import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
 import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
+import InventoryView from "@/views/Inventory/InventoryView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -636,10 +666,22 @@ const router = createRouter({
       component: DaftarPasienPage,
     },
     {
+      path: "/antrian/apm/aktif/pasien/jkn/berhasil",
+      name: "antrian-apm-aktif-pasien-jkn-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienBerhasilPage,
+    },
+    {
       path: "/antrian/apm/aktif/pasien/non-jkn",
       name: "antrian-apm-aktif-pasien-non-jkn",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
+      name: "antrian-apm-aktif-pasien-non-jkn-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienNonBerhasilPage,
     },
     {
       path: "/antrian/apm/aktif/checkin",
@@ -659,7 +701,13 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintAntrianPage,
     },
-
+    {
+      path: "/antrian/apm/aktif/print/data",
+      name: "antrian-apm-aktif-print-data",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PrintDataPage,
+    },
+    
     // NOTE Laboratorium
     {
       path: "/laboratorium",
@@ -945,13 +993,9 @@ const router = createRouter({
       component: PharmacyView,
     },
     {
-      path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-dokter",
-      name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-dokter",
-      meta: {
-        layout: SidebarLayout,
-        page: RevenueRecapPage,
-        requiresAuth: true,
-      },
+      path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-apotik",
+      name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-apotik",
+      meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
       component: PharmacyView,
     },
 
@@ -965,6 +1009,12 @@ const router = createRouter({
       path: "/rawat-inap/ruangan",
       name: "rawat-inap-ruangan",
       meta: { layout: SidebarLayout, page: RuanganRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/perpindahan-bangsal",
+      name: "rawat-inap-perpindahan-bangsal",
+      meta: { layout: SidebarLayout, page: PerpindahanBangsal, requiresAuth: true },
       component: RawatInapView,
     },
     {
@@ -1020,6 +1070,125 @@ const router = createRouter({
       name: "rawat-inap-laporan-rekap-tindakan-pasien",
       meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
       component: RawatInapView,
+    },
+
+    // NOTE IGD
+    {
+      path: "/igd",
+      name: "igd",
+      redirect: "/igd/pasien-igd",
+    },
+    {
+      path: "/igd/pasien-igd",
+      name: "igd-pasien-igd",
+      meta: { layout: SidebarLayout, page: PasienIgdPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-kunjungan",
+      name: "igd-bpjs-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-riwayat-kunjungan",
+      name: "igd-bpjs-monitoring-riwayat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-obat-kunjungan",
+      name: "igd-bpjs-monitoring-obat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/kunjungan-igd",
+      name: "igd-laporan-kunjungan-igd",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/pembatalan-dirawat",
+      name: "igd-laporan-pembatalan-dirawat",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/rekap-tindakan-pasien",
+      name: "igd-laporan-rekap-tindakan-pasien",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
+    },
+
+    // NOTE FISIOTERAPI
+
+    {
+      path: "/fisioterapi",
+      name: "fisioterapi",
+      redirect: "/fisioterapi/order-fisioterapi",
+    },
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI DATAMASTER
+    {
+      path: "/fisioterapi/datamaster/bed-ruangan",
+      name: "fisioterapi-datamaster-bed-ruangan",
+      meta: { layout: SidebarLayout, page: BedRuanganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE ORDER FISIOTERAPI
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI LAPORAN
+
+    {
+      path: "/fisioterapi/laporan/kunjungan",
+      name: "fisioterapi-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: KunjunganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-kunjungan-jenis-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-kunjungan-jenis-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiKunjunganJenisFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-terapi",
+      name: "fisioterapi-laporan-rekapitulasi-terapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiTerapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-pendapatan-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-pendapatan-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiPendapatanFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE Inventory
+    {
+      path: "/inventory",
+      name: "inventory",
+      redirect: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+    },
+    {
+      path: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+      name: "inventory-pengadaan-barang-pembelian-barang-supplier",
+      meta: { layout: SidebarLayout, page: InventoryPurchasePage, requiresAuth: true },
+      component: InventoryView,
     },
 
     // NOTE Test Component

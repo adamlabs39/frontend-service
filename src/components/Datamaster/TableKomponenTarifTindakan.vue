@@ -10,10 +10,10 @@ const schema = toTypedSchema(
   yup.object({
     listKomponenTarif: yup.array().of(
       yup.object({
-        tarifKomponenUuid: yup.string().required("Jenis pembayaran harus diisi"),
-        tarifPerKomponen: yup
-          .number()
-          .required("Harga bed harus diisi")
+        tarifKomponenUuid: yup
+          .string()
+          .required("Jenis pembayaran harus diisi"),
+        tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
       })
     ),
   })
@@ -31,7 +31,7 @@ const { remove, push, fields } = useFieldArray("listKomponenTarif");
 const handlePushTarif = () => {
   push({ tarifKomponenUuid: "", tarifPerKomponen: 0 });
 };
-const emit = defineEmits([ "update:listKomponenTarif"]);
+const emit = defineEmits(["update:listKomponenTarif"]);
 
 const onSubmit = handleSubmit((values) => {
   console.log("Submitted with", values);
@@ -82,7 +82,7 @@ defineExpose({
           >
             <template #prependText>
               <div
-                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD text-adameds-300 bg-adameds-300 rounded-l-md"
+                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
               >
                 Rp.
               </div>
@@ -97,7 +97,6 @@ defineExpose({
             background-color="bg-danger-300 rounded-lg"
             class="h-6 w-[26px] p-0"
             @click="remove(slotProps.index)"
-
           >
             <img src="@/assets/icons/delete.svg" alt="" />
           </CustomButton>
@@ -119,6 +118,5 @@ defineExpose({
       </div>
     </div>
     <!-- <CustomButton label="Submit" @click="onSubmit" /> -->
-
   </div>
 </template>

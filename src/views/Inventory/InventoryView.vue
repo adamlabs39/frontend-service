@@ -1,0 +1,146 @@
+<script setup lang="ts">
+import GearFillIcon from "@/components/icons/GearFillIcon.vue";
+import Sidebar from "@/components/section/Sidebar.vue";
+import { linkType } from "@/utils/Enum";
+import type { SidebarBody } from "@/utils/Interface";
+import { link } from "fs";
+import { ref } from "vue";
+
+const sidebarBodyList = ref<SidebarBody[]>([
+  {
+    name: "1",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Pengadaan Barang",
+        type: linkType.DROPDOWN,
+        icon: "BoxPlusIcon",
+        child: [
+          {
+            name: "Pembelian Barang Supplier",
+            type: linkType.LINK,
+            url: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+            icon: "",
+          },
+          {
+            name: "Verifikasi Pembelian Barang Supplier",
+            type: linkType.LINK,
+            url: "",
+            icon: "",
+          },
+          {
+            name: "Retur & Penggantian Barang Supplier",
+            type: linkType.LINK,
+            url: "",
+            icon: "",
+          },
+        ],
+      },
+      {
+        name: "Pengeluaran Barang",
+          type: linkType.DROPDOWN,
+        icon:"BoxUpIcon",
+        child: [
+          {
+            name: "Verifikasi & Pengiriman Unit",
+            type: linkType.LINK,
+            url: "",
+          },
+          { name: "Pengeluaran Unit", type: linkType.LINK, url: "" },
+        ],
+      },
+      {
+        name: "Penerimaan Barang",
+          type: linkType.DROPDOWN,
+        icon:"BoxDownIcon",
+        child: [
+          { name: "Penerimaan Pembelian", type: linkType.LINK, url: "" },
+          { name: "Penerimaan Retur Unit", type: linkType.LINK, url: "" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "2",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Datamaster",
+        type: linkType.DROPDOWN,
+        icon: "DatabaseFill",
+        child: [
+          {
+            name: "Supplier",
+            type: linkType.LINK,
+            url: "",
+            icon: "",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    name: "3",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Riwayat Tarif",
+        type: linkType.LINK,
+        url: "",
+        icon: "OpenBoxIcon",
+      },
+      {
+        name: "Kartu Stok & Mutasi",
+        type: linkType.LINK,
+        url: "",
+        icon: "OpenBoxIcon",
+      },
+      {
+        name: "Stok Opname",
+        type: linkType.LINK,
+        url: "",
+        icon: "OpenBoxIcon",
+      },
+      {
+        name: "Stok Adjustment",
+        type: linkType.LINK,
+        url: "",
+        icon: "OpenBoxIcon",
+      },
+    ],
+  },
+  {
+    name: "4",
+    type: linkType.SECTION,
+    child: [
+      {
+        name: "Laporan",
+            type: linkType.DROPDOWN,
+        icon:"FileReportIcon",
+        child: [
+          { name: "Obat Expired", type: linkType.LINK, url: "" },
+          { name: "Persediaan", type: linkType.LINK, url: "" },
+        ],
+      },
+    ],
+  },
+]);
+const filter = ref("");
+</script>
+
+<template>
+  <div class="flex h-full gap-3">
+    <Sidebar
+      sidebarTitle="Inventory"
+      sidebarTitleUrl="/inventory/pengadaan-barang/pembelian-barang-supplier"
+      class="flex-none"
+      :sidebar-body-list="sidebarBodyList"
+      v-model:filter="filter"
+    />
+    <component
+      class="max-h-full overflow-auto grow"
+      :is="$route.meta.page || 'div'"
+      :filter="filter"
+    ></component>
+  </div>
+</template>

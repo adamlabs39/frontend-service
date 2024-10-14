@@ -172,7 +172,7 @@ const itemsPasien = ref([
           </span>
         </div>
         <div class="text-XS">{{ slotProps.data.address }}</div>
-        <div class="flex flex-wrap">
+        <div class="flex flex-wrap/">
           <PhUserCirclePlus
             v-if="slotProps.data.newPatient"
             :size="22"

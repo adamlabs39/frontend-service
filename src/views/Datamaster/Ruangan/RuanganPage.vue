@@ -138,8 +138,11 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama Runagan",
+      Kode: "Kode Ruangan",
+      Nama: "Nama Ruangan",
+      Kategori: "Kategori Ruangan",
+      NomorKamar: "Nomor Kamar",
+      KelasRuangan: "Kelas Ruangan",
       Status: "Status",
     });
     for (let i = 0; i < rows.length; i++) {
@@ -156,7 +159,7 @@ const downloadExportExcel = async () => {
 
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
 
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     worksheet["A1"].s = {
       alignment: {
@@ -165,7 +168,7 @@ const downloadExportExcel = async () => {
       },
       font: { bold: true, sz: 14 },
     };
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
 
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
     for (let row = range.s.r; row <= range.e.r; row++) {
@@ -208,7 +211,18 @@ const downloadExportExcel = async () => {
   }
 };
 
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()  
+  dataUpload.append('file',file);
 
+  try {
+    const response = await ruanganStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchRuanganData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -363,6 +377,7 @@ const downloadExportExcel = async () => {
         :totalRecords="ruanganProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

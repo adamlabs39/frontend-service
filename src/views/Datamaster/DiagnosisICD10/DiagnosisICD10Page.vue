@@ -26,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch Diagnosis Data from API
 const fetchDiagnosisData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await diagnosisStore.getApi(
       diagnosisProperties.value.page,
@@ -44,7 +44,7 @@ const fetchDiagnosisData = async () => {
     console.error("Failed to fetch data", error);
     diagnosisPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchDiagnosisData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -104,14 +104,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await diagnosisStore.deleteApi(item.uuid);
       fetchDiagnosisData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -132,8 +132,8 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Diagnosis",
@@ -206,10 +206,26 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Diagnosis (ICD 10)");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Diagnosis (ICD 10)"
+    );
     XLSX.writeFile(workbook, `Datamaster Diagnosis (ICD 10).xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await diagnosisStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchDiagnosisData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -315,7 +331,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Diagnosis (ICD 10) ${slotProps.data.code}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Diagnosis (ICD 10) ${slotProps.data.code}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -343,6 +365,7 @@ const downloadExportExcel = async () => {
         :totalRecords="diagnosisProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

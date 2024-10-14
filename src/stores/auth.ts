@@ -22,5 +22,6 @@ export const useAuthStore = defineStore({
       localStorage.removeItem("user")
       return response
     }
+    
   },
 });

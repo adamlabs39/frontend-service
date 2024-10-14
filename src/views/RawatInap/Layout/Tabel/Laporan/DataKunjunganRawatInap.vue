@@ -55,6 +55,7 @@ const expandedRows = ref<any[]>([]);
     dataKey="id"
     :expandedRows="expandedRows"
     scrollable
+    stripedRows
     scrollHeight="flex"
     class="p-datatable-sm"
   >

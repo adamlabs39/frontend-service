@@ -9,6 +9,8 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -28,9 +30,9 @@ const defaultData = [
     startDateFilter: new Date(),
     endDateFilter: new Date(),
     kuota: "20",
-    durasi: "20",
-    slot_booking: "5",
-    slot_jkn: "5",
+    durasi: "0",
+    slot_jkn: "0",
+    slot_non_jkn: "0",
   },
   {
     noJadwal: 2,
@@ -38,9 +40,9 @@ const defaultData = [
     startDateFilter: new Date(),
     endDateFilter: new Date(),
     kuota: "20",
-    durasi: "20",
-    slot_booking: "5",
-    slot_jkn: "5",
+    durasi: "0",
+    slot_jkn: "0",
+    slot_non_jkn: "0",
   },
 ];
 
@@ -53,18 +55,18 @@ const data = ref([...defaultData]);
 const startDateFilter = ref<Date>(new Date());
 startDateFilter.value.setHours(0, 0, 0, 0);
 const endDateFilter = ref<Date>(new Date());
-  endDateFilter.value.setHours(0, 0, 0, 0);
+endDateFilter.value.setHours(0, 0, 0, 0);
 
 const addRow = () => {
   data.value.push({
     noJadwal: data.value.length + 1,
     hariModel: undefined,
-    startDateFilter: startDateFilter.value,
-    endDateFilter: endDateFilter.value,
+    startDateFilter: new Date(startDateFilter.value),
+    endDateFilter: new Date(endDateFilter.value),
     kuota: "20",
-    durasi: "20",
-    slot_booking: "5",
-    slot_jkn: "5",
+    durasi: "0",
+    slot_jkn: "0", // Corrected from slot_jkn to slotJkn
+    slot_non_jkn: "0", // Added missing slotNonJkn for consistency
   });
 };
 
@@ -91,6 +93,8 @@ const itemsHari = ref([
   { name: "Sabtu", code: "H6" },
   { name: "Minggu", code: "H7" },
 ]);
+
+const frekuensiNadi = ref<number | undefined>(undefined);
 
 const schema = toTypedSchema(
   yup.object({
@@ -186,13 +190,20 @@ function handleReset() {
   // Reset the DataTable to its default values
   data.value = [...defaultData];
 
-  // Ensure that CustomSelect and CustomDatePicker are reset properly
+  // Ensure that CustomSelect, CustomDatePicker, and CustomInputNumber are reset properly
   data.value.forEach((item) => {
-    item.hariModel = undefined; // Reset each entry's hariModel
-    item.startDateFilter = new Date(); // Reset each entry's startDateFilter
-    item.startDateFilter.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
-    item.endDateFilter = new Date(); // Reset each entry's endDateFilter
-    item.endDateFilter.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
+    // Reset select and date pickers
+    item.hariModel = undefined;
+    item.startDateFilter = new Date();
+    item.startDateFilter.setHours(0, 0, 0, 0);
+    item.endDateFilter = new Date();
+    item.endDateFilter.setHours(0, 0, 0, 0);
+
+    // Reset input number fields
+    item.kuota = "20"; // or default value
+    item.durasi = "0"; // or default value
+    item.slot_jkn = "0"; // or default value
+    item.slot_non_jkn = "0"; // or default value
   });
 }
 
@@ -207,7 +218,27 @@ const selectedPatient = ref([]);
   >
     <template #header>{{ title }} Jadwal</template>
     <template #body>
-      <div class="flex flex-col gap-5 mt-5">
+      <div class="flex flex-col gap-3 mt-5">
+        <div class="flex gap-2.5 w-full">
+          <CustomSelect
+            label="Poliklinik"
+            place-holder="Pilih Poliklinik"
+            v-model="poliModel"
+            :options="itemsPoli"
+            optionValue="code"
+            optionLabel="name"
+            class="w-3/4 mr-5 text-black"
+          />
+          <CustomTextfield
+            label="Kode Antrian Poli"
+            v-model="poliModel"
+            :options="itemsPoli"
+            Value="code"
+            placeholder="Kode Antrian Poli"
+            class="w-1/4"
+            disabled
+          />
+        </div>
         <div class="flex gap-2.5 w-full">
           <CustomSelect
             label="Nama Dokter"
@@ -217,19 +248,19 @@ const selectedPatient = ref([]);
             :options="itemsDokter"
             optionValue="code"
             optionLabel="name"
-            class="w-2/3 mr-5 text-black"
+            class="w-3/4 mr-5 text-black"
           />
-          <CustomSelect
-            label="Poli"
-            place-holder="Poli"
-            v-model="poliModel"
-            :options="itemsPoli"
-            optionValue="code"
-            optionLabel="name"
-            class="w-1/3"
+          <CustomTextfield
+            label="Kode Antrian Dokter"
+            v-model="dokterModel"
+            :options="itemsDokter"
+            Value="code"
+            placeholder="Kode Antrian Dokter"
+            class="w-1/4"
             disabled
           />
         </div>
+        <hr />
         <div class="relative overflow-y-auto" style="max-height: 190px">
           <DataTable
             v-if="itemsJadwal.length"
@@ -277,7 +308,7 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.startDateFilter"
                     label=""
-                    class="w-[100px] text-grey-400 text-xs"
+                    class="w-[90px] text-grey-400 text-xs"
                   />
                   <PhMinus class="mx-[5px] text-black" />
                   <CustomDatePicker
@@ -285,43 +316,75 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.endDateFilter"
                     label=""
-                    class="w-[100px] text-grey-400 text-sm"
+                    class="w-[90px] text-grey-400 text-sm"
                   />
                 </div>
               </template>
             </Column>
-            <Column field="kuota" header="Kuota" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.kuota }} Pasien</div>
-              </template>
-            </Column>
             <Column
               field="durasi per-pasien"
-              header="Durasi Per-Pasien"
-              headerClass="bg-adameds-50"
+              header="Durasi Per-pasien"
+              headerClass="bg-adameds-50 whitespace-nowrap"
             >
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.durasi }} Menit</div>
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.durasi"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">mnt</div>
+                  </template>
+                </CustomInputNumber>
               </template>
             </Column>
             <Column
-              field="slot booking"
-              header="Slot Booking"
+              field="slot jkn"
+              header="Slot JKN"
               headerClass="bg-adameds-50"
             >
               <template #body="slotProps">
-                <div class="text-SM">
-                  {{ slotProps.data.slot_booking }} Slot
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.slot_jkn"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">Slot</div>
+                  </template>
+                </CustomInputNumber>
+              </template>
+            </Column>
+
+            <Column
+              field="slot non-jkn"
+              header="Slot Non-JKN"
+              headerClass="bg-adameds-50"
+            >
+              <template #body="slotProps">
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.slot_non_jkn"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">Slot</div>
+                  </template>
+                </CustomInputNumber>
+              </template>
+            </Column>
+            <Column
+              field="total_kuota"
+              header="Total Kuota"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #body="slotProps">
+                <div class="text-SM whitespace-nowrap">
+                  {{ slotProps.data.kuota }} Pasien
                 </div>
-              </template>
-            </Column>
-            <Column
-              field="slot jkn mobile"
-              header="Slot JKN Mobile"
-              headerClass="bg-adameds-50"
-            >
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.slot_jkn }} Slot</div>
               </template>
             </Column>
           </DataTable>
@@ -341,13 +404,12 @@ const selectedPatient = ref([]);
         <hr />
         <div class="flex items-end gap-2.5 text-black">
           <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status === true ? "Aktif" : "Non-Aktif" }}</div>
+          <div>{{ status ? "Aktif" : "Non-Aktif" }}</div>
         </div>
       </div>
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"

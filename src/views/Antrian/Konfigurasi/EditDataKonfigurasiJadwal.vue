@@ -9,6 +9,8 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+
 const props = defineProps({
   isDialogVisible: {
     default: false,
@@ -30,7 +32,8 @@ const defaultData = [
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
-    slot_jkn: "5",
+    slot_jkn: "15",
+    slot_non_jkn: "5",
   },
   {
     noJadwal: 2,
@@ -40,7 +43,8 @@ const defaultData = [
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
-    slot_jkn: "5",
+    slot_jkn: "15",
+    slot_non_jkn: "5",
   },
   {
     noJadwal: 3,
@@ -50,7 +54,8 @@ const defaultData = [
     kuota: "20",
     durasi: "20",
     slot_booking: "5",
-    slot_jkn: "5",
+    slot_jkn: "15",
+    slot_non_jkn: "5",
   },
 ];
 
@@ -60,7 +65,7 @@ defaultData[1].startDateFilter.setHours(14, 0, 0, 0); // 14:00
 defaultData[2].startDateFilter.setHours(20, 0, 0, 0); // 20:00
 // Set specific hours for each item
 defaultData[0].endDateFilter.setHours(12, 0, 0, 0); // 08:00
-defaultData[1].endDateFilter.setHours(16, 0, 0, 0); // 14:00
+defaultData[1].endDateFilter.setHours(18, 0, 0, 0); // 14:00
 defaultData[2].endDateFilter.setHours(23, 0, 0, 0); // 20:00
 
 // Initialize data with default values
@@ -81,6 +86,7 @@ const addRow = () => {
     durasi: "20",
     slot_booking: "5",
     slot_jkn: "5",
+    slot_non_jkn: "5",
   });
 };
 
@@ -138,11 +144,11 @@ const itemsJadwal = ref([
 
 const itemsKeterangan = ref([
   {
-    namaDokter: "dr. Spesialis Sp. A",
-    jumlahJadwal: "2",
-    kodeHFIS: "1234",
-    spesialis: "Anak (Sp. A)",
-    poli: "Poli Anak",
+    namaDokter: "dr. Nama Dokter Sp. M",
+    antrianPoli: "MT",
+    antrianDokter: "01",
+    spesialis: "Mata (Sp. M)",
+    poli: "Poli Mata",
     status: true,
   },
 ]);
@@ -236,43 +242,50 @@ const selectedPatient = ref([]);
     <template #header>{{ title }} Jadwal</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
-        <div class="text-lg font-bold text-black">dr. Spesialis Sp. A</div>
+        <div
+            v-for="item in itemsKeterangan"
+            :key="item.kodeHFIS"
+            class="text-lg font-bold text-black"
+          >
+            {{ item.namaDokter }}
+          </div>
         <hr />
         <div class="grid grid-cols-4 ml-2 text-xs gap-x-4 gap-y-0">
-          <div class="text-black underline">Jumlah Jadwal</div>
-          <div class="text-black underline">Kode HFIS</div>
-          <div class="text-black underline">Spesialis</div>
-          <div class="text-black underline">Poli</div>
+          <div class="font-bold text-black underline">Poliklinik</div>
+          <div class="font-bold text-black underline">Spesialis</div>
+          <div class="font-bold text-black underline">Kode Antrian Poli</div>
+          <div class="font-bold text-black underline">Kode Antrian Dokter</div>
           <div
             v-for="item in itemsKeterangan"
             :key="item.kodeHFIS"
-            class="font-bold text-black"
+            class="text-sm text-black"
           >
-            {{ item.jumlahJadwal }} Jadwal
+            {{ item.poli }}
           </div>
           <div
             v-for="item in itemsKeterangan"
             :key="item.kodeHFIS"
-            class="font-bold text-black"
-          >
-            {{ item.kodeHFIS }}
-          </div>
-          <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="font-bold text-black"
+            class="text-sm text-black"
           >
             {{ item.spesialis }}
           </div>
           <div
             v-for="item in itemsKeterangan"
             :key="item.kodeHFIS"
-            class="font-bold text-black"
+            class="text-sm text-black"
           >
-            {{ item.poli }}
+            {{ item.antrianPoli }}
+          </div>
+          <div
+            v-for="item in itemsKeterangan"
+            :key="item.kodeHFIS"
+            class="text-sm text-black"
+          >
+            {{ item.antrianDokter }}
           </div>
         </div>
 
+        <hr>
         <div class="relative overflow-y-auto" style="max-height: 190px">
           <DataTable
             v-if="itemsJadwal.length"
@@ -320,7 +333,7 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.startDateFilter"
                     label=""
-                    class="w-[100px] text-grey-400 text-xs"
+                    class="w-[90px] text-grey-400 text-xs"
                   />
                   <PhMinus class="mx-[5px] text-black" />
                   <CustomDatePicker
@@ -328,48 +341,80 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.endDateFilter"
                     label=""
-                    class="w-[100px] text-grey-400 text-sm"
+                    class="w-[90px] text-grey-400 text-sm"
                   />
                 </div>
               </template>
             </Column>
-            <Column field="kuota" header="Kuota" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.kuota }} Pasien</div>
-              </template>
-            </Column>
             <Column
               field="durasi per-pasien"
-              header="Durasi Per-Pasien"
-              headerClass="bg-adameds-50"
+              header="Durasi Per-pasien"
+              headerClass="bg-adameds-50 whitespace-nowrap"
             >
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.durasi }} Menit</div>
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.durasi"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">mnt</div>
+                  </template>
+                </CustomInputNumber>
               </template>
             </Column>
             <Column
-              field="slot booking"
-              header="Slot Booking"
+              field="slot jkn"
+              header="Slot JKN"
               headerClass="bg-adameds-50"
             >
               <template #body="slotProps">
-                <div class="text-SM">
-                  {{ slotProps.data.slot_booking }} Slot
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.slot_jkn"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">Slot</div>
+                  </template>
+                </CustomInputNumber>
+              </template>
+            </Column>
+
+            <Column
+              field="slot non-jkn"
+              header="Slot Non-JKN"
+              headerClass="bg-adameds-50"
+            >
+              <template #body="slotProps">
+                <CustomInputNumber
+                  placeholder="0"
+                  v-model:modelValue="slotProps.data.slot_non_jkn"
+                  type="number"
+                  :showLabel="false"
+                >
+                  <template #appendText>
+                    <div class="flex items-center mr-2">Slot</div>
+                  </template>
+                </CustomInputNumber>
+              </template>
+            </Column>
+            <Column
+              field="total_kuota"
+              header="Total Kuota"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #body="slotProps">
+                <div class="text-SM whitespace-nowrap">
+                  {{ slotProps.data.kuota }} Pasien
                 </div>
-              </template>
-            </Column>
-            <Column
-              field="slot jkn mobile"
-              header="Slot JKN Mobile"
-              headerClass="bg-adameds-50"
-            >
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.slot_jkn }} Slot</div>
               </template>
             </Column>
           </DataTable>
         </div>
-        <div
+        <!-- <div
           class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
         >
           <CustomButton
@@ -380,7 +425,7 @@ const selectedPatient = ref([]);
             backgroundColor="bg-white"
             @click="addRow"
           />
-        </div>
+        </div> -->
         <hr />
         <div
           class="flex items-end gap-2.5 text-black"
@@ -396,7 +441,6 @@ const selectedPatient = ref([]);
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"

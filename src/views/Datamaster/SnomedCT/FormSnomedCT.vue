@@ -3,11 +3,11 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
@@ -28,7 +28,7 @@ const props = defineProps({
 });
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
+    code: yup.string().required("Kode Snomed CT harus diisi"),
     name: yup.string().required("Nama Snomed CT harus diisi"),
     status: yup.bool().default(false),
   })
@@ -163,7 +163,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

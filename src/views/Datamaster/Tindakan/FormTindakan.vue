@@ -69,8 +69,8 @@ onMounted(() => {
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama tindakan harus diisi"),
+    code: yup.string().required("Kode Tindakan harus diisi"),
+    name: yup.string().required("Nama Tindakan harus diisi"),
     snomedUuid: yup.string(),
     icd9Uuid: yup.string(),
     status: yup.bool(),
@@ -213,8 +213,8 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Tindakan" :value="code" />
         <CustomInfoRow label="Nama Tindaka" :value="name" />
-        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name" />
-        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name" />
+        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name ?? '-'" />
+        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name ?? '-'" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -231,7 +231,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

@@ -11,7 +11,9 @@ import axios from "axios";
 import GreenCard from "../GreenCard.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useSettingStore } from "@/stores/setting";
+import { utilsStore } from "@/stores/utils";
 
+const useUtilsStore = utilsStore();
 const props = defineProps({
 	profilFaskesResponse: {
 		type: Object,
@@ -27,15 +29,15 @@ const settingStore = useSettingStore();
 
 const emit = defineEmits(['update:isEditProfilFaskes', 'update:afterEditProfilFaskes']);
 
-const API_URL_ALAMAT = "https://alamat.thecloudalert.com/api/";
+const API_URL_ALAMAT = "https://mq8t8n8x-5000.asse.devtunnels.ms/api/v3/datamaster/";
 
 
 // Pilihan di select
-const provinces = ref<{ id: string; text: string }[]>([]);
-const regencies = ref<{ id: string; text: string }[]>([]);
-const districts = ref<{ id: string; text: string }[]>([]);
-const villages = ref<{ id: string; text: string }[]>([]);
-const postalCodes = ref<{ id: string; text: string }[]>([]);
+const provinces = ref<{ code: string; name: string }[]>([]);
+const regencies = ref<{ code: string; name: string }[]>([]);
+const districts = ref<{ code: string; name: string }[]>([]);
+const villages = ref<{ code: string; name: string }[]>([]);
+// const postalCodes = ref<{ id: string; text: string }[]>([]);
 
 
 const schemaProfilFaskes = computed(() =>
@@ -51,7 +53,7 @@ const schemaProfilFaskes = computed(() =>
             selectedRegencyId: yup.string().required("Kabupaten wajib dipilih"),
             selectedDistrictId: yup.string().required("Kecamatan wajib dipilih"),
             selectedVillageId: yup.string().required("Kelurahan wajib dipilih"),
-            selectedPostalCodeId: yup.string().required("Kode Pos wajib dipilih"),
+            postalCodeId: yup.string().required("Kode Pos wajib diisi"),
 			phone: yup.string().required("No Telpon wajib diisi"),
 			email:yup.string().required("Email wajib diisi"),
 			website:yup.string().required("Website wajib diisi"),
@@ -73,7 +75,7 @@ const {errors: profilFaskesErrors, handleSubmit: handleSubmitProfilFaskes, defin
 		selectedRegencyId: "",
 		selectedDistrictId : "",
 		selectedVillageId: "",
-		selectedPostalCodeId: "",
+		postalCodeId: props.profilFaskesResponse.address.postalCode,
         phone: props.profilFaskesResponse.phone,
 		email: props.profilFaskesResponse.email,
 		website: props.profilFaskesResponse.website,
@@ -91,7 +93,8 @@ const [selectedProvinceId] = defineFieldProfilFaskes("selectedProvinceId")
 const [selectedRegencyId] = defineFieldProfilFaskes("selectedRegencyId")
 const [selectedDistrictId] = defineFieldProfilFaskes("selectedDistrictId")
 const [selectedVillageId] = defineFieldProfilFaskes("selectedVillageId")
-const [selectedPostalCodeId] = defineFieldProfilFaskes("selectedPostalCodeId")
+const [postalCodeId] = defineFieldProfilFaskes("postalCodeId");
+// const [selectedPostalCodeId] = defineFieldProfilFaskes("selectedPostalCodeId")
 const [phone] = defineFieldProfilFaskes("phone")
 const [email] = defineFieldProfilFaskes("email")
 const [website] = defineFieldProfilFaskes("website")
@@ -107,7 +110,7 @@ const resetForm = () => {
             selectedRegencyId: '',
             selectedDistrictId: '',
             selectedVillageId: '',
-			selectedPostalCodeId: '',
+			postalCodeId: '',
 			phone: '',
 			email: '',
 			website: '',
@@ -117,6 +120,7 @@ const resetForm = () => {
 };
 
 const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
+	useUtilsStore.setLoading(true);
 	try {
 		// console.log(`${values.selectedProvinceId} ${provinces.value.find(obj => obj.id === values.selectedProvinceId)?.text}`)
 		const payload = {
@@ -126,11 +130,11 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
 			address_uuid: values.addressUuid,
 			logo: values.logo,
 			bg_warna: values.bgWarna,
-			prov: provinces.value.find(obj => obj.id === values.selectedProvinceId)?.text,
-			city: regencies.value.find(obj => obj.id === values.selectedRegencyId)?.text,
-			district: districts.value.find(obj => obj.id === values.selectedDistrictId)?.text,
-			village: villages.value.find(obj => obj.id === values.selectedVillageId)?.text,
-			postal_code: postalCodes.value.find(obj => obj.id === values.selectedPostalCodeId)?.text,
+			prov: provinces.value.find(obj => obj.code === values.selectedProvinceId)?.name,
+			city: regencies.value.find(obj => obj.code === values.selectedRegencyId)?.name,
+			district: districts.value.find(obj => obj.code === values.selectedDistrictId)?.name,
+			village: villages.value.find(obj => obj.code === values.selectedVillageId)?.name,
+			postal_code: values.postalCodeId,
 			phone: values.phone,
 			email: values.email,
 			website: values.website,
@@ -138,11 +142,12 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
 			
         };
 		const response = await settingStore.putProfilFaskesApi(payload);
-		console.log("API Response:", response);
+		// console.log("API Response:", response);
   
         if (response?.status === 200) {
             emit('update:isEditProfilFaskes', false);
-            emit('update:afterEditProfilFaskes', { ...props.profilFaskesResponse, ...payload });
+			emit('update:afterEditProfilFaskes', { ...props.profilFaskesResponse, ...payload });
+			useUtilsStore.setLoading(false);
         } else {
             console.error("Failed to update profile:");
         }
@@ -152,23 +157,25 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
 });
 
 const fetchData = async (url: string, refVar: any) => {
+	useUtilsStore.setLoading(true);
 	try {
 		const response = await axios.get(url);
-		refVar.value = response.data.result.map((item: any) => ({
-			text: item.text,
-			id: item.id,
+		refVar.value = response.data.payload.map((item: any) => ({
+			code: item.code,
+			name: item.name,
 		}));
-		console.log(refVar.value)
+		useUtilsStore.setLoading(false);
+		// console.log(refVar.value)
 	} catch (error) {
 		console.error(`Error fetching data from ${url}:`, error);
 	}
 };
 
-const fetchProvinces = () => fetchData(`${API_URL_ALAMAT}provinsi/get/`, provinces);
-const fetchRegencies = (provinceId: string) => fetchData(`${API_URL_ALAMAT}kabkota/get/?d_provinsi_id=${provinceId}`, regencies);
-const fetchDistricts = (regencyId: string) => fetchData(`${API_URL_ALAMAT}kecamatan/get/?d_kabkota_id=${regencyId}`, districts);
-const fetchVillages = (districtId: string) => fetchData(`${API_URL_ALAMAT}kelurahan/get/?d_kecamatan_id=${districtId}`, villages);
-const fetchPostalCode = (regencyId: string, districtId: string) => fetchData(`${API_URL_ALAMAT}kodepos/get/?d_kabkota_id=${regencyId}&d_kecamatan_id=${districtId}`, postalCodes);
+const fetchProvinces = () => fetchData(`${API_URL_ALAMAT}provinsi`, provinces);
+const fetchRegencies = (provinceId: string) => fetchData(`${API_URL_ALAMAT}kabupaten?provinsi_code=${provinceId}`, regencies);
+const fetchDistricts = (regencyId: string) => fetchData(`${API_URL_ALAMAT}kecamatan?kabupaten_code=${regencyId}`, districts);
+const fetchVillages = (districtId: string) => fetchData(`${API_URL_ALAMAT}kelurahan?kecamatan_code=${districtId}`, villages);
+// const fetchPostalCode = (regencyId: string, districtId: string) => fetchData(`${API_URL_ALAMAT}kodepos/get/?d_kabkota_id=${regencyId}&d_kecamatan_id=${districtId}`, postalCodes);
 
 watch(
 	() => [selectedProvinceId.value, selectedRegencyId.value, selectedDistrictId.value],
@@ -177,7 +184,7 @@ watch(
 		if (newRegencyId) fetchDistricts(newRegencyId);
 		if (newDistrictId) {
 			fetchVillages(newDistrictId);
-			fetchPostalCode(newRegencyId || '', newDistrictId);
+			// fetchPostalCode(newRegencyId || '', newDistrictId);
 		}
 	},
 );
@@ -200,11 +207,11 @@ onMounted(() => {
 			<div class="flex gap-[30px] mb-4">
 				<div class="w-[200px]">
 					<CustomTextfield label="Kode Faskes" placeholder="Kode Faskes" v-model="code" :invalid="!!profilFaskesErrors.code"
-                            :invalidMessage="profilFaskesErrors.code"/>
+                            :invalidMessage="profilFaskesErrors.code" disabled/>
 				</div>
 				<div class="grow">
 					<CustomTextfield label="Nama Faskes" class="w-full" placeholder="Nama Faskes" v-model="name" :invalid="!!profilFaskesErrors.name"
-                            :invalidMessage="profilFaskesErrors.name"/>
+                            :invalidMessage="profilFaskesErrors.name" disabled/>
 				</div>
 			</div>
 
@@ -217,30 +224,29 @@ onMounted(() => {
 			<div class="grid grid-cols-2 gap-[30px]">
 				<!-- Provinsi, Kabupaten, Kecamatan, dan Kelurahan berada dalam dua kolom -->
 				<div>
-					<CustomSelect label="Provinsi" v-model="selectedProvinceId" :options="provinces" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedProvinceId" :invalidMessage="profilFaskesErrors.selectedProvinceId"
+					<CustomSelect label="Provinsi" v-model="selectedProvinceId" :options="provinces" optionValue="code"
+						optionLabel="name" :isLoading="false" :invalid="!!profilFaskesErrors.selectedProvinceId" :invalidMessage="profilFaskesErrors.selectedProvinceId"
 						:disabled="false" placeHolder="Pilih Provinsi" customSelectClass="border-[#C7CBD2]"  />
 				</div>
 				<div>
-					<CustomSelect label="Kabupaten" v-model="selectedRegencyId" :options="regencies" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedRegencyId" :invalidMessage="profilFaskesErrors.selectedRegencyId"
+					<CustomSelect label="Kabupaten" v-model="selectedRegencyId" :options="regencies" optionValue="code"
+						optionLabel="name" :isLoading="false" :invalid="!!profilFaskesErrors.selectedRegencyId" :invalidMessage="profilFaskesErrors.selectedRegencyId"
 						:disabled="false" placeHolder="Pilih Kabupaten" customSelectClass="border-[#C7CBD2]" />
 				</div>
 				<div>
-					<CustomSelect label="Kecamatan" v-model="selectedDistrictId" :options="districts" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedDistrictId" :invalidMessage="profilFaskesErrors.selectedDistrictId"
+					<CustomSelect label="Kecamatan" v-model="selectedDistrictId" :options="districts" optionValue="code"
+						optionLabel="name" :isLoading="false" :invalid="!!profilFaskesErrors.selectedDistrictId" :invalidMessage="profilFaskesErrors.selectedDistrictId"
 						:disabled="false" placeHolder="Pilih Kecamatan" customSelectClass="border-[#C7CBD2]" />
 				</div>
 				<div>
-					<CustomSelect label="Kelurahan" v-model="selectedVillageId" :options="villages" optionValue="id"
-						optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedVillageId" :invalidMessage="profilFaskesErrors.selectedVillageId"
+					<CustomSelect label="Kelurahan" v-model="selectedVillageId" :options="villages" optionValue="code"
+						optionLabel="name" :isLoading="false" :invalid="!!profilFaskesErrors.selectedVillageId" :invalidMessage="profilFaskesErrors.selectedVillageId"
 						:disabled="false" placeHolder="Pilih Kelurahan" customSelectClass="border-[#C7CBD2]" />
 				</div>
 
 				<div>
-					<CustomSelect label="Kode Pos" v-model="selectedPostalCodeId" :options="postalCodes"
-						optionValue="id" optionLabel="text" :isLoading="false" :invalid="!!profilFaskesErrors.selectedPostalCodeId" :invalidMessage="profilFaskesErrors.selectedPostalCodeId":disabled="false" placeHolder="Pilih Kode Pos"
-						customSelectClass="border-[#C7CBD2]" />
+					<CustomTextfield label="Kode Pos" v-model="postalCodeId"
+						 :invalid="!!profilFaskesErrors.postalCodeId" :invalidMessage="profilFaskesErrors.postalCodeId" placeholder="Isi Kode Pos"/>
 				</div>
 				<div>
 					<CustomTextfield label="No. Telpon" class="w-full" placeholder="No. Telpon" v-model="phone" :invalid="!!profilFaskesErrors.phone" :invalidMessage="profilFaskesErrors.phone"/>

@@ -9,6 +9,7 @@ import Footer from "../Layout/FooterPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import FormVoucher from "./FormVoucher.vue";
 import NoData from "@/components/section/NoData.vue";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
 // State Management
 const voucherStore = useVoucherStore();
@@ -25,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch Voucher Data from API
 const fetchVoucherData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await voucherStore.getApi(
       voucherProperties.value.page,
@@ -43,7 +44,7 @@ const fetchVoucherData = async () => {
     console.error("Failed to fetch data", error);
     voucherPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -52,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchVoucherData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -102,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await voucherStore.deleteApi(item.uuid);
       fetchVoucherData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -216,6 +217,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()  
+  dataUpload.append('file',file);
+
+  try {
+    const response = await voucherStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchVoucherData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -235,7 +249,7 @@ const downloadExportExcel = async () => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-      v-else
+        v-else
         :value="voucherPayload"
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
@@ -289,7 +303,12 @@ const downloadExportExcel = async () => {
           </template>
           <template #body="slotProps">
             <div class="w-full text-center text-SM">
-              Rp. {{ slotProps.data.value }}
+              <span v-if="slotProps.data.type === 'potongan'">
+                Rp. {{ slotProps.data.value }}
+              </span>
+              <span v-else-if="slotProps.data.type === 'persentase'">
+                {{ slotProps.data.value }}%
+              </span>
             </div>
           </template>
         </Column>
@@ -332,7 +351,14 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Voucher ${slotProps.data.code}`, slotProps.data)"              >
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Voucher ${slotProps.data.code}`,
+                    slotProps.data
+                  )
+                "
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
@@ -343,8 +369,14 @@ const downloadExportExcel = async () => {
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-        :editData="dialogConfig.data"
+        :payload="dialogConfig.data"
         @data-updated="fetchVoucherData"
+      />
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
       />
     </template>
     <template #footer>
@@ -353,6 +385,7 @@ const downloadExportExcel = async () => {
         :totalRecords="voucherProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

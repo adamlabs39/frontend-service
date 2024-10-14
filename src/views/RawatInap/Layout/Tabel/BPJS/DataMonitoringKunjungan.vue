@@ -72,6 +72,7 @@ const itemsMonitoringKunjungan = ref([
     :value="itemsMonitoringKunjungan"
     tableStyle="min-width: 50rem"
     scrollable
+    stripedRows
     scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
   >

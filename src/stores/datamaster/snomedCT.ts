@@ -26,5 +26,8 @@ export const useSnomedCTStore = defineStore({
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/snomed/export`, payload);
       },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/snomed/import", payload);
+      },
     },
   });

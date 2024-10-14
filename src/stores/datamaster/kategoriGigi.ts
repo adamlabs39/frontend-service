@@ -26,5 +26,8 @@ export const useKategoriGigiStore = defineStore({
     async exportApi(payload = {}) {      
       return apiDatamasterGet(`/datamaster/kategori_gigi/export`, payload);
     },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/kategori_gigi/import", payload);
+    },
   },
 });
