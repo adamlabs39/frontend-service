@@ -42,7 +42,7 @@ const fetchSettingProfilFaskesData = async () => {
         const response = await settingStore.getProfilFaskesApi();
         if (response) {
             profilFaskesResponse.value = response;
-            console.log(response)
+            // console.log(response)
             useUtilsStore.setLoading(false)
         } else {
             console.error("Unexpected response Structure", response);
