@@ -49,7 +49,7 @@ const resetFilter = () => {
 };
 
 const reportType = ref("");
-const reportData = ref([1]);
+const reportData = ref([]);
 const expandedRows = ref();
 
 defineExpose({

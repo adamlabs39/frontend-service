@@ -10,18 +10,21 @@ export const useAuthStore = defineStore({
       const response = await apiAuthPost("/login", payload);
 
       localStorage.setItem("access_token", `Bearer ${response.payload.token}`);
-      localStorage.setItem("permission", JSON.stringify(response.payload.permissions))
-      localStorage.setItem("user", JSON.stringify(response.payload.user))
+      localStorage.setItem(
+        "permission",
+        JSON.stringify(response.payload.permissions)
+      );
+      localStorage.setItem("user", JSON.stringify(response.payload.user));
+
       return response;
     },
     async logoutApi() {
-      const response = await apiAuthDelete('/logout', {})
+      const response = await apiAuthDelete("/logout", {});
 
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("permission")
-      localStorage.removeItem("user")
-      return response
-    }
-    
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("permission");
+      localStorage.removeItem("user");
+      return response;
+    },
   },
 });
