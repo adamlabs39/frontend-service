@@ -421,7 +421,7 @@ const handlePageUpdate = (page: number) => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="riwayatDialog2 = true"
+          @rowClick="riwayatDialog3 = true"
         >
           <!-- Resep -->
           <Column field="resep" header="Resep" headerClass="bg-adameds-50">
@@ -972,8 +972,8 @@ const handlePageUpdate = (page: number) => {
       </template>
     </CustomDialog>
 
-     <!-- Riwayat Dialog2 -->
-     <CustomDialog v-model:visible="riwayatDialog2" width="1000px">
+    <!-- Riwayat Dialog2 -->
+    <CustomDialog v-model:visible="riwayatDialog2" width="1000px">
       <template #header>
         <div class="flex justify-between">
           <div class="flex">
@@ -1308,428 +1308,336 @@ const handlePageUpdate = (page: number) => {
         </div>
       </template>
     </CustomDialog>
-
+    
     <!-- Riwayat Dialog3 -->
     <CustomDialog v-model:visible="riwayatDialog3" width="1000px">
       <template #header>
         <div class="flex justify-between">
           <div class="flex">
             <p>Riwayat Resep - RSP123
-              <span>
-                <CustomChip
-                  label="TUNAI"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-50"
-                  textColor="text-adameds-300"
-                  customClass="h-6"
-                  class="ml-[5px]"
-                />
-              </span>
+            <CustomChip
+              label="TUNAI"
+              :showCheckedIcon="false"
+              borderColor="border-adameds-300"
+              bgColor="bg-adameds-50"
+              textColor="text-adameds-300"
+              customClass="h-6"
+              class="ml-[5px]"
+            />
             </p>
           </div>
           <div></div>
           <div class="flex ml-[470px]">
             <div class="bg-white w-[1px] h-[30px]"></div>
-            <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
-          </div>
+              <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
+            </div>
           <div>
-            
           </div>
         </div>
       </template>
       <template #body>
         <div>
-        <div class="pt-5">
-          <div class="flex flex-row">
-            <div class="basis-1/4">
-              <p class="font-bold text-MD">Nama lengkap pasien</p>
-              <p>REG1231235</p>
-              <CustomButton class="w-24 h-5 text-sm">00-00-00</CustomButton>
-              <CustomChip
-                :showCheckedIcon="false"
-                label="Laki-laki"
-                bgColor="bg-male-75"
-                textColor="text-male-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
-              />
-              <!-- <CustomChip
-                :showCheckedIcon="false"
-                label="Perempuan"
-                bgColor="bg-female-75"
-                textColor="text-female-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              /> -->
-            </div>
-            <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
-            <div class="mt-[20px] mr-[40px]">
-              <p class="text-xs font-bold underline underline-offset-2">Tgl. Lahir</p>
-              <p class="">10 Januari 2090</p>
-            </div>
-            <div class="mt-[20px] mr-[40px]">
-              <p class="text-xs font-bold underline underline-offset-2">Umur</p>
-              <p class="">24Thn 2Bln 1Hari</p>
-            </div>
-            <div class="mt-[20px] mr-[40px]">
-              <p class="text-xs font-bold underline underline-offset-2">Alergi</p>
-              <p class="">Tidak Ada</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-1">
-            <CustomAccordion no-border initial-state="0">
-              <template #header>Asesmen Medis</template>
-              <template #content>
-                <div class="flex flex-row mt-[20px]">
-                  <div class="basis-1/4">
-                    <p class="text-xs font-bold underline underline-offset-2">Nama lengkap pasien</p>
-                    <p>Sakit Mata</p>
-                    <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">Dokter Pengirim
-                      <span>  </span>
-                    </p>
-                    <p>dr. Anji Sp. M</p>
-                  </div>
-                  <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
-                  <div class="mr-[40px]">
-                    <p class="text-xs font-bold underline underline-offset-2">Diagnosa Primer</p>
-                    <p class="">H10.9 Conjuctivitis</p>
-                    <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">Diagnosa Primer</p>
-                    <p class="">-</p>
-                  </div>
-                  <div class="mr-[40px]">
-                    <p class="text-xs font-bold underline underline-offset-2">Diagnosa Sekunder</p>
-                    <p class="">-</p>
-                  </div>
-                  <div class="mr-[40px]">
-                    <p class="text-xs font-bold underline underline-offset-2">Diagnosa Sekunder</p>
-                    <p class="">-</p>
-                  </div>
-                </div>
-              </template>
-              <template #collapseIcon>
-                <CustomButton
-                  icon="PhCaretUp"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
+          <div class="pt-5">
+            <div class="flex flex-row">
+              <div class="basis-1/4">
+                <p class="font-bold text-MD">Nama lengkap pasien</p>
+                <p>REG1231235</p>
+                <CustomButton class="w-24 h-5 text-sm">00-00-00</CustomButton>
+                <CustomChip
+                  :showCheckedIcon="false"
+                  label="Laki-laki"
+                  bgColor="bg-male-75"
+                  textColor="text-male-300"
+                  customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
                 />
-              </template>
-              <template #expandIcon>
-                <CustomButton
-                  icon="PhCaretDown"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-            </CustomAccordion>
-          </div>
-          <div class="grid grid-cols-1">
-            <CustomAccordion no-border initial-state="0">
-              <template #header>Status Verifikasi</template>
-              <template #content>
-                <div class="mt-[20px]">
-                  <DataTable
-                      v-if="itemRetur.length"
-                      :value="itemRetur"
-                      class="mt-2"
-                      scrollable
-                      scrollHeight="flex"
-                      :pt="{ headerRow: 'text-SM' }"
-                      @rowClick="riwayatDialog = true"
-                    >
-                      <!-- Resep -->
-                      <Column field="step" header="Step" headerClass="bg-adameds-50">
+                <!-- <CustomChip
+                  :showCheckedIcon="false"
+                  label="Perempuan"
+                  bgColor="bg-female-75"
+                  textColor="text-female-300"
+                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                /> -->
+              </div>
+              <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
+              <div class="mt-[20px] mr-[40px]">
+                <p class="text-xs font-bold underline underline-offset-2">Tgl. Lahir</p>
+                <p class="">10 Januari 2090</p>
+              </div>
+              <div class="mt-[20px] mr-[40px]">
+                <p class="text-xs font-bold underline underline-offset-2">Umur</p>
+                <p class="">24Thn 2Bln 1Hari</p>
+              </div>
+              <div class="mt-[20px] mr-[40px]">
+                <p class="text-xs font-bold underline underline-offset-2">Alergi</p>
+                <p class="">Tidak Ada</p>
+              </div>
+            </div>
+            
+            <!-- Asesmen Medis -->
+            <div class="grid grid-cols-1">
+              <CustomAccordion no-border initial-state="0">
+                <template #header>Asesmen Medis</template>
+                <template #content>
+                  <div class="flex flex-row mt-[20px]">
+                    <div class="basis-1/4">
+                      <p class="text-xs font-bold underline underline-offset-2">Nama lengkap pasien</p>
+                      <p>Sakit Mata</p>
+                      <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">Dokter Pengirim
+                        <span>  </span>
+                      </p>
+                      <p>dr. Anji Sp. M</p>
+                    </div>
+                    <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
+                    <div class="mr-[40px]">
+                      <p class="text-xs font-bold underline underline-offset-2">Diagnosa Primer</p>
+                      <p class="">H10.9 Conjuctivitis</p>
+                      <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">Diagnosa Primer</p>
+                      <p class="">-</p>
+                    </div>
+                    <div class="mr-[40px]">
+                      <p class="text-xs font-bold underline underline-offset-2">Diagnosa Sekunder</p>
+                      <p class="">-</p>
+                    </div>
+                    <div class="mr-[40px]">
+                      <p class="text-xs font-bold underline underline-offset-2">Diagnosa Sekunder</p>
+                      <p class="">-</p>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
+            
+            <!-- Status Verifikasi & Batal -->
+            <div class="grid grid-cols-1">
+              <CustomAccordion no-border initial-state="0">
+                <template #header>Status Verifikasi & Batal</template>
+                <template #content>
+                  <div class="mt-[20px]">
+                    <DataTable
+                        v-if="itemRetur.length"
+                        :value="itemRetur"
+                        class="mt-2"
+                        scrollable
+                        scrollHeight="flex"
+                        :pt="{ headerRow: 'text-SM' }"
+                        @rowClick="riwayatDialog = true"
+                      >
+                        <!-- Resep -->
+                        <Column field="step" header="Step" headerClass="bg-adameds-50">
+                          <template #body="slotProps">
+                            <div class="">
+                                <p class="">{{ slotProps.data.step }}</p>
+                            </div>
+                          </template>
+                        </Column>
+
+                        <!-- Status -->
+                        <Column field="status" header="Status" headerClass="bg-adameds-50">
+                          <template #body="slotProps">
+                            <div class="text-SM">
+                              <p class="font-bold underline underline-offset-2">{{ slotProps.data.status }}</p>
+                            </div>
+                            <div class="">
+                              <p>{{ slotProps.data.dokter  }}</p>
+                            </div>
+                          </template>
+                        </Column>
+
+                        <!-- Tanggal -->
+                        <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50">
+                          <template #body="slotProps">
+                            <div>
+                              <p class="text-sm">{{ slotProps.data.tanggal }}</p>
+                            </div>
+                          </template>
+                        </Column>
+
+                        <!-- Jam -->
+                        <Column field="jam" header="Jam" headerClass="bg-adameds-50">
                         <template #body="slotProps">
                           <div class="">
-                              <p class="">{{ slotProps.data.step }}</p>
+                            <p class="text-sm">{{ slotProps.data.jam }}</p>
                           </div>
                         </template>
                       </Column>
+                    </DataTable>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
 
-                      <!-- Status -->
-                      <Column field="status" header="Status" headerClass="bg-adameds-50">
-                        <template #body="slotProps">
-                          <div class="text-SM">
-                            <p class="font-bold underline underline-offset-2">{{ slotProps.data.status }}</p>
+            <!-- Alasan Batal -->
+            <div class="grid grid-cols-1">
+              <CustomAccordion no-border initial-state="0">
+                <template #header>Alasan Batal</template>
+                  <template #content>
+                    <div class="mt-[20px]">
+                      <p>Obat belum lengkap terorder</p>
+                    </div>
+                  </template>
+                  <template #collapseIcon>
+                    <CustomButton
+                      icon="PhCaretUp"
+                      backgroundColor="bg-transparent"
+                      textColor="text-adameds-300"
+                    />
+                  </template>
+                  <template #expandIcon>
+                    <CustomButton
+                      icon="PhCaretDown"
+                      backgroundColor="bg-transparent"
+                      textColor="text-adameds-300"
+                    />
+                </template>
+              </CustomAccordion>
+            </div>
+            
+            <!-- Daftar Resep/Obat -->
+            <div class="grid grid-cols-1">
+              <CustomAccordion no-border initial-state="0">
+                <template #header>Daftar Resep / Obat</template>
+                <template #content>
+                  <div class="mt-[20px]">
+                    <card class="bg-adameds-50">
+                      <template #content>
+                        <div class="flex justify-between">
+                          <div class="flex">
+                            <CustomButton class="text-sm h-7">02</CustomButton>
+                            <p class="ml-2 text-base font-bold">
+                              Amoxcillin
+                            </p>
+                            <PhArrowRight
+                              :size="20"
+                              class="my-auto ml-2 text-success-300"
+                              weight="bold"
+                            />
+                            <p class="ml-2 text-base font-bold">15 Tablet</p>
                           </div>
-                          <div class="">
-                            <p>{{ slotProps.data.dokter  }}</p>
-                          </div>
-                        </template>
-                      </Column>
-
-                      <!-- Tanggal -->
-                      <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50">
-                        <template #body="slotProps">
-                          <div>
-                            <p class="text-sm">{{ slotProps.data.tanggal }}</p>
-                          </div>
-                        </template>
-                      </Column>
-
-                      <!-- Jam -->
-                      <Column field="jam" header="Jam" headerClass="bg-adameds-50">
-                      <template #body="slotProps">
-                        <div class="">
-                          <p class="text-sm">{{ slotProps.data.jam }}</p>
                         </div>
                       </template>
-                    </Column>
-                  </DataTable>
-                </div>
-              </template>
-              <template #collapseIcon>
-                <CustomButton
-                  icon="PhCaretUp"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-              <template #expandIcon>
-                <CustomButton
-                  icon="PhCaretDown"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-            </CustomAccordion>
-          </div>
-          <div class="grid grid-cols-1">
-            <CustomAccordion no-border initial-state="0">
-              <template #header>Asesmen Medis</template>
-              <template #content>
-                <div class="mt-[20px]">
-                  <card class="bg-adameds-50">
-                    <template #content>
-                      <div class="flex justify-between">
-                        <div class="flex">
-                          <CustomButton class="text-sm h-7">01</CustomButton>
-                          <p class="ml-2 text-base font-bold">
-                            Paracetamol
-                          </p>
-                          <PhArrowRight
-                            :size="20"
-                            class="my-auto ml-2 text-success-300"
-                            weight="bold"
-                          />
-                          <p class="ml-2 text-base font-bold">10 Tablet</p>
-                        </div>
-                        <div>
-                          <CustomChip
-                            :showCheckedIcon="false"
-                            label="OBAT KRONIS"
-                            borderColor="border-danger-300"
-                            bgColor="bg-none"
-                            textColor="text-danger-300"
-                            customClass="h-5 border-danger-300"
-                          />
-                        </div>
-                      </div>
-                    </template>
-                  </card>
-                  <div class="pt-5 mt-[-20px]">
-                    <DataTable
-                      v-if="itemStokObat.length"
-                      :value="itemStokObat"
-                      class="overflow-hidden rounded-[10px]"
-                      scrollable
-                      scrollHeight="flex"
-                      :pt="{ headerRow: 'text-SM' }"
-                    >
-                      <!-- Stok Obat -->
-                      <Column field="stokObat" header="Stok Obat">
-                        <template #body="slotProps">
-                          <div class="flex justify-between">
-                            <div>
-                              <p class="text-SM">
-                                {{ slotProps.data.stokObat }}
-                              </p>
+                    </card>
+                    <div class="pt-5 mt-[-20px]">
+                      <DataTable
+                        v-if="itemStokObat.length"
+                        :value="itemStokObat"
+                        class="overflow-hidden rounded-[10px]"
+                        scrollable
+                        scrollHeight="flex"
+                        :pt="{ headerRow: 'text-SM' }"
+                      >
+                        <!-- Stok Obat -->
+                        <Column field="stokObat" header="Stok Obat">
+                          <template #body="slotProps">
+                            <div class="flex justify-between">
+                              <div>
+                                <p class="text-SM">
+                                  {{ slotProps.data.stokObat }}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </template>
-                      </Column>
-                      <!-- Aturan & Cara Pakai -->
-                      <Column field="status" header="Aturan & Cara Pakai">
-                        <template #body="slotProps">
-                          <div>
-                            <p class="text-sm">{{ slotProps.data.status }}</p>
-                          </div>
-                        </template>
-                      </Column>
-                      <!-- Satuan -->
-                      <Column field="satuan" header="Satuan">
-                        <template #body="slotProps">
-                          <div class="text-sm">{{ slotProps.data.satuan }}</div>
-                        </template>
-                      </Column>
-                      <!-- Jasa Resep -->
-                      <Column field="jasaResep" header="Jasa Resep">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
-                        </template>
-                      </Column>
-                      <!-- Potongan -->
-                      <Column field="potongan" header="Potongan">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.potongan }}</div>
-                        </template>
-                      </Column>
-                      <!-- Total -->
-                      <Column field="total" header="Total">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.total }}</div>
-                        </template>
-                      </Column>
-                    </DataTable>
-                  </div>
-                </div>
-                <div class="mt-[20px]">
-                  <card class="bg-adameds-50">
-                    <template #content>
-                      <div class="flex justify-between">
-                        <div class="flex">
-                          <CustomButton class="text-sm h-7">02</CustomButton>
-                          <p class="ml-2 text-base font-bold">
-                            Amoxcillin
-                          </p>
-                          <PhArrowRight
-                            :size="20"
-                            class="my-auto ml-2 text-success-300"
-                            weight="bold"
-                          />
-                          <p class="ml-2 text-base font-bold">15 Tablet</p>
-                        </div>
-                      </div>
-                    </template>
-                  </card>
-                  <div class="pt-5 mt-[-20px]">
-                    <DataTable
-                      v-if="itemStokObat.length"
-                      :value="itemStokObat"
-                      class="overflow-hidden rounded-[10px]"
-                      scrollable
-                      scrollHeight="flex"
-                      :pt="{ headerRow: 'text-SM' }"
-                    >
-                      <!-- Stok Obat -->
-                      <Column field="stokObat" header="Stok Obat">
-                        <template #body="slotProps">
-                          <div class="flex justify-between">
+                          </template>
+                        </Column>
+                        <!-- Aturan & Cara Pakai -->
+                        <Column field="status" header="Aturan & Cara Pakai">
+                          <template #body="slotProps">
                             <div>
-                              <p class="text-SM">
-                                {{ slotProps.data.stokObat }}
-                              </p>
+                              <p class="text-sm">{{ slotProps.data.status }}</p>
                             </div>
-                          </div>
-                        </template>
-                      </Column>
-                      <!-- Aturan & Cara Pakai -->
-                      <Column field="status" header="Aturan & Cara Pakai">
-                        <template #body="slotProps">
-                          <div>
-                            <p class="text-sm">{{ slotProps.data.status }}</p>
-                          </div>
-                        </template>
-                      </Column>
-                      <!-- Satuan -->
-                      <Column field="satuan" header="Satuan">
-                        <template #body="slotProps">
-                          <div class="text-sm">{{ slotProps.data.satuan }}</div>
-                        </template>
-                      </Column>
-                      <!-- Jasa Resep -->
-                      <Column field="jasaResep" header="Jasa Resep">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
-                        </template>
-                      </Column>
-                      <!-- Potongan -->
-                      <Column field="potongan" header="Potongan">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.potongan }}</div>
-                        </template>
-                      </Column>
-                      <!-- Total -->
-                      <Column field="total" header="Total">
-                        <template #body="slotProps">
-                          <div class="text-SM">{{ slotProps.data.total }}</div>
-                        </template>
-                      </Column>
-                    </DataTable>
+                          </template>
+                        </Column>
+                        <!-- Satuan -->
+                        <Column field="satuan" header="Satuan">
+                          <template #body="slotProps">
+                            <div class="text-sm">{{ slotProps.data.satuan }}</div>
+                          </template>
+                        </Column>
+                        <!-- Jasa Resep -->
+                        <Column field="jasaResep" header="Jasa Resep">
+                          <template #body="slotProps">
+                            <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
+                          </template>
+                        </Column>
+                        <!-- Potongan -->
+                        <Column field="potongan" header="Potongan">
+                          <template #body="slotProps">
+                            <div class="text-SM">{{ slotProps.data.potongan }}</div>
+                          </template>
+                        </Column>
+                        <!-- Total -->
+                        <Column field="total" header="Total">
+                          <template #body="slotProps">
+                            <div class="text-SM">{{ slotProps.data.total }}</div>
+                          </template>
+                        </Column>
+                      </DataTable>
+                    </div>
                   </div>
-                </div>
-              </template>
-              <template #collapseIcon>
-                <CustomButton
-                  icon="PhCaretUp"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-              <template #expandIcon>
-                <CustomButton
-                  icon="PhCaretDown"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-            </CustomAccordion>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
           </div>
-        </div>
         
-        <!-- Total Tagihan Resep -->
-        <div class="mt-4">
-          <card class="bg-adameds-50">
-            <template #content>
-              <div class="flex justify-between">
-                <p class="text-base font-bold">
-                  Total Tagihan Resep
-                </p>
-                <p class="text-base font-bold">
-                  RP. 0, 00
-                </p>
-              </div>
-            </template>
-          </card>
-        </div>
-        
-        <!-- Catatan -->
-        <div class="grid grid-cols-1">
-          <CustomAccordion no-border initial-state="0">
-            <template #header>Catatan</template>
+          <!-- Total Tagihan Resep -->
+          <div class="mt-4">
+            <card class="bg-adameds-50">
               <template #content>
-                <div class="mt-[20px]">
-                  <p>-</p>
+                <div class="flex justify-between">
+                  <p class="text-base font-bold">
+                    Total Tagihan Resep
+                  </p>
+                  <p class="text-base font-bold">
+                    RP. 0, 00
+                  </p>
                 </div>
               </template>
-              <template #collapseIcon>
-                <CustomButton
-                  icon="PhCaretUp"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-              </template>
-              <template #expandIcon>
-                <CustomButton
-                  icon="PhCaretDown"
-                  backgroundColor="bg-transparent"
-                  textColor="text-adameds-300"
-                />
-            </template>
-          </CustomAccordion>
-        </div>
-        <hr class="border-[1px] border-grey-200">
-        <div class="flex">
-          <div class="mt-3">           
-            <CustomButton background-color="bg-adameds-300 rounded-lg">
-              <div class="flex items-center gap-2">
-                <PhPrinter :size="18" color="#ffffff" weight="fill" />
-                <div class="text-SM">Cetak</div>
-              </div>
-            </CustomButton>
+            </card>
           </div>
         </div>
-      </div>
       </template>
     </CustomDialog>
+
   </div>
 </template>
   

@@ -66,19 +66,58 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="flex mt-[10px]">
-              <CustomSelect label="Metode Pembayaran" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" place-holder="Tunai" />
-              <CustomSelect label="Lokasi Stok" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" place-holder="Semua" />
+            <div class="grid grid-cols-2 gap-4 mt-[10px]">
+              <div>
+                <CustomSelect 
+                  label="Metode Pembayaran" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" 
+                  place-holder="Tunai" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Lokasi Stok" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" 
+                  place-holder="Semua" 
+                />
+              </div>
             </div>
-
-            <!-- baris kedua -->
             <div class="flex mt-[10px]">
-              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-9" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <CustomTextfield
+                label="Cari Pasien"
+                prependIcon="PhMagnifyingGlass"
+                placeholder="Cari Asal Resep / No. RM"
+                class="mr-5 grow"
+              />
+              <CustomDatePicker
+                v-model="startDateFilter"
+                label="Tanggal"
+                class="w-[150px]"
+              />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
-              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
+              <CustomDatePicker
+                v-model="endDateFilter"
+                :showLabel="false"
+                class="mt-auto w-[150px]"
+              />
+              <CustomButton
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
+              />
             </div>
           </template>
           <template #collapseIcon>

@@ -67,21 +67,77 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="flex mt-[10px]">
-              <CustomSelect label="Jenis Pelayanan" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
-              <CustomSelect label="Resep" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Racikan', 'Non-Racikan']" place-holder="Semua" />
-              <CustomSelect label="Asal Resep" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Poli', 'Ranap']" place-holder="Semua" />
-              <CustomSelect label="Pendapatan" class="w-1/4 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" place-holder="Semua" />
+            <div class="grid grid-cols-4 gap-4 mt-[10px]">
+              <div>
+                <CustomSelect 
+                  label="Jenis Pelayanan" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Resep" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Racikan', 'Non-Racikan']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Asal Resep" 
+                  class="" 
+                  optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Poli', 'Ranap']" 
+                  place-holder="Semua" 
+                />
+              </div>
+              <div>
+                <CustomSelect 
+                  label="Pendapatan" 
+                  class="" optionLabel="" 
+                  optionValue="" 
+                  :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" 
+                  place-holder="Semua" 
+                />
+              </div>
             </div>
-
-            <!-- baris kedua -->
             <div class="flex mt-[10px]">
-              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-5" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <CustomTextfield
+                label="Cari Pasien"
+                prependIcon="PhMagnifyingGlass"
+                placeholder="Cari Asal Resep / No. RM"
+                class="mr-5 grow"
+              />
+              <CustomDatePicker
+                v-model="startDateFilter"
+                label="Tanggal"
+                class="w-[150px]"
+              />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
-              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
+              <CustomDatePicker
+                v-model="endDateFilter"
+                :showLabel="false"
+                class="mt-auto w-[150px]"
+              />
+              <CustomButton
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
+              />
             </div>
           </template>
           <template #collapseIcon>
