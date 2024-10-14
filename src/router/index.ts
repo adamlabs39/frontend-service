@@ -15,6 +15,7 @@ import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
 import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
 import RawatInapView from "@/views/RawatInap/RawatInapView.vue";
+import FisioterapiView from "@/views/Fisioterapi/FisioterapiView.vue";
 
 // SECTION Page View
 // NOTE Admisi
@@ -124,6 +125,17 @@ import PembatalanDirawatPage from "@/views/IGD/Laporan/PembatalanDirawat.vue";
 import RekapTindakanPasien from "@/views/IGD/Laporan/RekapTindakanPasien.vue";
 import BPJSPage from "@/views/IGD/BPJS/BPJSPage.vue";
 import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
+// NOTE FISIOTERAPI DATAMASTER
+import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
+
+// NOTE ORDER FISIOTERAPI
+import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
+
+// NOTE FISIOTERAPI/LAPORAN
+import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
+import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
+import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerapiPage.vue";
+import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -1087,6 +1099,63 @@ const router = createRouter({
       name: "igd-laporan-rekap-tindakan-pasien",
       meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
       component: IGDView,
+    },
+
+    // NOTE FISIOTERAPI
+
+    {
+      path: "/fisioterapi",
+      name: "fisioterapi",
+      redirect: "/fisioterapi/order-fisioterapi",
+    },
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI DATAMASTER
+    {
+      path: "/fisioterapi/datamaster/bed-ruangan",
+      name: "fisioterapi-datamaster-bed-ruangan",
+      meta: { layout: SidebarLayout, page: BedRuanganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE ORDER FISIOTERAPI
+    {
+      path: "/fisioterapi/order-fisioterapi",
+      name: "fisioterapi-order-fisioterapi",
+      meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
+    // NOTE FISIOTERAPI LAPORAN
+
+    {
+      path: "/fisioterapi/laporan/kunjungan",
+      name: "fisioterapi-laporan-kunjungan",
+      meta: { layout: SidebarLayout, page: KunjunganPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-kunjungan-jenis-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-kunjungan-jenis-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiKunjunganJenisFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-terapi",
+      name: "fisioterapi-laporan-rekapitulasi-terapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiTerapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/laporan/rekapitulasi-pendapatan-fisioterapi",
+      name: "fisioterapi-laporan-rekapitulasi-pendapatan-fisioterapi",
+      meta: { layout: SidebarLayout, page: RekapitulasiPendapatanFisioterapiPage, requiresAuth: true },
+      component: FisioterapiView,
     },
 
     // NOTE Test Component

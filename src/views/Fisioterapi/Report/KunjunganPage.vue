@@ -9,6 +9,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -56,7 +57,7 @@ const reportData = ref([
     no_SEP: "",
     insurance_account_name: "TUNAI",
     polyclinic: "-",
-    gender: "L",
+    gender: "P",
     phone: "082112341234",
     age_year: 10,
     age_month: 3,
@@ -102,7 +103,7 @@ onMounted(() => {
   <div class="flex flex-col h-full overflow-hidden">
     <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
+        <CustomAccordion :openWithHeader="false" noBorder initial-state="1">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
@@ -115,25 +116,20 @@ onMounted(() => {
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
                 <div>
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Pendapatan</p>
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Kunjungan</p>
                 </div>
               </div>
             </div>
           </template>
+
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomSelect label="Jenis Pelayanan" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
-              <CustomSelect label="Metode Pembayaran" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Lunas', 'Piutang']" place-holder="Semua" />
-              <CustomSelect label="Pendapatan" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" place-holder="Semua" />
-            </div>
-
-            <!-- baris kedua -->
-            <div class="flex mt-[10px]">
-              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-5" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <CustomTextfield label="Pencarian" prependIcon="PhMagnifyingGlass" placeholder="Cari Nama / No. RM / No. Reg" class="mr-5 grow" />
+              <CustomSelect label="Metode Bayar" class="mr-5 w-[250px]" optionLabel="" optionValue="" :options="['Semua', 'Lunas', 'Piutang']" place-holder="Semua" />
+              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[150px]" />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
+              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[150px]" />
+              <CustomButton icon="PhMagnifyingGlass" label="Cari" class="ml-5 mr-[10px] mt-auto" borderColor="border-adameds-300" />
               <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
             </div>
           </template>
@@ -165,26 +161,32 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column field="resepNumber" header="No. Resep" header-class="text-black bg-adameds-50"></Column>
           <Column field="noReg" header="No. Registrasi" header-class="text-black bg-adameds-50"></Column>
           <Column field="noRM" header="No. RM" header-class="text-black bg-adameds-50"></Column>
           <Column field="name" header="Nama Pasien" header-class="text-black bg-adameds-50"></Column>
-          <Column field="pelayanan" header="Jenis Pelayanan" header-class="text-black bg-adameds-50">
-            <template #body="slotProps">
-              <div class="text-center">
-                <div v-if="slotProps.data.polyclinic.includes('POLI')">RAJAL</div>
-                <div v-else></div>
-              </div>
-            </template>
-          </Column>
           <Column field="insurance_account_name" header="Metode Pembayaran" header-class="text-black bg-adameds-50"></Column>
+          <Column field="faseRehab" header="Fase Rehabilitasi" header-class="text-black bg-adameds-50"></Column>
+          <Column field="terapisName" header="Terapis" header-class="text-black bg-adameds-50"></Column>
           <template #expansion="slotProps">
-            <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
+            <div class="p-3 -mx-3 -my-1.5 bg-adameds-50">
               <DataTable :value="[slotProps.data]" class="overflow-hidden rounded-lg bg-adameds-50" :pt="{ headerRow: 'text-SM' }">
-                <Column field="invoiceNumber" header="No. Invoice" header-class="text-black bg-adameds-50"> </Column>
-                <Column field="doctorData.doctor" header="Nama Dokter" header-class="text-black bg-adameds-50"></Column>
-                <Column field="polyclinic" header="Asal Resep" header-class="text-black bg-adameds-50"></Column>
-                <Column field="total" header="Total" header-class="text-black bg-adameds-50"></Column>
+                <Column field="age_year" header="Usia" header-class="text-white bg-adameds-300">
+                  <template #body="slotProps">
+                    <div>{{ slotProps.data.age_year }} Th {{ slotProps.data.age_month }} Bl {{ slotProps.data.age_day }} Hr</div>
+                  </template>
+                </Column>
+                <Column field="gender" header="Jenis Kelamin" header-class="text-white bg-adameds-300">
+                  <template #body="slotProps">
+                    <div>
+                      <div v-if="slotProps.data.gender.includes('L')">Laki-Laki</div>
+                      <div v-else-if="slotProps.data.gender.includes('P')">Perempuan</div>
+                      <div v-else></div>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="diagnosa" header="Diagnosa Fisioterapi" header-class="text-white bg-adameds-300"></Column>
+                <Column field="painScale" header="Numeric Rating Scale (Pain Scale)" header-class="text-white bg-adameds-300"></Column>
+                <Column field="note" header="Catatan Fisioterapi (SOAPIER)" header-class="text-white bg-adameds-300"></Column>
               </DataTable>
             </div>
           </template>
@@ -195,9 +197,7 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between">
           <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
-          <Paginator :rows="10" :totalRecords="120" :rowsPerPageOptions="[10, 20, 30]" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown" currentPageReportTemplate="{currentPage}">
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+          <CustomPaginator :rows="10" :totalRecords="reportData.length" :rowsPerPageOptions="[10, 20, 30]" @update:rows="handleRowsUpdate" @update:current-page="handlePageUpdate" />
         </div>
       </template>
     </Card>
