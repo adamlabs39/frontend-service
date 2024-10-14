@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import DataPatient from "./DataPatient.vue";
+import DataPatient from "@/components/RekamMedis/DataPatient.vue";
 import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";

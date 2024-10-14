@@ -110,6 +110,7 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
+import PerpindahanBangsal from "@/views/RawatInap/Page/PerpindahanBangsal.vue";
 import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
 import LaporanPageRI from "@/views/RawatInap/Page/LaporanPage.vue";
 // NOTE Page IGD
@@ -976,6 +977,12 @@ const router = createRouter({
       path: "/rawat-inap/ruangan",
       name: "rawat-inap-ruangan",
       meta: { layout: SidebarLayout, page: RuanganRIPage, requiresAuth: true },
+      component: RawatInapView,
+    },
+    {
+      path: "/rawat-inap/perpindahan-bangsal",
+      name: "rawat-inap-perpindahan-bangsal",
+      meta: { layout: SidebarLayout, page: PerpindahanBangsal, requiresAuth: true },
       component: RawatInapView,
     },
     {

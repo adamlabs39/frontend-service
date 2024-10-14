@@ -10,6 +10,7 @@ import DataKunjunganRawatInap from "../Layout/Tabel/Laporan/DataKunjunganRawatIn
 import DataPerpindahanPasien from "../Layout/Tabel/Laporan/DataPerpindahanPasien.vue";
 import DataPembatalanDirawat from "../Layout/Tabel/Laporan/DataPembatalanDirawat.vue";
 import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPasien.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
@@ -112,15 +113,7 @@ onMounted(() => {
           class="my-auto bg-adameds-300"
           label="Cetak"
         />
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator :rows="10" :totalRecords="120" @page="() => {}" />
       </div>
     </template>
   </Card>
