@@ -112,6 +112,17 @@ import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
 import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
 import LaporanPageRI from "@/views/RawatInap/Page/LaporanPage.vue";
+// NOTE Page IGD
+import IGDView from "@/views/IGD/IGDView.vue";
+import PasienIgdPage from "@/views/IGD/PasienIgd/PasienIgdPage.vue";
+import MonitoringKunjunganPage from "@/views/IGD/BPJS/MonitoringKunjungan.vue";
+import MonitoringRiwayatKunjunganPage from "@/views/IGD/BPJS/MonitoringRiwayatKunjungan.vue";
+import MonitoringObatKunjunganPage from "@/views/IGD/BPJS/MonitoringObatKunjungan.vue";
+import KunjunganIgdPage from "@/views/IGD/Laporan/KunjunganIgd.vue";
+import PembatalanDirawatPage from "@/views/IGD/Laporan/PembatalanDirawat.vue";
+import RekapTindakanPasien from "@/views/IGD/Laporan/RekapTindakanPasien.vue";
+import BPJSPage from "@/views/IGD/BPJS/BPJSPage.vue";
+import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
 
 // !SECTION
 // NOTE Test Component
@@ -1020,6 +1031,55 @@ const router = createRouter({
       name: "rawat-inap-laporan-rekap-tindakan-pasien",
       meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
       component: RawatInapView,
+    },
+
+    // NOTE IGD
+    {
+      path: "/igd",
+      name: "igd",
+      redirect: "/igd/pasien-igd",
+    },
+    {
+      path: "/igd/pasien-igd",
+      name: "igd-pasien-igd",
+      meta: { layout: SidebarLayout, page: PasienIgdPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-kunjungan",
+      name: "igd-bpjs-monitoring-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-riwayat-kunjungan",
+      name: "igd-bpjs-monitoring-riwayat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/bpjs/monitoring-obat-kunjungan",
+      name: "igd-bpjs-monitoring-obat-kunjungan",
+      meta: { layout: SidebarLayout, page: BPJSPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/kunjungan-igd",
+      name: "igd-laporan-kunjungan-igd",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/pembatalan-dirawat",
+      name: "igd-laporan-pembatalan-dirawat",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
+    },
+    {
+      path: "/igd/laporan/rekap-tindakan-pasien",
+      name: "igd-laporan-rekap-tindakan-pasien",
+      meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
+      component: IGDView,
     },
 
     // NOTE Test Component
