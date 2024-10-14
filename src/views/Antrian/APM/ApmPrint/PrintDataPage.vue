@@ -2,14 +2,13 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
+import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
+import { ref } from "vue";
 
 const router = useRouter();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
-};
-const handleData = () => {
-  router.push("/antrian/apm/aktif/print/data");
 };
 
 const props = defineProps({
@@ -22,6 +21,22 @@ const props = defineProps({
   method: {
     type: String,
   },
+});
+
+const tiketAntrian = ref({
+  noRM: "00-00-00",
+  noBooking: "63DJ83",
+  noRegistrasi: "REG2407010049",
+  noBPJS: "523214315123123",
+  nik: "327012371204102",
+  nama: "Nama Lengkap Pasien Jika Panjang",
+  tanggalLahir: "01 Januari 2000",
+  gender: "Laki-laki",
+  namaPoli: "Poli Anak",
+  dokter: "dr. Nama Dokter",
+  jadwal: "07:00 - 10:00",
+  tanggal: "10 Jan 2024",
+  noAntri: "PD-02-01",
 });
 </script>
 
@@ -103,29 +118,24 @@ const props = defineProps({
             <div
               class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
             >
-              Print Antrian
+              Data Ditemukan
             </div>
 
             <!-- Button Container (Right) -->
             <div class="flex items-center justify-end col-span-1 mr-6">
               <CustomButton
-                label="< &nbsp Kembali"
+                label="< &nbsp Halaman Utama"
                 outlined
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
-                class="w-[120px]"
-                      @click="handleHome"
+                class="w-[170px]"
+                @click="handleHome"
               />
             </div>
           </div>
 
-          <div class="flex flex-col items-center">
-            <CustomTextfield
-              :label="`No. Kode Booking`"
-              :placeholder="`Masukkan No. Kode Booking`"
-              class="w-2/5 mt-16 mr-5"
-            ></CustomTextfield>
-            <CustomButton label="Print" class="w-2/5 mt-10 mr-5" @click="handleData"/>
+          <div class="flex items-center justify-center">
+            <TiketAntrian :tiketAntrian="tiketAntrian" class="w-10/12 mt-14" />
           </div>
         </div>
       </div>

@@ -104,6 +104,9 @@ import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasie
 import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
 import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
 import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
+import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
+import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
+import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -663,10 +666,22 @@ const router = createRouter({
       component: DaftarPasienPage,
     },
     {
+      path: "/antrian/apm/aktif/pasien/jkn/berhasil",
+      name: "antrian-apm-aktif-pasien-jkn-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienBerhasilPage,
+    },
+    {
       path: "/antrian/apm/aktif/pasien/non-jkn",
       name: "antrian-apm-aktif-pasien-non-jkn",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
+      name: "antrian-apm-aktif-pasien-non-jkn-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienNonBerhasilPage,
     },
     {
       path: "/antrian/apm/aktif/checkin",
@@ -686,7 +701,13 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintAntrianPage,
     },
-
+    {
+      path: "/antrian/apm/aktif/print/data",
+      name: "antrian-apm-aktif-print-data",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PrintDataPage,
+    },
+    
     // NOTE Laboratorium
     {
       path: "/laboratorium",
