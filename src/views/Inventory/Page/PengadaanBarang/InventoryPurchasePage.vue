@@ -1,18 +1,22 @@
 <script lang="ts" setup>
 import type { MenuItem } from "primevue/menuitem";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import HeaderPengadaanBarang from "../../HeaderPengadaanBarang.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import PengajuanPembelian from "./Tabel/PengajuanPembelian.vue";
 import Paginator from "primevue/paginator";
 import TambahPermintaan from "@/views/Inventory/Page/PengadaanBarang/TambahPermintaan.vue";
+import DetailPembelian from "./DetailPembelian.vue";
+import DatabaseFill from "@/components/icons/DatabaseFill.vue";
 
 const route = useRoute();
 const value = ref("1");
 
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([{}]);
+
+const detailPermintaanData = ref();
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
@@ -32,37 +36,54 @@ const updatePageType = (path: string) => {
 };
 
 const changeSection = (label: string, data: any = null) => {
-  let tempData = { label: label };
+  dataBreadCrumb.value = [{ label }]; // Pastikan ini direset
   if (data) {
-    tempData = { ...tempData, ...data };
+    detailPermintaanData.value = data; // Simpan data detail
   }
-  console.log(tempData);
-  if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = tempData;
-  } else {
-    dataBreadCrumb.value.push(tempData);
-  }
-  console.log(dataBreadCrumb.value.length);
 };
+
 
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
   updatePageType(route.path);
+
 });
 
 
-const pembelianData = ref(null);  // Reaktif untuk menyimpan data yang diterima
+const pembelianData = ref<any | null>(null); 
 
-const handleSimpanPembelian = (data:any) => {
-  pembelianData.value = data;  // Simpan data yang diterima
-  dataBreadCrumb.value[0].label = 'Pembelian Barang Supplier';  // Kembali ke tab Pembelian Barang Supplier
+const handleSimpanPembelian = (data: any) => {
+  if (pembelianData.value === null) {
+    pembelianData.value = [];  
+  }
+  pembelianData.value.push(data);  
+  dataBreadCrumb.value[0].label = 'Pembelian Barang Supplier'; 
 };
 
+// Saat sudah dibatalkan dari page DetailPembelian
+const pembatalanData = ((updatedData: any) => {
+   if (pembelianData.value) {
+    // Find the index of the item you want to update
+     const index = pembelianData.value.findIndex(item => item.noPembelian === updatedData.noPembelian);
+    console.log(index)
+    if (index !== -1) {
+      // Update the existing item
+      pembelianData.value[index] = updatedData;
+      dataBreadCrumb.value[0].label = 'Pembelian Barang Supplier';
+    }
+  }
+})
+
+// Hanya menampilkan pengajuan saat di tabs Pengajuan Pembelian
+const pengajuanPembelianData = computed(() => {
+  return pembelianData.value?.filter(item => item.status === 'PENGAJUAN') || [];
+});
 </script>
 
 <template>
+  <!-- {{pembelianData  }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
     pt:body:class="h-full pt-0 overflow-auto"
@@ -79,7 +100,7 @@ const handleSimpanPembelian = (data:any) => {
           <div class="flex items-center gap-2">
             <!-- Filter = {{ props.filter }} -->
             <CustomButton
-              label="Pengajuan Pembelian"
+              label="PENGAJUAN PEMBELIAN"
               class="grow"
               :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
               :border-color="
@@ -119,7 +140,7 @@ const handleSimpanPembelian = (data:any) => {
       <Tabs v-model:value="value">
         <TabPanels>
           <TabPanel value="1">
-            <PengajuanPembelian :pembelian-data = "pembelianData" />
+            <PengajuanPembelian :pembelian-data = "pengajuanPembelianData" @row-clicked="changeSection('Detail Permintaan', $event)"/>
           </TabPanel>
           <TabPanel value="2"> lmlm </TabPanel>
         </TabPanels>
@@ -148,4 +169,6 @@ const handleSimpanPembelian = (data:any) => {
     @kembali="dataBreadCrumb[0].label = 'Pembelian Barang Supplier'"
     @on-simpan-pembelian="handleSimpanPembelian"
   />
+
+  <DetailPembelian :data-bread-crumb="dataBreadCrumb" :page-type="pageType" :detail-data="detailPermintaanData" v-else-if="dataBreadCrumb[0].label == 'Detail Permintaan'"  @kembali="dataBreadCrumb[0].label = 'Pembelian Barang Supplier'" @pembatalan="pembatalanData"/>
 </template>
