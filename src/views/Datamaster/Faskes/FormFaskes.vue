@@ -126,6 +126,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Faskes"
@@ -134,6 +135,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <hr class="border-grey-200 col-span-12" />
         <CustomSwitch

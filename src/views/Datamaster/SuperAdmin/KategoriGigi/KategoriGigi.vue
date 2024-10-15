@@ -237,7 +237,9 @@ const handleFileUpload = async (file: File) => {
       <HeaderFilter
         pageType="kategori-gigi"
         isSuperAdmin
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchKategoriGigiData()"
       />
     </template>
     <template #content>

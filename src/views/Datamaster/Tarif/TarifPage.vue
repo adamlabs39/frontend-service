@@ -1,56 +1,67 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useTarifStore } from "@/stores/datamaster/tarif";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { utilsStore } from "@/stores/utils";
-import Footer from "../Layout/FooterPaginator.vue";
+import FooterPaginator from "../Layout/FooterPaginator.vue";
 import TablesRuangan from "./TarifRuangan/TablesRuangan.vue";
 import TablesTindakan from "./TarifTindakan/TablesTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import FormTarifTindakan from "./TarifTindakan/FormTarifTindakan.vue";
 import FormTarifRuangan from "./TarifRuangan/FormTarifRuangan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const selectedTab = ref("0");
-const handleSelectedTab = (newTab: any) => {
-  selectedTab.value = newTab;
-};
-const testDialog = ref(false);
+const searchQuery = ref<string>("");
 
 const tarifStore = useTarifStore();
 const UseUtilsStore = utilsStore();
 const tarifPayload = ref<any[]>([]);
 const tindakanPayload = ref<any[]>([]);
 const ruanganPayload = ref<any[]>([]);
-
 const tarifProperties = ref({
   page: 1,
   page_size: 10,
+  jenis: "Tindakan",
   total: 0,
 });
+
+const handleSelectedTab = (newTab: string) => {
+  selectedTab.value = newTab;
+  tarifProperties.value.jenis = newTab === "0" ? "Tindakan" : "Ruangan";
+  tarifProperties.value.page = 1;
+  fetchTarifData();
+};
 
 const fetchTarifData = async () => {
   UseUtilsStore.setLoading(true);
   try {
+    // Set jenis berdasarkan tab yang aktif
+    const jenis = tarifProperties.value.jenis;
+
+    // Fetch data dari API berdasarkan jenis
     const response = await tarifStore.getApi(
       tarifProperties.value.page,
-      tarifProperties.value.page_size
+      tarifProperties.value.page_size,
+      searchQuery.value,
+      jenis
     );
 
     if (response && response.payload) {
       tarifProperties.value.total = response.properties.total;
 
-      // Full payload
-      tarifPayload.value = response.payload;
+      // Simpan payload yang relevan berdasarkan jenis
+      if (jenis === "Tindakan") {
+        tindakanPayload.value = response.payload;
+      } else if (jenis === "Ruangan") {
+        ruanganPayload.value = response.payload;
+      }
 
-      // Filter tindakan and ruangan
-      tindakanPayload.value = tarifPayload.value.filter(
-        (item: any) => item.jenisTarif === "Tindakan"
-      );
-      ruanganPayload.value = tarifPayload.value.filter(
-        (item: any) => item.jenisTarif === "Ruangan"
-      );
+      // Simpan payload penuh jika diperlukan
+      tarifPayload.value = response.payload;
     } else {
+      // Reset payload jika tidak ada respons
       tarifPayload.value = [];
       tindakanPayload.value = [];
       ruanganPayload.value = [];
@@ -65,18 +76,27 @@ const fetchTarifData = async () => {
   }
 };
 
-const formTarifTindakanRef = ref<InstanceType<typeof FormTarifTindakan> | null>(
-  null
-);
+onMounted(() => {
+  fetchTarifData(); // Fetch initial data based on the default "Tindakan"
+});
 
-const onSubmit = () => {
-  if (formTarifTindakanRef.value) {
-    formTarifTindakanRef.value.onSubmit();
-  }
+// Handle Pagination
+const handlePage = (event: any) => {
+  tarifProperties.value.page = event.page + 1;
+  tarifProperties.value.page_size = event.rows;
+  fetchTarifData();
 };
 
-onMounted(() => {
-  fetchTarifData();
+// Check if Tindakan Data Exists
+const hasTindakanData = computed(() => {
+  return (
+    Array.isArray(tindakanPayload.value) && tindakanPayload.value.length > 0
+  );
+});
+
+// Check if Ruangan Data Exists
+const hasRuanganData = computed(() => {
+  return Array.isArray(ruanganPayload.value) && ruanganPayload.value.length > 0;
 });
 
 const isTambahTindakanDialogVisible = ref(false);
@@ -121,19 +141,32 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
         @tambah-data="FormTindakanDialog('add', 'Tambah Data')"
         @tarif-ruangan="FormRUanganDialog('add', 'Tambah Data')"
         @selected-tab="handleSelectedTab"
+       @reload-data="fetchTarifData()"
       />
     </template>
     <template #content>
-      <Tabs v-model:value="selectedTab">
-        <TabPanels>
-          <TabPanel value="0">
-            <TablesTindakan :payload="tindakanPayload" />
-          </TabPanel>
-          <TabPanel value="1">
-            <TablesRuangan :payload="ruanganPayload" />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <div class="h-full">
+        <Tabs v-model:value="selectedTab" class="h-full">
+          <TabPanels class="h-full">
+            <TabPanel value="0" class="h-full">
+              <div v-if="hasTindakanData">
+                <TablesTindakan :payload="tindakanPayload" />
+              </div>
+              <div v-else class="h-full">
+                <NoData class="h-full" />
+              </div>
+            </TabPanel>
+            <TabPanel value="1" class="h-full">
+              <div v-if="hasRuanganData">
+                <TablesRuangan :payload="ruanganPayload" />
+              </div>
+              <div v-else class="h-full">
+                <NoData class="h-full" />
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </div>
       <FormTarifTindakan
         v-model:isDialogVisible="isTambahTindakanDialogVisible"
         :title="dialogConfig.title"
@@ -150,7 +183,11 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
       />
     </template>
     <template #footer>
-      <Footer :rows="1" :totalRecords="1" />
+      <FooterPaginator
+        :rows="tarifProperties.page_size"
+        :totalRecords="tarifProperties.total"
+        @page="handlePage"
+      />
     </template>
   </Card>
 </template>

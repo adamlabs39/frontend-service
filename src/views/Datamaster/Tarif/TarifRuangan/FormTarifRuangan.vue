@@ -187,7 +187,8 @@ watch(
   >
     <template #header>Tambah Tarif</template>
     <template #body>
-      <div class="flex flex-col h-full overflow-hidden">
+      <!-- Form Input -->
+      <div v-if="method !== 'detail'" class="flex flex-col h-full overflow-hidden">
         <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             v-model="code"
@@ -316,18 +317,32 @@ watch(
           />
         </div>
       </div>
+       <!-- Detail Data -->
+       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+       ini halaman detail
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Batal"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-          >
-          </CustomButton>
-          <CustomButton @click="onSubmit" label="Simpan" />
+            @click="closeDialog"
+          />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

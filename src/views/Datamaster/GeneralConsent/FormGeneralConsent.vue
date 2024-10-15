@@ -131,6 +131,7 @@ watch(
             class="col-span-4"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
+            :required="errors.code ? true : false"
           />
 
           <CustomTextfield
@@ -140,6 +141,7 @@ watch(
             class="col-span-8"
             :invalid="!!errors.name"
             :invalidMessage="errors.name"
+            :required="errors.name ? true : false"
           />
           <CustomAccordion
             initialState="0"

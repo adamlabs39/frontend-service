@@ -132,6 +132,7 @@ watch(
           placeholder="Masukkan Code SATUSEHAT"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           v-model="display"
@@ -139,6 +140,7 @@ watch(
           placeholder="Masukkan Display SATUSEHAT"
           :invalid="!!errors.display"
           :invalidMessage="errors.display"
+          :required="errors.display ? true : false"
         />
         <CustomInputNumber
           v-model="name"
@@ -146,6 +148,7 @@ watch(
           placeholder="Masukkan Gigi"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />

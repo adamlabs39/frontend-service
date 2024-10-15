@@ -235,9 +235,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="faskes"
-          :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+         @reload-data="fetchFaskesData()"
       />
     </template>
 
@@ -308,7 +308,7 @@ const handleFileUpload = async (file: File) => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">

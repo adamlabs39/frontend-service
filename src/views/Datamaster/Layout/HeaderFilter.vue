@@ -5,14 +5,12 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   pageType: {
     type: String,
     required: true,
-  },
-  valueSearch: {
-    type: String,
   },
   isSuperAdmin: {
     type: Boolean,
@@ -20,6 +18,18 @@ const props = defineProps({
   },
   dataBreadCrumb: {
     default: "",
+  },
+  filterChipList: {
+    type: Array as PropType<FilterChip[]>,
+    default: () => [],
+  },
+  filterSelect: {
+    type: Array,
+    default: () => [],
+  },
+  filterSelectSecond: {
+    type: Array,
+    default: () => [],
   },
 });
 
@@ -29,6 +39,13 @@ const emit = defineEmits([
   "update:valueSearch",
   "update:selectedRole",
   "selectedTab",
+  "reload-data",
+  "filterChange",
+  "update:selectedFilter",
+  "update:selectedFilterSecond",
+  "search",
+  "reset"
+  
 ]);
 
 const pageLabel = computed(() => {
@@ -83,35 +100,63 @@ const dataBreadCrumb = ref([
         : "Oklusi",
   },
 ]);
-const valueSearch = ref(props.valueSearch);
+const valueSearch = ref();
+const valueSelectedFilter = ref();
+const valueSelectedFilterSecond = ref();
+
+const resetForm = () => {
+  valueSearch.value = ""; // Mengatur ulang pencarian
+  valueSelectedFilter.value = ''; // Reset filter pertama
+  valueSelectedFilterSecond.value = ''; // Reset filter kedua
+  emit("reset");
+};
+
+
 watch(valueSearch, (newValue) => {
   emit("update:valueSearch", newValue);
 });
 
-const filterAktif = ref(["AKTIF", "NON-AKTIF"]);
 const selectedFilterAktif = ref<string[]>([]);
-const onAktifSelect = (label: string) => {
-  if (selectedFilterAktif.value.includes(label)) {
-    selectedFilterAktif.value = selectedFilterAktif.value.filter(
-      (item) => item != label
-    );
-  } else {
-    selectedFilterAktif.value.push(label);
-  }
-};
 
 const tabs = ref([
   { title: "TINDAKAN", content: "Tindakan", value: "0" },
   { title: "RUANGAN", content: "Ruangan", value: "1" },
 ]);
 const selectedTab = ref("0");
+const filterPoliList = ref([
+  "POLI UMUM",
+  "POLI ANAK",
+  "POLI GIGI POLI MATA",
+  "APS",
+]);
+
+const selectedFilter = ref<number[]>([]);
+
+const onPoliSelect = (value: number) => {
+  const index = selectedFilter.value.indexOf(value);
+  if (index === -1) {
+    selectedFilter.value.push(value);
+  } else {
+    selectedFilter.value.splice(index, 1);
+  }
+  emit("filterChange", selectedFilter.value);
+};
+
+interface FilterChip {
+  label: string;
+  value: any;
+}
 </script>
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <CustomButton icon="PhArrowClockwise" class="mr-5" />
+          <CustomButton
+            icon="PhArrowClockwise"
+            class="mr-5"
+            @click="emit('reload-data')"
+          />
           <CustomBreadCrumb
             v-if="isSuperAdmin"
             :home="{
@@ -142,12 +187,16 @@ const selectedTab = ref("0");
             @click="$emit('selectedTab', (selectedTab = tab.value))"
             :outlined="selectedTab !== tab.value"
           />
-          <PhLineVertical v-if="['tarif'].includes(pageType)" :size="32" class="text-adameds-300" />
+          <PhLineVertical
+            v-if="['tarif'].includes(pageType)"
+            :size="32"
+            class="text-adameds-300"
+          />
 
           <CustomButton
             @click="emit('tambah-data')"
             icon="PhPlus"
-            :label="props.pageType === 'tarif'?'Tarif Tindakan': 'Data'"
+            :label="props.pageType === 'tarif' ? 'Tarif Tindakan' : 'Data'"
             class="mr-[10px]"
           />
           <CustomButton
@@ -171,10 +220,12 @@ const selectedTab = ref("0");
             "
             class="grow"
             prependIcon="PhMagnifyingGlass"
+            @update:modelValue="$emit('update:valueSearch', valueSearch)"
           />
           <CustomSelect
             v-if="['user', 'ruangan', 'tarif'].includes(pageType)"
             class="grow"
+            v-model="valueSelectedFilter"
             :label="
               props.pageType === 'user'
                 ? 'Role'
@@ -193,12 +244,17 @@ const selectedTab = ref("0");
                 ? 'Pilih Unit Pelayanan'
                 : 'Pilih Kategori'
             "
-            optionValue="code"
+            :options="props.filterSelect"
+            optionValue="uuid"
             optionLabel="name"
+            @update:modelValue="
+              $emit('update:selectedFilter', valueSelectedFilter)
+            "
           />
           <CustomSelect
             v-if="['ruangan', 'tarif'].includes(pageType)"
             class="grow"
+            v-model="valueSelectedFilterSecond"
             :label="
               props.pageType === 'ruangan'
                 ? 'Kelas'
@@ -213,19 +269,55 @@ const selectedTab = ref("0");
                 ? 'Pilih Metode Pembayaran'
                 : 'Pilih Kelas'
             "
-            optionValue="code"
-            optionLabel="name"
+            :options="props.filterSelectSecond"
+            optionValue="value"
+            optionLabel="label"
+            @update:modelValue="
+              $emit('update:selectedFilterSecond', valueSelectedFilterSecond)
+            "
           />
           <div
             class="flex gap-2.5"
             v-if="['user', 'ruangan', 'tarif'].includes(pageType)"
           >
-            <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="" />
+            <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="$emit('search')" />
             <CustomButton
               label="Reset"
               background-color="bg-white"
               border-color="border-adameds-300"
               text-color="text-adameds-300"
+              @click="resetForm()"
+            />
+          </div>
+        </div>
+
+        <div
+          v-if="['pegawai', 'praktisi'].includes(pageType)"
+          class="flex mb-[10px] items-center"
+        >
+          <div class="w-[15%] text-SM font-semibold text-grey-300">
+            {{
+              props.pageType === "pegawai"
+                ? "Filter Tipe Pegawai"
+                : props.pageType === "praktisi"
+                ? "Filter Tipe Praktisi"
+                : ""
+            }}
+          </div>
+          <div class="flex text-grey-300">
+            |
+            <CustomChip
+              v-for="(filter, index) in filterChipList"
+              :key="filter.value + index"
+              :label="filter.label"
+              borderColor="border-adameds-300"
+              iconColor="text-adameds-300"
+              textColor="text-adameds-300"
+              bg-color="bg-adameds-50"
+              class="ml-[10px]"
+              :isSelected="selectedFilter.includes(filter.value)"
+              selectedColor="bg-adameds-300 border-adameds-300"
+              @selected="onPoliSelect(filter.value)"
             />
           </div>
         </div>

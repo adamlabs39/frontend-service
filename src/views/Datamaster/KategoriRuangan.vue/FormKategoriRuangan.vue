@@ -125,6 +125,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
 
         <CustomTextfield
@@ -134,6 +135,7 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
@@ -165,7 +167,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

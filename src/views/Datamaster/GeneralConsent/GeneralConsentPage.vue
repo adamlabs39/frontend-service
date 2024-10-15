@@ -125,9 +125,9 @@ const confirmDelete = async (item: any) => {
     <template #header>
       <HeaderFilter
         page-type="general"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchGeneralConsentData()"
       />
     </template>
 

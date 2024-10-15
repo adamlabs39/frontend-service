@@ -129,6 +129,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Penjamin"
@@ -137,6 +138,7 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
 
         <CustomTextfield
