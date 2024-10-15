@@ -21,11 +21,12 @@ export const useAdmisiRJStore = defineStore({
         poly = "",
         startDate = "",
         endDate = "",
+        dpjp = "",
       },
       payload = {}
     ) {
       // return apiAdmisiGet(
-      //   `/rawat-jalan?q=${q}&paymentMethod=${paymentMethod}&page=${page}&limit=${limit}&platform=${platform}&poly=${poly}&start_date=${startDate}&end_date=${endDate}`,
+      //   `/rawat-jalan?q=${q}&paymentMethod=${paymentMethod}&page=${page}&limit=${limit}&platform=${platform}&poly=${poly}&start_date=${startDate}&end_date=${endDate}&dpjp=${endDate}`,
       //   payload
       // );
       return {

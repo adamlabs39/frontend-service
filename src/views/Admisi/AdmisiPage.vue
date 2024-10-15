@@ -15,6 +15,7 @@ import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
 
+// NOTE Store
 const storeUtils = utilsStore();
 const admisiRJStore = useAdmisiRJStore();
 const admisiRIStore = useAdmisiRIStore();

@@ -19,11 +19,12 @@ export const useAdmisiIGDStore = defineStore({
         limit = 10,
         startDate = "",
         endDate = "",
+        dpjp = "",
       },
       payload = {}
     ) {
       // return apiAdmisiGet(
-      //   `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}`,
+      //   `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&dpjp=${endDate}`,
       //   payload
       // );
       return {
