@@ -169,6 +169,7 @@ watch(
         <CustomInfoRow label="Nama Penjamin" :value="name" />
         <CustomInfoRow label="No. Telepon" :value="phone" />
         <CustomInfoRow label="Alamat" :value="address" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

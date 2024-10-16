@@ -235,8 +235,9 @@ watch(
         <CustomInfoRow label="Kode Ruangan" :value="code" />
         <CustomInfoRow label="Nama Ruangan" :value="name" />
         <CustomInfoRow label="Kategori Ruangan" :value="payload.kategoriRuanganName" />
-        <CustomInfoRow label="Nomor Kamar" :value="`${noRoom}`" />
+        <CustomInfoRow label="No. Kamar" :value="`${noRoom}`" />
         <CustomInfoRow label="Kelas Ruangan" :value="kelasRuanganLabel" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

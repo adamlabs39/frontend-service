@@ -15,6 +15,9 @@ export const usePraktisiStore = defineStore({
       const { page = 1, limit = 10, name = "", doctor=false,non_doctor=false, payload = {} } = params;
       return apiDatamasterGet(`/datamaster/practitioner?page=${page}&limit=${limit}&name=${name}&doctor=${doctor}&non_doctor=${non_doctor}`, payload);
     },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/practitioner/aktif`, payload);
+    },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/practitioner", payload);
     },

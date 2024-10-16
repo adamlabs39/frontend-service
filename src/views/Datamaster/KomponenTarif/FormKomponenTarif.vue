@@ -153,6 +153,7 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Komponen Tarif" :value="code" />
         <CustomInfoRow label="Nama Komponen Tarif" :value="name" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

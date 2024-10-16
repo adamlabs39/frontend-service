@@ -301,6 +301,7 @@ watch(
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
         <CustomInfoRow label="Catatan" :value="payload.catatan ?? '-'" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status" :value="payload.status">
           <template #value>
             <CustomChip

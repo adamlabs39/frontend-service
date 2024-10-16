@@ -201,7 +201,7 @@ watch(
           optionLabel="name"
           class="col-span-12"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -217,6 +217,7 @@ watch(
         <CustomInfoRow label="Nama Tindaka" :value="name" />
         <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name ?? '-'" />
         <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name ?? '-'" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

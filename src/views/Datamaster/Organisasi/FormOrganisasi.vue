@@ -377,7 +377,7 @@ watch(
           place-holder="Pilih Part Of"
           class="col-span-12"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -389,7 +389,7 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <div class="font-bold text-heading leading-8">Data Organisasi</div>
+        <div class="font-bold leading-8 text-heading">Data Organisasi</div>
         <hr class="border-grey-200" />
         <CustomInfoRow label="Kode Organisasi" :value="payload.code" />
         <CustomInfoRow label="Nama Organisasi" :value="payload.name" />
@@ -423,7 +423,6 @@ watch(
           label="ID SATUSEHAT"
           :value="payload.satuSehatId ?? '-'"
         />
-
         <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

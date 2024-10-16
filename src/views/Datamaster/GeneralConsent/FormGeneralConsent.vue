@@ -123,7 +123,7 @@ watch(
     <template #body>
       <!-- Form Input -->
       <div v-if="method !== 'detail'">
-        <div class="mt-5 grid grid-cols-12 gap-5">
+        <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             v-model="code"
             label="Kode General Consent"
@@ -170,7 +170,7 @@ watch(
                   <div class="">list data dinamis</div>
                   <hr class="border-grey-200 my-2.5" />
                   <div class="">
-                    <ol class="grid grid-flow-col grid-cols- grid-rows-4">
+                    <ol class="grid grid-flow-col grid-rows-4 grid-cols-">
                       <li>1. nama</li>
                       <li>2. alamat</li>
                       <li>3. umur</li>
@@ -202,7 +202,7 @@ watch(
         </div>
         <CustomCkEditor v-model="isiSurat" label="Isi General Consent" />
 
-        <hr class="border-grey-200 col-span-12 my-5" />
+        <hr class="col-span-12 my-5 border-grey-200" />
         <CustomSwitch v-model="status" label="Status" class="col-span-12" />
       </div>
 
@@ -211,6 +211,7 @@ watch(
         <CustomInfoRow label="Kode General Consent" :value="code" />
         <CustomInfoRow label="Nama General Consent" :value="name" />
         <CustomInfoRow label="Isi General Consent" :value="isiSurat" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

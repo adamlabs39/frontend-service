@@ -488,7 +488,7 @@ watch(
     <template #header>{{ title }} Role</template>
     <template #body>
       <!-- Form Input -->
-      <div class="grid grid-cols-12 gap-5 mt-5">
+      <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
           label="Kode"
           v-model="code"
@@ -564,6 +564,26 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Role" :value="code" />
         <CustomInfoRow label="Nama Role" :value="name" />
+        <CustomInfoRow label="Modul">
+          <template #value>
+            <div
+              v-if="payload.permission && payload.permission.length"
+              class="flex flex-wrap w-full h-full gap-1"
+            >
+              <CustomChip
+                v-for="permission in payload.permission"
+                :label="permission"
+                textColor="text-white"
+                bgColor="bg-adameds-300"
+                borderColor="border-none"
+                :showCheckedIcon="false"
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </div>
+            <div v-else>-</div>
+          </template>
+        </CustomInfoRow>
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

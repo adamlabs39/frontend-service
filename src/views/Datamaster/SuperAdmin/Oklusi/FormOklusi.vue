@@ -176,6 +176,7 @@ watch(
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Oklusi" :value="name" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
             <template #value>
               <CustomChip

@@ -265,6 +265,7 @@ watch(
         <CustomInfoRow label="Jumlah" :value="payload.qty" />
         <CustomInfoRow label="Tipe Voucher" :value="payload.type" />
         <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
