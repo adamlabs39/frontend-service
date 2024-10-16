@@ -5,7 +5,7 @@ import { ref, watch } from "vue";
 import DetailPembelian from "../DetailPembelian.vue";
 
 const props = defineProps({
-  pembelianData: {
+  canceledData: {
     type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
     default: null,
   },
@@ -14,17 +14,15 @@ const props = defineProps({
 
 const emit = defineEmits(['row-clicked']);  // Define emit event
 
-
   
-const selectedPengajuanPembelian = ref([]);
-const pengajuanPembelians = ref ([]);
-
+const selectedPengajuanPembatalan = ref([]);
+const pengajuanPembatalans = ref ([]);
 
 watch(
-  () => props.pembelianData,
-  (newPembelianData) => {
-    if (newPembelianData) {
-      pengajuanPembelians.value = newPembelianData.map((item:any) => ({
+  () => props.canceledData,
+  (newCanceledData) => {
+    if (newCanceledData) {
+      pengajuanPembatalans.value = newCanceledData.map((item:any) => ({
         tanggalPembelian: new Date(item.tanggalPembelian).toLocaleDateString(),
         noPembelian: item.noPembelian,
         kategoriItem: item.kategoriItem,
@@ -49,19 +47,19 @@ watch(
 );
 
 
+
 const handleRowClick = (rowData:any) => {
-  emit('row-clicked', rowData.data);
-  console.log(rowData.data)
+    emit('row-clicked', rowData.data);
+    console.log(rowData.data)
 };
 
 </script>
 
 <template>
-  <!-- {{ pembelianData }} -->
   <DataTable
-    v-if="pengajuanPembelians.length"
-    v-model:selection="selectedPengajuanPembelian"
-    :value="pengajuanPembelians"
+    v-if="pengajuanPembatalans.length"
+    v-model:selection="selectedPengajuanPembatalan"
+    :value="pengajuanPembatalans"
     @row-click="handleRowClick"
     tableStyle="min-width: 50rem"
     scrollable
@@ -143,7 +141,7 @@ const handleRowClick = (rowData:any) => {
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.status"
-            bgColor="bg-grey-300"
+            bgColor="bg-danger-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
@@ -152,9 +150,4 @@ const handleRowClick = (rowData:any) => {
     </Column>
   </DataTable>
   <NoData v-else />
-
-
-  <!-- <div class="mt-8">
-    {{ pengajuanPembelians }}
-  </div> -->
 </template>

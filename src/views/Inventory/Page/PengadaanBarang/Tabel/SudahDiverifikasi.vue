@@ -3,65 +3,63 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import { ref, watch } from "vue";
 import DetailPembelian from "../DetailPembelian.vue";
+import { onMounted } from "vue";
 
 const props = defineProps({
-  pembelianData: {
-    type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
+  canceledData: {
+    type: Object as () => Record<string, any> | null, // Izinkan null sebagai nilai default
     default: null,
   },
-
 });
 
-const emit = defineEmits(['row-clicked']);  // Define emit event
+const emit = defineEmits(["row-clicked"]); // Define emit event
 
+const selectedVerifiedData = ref<any[]>([]);
+const verifiedData = ref<any[]>([]);
 
-  
-const selectedPengajuanPembelian = ref([]);
-const pengajuanPembelians = ref ([]);
+onMounted(() => {
+  verifiedData.value = [
+    {
+      petugasPembuatPO: "Nama Petugas",
+      status: "DIVERIFIKASI",
+      isCito: true,
+      ppn: true,
+      materai: 10000,
+      diskon: 1000,
+      catatan: "Halo semuanya",
+      metodePembelian: "Tunai",
+      tanggalPembelian: "2024-10-16T03:03:10.183Z",
+      supplier: "PT. Sanbe",
+      jenisStok: "Umum",
+      jenisItem: "Obat",
+      kategoriItem: "Medis",
+      lokasiPenerima: "Gudang Farmasi",
+      noPembelian: "PO8872",
+      datas: [
+        {
+          namaItems: "Paracetamol",
+          jumlahBeli: 2,
+          hargaSatuan: 1000,
+          satuanBeli: "Box/100",
+          jumlahPermintaan: 100000,
+        },
+      ],
+      totalItem: 1,
+    },
+  ];
+});
 
-
-watch(
-  () => props.pembelianData,
-  (newPembelianData) => {
-    if (newPembelianData) {
-      pengajuanPembelians.value = newPembelianData.map((item:any) => ({
-        tanggalPembelian: new Date(item.tanggalPembelian).toLocaleDateString(),
-        noPembelian: item.noPembelian,
-        kategoriItem: item.kategoriItem,
-        jenisItem: item.jenisItem,
-        jenisStok: item.jenisStok,
-        supplier: item.supplier,
-        petugasPembuatPO: item.petugasPembuatPO,
-        lokasiPenerima:item.lokasiPenerima,
-        status: item.status,
-        isCito: item.isCito,
-        ppn: item.ppn,
-        materai: item.materai,
-        diskon: item.diskon,
-        catatan: item.catatan,
-        metodePembelian: item.metodePembelian,
-        totalItem: item.totalItem,
-        datas: item.datas, // Menyimpan data items
-      }));
-    }
-  },
-  { immediate: true }
-);
-
-
-const handleRowClick = (rowData:any) => {
-  emit('row-clicked', rowData.data);
-  console.log(rowData.data)
+const handleRowClick = (rowData: any) => {
+  emit("row-clicked", rowData.data);
+  console.log(rowData.data);
 };
-
 </script>
 
 <template>
-  <!-- {{ pembelianData }} -->
   <DataTable
-    v-if="pengajuanPembelians.length"
-    v-model:selection="selectedPengajuanPembelian"
-    :value="pengajuanPembelians"
+    v-if="verifiedData.length"
+    v-model:selection="selectedVerifiedData"
+    :value="verifiedData"
     @row-click="handleRowClick"
     tableStyle="min-width: 50rem"
     scrollable
@@ -122,7 +120,7 @@ const handleRowClick = (rowData:any) => {
         </div>
       </template>
     </Column>
-    
+
     <Column field="petugas" headerClass="bg-adameds-50">
       <template #header>
         <div class="font-semibold">Petugas</div>
@@ -143,7 +141,7 @@ const handleRowClick = (rowData:any) => {
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.status"
-            bgColor="bg-grey-300"
+            bgColor="bg-aqua-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
@@ -152,9 +150,4 @@ const handleRowClick = (rowData:any) => {
     </Column>
   </DataTable>
   <NoData v-else />
-
-
-  <!-- <div class="mt-8">
-    {{ pengajuanPembelians }}
-  </div> -->
 </template>

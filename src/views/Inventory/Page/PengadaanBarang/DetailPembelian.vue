@@ -71,7 +71,7 @@ const handleReject = (reason:string) => {
 </script>
 
 <template>
-  {{ props.detailData }}
+  <!-- {{ props.detailData }} -->
   <Card pt:body:class="h-full pt-0" pt:content:class="h-full">
     <template #header>
       <CustomAccordion :openWithHeader="false" noBorder initialState="0">
@@ -336,7 +336,7 @@ const handleReject = (reason:string) => {
             </div>
           </div>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3" v-if="detailData?.status=='PENGAJUAN'">
           <CustomButton
             class="my-auto bg-danger-300"
             label="Batal Pembelian"

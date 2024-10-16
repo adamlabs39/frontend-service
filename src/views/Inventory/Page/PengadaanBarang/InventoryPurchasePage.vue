@@ -9,6 +9,8 @@ import Paginator from "primevue/paginator";
 import TambahPermintaan from "@/views/Inventory/Page/PengadaanBarang/TambahPermintaan.vue";
 import DetailPembelian from "./DetailPembelian.vue";
 import DatabaseFill from "@/components/icons/DatabaseFill.vue";
+import Dibatalkan from "./Tabel/Dibatalkan.vue";
+import SudahDiverifikasi from "./Tabel/SudahDiverifikasi.vue";
 
 const route = useRoute();
 const value = ref("1");
@@ -66,7 +68,7 @@ const handleSimpanPembelian = (data: any) => {
 const pembatalanData = ((updatedData: any) => {
    if (pembelianData.value) {
     // Find the index of the item you want to update
-     const index = pembelianData.value.findIndex(item => item.noPembelian === updatedData.noPembelian);
+     const index = pembelianData.value.findIndex((item:any)=> item.noPembelian === updatedData.noPembelian);
     console.log(index)
     if (index !== -1) {
       // Update the existing item
@@ -78,12 +80,15 @@ const pembatalanData = ((updatedData: any) => {
 
 // Hanya menampilkan pengajuan saat di tabs Pengajuan Pembelian
 const pengajuanPembelianData = computed(() => {
-  return pembelianData.value?.filter(item => item.status === 'PENGAJUAN') || [];
+  return pembelianData.value?.filter((item:any )=> item.status === 'PENGAJUAN') || [];
+});
+const pembatalanPembelianData = computed(() => {
+  return pembelianData.value?.filter((item:any )=> item.status === 'DIBATALKAN') || [];
 });
 </script>
 
 <template>
-  <!-- {{pembelianData  }} -->
+  <!-- {{ pembelianData  }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
     pt:body:class="h-full pt-0 overflow-auto"
@@ -142,7 +147,12 @@ const pengajuanPembelianData = computed(() => {
           <TabPanel value="1">
             <PengajuanPembelian :pembelian-data = "pengajuanPembelianData" @row-clicked="changeSection('Detail Permintaan', $event)"/>
           </TabPanel>
-          <TabPanel value="2"> lmlm </TabPanel>
+          <TabPanel value="2">
+            <Dibatalkan :canceledData="pembatalanPembelianData" @row-clicked="changeSection('Detail Permintaan', $event)" />
+          </TabPanel>
+          <TabPanel value="3">
+            <SudahDiverifikasi/>
+          </TabPanel>
         </TabPanels>
       </Tabs>
     </template>
