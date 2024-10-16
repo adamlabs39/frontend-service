@@ -25,7 +25,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Verifikasi Pembelian Barang Supplier",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/pengadaan-barang/verifikasi-pembelian-barang-supplier",
             icon: "",
           },
           {
