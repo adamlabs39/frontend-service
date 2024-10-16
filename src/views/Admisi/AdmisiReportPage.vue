@@ -220,7 +220,8 @@ defineExpose({
                 v-if="pageType != 'kunjungan' && pageType != 'penjamin'"
                 label="Cari Pasien"
                 placeholder="Cari Nama / Alamat / No. RM"
-                class="mr-5 w-[60%]"
+                class="mr-5"
+                :class="[pageType == 'bayi-baru-lahir' ? 'grow' : 'w-[60%]']"
               />
               <CustomSelect
                 v-if="
@@ -240,7 +241,7 @@ defineExpose({
                 ]"
               />
               <CustomSelect
-                v-else
+                v-else-if="pageType != 'bayi-baru-lahir'"
                 v-model="visitTypeFilter"
                 label="Jenis Kunjungan"
                 class="mr-5 grow"
@@ -754,18 +755,6 @@ defineExpose({
                   <!-- {{ epochToDate(data.tglRegistrasi, "dateTime") }} -->
                 </template>
               </Column>
-              <!-- FIXME Belum Ada -->
-              <Column
-                field="noreg"
-                header="No. Registrasi"
-                header-class="text-black bg-adameds-50"
-              ></Column>
-              <!-- FIXME Belum Ada -->
-              <Column
-                field="visitType"
-                header="Jenis Kunjungan"
-                header-class="text-black bg-adameds-50"
-              ></Column>
               <Column
                 field="noRmBaby"
                 header="No. RM"
