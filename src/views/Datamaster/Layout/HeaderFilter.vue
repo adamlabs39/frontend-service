@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, type PropType, computed, watch } from "vue";
+import { ref, type PropType, computed, watch,defineExpose } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -108,9 +108,12 @@ const resetForm = () => {
   valueSearch.value = ""; // Mengatur ulang pencarian
   valueSelectedFilter.value = ''; // Reset filter pertama
   valueSelectedFilterSecond.value = ''; // Reset filter kedua
-  emit("reset");
+  // emit("reset");
 };
 
+defineExpose({
+  resetForm,
+});
 
 watch(valueSearch, (newValue) => {
   emit("update:valueSearch", newValue);
@@ -270,8 +273,16 @@ interface FilterChip {
                 : 'Pilih Kelas'
             "
             :options="props.filterSelectSecond"
-            optionValue="value"
-            optionLabel="label"
+            :optionValue="props.pageType === 'ruangan'
+                ? 'value'
+                : props.pageType === 'tarif'
+                ? 'uuid'
+                : ''"
+            :optionLabel="props.pageType === 'ruangan'
+                ? 'label'
+                : props.pageType === 'tarif'
+                ? 'name'
+                : ''"
             @update:modelValue="
               $emit('update:selectedFilterSecond', valueSelectedFilterSecond)
             "
@@ -286,7 +297,7 @@ interface FilterChip {
               background-color="bg-white"
               border-color="border-adameds-300"
               text-color="text-adameds-300"
-              @click="resetForm()"
+              @click="$emit('reset')"
             />
           </div>
         </div>

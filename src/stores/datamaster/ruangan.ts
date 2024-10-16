@@ -34,6 +34,9 @@ export const useRuanganStore = defineStore({
         payload
       );
     },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/ruangan/aktif`, payload);
+    },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/ruangan", payload);
     },

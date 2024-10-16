@@ -41,13 +41,8 @@ const handleSelectedKelas = (selectedValue:any) => {
 
 // Reset filter fields
 const handleReset = () => {
-  searchQuery.value = ""; 
-  selectedKategoriRuangan.value = "";
-  selectedKelas.value = ""; 
-  ruanganProperties.value.page = 1; 
+  resetForm();
   fetchRuanganData(); 
-  console.log('selected=',selectedKategoriRuangan.value)
-
 };
 
 // Fetch Ruangan Data from API
@@ -269,7 +264,15 @@ const handleFileUpload = async (file: File) => {
   }
 };
 
+const resetFormRef = ref();
 
+const resetForm = () => {
+  searchQuery.value = ""; 
+  selectedKategoriRuangan.value = "";
+  selectedKelas.value = ""; 
+  ruanganProperties.value.page = 1;
+  resetFormRef.value.resetForm(); 
+};
 </script>
 
 <template>
@@ -290,6 +293,7 @@ const handleFileUpload = async (file: File) => {
         @reset="handleReset()"
         :filterSelect="kategoriRuanganPayload"
         :filterSelectSecond="optionsKelas"
+        ref="resetFormRef"
       />
     </template>
 

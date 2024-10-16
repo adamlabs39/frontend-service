@@ -42,7 +42,7 @@ const optionsPelayanan = ref([
 
 const fetchPenjamin = async () => {
   try {
-    const response = await penjaminStore.getApi();
+    const response = await penjaminStore.getAktifApi();
     if (response && response.payload) {
       penjaminPayload.value = response.payload;
     } else {
@@ -56,7 +56,7 @@ const fetchPenjamin = async () => {
 
 const fetchRuangan = async () => {
   try {
-    const response = await ruanganStore.getApi();
+    const response = await ruanganStore.getAktifApi();
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
     } else {

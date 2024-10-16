@@ -284,11 +284,10 @@ const handleFileUpload = async (file: File) => {
           class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
-        >
+        <Column field="status" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center text-SM">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
