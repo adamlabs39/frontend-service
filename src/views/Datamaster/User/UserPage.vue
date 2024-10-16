@@ -87,7 +87,11 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="user" @tambah-data="changeSection('Daftar')" />
+      <HeaderFilter
+        page-type="user"
+        @tambah-data="changeSection('Daftar')"
+        @reload-data="fetchUserData()"
+      />
     </template>
     <template #content>
       <NoData v-if="!hasData" />

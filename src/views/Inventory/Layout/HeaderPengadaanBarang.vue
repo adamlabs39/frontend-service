@@ -20,10 +20,10 @@ const props = defineProps({
 const emit = defineEmits(["tambahPermintaan"]);
 const noPO = ref<string>("");
 
-onMounted(() => {
-  console.log(props.dataBreadCrumb)
-  // console.log("`page", props.pageType);
-})
+// onMounted(() => {
+//   console.log(props.dataBreadCrumb)
+//   console.log("`page", props.pageType);
+// })
 </script>
 
 <template>
@@ -62,7 +62,7 @@ onMounted(() => {
           prependIcon="PhMagnifyingGlass"
           label="Pencarian"
           placeholder="Cari Nama Pasien"
-          class="mr-5 grow"
+          class=" grow"
         />
       </div>
       <slot name="tabs"></slot>

@@ -169,12 +169,12 @@ const baseInstanceDatamaster = axios.create({
 
 baseInstanceDatamaster.interceptors.request.use(
   (config) => {
-    const token =
-      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwZXIgYWRtaW4iLCJ1c2VybmFtZSI6ImFkbWluQGdtYWlsLmNvbSIsImZhc2tlc1V1aWQiOm51bGwsImlhdCI6MTcyODU0NzUwMiwiZXhwIjoxNzI4NTU4MzAyLCJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSJ9.fvUwi6IPO0BwcF2WraoVK0uS7taggZtF2YD5Zpxdt3ALyMmeBXy22MMT2tL6zGVtQGqJrlqFBwaZTgVtydALlFedQT_tmm2xWHm7fzDUEYD7yYzqh8IWGvR_8eT9vonUApl_EfqKcRnh3f_HbRLh7tvnsuApIyny_NWZaDIJ9zvaMMkK9XZ-D880Q3GVHOOyYCjB4xLch143-xFr9uSmJekzgvCwsfclMZodE40iYCsGmCS9yYAFPo1GgrdTOf5riPeL5mhoky5-6YZEnBCtdOqYM0291_p6ZooG9ksK_5m_L6M6O-UQyJDCmzDUSEXLLrfQVGPkOmGxbBScPEhjIA";
+    const token = localStorage.getItem("access_token");
+
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);

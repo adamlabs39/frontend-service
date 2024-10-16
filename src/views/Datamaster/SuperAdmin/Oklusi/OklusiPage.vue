@@ -237,9 +237,9 @@ const handleFileUpload = async (file: File) => {
       <HeaderFilter
         pageType="oklusi"
         isSuperAdmin
-         :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchOklusiData()"
       />
     </template>
     <template #content>

@@ -173,6 +173,11 @@ const apiDatamasterGet = async (url: string, data: object) => {
 const apiDatamasterPost = async (url: string, data: object) => {
   try {
     let response = await baseInstanceDatamaster.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -181,6 +186,11 @@ const apiDatamasterPost = async (url: string, data: object) => {
 const apiDatamasterPut = async (url: string, data: object) => {
   try {
     let response = await baseInstanceDatamaster.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -189,6 +199,11 @@ const apiDatamasterPut = async (url: string, data: object) => {
 const apiDatamasterDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstanceDatamaster.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: "Data berhasil dihapus",
+      life: 3000,
+    });
     return response;
   } catch (error) {
     errorApiHandler(error);
