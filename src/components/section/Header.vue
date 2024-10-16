@@ -7,12 +7,14 @@ import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
 
+
 interface userData {
   name: string;
   role: string;
 }
 
 const authStore = useAuthStore();
+
 const UseUtilsStore = utilsStore();
 
 const router = useRouter();
@@ -144,6 +146,7 @@ onMounted(() => {
 const checkActiveTab = (url: string) => {
   let split = route.path.split("/");
   return `/${split[1]}` == url;
+ 
 };
 </script>
 
