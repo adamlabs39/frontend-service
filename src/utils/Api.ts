@@ -5,7 +5,8 @@ type AnyObject = { [key: string]: any };
 
 // Convert camelCase to snake_case
 const toSnakeCase = (obj: AnyObject | any[]): AnyObject | any[] => {
-  if (typeof obj !== "object" || obj === null || obj instanceof FormData) return obj;
+  if (typeof obj !== "object" || obj === null || obj instanceof FormData)
+    return obj;
 
   if (Array.isArray(obj)) {
     return obj.map((item) => toSnakeCase(item));
@@ -23,7 +24,8 @@ const toSnakeCase = (obj: AnyObject | any[]): AnyObject | any[] => {
 
 // Convert snake_case to camelCase
 const toCamelCase = (obj: AnyObject | any[]): AnyObject | any[] => {
-  if (typeof obj !== "object" || obj === null || obj instanceof FormData) return obj;
+  if (typeof obj !== "object" || obj === null || obj instanceof FormData)
+    return obj;
 
   if (Array.isArray(obj)) {
     return obj.map((item) => toCamelCase(item));
@@ -89,7 +91,7 @@ const authInstance = axios.create({
 });
 
 authInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem("access_token");
 
   if (!token) {
     config.headers["Authorization"] = "";
@@ -128,7 +130,8 @@ const settingInstance = axios.create({
 settingInstance.interceptors.request.use((config) => {
   console.log(import.meta.env.VITE_URL_SETTING);
 
-  const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTFmNWZlLWE3NWItN2RkNC1iNDhlLTJlYWZmMzZlYWU5MSIsInVzZXJuYW1lIjoiYWRhbS1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwidXNlclV1aWQiOiIwMTkxZjVmZS1hZGJmLTc1ZjItOGVhNi0xNzUxZjJiYzA2NWUiLCJpYXQiOjE3MjczNDM2MzYsImV4cCI6MTcyOTkzNTYzNiwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.DUAm62beCvH5znNBPbkhpbEM26Kv5jvfgdEYAcQ4lLRgehaZt-k89AYWM31aT83G-HlM5mkEbwTqrw4zb2gj2OiuNUPmwugBIXZVARM99Gcp4AHuomFkgC7d2n8VGnt7gvoIRK7blRPtYymKNFATk36XhDZUI3glXVy3yQQ4M7etjvbIv9q7RqqgDyo1gc8gIvcieSNuSk-4SQh4u7pSCeNqduji3McEKvZVbzxa9L2mtpZhYK5X3c3CNwMkUCR2SXY6o50uibjEO8EzE1alN824Jf8_Vr2CDYtP90O0MtquZLkeLbd7IHBjZfqWGjTFQU7drtrdwT7-33-Q-4F1dw";
+  const token =
+    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTFmNWZlLWE3NWItN2RkNC1iNDhlLTJlYWZmMzZlYWU5MSIsInVzZXJuYW1lIjoiYWRhbS1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwidXNlclV1aWQiOiIwMTkxZjVmZS1hZGJmLTc1ZjItOGVhNi0xNzUxZjJiYzA2NWUiLCJpYXQiOjE3MjczNDM2MzYsImV4cCI6MTcyOTkzNTYzNiwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.DUAm62beCvH5znNBPbkhpbEM26Kv5jvfgdEYAcQ4lLRgehaZt-k89AYWM31aT83G-HlM5mkEbwTqrw4zb2gj2OiuNUPmwugBIXZVARM99Gcp4AHuomFkgC7d2n8VGnt7gvoIRK7blRPtYymKNFATk36XhDZUI3glXVy3yQQ4M7etjvbIv9q7RqqgDyo1gc8gIvcieSNuSk-4SQh4u7pSCeNqduji3McEKvZVbzxa9L2mtpZhYK5X3c3CNwMkUCR2SXY6o50uibjEO8EzE1alN824Jf8_Vr2CDYtP90O0MtquZLkeLbd7IHBjZfqWGjTFQU7drtrdwT7-33-Q-4F1dw";
 
   if (!token) {
     config.headers["Authorization"] = "";
@@ -166,12 +169,12 @@ const baseInstanceDatamaster = axios.create({
 
 baseInstanceDatamaster.interceptors.request.use(
   (config) => {
-    const token =
-      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic3VwZXIgYWRtaW4iLCJ1c2VybmFtZSI6ImFkbWluQGdtYWlsLmNvbSIsImZhc2tlc1V1aWQiOm51bGwsImlhdCI6MTcyODU0NzUwMiwiZXhwIjoxNzI4NTU4MzAyLCJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSJ9.fvUwi6IPO0BwcF2WraoVK0uS7taggZtF2YD5Zpxdt3ALyMmeBXy22MMT2tL6zGVtQGqJrlqFBwaZTgVtydALlFedQT_tmm2xWHm7fzDUEYD7yYzqh8IWGvR_8eT9vonUApl_EfqKcRnh3f_HbRLh7tvnsuApIyny_NWZaDIJ9zvaMMkK9XZ-D880Q3GVHOOyYCjB4xLch143-xFr9uSmJekzgvCwsfclMZodE40iYCsGmCS9yYAFPo1GgrdTOf5riPeL5mhoky5-6YZEnBCtdOqYM0291_p6ZooG9ksK_5m_L6M6O-UQyJDCmzDUSEXLLrfQVGPkOmGxbBScPEhjIA";
+    const token = localStorage.getItem("access_token");
+
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);

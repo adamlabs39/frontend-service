@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchRoleData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -77,8 +77,8 @@ const metaKey = ref(true);
 const selectedData = ref();
 
 const onRowSelect = (event: any) => {
-  console.log('test');
-  
+  console.log("test");
+
   selectedData.value = event.data;
   openDialog("detail", "Detail Data", selectedData.value);
 };
@@ -224,9 +224,9 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="role"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchRoleData()"
       />
     </template>
 
@@ -282,18 +282,27 @@ const downloadExportExcel = async () => {
         >
           <template #body="slotProps">
             <div class="flex flex-wrap gap-2">
-              <div v-for="items in slotProps.data.permission" :key="items">
-                <CustomChip
-                  :label="items"
-                  :showCheckedIcon="false"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
-                />
+              <div
+                v-if="
+                  slotProps.data.permission &&
+                  slotProps.data.permission.length > 0
+                "
+              >
+                <div v-for="items in slotProps.data.permission" :key="items">
+                  <CustomChip
+                    :label="items"
+                    :showCheckedIcon="false"
+                    border-color="border-none"
+                    bg-color="bg-adameds-300"
+                    customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+                  />
+                </div>
               </div>
+              <div v-else>-</div>
             </div>
           </template>
         </Column>
+
         <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
@@ -355,7 +364,7 @@ const downloadExportExcel = async () => {
         </Column>
       </DataTable>
       <FormRole
-      v-model:isDialogVisible="isTambahDataDialogVisible"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"

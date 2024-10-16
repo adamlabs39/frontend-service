@@ -15,7 +15,7 @@ export const useLokasiStore = defineStore({
       return apiDatamasterGet(`/datamaster/lokasi?page=${page}&limit=${limit}&name=${name}`, payload);
     },
     async getAktifApi(payload = {}) {      
-      return apiDatamasterGet(`/datamaster/lokasi/aktif}`, payload);
+      return apiDatamasterGet(`/datamaster/lokasi/aktif`, payload);
     },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/lokasi", payload);

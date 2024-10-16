@@ -129,6 +129,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Penjamin"
@@ -137,6 +138,7 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
 
         <CustomTextfield
@@ -167,6 +169,7 @@ watch(
         <CustomInfoRow label="Nama Penjamin" :value="name" />
         <CustomInfoRow label="No. Telepon" :value="phone" />
         <CustomInfoRow label="Alamat" :value="address" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

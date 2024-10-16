@@ -118,7 +118,7 @@ watch(
     <template #header>{{ title }} Faskes</template>
     <template #body>
       <!-- Form Input -->
-      <div v-if="method !== 'detail'" class="mt-5 grid grid-cols-12 gap-5">
+      <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
           label="Kode Faskes"
           v-model="code"
@@ -126,6 +126,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Faskes"
@@ -134,8 +135,9 @@ watch(
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -150,6 +152,7 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Faskes" :value="code" />
         <CustomInfoRow label="Nama Faskes" :value="name" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

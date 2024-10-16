@@ -191,6 +191,7 @@ watch(
               optionLabel="name"
               :invalid="!!errors.kategoriGigiUuid"
               :invalidMessage="errors.kategoriGigiUuid"
+              :required="errors.kategoriGigiUuid ? true : false"
             />
             <CustomTextfield
               label="Referensi Sistem SATUSEHAT"
@@ -198,6 +199,7 @@ watch(
               placeholder="Masukkan Referensi sistem SATUSEHAT"
               :invalid="!!errors.system"
               :invalidMessage="errors.system"
+              :required="errors.system ? true : false"
             />
             <CustomTextfield
               label="Code SATUSEHAT"
@@ -205,6 +207,7 @@ watch(
               placeholder="Masukkan Code SATUSEHAT"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
             />
             <CustomTextfield
               label="Display SATUSEHAT"
@@ -212,6 +215,7 @@ watch(
               placeholder="Masukkan Display SATUSEHAT"
               :invalid="!!errors.display"
               :invalidMessage="errors.display"
+              :required="errors.display ? true : false"
             />
             <CustomTextfield
               label="Nama Item Gigi"
@@ -219,6 +223,7 @@ watch(
               placeholder="Masukkan Nama Item Gigi"
               :invalid="!!errors.name"
               :invalidMessage="errors.name"
+              :required="errors.name ? true : false"
             />
             <CustomTextArea
               label="Catatan"
@@ -296,6 +301,7 @@ watch(
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
         <CustomInfoRow label="Catatan" :value="payload.catatan ?? '-'" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status" :value="payload.status">
           <template #value>
             <CustomChip

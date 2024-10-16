@@ -18,7 +18,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const praktisiStore = usePraktisiStore();
 const faskesStore = useFaskesStore();
-const roleStore = useFaskesStore();
+const roleStore = useRoleStore();
 const praktisiPayload = ref<any[]>([]);
 const faskesPayload = ref<any[]>([]);
 const rolePayload = ref<any[]>([]);
@@ -100,7 +100,7 @@ const dataBreadCrumb = ref([{ label: "Tambah Data" }]);
 
 const fetchPraktisi = async () => {
   try {
-    const response = await praktisiStore.getApi();
+    const response = await praktisiStore.getAktifApi();
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
@@ -113,7 +113,7 @@ const fetchPraktisi = async () => {
 };
 const fetchFaskes = async () => {
   try {
-    const response = await faskesStore.getApi();
+    const response = await faskesStore.getAktifApi();
     if (response && response.payload) {
       faskesPayload.value = response.payload;
     } else {
@@ -126,15 +126,15 @@ const fetchFaskes = async () => {
 };
 const fetchRole = async () => {
   try {
-    const response = await roleStore.getApi();
+    const response = await roleStore.getAktifApi();
     if (response && response.payload) {
-      faskesPayload.value = response.payload;
+      rolePayload.value = response.payload;
     } else {
-      faskesPayload.value = [];
+      rolePayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch role", error);
-    faskesPayload.value = [];
+    rolePayload.value = [];
   }
 };
 
@@ -249,6 +249,39 @@ const permissionsItem = ref([
         name: "Monitoring Kamar",
         allows: ["READ", "SETTING BED", "CREATE BED", "DELETE BED"],
       },
+      {
+        name: "Laporan Admisi",
+        features: [
+          {
+            name: "Kunjungan",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "penjamin",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Batal Kunjungan",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Status kamar",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Keperawatan Inap Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Bayi Baru Lahir",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Rekap Jumlah Pasien BPJS",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
     ],
   },
   {
@@ -283,6 +316,10 @@ const permissionsItem = ref([
         name: "Laporan Rawat Jalan",
         features: [
           {
+            name: "Kunjungan",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
             name: "Pembatalan Poli",
             allows: ["READ", "CETAK LAPORAN"],
           },
@@ -307,7 +344,7 @@ const permissionsItem = ref([
               "UPDATE REKAM MEDIS",
               "CETAK LABEL",
               "TUTUP SEMUA FORM",
-              "BUKAN SEMUA FORM",
+              "BUKA SEMUA FORM",
               "RIWAYAT",
               "SEMBUNYIKAN DETAIL PASIEN",
               "TAMPILKAN DETAIL PASIEN",
@@ -320,15 +357,23 @@ const permissionsItem = ref([
               "CETAK LABEL",
               "RIWAYAT",
               "SEMBUNYIKAN DETAIL PASIEN",
-              "CREATE DIAGNOSIS",
-              "DELETE DIAGNOSIS",
-              "UPDATE CATATAN PERAWAT",
-              "BALAS CATATAN PERAWAT",
-              "KIRIM CATATAN",
-              "KIRIM INTRUKSI",
-              "CREATE TINDAKAN",
-              "CREATE MULTIPLE TINDAKAN",
-              "DELETE TINDAKAN",
+              "TIDAK ADA ALERGI",
+              "CREATE ALERGI",
+              "CREATE ANAMNESIS",
+              "CREATE TANDA VITAL",
+              "CREATE ANTROPOMETRI",
+              "CREATE ASESMEN NYERI",
+              "CREATE KESADARAN",
+              "CREATE PEMERIKSAAN FISIK",
+              "CREATE PEMERIKSAAN GIGI",
+              "CREATE PEMERIKSAAN MATA",
+              "CREATE DERAJAT LUKA BAKAR",
+              "CREATE CATATAN HASIL PENUNJANG",
+              "CREATE DIAGNOSIS DOKTER",
+              "CREATE ASUHAN KEPERAWATAN",
+              "CREAT CATATAN PERAWAT",
+              "CREATE INSTRUKSI MEDIS",
+              "CREATE PEMERIKSAAN DAN TINDAKAN",
             ],
           },
           {
@@ -337,48 +382,84 @@ const permissionsItem = ref([
               "READ",
               "CETAK LABEL",
               "RIWAYAT",
-              "SEMBUNYIKAN DATA PASIEN",
+              "SEMBUNYIKAN DETAIL PASIEN",
               "TUTUP SEMUA FORM",
               "BUKA SEMUA FORM",
               "CREATE OBAT",
-              "CREATE RACIKAN OBAT",
-              "ITEM OBAT RACIKAN",
+              "CREATE OBAT RACIKAN",
               "UPDATE OBAT",
               "DELETE OBAT",
-              "DELETE ITEM OBAT RACIKAN",
             ],
           },
           {
             name: "Akses Dan Penunjang",
             allows: [
               "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
               "CREATE ALKES",
-              "CREATE MULTIPLE ALKES",
+              "CREATE ALKES MULTIPLE",
               "DELETE LIST ALKES",
-              "DELETE MULTIPLE ITEM ALKES",
+              "DELETE ITEM ALKES MULTIPLE",
               "DELETE SEMUA",
+              "AMBIL ITEM",
+              "SIMPAN ORDER",
               "CREATE TINDAKAN",
               "DELETE LIST TINDAKAN",
             ],
           },
           {
             name: "Inform Consent",
-            allows: ["READ"],
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CREATE",
+            ],
           },
           {
             name: "Unggah Berkas",
-            allows: ["READ", "UPDATE FILE", "DELETE FILE", ""],
+            allows: [
+              "READ",
+              "UPDATE FILE TERUNGGAH",
+              "DELETE FILE TERUNGGAH",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "MENYEMBUNYIKAN DETAIL PASIEN",
+              "CARI FILE",
+              "TAMPILAN LIST",
+              "TAMPILAN GRID",
+            ],
           },
           {
             name: "Resume Dan Discarge",
-            allows: ["READ"],
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK RESUME MEDIS",
+              "SIMPAN RESUME MEDIS",
+              "DISCHARGE",
+            ],
           },
           {
             name: "Cetak Hasil Dan Surat",
             allows: [
               "READ",
-              "CREATE SURAT KETERANGAN",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK HASIL",
+              "CREATE SURAT",
               "DELETE SURAT KETERANGAN",
+              "CETAK SURAT",
             ],
           },
         ],
@@ -390,7 +471,7 @@ const permissionsItem = ref([
     sub_modules: [
       {
         name: "Rawat Inap",
-        allows: ["READ","BATAL DIRAWAT"],
+        allows: ["READ", "BATAL DIRAWAT"],
       },
       {
         name: "Perpindahan Bangsal",
@@ -446,56 +527,371 @@ const permissionsItem = ref([
               "UPDATE PEMERIKSAAN DAN TINDAKAN",
               "UPDATE REKAM MEDIS",
               "DELETE SESI",
-              "",
+              "CETAK LABEL",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TAMPILKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "RIWAYAT",
             ],
           },
           {
             name: "Asesmen",
             allows: [
               "READ",
-              "CREATE DIAGNOSIS",
-              "DELETE DIAGNOSIS",
-              "UPDATE CATATAN PERAWAT",
-              "BALAS CATATAN PERAWAT",
-              "KIRIM CATATAN PERAWAT",
-              "KIRIM INTERUKSI MEDIS",
-              "CREATE MULTIPLE TINDAKAN",
-              "DELETE TINDAKAN",
-              "DELETE MULTIPLE TINDAKAN",
-              "DELETE SEMUA",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "TIDAK ADA ALERGI",
+              "CREATE ALERGI",
+              "CREATE ANAMNESIS",
+              "CREATE TANDA VITAL",
+              "CREATE ANTROPOMETRI",
+              "CREATE ASESMEN NYERI",
+              "CREATE KESADARAN",
+              "CREATE PEMERIKSAAN FISIK",
+              "CREATE DERAJAT LUKA BAKAR",
+              "CREATE CATATAN HASIL PENUNJANG",
+              "CREATE DIAGNOSIS DOKTER",
+              "CREATE ASUHAN KEPERAWATAN",
+              "CREATE CATATAN PERAWAT",
+              "CREATE INSTRUKSI MEDIS",
+              "CREATE PEMERIKSAAN DAN TINDAKAN",
             ],
           },
           {
             name: "SOAP Dokter",
             allows: [
               "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
               "CREATE OBAT",
-              "CREATE RACIKAN",
+              "CREATE OBAT RACIKAN",
               "UPDATE OBAT",
               "DELETE OBAT",
-              "DELETE ITEM OBAT RACIKAN",
             ],
           },
           {
             name: "Inform Consent",
-            allows: ["READ"],
-          },
-          {
-            name: "Inform Consent",
-            allows: ["READ"],
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CREATE",
+            ],
           },
           {
             name: "Alkes Dan Penunjang",
             allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
               "CREATE ALKES",
-              "CREATE MULTIPLE ALKES",
+              "CREATE ALKES MULTIPLE",
               "DELETE ALKES",
-              "DELETE MULTIPLE ALKES",
+              "DELETE ALKES MULTIPLE",
               "DELETE SEMUA",
+              "AMBIL ITEM",
+              "SIMPAN ORDER",
               "CREATE TINDAKAN",
-              "DELETE TINDAKAN",
             ],
           },
+          {
+            name: "Perpindahan",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "PINDAHKAN PASIEN",
+            ],
+          },
+          {
+            name: "FPO",
+            allows: [
+              "READ",
+              "CREATE PEMBERIAN OBAT",
+              "UPDATE PEMBERIAN OBAT",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TANGGAL PEMERIKSAAN",
+              "TANGGAL PEMBERIAN OBAT",
+            ],
+          },
+          {
+            name: "Unggah Berkas",
+            allows: [
+              "READ",
+              "UPDATE FILE TERUNGGAH",
+              "DELETE FILE TERUNGGAH",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CARI FILE",
+              "TAMPILAN LIST",
+              "TAMPILAN GRID",
+            ],
+          },
+          {
+            name: "Resume & Discharge",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK RESUME MEDIS",
+              "SIMPAN RESUME MEDIS",
+              "DISCHARGE",
+            ],
+          },
+          {
+            name: "Cetak Hasil & Surat",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK HASIL",
+              "CREATE SURAT",
+              "DELETE SURAT KETERANGAN",
+              "CETAK SURAT",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    module: "IGD",
+    sub_modules: [
+      {
+        name: "IGD",
+        allows: ["READ", "BATAL DIRAWAT"],
+      },
+      {
+        name: "BPJS-PCARE",
+        features: [
+          {
+            name: "Monitoring Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            allows: ["READ", "CETAK BPJS"],
+          },
+        ],
+      },
+      {
+        name: "Laporan IGD",
+        features: [
+          {
+            name: "Kunjungan",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Pembatalan Berobat",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+          {
+            name: "Rekap Tindakan Pasien",
+            allows: ["READ", "CETAK LAPORAN"],
+          },
+        ],
+      },
+      {
+        name: "Detail Pasien",
+        features: [
+          {
+            name: "Rekam Medis",
+            allows: [
+              "READ",
+              "UPDATE PEMERIKSAAN FISIK",
+              "UPDATE DERAJAT LUKA BAKAR",
+              "UPDATE PEMERIKSAAN DAN TINDAKAN",
+              "UPDATE REKAM MEDIS",
+              "DELETE SESI",
+              "CETAK LABEL",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TAMPILKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "RIWAYAT",
+            ],
+          },
+          {
+            name: "Asesmen",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "RIWAYAT",
+              "TIDAK ADA ALERGI",
+              "CREATE ALERGI",
+              "CREATE ANAMNESIS IGD",
+              "CREATE TRIASE",
+              "CREATE TANDA VITAL",
+              "CREATE ANTROPOMETRI",
+              "CREATE ASESMEN NYERI",
+              "CREATE KESADARAN",
+              "CREATE PEMERIKSAAN FISIK",
+              "CREATE DERAJAT LUKA BAKAR",
+              "CREATE CATATAN HASIL PENUNJANG",
+              "CREATE DIAGNOSIS DOKTER",
+              "CREATE ASUHAN KEPERAWATAN",
+              "CREATE CATATAN PERAWAT",
+              "CREATE INSTRUKSI MEDIS",
+              "CREATE PEMERIKSAAN DAN TINDAKAN",
+            ],
+          },
+          {
+            name: "SOAP Dokter",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CREATE OBAT",
+              "CREATE OBAT RACIKAN",
+              "UPDATE OBAT",
+              "DELETE OBAT",
+            ],
+          },
+
+          {
+            name: "Alkes Dan Penunjang",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CREATE ALKES",
+              "CREATE ALKES MULTIPLE",
+              "DELETE ALKES",
+              "DELETE ALKES MULTIPLE",
+              "DELETE SEMUA",
+              "AMBIL ITEM",
+              "SIMPAN ORDER",
+              "CREATE TINDAKAN",
+            ],
+          },
+          {
+            name: "Inform Consent",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CREATE",
+            ],
+          },
+          {
+            name: "FPO",
+            allows: [
+              "READ",
+              "CREATE PEMBERIAN OBAT",
+              "UPDATE PEMBERIAN OBAT",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TANGGAL PEMERIKSAAN",
+              "TANGGAL PEMBERIAN OBAT",
+            ],
+          },
+          {
+            name: "Unggah Berkas",
+            allows: [
+              "READ",
+              "UPDATE FILE TERUNGGAH",
+              "DELETE FILE TERUNGGAH",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "CARI FILE",
+              "TAMPILAN LIST",
+              "TAMPILAN GRID",
+            ],
+          },
+          {
+            name: "Resume & Discharge",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK RESUME MEDIS",
+              "SIMPAN RESUME MEDIS",
+              "DISCHARGE",
+            ],
+          },
+          {
+            name: "Cetak Hasil & Surat",
+            allows: [
+              "READ",
+              "CETAK LABEL",
+              "RIWAYAT",
+              "SEMBUNYIKAN DETAIL PASIEN",
+              "TUTUP SEMUA FORM",
+              "BUKA SEMUA FORM",
+              "CETAK HASIL",
+              "CREATE SURAT",
+              "DELETE SURAT KETERANGAN",
+              "CETAK SURAT",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    module: "Farmasi",
+    sub_modules: [
+      {
+        name: "Panggil Antrian",
+        allows: ["PANGGIL", "LEWATI", "VERIFIKASI", "PENYERAHAN OBAT"],
+      },
+      {
+        name: "Resep Dokter",
+        allows: [
+          "READ",
+          "UPDATE OBAT",
+          "BATAL ORDER",
+          "PINDAH LOKASI ORDER",
+          "CETAK",
+          "SIMPAN TELAAH",
+          "VERIFIKASI",
+          "EDIT OBAT",
+          "SIMPAN EDIT",
+          "OBAT DIGERUS",
+          "SIMPAN & UBAH MENJADI RACIKAN",
+          "BATAL",
+          "(MENUNGGU PEMBAYARAN) CETAK",
+          "(OBAT DISIAPKAN TUNAI) CETAK",
+          "OBAT SIAP DISERAHKAN",
+          "BATAL",
+          "CETAK",
+          "OBAT SIAP DISERAHKAN",
+          "BATAL PENYERAHAN",
+          "(PENYERAHAN OBAT) CETAK",
+          "SERAHKAN OBAT",
         ],
       },
     ],
@@ -530,44 +926,8 @@ const permissions = ref(
   }))
 );
 
-// const onSubmit = handleSubmit(async (values: any) => {
-//   const selectedPermissions = permissions.value
-//     .filter((module) => module.checked) // Only selected modules
-//     .map((module) => ({
-//       modul: module.modul,
-//       sub_modules: module.sub_modules
-//         .filter((subModule) => subModule.checked) // Only selected sub_modules
-//         .map((subModule) => ({
-//           name: subModule.name,
-
-//           // If subModule has features, map selected features and their allows
-//           features: subModule.features
-//             ? subModule.features
-//                 .filter((feature) => feature.checked) // Only selected features
-//                 .map((feature) => ({
-//                   name: feature.name,
-//                   allows: feature.allows
-//                     .filter((allow) => allow.checked) // Only selected allows in features
-//                     .map((allow) => allow.name),
-//                 }))
-//             : [],
-
-//           // Map allows if there are no features
-//           allows: subModule.allows
-//             ? subModule.allows
-//                 .filter((allow) => allow.checked) // Only selected allows in sub_modules
-//                 .map((allow) => allow.name)
-//             : [],
-//         })),
-//     }));
-//     console.log([...values.datas, ...selectedPermissions])
-//     console.log(values);
-//     console.log(selectedPermissions);
-
-// });
-// Method to submit selected permissions
 const onSubmit = () => {
-   const selectedPermissions = permissions.value
+  const selectedPermissions = permissions.value
     .filter((module) => module.checked) // Only selected modules
     .map((module) => ({
       modul: module.modul,
@@ -599,7 +959,6 @@ const onSubmit = () => {
 
   console.log(selectedPermissions); // Log the selected permissions for testing
 };
-
 </script>
 
 <template>
@@ -665,7 +1024,7 @@ const onSubmit = () => {
                 place-holder="Cari & Pilih Praktisi"
                 :options="praktisiPayload"
                 option-label="name"
-                option-value="uuid"
+            option-value="uuid"
                 class="grow"
               />
               <CustomButton
@@ -703,7 +1062,6 @@ const onSubmit = () => {
 
             <CustomInputNumber
               label="No. Handphone"
-              v-model="phone"
               placeholder="08xx-xxxx-xxxx"
               class="col-span-6"
               :invalid="!!errors.phone"
@@ -796,6 +1154,9 @@ const onSubmit = () => {
               label="Role"
               place-holder="Pilih Role"
               class="col-span-12"
+              :options="rolePayload"
+              option-label="name"
+            option-value="uuid"
             />
 
             <!-- Loop through all modules -->

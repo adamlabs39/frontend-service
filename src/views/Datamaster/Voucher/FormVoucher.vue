@@ -166,6 +166,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Voucher"
@@ -174,6 +175,7 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
         <div class="flex flex-col grid-cols-12 col-span-6 gap-1">
           <div class="col-span-12 font-semibold text-normal">Tanggal</div>
@@ -189,6 +191,7 @@ watch(
           class="col-span-6"
           :invalid="!!errors.qty"
           :invalidMessage="errors.qty"
+          :required="errors.qty ? true : false"
         />
         <div class="grid items-end w-full grid-cols-2 col-span-6 gap-5">
           <div class="col-span-2 -mb-4 font-semibold text-normal">
@@ -262,6 +265,7 @@ watch(
         <CustomInfoRow label="Jumlah" :value="payload.qty" />
         <CustomInfoRow label="Tipe Voucher" :value="payload.type" />
         <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

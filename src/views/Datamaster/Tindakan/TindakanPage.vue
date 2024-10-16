@@ -239,9 +239,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="tindakan"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchTindakanData()"
       />
     </template>
     <template #content>

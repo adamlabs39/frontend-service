@@ -14,6 +14,10 @@ import * as yup from "yup";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import DialogPermintaanMultiple from "./DialogPermintaanMultiple.vue";
 
+function generateRandomNoPembelian() {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
+  return `PO${randomNumber}`; // Gabungkan dengan "PO"
+}
 const props = defineProps({
   pageType: {
     type: String,
@@ -25,9 +29,9 @@ const props = defineProps({
   },
 });
 
-onMounted(() => {
-  console.log(props.pageType);
-});
+// onMounted(() => {
+//   console.log(props.pageType);
+// });
 
 
 const emit = defineEmits(["kembali", "onSimpanPembelian"]);
@@ -52,13 +56,15 @@ const tambahPermintaanSchema = toTypedSchema(
     materai: yup.number(),
     ppn: yup.bool().default(false),
     isCito: yup.bool().default(false),
+    status: yup.string(),
+    petugasPembuatPO:yup.string()
   })
 );
 
 const { handleSubmit, resetForm, defineField } = useForm({
   validationSchema: tambahPermintaanSchema,
   initialValues: {
-    noPembelian: "",
+    noPembelian: generateRandomNoPembelian(),
     lokasiPenerima: "",
     kategoriItem: "",
     jenisItem: "",
@@ -69,6 +75,8 @@ const { handleSubmit, resetForm, defineField } = useForm({
     catatan: "",
     diskon: 0,
     materai: 0,
+    status: "PENGAJUAN",
+  petugasPembuatPO: "Nama Petugas"
   },
 });
 
@@ -85,6 +93,8 @@ const [diskon] = defineField("diskon");
 const [materai] = defineField("materai");
 const [ppn] = defineField("ppn");
 const [isCito] = defineField("isCito");
+const [status] = defineField("status");
+const [petugasPembuatPO] = defineField("petugasPembuatPO");
 
 const listLokasiPenerimas = ref([
   { id: 1, value: "Gudang Farmasi" },
@@ -504,7 +514,7 @@ const resetFormFields = () => {
           </div>
           <div>
             <div class="font-semibold underline text-SM">Petugas Pembelian</div>
-            <div class="font-normal text-normal">Nama Petugas</div>
+            <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
           </div>
         </div>
         <div class="flex gap-3">

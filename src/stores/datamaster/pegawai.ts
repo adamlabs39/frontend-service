@@ -11,8 +11,12 @@ export const usePegawaiStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
-      return apiDatamasterGet(`/datamaster/pegawai?page=${page}&limit=${limit}&name=${name}`, payload);
+    async getApi(params: { page?: number; limit?: number; name?: string; type?:string; payload?: object } = {}) {
+      const { page = 1, limit = 10, name = "", type="", payload = {} } = params;
+      return apiDatamasterGet(`/datamaster/pegawai?page=${page}&limit=${limit}&name=${name}&type=${type}`, payload);
+    },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/pegawai/aktif`, payload);
     },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/pegawai", payload);

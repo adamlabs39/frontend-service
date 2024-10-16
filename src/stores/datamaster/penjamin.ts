@@ -14,6 +14,9 @@ export const usePenjaminStore = defineStore({
     async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
       return apiDatamasterGet(`/datamaster/penjamin?page=${page}&limit=${limit}&name=${name}`, payload);
     },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/penjamin/aktif`, payload);
+    },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/penjamin", payload);
     },

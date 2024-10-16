@@ -103,7 +103,7 @@ const optionsLab = ref([
 const schema = toTypedSchema(
   yup.object({
     jenisTarif: yup.string().default("Tindakan"),
-    code: yup.string().required("Code harus diisi"),
+    code: yup.string().required("Kode Tarif harus diisi"),
     name: yup.string(),
     grandTotal: yup.number(),
     mode: yup.string(),
@@ -134,7 +134,7 @@ const schema = toTypedSchema(
     ),
     tarifLab: yup.array().of(
       yup.object({
-        tarifLabUuid: yup.string().when("isPoli", {
+        tarifLabUuid: yup.string().when("isMcu", {
           is: (value: boolean) => value === true,
           then: (schema) => schema.required("Tarif Lab harus diisi"),
           otherwise: (schema) => schema.notRequired(),
@@ -153,7 +153,8 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
         listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
       },
     ],
-    tarifLab: [{ tarifLabUuid: "" }],
+    
+    // tarifLab: [{ tarifLabUuid: "" }],
   },
 });
 
@@ -196,12 +197,33 @@ const removeListKomponenTarif = (
   );
 };
 
-const onSubmit = handleSubmit(async (values) => {
-  values.grandTotal = grandTotal.value;
-  console.log(grandTotal)
-  console.log(penjamin);
+// const onSubmit = handleSubmit(async (values) => {
+//   values.grandTotal = grandTotal.value;
+//   console.log(grandTotal)
+//   console.log(penjamin);
 
-  console.log("Submitted luar with", values);
+//   console.log("Submitted luar with", values);
+// });
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    values.grandTotal = grandTotal.value;
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await tarifStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await tarifStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
 });
 
 const [code] = defineField("code");
@@ -223,6 +245,8 @@ watch(penjaminSelected, (newVal) => {
   const formattedPenjamin = newVal.map((value) => ({ penjaminUuid: value }));
   penjamin.value = formattedPenjamin;
 });
+
+
 
 const {
   remove: removeTarifLab,
@@ -328,6 +352,7 @@ const grandTotalFormatted = computed(() => {
               placeholder="Kode Tarif"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
             />
             <CustomTextfield
               class="col-span-5"
@@ -355,7 +380,6 @@ const grandTotalFormatted = computed(() => {
               placeholder="Pelayanan"
               class="col-span-6"
             />
-            {{ penjamin }}
             <CustomMultiSelect
               label="Metode Pembayaran"
               v-model="penjaminSelected"
@@ -667,6 +691,7 @@ const grandTotalFormatted = computed(() => {
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
+            @click="closeDialog()"
           >
           </CustomButton>
           <CustomButton @click="onSubmit" label="Simpan" />
