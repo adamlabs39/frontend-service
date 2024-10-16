@@ -47,22 +47,58 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
             class=""
           />
           <div class="flex">
-            <CustomButton @click="emit('back')" icon="PhCaretLeft" label="Kembali" outlined borderColor="border-adameds-300" textColor="text-adameds-300" />
+            <CustomButton
+              @click="emit('back')"
+              icon="PhCaretLeft"
+              label="Kembali"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+            />
           </div>
         </div>
       </template>
     </Card>
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-      <PatientIdentityForm class="mt-2" :dataBreadCrumb="dataBreadCrumb" :pageType="pageType"  :patientData="patientData" @back="dataBreadCrumb.pop()" />
-      <DoctorVisitDetailForm class="mt-2" :dataBreadCrumb="dataBreadCrumb" :pageType="pageType"  :patientData="patientData" @back="dataBreadCrumb.pop()" />
-      <OrderTindakan/>
+      <PatientIdentityForm
+        class="mt-2"
+        :dataBreadCrumb="dataBreadCrumb"
+        :pageType="pageType"
+        :patientData="patientData"
+        @back="dataBreadCrumb.pop()"
+      />
+      <DoctorVisitDetailForm
+        class="mt-2"
+        :dataBreadCrumb="dataBreadCrumb"
+        :pageType="pageType"
+        :patientData="patientData"
+        @back="dataBreadCrumb.pop()"
+      />
+
+      <OrderTindakan
+        class="mt-2"
+        :dataBreadCrumb="dataBreadCrumb"
+        :pageType="pageType"
+        :patientData="patientData"
+        @back="dataBreadCrumb.pop()"
+      />
     </div>
-    
+
     <Card class="absolute inset-x-0 bottom-0">
-      <template #content>
+      <template #footer>
         <div class="flex justify-end">
-          <CustomButton label="Reset" class="mr-[10px]" outlined borderColor="border-grey-200" textColor="text-grey-300" />
-          <CustomButton label="Simpan" class="" backgroundColor="bg-adameds-300" />
+          <CustomButton
+            label="Reset"
+            class="mr-[10px]"
+            outlined
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+          />
+          <CustomButton
+            label="Simpan"
+            class=""
+            backgroundColor="bg-adameds-300"
+          />
         </div>
       </template>
     </Card>
