@@ -31,7 +31,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Retur & Penggantian Barang Supplier",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
             icon: "",
           },
         ],
