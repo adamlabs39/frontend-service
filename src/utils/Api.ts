@@ -206,13 +206,13 @@ const baseInstanceAdmisi = axios.create({
       Accept: "text/plain, */*",
     },
   },
-  baseURL: import.meta.env.VITE_BASE_DATAMASTER,
+  baseURL: import.meta.env.VITE_BASE_ADMISI,
 });
 
 baseInstanceAdmisi.interceptors.request.use(
   (config) => {
     const token =
-      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTFmNWZlLWE3NWItN2RkNC1iNDhlLTJlYWZmMzZlYWU5MSIsInVzZXJuYW1lIjoiaGFiaWItZGV2IiwiZmFza2VzVXVpZCI6IjlkNDAzdWZqaDQzdWZoM3VmODQzMGloZiIsInVzZXJVdWlkIjoiMDE5MWY1ZmUtYWVjNC03MmMyLWIyNjUtZGRhMTkwNGZhZjdlIiwiaWF0IjoxNzI3MDU5Njk3LCJleHAiOjE3Mjk2NTE2OTcsImlzcyI6ImF1dGhlbnRpY2F0aW9uLXNlcml2aWNlIn0.kfAtpjzJgYLOtmdojlCmwFbYZUQm8JajhdB7chQVugNIail9qOJ101KHTHiw9VRXwAB-JAQ1jz5reTfXGGsZztO4I5eWnu5PMlmefuhSSb_pX5QpOiARh97X9K_VC9wAp-L9tp88cTtnKOyeJ2v2UyDvgp33JbNXWLdzJzsdx-XiA9t71-VTH61UdhSpFrlKdYzlNdfeT3c0K2IqlMzgAeEuKO6nxVpdmPthZ5sSABGSAVylfGSrE_o6f-odFZg1A7ki6PJ_Qvd2dVWl-u8U84bOOeMudv2FtwTIjEIZV7-7P4MnZ9FLoDQ4yrudxrbTi8nfYdAzai0L5NEBRVu40w";
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTI5Mzc1LTg5MzQtNzllNi1iNTc2LWI3Nzc3OTAwYTIyNyIsInVzZXJuYW1lIjoiYWxsaWFuby1kZXYiLCJmYXNrZXNVdWlkIjoiOWQ0MDN1ZmpoNDN1ZmgzdWY4NDMwaWhmIiwibmFtZSI6ImFsbGlhbm8iLCJpYXQiOjE3MjkwNTA5MjksImV4cCI6MTczNzY5MDkyOSwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.opmy0ugOdt0WKFY_sRmEtIeVWuJj94F5X9BuCOcwzpjbqStjAs6BD_eEiMSU-nsXs-ht7Kk-sUd338_MLQeP_pmP0KIn7sTzuCwceM7VnxtnrX9eVfJKMohTcRr61xnOwIcW0zFPMGwO0uhS2Q75gqSSE2Q87go51TznjAQMaSsxnqhk23CT1xJ9ZejDUCC0G6oKLUm6E_ScdRve3Qw3ebo8vm7pAKgmd_5VVNvmOkjTR-uQhmz_kFD5RFhN5ZZjI9hjmkT90ilgFr-tLWD5GZxoxkjRHKcNoyI9UcEnXQRM8C_Sx8xohFaKQIk-DJMRl_PS6mpDjRELXymv-UJ5Jw";
     if (!token) {
       config.headers["Authorization"] = "";
     } else {

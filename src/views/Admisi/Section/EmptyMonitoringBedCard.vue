@@ -1,4 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = defineProps({
+  bedData: {
+    type: Object,
+    default: () => {},
+  },
+});
+</script>
 
 <template>
   <div
@@ -10,8 +17,8 @@
         alt=""
         class="h-6 mr-[5px]"
       />
-      <span class="leading-6">Bed 1 </span>
-      <span class="font-bold leading-6">- RM.123456</span>
+      <span class="leading-6">Bed {{ props.bedData.noBed }}</span>
+      <span class="font-bold leading-6"> - KOSONG</span>
     </div>
   </div>
 </template>

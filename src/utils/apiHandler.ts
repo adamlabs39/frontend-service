@@ -235,6 +235,14 @@ const apiAdmisiPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAdmisiPatch = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.patch(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 const apiAdmisiDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.delete(url, data);
@@ -263,5 +271,6 @@ export {
   apiAdmisiGet,
   apiAdmisiPost,
   apiAdmisiPut,
+  apiAdmisiPatch,
   apiAdmisiDelete,
 };
