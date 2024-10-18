@@ -55,5 +55,5 @@ export function epochToDate(
     return formatTime(date);
   }
 
-  return date.toString();
+  return date;
 }
