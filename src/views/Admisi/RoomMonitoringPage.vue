@@ -23,38 +23,21 @@ const storeUtils = utilsStore();
 const monitoringKamarStore = useMonitoringKamarStore();
 
 const filterRoomCategoryList = ref([
-  "RAWATAN UMUM",
-  "RAWATAN ANAK",
-  "RAWATAN BAYI",
-  "ICU",
+  { name: "RAWATAN UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bb" },
+  { name: "RAWATAN ANAK", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
+  { name: "RAWATAN BAYI", uuid: "0191a18a-22e4-773b-8229-a023f420d0bd" },
+  { name: "ICU", uuid: "0191a18a-22e4-773b-8229-a023f420d0be" },
 ]);
 const selectedFilterRoomCategory = ref<string[]>([]);
-const onRoomCategorySelect = (label: string) => {
-  if (selectedFilterRoomCategory.value.includes(label)) {
+const onRoomCategorySelect = (uuid: string) => {
+  if (selectedFilterRoomCategory.value.includes(uuid)) {
     selectedFilterRoomCategory.value = selectedFilterRoomCategory.value.filter(
-      (item) => item != label
+      (item) => item != uuid
     );
   } else {
-    selectedFilterRoomCategory.value.push(label);
+    selectedFilterRoomCategory.value.push(uuid);
   }
-};
-
-const filterRoomClassList = ref([
-  "KELAS I",
-  "KELAS II",
-  "KELAS III",
-  "VIP",
-  "VIIP",
-]);
-const selectedRoomClass = ref<string[]>([]);
-const onRoomClassSelect = (label: string) => {
-  if (selectedRoomClass.value.includes(label)) {
-    selectedRoomClass.value = selectedRoomClass.value.filter(
-      (item) => item != label
-    );
-  } else {
-    selectedRoomClass.value.push(label);
-  }
+  searchData()
 };
 
 const properties = ref({
@@ -64,10 +47,22 @@ const properties = ref({
 });
 const itemsRoom = ref<any[]>([]);
 
+const search = ref("");
+
+interface Filter {
+  q?: string;
+  filterKategori?: string;
+}
 const fetchData = async () => {
   storeUtils.setLoading(true);
+  let filter = {} as Filter;
+  filter.q = search.value;
+  // FIXME masih single filter
+  filter.filterKategori = selectedFilterRoomCategory.value[0] ?? "";
+  console.log("filter.filterKategori", filter.filterKategori);
+
   try {
-    const response = await monitoringKamarStore.getMonitoringKamar({});
+    const response = await monitoringKamarStore.getMonitoringKamar(filter);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       itemsRoom.value = response.payload;
@@ -77,6 +72,17 @@ const fetchData = async () => {
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+const timer = ref<any>();
+const searchData = () => {
+  if (timer.value) {
+    clearTimeout(timer.value);
+    timer.value = null;
+  }
+  timer.value = setTimeout(async () => {
+    await fetchData();
+  }, 800);
 };
 
 const roomSettingDialog = ref(false);
@@ -121,15 +127,17 @@ const showBedForm = async (data: any) => {
 };
 
 const schema = toTypedSchema(
-  yup.object({
-    bedData: yup.array().of(
-      yup.object({
-        uuid: yup.string().nullable(),
-        bedName: yup.string().required("Jenis Bed harus diisi"),
-        noBed: yup.number().required("Nomor Bed harus diisi"),
-      })
-    ),
-  })
+  yup
+    .object({
+      bedData: yup.array().of(
+        yup.object({
+          uuid: yup.string().nullable(),
+          bedName: yup.string().required("Jenis Bed harus diisi"),
+          noBed: yup.number().required("Nomor Bed harus diisi"),
+        })
+      ),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -139,11 +147,18 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 const onSubmit = handleSubmit(async (values) => {
   storeUtils.setLoading(true);
   try {
+    values.bedData?.forEach((bed) => {
+      bed.noBed = `${bed.noBed}` as unknown as number;
+      bed.uuid = bed.uuid ?? null;
+    });
     await monitoringKamarStore.updateBed(
       openedRoomData.value.uuid,
       values.bedData
     );
+    roomSettingDialog.value = false;
+    resetForm();
   } catch (error) {
+    console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
   }
@@ -186,39 +201,42 @@ onMounted(() => {
                   Monitoring Kamar
                 </span>
               </div>
-              <div class="grow">
-                <CustomTextfield
-                  :showLabel="false"
-                  prependIcon="PhMagnifyingGlass"
-                  placeholder="Cari Ruangan / Kamar"
-                  class="mr-5"
-                />
-              </div>
             </div>
           </template>
           <template #content>
+            <CustomTextfield
+              v-model="search"
+              @update:model-value="searchData"
+              :showLabel="false"
+              prependIcon="PhMagnifyingGlass"
+              placeholder="Cari Ruangan / Kamar"
+              class="mt-[10px]"
+            />
             <div class="font-semibold text-SM text-grey-300">
               <div>
                 <div class="flex mb-[10px] mt-5">
-                  <div class="w-[15%]">Filter Poli</div>
+                  <div class="w-[15%]">Filter Kategori Ruangan</div>
                   <div class="flex">
-                    |
+                    <div class="border border-grey-300"></div>
                     <CustomChip
-                      v-for="(poli, index) in filterRoomCategoryList"
-                      :key="poli + index"
-                      :label="poli"
+                      v-for="(kategoriRuangan, index) in filterRoomCategoryList"
+                      :key="kategoriRuangan.uuid + index"
+                      :label="kategoriRuangan.name"
+                      :value="kategoriRuangan.uuid"
                       borderColor="border-adameds-300"
                       iconColor="text-adameds-300"
                       textColor="text-adameds-300"
                       :iconSize="16"
                       class="ml-[10px]"
                       selectedColor="bg-adameds-300 border-adameds-300"
-                      :isSelected="selectedFilterRoomCategory.includes(poli)"
+                      :isSelected="
+                        selectedFilterRoomCategory.includes(kategoriRuangan.uuid)
+                      "
                       @selected="onRoomCategorySelect"
                     />
                   </div>
                 </div>
-                <div class="flex my-[10px]">
+                <!-- <div class="flex my-[10px]">
                   <div class="w-[15%]">Filter Kelas Ruangan</div>
                   <div class="flex">
                     |
@@ -236,7 +254,7 @@ onMounted(() => {
                       @selected="onRoomClassSelect"
                     />
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
           </template>

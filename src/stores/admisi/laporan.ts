@@ -178,7 +178,6 @@ export const useAdmisiIGDStore = defineStore({
       },
       payload = {}
     ) {
-      // FIXME Kurang search nama pasien
       return apiAdmisiGet(
         `/report/cancel-visit?page=${page}&limit=${limit}&q=${q}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
         payload
@@ -195,7 +194,6 @@ export const useAdmisiIGDStore = defineStore({
       },
       payload = {}
     ) {
-      // FIXME Kurang search nama pasien
       return apiAdmisiGet(
         `/report/room?page=${page}&limit=${limit}&q=${q}&room=${ruangan}&start_date=${startDate}&end_date=${endDate}`,
         payload
@@ -212,7 +210,6 @@ export const useAdmisiIGDStore = defineStore({
       },
       payload = {}
     ) {
-      // FIXME Kurang search kelas
       return apiAdmisiGet(
         `/report/rawat-inap?page=${page}&limit=${limit}&q=${q}&room=${ruangan}&start_date=${startDate}&end_date=${endDate}`,
         payload
