@@ -6,7 +6,7 @@ import FormCatatanPerawat from '@/components/RekamMedis/CatatanPerawat/FormCatat
 import FormDiagnosaDokterICD10 from '@/components/RekamMedis/DiagnosaDokter/FormDiagnosaDokterICD10.vue';
 import AccordionOrderObat from '@/components/RekamMedis/OrderObat/AccordionOrderObat.vue';
 import FormOrderFisio from '@/components/RekamMedis/OrderFisio/FormOrderFisio.vue';
-import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue';
+import FormOrderAlkes from '@/components/RekamMedis/OrderAlkes/AccordionOrderAlkes.vue';
 import FormPersetujuanPasien from '@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue';
 import FormUnggahBerkas from '@/components/RekamMedis/UnggahBerkas/FormUnggahBerkas.vue';
 import PermissionMenuPage from './SettingPage/Template/PermissionMenu/PermissionMenuPage.vue';
