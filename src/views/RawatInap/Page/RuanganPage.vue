@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
-import DataPasienRawatInap from "../Layout/Tabel/Poli/DataPasienRawatInap.vue";
+import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
 import { useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const props = defineProps({
   filterRuang: {
@@ -113,15 +114,7 @@ onMounted(() => {
             placeholder="Alasan Batal Kunjungan"
           />
         </div>
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator :rows="10" :totalRecords="120" @page="() => {}" />
       </div>
     </template>
   </Card>

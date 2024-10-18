@@ -2,117 +2,66 @@
 import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import DetailTarifRuangan from "./FormTarifRuangan.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
+import FormTarifRuangan from "./FormTarifRuangan.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 
 const props = defineProps({
   payload: {
     type: Array,
-    default: () => ([]),
+    default: () => [],
   },
 });
 
 const products = ref();
 const expandedRows = ref();
-const detail = ref(false);
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
-onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      nama_ruangan: "Ruangan Mawar",
-      kategori_ruangan: "Rawatan Umum",
-      kelas: "Kelas III",
-      pelayanan: "Rawat Jalan",
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      status: "AKTIF",
-      action: "edit",
-      orders: [
-        {
-          id: "1",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "2",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "3",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-      ],
-    },
-    {
-      id: "2",
-      nama_ruangan: "Ruangan Mawar",
-      kategori_ruangan: "Rawatan Umum",
-      kelas: "Kelas III",
-      pelayanan: "Rawat Jalan",
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      status: "AKTIF",
-      action: "edit",
-      orders: [
-        {
-          id: "1",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "2",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "3",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-      ],
-    },
-    {
-      id: "3",
-      nama_ruangan: "Ruangan Mawar",
-      kategori_ruangan: "Rawatan Umum",
-      kelas: "Kelas III",
-      pelayanan: "Rawat Jalan",
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      status: "AKTIF",
-      action: "edit",
-      orders: [
-        {
-          id: "1",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "2",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-        {
-          id: "3",
-          jenis_pembayaran_bed: "Tunai",
-          harga_tarif: "Rp. 100,000",
-        },
-      ],
-    },
-  ];
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  FormRuanganDialog("detail", "Detail Data", selectedData.value);
+};
+
+const isTambahRuanganDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
 });
+const FormRuanganDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahRuanganDialogVisible.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
 </script>
 
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
     :value="payload"
+    v-model:selection="selectedData"
+    :metaKeySelection="metaKey"
+    @rowClick="onRowSelect"
+    selectionMode="single"
     tableStyle="min-width: 50rem"
     class="-m-4 text-xs"
     stripedRows
     dataKey="id"
     scrollable
     scrollHeight="flex"
+    :dt="{
+      rowSelectedColor: '#000000',
+      rowSelectedBackground: 'transparent',
+      bodyCellSelectedBorderColor: 'transparent',
+      bodyCellBorderColor: 'transparent',
+      rowStripedBackground: '#F8F8F8',
+    }"
   >
     <Column
       expander
@@ -131,33 +80,27 @@ onMounted(() => {
       header="Nama Ruangan"
       header-class="text-black bg-adameds-50"
     ></Column>
-    <Column
-      header="Kategori Ruangan"
-      header-class="text-black bg-adameds-50"
-    >
+    <Column header="Kategori Ruangan" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div v-for="items in slotProps.data.ruangan" :key="items">
-            {{ items.kategoriRuanganName }}
-          </div>
+          {{ items.kategoriRuanganName }}
+        </div>
       </template>
     </Column>
-    <Column
-      header="Kelas"
-      header-class="text-black bg-adameds-50"
-    >
-    <template #body="slotProps">
+    <Column header="Kelas" header-class="text-black bg-adameds-50">
+      <template #body="slotProps">
         <div v-for="items in slotProps.data.ruangan" :key="items">
-            {{ items.kelasRuangan }}
-          </div>
-      </template></Column>
-    <Column
-      header="pelayanan"
-      header-class="text-black bg-adameds-50"
-    > <template #body="slotProps">
+          {{ items.kelasRuangan }}
+        </div>
+      </template>
+    </Column>
+    <Column header="pelayanan" header-class="text-black bg-adameds-50">
+      <template #body="slotProps">
         <div v-for="items in slotProps.data.pelayanan" :key="items">
-            {{ items.unitPelayananName }}
-          </div>
-      </template></Column>
+          {{ items.unitPelayananName }}
+        </div>
+      </template>
+    </Column>
     <Column
       field="metode_pembayaran"
       header="Metode Pembayaran"
@@ -210,13 +153,20 @@ onMounted(() => {
             label=""
             background-color="bg-[#3D84E5] rounded-lg"
             class="h-6 w-[26px] p-0"
+            @click="FormRuanganDialog('edit', 'Edit Data', slotProps.data)"
           >
             <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>
           <CustomButton
             label=""
             background-color="bg-danger-300 rounded-lg"
-            @click="() => {}"
+            @click="
+              deleteDialog(
+                'delete',
+                `Tarif Ruangan ${slotProps.data.code}`,
+                slotProps.data
+              )
+            "
             class="h-6 w-[26px] p-0"
           >
             <img src="@/assets/icons/delete.svg" alt="" />
@@ -245,4 +195,15 @@ onMounted(() => {
       </div>
     </template>
   </DataTable>
+  <FormTarifRuangan
+    v-model:isDialogVisible="isTambahRuanganDialogVisible"
+    :title="dialogConfig.title"
+    :method="dialogConfig.method"
+    :payload="dialogConfig.data"
+  />
+  <DialogDelete
+    v-model:isDialogVisible="isDeleteDialogVisible"
+    :title="dialogConfig.title"
+    :itemToDelete="dialogConfig.data"
+  />
 </template>

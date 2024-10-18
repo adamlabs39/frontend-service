@@ -9,7 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FormKategoriGigi from "./FormKategoriGigi.vue";
 import FooterPaginator from "../../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-
+import DialogDelete from "../../Layout/DialogDelete.vue";
 // State Management
 const kategoriGigiStore = useKategoriGigiStore();
 const UseUtilsStore = utilsStore();
@@ -134,6 +134,8 @@ const downloadExportExcel = async () => {
     data.push({}); 
     data.push({
       No: "No",
+      System: "Referensi Sistem SATUSEHAT",
+      Code: "Code SATUSEHAT",
       Display: "Display SATUSEHAT",
       Name:"Kategri Gigi",
       Status: "Status",
@@ -155,7 +157,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -164,7 +166,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -204,10 +206,23 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Kategori Gigi");
+    XLSX.writeFile(workbook, `Datamaster Kategori Gigi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
+
+  try {
+    const response = await kategoriGigiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchKategoriGigiData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
   }
 };
 </script>
@@ -222,7 +237,9 @@ const downloadExportExcel = async () => {
       <HeaderFilter
         pageType="kategori-gigi"
         isSuperAdmin
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchKategoriGigiData()"
       />
     </template>
     <template #content>
@@ -314,7 +331,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Kategori Ruagan', slotProps.data)"
+                @click="deleteDialog('delete', `Kategori Gigi ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -343,6 +360,7 @@ const downloadExportExcel = async () => {
         :totalRecords="kategoriGigiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

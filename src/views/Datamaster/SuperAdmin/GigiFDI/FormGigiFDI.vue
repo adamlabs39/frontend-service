@@ -74,13 +74,12 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 });
 
-
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -114,7 +113,6 @@ watch(
     }
   }
 );
-
 </script>
 
 <template>
@@ -124,7 +122,7 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }}</template>
     <template #body>
       <div v-if="method !== 'detail'" class="flex flex-col gap-5 mt-5">
         <!-- Keadaan Gigi Input -->
@@ -134,6 +132,7 @@ watch(
           placeholder="Masukkan Code SATUSEHAT"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           v-model="display"
@@ -141,6 +140,7 @@ watch(
           placeholder="Masukkan Display SATUSEHAT"
           :invalid="!!errors.display"
           :invalidMessage="errors.display"
+          :required="errors.display ? true : false"
         />
         <CustomInputNumber
           v-model="name"
@@ -148,6 +148,7 @@ watch(
           placeholder="Masukkan Gigi"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
@@ -165,10 +166,18 @@ watch(
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Gigi" :value="`${name}`" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
-            <template #value>
-                <CustomChip :label="`${status}`" bg-color="bg-adameds-300" text-color="text-white" icon-color="" border-color="border-adameds-300" />
-              </template>
+          <template #value>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
         </CustomInfoRow>
       </div>
     </template>

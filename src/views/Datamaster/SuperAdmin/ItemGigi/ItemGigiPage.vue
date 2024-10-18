@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchItemGigiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -84,6 +84,7 @@ const onRowSelect = (event: any) => {
 // Dialog Management
 const isTambahDataDialogVisible = ref(false);
 const isDeleteDialogVisible = ref(false);
+// const isPreview=ref(false)
 
 const dialogConfig = ref<any>({
   method: "add",
@@ -137,9 +138,10 @@ const downloadExportExcel = async () => {
       No: "No",
       Kategori: "Kategori Gigi",
       Referensi: "Referensi Sistem SATUSEHAT",
+      Code: "Masukkan Code SATUSEHAT",
       Display: "Display SATUSEHAT",
-      Name:"Nama Item Gigi",
-      Catatan:"Catatan",
+      Name: "Nama Item Gigi",
+      Catatan: "Catatan",
       Status: "Status",
     });
 
@@ -147,11 +149,12 @@ const downloadExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        Kategori: rows[i].kategori,
-        Referensi:rows[i].referensi,
-        Display:rows[i].display,
+        Kategori: rows[i].kategoriGigiName,
+        Referensi: rows[i].referensi,
+        Code: rows[i].code,
+        Display: rows[i].display,
         Nama: rows[i].name,
-        Catatan:rows[i].catatan,
+        Catatan: rows[i].catatan ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -162,7 +165,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -171,7 +174,16 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -217,6 +229,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await itemGigiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchItemGigiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -229,7 +254,9 @@ const downloadExportExcel = async () => {
       <HeaderFilter
         pageType="item-gigi"
         isSuperAdmin
-        @tambah-data="openDialog('add', 'Tambah Data')"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data Gigi FDI')"
+        @reload-data="fetchItemGigiData()"
       />
     </template>
     <template #content>
@@ -240,6 +267,7 @@ const downloadExportExcel = async () => {
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
         @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -312,6 +340,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-adameds-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="
+                  openDialog(
+                    'preview',
+                    `Preview - ${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <PhEye :size="13" weight="fill" />
               </CustomButton>
@@ -319,7 +354,9 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                @click="
+                  openDialog('edit', 'Edit Data Gigi FDI', slotProps.data)
+                "
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -361,6 +398,7 @@ const downloadExportExcel = async () => {
         :totalRecords="itemGigiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

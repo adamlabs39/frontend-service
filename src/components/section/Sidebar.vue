@@ -79,7 +79,7 @@ const getSVG = (svg: string) => {
         <!-- Title -->
         <div v-if="showSidebar" class="flex justify-between mb-[25px]">
           <div
-            class="font-semibold cursor-pointer text-heading"
+            class="font-semibold cursor-pointer text-heading "
             @click="goToPage(sidebarTitleUrl)"
           >
             {{ sidebarTitle }}
@@ -176,7 +176,7 @@ const getSVG = (svg: string) => {
 
         <!-- body -->
          <div class="overflow-auto">
-           <div v-for="(section, index) in props.sidebarBodyList" class="text-SM">
+           <div v-for="(section, index) in props.sidebarBodyList" class="text-SM ">
              <hr :class="[index == 0 ? 'mb-[20px]': 'my-[20px]']" />
              <div v-for="row1 in section.child">
                <div v-if="showSidebar">

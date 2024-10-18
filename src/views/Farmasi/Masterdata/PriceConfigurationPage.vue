@@ -1,193 +1,227 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, ref } from 'vue';
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
-const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', handleRowsUpdate);
-};
+const status = ref(false);
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
-      <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
-          <template #header>
-            <div class="flex justify-between w-full align-middle">
-              <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Kasir',
-                    home: true,
-                  }"
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
+        <template #header>
+          <div class="flex mt-5 mb-[20px] ml-5">
+            <CustomButton icon="PhArrowClockwise" class="mr-5" />
+            <CustomBreadCrumb
+              :home="{
+                label: 'Datamaster',
+                home: true,
+              }"
+            />
+            <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+            <div class="">
+              <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Konfigurasi Harga</p>
+            </div>
+          </div>
+        </template>
+        <template #content>
+          <hr class="border border-slate-200"/>
+          <!-- Metode Pemotong Stok -->
+          <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+            <div class="flex justify-between">
+              <div class="">
+                <p class="text-lg font-bold text-adameds-300 font-poppins">Metode Pemotongan Stok</p>
+              </div>
+              <div>
+                <CustomChip
+                  label="FIFO"
+                  textColor="text-white"
+                  bgColor="bg-adameds-300"
+                  borderColor="border-none"
+                  icon-color="white"
+                  customClass="text-sm font-semibold h-6"
                 />
               </div>
             </div>
-          </template>
-          <template #content>
-            <div class="flex mt-[10px]">
-              <CustomTextfield
-                label="Pencarian Transaksi"
-                prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
-              />
-              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
-              <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <CustomSelect
-                label="Pilih Shift"
-                class="grow"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-              />
-              <CustomButton
-                label="Open Kasir"
-                class="ml-5 mr-[10px] mt-auto"
-              />
-            </div>
-            <div class="flex mt-[10px]">
-              
-            </div>
-          </template>
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
-          </template>
-        </CustomAccordion>
-      </template>
-      <template #content>
-          <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
-              <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
-                  alt="no data"
-                  class="mx-auto"
-                /> -->
-                <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
+            <hr class="mt-[10px] border border-slate-200"/>
+            <!-- FIFO -->
+            <div class="flex justify-between">
+              <div class="mt-[10px]">
+                <p class="font-bold">First In First Out (FIFO)</p>
+                <p class="text-xs text-mediumGrey-400">Persediaan yang diperoleh diawal akan dipotong (digunakan) terlebih dahulu</p>
+              </div>
+              <div class="mt-[20px]">
+                <CustomSwitch
+                  v-model="status"
+                  :show-label="false"
+                  sideLabel="NON-AKTIF"
+                  sideLabelTrue="AKTIF"
+                />
               </div>
             </div>
-            
-            <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
-              <!-- Total Pembayaran -->
-              <div class="flex items-center justify-between">
-                <div class="text-base font-bold font-poppins">
-                  Total Pembayaran
-                </div>
+            <!-- LIFO -->
+            <div class="flex justify-between">
+              <div class="mt-[20px]">
+                <p class="font-bold">Last In First Out (LIFO)</p>
+                <p class="text-xs text-mediumGrey-400">Persediaan yang diperoleh diakhir akan dipotong (digunakan) terlebih dahulu</p>
               </div>
-              <hr class="mt-2 mb-2 border border-slate-300"/>
-              <!-- Biaya Administrasi -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm text-black font-poppins">
-                  Biaya Administrasi
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+              <div class="mt-[30px]">
+                <CustomSwitch
+                  v-model="status"
+                  :show-label="false"
+                  sideLabel="NON-AKTIF"
+                  sideLabelTrue="AKTIF"
+                />
               </div>
-              <!-- Biaya Tindakan -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Tindakan
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </div>
+            <!-- FEFO -->
+            <div class="flex justify-between">
+              <div class="mt-[20px]">
+                <p class="font-bold">First Expired First Out (FEFO)</p>
+                <p class="text-xs text-mediumGrey-400">Persediaan yang akan kadaluarsa (*Jika tanggal kadaluarsa diisi ketika penerimaan / produksi) akan tipotong (digunakan) terlebih dahulu</p>
               </div>
-              <!-- Biaya Obat -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Obat
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- Biaya Kamar -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Kamar
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <!-- PPN -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  PPN
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-4 border-dashed border-[1px] border-slate-300"/>
-              <!-- Diskon -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-poppins">
-                  Diskon
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-6 mb-2 border-black border-1"/>
-              <!-- Grand Total -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-bold font-poppins">
-                  Grand Total
-                </div>
-                <div class="text-sm font-bold font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
-                <div class="flex">
-                  <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                  <CustomButton
-                    label="Bayar"
-                    class="w-full ml-4 mr-4"
-                    textColor = "text-slate-400"
-                    backgroundColor="bg-slate-200"
-                  />
-                </div>
+              <div class="mt-[30px]">
+                <CustomSwitch
+                  v-model="status"
+                  :show-label="false"
+                  sideLabel="NON-AKTIF"
+                  sideLabelTrue="AKTIF"
+                />
               </div>
             </div>
           </div>
-      </template>
+
+          <!-- Metode HPP -->
+          <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+            <div class="flex justify-between">
+              <div class="">
+                <p class="text-lg font-bold text-adameds-300 font-poppins">Metode HPP</p>
+              </div>
+              <div>
+                <CustomChip
+                  label="Harga Terakhir"
+                  textColor="text-white"
+                  bgColor="bg-adameds-300"
+                  borderColor="border-none"
+                  icon-color="white"
+                  customClass="text-sm font-semibold h-6"
+                />
+              </div>
+            </div>
+            <hr class="mt-[10px] border border-slate-200"/>
+            <!-- Harga Terakhir -->
+            <div class="flex justify-between">
+              <div class="mt-[10px]">
+                <p class="font-bold">Harga Terakhir</p>
+                <p class="text-xs text-mediumGrey-400">Penggunaan HPP dengan Harga Terakhir</p>
+              </div>
+              <div class="mt-[20px]">
+                <CustomSwitch
+                  v-model="status"
+                  :show-label="false"
+                  sideLabel="NON-AKTIF"
+                  sideLabelTrue="AKTIF"
+                />
+              </div>
+            </div>
+            <!-- Rata-rata -->
+            <div class="flex justify-between">
+              <div class="mt-[20px]">
+                <p class="font-bold">Rata-rata</p>
+                <p class="text-xs text-mediumGrey-400">Penggunaan HPP dengan rata-rata</p>
+              </div>
+              <div class="mt-[30px]">
+                <CustomSwitch
+                  v-model="status"
+                  :show-label="false"
+                  sideLabel="NON-AKTIF"
+                  sideLabelTrue="AKTIF"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Margin -->
+          <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+            <div class="flex justify-between">
+              <div class="">
+                <p class="text-lg font-bold text-adameds-300 font-poppins">Margin</p>
+              </div>
+              <div>
+                <CustomChip
+                  label="5%"
+                  textColor="text-white"
+                  bgColor="bg-adameds-300"
+                  borderColor="border-none"
+                  icon-color="white"
+                  customClass="text-sm font-semibold h-6"
+                />
+              </div>
+            </div>
+            <hr class="mt-[10px] border border-slate-200"/>
+            <!-- Presentasi Margin -->
+            <div class="flex justify-between">
+              <div class="mt-[10px]">
+                <p class="font-bold">Presentasi Margin</p>
+                <li class="text-xs text-mediumGrey-400 mt-[5px]">Mempengaruhi pada kolom <span class="font-bold text-black">Harga Dasar</span> di master item medis</li>
+                <li class="text-xs text-mediumGrey-400">HNA otomatis terhitung</li>
+              </div>
+              <div class="mt-[10px]">
+                <p class="font-bold">Input Margin (%)</p>
+                <CustomTextfield placeholder="5" :show-label="false" class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]">
+                  <template #appendText>
+                    <div
+                      class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
+                    >
+                      %
+                    </div>
+                  </template>
+                </CustomTextfield>
+              </div>
+            </div>
+          </div>
+
+          <!-- PPN -->
+          <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+            <div class="flex justify-between">
+              <div class="">
+                <p class="text-lg font-bold text-adameds-300 font-poppins">PPN</p>
+              </div>
+              <div>
+                <CustomChip
+                  label="12%"
+                  textColor="text-white"
+                  bgColor="bg-adameds-300"
+                  borderColor="border-none"
+                  icon-color="white"
+                  customClass="text-sm font-semibold h-6"
+                />
+              </div>
+            </div>
+            <hr class="mt-[10px] border border-slate-200"/>
+            <!-- Presentasi PPN -->
+            <div class="flex justify-between">
+              <div class="mt-[10px]">
+                <p class="font-bold">Presentasi PPN</p>
+                <li class="text-xs text-mediumGrey-400 mt-[5px]">Mempengaruhi pada kolom <span class="font-bold text-black">Harga Dasar</span> di master item medis</li>
+                <li class="text-xs text-mediumGrey-400">HJA otomatis terhitung</li>
+              </div>
+              <div class="mt-[10px]">
+                <p class="font-bold">Input PPN (%)</p>
+                <CustomTextfield placeholder="12" :show-label="false" class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]">
+                  <template #appendText>
+                    <div
+                      class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
+                    >
+                      %
+                    </div>
+                  </template>
+                </CustomTextfield>
+              </div>
+            </div>
+          </div>
+        </template>
     </Card>
-  </div>
 </template>

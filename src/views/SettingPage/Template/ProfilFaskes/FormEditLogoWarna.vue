@@ -10,6 +10,9 @@ import { computed } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { utilsStore } from "@/stores/utils";
+
+const useUtilsStore = utilsStore();
 
 const props = defineProps({
 	profilFaskesResponse: {
@@ -50,8 +53,9 @@ const [bgWarna] = defineFieldLogoWarna("bgWarna");
 
 
 const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
+	useUtilsStore.setLoading(true);
 	try {
-		 console.log('bgWarna value before submission:', values.bgWarna);
+		console.log('bgWarna value before submission:', values.bgWarna);
 		const payload = {
 			logo: values.logo,
 			bgWarna: values.bgWarna,
@@ -75,6 +79,7 @@ const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
 		if (response?.status === 200) {
 			emit('update:isEditLogoWarna', false);
 			emit('update:afterEditLogoWarna', { ...props.profilFaskesResponse, ...payload });
+			useUtilsStore.setLoading(false);
 		} else {
 			console.error("Failed to update profile:");
 		}

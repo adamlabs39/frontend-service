@@ -48,7 +48,13 @@ const fetchRoleData = async () => {
   }
 };
 
-watch([searchQuery], fetchRoleData);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchRoleData();
+  }, 500);
+});
 
 onMounted(() => {
   fetchRoleData();
@@ -71,6 +77,8 @@ const metaKey = ref(true);
 const selectedData = ref();
 
 const onRowSelect = (event: any) => {
+  console.log("test");
+
   selectedData.value = event.data;
   openDialog("detail", "Detail Data", selectedData.value);
 };
@@ -121,7 +129,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER ROLE"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -129,8 +137,8 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Role",
+      Nama: "Nama Role",
       Status: "Status",
     });
 
@@ -216,23 +224,33 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="role"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchRoleData()"
       />
     </template>
 
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-      v-else
+        v-else
         :value="rolePayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         class="text-xs"
-
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
@@ -264,18 +282,27 @@ const downloadExportExcel = async () => {
         >
           <template #body="slotProps">
             <div class="flex flex-wrap gap-2">
-              <div v-for="items in slotProps.data.permission" :key="items">
-                <CustomChip
-                  :label="items"
-                  :showCheckedIcon="false"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
-                />
+              <div
+                v-if="
+                  slotProps.data.permission &&
+                  slotProps.data.permission.length > 0
+                "
+              >
+                <div v-for="items in slotProps.data.permission" :key="items">
+                  <CustomChip
+                    :label="items"
+                    :showCheckedIcon="false"
+                    border-color="border-none"
+                    bg-color="bg-adameds-300"
+                    customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+                  />
+                </div>
               </div>
+              <div v-else>-</div>
             </div>
           </template>
         </Column>
+
         <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
@@ -337,7 +364,7 @@ const downloadExportExcel = async () => {
         </Column>
       </DataTable>
       <FormRole
-      v-model:isDialogVisible="isTambahDataDialogVisible"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"

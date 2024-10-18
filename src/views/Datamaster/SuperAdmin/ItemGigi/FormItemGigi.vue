@@ -3,6 +3,8 @@ import { ref, watch, onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useKategoriGigiStore } from "@/stores/datamaster/kategoriGigi";
+import { useItemGigiStore } from "@/stores/datamaster/itemGigi";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -12,9 +14,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomDragDrop from "@/components/Base/CustomDragDrop.vue";
-import { useKategoriGigiStore } from "@/stores/datamaster/kategoriGigi";
-import { useItemGigiStore } from "@/stores/datamaster/itemGigi";
-import { Code } from "ckeditor5";
+import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -59,7 +59,7 @@ onMounted(() => {
 const schema = toTypedSchema(
   yup.object({
     kategoriGigiUuid: yup.string().required("Kategori Gigi harus dipilih"),
-    system: yup.string().required("Kategori Gigi harus dipilih"),
+    system: yup.string().required("Referensi sistem SATUSEHAT harus diisi"),
     code: yup.string().required("Kode SATUSEHAT harus diisi"),
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Gigi harus diisi"),
@@ -80,7 +80,6 @@ const [name] = defineField("name");
 const [image] = defineField("image");
 const [catatan] = defineField("catatan");
 const [kategoriGigiUuid] = defineField("kategoriGigiUuid");
-
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -129,11 +128,11 @@ const closeDialog = () => {
   resetForm();
 };
 
-// const itemGigi = ref();
 const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
 const clearItemGigiPreview = () => {
+  image.value = ""; // Hapus gambar yang diunggah
   if (itemGigiUpload.value) {
-    itemGigiUpload.value.clearFile();
+    itemGigiUpload.value.clearFile(); // Reset komponen DragDrop ke keadaan semula
   }
 };
 
@@ -157,14 +156,28 @@ watch(
 
 <template>
   <CustomDialog
-    width="600px"
+    :width="
+      method === 'add'
+        ? '800px'
+        : method === 'edit'
+        ? '800px'
+        : method === 'detail'
+        ? '600px'
+        : '360px'
+    "
     :visible="isDialogVisible"
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
     <template #header>{{ title }} Gigi FDI</template>
+
+    <!-- BODY CONTENT -->
     <template #body>
-      <div v-if="method !== 'detail'" class="flex flex-col gap-5 mt-5">
+      <!-- Kondisi untuk 'add' dan 'edit' -->
+      <div
+        v-if="method === 'add' || method === 'edit'"
+        class="flex flex-col gap-5 mt-5"
+      >
         <div class="grid grid-cols-2 gap-5">
           <div
             class="flex grid flex-col gap-5 pb-5 pr-5 border-r border-adameds-300"
@@ -178,6 +191,7 @@ watch(
               optionLabel="name"
               :invalid="!!errors.kategoriGigiUuid"
               :invalidMessage="errors.kategoriGigiUuid"
+              :required="errors.kategoriGigiUuid ? true : false"
             />
             <CustomTextfield
               label="Referensi Sistem SATUSEHAT"
@@ -185,6 +199,7 @@ watch(
               placeholder="Masukkan Referensi sistem SATUSEHAT"
               :invalid="!!errors.system"
               :invalidMessage="errors.system"
+              :required="errors.system ? true : false"
             />
             <CustomTextfield
               label="Code SATUSEHAT"
@@ -192,6 +207,7 @@ watch(
               placeholder="Masukkan Code SATUSEHAT"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
             />
             <CustomTextfield
               label="Display SATUSEHAT"
@@ -199,6 +215,7 @@ watch(
               placeholder="Masukkan Display SATUSEHAT"
               :invalid="!!errors.display"
               :invalidMessage="errors.display"
+              :required="errors.display ? true : false"
             />
             <CustomTextfield
               label="Nama Item Gigi"
@@ -206,6 +223,7 @@ watch(
               placeholder="Masukkan Nama Item Gigi"
               :invalid="!!errors.name"
               :invalidMessage="errors.name"
+              :required="errors.name ? true : false"
             />
             <CustomTextArea
               label="Catatan"
@@ -213,6 +231,7 @@ watch(
               placeholder="Masukkan Catatan"
             />
           </div>
+
           <div>
             <div class="flex justify-between">
               <div class="font-semibold text-normal">Upload & Preview</div>
@@ -227,21 +246,21 @@ watch(
               />
             </div>
             <CustomDragDrop
+              v-if="!image"
               v-model="image"
               :allowed-file-types="['image/png']"
-              :class="
-                image
-                  ? 'bg-adameds-300 border-none'
-                  : 'bg-white border-adameds-300'
-              "
               class="h-[400px]"
               ref="itemGigiUpload"
             />
+            <div
+              v-if="image"
+              class="bg-adameds-300 h-[400px] flex items-center justify-center mt-5 rounded-md"
+            >
+              <img :src="image" />
+            </div>
           </div>
         </div>
-        <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
-        <!-- Status Switch -->
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -251,34 +270,69 @@ watch(
           class="col-span-2"
         />
       </div>
-      <div v-else class="flex flex-col gap-5 mt-5">
-        <CustomInfoRow label="Kategori Gigi" :value="payload.kategoriGigiName" />
-        <CustomInfoRow label="Referensi Sistem SATUSEHAT" :value="payload.system" />
-        <CustomInfoRow label="Code SATUSEHAT"  :value="payload.code"/>
+
+      <!-- Kondisi untuk 'preview' -->
+      <div
+        v-if="method === 'preview'"
+        class="flex items-center justify-center w-full"
+      >
+        <div
+          v-if="image"
+          class="flex items-center justify-center mt-5 border-2 border-dashed rounded-md border-adameds-300 bg-adameds-50 w-fit h-fit"
+        >
+          <img :src="image" class="w-[80px] h-[80px] m-2.5" />
+        </div>
+        <div v-else class="mt-5">
+          <NoData />
+        </div>
+      </div>
+
+      <!-- Kondisi untuk 'detail' -->
+      <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <CustomInfoRow
+          label="Kategori Gigi"
+          :value="payload.kategoriGigiName"
+        />
+        <CustomInfoRow
+          label="Referensi Sistem SATUSEHAT"
+          :value="payload.system"
+        />
+        <CustomInfoRow label="Code SATUSEHAT" :value="payload.code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
-        <CustomInfoRow label="Nama Item Gigi" :value="payload.name"/>
-        <CustomInfoRow label="Catatan" :value="payload.catatan" />
+        <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
+        <CustomInfoRow label="Catatan" :value="payload.catatan ?? '-'" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status" :value="payload.status">
           <template #value>
             <CustomChip
-              :label="status ? 'AKTIF' : 'NON-AKTIF'"
-              :textColor="status ? 'text-white' : 'text-[#80868d]'"
-              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
-              :icon-color="status ? 'white' : '#80868d'"
+              :label="payload.status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="payload.status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="payload.status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="payload.status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="payload.status ? 'white' : '#80868d'"
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
           </template>
         </CustomInfoRow>
-        <CustomInfoRow label="Preview Gigi" :value="`${name}`" />
+        <CustomInfoRow label="Preview Gigi">
+          <template #value>
+            <div
+              v-if="image"
+              class="flex items-center justify-center border-2 border-dashed rounded-md border-adameds-300 bg-adameds-50 w-fit h-fit"
+            >
+              <img :src="image" class="w-[80px] h-[80px] m-2.5" />
+            </div>
+            <div v-else>-</div>
+          </template>
+        </CustomInfoRow>
       </div>
     </template>
 
-    <!-- Footer Section for Reset and Save Buttons -->
-    <template #footer>
+    <!-- FOOTER -->
+    <template #footer v-if="method !== 'preview'">
       <div class="flex justify-end space-x-3">
         <CustomButton
-          v-if="method !== 'detail'"
+          v-if="method === 'add' || method === 'edit'"
           border-color="border-grey-200"
           text-color="text-grey-300"
           background-color="bg-transparent"
@@ -286,7 +340,7 @@ watch(
           @click="resetForm()"
         ></CustomButton>
         <CustomButton
-          v-if="method !== 'detail'"
+          v-if="method === 'add' || method === 'edit'"
           label="Simpan"
           @click="onSubmit"
         ></CustomButton>

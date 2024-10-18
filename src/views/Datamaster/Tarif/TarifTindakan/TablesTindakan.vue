@@ -3,78 +3,59 @@ import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import DetailTarifTindakan from "./FormTarifTindakan.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-
+import FormTarifTindakan from "./FormTarifTindakan.vue";
 const props = defineProps({
   payload: {
     type: Array,
-    default: () => ([]),
+    default: () => [],
   },
 });
-const products = ref();
-const hapusDataDialog = ref(false);
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
-onMounted(() => {
-  products.value = [
-    {
-      id: "1",
-      kode: "123",
-      nama_tarif: "Paket Pemeriksaan Poli Umum",
-      pilihan_tarif: "Single",
-      pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      tarif_harga: "Rp. 150,000",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "2",
-      kode: "123",
-      nama_tarif: "Paket Pemeriksaan Poli Umum",
-      pilihan_tarif: "Single",
-      pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      tarif_harga: "Rp. 150,000",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "3",
-      kode: "123",
-      nama_tarif: "Paket Pemeriksaan Poli Umum",
-      pilihan_tarif: "Single",
-      pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      tarif_harga: "Rp. 150,000",
-      status: "AKTIF",
-      action: "edit",
-    },
-    {
-      id: "4",
-      kode: "123",
-      nama_tarif: "Paket Pemeriksaan Poli Umum",
-      pilihan_tarif: "Single",
-      pelayanan: ["Dashboard", "Admisi", "Antrian", "IGD", "Rawat Jalan"],
-      metode_pembayaran: ["TUNAI", "BPJS"],
-      tarif_harga: "Rp. 150,000",
-      status: "AKTIF",
-      action: "edit",
-    },
-  ];
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  FormTindakanDialog("detail", "Detail Data", selectedData.value);
+};
+const hapusDataDialog = ref(false);
+const isTambahTindakanDialogVisible = ref(false);
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
 });
-const detail = ref(false);
+const FormTindakanDialog = (
+  method: string,
+  title: string,
+  data: any = null
+) => {
+  dialogConfig.value = { method, title, data };
+  isTambahTindakanDialogVisible.value = true;
+};
 </script>
 
 <template>
   <!-- {{ payload }} -->
   <DataTable
     :value="payload"
+    v-model:selection="selectedData"
+    :metaKeySelection="metaKey"
+    @rowClick="onRowSelect"
+    selectionMode="single"
     tableStyle="min-width: 50rem"
     stripedRows
     class="-m-4 text-xs"
     scrollable
     scrollHeight="flex"
+    :dt="{
+      rowSelectedColor: '#000000',
+      rowSelectedBackground: 'transparent',
+      bodyCellSelectedBorderColor: 'transparent',
+      bodyCellBorderColor: 'transparent',
+      rowStripedBackground: '#F8F8F8',
+    }"
   >
     <Column header="No." headerClass="bg-adameds-50">
       <template #body="slotProps">
@@ -132,17 +113,11 @@ const detail = ref(false);
         </div>
       </template>
     </Column>
-    <Column
-      header="Tarif Harga"
-      headerClass="bg-adameds-50"
-      class="w-[100px]"
-    >
-    <template #body="slotProps">
-      <div>
-        Rp. {{ slotProps.data.grandTotal }}
-      </div>
-    </template>
-  </Column>
+    <Column header="Tarif Harga" headerClass="bg-adameds-50" class="w-[100px]">
+      <template #body="slotProps">
+        <div>Rp. {{ slotProps.data.grandTotal }}</div>
+      </template>
+    </Column>
     <Column field="status" headerClass="bg-adameds-50 text-center">
       <template #header>
         <div class="w-full font-semibold text-center">Status</div>
@@ -191,41 +166,11 @@ const detail = ref(false);
       </template>
     </Column>
   </DataTable>
-  <CustomDialog
-    width="600px"
-    v-model:visible="hapusDataDialog"
-    headerBg="bg-danger-300"
-  >
-    <template #header>Hapus Tarif</template>
-    <template #body>
-      <div class="flex flex-col gap-5 mt-5">
-        <CustomTextfield
-          label="Alasan Hapus Tarif"
-          placeholder="Alasan Hapus Tarif"
-        />
-        <div class="italic text-normal text-danger-300">
-          *Setelah hapus, data akan <span class="font-bold">terupdate</span> dan
-          akan <span class="font-bold">mempengaruhi seluruh pelayanan</span>
-        </div>
-      </div>
-    </template>
-    <template #footer>
-      <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
-        <div class="mt-5 flex justify-end gap-2.5">
-          <CustomButton
-            label="Batal"
-            border-color="border-grey-200"
-            background-color="bg-white"
-            text-color="text-grey-300"
-            @click="hapusDataDialog = false"
-          >
-          </CustomButton>
 
-          <CustomButton label="Iya, Hapus" background-color="bg-danger-300">
-          </CustomButton>
-        </div>
-      </div>
-    </template>
-  </CustomDialog>
+  <FormTarifTindakan
+    v-model:isDialogVisible="isTambahTindakanDialogVisible"
+    :title="dialogConfig.title"
+    :method="dialogConfig.method"
+    :payload="dialogConfig.data"
+  />
 </template>

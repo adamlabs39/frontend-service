@@ -37,7 +37,7 @@ const kategoriRuanganPayload = ref<any[]>([]);
 
 const fetchKategoriRuangan = async () => {
   try {
-    const response = await kategoriRuanganStore.getApi();
+    const response = await kategoriRuanganStore.getAktifApi();
     if (response && response.payload) {
       kategoriRuanganPayload.value = response.payload;
     } else {
@@ -61,11 +61,11 @@ const optionsKelas = ref([
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string(),
-    kategoriRuanganUuid: yup.string().required("Kategori ruangan harus dipilih"),
-    noRoom: yup.number().required("Nomor kamar harus diisi"),
-    kelasRuangan: yup.number().required("Kelas ruangan harus dipilih"),
+    code: yup.string().required("Kode Ruangan harus diisi"),
+    name: yup.string().required("Nama Ruangan harus diisi"),
+    kategoriRuanganUuid: yup.string().required("Kategori Ruangan harus dipilih"),
+    noRoom: yup.number().required("Nomor Kamar harus diisi"),
+    kelasRuangan: yup.number().required("Kelas Ruangan harus dipilih"),
     status: yup.bool(),
   })
 );
@@ -171,12 +171,18 @@ watch(
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
             class="col-span-4"
+            :required="errors.code ? true : false"
+
           />
           <CustomTextfield
             label="Nama Ruangan"
             v-model="name"
             placeholder="Nama Ruangan"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
             class="col-span-8"
+            :required="errors.name ? true : false"
+
           />
           <CustomSelect
             label="Kategori Ruangan"
@@ -188,6 +194,8 @@ watch(
             class="col-span-8"
             :invalid="!!errors.kategoriRuanganUuid"
             :invalidMessage="errors.kategoriRuanganUuid"
+            :required="errors.kategoriRuanganUuid ? true : false"
+
           />
           <CustomInputNumber
             label="Nomor Kamar"
@@ -195,6 +203,7 @@ watch(
             :invalid="!!errors.noRoom"
             :invalidMessage="errors.noRoom"
             class="col-span-4"
+            :required="errors.noRoom ? true : false"
 
           />
         <CustomSelect
@@ -207,6 +216,8 @@ watch(
           class="col-span-12"
           :invalid="!!errors.kelasRuangan"
           :invalidMessage="errors.kelasRuangan"
+          :required="errors.kelasRuangan ? true : false"
+
         />
 
         <hr class="col-span-12 border-grey-200" />
@@ -224,8 +235,9 @@ watch(
         <CustomInfoRow label="Kode Ruangan" :value="code" />
         <CustomInfoRow label="Nama Ruangan" :value="name" />
         <CustomInfoRow label="Kategori Ruangan" :value="payload.kategoriRuanganName" />
-        <CustomInfoRow label="Nomor Kamar" :value="`${noRoom}`" />
+        <CustomInfoRow label="No. Kamar" :value="`${noRoom}`" />
         <CustomInfoRow label="Kelas Ruangan" :value="kelasRuanganLabel" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -242,7 +254,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

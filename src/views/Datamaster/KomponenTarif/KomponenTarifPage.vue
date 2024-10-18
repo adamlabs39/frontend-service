@@ -26,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch KomponenTarif Data from API
 const fetchKomponenTarifData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await komponenTarifStore.getApi(
       komponenTarifProperties.value.page,
@@ -44,7 +44,7 @@ const fetchKomponenTarifData = async () => {
     console.error("Failed to fetch data", error);
     komponenTarifPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchKomponenTarifData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -103,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await komponenTarifStore.deleteApi(item.uuid);
       fetchKomponenTarifData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -131,8 +131,8 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Komponen Tarif",
@@ -205,10 +205,27 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Komponen Tarif");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Komponen Tarif"
+    );
     XLSX.writeFile(workbook, `Datamaster Komponen Tarif.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await komponenTarifStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchKomponenTarifData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -221,9 +238,9 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="komponen-tarif"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchKomponenTarifData()"
       />
     </template>
     <template #content>
@@ -257,7 +274,8 @@ const downloadExportExcel = async () => {
               {{
                 slotProps.index +
                 1 +
-                (komponenTarifProperties.page - 1) * komponenTarifProperties.page_size
+                (komponenTarifProperties.page - 1) *
+                  komponenTarifProperties.page_size
               }}
             </div>
           </template>
@@ -316,7 +334,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Komponen Tarif ${slotProps.data.code}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Komponen Tarif ${slotProps.data.code}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -345,6 +369,7 @@ const downloadExportExcel = async () => {
         :totalRecords="komponenTarifProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

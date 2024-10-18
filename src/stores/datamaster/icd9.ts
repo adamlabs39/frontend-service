@@ -11,8 +11,19 @@ export const useIcd9Store = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
-      return apiDatamasterGet(`/datamaster/icd9?page=${page}&limit=${limit}&name=${name}`, payload);
+    async getApi(
+      page: number = 1,
+      limit: number = 10,
+      name: String = "",
+      payload = {}
+    ) {
+      return apiDatamasterGet(
+        `/datamaster/icd9?page=${page}&limit=${limit}&name=${name}`,
+        payload
+      );
+    },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/icd9/aktif`, payload);
     },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/icd9", payload);
@@ -23,12 +34,11 @@ export const useIcd9Store = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/icd9/${uuid}`, payload);
     },
-    async exportApi(payload = {}) {      
+    async exportApi(payload = {}) {
       return apiDatamasterGet(`/datamaster/icd9/export`, payload);
     },
     async importApi(payload: any) {
-      console.log('======',payload);
-    return apiDatamasterPost("/datamaster/icd9/import", payload);
-  },
+      return apiDatamasterPost("/datamaster/icd9/import", payload);
+    },
   },
 });

@@ -8,6 +8,7 @@ import DataMonitoringKunjungan from "../Layout/Tabel/BPJS/DataMonitoringKunjunga
 import DataMonitoringRiwayatKunjungan from "../Layout/Tabel/BPJS/DataMonitoringRiwayatKunjungan.vue";
 import DataMonitoringObatKunjungan from "../Layout/Tabel/BPJS/DataMonitoringObatKunjungan.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
@@ -78,15 +79,7 @@ const handleSearchExecuted = (status: boolean) => {
           class="my-auto bg-adameds-300"
           label="Cetak"
         />
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator :rows="10" :totalRecords="120" @page="() => {}" />
       </div>
     </template>
   </Card>

@@ -32,6 +32,10 @@ import HouseFill from "./HouseFill.vue";
 import AddPrint from "./AddPrint.vue";
 import Stethoscop from "./Stethoscop.vue";
 import PlusIcon from "./PlusIcon.vue";
+import OpenBoxIcon from "./OpenBoxIcon.vue";
+import BoxPlusIcon from "./BoxPlusIcon.vue";
+import BoxUpIcon from "./BoxUpIcon.vue";
+import BoxDownIcon from "./BoxDownIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -68,5 +72,10 @@ export default {
     app.component("AddPrint", AddPrint);
     app.component("Stethoscop", Stethoscop);
     app.component("PlusIcon", PlusIcon);
+    // NOTE Inventory
+    app.component("OpenBoxIcon", OpenBoxIcon);
+    app.component("BoxPlusIcon", BoxPlusIcon);
+    app.component("BoxUpIcon", BoxUpIcon);
+    app.component("BoxDownIcon", BoxDownIcon);
   },
 };

@@ -29,7 +29,7 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Penjamin harus diisi"),
-    name: yup.string().required("Nama Penjamin CM harus diisi"),
+    name: yup.string().required("Nama Penjamin harus diisi"),
     phone: yup.string(),
     address: yup.string(),
     status: yup.bool().default(false),
@@ -129,6 +129,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Penjamin"
@@ -137,14 +138,9 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
-        <!-- <CustomInputNumber
-        label="No. Telepon"
-          v-model="phone"
-          placeholder="0"
-          type="number"
-          class="col-span-4"
-        /> -->
+
         <CustomTextfield
           label="No. Telepon"
           v-model="phone"
@@ -173,6 +169,7 @@ watch(
         <CustomInfoRow label="Nama Penjamin" :value="name" />
         <CustomInfoRow label="No. Telepon" :value="phone" />
         <CustomInfoRow label="Alamat" :value="address" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -189,7 +186,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Batal"

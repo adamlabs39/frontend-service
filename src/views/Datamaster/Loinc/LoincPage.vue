@@ -25,7 +25,7 @@ const searchQuery = ref<string>("");
 
 // Fetch LOINC Data from API
 const fetchLoincData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await loincStore.getApi(
       loincProperties.value.page,
@@ -42,7 +42,7 @@ const fetchLoincData = async () => {
     console.error("Failed to fetch data", error);
     loincPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -51,7 +51,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchLoincData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -102,14 +102,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await loincStore.deleteApi(item.uuid);
       fetchLoincData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -130,8 +130,8 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode LOINC",
@@ -210,6 +210,18 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await loincStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchLoincData();
+    console.log('File uploaded successfully:', response);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  }
+};
 </script>
 
 <template>
@@ -219,11 +231,12 @@ const downloadExportExcel = async () => {
     class=""
   >
     <template #header>
-      <HeaderFilter 
-      page-type="loinc" 
-      :value-search="searchQuery"
-      @update:valueSearch="searchQuery = $event"
-      @tambah-data="openDialog('add', 'Tambah Data')" />
+      <HeaderFilter
+        page-type="loinc"
+        @update:valueSearch="searchQuery = $event"
+        @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchLoincData()"
+      />
     </template>
 
     <template #content>
@@ -258,7 +271,11 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column field="code" header="Kode LOINC" headerClass="bg-adameds-50"></Column>
+        <Column
+          field="code"
+          header="Kode LOINC"
+          headerClass="bg-adameds-50"
+        ></Column>
         <Column
           field="name"
           header="Nama LOINC"
@@ -304,7 +321,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                 @click="deleteDialog('delete', `LOINC ${slotProps.data.code}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `LOINC ${slotProps.data.code}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -313,7 +336,7 @@ const downloadExportExcel = async () => {
         </Column>
       </DataTable>
       <FormLoinc
-      v-model:isDialogVisible="isTambahDataDialogVisible"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
@@ -333,6 +356,13 @@ const downloadExportExcel = async () => {
         :totalRecords="loincProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+      />
+      <FooterPaginator
+        :rows="loincProperties.page_size"
+        :totalRecords="loincProperties.total"
+        @page="handlePage"
+        @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

@@ -14,6 +14,9 @@ export const useFaskesStore = defineStore({
       async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
         return apiDatamasterGet(`/datamaster/faskes?page=${page}&limit=${limit}&name=${name}`, payload);
       },
+      async getAktifApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/faskes/aktif`, payload);
+      },
       async postApi(payload = {}) {
         return apiDatamasterPost("/datamaster/faskes", payload);
       },
@@ -25,6 +28,9 @@ export const useFaskesStore = defineStore({
       },
       async exportApi(payload = {}) {      
         return apiDatamasterGet(`/datamaster/faskes/export`, payload);
+      },
+      async importApi(payload: any) {
+        return apiDatamasterPost("/datamaster/faskes/import", payload);
       },
     },
   });

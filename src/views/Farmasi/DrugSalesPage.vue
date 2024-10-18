@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -9,6 +8,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
 import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
+import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
@@ -33,7 +33,7 @@ const onSelectPayType = (label: string) => {
   
 };
 
-// Filter Pelayanan
+// Filter Farmasi
 const selectedFilterFarmasi = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterFarmasi.value.includes(label)) {
@@ -297,57 +297,57 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
-      <DataTable
-        v-if="itemsPasien.length"
-        :value="itemsPasien"
-        tableStyle="min-width: 50rem"
-        class="mt-2"
-        scrollable
-        scrollHeight="flex"
-        :pt="{ headerRow: 'text-SM' }"
-        @rowClick="showDetail"
-      >
-        <!-- Penjualan -->
-        <Column field="penjualan" header="Penjualan" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="">
-              <div v-if="slotProps.data.no_antrian"
-                class="text-SM">
-                {{ slotProps.data.no_antrian }}
+        <DataTable
+          v-if="itemsPasien.length"
+          :value="itemsPasien"
+          tableStyle="min-width: 50rem"
+          class="mt-2"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
+          @rowClick="showDetail"
+        >
+          <!-- Penjualan -->
+          <Column field="penjualan" header="Penjualan" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="">
+                <div v-if="slotProps.data.no_antrian"
+                  class="text-SM">
+                  {{ slotProps.data.no_antrian }}
+                </div>
+                <div class="text-SM">{{ slotProps.data.noRegis }}</div>
+                <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
               </div>
-              <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-              <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
-            </div>
-          </template>
-        </Column>
+            </template>
+          </Column>
 
-        <!-- Pembeli -->
-        <Column field="pembeli" header="Pembeli" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="text-SM">
-              <p class="font-semibold">{{ slotProps.data.name }}</p>
-            </div>
-            <div class="flex flex-wrap">
-              <CustomChip
-                :label="slotProps.data.layanan"
-                :showCheckedIcon="false"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-300" 
-                textColor="text-white"
-                customClass="h-6"
-              />
-            </div>
-          </template>
-        </Column>
+          <!-- Pembeli -->
+          <Column field="pembeli" header="Pembeli" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <p class="font-semibold">{{ slotProps.data.name }}</p>
+              </div>
+              <div class="flex flex-wrap">
+                <CustomChip
+                  :label="slotProps.data.layanan"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-6"
+                />
+              </div>
+            </template>
+          </Column>
 
-        <!-- Harga -->
-        <Column field="harga" header="Harga" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.harga }}</div>
-          </template>
-        </Column>
-      </DataTable>
-      <NoData v-else />
+          <!-- Harga -->
+          <Column field="harga" header="Harga" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.harga }}</div>
+            </template>
+          </Column>
+        </DataTable>
+        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-end">

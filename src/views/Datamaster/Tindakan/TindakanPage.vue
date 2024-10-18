@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useTindakanStore } from "@/stores/datamaster/tindakan";
+import { utilsStore } from "@/stores/utils";
 import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -8,7 +9,6 @@ import Footer from "../Layout/FooterPaginator.vue";
 import FormTindakan from "./FormTindakan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import DialogDelete from "../Layout/DialogDelete.vue";
-import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
 
 // State Management
@@ -137,7 +137,8 @@ const downloadExportExcel = async () => {
       No: "No",
       Kode: "Kode Tindakan",
       Nama: "Nama Tindakan",
-      SnomedIcd:"Snomed&ICD",
+      Snomed:"Snomed",
+      icd:"ICD 9 CM",
       Status: "Status",
     });
 
@@ -147,6 +148,8 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
+        Snomed: rows[i].snomedDetail.name ?? '-',
+        icd: rows[i].icd9Detail.name ?? '-',
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -157,7 +160,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -166,7 +169,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -212,6 +215,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
+
+  try {
+    const response = await tindakanStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchTindakanData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -223,9 +239,9 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="tindakan"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchTindakanData()"
       />
     </template>
     <template #content>
@@ -269,7 +285,7 @@ const downloadExportExcel = async () => {
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column header="Snome & ICD" class="w-3/12" headerClass="bg-adameds-50">
+        <Column header="Snomed & ICD 9 CM" class="w-3/12" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="underline">Snomed-CT</div>
             <div class="mb-3 font-bold">
@@ -333,7 +349,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Tindakan', slotProps.data)"
+                @click="deleteDialog('delete', `Tindakan ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -361,6 +377,7 @@ const downloadExportExcel = async () => {
         :totalRecords="tindakanProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

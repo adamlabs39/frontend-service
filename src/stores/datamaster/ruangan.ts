@@ -11,8 +11,31 @@ export const useRuanganStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
-      return apiDatamasterGet(`/datamaster/ruangan?page=${page}&limit=${limit}&name=${name}`, payload);
+    async getApi(
+      params: {
+        page?: number;
+        limit?: number;
+        name?: string;
+        kategori_ruangan_uuid?: string;
+        kelas_ruangan?: string;
+        payload?: object;
+      } = {}
+    ) {
+      const {
+        page = 1,
+        limit = 10,
+        name = "",
+        kategori_ruangan_uuid = "",
+        kelas_ruangan = "",
+        payload = {},
+      } = params;
+      return apiDatamasterGet(
+        `/datamaster/ruangan?page=${page}&limit=${limit}&name=${name}&kategori_ruangan_uuid=${kategori_ruangan_uuid}&kelas_ruangan=${kelas_ruangan}`,
+        payload
+      );
+    },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/ruangan/aktif`, payload);
     },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/ruangan", payload);
@@ -23,8 +46,11 @@ export const useRuanganStore = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/ruangan/${uuid}`, payload);
     },
-    async exportApi(payload = {}) {      
+    async exportApi(payload = {}) {
       return apiDatamasterGet(`/datamaster/ruangan/export`, payload);
+    },
+    async importApi(payload: any) {
+      return apiDatamasterPost("/datamaster/ruangan/import", payload);
     },
   },
 });

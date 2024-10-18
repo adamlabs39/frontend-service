@@ -225,12 +225,11 @@ const handleFileUpload = async (file: File) => {
 
   try {
     const response = await icd9Store.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchIcd9Data()
     console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
   } catch (error) {
     console.error('Error uploading file:', error); // Log error jika upload gagal
   }
-
-  
 };
 </script>
 
@@ -242,9 +241,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="icd9-cm"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchIcd9Data()"
       />
     </template>
     <template #content>

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch, computed } from "vue";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -13,7 +14,9 @@ import DialogDelete from "../Layout/DialogDelete.vue";
 
 // State Management
 const ruanganStore = useRuanganStore();
+const kategoriRuanganStore = useKategoriRuanganStore();
 const UseUtilsStore = utilsStore();
+const kategoriRuanganPayload = ref<any[]>([]);
 const ruanganPayload = ref<any[]>([]);
 const ruanganProperties = ref({
   page: 1,
@@ -21,18 +24,39 @@ const ruanganProperties = ref({
   total: 0,
 });
 
-// Search Query
+// Filter
 const searchQuery = ref<string>("");
+const selectedKategoriRuangan = ref("");
+const selectedKelas = ref("");
+
+const handleSearchQuery = (searchValue:string) => {
+  searchQuery.value = searchValue;
+};
+const handleSelectedKategoriRuangan = (selectedValue:any) => {
+  selectedKategoriRuangan.value = selectedValue;
+};
+const handleSelectedKelas = (selectedValue:any) => {
+  selectedKelas.value = selectedValue;
+};
+
+// Reset filter fields
+const handleReset = () => {
+  resetForm();
+  fetchRuanganData(); 
+};
 
 // Fetch Ruangan Data from API
 const fetchRuanganData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
-    const response = await ruanganStore.getApi(
-      ruanganProperties.value.page,
-      ruanganProperties.value.page_size,
-      searchQuery.value
-    );
+    
+    const response = await ruanganStore.getApi({
+      page: ruanganProperties.value.page,
+      limit: ruanganProperties.value.page_size,
+      name: searchQuery.value,
+      kategori_ruangan_uuid: selectedKategoriRuangan.value !== null ? selectedKategoriRuangan.value : '',
+      kelas_ruangan: selectedKelas.value !== null ? selectedKelas.value : '', 
+    });
 
     if (response && response.payload) {
       ruanganProperties.value.total = response.properties.total;
@@ -44,20 +68,36 @@ const fetchRuanganData = async () => {
     console.error("Failed to fetch data", error);
     ruanganPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
+  }
+
+};
+
+const fetchKategoriRuangan = async () => {
+  try {
+    const response = await kategoriRuanganStore.getAktifApi();
+    if (response && response.payload) {
+      kategoriRuanganPayload.value = response.payload;
+    } else {
+      kategoriRuanganPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    kategoriRuanganPayload.value = [];
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchRuanganData();
-  }, 500); 
-});
+const optionsKelas = ref([
+  { label: "kelas 1", value: 1 },
+  { label: "kelas 2", value: 2 },
+  { label: "kelas 3", value: 3 },
+  { label: "VIP", value: 4 },
+  { label: "VVIP", value: 5 },
+]);
 
 onMounted(() => {
   fetchRuanganData();
+  fetchKategoriRuangan();
 });
 
 // Handle Pagination
@@ -103,26 +143,18 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await ruanganStore.deleteApi(item.uuid);
       fetchRuanganData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
 };
-
-const kelasRuanganMapping = {
-  1: "Kelas 1",
-  2: "Kelas 2",
-  3: "Kelas 3",
-  4: "VIP",
-  5: "VVIP",
-} ;
 
 const downloadExportExcel = async () => {
   try {
@@ -138,8 +170,11 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama Runagan",
+      Kode: "Kode Ruangan",
+      Nama: "Nama Ruangan",
+      Kategori: "Kategori Ruangan",
+      NomorKamar: "Nomor Kamar",
+      KelasRuangan: "Kelas Ruangan",
       Status: "Status",
     });
     for (let i = 0; i < rows.length; i++) {
@@ -156,7 +191,7 @@ const downloadExportExcel = async () => {
 
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
 
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     worksheet["A1"].s = {
       alignment: {
@@ -165,7 +200,15 @@ const downloadExportExcel = async () => {
       },
       font: { bold: true, sz: 14 },
     };
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
     for (let row = range.s.r; row <= range.e.r; row++) {
@@ -183,8 +226,8 @@ const downloadExportExcel = async () => {
           };
         }
 
-       // Align header cells (row 3)
-       if (row === 2 || col === 0) {
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
           worksheet[cellAddress].s.alignment = {
             horizontal: "center",
             vertical: "center",
@@ -208,7 +251,28 @@ const downloadExportExcel = async () => {
   }
 };
 
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
+  try {
+    const response = await ruanganStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchRuanganData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
+  }
+};
+
+const resetFormRef = ref();
+
+const resetForm = () => {
+  searchQuery.value = ""; 
+  selectedKategoriRuangan.value = "";
+  selectedKelas.value = ""; 
+  ruanganProperties.value.page = 1;
+  resetFormRef.value.resetForm(); 
+};
 </script>
 
 <template>
@@ -220,9 +284,16 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="ruangan"
-        :value-search="searchQuery"
-        @update:valueSearch="searchQuery = $event"
+        @update:valueSearch="handleSearchQuery"
+        @update:selectedFilter="handleSelectedKategoriRuangan" 
+        @update:selectedFilterSecond="handleSelectedKelas" 
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchRuanganData()"
+        @search="fetchRuanganData()"
+        @reset="handleReset()"
+        :filterSelect="kategoriRuanganPayload"
+        :filterSelectSecond="optionsKelas"
+        ref="resetFormRef"
       />
     </template>
 
@@ -279,15 +350,12 @@ const downloadExportExcel = async () => {
           headerClass="bg-adameds-50"
         ></Column>
 
-        <Column
-          header="Kelas Ruangan"
-          headerClass="bg-adameds-50"
-        >
+        <Column header="Kelas Ruangan" headerClass="bg-adameds-50">
           <template #body="slotProps">
             {{
-              kelasRuanganMapping[
-                slotProps.data.kelasRuangan as keyof typeof kelasRuanganMapping
-              ] || "Unknown"
+              optionsKelas.find(
+                (kelas) => kelas.value === slotProps.data.kelasRuangan
+              )?.label || "-"
             }}
           </template>
         </Column>
@@ -335,7 +403,8 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Ruangan', slotProps.data)"              >
+                @click="deleteDialog('delete', 'Ruangan', slotProps.data)"
+              >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
             </div>
@@ -363,6 +432,7 @@ const downloadExportExcel = async () => {
         :totalRecords="ruanganProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

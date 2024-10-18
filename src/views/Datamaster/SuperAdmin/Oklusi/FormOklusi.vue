@@ -7,7 +7,6 @@ import { useOklusiGigiStore } from "@/stores/datamaster/oklusiGigi";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -142,6 +141,7 @@ watch(
           placeholder="Masukkan Code SATUSEHAT"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           v-model="display"
@@ -149,6 +149,7 @@ watch(
           placeholder="Masukkan Display SATUSEHAT"
           :invalid="!!errors.display"
           :invalidMessage="errors.display"
+          :required="errors.display ? true : false"
         />
         <CustomTextfield
           v-model="name"
@@ -156,6 +157,7 @@ watch(
           placeholder="Oklusi"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
@@ -174,6 +176,7 @@ watch(
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Oklusi" :value="name" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
             <template #value>
               <CustomChip

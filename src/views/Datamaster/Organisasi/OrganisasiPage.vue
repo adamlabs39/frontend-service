@@ -6,7 +6,6 @@ import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FormOrganisasi from "./FormOrganisasi.vue";
-import DetailDataOrganisasi from "./DetailDataOrganisasi.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
@@ -54,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchOrganisasiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -128,7 +127,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER ORGANISASI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -136,8 +135,20 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode ICD-9 CM",
-      Nama: "Nama ICD-9 CM",
+      Kode: "Kode Organisasi",
+      Nama: "Nama Organisasi",
+      Phone: "No. Telephone",
+      Email: "E-mail",
+      Url: "URL",
+      Provinsi: "Provinsi",
+      Kabupaten: "Kabupaten/Kota",
+      Kecamatan: "Kecamatan",
+      Kelurahan: "Kelurahan/Desa",
+      KodePos: "Kode Pos",
+      Alamat: "Alamat",
+      PartOf: "Part Of ID",
+      PartOfName: "Part Of Name",
+      IDSatusehat: "ID SATUSEHAT",
       Status: "Status",
     });
 
@@ -147,6 +158,18 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
+        Phone: rows[i].phone,
+        Email: rows[i].email,
+        Url: rows[i].url,
+        Provinsi: rows[i].detailAlamat.provinsi ?? "-",
+        Kabupaten: rows[i].detailAlamat.kabupaten ?? "-",
+        Kecamatan: rows[i].detailAlamat.kecamatan ?? "-",
+        Kelurahan: rows[i].detailAlamat.kelurahan,
+        KodePos: rows[i].kodePos,
+        Alamat: rows[i].alamat,
+        PartOf: rows[i].PartOf ?? "-",
+        PartOfName: rows[i].partOfName ?? "-",
+        IDSatusehat: rows[i].satuSehatId ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -157,7 +180,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 15 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -166,7 +189,24 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -206,10 +246,23 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Organisasi");
+    XLSX.writeFile(workbook, `Datamaster Organisasi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await organisasiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchOrganisasiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -223,9 +276,9 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="organisasi"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchOrganisasiData()"
       />
     </template>
 
@@ -360,6 +413,7 @@ const downloadExportExcel = async () => {
         :totalRecords="organisasiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

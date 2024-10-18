@@ -9,6 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FormGigiFDI from "./FormGigiFDI.vue";
 import NoData from "@/components/section/NoData.vue";
 import FooterPaginator from "../../Layout/FooterPaginator.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 
 // State Management
 const gigiStore = useGigiStore();
@@ -25,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch ICD9 Data from API
 const fetchGigiData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await gigiStore.getApi(
       gigiProperties.value.page,
@@ -43,7 +44,7 @@ const fetchGigiData = async () => {
     console.error("Failed to fetch data", error);
     gigiPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -52,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchGigiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -102,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await gigiStore.deleteApi(item.uuid);
       fetchGigiData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -134,6 +135,7 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
+      code: "Code SATUSEHAT",
       Gigi: "Gigi",
       Display: "Display SATUSEHAT",
       Status: "Status",
@@ -143,6 +145,7 @@ const downloadExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
+        Code: rows[i].code,
         Gigi: rows[i].name,
         Display: rows[i].display,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
@@ -155,7 +158,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -164,7 +167,13 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 20 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -210,6 +219,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await gigiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchGigiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -222,9 +244,9 @@ const downloadExportExcel = async () => {
       <HeaderFilter
         pageType="gigi-fdi"
         isSuperAdmin
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchGigiData()"
       />
     </template>
     <template #content>
@@ -235,6 +257,7 @@ const downloadExportExcel = async () => {
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
         @rowClick="onRowSelect"
+        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -311,7 +334,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Gigi FDI', slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Gigi FDI ${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -339,6 +368,7 @@ const downloadExportExcel = async () => {
         :totalRecords="gigiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

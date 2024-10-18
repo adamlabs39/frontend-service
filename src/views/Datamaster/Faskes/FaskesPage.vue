@@ -135,7 +135,7 @@ const downloadExportExcel = async () => {
     data.push({}); 
     data.push({
       No: "No",
-      Kode: "Kode",
+      Kode: "Kode Faskes",
       Nama: "Nama Faskes",
       Status: "Status",
     });
@@ -165,7 +165,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -211,6 +211,19 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData()
+  dataUpload.append('file',file);
+
+  try {
+    const response = await faskesStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchFaskesData()
+    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error('Error uploading file:', error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -222,9 +235,9 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="faskes"
-          :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+         @reload-data="fetchFaskesData()"
       />
     </template>
 
@@ -271,11 +284,10 @@ const downloadExportExcel = async () => {
           class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
-        >
+        <Column field="status" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center text-SM">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -295,7 +307,7 @@ const downloadExportExcel = async () => {
         </Column>
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
-            <div class="w-full text-center font-semibold text-SM">Action</div>
+            <div class="w-full font-semibold text-center text-SM">Action</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
@@ -311,7 +323,7 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Faskes', slotProps.data)"
+                @click="deleteDialog('delete', `Faskes ${slotProps.data.code}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -341,6 +353,7 @@ const downloadExportExcel = async () => {
         :totalRecords="faskesProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

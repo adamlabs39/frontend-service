@@ -38,27 +38,27 @@ const snomedPayload= ref<any[]>([]);
 
 const fetchIcd9 = async () => {
   try {
-    const response = await icd9Store.getApi();
+    const response = await icd9Store.getAktifApi();
     if (response && response.payload) {
       icd9Payload.value = response.payload;
     } else {
       icd9Payload.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch kategori ruangan", error);
+    console.error("Failed to fetch ICD9", error);
     icd9Payload.value = [];
   }
 };
 const fetchSnomed = async () => {
   try {
-    const response = await snomedStore.getApi();
+    const response = await snomedStore.getAktifApi();
     if (response && response.payload) {
       snomedPayload.value = response.payload;
     } else {
       snomedPayload.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch kategori ruangan", error);
+    console.error("Failed to fetch Snomed CT", error);
     snomedPayload.value = [];
   }
 };
@@ -69,8 +69,8 @@ onMounted(() => {
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama tindakan harus diisi"),
+    code: yup.string().required("Kode Tindakan harus diisi"),
+    name: yup.string().required("Nama Tindakan harus diisi"),
     snomedUuid: yup.string(),
     icd9Uuid: yup.string(),
     status: yup.bool(),
@@ -172,6 +172,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Tindakan"
@@ -180,6 +181,7 @@ watch(
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
           class="col-span-8"
+          :required="errors.name ? true : false"
         />
         <CustomSelect
           label="Snomed CT"
@@ -199,7 +201,7 @@ watch(
           optionLabel="name"
           class="col-span-12"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -213,8 +215,9 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Tindakan" :value="code" />
         <CustomInfoRow label="Nama Tindaka" :value="name" />
-        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name" />
-        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name" />
+        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name ?? '-'" />
+        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name ?? '-'" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -231,7 +234,6 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             v-if="method !== 'detail'"

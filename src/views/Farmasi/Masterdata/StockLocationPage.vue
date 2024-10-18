@@ -1,15 +1,58 @@
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const emits = defineEmits(['update:rows', 'update:current-page']);
-const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', handleRowsUpdate);
+const lokasiStokDialog = ref(false);
+const selectedJenisLokasi = ref();
+const selectedTujuanOrder = ref();
+const status = ref(false);
+const rowsPerPage = ref(10);
+const currentPage = ref(0);
+
+const handleRowsUpdate = (newRows: number) => {
+  rowsPerPage.value = newRows;
+  currentPage.value = 0;
 };
+
+const handlePageUpdate = (newPage: number) => {
+  currentPage.value = newPage;
+};
+
+const filterLokasi = ref([
+  "GUDANG",
+  "DEPO PELAYANAN"
+]);
+
+const selectedFilterLokasi = ref<string[]>([]);
+const onPoliSelect = (label: string) => {
+  if (selectedFilterLokasi.value.includes(label)) {
+    // console.log(selectedFilterLokasi, 'selectedFilterLokasi');
+    
+    selectedFilterLokasi.value = selectedFilterLokasi.value.filter(
+      (item) => item != label
+    );
+  } else {
+    selectedFilterLokasi.value.push(label);
+  }
+};
+
+const dataLokasiStok = ref([
+  { kodeLokasi: "GFM", namaLokasi: "Gudang Farmasi", jenisLokasi: "GUDANG", tujuanOrder: "-", status:"NON-AKTIF" },
+  { kodeLokasi: "GLG", namaLokasi: "Gudang Logistik", jenisLokasi: "DEPO PELAYANAN", tujuanOrder: "-", status:"NON-AKTIF" },
+  { kodeLokasi: "FRJ", namaLokasi: "Farmasi Rawat Jalan", jenisLokasi: "GUDANG", tujuanOrder: "Rawat Jalan", status:"AKTIF" },
+  { kodeLokasi: "FRI", namaLokasi: "Farmasi Rawat Inap", jenisLokasi: "DEPO PELAYANAN", tujuanOrder: "Rawat Inap", status:"AKTIF" },
+  { kodeLokasi: "FGD", namaLokasi: "Farmasi IGD", jenisLokasi: "DEPO PELAYANAN", tujuanOrder: "IGD", status:"AKTIF" },
+]);
 </script>
 
 <template>
@@ -27,46 +70,53 @@ const handleRowsUpdate = (rows: number) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Kasir',
+                    label: 'Datamaster',
                     home: true,
                   }"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Lokasi Stok</p>
+                </div>
               </div>
+              <CustomButton
+                @click="lokasiStokDialog = true"
+                icon="PhPlus"
+                label="Data"
+                class="mr-[10px]"
+              />
             </div>
           </template>
           <template #content>
-            <div class="flex mt-[10px]">
+            <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
-                label="Pencarian Transaksi"
+                label="Cari Lokasi Stok"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="w-[48%] mr-5"
-              />
-              <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[20px]"></div>
-              <CustomTextfield pr label="Saldo Awal" placeholder="0" class="mr-5">
-                <template #prependText>
-                  <div
-                    class="font-semibold text-MD leading-7 text-adameds-300 w-[53.34px] flex items-center justify-center border-r"
-                  >
-                    Rp.
-                  </div>
-                </template>
-              </CustomTextfield>
-              <CustomSelect
-                label="Pilih Shift"
-                class="grow"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-              />
-              <CustomButton
-                label="Open Kasir"
-                class="ml-5 mr-[10px] mt-auto"
+                placeholder="Cari Lokasi Stok"
+                class=""
               />
             </div>
-            <div class="flex mt-[10px]">
-              
+            <!-- Filter Jenis Lokasi -->
+            <div class="flex mb-[10px] mt-5">
+              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Jenis Lokasi</div>
+                <div class="flex">
+                  <span class="font-semibold text-grey-300">|</span>
+                  <CustomChip
+                    v-for="(lokasiStok, index) in filterLokasi" :key="lokasiStok + index"
+                    :label="lokasiStok"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-50"
+                    iconColor="text-adameds-300"
+                    textColor="text-adameds-300"
+                    customClass="h-7"
+                    class="ml-[10px]"
+                    :isSelected="selectedFilterLokasi.includes(lokasiStok)"
+                    @selected="onPoliSelect"
+                    selectedColor="bg-adameds-300 border-adameds-300"
+                  />
+                </div>
             </div>
+            <hr class="mt-5 border-[1px] border-grey-200">
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -85,109 +135,208 @@ const handleRowsUpdate = (rows: number) => {
         </CustomAccordion>
       </template>
       <template #content>
-          <div class="grid grid-cols-[50%_50%] gap-5 h-full mr-5">
-            <div class="flex flex-col text-center border-[3px] border-dashed border-grey-300 rounded-lg">
-              <div class="m-auto text-SM">
-                <!-- <img
-                  src="../../../assets/icons/no-data-icon.svg"
-                  alt="no data"
-                  class="mx-auto"
-                /> -->
-                <div class="text-grey-300">Silahkan Cari Tagihan Pasien</div>
+        <DataTable
+          :value="dataLokasiStok"
+          tableStyle="min-width: 50rem"
+          stripedRows
+          class="text-xs"
+          scrollable
+          scrollHeight="flex"
+        >
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
               </div>
-            </div>
-            
-            <!-- Kolom Pembayaran -->
-            <div class="relative p-5 rounded-lg bg-adameds-50">
-              <!-- Total Pembayaran -->
-              <div class="flex items-center justify-between">
-                <div class="text-base font-bold font-poppins">
-                  Total Pembayaran
-                </div>
+            </template>
+          </Column>
+          <Column field="kodeLokasi" header="Kode Lokasi Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="namaLokasi" header="Nama Lokasi Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="jenisLokasi" header="Jenis Lokasi" headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #body="slotProps">
+              <CustomChip
+                :label="slotProps.data.jenisLokasi"
+                :showCheckedIcon="false"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-300" 
+                textColor="text-white"
+                customClass="h-6"
+              />
+            </template>
+          </Column>
+          <Column field="tujuanOrder" header="Default Tujuan Order & Permintaan" headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.tujuanOrder == '-'">
+                <p class="font-bold">-</p>
               </div>
-              <hr class="mt-2 mb-2 border border-slate-300"/>
-              <!-- Biaya Administrasi -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm text-black font-poppins">
-                  Biaya Administrasi
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+              <div v-else>
+                <CustomChip
+                  :label="slotProps.data.tujuanOrder"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-6"
+                />
               </div>
-              <!-- Biaya Tindakan -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Tindakan
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </template>
+          </Column>
+          <Column field="status" headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="w-full text-center">Status</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex justify-center items-center min-w-[120px]">
+                <CustomChip
+                  :label="slotProps.data.status"
+                  :textColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'text-white'
+                      : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'bg-adameds-300'
+                      : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status === 'AKTIF'
+                      ? 'border-none'
+                      : 'border-[#80868d]'
+                  "
+                  :icon-color="
+                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                  "
+                  customClass="text-xs font-semibold h-5 flex"
+                />
               </div>
-              <!-- Biaya Obat -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Obat
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header="slotProps">
+              <div class="w-full font-semibold text-center text-SM">
+                Action
               </div>
-              <!-- Biaya Kamar -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  Biaya Kamar
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center gap-2.5 justify-center">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/edit.svg" alt="" />
+                </CustomButton>
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  class="h-6 w-[26px] p-0"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" />
+                </CustomButton>
               </div>
-              <!-- PPN -->
-              <div class="flex justify-between mt-4">
-                <div class="text-sm font-poppins">
-                  PPN
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-4 border-dashed border-[1px] border-slate-300"/>
-              <!-- Diskon -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-poppins">
-                  Diskon
-                </div>
-                <div class="text-sm font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <hr class="mt-6 mb-2 border-black border-1"/>
-              <!-- Grand Total -->
-              <div class="flex justify-between mt-6">
-                <div class="text-sm font-bold font-poppins">
-                  Grand Total
-                </div>
-                <div class="text-sm font-bold font-poppins">
-                  Rp, 0
-                </div>
-              </div>
-              <div class="absolute inset-x-0 bottom-0 mb-4">
-                <div class="flex">
-                  <!-- <CustomButton
-                    label="Bayar"
-                    class="w-full mr-4"
-                  /> -->
-                  <CustomButton
-                    label="Bayar"
-                    class="w-full ml-4 mr-4"
-                    textColor = "text-slate-400"
-                    backgroundColor="bg-slate-200"
-                  />
-                </div>
-              </div>
-            </div>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+      <template #footer>
+        <div class="flex justify-between px-5 py-2.5">
+          <div class="flex items-center gap-2.5">
+            <CustomButton label="Import">
+              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            </CustomButton>
+            <CustomButton label="Eksport">
+              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+            </CustomButton>
           </div>
+          <CustomPaginator
+            :rows="rowsPerPage"
+            :totalRecords="dataLokasiStok.length"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @update:rows="handleRowsUpdate"
+            @update:current-page="handlePageUpdate"
+          />
+        </div>
       </template>
     </Card>
+    <CustomDialog v-model:visible="lokasiStokDialog" width="500px">
+      <template #header>
+        <div class="grid grid-cols-1">
+          <p>Tambah Lokasi Stok</p>
+        </div>
+      </template>
+      <template #body>
+        <div class="grid grid-cols-[30%,70%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Kode Lokasi Stok"
+              placeholder="Kode Lokasi Stok"
+              class="mr-2"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Nama Lokasi Stok"
+              placeholder="Nama Lokasi Stok"
+              class="ml-2"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1">
+          <div class="mt-[20px]">
+            <CustomSelect
+              place-holder="Pilih Jenis Lokasi"
+              label="Pilih Jenis Lokasi"
+              v-model="selectedJenisLokasi"
+              optionLabel=""
+              optionValue=""
+              :options="['Gudang', 'Depo Pelayanan']"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1" v-if="selectedJenisLokasi == 'Depo Pelayanan'">
+          <div class="mt-[20px]">
+            <CustomMultiSelect
+              placeholder="Pilih Tujuan Order & Permintaan"
+              label="Default Tujuan Order & Permintaan"
+              v-model="selectedTujuanOrder"
+              optionLabel=""
+              optionValue=""
+              :maxSelectedLabels="3"
+              :options="['Rawat Jalan', 'Rawat Inap', 'IGD']"
+            />
+          </div>
+        </div>
+        <hr class="mt-[20px] border border-slate-300"/>
+        <div class="grid grid-cols-2 mt-[15px]">
+          <div>
+            <CustomSwitch
+              v-model="status"
+              :show-label="true"
+              label="Status"
+              sideLabel="NON-AKTIF"
+              sideLabelTrue="AKTIF"
+            />
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="w-full">
+          <!-- <hr class="-mx-5 border-grey-200" /> -->
+          <div class="mt-5 flex justify-end gap-2.5">
+            <CustomButton
+              label="Reset"
+              textColor="text-grey-300"
+              backgroundColor="bg-transparent"
+              borderColor="border-2 border-grey-200"
+            />
+            <CustomButton label="Simpan"/>
+          </div>
+        </div>
+      </template>
+    </CustomDialog>
   </div>
 </template>
