@@ -37,7 +37,7 @@ const onRoomCategorySelect = (uuid: string) => {
   } else {
     selectedFilterRoomCategory.value.push(uuid);
   }
-  searchData()
+  searchData();
 };
 
 const properties = ref({
@@ -196,7 +196,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex mr-[60px]">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  @click="fetchData"
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                />
                 <span class="leading-10 text-adameds-300 text-heading">
                   Monitoring Kamar
                 </span>
@@ -230,7 +234,9 @@ onMounted(() => {
                       class="ml-[10px]"
                       selectedColor="bg-adameds-300 border-adameds-300"
                       :isSelected="
-                        selectedFilterRoomCategory.includes(kategoriRuangan.uuid)
+                        selectedFilterRoomCategory.includes(
+                          kategoriRuangan.uuid
+                        )
                       "
                       @selected="onRoomCategorySelect"
                     />

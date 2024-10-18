@@ -14,6 +14,8 @@ import PatientIdentityForm from "./Section/PatientIdentityForm.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
 import type { DataTableRowClickEvent } from "primevue/datatable";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { formatDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -47,16 +49,32 @@ const isDetail = () => {
   else return false;
 };
 
+const timer = ref<any>();
+const searchData = () => {
+  if (timer.value) {
+    clearTimeout(timer.value);
+    timer.value = null;
+  }
+  timer.value = setTimeout(async () => {
+    await fetchData();
+  }, 800);
+};
+
 const properties = ref({
   page: 1,
-  page_size: 10,
+  pageSize: 10,
   total: 0,
 });
+const search = ref("");
+
 const fetchData = async () => {
   storeUtils.setLoading(true);
-
   try {
-    const response = await masterPasienStore.getMasterPasien({});
+    const response = await masterPasienStore.getMasterPasien({
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+      q: search.value,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       itemsPasien.value = response.payload;
@@ -71,6 +89,7 @@ const fetchData = async () => {
 
 const openedPatientData = ref<any>({});
 const showDetailPatient = async (event: DataTableRowClickEvent) => {
+  storeUtils.setLoading(true);
   try {
     const response = await masterPasienStore.getDetailMasterPasien(
       event.data.uuid
@@ -95,6 +114,7 @@ const patientIdentityForm = ref<InstanceType<
 const method = ref<"add" | "edit">("add");
 const openPatientForm = (type: "add" | "edit") => {
   method.value = type;
+
   if (type == "add") {
     openedPatientData.value = {};
     changeSection("Tambah Data Pasien");
@@ -107,6 +127,7 @@ const closePatientForm = () => {
     patientIdentityForm.value.onResetForm();
     openedPatientData.value = {};
     dataBreadCrumb.value.pop();
+    fetchData();
   }
 };
 
@@ -115,17 +136,20 @@ const onSubmit = async () => {
     storeUtils.setLoading(true);
     const patientData = await patientIdentityForm.value.onSubmit();
     try {
+      let tempBirthDate = formatDate(
+        patientData!.birthDetail.birthDate,
+        true
+      );
+      patientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
       if (method.value == "add") {
-        // await masterPasienStore.createMasterPasien(patientData);
-        console.log("patientData", patientData);
+        await masterPasienStore.createMasterPasien(patientData);
       } else if (method.value == "edit") {
-        // await masterPasienStore.updateMasterPasien(
-        //   openedPatientData.value.uuid,
-        //   patientData
-        // );
-        console.log("uuid", openedPatientData.value.uuid);
-        console.log("patientData", patientData);
+        await masterPasienStore.updateMasterPasien(
+          openedPatientData.value.uuid,
+          patientData
+        );
       }
+      closePatientForm();
     } catch (error) {
       console.error("Failed to process the data:", error);
     } finally {
@@ -138,6 +162,12 @@ const resetForm = async () => {
   if (patientIdentityForm.value) {
     patientIdentityForm.value.onResetForm();
   }
+};
+
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.pageSize = event.rows;
+  fetchData();
 };
 
 onMounted(() => {
@@ -158,7 +188,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  @click="fetchData"
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Data Pasien',
@@ -186,6 +220,8 @@ onMounted(() => {
           </template>
           <template #content>
             <CustomTextfield
+              v-model="search"
+              @update:model-value="searchData"
               label="Pencarian"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Nama / address / No. RM"
@@ -285,15 +321,11 @@ onMounted(() => {
             class="my-auto bg-danger-300"
             label="Hapus Pasien"
           />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+          <CustomPaginator
+            :rows="properties.pageSize"
+            :totalRecords="properties.total"
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>
@@ -608,9 +640,7 @@ onMounted(() => {
               backgroundColor="bg-adameds-300"
             />
             <CustomButton
-              @click="
-                (detailPatientDialog = false), changeSection('Edit Data Pasien')
-              "
+              @click="(detailPatientDialog = false), openPatientForm('edit')"
               label="Edit Data Pasien"
               class=""
               backgroundColor="bg-adameds-300"

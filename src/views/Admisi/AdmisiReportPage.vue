@@ -122,6 +122,8 @@ const resetFilter = () => {
 };
 
 interface Filter {
+  page?: number;
+  limit?: number;
   q?: string;
   practitionerUuid?: string;
   jenisKunjungan?: string;
@@ -134,6 +136,8 @@ interface Filter {
 const setFilter = () => {
   let filter = {} as Filter;
 
+  filter.page = properties.value.page
+  filter.limit = properties.value.pageSize
   filter.q = search.value;
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
@@ -973,7 +977,7 @@ defineExpose({
         <CustomPaginator
           :rows="properties.pageSize"
           :totalRecords="properties.total"
-          @page="() => {}"
+          @page="handlePage"
         />
       </div>
     </template>

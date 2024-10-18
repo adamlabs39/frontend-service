@@ -305,10 +305,13 @@ defineExpose({
             label="Jenis Kelamin"
             placeHolder="Pilih Jenis Kelamin"
             class=""
-            optionLabel=""
-            optionValue=""
+            optionLabel="label"
+            optionValue="value"
             :showFilter="false"
-            :options="['Laki-laki', 'Perempuan']"
+            :options="[
+              { label: 'Laki-laki', value: 'Male' },
+              { label: 'Perempuan', value: 'Female' },
+            ]"
             :disabled="isDetail"
             :invalid="!!errors.gender"
             :invalidMessage="errors.gender"
