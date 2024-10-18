@@ -11,7 +11,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Konfigurasi",
-        icon: "sliders-fill",
+        icon: "PhSliders",
         type: linkType.DROPDOWN,
         child: [
           {
@@ -30,15 +30,9 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
       {
         name: "Data antrian",
-        icon: "user-list-bold",
+        icon: "PhUserList",
         type: linkType.LINK,
         url: "/antrian/data-antrian",
-      },
-      {
-        name: "Monitoring antrian",
-        icon: "list-bullets-bold",
-        type: linkType.LINK,
-        url: "/antrian/monitoring-antrian",
       },
     ],
   },
@@ -48,13 +42,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
     child: [
       {
         name: "Layar",
-        icon: "screencast-fill",
+        icon: "PhScreencast",
         type: linkType.LINK,
         url: "/antrian/layar",
       },
       {
         name: "APM",
-        icon: "airplay-fill",
+        icon: "PhAirplay",
         type: linkType.LINK,
         url: "/antrian/apm",
       },

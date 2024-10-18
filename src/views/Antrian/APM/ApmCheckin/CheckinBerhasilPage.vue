@@ -4,6 +4,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import { ref } from "vue";
+import AddPrint from "@/components/icons/AddPrint.vue";
+import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
 
 const router = useRouter();
 
@@ -101,11 +103,7 @@ const tiketAntrian = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/solar_user-check-bold.svg"
-                    class="shrink-0 w-[30px] h-[30px] filter invert"
-                  />
+                  <SolarUserCheckIcon class="text-white" :size="30"/>
                 </div>
 
                 <!-- Text Container with Background -->
@@ -119,7 +117,8 @@ const tiketAntrian = ref({
             <div
               class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
             >
-              Checkin Berhasil
+              <div class="pr-2">Checkin Berhasil</div> 
+              <CheckCircleIcon class="text-adameds-300" :size="30"/>
             </div>
 
             <!-- Button Container (Right) -->
