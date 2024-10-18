@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { dateToEpoch, formatDate } from "@/utils/Helpers";
+import { dateToEpoch, formatDate, epochToDate } from "@/utils/Helpers";
 import { useVoucherStore } from "@/stores/datamaster/voucher";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -41,7 +41,7 @@ const schema = toTypedSchema(
     type: yup.string(),
     value: yup.number(),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -119,7 +119,13 @@ const closeDialog = () => {
   resetDialogMode();
   resetForm();
 };
-
+watch(type, (newType) => {
+  if (newType === "persentase") {
+    potonganValue.value = 0; // Clear potongan value if switching to percentage
+  } else if (newType === "potongan") {
+    persenValue.value = 0; // Clear percentage value if switching to potongan
+  }
+});
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -128,15 +134,15 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
-          startDate: new Date(props.payload.startDate),
-          endDate: new Date(props.payload.endDate),        
+          startDate: epochToDate(props.payload.startDate) as Date,
+          endDate: epochToDate(props.payload.endDate) as Date,
         });
         if (props.payload.type === "persentase") {
-          persenValue.value = props.payload.value; 
-          potonganValue.value = 0; 
+          persenValue.value = props.payload.value;
+          potonganValue.value = 0;
         } else if (props.payload.type === "potongan") {
-          potonganValue.value = props.payload.value; 
-          persenValue.value = 0; 
+          potonganValue.value = props.payload.value;
+          persenValue.value = 0;
         }
       }
     } else {
@@ -177,7 +183,7 @@ watch(
           class="col-span-8"
           :required="errors.name ? true : false"
         />
-        <div class="flex flex-col grid-cols-12 col-span-6 gap-1">
+        <div class="flex flex-col grid-cols-12 col-span-7 gap-1">
           <div class="col-span-12 font-semibold text-normal">Tanggal</div>
           <div class="flex justify-between items-center gap-2.5">
             <CustomDatePicker v-model="startDate" :showLabel="false" />
@@ -188,12 +194,12 @@ watch(
         <CustomInputNumber
           v-model="qty"
           label="Jumlah Voucher"
-          class="col-span-6"
+          class="col-span-5"
           :invalid="!!errors.qty"
           :invalidMessage="errors.qty"
           :required="errors.qty ? true : false"
         />
-        <div class="grid items-end w-full grid-cols-2 col-span-6 gap-5">
+        <div class="grid items-end w-full grid-cols-2 col-span-7 gap-5">
           <div class="col-span-2 -mb-4 font-semibold text-normal">
             Tipe Voucher
           </div>
@@ -204,13 +210,13 @@ watch(
             :value="data.value"
           />
         </div>
-        <div class="flex flex-col col-span-6">
+        <div class="flex flex-col col-span-5">
           <div class="block font-semibold text-normal">Tarif Voucher</div>
-          <div class="flex items-end gap-5">
+          <div class="grid grid-cols-3 items-end gap-5">
             <CustomInputNumber
               v-model="persenValue"
               label=""
-              class="basis-1/3"
+              class="col-span-1"
               :disabled="type === 'potongan'"
             >
               <template #appendText>
@@ -219,7 +225,7 @@ watch(
             </CustomInputNumber>
             <CustomInputNumber
               v-model="potonganValue"
-              class=""
+              class="col-span-2"
               label=""
               :disabled="type === 'persentase'"
             >
@@ -248,23 +254,25 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Voucher" :value="payload.code" />
         <CustomInfoRow label="Nama Voucher" :value="payload.name" />
-        <!-- <CustomInfoRow
+        <CustomInfoRow
           label="Waktu Voucher"
           :value="`${startDate ? formatDate(startDate) : ''} - ${
             endDate ? formatDate(endDate) : ''
           }`"
-        /> -->
-        <!-- <CustomInfoRow label="Waktu Voucher">
-          <template #value>
-            <div>
-              {{ formatDate(payload.startDate) }} -
-              {{ formatDate(payload.endDate) }}
-            </div>
-          </template>
-        </CustomInfoRow> -->
+        />
+
         <CustomInfoRow label="Jumlah" :value="payload.qty" />
         <CustomInfoRow label="Tipe Voucher" :value="payload.type" />
-        <CustomInfoRow label="Tarif Voucher" :value="`${payload.value}`" />
+        <CustomInfoRow label="Tarif Voucher">
+          <template #value>
+            <span v-if="payload.type === 'potongan'">
+              Rp. {{ payload.value }}
+            </span>
+            <span v-else-if="payload.type === 'persentase'">
+              {{ payload.value }}%
+            </span>
+          </template>
+        </CustomInfoRow>
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

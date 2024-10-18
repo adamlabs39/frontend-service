@@ -32,7 +32,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode Diagnosis harus diisi"),
     name: yup.string().required("Nama Diagnosis harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

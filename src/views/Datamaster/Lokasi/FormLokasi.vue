@@ -85,7 +85,7 @@ const schema = toTypedSchema(
     statusOperasional: yup.bool().default(false),
     isPoli: yup.bool().default(false),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

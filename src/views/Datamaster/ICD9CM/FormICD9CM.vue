@@ -32,7 +32,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode ICD 9 CM harus diisi"),
     name: yup.string().required("Nama ICD 9 CM harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

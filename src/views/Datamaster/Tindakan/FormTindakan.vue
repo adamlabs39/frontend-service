@@ -74,7 +74,7 @@ const schema = toTypedSchema(
     snomedUuid: yup.string(),
     icd9Uuid: yup.string(),
     status: yup.bool(),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -143,8 +143,8 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
-          snomedUuid: props.payload.snomedDetail.uuid,
-          icd9Uuid: props.payload.icd9Detail.uuid
+          snomedUuid: props.payload.snomedDetail?.uuid || '',
+            icd9Uuid: props.payload.icd9Detail?.uuid || ''
         });
       }
     } else {

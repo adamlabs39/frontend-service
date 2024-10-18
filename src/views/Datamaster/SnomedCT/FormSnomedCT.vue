@@ -31,7 +31,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode Snomed CT harus diisi"),
     name: yup.string().required("Nama Snomed CT harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

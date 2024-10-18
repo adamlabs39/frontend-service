@@ -15,13 +15,7 @@ const props = defineProps({
 const products = ref();
 const expandedRows = ref();
 // Selected Row
-const metaKey = ref(true);
 const selectedData = ref();
-
-const onRowSelect = (event: any) => {
-  selectedData.value = event.data;
-  FormRuanganDialog("detail", "Detail Data", selectedData.value);
-};
 
 const isTambahRuanganDialogVisible = ref(false);
 const isDeleteDialogVisible = ref(false);
@@ -39,16 +33,20 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isDeleteDialogVisible.value = true;
 };
+const emit = defineEmits(["deleteItem"]);
+
+const confirmDelete = () => {
+  if (dialogConfig.value.data) {
+    emit("deleteItem", dialogConfig.value.data);
+    isDeleteDialogVisible.value = false;
+  }
+};
 </script>
 
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
     :value="payload"
-    v-model:selection="selectedData"
-    :metaKeySelection="metaKey"
-    @rowClick="onRowSelect"
-    selectionMode="single"
     tableStyle="min-width: 50rem"
     class="-m-4 text-xs"
     stripedRows
@@ -125,7 +123,7 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
         <div class="w-full font-semibold text-center">Status</div>
       </template>
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-center min-w-[120px]">
           <CustomChip
             :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
             :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
@@ -163,7 +161,7 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
             @click="
               deleteDialog(
                 'delete',
-                `Tarif Ruangan ${slotProps.data.code}`,
+                `Tarif Ruangan ${slotProps.data.code}-${slotProps.data.name}`,
                 slotProps.data
               )
             "
@@ -187,10 +185,16 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
           >
           </Column>
           <Column
+
             field="harga"
-            header="Harga Tarif"
-            header-class="text-white bg-adameds-300"
-          ></Column>
+            header-class="text-white bg-adameds-300 font-semibold text-SM"
+            bodyClass="text-end"
+
+          >
+          <template #header>
+                      <div class="w-full text-end">Harga Tarif</div>
+                    </template>
+        </Column>
         </DataTable>
       </div>
     </template>
@@ -205,5 +209,6 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
     v-model:isDialogVisible="isDeleteDialogVisible"
     :title="dialogConfig.title"
     :itemToDelete="dialogConfig.data"
+    @delete="confirmDelete"
   />
 </template>

@@ -23,11 +23,9 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: "",
   },
   method: {
     type: String,
-    default: "detail",
   },
   payload: {
     type: Object,
@@ -66,7 +64,7 @@ const schema = toTypedSchema(
     image: yup.string(),
     catatan: yup.string(),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -85,18 +83,21 @@ const [status] = defineField("status");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
+  console.log("test ediit ad")
   try {
+    console.log(values)
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await itemGigiStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
+      console.log("Data updated successfully:", values);
+
+      // const response = await itemGigiStore.putApi(uuid, values);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      const response = await itemGigiStore.postApi(values);
+      // const response = await itemGigiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -130,9 +131,9 @@ const closeDialog = () => {
 
 const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
 const clearItemGigiPreview = () => {
-  image.value = ""; // Hapus gambar yang diunggah
+  image.value = ""; 
   if (itemGigiUpload.value) {
-    itemGigiUpload.value.clearFile(); // Reset komponen DragDrop ke keadaan semula
+    itemGigiUpload.value.clearFile(); 
   }
 };
 
@@ -340,7 +341,6 @@ watch(
           @click="resetForm()"
         ></CustomButton>
         <CustomButton
-          v-if="method === 'add' || method === 'edit'"
           label="Simpan"
           @click="onSubmit"
         ></CustomButton>
