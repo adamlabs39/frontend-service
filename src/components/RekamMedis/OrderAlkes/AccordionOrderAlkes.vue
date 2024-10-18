@@ -139,7 +139,7 @@ const resetOrderAlkes = () => {
               <div class="font-normal text-SM">{{ result.tglOrder }}</div>
               <div class="font-semibold underline text-XS">Jumlah Order</div>
               <div class="font-normal text-SM">
-                {{ result.datas.length }} Obat
+                {{ result.datas.length }} Item
               </div>
             </div>
           </div>
