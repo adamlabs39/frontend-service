@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -12,6 +12,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
 import { epochToDate, dateToEpoch } from "@/utils/Helpers";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -79,7 +80,9 @@ const updatePageType = async (path: string) => {
     },
   ];
   reportType.value = pageType.value;
-  reportData.value = await fetchReportData();
+  let filter = {} as Filter;
+  filter = setFilter();
+  reportData.value = await fetchReportData(filter);
 };
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -95,6 +98,18 @@ const penjaminFilter = ref("0");
 const ruanganFilter = ref("");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
+
+// Function to set the desired time for startDate and endDate
+const setTimeForDate = (
+  date: Date,
+  hours: number,
+  minutes: number,
+  seconds: number
+) => {
+  const newDate = new Date(date); // Clone the date to avoid mutation
+  newDate.setHours(hours, minutes, seconds, 0);
+  return newDate;
+};
 
 const resetFilter = () => {
   search.value = "";
@@ -116,36 +131,61 @@ interface Filter {
   endDate?: string;
 }
 
-const searchData = async () => {
+const setFilter = () => {
   let filter = {} as Filter;
 
   filter.q = search.value;
-  filter.startDate = `${dateToEpoch(startDateFilter.value)}`;
-  filter.endDate = `${dateToEpoch(endDateFilter.value)}`;
+  filter.startDate = `${dateToEpoch(
+    setTimeForDate(startDateFilter.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(endDateFilter.value, 23, 59, 59)
+  )}`;
   if (pageType.value == "kunjungan") {
-    filter.practitionerUuid = dpjpFilter.value;
+    filter.practitionerUuid = dpjpFilter.value ?? "";
     filter.jenisKunjungan =
-      visitTypeFilter.value == "Semua" ? "" : visitTypeFilter.value;
+      visitTypeFilter.value == "Semua" || !visitTypeFilter.value
+        ? ""
+        : visitTypeFilter.value;
   } else if (pageType.value == "penjamin") {
-    filter.practitionerUuid = dpjpFilter.value;
+    filter.practitionerUuid = dpjpFilter.value ?? "";
     filter.jenisKunjungan =
-      visitTypeFilter.value == "Semua" ? "" : visitTypeFilter.value;
-    filter.penjamin = penjaminFilter.value == "0" ? "" : penjaminFilter.value;
+      visitTypeFilter.value == "Semua" || !visitTypeFilter.value
+        ? ""
+        : visitTypeFilter.value;
+    filter.penjamin =
+      penjaminFilter.value == "0" || !penjaminFilter.value
+        ? ""
+        : penjaminFilter.value;
   } else if (
     pageType.value == "batal-kunjungan" ||
     pageType.value == "bayi-baru-lahir" ||
     pageType.value == "rekap-jumlah-pasien-bpjs"
   ) {
     filter.jenisKunjungan =
-      visitTypeFilter.value == "Semua" ? "" : visitTypeFilter.value;
+      visitTypeFilter.value == "Semua" || !visitTypeFilter.value
+        ? ""
+        : visitTypeFilter.value;
   } else if (
     pageType.value == "status-kamar" ||
     pageType.value == "keperawatan-inap-pasien"
   ) {
-    filter.ruangan = ruanganFilter.value;
+    filter.ruangan = ruanganFilter.value ?? "";
   }
+  return filter;
+};
 
-  await fetchReportData(filter);
+const searchData = async () => {
+  let filter = {} as Filter;
+  filter = setFilter();
+
+  reportData.value = await fetchReportData(filter);
+};
+
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.pageSize = event.rows;
+  searchData();
 };
 
 defineExpose({
@@ -164,7 +204,11 @@ defineExpose({
         <template #header>
           <div class="flex justify-between w-full align-middle">
             <div class="flex">
-              <CustomButton icon="PhArrowClockwise" class="mr-5" />
+              <CustomButton
+                @click="searchData"
+                icon="PhArrowClockwise"
+                class="mr-5"
+              />
               <CustomBreadCrumb
                 :home="{
                   label: 'Laporan',
@@ -194,7 +238,10 @@ defineExpose({
               optionLabel="name"
               optionValue="uuid"
               :options="[
-                { uuid: '7379hdishdjsfggy73983', name: 'dr. Budi' },
+                {
+                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+                  name: 'Rudi tabuti',
+                },
                 { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
                 { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
               ]"
@@ -218,6 +265,7 @@ defineExpose({
               />
               <CustomTextfield
                 v-if="pageType != 'kunjungan' && pageType != 'penjamin'"
+                v-model="search"
                 label="Cari Pasien"
                 placeholder="Cari Nama / Alamat / No. RM"
                 class="mr-5"
@@ -231,14 +279,9 @@ defineExpose({
                 v-model="ruanganFilter"
                 label="Ruangan"
                 class="mr-5 grow"
-                optionLabel="name"
-                optionValue="faskesUuid"
-                :options="[
-                  {
-                    name: 'MELATI',
-                    faskesUuid: 'f5ee9f69-83dd-4196-af8d-a17ec6988a12',
-                  },
-                ]"
+                optionLabel=""
+                optionValue=""
+                :options="['101', '102']"
               />
               <CustomSelect
                 v-else-if="pageType != 'bayi-baru-lahir'"
@@ -338,9 +381,8 @@ defineExpose({
                 header="Jenis Kunjungan"
                 header-class="text-black bg-adameds-50"
               ></Column>
-              <!-- FIXME Belum Ada -->
               <Column
-                field="rmNumber"
+                field="patient.noRm"
                 header="No. RM"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -452,9 +494,8 @@ defineExpose({
                 header="Jenis Kunjungan"
                 header-class="text-black bg-adameds-50"
               ></Column>
-              <!-- FIXME Belum Ada -->
               <Column
-                field="rmNumber"
+                field="patient.noRm"
                 header="No. RM"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -574,9 +615,8 @@ defineExpose({
                 header="Jenis Kunjungan"
                 header-class="text-black bg-adameds-50"
               ></Column>
-              <!-- FIXME Belum Ada -->
               <Column
-                field="rmNumber"
+                field="patient.noRm"
                 header="No. RM"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -585,15 +625,17 @@ defineExpose({
                 header="Nama Pasien"
                 header-class="text-black bg-adameds-50"
               ></Column>
-              <!-- FIXME Belum Ada -->
               <Column
                 field="cancelDate"
                 header="Tgl. Batal"
                 header-class="text-black bg-adameds-50"
-              ></Column>
-              <!-- FIXME Belum Ada -->
+              >
+                <template #body="{ data }">
+                  {{ epochToDate(data.cancelDate, "dateTime") }}
+                </template>
+              </Column>
               <Column
-                field="officer"
+                field="cancelBy"
                 header="Petugas"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -604,9 +646,8 @@ defineExpose({
                     class="overflow-hidden rounded-lg bg-adameds-50"
                     :pt="{ headerRow: 'text-SM' }"
                   >
-                    <!-- FIXME Belum Ada -->
                     <Column
-                      field="poli"
+                      field="polyclinic"
                       header="Poli"
                       header-class="text-black bg-adameds-50"
                     ></Column>
@@ -744,7 +785,6 @@ defineExpose({
               >
                 <template #body="{ index }">{{ index + 1 }}</template>
               </Column>
-              <!-- FIXME Belum Epoch -->
               <Column
                 field="tglRegistrasi"
                 header="Tgl. Registrasi"
@@ -752,7 +792,6 @@ defineExpose({
               >
                 <template #body="{ data }">
                   {{ data.tanggalDaftar }}
-                  <!-- {{ epochToDate(data.tglRegistrasi, "dateTime") }} -->
                 </template>
               </Column>
               <Column
@@ -765,9 +804,8 @@ defineExpose({
                 header="Nama Bayi"
                 header-class="text-black bg-adameds-50"
               ></Column>
-              <!-- FIXME Belum Ada -->
               <Column
-                field="birthDate"
+                field="birthDetail.birthDate"
                 header="Tgl. Lahir"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -792,15 +830,13 @@ defineExpose({
                         {{ data.genderBaby == "Male" ? "L" : "P" }}
                       </template>
                     </Column>
-                    <!-- FIXME Belum Ada -->
                     <Column
-                      field="birthPlace"
+                      field="birthDetail.birthPlace"
                       header="Tempat Lahir"
                       header-class="text-black bg-adameds-50"
                     ></Column>
-                    <!-- FIXME Belum Ada -->
                     <Column
-                      field="motherIdentity"
+                      field="nameMom"
                       header="Identitas Ibu"
                       header-class="text-black bg-adameds-50"
                     ></Column>
@@ -934,15 +970,11 @@ defineExpose({
           class="mr-[10px]"
           backgroundColor="bg-adameds-300"
         />
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="properties.pageSize"
+          :totalRecords="properties.total"
+          @page="() => {}"
+        />
       </div>
     </template>
   </Card>
