@@ -133,6 +133,7 @@ import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
 
 // NOTE ORDER FISIOTERAPI
 import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
+import PenjadwalanTerapiPage from "@/views/Fisioterapi/PenjadwalanTerapiPage.vue";
 
 // NOTE FISIOTERAPI/LAPORAN
 import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
@@ -1150,6 +1151,13 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
       component: FisioterapiView,
     },
+    {
+      path: "/fisioterapi/penjadwalan-fisioterapi",
+      name: "fisioterapi-penjadwalan-fisioterapi",
+      meta: { layout: SidebarLayout, page: PenjadwalanTerapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
 
     // NOTE FISIOTERAPI LAPORAN
 

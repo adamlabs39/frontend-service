@@ -19,7 +19,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Penjadwalan Terapi",
         icon: "FisioIcon",
         type: linkType.LINK,
-        url: "/farmasi/penjualan-obat",
+        url: "/fisioterapi/penjadwalan-fisioterapi",
       },
       {
         name: "Evaluasi Terapi",
@@ -97,7 +97,16 @@ const sidebarBodyList = ref<SidebarBody[]>([
 
 <template>
   <div class="flex h-full gap-3">
-    <Sidebar sidebarTitle="Fisioterapi" sidebarTitleUrl="/fisioterapi" class="flex-none" :sidebar-body-list="sidebarBodyList" showStockBtn />
-    <component class="max-h-full overflow-auto grow" :is="$route.meta.page || 'div'"></component>
+    <Sidebar
+      sidebarTitle="Fisioterapi"
+      sidebarTitleUrl="/fisioterapi"
+      class="flex-none"
+      :sidebar-body-list="sidebarBodyList"
+      showStockBtn
+    />
+    <component
+      class="max-h-full overflow-auto grow"
+      :is="$route.meta.page || 'div'"
+    ></component>
   </div>
 </template>
