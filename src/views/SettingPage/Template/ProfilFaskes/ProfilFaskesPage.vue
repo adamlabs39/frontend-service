@@ -57,6 +57,7 @@ const fetchSettingProfilFaskesData = async () => {
 onMounted(() => {
     // console.log(profilFaskesResponse.value);
     fetchSettingProfilFaskesData();
+    console.log(profilFaskesResponse)
 });
 
 const handleProfilFaskesUpdate = (updatedProfile: any) => {
