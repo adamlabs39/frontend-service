@@ -16,13 +16,11 @@ import NoData from "@/components/section/NoData.vue";
 
 const selectedTab = ref("0");
 const tarifStore = useTarifStore();
-const kategoriRuanganStore = useKategoriRuanganStore();
 const penjaminStore = usePenjaminStore();
 const UseUtilsStore = utilsStore();
 const tarifPayload = ref<any[]>([]);
 const tindakanPayload = ref<any[]>([]);
 const ruanganPayload = ref<any[]>([]);
-const kategoriRuanganPayload = ref<any[]>([]);
 const penjaminPayload = ref<any[]>([]);
 
 const tarifProperties = ref({
@@ -36,34 +34,37 @@ const handleSelectedTab = (newTab: string) => {
   selectedTab.value = newTab;
   tarifProperties.value.jenis = newTab === "0" ? "Tindakan" : "Ruangan";
   tarifProperties.value.page = 1;
-  resetForm()
+  resetForm();
   fetchTarifData();
 };
 
 // Filter
 const searchQuery = ref<string>("");
-const selectedKategoriRuangan = ref("");
+const selectedUnit = ref();
 const selectedPenjamin = ref("");
 
-const handleSearchQuery = (searchValue:string) => {
+const handleSearchQuery = (searchValue: string) => {
   searchQuery.value = searchValue;
 };
-const handleSelectedKategoriRuangan = (selectedValue:any) => {
-  selectedKategoriRuangan.value = selectedValue;
+const handleSelectedUnit = (selectedValue: any) => {
+  selectedUnit.value = selectedValue;
 };
-const handleSelectedPenjamin = (selectedValue:any) => {
+const handleSelectedPenjamin = (selectedValue: any) => {
   selectedPenjamin.value = selectedValue;
 };
 
 // Reset filter fields
 const handleReset = () => {
-  resetForm()
-  fetchTarifData(); 
+  resetForm();
+  fetchTarifData();
 };
-
 
 const fetchTarifData = async () => {
   UseUtilsStore.setLoading(true);
+  let unitValue = "";
+  if (selectedUnit.value !== null) {
+    unitValue = selectedUnit.value === 4 ? "" : selectedUnit.value;
+  }
   try {
     // Set jenis berdasarkan tab yang aktif
     const jenis = tarifProperties.value.jenis;
@@ -74,10 +75,9 @@ const fetchTarifData = async () => {
       tarifProperties.value.page_size,
       searchQuery.value,
       jenis,
-      selectedKategoriRuangan.value !== null ? selectedKategoriRuangan.value : '',
-      selectedPenjamin.value !== null ? selectedPenjamin.value : ''
+      unitValue,
+      selectedPenjamin.value !== null ? selectedPenjamin.value : ""
     );
-    
 
     if (response && response.payload) {
       tarifProperties.value.total = response.properties.total;
@@ -107,20 +107,12 @@ const fetchTarifData = async () => {
   }
 };
 
-
-const fetchKategoriRuangan = async () => {
-  try {
-    const response = await kategoriRuanganStore.getAktifApi();
-    if (response && response.payload) {
-      kategoriRuanganPayload.value = response.payload;
-    } else {
-      kategoriRuanganPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch fetch kategori ruangan", error);
-    kategoriRuanganPayload.value = [];
-  }
-};
+const optionsPelayanan = ref([
+  { label: "IGD", value: 1 },
+  { label: "Rawat Jalan", value: 2 },
+  { label: "Rawat Inap", value: 3 },
+  { label: "Semua", value: 4 },
+]);
 
 const fetchPenjamin = async () => {
   try {
@@ -138,7 +130,6 @@ const fetchPenjamin = async () => {
 
 onMounted(() => {
   fetchTarifData();
-  fetchKategoriRuangan() 
   fetchPenjamin();
 });
 
@@ -147,6 +138,21 @@ const handlePage = (event: any) => {
   tarifProperties.value.page = event.page + 1;
   tarifProperties.value.page_size = event.rows;
   fetchTarifData();
+};
+
+const handleDeleteItem = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await tarifStore.deleteApi(item.uuid);
+      fetchTarifData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
 };
 
 // Check if Tindakan Data Exists
@@ -185,18 +191,14 @@ const FormRUanganDialog = (method: string, title: string, data: any = null) => {
   isTambahRuanganDialogVisible.value = true;
 };
 
-const deleteDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  isDeleteDialogVisible.value = true;
-};
 const resetFormRef = ref();
 
 const resetForm = () => {
-  searchQuery.value = ""; 
-  selectedKategoriRuangan.value = "";
-  selectedPenjamin.value = ""; 
+  searchQuery.value = "";
+  selectedUnit.value = "";
+  selectedPenjamin.value = "";
   tarifProperties.value.page = 1;
-  resetFormRef.value.resetForm(); // Memanggil fungsi `resetForm` yang diekspos dari child
+  resetFormRef.value.resetForm();
 };
 </script>
 
@@ -210,15 +212,15 @@ const resetForm = () => {
       <HeaderFilter
         page-type="tarif"
         @update:valueSearch="handleSearchQuery"
-        @update:selectedFilter="handleSelectedKategoriRuangan" 
-        @update:selectedFilterSecond="handleSelectedPenjamin" 
+        @update:selectedFilter="handleSelectedUnit"
+        @update:selectedFilterSecond="handleSelectedPenjamin"
         @tambah-data="FormTindakanDialog('add', 'Tambah Data')"
         @tarif-ruangan="FormRUanganDialog('add', 'Tambah Data')"
         @selected-tab="handleSelectedTab"
         @reload-data="fetchTarifData()"
         @search="fetchTarifData()"
         @reset="handleReset()"
-        :filterSelect="kategoriRuanganPayload"
+        :filterSelect="optionsPelayanan"
         :filterSelectSecond="penjaminPayload"
         ref="resetFormRef"
       />
@@ -227,9 +229,12 @@ const resetForm = () => {
       <div class="h-full">
         <Tabs v-model:value="selectedTab" class="h-full">
           <TabPanels class="h-full">
-            <TabPanel value="0" class="h-full ">
+            <TabPanel value="0" class="h-full">
               <div v-if="hasTindakanData">
-                <TablesTindakan :payload="tindakanPayload" />
+                <TablesTindakan
+                  :payload="tindakanPayload"
+                  @deleteItem="handleDeleteItem"
+                />
               </div>
               <div v-else class="h-full">
                 <NoData class="h-full -mx-4" />
@@ -237,7 +242,10 @@ const resetForm = () => {
             </TabPanel>
             <TabPanel value="1" class="h-full">
               <div v-if="hasRuanganData">
-                <TablesRuangan :payload="ruanganPayload" />
+                <TablesRuangan
+                  :payload="ruanganPayload"
+                  @deleteItem="handleDeleteItem"
+                />
               </div>
               <div v-else class="h-full">
                 <NoData class="h-full -mx-4" />

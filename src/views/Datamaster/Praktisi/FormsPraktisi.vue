@@ -95,7 +95,11 @@ const schema = toTypedSchema(
     sip: yup.string(),
     str: yup.string(),
     isDoctor: yup.boolean(),
-    codeAntrianDokter: yup.string().required("Kode Antrian Dokter harus diisi"),
+    codeAntrianDokter: yup.string().when("isDoctor", {
+      is: (value: boolean) => value === true,
+      then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     practitionerPoli: yup.array().of(
       yup.object().shape({
         lokasiUuid: yup.string().required("Unit Pelayanan harus dipilih"),
@@ -103,7 +107,7 @@ const schema = toTypedSchema(
     ),
 
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -187,12 +191,7 @@ watch(
     }
   }
 );
-const cobaSelected = ref();
-const optionsPelayanan = ref([
-  { label: "IGD", value: "1" },
-  { label: "Rawat Jalan", value: "2" },
-  { label: "Rawat Inap", value: "3" },
-]);
+
 </script>
 
 <template>
@@ -294,7 +293,6 @@ const optionsPelayanan = ref([
           class="col-span-4"
         />
         <CustomTextfield
-          v-if="isDoctor"
           label="STR"
           v-model="str"
           placeholder="0"

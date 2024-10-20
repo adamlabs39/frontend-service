@@ -60,7 +60,7 @@ const fetchPraktisiData = async () => {
       limit: praktisiProperties.value.page_size,
       name: searchQuery.value,
       doctor: isDoctor,
-      non_doctor: isNonDoctor,
+      non_doctor: isNonDoctor ,
     });
 
     if (response && response.payload) {
@@ -375,7 +375,7 @@ const downloadExportExcel = async () => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Praktisi ${slotProps.data}`,
+                    `Praktisi ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

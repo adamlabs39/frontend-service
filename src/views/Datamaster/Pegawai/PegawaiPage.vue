@@ -385,7 +385,7 @@ const filterTipePegawai = ref([
                 @click="
                   deleteDialog(
                     'delete',
-                    `Pegawai ${slotProps.data.name}`,
+                    `Pegawai ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

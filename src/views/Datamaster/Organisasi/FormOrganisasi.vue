@@ -29,6 +29,7 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
 const organisasiStore = useOrganisasiStore();
 const organisasiPayload = ref<any[]>([]);
 
@@ -127,7 +128,7 @@ const schema = toTypedSchema(
     alamat: yup.string().required("Alamat harus diisi"),
     partOfUuid: yup.string(),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
