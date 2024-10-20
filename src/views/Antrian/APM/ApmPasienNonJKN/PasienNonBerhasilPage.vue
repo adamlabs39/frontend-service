@@ -4,6 +4,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import { ref } from "vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
 
 const router = useRouter();
 
@@ -101,11 +102,7 @@ const tiketAntrian = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/vector-plus.svg"
-                    class="shrink-0 w-[30px] h-[30px] p-[2px]"
-                  />
+                  <PlusIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->

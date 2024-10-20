@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import AddPrint from "../icons/AddPrint.vue";
+import SolarUserCheckIcon from "../icons/SolarUserCheckIcon.vue";
+import Stethoscop from "../icons/Stethoscop.vue";
+
 const props = defineProps({
   cardAktivitas: {
     type: Object as () => { keterangan: string },
@@ -17,17 +21,30 @@ const props = defineProps({
       ><div
         class="rounded-r-xl rounded-l-xl w-full h-[80px] flex items-center justify-center bg-adameds-50"
       >
-        <img
+        <SolarUserCheckIcon
+          class="text-adameds-300"
+          :size="50"
           v-if="cardAktivitas.keterangan === 'Checkin'"
+        />
+        <AddPrint
+          class="text-adameds-300"
+          :size="50"
+          v-if="cardAktivitas.keterangan === 'Print'"
+        />
+        <!-- <img
+          v-if="cardAktivitas.keterangan === 'Umum'"
           src="@/assets/icons/solar_user-check-bold.svg"
           alt=""
-          class="w-[50px] h-[50px]"
-        />
-        <img
-          v-if="cardAktivitas.keterangan === 'Print'"
-          src="@/assets/icons/icon-park-solid_add-print.svg"
-          alt=""
           class="w-[40px] h-[40px]"
+        /> -->
+        <Stethoscop
+          class="text-adameds-300"
+          :size="40"
+          v-if="
+            ['Umum', 'Anak', 'Mata', 'Kandungan'].includes(
+              cardAktivitas.keterangan
+            )
+          "
         />
       </div>
     </template>
