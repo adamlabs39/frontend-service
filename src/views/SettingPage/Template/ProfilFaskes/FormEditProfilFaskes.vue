@@ -116,6 +116,9 @@ const schemaProfilFaskes = computed(() =>
       name: yup.string().required("Nama Faskes wajib diisi"),
       fullAddress: yup.string().required("Alamat wajib diisi"),
       addressUuid: yup.string(),
+      lat:yup.string(),
+      long:yup.string(),
+      cover: yup.string(),
       logo: yup.string(),
       bgWarna: yup.string(),
       selectedProvinceId: yup.string().required("Provinsi wajib dipilih"),
@@ -127,7 +130,7 @@ const schemaProfilFaskes = computed(() =>
       email: yup.string().required("Email wajib diisi"),
       website: yup.string().required("Website wajib diisi"),
       urlGmaps: yup.string().required("Link Google Maps wajib diisi"),
-    })
+    }).noUnknown()
   )
 );
 
@@ -143,7 +146,10 @@ const {
     name: props.profilFaskesResponse.name,
     fullAddress: props.profilFaskesResponse.address.fullAddress || "",
     addressUuid: props.profilFaskesResponse.addressUuid,
-    logo: "",
+    lat:props.profilFaskesResponse.lat,
+    long:props.profilFaskesResponse.long,
+    cover: "",
+    logo:"",
     bgWarna: "",
     selectedProvinceId: "",
     selectedRegencyId: "",
@@ -161,6 +167,9 @@ const [code] = defineFieldProfilFaskes("code");
 const [name] = defineFieldProfilFaskes("name");
 const [fullAddress] = defineFieldProfilFaskes("fullAddress");
 const [addressUuid] = defineFieldProfilFaskes("addressUuid");
+const [lat] = defineFieldProfilFaskes("lat");
+const [long] = defineFieldProfilFaskes("long");
+const [cover] = defineFieldProfilFaskes("cover");
 const [logo] = defineFieldProfilFaskes("logo");
 const [bgWarna] = defineFieldProfilFaskes("bgWarna");
 const [selectedProvinceId] = defineFieldProfilFaskes("selectedProvinceId");
@@ -189,6 +198,9 @@ const resetForm = () => {
       email: "",
       website: "",
       urlGmaps: "",
+      lat: "",
+      long:"",
+      cover: ""
     },
   });
 };
@@ -202,8 +214,9 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
       name: values.name,
       full_address: values.fullAddress,
       address_uuid: values.addressUuid,
-      logo: values.logo,
+      cover: values.cover,
       bg_warna: values.bgWarna,
+      logo: values.logo,
       prov: provinsiPayload.value.find(
         (obj) => obj.code === values.selectedProvinceId
       )?.name,
@@ -221,9 +234,11 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
       email: values.email,
       website: values.website,
       url_gmaps: values.urlGmaps,
+      lat:values.lat,
+      long: values.long,
     };
     const response = await settingStore.putProfilFaskesApi(payload);
-    // console.log("API Response:", response);
+    console.log("API Response:", response);
 
     if (response?.status === 200) {
       emit("update:isEditProfilFaskes", false);
@@ -439,9 +454,9 @@ onMounted(() => {
             label="Latitude"
             class="w-full"
             placeholder="Masukkan Latitude"
-            v-model="website"
-            :invalid="!!profilFaskesErrors.website"
-            :invalidMessage="profilFaskesErrors.website"
+            v-model="lat"
+            :invalid="!!profilFaskesErrors.lat"
+            :invalidMessage="profilFaskesErrors.lat"
           />
         </div>
         <div>
@@ -449,9 +464,9 @@ onMounted(() => {
             label="Longitude"
             class="w-full"
             placeholder="Masukkan Longitude"
-            v-model="website"
-            :invalid="!!profilFaskesErrors.website"
-            :invalidMessage="profilFaskesErrors.website"
+            v-model="long"
+            :invalid="!!profilFaskesErrors.long"
+            :invalidMessage="profilFaskesErrors.long"
           />
         </div>
 
@@ -472,7 +487,7 @@ onMounted(() => {
               Cover
             </div>
             <CustomDragDrop
-              v-model="logo"
+              v-model="cover"
               :allowed-file-types="['image/png']"
               class="bg-white"
             />
