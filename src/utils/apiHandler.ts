@@ -2,6 +2,7 @@ import {
   baseInstance,
   settingInstance,
   baseInstanceDatamaster,
+  baseInstanceAdmisi,
   authInstance,
 } from "./Api";
 import { app } from "@/main";
@@ -209,6 +210,48 @@ const apiDatamasterDelete = async (url: string, data: object) => {
   }
 };
 
+//Admisi
+const apiAdmisiGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.post(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.put(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPatch = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.patch(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.delete(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -225,4 +268,9 @@ export {
   apiDatamasterPost,
   apiDatamasterPut,
   apiDatamasterDelete,
+  apiAdmisiGet,
+  apiAdmisiPost,
+  apiAdmisiPut,
+  apiAdmisiPatch,
+  apiAdmisiDelete,
 };

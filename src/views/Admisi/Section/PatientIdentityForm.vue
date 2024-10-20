@@ -7,6 +7,9 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
 
 const props = defineProps({
   pageType: {
@@ -34,17 +37,90 @@ onMounted(() => {
   ) {
     newBorn.value = true;
   }
+
+  if (Object.keys(props.patientData).length) {
+    let tempPatientData = props.patientData;
+    tempPatientData.birthDetail.birthDate = new Date(
+      tempPatientData.birthDetail.birthDate
+    );
+
+    setValues({
+      ...tempPatientData,
+    });
+  }
 });
 
 const newBorn = ref(false);
-const noIdentity = ref(false);
+const withoutIdentity = ref(false);
 
-const submitForm = () => {
-  console.log("Submited Patient Identity Form");
+const schema = toTypedSchema(
+  yup.object({
+    noRm: yup.string(),
+    title: yup.string().required("Awalan/Gelar harus dipilih"),
+    name: yup.string().required("Nama lengkap harus diisi"),
+    identity: yup.string().required("Identitas harus dipilih"),
+    noIdentity: yup.string().required("No identitas harus diisi"),
+    birthDetail: yup.object({
+      birthPlace: yup.string().required("Tempat lahir harus diisi"),
+      birthDate: yup.date().required("Tanggal lahir harus dipilih"),
+    }),
+    gender: yup.string().required("Jenis kelamin harus dipilih"),
+    phone: yup.string().required("No. Handphone harus diisi"),
+    religion: yup.string().required("Agama harus dipilih"),
+    language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
+    maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
+    motherName: yup.string().required("Nama ibu kandung harus diisi"),
+    address: yup.object({
+      prov: yup.string().required("Provinsi harus dipilih"),
+      city: yup.string().required("Kabupaten / Kota harus dipilih"),
+      district: yup.string().required("Kecamatan harus dipilih"),
+      rt: yup.string().required("RT harus diisi"),
+      rw: yup.string().required("RW harus diisi"),
+      fullAddress: yup.string().required("Alamat harus diisi"),
+      country: yup.string().required("Negara harus diisi"),
+      village: yup.string().required("Kelurahan / Desa harus dipilih"),
+      postalCode: yup.string().required("Kode Pos harus dipilih"),
+    }),
+  })
+);
+
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+
+const [noRm] = defineField("noRm");
+const [title] = defineField("title");
+const [name] = defineField("name");
+const [identity] = defineField("identity");
+const [noIdentity] = defineField("noIdentity");
+const [birthDetailPlace] = defineField("birthDetail.birthPlace");
+const [birthDetailDate] = defineField("birthDetail.birthDate");
+const [gender] = defineField("gender");
+const [phone] = defineField("phone");
+const [religion] = defineField("religion");
+const [language] = defineField("language");
+const [maritialStatus] = defineField("maritialStatus");
+const [motherName] = defineField("motherName");
+const [addressProv] = defineField("address.prov");
+const [addressCity] = defineField("address.city");
+const [addressDistrict] = defineField("address.district");
+const [addressRt] = defineField("address.rt");
+const [addressRw] = defineField("address.rw");
+const [addressFullAddress] = defineField("address.fullAddress");
+const [addressCountry] = defineField("address.country");
+const [addressVillage] = defineField("address.village");
+const [addressPostalCode] = defineField("address.postalCode");
+
+const onSubmit = handleSubmit(async (values) => {
+  return values;
+});
+const onResetForm = () => {
+  resetForm();
 };
 
 defineExpose({
-  submitForm,
+  onSubmit,
+  onResetForm,
 });
 </script>
 
@@ -63,49 +139,48 @@ defineExpose({
       <div class="pt-5">
         <div class="flex">
           <CustomSelect
-            v-if="pageType != 'rawat-inap'"
+            v-if="pageType != 'rawat-inap' && formType != 'Edit Data Pasien'"
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
-            class="grow"
-            :class="{ 'mr-[30px]': pageType != 'datamaster' }"
+            class="grow mr-[30px]"
+            :class="{ '': pageType != 'datamaster' }"
             optionLabel=""
             optionValue=""
             :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
             prependIcon="PhMagnifyingGlass"
-            :disabled="
-              noIdentity || newBorn || isDetail || pageType == 'datamaster'
-            "
+            :disabled="withoutIdentity || newBorn || isDetail"
           />
           <CustomSwitch
             v-if="pageType == 'igd'"
             v-model="newBorn"
             label="Bayi Baru Lahir"
             class="mr-[50px]"
-            @update:model-value="noIdentity = false"
+            @update:model-value="withoutIdentity = false"
             :disabled="isDetail"
           />
           <CustomSwitch
             v-if="pageType == 'igd'"
-            v-model="noIdentity"
+            v-model="withoutIdentity"
             label="Tanpa Identitas"
             class="mr-[35px]"
             @update:model-value="newBorn = false"
             :disabled="isDetail"
           />
           <div
-            v-if="pageType != 'rawat-inap'"
+            v-if="pageType != 'rawat-inap' && formType != 'Edit Data Pasien'"
             class="border-[1px] border-grey-200 mr-[35px]"
           ></div>
           <CustomTextfield
+            v-model="noRm"
             label="No. RM"
             class="w-[23.5%]"
             placeholder="No. RM"
-            disabled
+            readOnly
           />
         </div>
         <hr class="mt-5 mb-[30px]" />
         <div
-          v-if="newBorn || noIdentity"
+          v-if="newBorn || withoutIdentity"
           class="grid grid-cols-2 mb-5 gap-x-[30px]"
         >
           <CustomTextfield
@@ -128,7 +203,7 @@ defineExpose({
             <CustomTextfield
               :label="newBorn ? 'No. KTP Ibu' : ''"
               class="col-span-3"
-              :class="{ 'mt-auto': noIdentity }"
+              :class="{ 'mt-auto': withoutIdentity }"
               placeholder="KTP"
               :disabled="isDetail"
             />
@@ -136,6 +211,7 @@ defineExpose({
         </div>
         <div v-else class="flex mb-5">
           <CustomSelect
+            v-model="title"
             label="Awalan / Gelar"
             placeHolder="Pilih Awalan / Gelar"
             class="pr-[20px] w-1/4"
@@ -151,15 +227,21 @@ defineExpose({
               'By. (Bayi)',
             ]"
             :disabled="isDetail"
+            :invalid="!!errors.title"
+            :invalidMessage="errors.title"
           />
           <div class="flex ml-[10px] grow">
             <CustomTextfield
+              v-model="name"
               label="Nama Lengkap"
               class="w-full mr-[30px]"
               placeholder="Nama Lengkap"
               :disabled="isDetail"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
             />
             <CustomSelect
+              v-model="identity"
               label="Identitas"
               placeHolder="Pilih Identitas"
               class="mr-[10px]"
@@ -168,29 +250,40 @@ defineExpose({
               :showFilter="false"
               :options="['KTP', 'Passport', 'SIM', 'Lainya']"
               :disabled="isDetail"
+              :invalid="!!errors.identity"
+              :invalidMessage="errors.identity"
             />
           </div>
           <CustomTextfield
+            v-model="noIdentity"
             label=" "
-            class="w-[23.5%] mt-auto"
+            class="w-[23.5%] mt-5"
             placeholder="KTP"
             :disabled="isDetail"
+            :invalid="!!errors.noIdentity"
+            :invalidMessage="errors.noIdentity"
           />
         </div>
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
           <!-- Row 1 -->
           <CustomTextfield
-            v-if="!noIdentity"
+            v-if="!withoutIdentity"
+            v-model="birthDetailPlace"
             label="Tempat Lahir"
             class=""
             placeholder="Tempat Lahir"
             :disabled="isDetail"
+            :invalid="!!errors['birthDetail.birthPlace']"
+            :invalidMessage="errors['birthDetail.birthPlace']"
           />
           <CustomDatePicker
+            v-model="birthDetailDate"
             label="Tanggal Lahir"
             placeHolder="01-01-2024"
             class=""
             :disabled="isDetail"
+            :invalid="!!errors['birthDetail.birthDate']"
+            :invalidMessage="errors['birthDetail.birthDate']"
           />
           <CustomDatePicker
             v-if="newBorn"
@@ -208,25 +301,35 @@ defineExpose({
             :disabled="isDetail"
           />
           <CustomSelect
+            v-model="gender"
             label="Jenis Kelamin"
             placeHolder="Pilih Jenis Kelamin"
             class=""
-            optionLabel=""
-            optionValue=""
+            optionLabel="label"
+            optionValue="value"
             :showFilter="false"
-            :options="['Laki-laki', 'Perempuan']"
+            :options="[
+              { label: 'Laki-laki', value: 'Male' },
+              { label: 'Perempuan', value: 'Female' },
+            ]"
             :disabled="isDetail"
+            :invalid="!!errors.gender"
+            :invalidMessage="errors.gender"
           />
           <!-- Row 2 -->
           <CustomTextfield
             v-if="!newBorn"
+            v-model="phone"
             label="No. Handphone"
             class=""
             placeholder="08XX-XXXX-XXXX"
             :disabled="isDetail"
+            :invalid="!!errors.phone"
+            :invalidMessage="errors.phone"
           />
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            v-if="!newBorn && !withoutIdentity"
+            v-model="religion"
             label="Agama"
             placeHolder="Pilih Agama"
             class=""
@@ -243,9 +346,12 @@ defineExpose({
               'Lain-lain',
             ]"
             :disabled="isDetail"
+            :invalid="!!errors.religion"
+            :invalidMessage="errors.religion"
           />
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            v-if="!newBorn && !withoutIdentity"
+            v-model="addressCountry"
             label="Negara"
             placeHolder="Pilih Negara"
             class=""
@@ -254,9 +360,12 @@ defineExpose({
             :showFilter="false"
             :options="['Indonesia', 'Jepang', 'Amerika Serikat']"
             :disabled="isDetail"
+            :invalid="!!errors['address.country']"
+            :invalidMessage="errors['address.country']"
           />
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            v-if="!newBorn && !withoutIdentity"
+            v-model="language"
             label="Bahasa yang Dikuasai"
             placeHolder="Pilih Bahasa yang Dikuasai"
             class=""
@@ -265,10 +374,13 @@ defineExpose({
             :showFilter="false"
             :options="['Bahasa Indonesia', 'Bahasa Inggris', 'Bahasa Jawa']"
             :disabled="isDetail"
+            :invalid="!!errors.language"
+            :invalidMessage="errors.language"
           />
           <!-- Row 3 -->
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            v-if="!newBorn && !withoutIdentity"
+            v-model="maritialStatus"
             label="Status Pernikahan"
             placeHolder="Pilih Status Pernikahan"
             class=""
@@ -277,13 +389,18 @@ defineExpose({
             :showFilter="false"
             :options="['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']"
             :disabled="isDetail"
+            :invalid="!!errors.maritialStatus"
+            :invalidMessage="errors.maritialStatus"
           />
           <CustomTextfield
-            v-if="!noIdentity"
+            v-if="!withoutIdentity"
+            v-model="motherName"
             label="Nama Ibu Kandung"
             :class="[newBorn ? 'col-span-2' : 'col-span-3']"
             placeholder="Nama Ibu Kandung"
             :disabled="isDetail"
+            :invalid="!!errors.motherName"
+            :invalidMessage="errors.motherName"
           />
           <CustomSwitch
             v-if="newBorn"
@@ -292,9 +409,13 @@ defineExpose({
             :disabled="isDetail"
           />
         </div>
-        <hr v-if="!noIdentity" class="my-[30px]" />
-        <div v-if="!noIdentity" class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
+        <hr v-if="!withoutIdentity" class="my-[30px]" />
+        <div
+          v-if="!withoutIdentity"
+          class="grid grid-cols-4 gap-y-5 gap-x-[30px]"
+        >
           <CustomSelect
+            v-model="addressProv"
             label="Provinsi"
             placeHolder="Pilih Provinsi"
             class=""
@@ -303,8 +424,11 @@ defineExpose({
             :showFilter="false"
             :options="['DKI Jakarta', 'Jawa Barat', 'Jawa Timur']"
             :disabled="isDetail"
+            :invalid="!!errors['address.prov']"
+            :invalidMessage="errors['address.prov']"
           />
           <CustomSelect
+            v-model="addressCity"
             label="Kabupaten / Kota"
             placeHolder="Pilih Kabupaten / Kota"
             class=""
@@ -313,8 +437,11 @@ defineExpose({
             :showFilter="false"
             :options="['Kota Jakarta Pusat', 'Kota Bandung', 'Kota Surabaya']"
             :disabled="isDetail"
+            :invalid="!!errors['address.city']"
+            :invalidMessage="errors['address.city']"
           />
           <CustomSelect
+            v-model="addressDistrict"
             label="Kecamatan"
             placeHolder="Pilih Kecamatan"
             class=""
@@ -327,8 +454,11 @@ defineExpose({
               'Kecamatan Wonokromo',
             ]"
             :disabled="isDetail"
+            :invalid="!!errors['address.district']"
+            :invalidMessage="errors['address.district']"
           />
           <CustomSelect
+            v-model="addressVillage"
             label="Kelurahan / Desa"
             placeHolder="Pilih Kelurahan / Desa"
             class=""
@@ -341,22 +471,31 @@ defineExpose({
               'Kelurahan Dukuh Menanggal',
             ]"
             :disabled="isDetail"
+            :invalid="!!errors['address.village']"
+            :invalidMessage="errors['address.village']"
           />
           <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
             <CustomTextfield
+              v-model="addressRt"
               label="RT"
               class=""
               placeholder="0"
               :disabled="isDetail"
+              :invalid="!!errors['address.rt']"
+              :invalidMessage="errors['address.rt']"
             />
             <CustomTextfield
+              v-model="addressRw"
               label="RW"
               class=""
               placeholder="0"
               :disabled="isDetail"
+              :invalid="!!errors['address.rw']"
+              :invalidMessage="errors['address.rw']"
             />
           </div>
           <CustomSelect
+            v-model="addressPostalCode"
             label="Kode Pos"
             placeHolder="Pilih Kode Pos"
             class=""
@@ -365,13 +504,18 @@ defineExpose({
             :showFilter="false"
             :options="['10110', '40115', '60241']"
             :disabled="isDetail"
+            :invalid="!!errors['address.postalCode']"
+            :invalidMessage="errors['address.postalCode']"
           />
           <CustomTextArea
+            v-model="addressFullAddress"
             label="Alamat"
             class="col-span-2"
             placeholder="Alamat"
             height="h-10"
             :disabled="isDetail"
+            :invalid="!!errors['address.fullAddress']"
+            :invalidMessage="errors['address.fullAddress']"
           />
         </div>
       </div>
