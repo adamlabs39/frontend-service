@@ -37,7 +37,7 @@ const schema = toTypedSchema(
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Kategori harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

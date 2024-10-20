@@ -13,9 +13,15 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import DaftarOrderFisioPage from "./Layout/DaftarOrderFisioPage.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
+import HeaderEditDataPasienPage from "./Layout/HeaderEditDataPasienPage.vue";
+import PopUpOrderFisioPage from "./Layout/PopUpOrderFisioPage.vue";
 
 import NoData from "@/components/section/NoData.vue";
-import type { DataTableRowClickEvent } from "primevue/datatable";
 
 const storeUtils = utilsStore();
 const pageType = ref("");
@@ -24,7 +30,8 @@ const rowsPerPage = ref(10);
 const currentPage = ref(0);
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const popupDialog = ref(false);
+
+const editOrderDialog = ref(false);
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
@@ -47,10 +54,6 @@ const changeSection = (label: string, data: any = null) => {
   } else {
     dataBreadCrumb.value.push(tempData);
   }
-};
-
-const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Daftar");
 };
 
 const updatePageType = (path: string) => {
@@ -185,29 +188,6 @@ const selectedPatient = ref([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
-const openedPatientData = ref<any>({});
-const showPatientDetail = (event: DataTableRowClickEvent) => {
-  openedPatientData.value = event.data;
-  if (pageType.value == "order-fisio") {
-    if (openedPatientData.value.status_rj == "1") {
-      changeSection("Checkin", { platform: openedPatientData.value.platform });
-    } else {
-      changeSection("Detail");
-    }
-  } else if (pageType.value == "rawat-inap") {
-    if (
-      openedPatientData.value.status_ri == "1" ||
-      openedPatientData.value.status_ri == "2"
-    ) {
-      changeSection("Daftar");
-    } else {
-      changeSection("Detail");
-    }
-  } else {
-    changeSection("Detail");
-  }
-};
-
 // Filter Pembayaran
 
 const selectedStatus = ref<any>();
@@ -265,10 +245,63 @@ const onPaymentMethodSelect = (label: string) => {
     selectedPaymentMethod.value.push(label);
   }
 };
+
+const dateFilter = ref<Date>(new Date());
+const dataTindakan = ref<any[]>([]);
+
+const tambahTindakan = toTypedSchema(
+  yup.object({
+    listTindakan: yup.string(),
+    jumlah: yup.number(),
+    harga: yup.number(),
+  })
+);
+
+const { handleSubmit, resetForm, defineField } = useForm({
+  validationSchema: tambahTindakan,
+  initialValues: {
+    listTindakan: "",
+    jumlah: 0,
+    harga: 0,
+  },
+});
+
+const listTindakan = ref([
+  { id: "1", value: "Fisio 1" },
+  { id: "2", value: "Fidio 2" },
+  { id: "3", value: "Fisio 3" },
+]);
+
+const deleteDataTindakan = (index: number) => {
+  dataTindakan.value.splice(index, 1);
+};
+
+const myPushFunction = () => {
+  dataTindakan.value.push({
+    listTindakan: "",
+    jumlah: 0,
+    harga: 0,
+  });
+};
+
+const medicalRecord = ref<typeof MedicalRecord>();
+const openDialogRM = () => {
+  medicalRecord.value?.showDialogRM();
+};
+const popupDialog = ref(false);
+
+const editIdentitas = () => {
+  popupDialog.value = false;
+  changeSection("Edit Profil Pasien");
+};
+const handleBack = () => {
+  popupDialog.value = true; // Menampilkan popup dialog
+  dataBreadCrumb.value = [];
+};
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex flex-col w-full h-full overflow-hidden">
     <Card
       v-if="dataBreadCrumb.length == 0"
       pt:body:class="h-full pt-0 overflow-auto"
@@ -276,7 +309,7 @@ const onPaymentMethodSelect = (label: string) => {
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
+        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
@@ -549,7 +582,7 @@ const onPaymentMethodSelect = (label: string) => {
             field="status"
             header="Status"
             headerClass="bg-adameds-50"
-            class="w-[114px]"
+            class="w-[150px]"
           >
             <template #body="slotProps">
               <div>
@@ -656,6 +689,15 @@ const onPaymentMethodSelect = (label: string) => {
       :patientData="patientData"
       @back="dataBreadCrumb.pop()"
     />
+
+    <HeaderEditDataPasienPage
+      v-else-if="dataBreadCrumb[0].label == 'Edit Profil Pasien'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :patientData="patientData"
+      @back="handleBack"
+    />
+
     <!-- Pop Up Dialog -->
     <CustomDialog v-model:visible="popupDialog" width="1000px">
       <template #header>
@@ -720,152 +762,218 @@ const onPaymentMethodSelect = (label: string) => {
             </div>
 
             <!-- Asesmen Medis -->
-
-            <div class="flex justify-between pt-4 mt-5">
-              <div class="mt-4 basis-1/4">
-                <p class="font-bold text-MD">Asesmen Medis</p>
-              </div>
-              <CustomButton
-                @click="changeSection('')"
-                label="Rekam Medis"
-                class="mr-[10px]"
-              />
-            </div>
-            <hr class="mt-5 mb-[30px]" />
-            <div class="flex flex-row mt-8">
-              <div class="basis-1/4">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Keluhan Utama
-                </p>
-                <p>Sakit Mata</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Dokter Pengirim
-                  <span> </span>
-                </p>
-                <p>dr. Anji Sp. M</p>
-              </div>
-              <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
-              <div class="mr-[180px]">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Diagnosa Primer
-                </p>
-                <p class="">H10.9 Conjuctivitis</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Diagnosa Sekunder
-                </p>
-                <p class="">-</p>
-              </div>
-              <div class="mr-[80px]">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Diagnosa Sekunder
-                </p>
-                <p class="">-</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Diagnosa Sekunder
-                </p>
-                <p class="">-</p>
-              </div>
+            <div class="grid grid-cols-1 mt-2">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full mt-5">
+                    <div class="mt-4 basis-1/4">
+                      <p class="font-bold text-MD">Asesmen Medis</p>
+                    </div>
+                    <div>
+                      <CustomButton
+                        @click="openDialogRM"
+                        label="Rekam Medis"
+                        class="mr-4"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template #content>
+                  <div class="flex flex-row mt-8">
+                    <div class="basis-1/4">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Keluhan Utama
+                      </p>
+                      <p>Sakit Mata</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Dokter Pengirim
+                        <span> </span>
+                      </p>
+                      <p>dr. Anji Sp. M</p>
+                    </div>
+                    <div
+                      class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"
+                    ></div>
+                    <div class="mr-[180px]">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Diagnosa Primer
+                      </p>
+                      <p class="">H10.9 Conjuctivitis</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                    </div>
+                    <div class="mr-[80px]">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
             </div>
 
             <!-- Profil Pasien  -->
-            <div class="flex justify-between pt-4 mt-5">
-              <div class="mt-4 basis-1/4">
-                <p class="font-bold text-MD">Profil Pasien</p>
-              </div>
-              <CustomButton
-                @click="changeSection('')"
-                label="Edit Data"
-                class="mr-[10px]"
-              />
-            </div>
-            <hr class="mt-5 mb-[30px]" />
-            <div class="grid grid-cols-3 gap-4 mt-8">
-              <div class="">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  KTP
-                </p>
-                <p>1666666666666666</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Provinsi
-                  <span> </span>
-                </p>
-                <p>Jawa Timur</p>
-                <p class="mt-3 text-xs font-bold underline underline-offset-2">
-                  Kelurahahn / Desa
-                </p>
-                <p>Keputih</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Alamat
-                  <span> </span>
-                </p>
-                <p>Jl. Ijo Abang no. 17</p>
-              </div>
 
-              <div>
-                <p class="text-xs font-bold underline underline-offset-2">
-                  No. Handphone
-                </p>
-                <p class="">081234567890</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Kabupaten / Kota
-                </p>
-                <p class="">Surabaya</p>
-                <div class="flex flex-row mt-[10px]">
-                  <div class="basis-1/4">
-                    <p class="text-xs font-bold underline underline-offset-2">
-                      RT
-                    </p>
-                    <p>01</p>
+            <div class="grid grid-cols-1 mt-2">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full mt-5">
+                    <div class="mt-4 basis-1/4">
+                      <p class="font-bold text-MD">Profil Pasien</p>
+                    </div>
+                    <div>
+                      <CustomButton
+                        @click="editIdentitas"
+                        label="Edit Data"
+                        class="mr-4"
+                      />
+                    </div>
                   </div>
-                  <div class="basis-1/4">
-                    <p class="text-xs font-bold underline underline-offset-2">
-                      RW
-                    </p>
-                    <p>02</p>
+                </template>
+                <template #content>
+                  <div class="grid grid-cols-3 gap-4 mt-8">
+                    <div class="">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        KTP
+                      </p>
+                      <p>1666666666666666</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Provinsi
+                        <span> </span>
+                      </p>
+                      <p>Jawa Timur</p>
+                      <p
+                        class="mt-3 text-xs font-bold underline underline-offset-2"
+                      >
+                        Kelurahahn / Desa
+                      </p>
+                      <p>Keputih</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Alamat
+                        <span> </span>
+                      </p>
+                      <p>Jl. Ijo Abang no. 17</p>
+                    </div>
+
+                    <div>
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        No. Handphone
+                      </p>
+                      <p class="">081234567890</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kabupaten / Kota
+                      </p>
+                      <p class="">Surabaya</p>
+                      <div class="flex flex-row mt-[10px]">
+                        <div class="basis-1/4">
+                          <p
+                            class="text-xs font-bold underline underline-offset-2"
+                          >
+                            RT
+                          </p>
+                          <p>01</p>
+                        </div>
+                        <div class="basis-1/4">
+                          <p
+                            class="text-xs font-bold underline underline-offset-2"
+                          >
+                            RW
+                          </p>
+                          <p>02</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Agama
+                      </p>
+                      <p class="">Islam</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kecamatan
+                      </p>
+                      <p class="">Sukolilo</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kode Pos
+                      </p>
+                      <p class="">12345</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div>
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Agama
-                </p>
-                <p class="">Islam</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Kecamatan
-                </p>
-                <p class="">Sukolilo</p>
-                <p
-                  class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                >
-                  Kode Pos
-                </p>
-                <p class="">12345</p>
-              </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
             </div>
 
             <!-- List Order Terapi -->
             <div class="grid grid-cols-1 mt-[20px]">
-              <CustomAccordion no-border initial-state="0">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
                 <template #header>
-                  <div class="flex justify-between">
+                  <div class="flex justify-between w-full">
                     <div class="mt-2">
                       <p>List Order Terapi</p>
                     </div>
-                    <div></div>
+
                     <div class="flex ml-[460px] mt-2">
                       <div class="bg-mediumGrey-300 w-[1px] h-[30px]"></div>
                       <p class="text-xs ml-[10px] mt-[3px]">
@@ -873,11 +981,10 @@ const onPaymentMethodSelect = (label: string) => {
                       </p>
                     </div>
                     <CustomButton
-                      @click="changeSection('')"
+                      @click="editOrderDialog = true"
                       label="Edit Order"
-                      class="ml-[40px]"
+                      class="mr-4"
                     />
-                    <div></div>
                   </div>
                 </template>
                 <template #content>
@@ -904,7 +1011,7 @@ const onPaymentMethodSelect = (label: string) => {
                         class="overflow-hidden rounded-[10px]"
                         scrollable
                         scrollHeight="flex"
-                        :pt="{ headerRow: 'text-SM' }"
+                        :pt="{ headerRow: 'text-SM', thead: 'z-0' }"
                       >
                         <Column
                           field="pemeriksaanName"
@@ -996,9 +1103,188 @@ const onPaymentMethodSelect = (label: string) => {
         <Card class="absolute inset-x-0 bottom-0">
           <template #footer>
             <div class="flex justify-end">
-
               <CustomButton
                 label="Validasi Order"
+                backgroundColor="bg-adameds-300"
+              />
+            </div>
+          </template>
+        </Card>
+      </template>
+    </CustomDialog>
+
+    <!-- Edit Order Dialog -->
+    <CustomDialog
+      v-model:visible="editOrderDialog"
+      class="h-[600px]"
+      width="800px"
+    >
+      <template #header>
+        <div class="flex">
+          <p>Edit Order Fisio</p>
+        </div>
+      </template>
+      <template #body>
+        <div class="pt-5 grid grid-cols-[25%_75%] gap-4">
+          <div>
+            <CustomDatePicker
+              v-model="dateFilter"
+              label="Tanggal"
+              class="mr-[20px]"
+            />
+          </div>
+          <div>
+            <CustomSelect
+              label="Jenis Fisioterapi"
+              place-holder="Pilih Jenis Fisioterapi"
+              class="mr-[20px]"
+              optionLabel=""
+              optionValue=""
+              :options="['Jenis 1', 'Jenis 2', 'Jenis 3']"
+            />
+          </div>
+        </div>
+        <div>
+          <CustomSelect
+            label="Diagnosis"
+            place-holder="Cari dan Pilih Diagnosis"
+            class="w-full mt-4"
+            optionLabel=""
+            optionValue=""
+            :options="['Diagnosis 1', 'Diagnosis 2', 'Diagnosis 3']"
+            prependIcon="PhMagnifyingGlass"
+          />
+        </div>
+
+        <!-- Data Tabel dialog -->
+        <div class="mt-[20px]">
+          <div class="relative overflow-y-auto" style="max-height: 220px">
+            <DataTable
+              :pt="{ headerRow: 'text-SM' }"
+              :value="dataTindakan"
+              scrollable
+              scrollHeight="160px"
+              class="overflow-hidden text-xs rounded-lg bg-adameds-50"
+            >
+              <Column
+                headerClass="bg-adameds-50 font-semibold text-SM"
+                class="w-[20px]"
+              >
+                <template #header>
+                  <div class="flex items-center">No.</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    {{ slotProps.index + 1 }}
+                  </div>
+                </template>
+              </Column>
+
+              <Column headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="font-semibold">List Tindakan</div>
+                </template>
+                <template #body="slotProps">
+                  <CustomSelect
+                    prepend-icon="PhMagnifyingGlass"
+                    v-model="slotProps.data.listTindakan"
+                    :options="listTindakan"
+                    optionValue="value"
+                    optionLabel="value"
+                    label=""
+                    place-holder="Cari & Pilih Tindakan"
+                  />
+                </template>
+              </Column>
+              <Column headerClass="bg-adameds-50 " class="w-[150px]">
+                <template #header>
+                  <div class="w-full font-semibold text-center">Jumlah</div>
+                </template>
+                <template #body="slotProps">
+                  <CustomInputNumber
+                    :show-label="false"
+                    v-model="slotProps.data.jumlah"
+                    :show-buttons="true"
+                    class="text-center"
+                  />
+                </template>
+              </Column>
+
+              <Column headerClass="bg-adameds-50 " class="min-w-[150px]">
+                <template #header>
+                  <div class="w-full font-semibold text-center">Harga</div>
+                </template>
+                <template #body="slotProps">
+                  <CustomInputNumber
+                    v-model="slotProps.data.harga"
+                    class=""
+                    label=""
+                  >
+                    <template #prependText>
+                      <div
+                        class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                      >
+                        Rp.
+                      </div>
+                    </template>
+                  </CustomInputNumber>
+                </template>
+              </Column>
+
+              <Column headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="w-full font-semibold text-center">Action</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    <CustomButton
+                      label=""
+                      background-color="bg-danger-300 rounded-lg"
+                      @click="deleteDataTindakan(slotProps.index)"
+                    >
+                      <img
+                        src="@/assets/icons/delete.svg"
+                        alt=""
+                        width="14px"
+                      />
+                    </CustomButton>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-center mt-5 p-5 border border-dashed rounded-lg border-adameds-300 gap-2.5 mb-[70px]"
+        >
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Tindakan"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="myPushFunction"
+          />
+        </div>
+        <Card class="absolute inset-x-0 bottom-0">
+          <template #footer>
+            <div class="flex justify-end">
+              <CustomButton
+                label="Reset"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-grey-200"
+                textColor="text-grey-300"
+              />
+              <CustomButton
+                label="Batal Edit"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+              />
+              <CustomButton
+                label="Simpan"
                 class=""
                 backgroundColor="bg-adameds-300"
               />
@@ -1008,4 +1294,5 @@ const onPaymentMethodSelect = (label: string) => {
       </template>
     </CustomDialog>
   </div>
+  <MedicalRecord ref="medicalRecord" />
 </template>

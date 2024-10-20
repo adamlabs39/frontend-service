@@ -4,6 +4,23 @@ import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
 import { ref } from "vue";
 
+const getUserRole = () => {
+  const userDataString = localStorage.getItem("user");
+  if (userDataString) {
+    try {
+      const userData = JSON.parse(userDataString);
+      return userData.role;
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const isSuperAdmin = getUserRole() === "super admin";
+
+
 const sidebarBodyList = ref<SidebarBody[]>([
   {
     name: "1",
@@ -157,7 +174,10 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
     ],
   },
-  {
+
+]);
+if (isSuperAdmin) {
+  sidebarBodyList.value.push({
     name: "7",
     type: linkType.SECTION,
     child: [
@@ -189,8 +209,9 @@ const sidebarBodyList = ref<SidebarBody[]>([
         ],
       },
     ],
-  },
-]);
+  });
+}
+
 const filter = ref("");
 </script>
 

@@ -33,7 +33,7 @@ const schema = toTypedSchema(
     phone: yup.string(),
     address: yup.string(),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

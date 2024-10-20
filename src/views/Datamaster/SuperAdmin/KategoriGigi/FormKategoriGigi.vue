@@ -13,16 +13,13 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 
 const props = defineProps({
   isDialogVisible: {
-    type: Boolean,
     default: false,
   },
   title: {
     type: String,
-    default: "",
   },
   method: {
     type: String,
-    default: "detail",
   },
   payload: {
     type: Object,
@@ -37,7 +34,7 @@ const schema = toTypedSchema(
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Kategori harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -56,17 +53,17 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (method.value === "edit") {
+    if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await kategoriGigiStore.postApi(values);
+      emit("data-updated");
+    } else if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
       const response = await kategoriGigiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
-      const response = await kategoriGigiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -78,9 +75,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -114,7 +111,6 @@ watch(
     }
   }
 );
-
 </script>
 
 <template>
@@ -190,7 +186,6 @@ watch(
             />
           </template>
         </CustomInfoRow>
-        
       </div>
     </template>
 

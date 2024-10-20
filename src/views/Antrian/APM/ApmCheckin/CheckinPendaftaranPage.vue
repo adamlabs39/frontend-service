@@ -83,11 +83,7 @@ const props = defineProps({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/solar_user-check-bold.svg"
-                    class="shrink-0 w-[30px] h-[30px] filter invert"
-                  />
+                  <SolarUserCheckIcon class="text-white" :size="30"/>
                 </div>
 
                 <!-- Text Container with Background -->

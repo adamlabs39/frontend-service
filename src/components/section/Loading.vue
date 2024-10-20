@@ -4,7 +4,7 @@ import LoadingJSON from "@/assets/images/Loading.json";
 </script>
 
 <template>
-  <div class="fixed z-50 flex justify-center w-full h-full align-middle">
+  <div class="fixed flex justify-center w-full h-full align-middle z-[99999]">
     <div class="absolute w-full h-full backdrop-blur-md"></div>
     <div class="flex my-auto">
       <Vue3Lottie

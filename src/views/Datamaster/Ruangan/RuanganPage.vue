@@ -403,7 +403,7 @@ const resetForm = () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', 'Ruangan', slotProps.data)"
+                @click="deleteDialog('delete', `Ruangan ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

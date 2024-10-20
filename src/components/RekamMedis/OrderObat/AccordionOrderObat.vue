@@ -41,7 +41,7 @@ const results = ref<any[]>([]);
 
 function handleTambahOrder() {
   dialogTambahOrder.value.isVisible = true;
-  dialogTambahOrder.value.title = "Tambah Order";
+  dialogTambahOrder.value.title = "Form Tambah Obat";
 }
 
 // terima payload dari file DialogOrderObat
@@ -272,6 +272,7 @@ defineExpose({
             </div>
           </div>
         </div>
+        <!-- Card End -->
       </div>
       <div v-else class="py-5">
         <NoData />

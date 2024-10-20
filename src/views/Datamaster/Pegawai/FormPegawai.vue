@@ -47,7 +47,7 @@ const schema = toTypedSchema(
     gender: yup.string().required("Jenis Kelamin harus diisi"),
     tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

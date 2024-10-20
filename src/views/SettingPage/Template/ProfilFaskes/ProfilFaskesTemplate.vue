@@ -25,55 +25,71 @@ const props = defineProps({
 				<!-- 7 kolom di sebelah kiri -->
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Kode Faskes</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.code }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.code || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Nama Faskes</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.name }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.name || '-'}}</div>
 				</div>
 				<div class="col-span-2 mb-4">
 					<div class="text-sm font-normal underline">Alamat</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.fullAddress }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.fullAddress || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Provinsi</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.prov }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.prov || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Kabupaten/Kota</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.city }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.city || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Kecamatan</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.district }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.district || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Kelurahan</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.village }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.village || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Kode Pos</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.postalCode }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.address.postalCode || '-'}}</div>
 				</div>
+				
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">No. Telpon</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.phone }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.phone || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Email</div>
-					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.email }}</div>
+					<div class="font-semibold text-MD">{{ props.profilFaskesResponse.email || '-'}}</div>
 				</div>
 				<div class="mb-4">
 					<div class="text-sm font-normal underline">Website</div>
 					<div class="font-semibold text-MD">
-						<a :href="props.profilFaskesResponse.website" target="_blank">{{ props.profilFaskesResponse.website }}</a>
+						<a :href="props.profilFaskesResponse.website" target="_blank">{{ props.profilFaskesResponse.website || '-'}}</a>
 					</div>
 				</div>
-				<div class="col-span-2 mb-4">
+				<div class="mb-4">
+					<div class="text-sm font-normal underline">Latitude</div>
+					<div class="font-semibold text-MD">{{  '-'}}</div>
+				</div>
+				<div class="mb-4">
+					<div class="text-sm font-normal underline">Longitude</div>
+					<div class="font-semibold text-MD">{{ '-'}}</div>
+				</div>
+				<div class="mb-4 ">
 					<div class="text-sm font-normal underline">Link Google Map</div>
 					<div class="font-semibold text-MD">
 						<a :href="props.profilFaskesResponse.url_gmaps"
-							target="_blank">{{ props.profilFaskesResponse.urlGmaps }}</a>
+							target="_blank">{{ props.profilFaskesResponse.urlGmaps || '-'}}</a>
+					</div>
+				</div>
+				<div class="mb-4 ">
+					<div class="text-sm font-normal underline">Cover</div>
+					<div class="font-semibold text-MD">
+						<a :href="props.profilFaskesResponse.url_gmaps"
+							target="_blank">{{ props.profilFaskesResponse.urlGmaps || '-'}}</a>
 					</div>
 				</div>
 			</div>

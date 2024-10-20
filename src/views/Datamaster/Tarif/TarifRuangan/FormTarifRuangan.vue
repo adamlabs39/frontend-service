@@ -36,7 +36,6 @@ const penjaminPayload = ref<any[]>([]);
 const ruanganPayload = ref<any[]>([]);
 const optionsPelayanan = ref([
   { label: "IGD", value: 1 },
-  { label: "Rawat Jalan", value: 2 },
   { label: "Rawat Inap", value: 3 },
 ]);
 
@@ -87,7 +86,7 @@ const schema = toTypedSchema(
       })
     ),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -130,11 +129,6 @@ const onSubmit = handleSubmit(async (values: any) => {
 });
 
 
-const jenisBayarOptions = ref([
-  { label: "Tunai", value: "tunai" },
-  { label: "BPJS", value: "bpjs" },
-]);
-
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const method = ref(props.method);
@@ -168,6 +162,8 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          unitPelayanan:props.payload.pelayanan[0].unitPelayanan,
+          ruanganUuid:props.payload.ruangan[0].ruanganUuid
         });
       }
     } else {
@@ -317,10 +313,7 @@ watch(
           />
         </div>
       </div>
-       <!-- Detail Data -->
-       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-       ini halaman detail
-      </div>
+       
     </template>
     <template #footer>
       <div class="w-full">
@@ -338,11 +331,7 @@ watch(
             label="Simpan"
             @click="onSubmit"
           />
-          <CustomButton
-            v-if="method === 'detail'"
-            label="Edit"
-            @click="handleEdit"
-          />
+          
         </div>
       </div>
     </template>

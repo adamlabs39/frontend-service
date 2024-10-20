@@ -234,7 +234,7 @@ interface FilterChip {
                 ? 'Role'
                 : props.pageType === 'ruangan'
                 ? 'Kategori'
-                : props.pageType === 'ruangan'
+                : props.pageType === 'tarif'
                 ? 'Unit Pelayanan'
                 : 'Kategori'
             "
@@ -243,13 +243,21 @@ interface FilterChip {
                 ? 'Pilih Role'
                 : props.pageType === 'ruangan'
                 ? 'Pilih Kategori'
-                : props.pageType === 'ruangan'
+                : props.pageType === 'tarif'
                 ? 'Pilih Unit Pelayanan'
                 : 'Pilih Kategori'
             "
             :options="props.filterSelect"
-            optionValue="uuid"
-            optionLabel="name"
+            :optionValue="props.pageType === 'ruangan'
+                ? 'uuid'
+                : props.pageType === 'tarif'
+                ? 'value'
+                : ''"
+            :optionLabel="props.pageType === 'ruangan'
+                ? 'name'
+                : props.pageType === 'tarif'
+                ? 'label'
+                : ''"
             @update:modelValue="
               $emit('update:selectedFilter', valueSelectedFilter)
             "

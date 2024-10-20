@@ -12,6 +12,7 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import DetailPasien from "./DetailPasien.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import RiwayatSebelumnya from "./RiwayatSebelumnya.vue";
 
 type Obat = {
   namaObat: string;
@@ -149,7 +150,7 @@ function updateVisibility(value: boolean) {
 
 <template>
   <CustomDialog
-    width="1000px"
+    :full-screen="true"
     :visible="isDialogVisible"
     headerBg="bg-adameds-300"
     @update:visible="updateVisibility"
@@ -157,15 +158,19 @@ function updateVisibility(value: boolean) {
     <template #header>{{ title }}</template>
     <template #body>
       <!--  -->
-      <div class="flex my-5 gap-7">
-        <DetailPasien />
+      <div class="flex gap-5 my-5">
+        <div class="min-w-[500px]">
+          <DetailPasien />
+          <RiwayatSebelumnya />
+        </div>
+
         <hr class="h-auto border border-adameds-300" />
 
         <!--  Mulai Diisi -->
         <div class="grow">
           <div class="flex items-center justify-between">
             <div class="font-semibold text-MD">
-              Total Obat Terpilih : {{ fields.length }}
+              Total Obat : {{ fields.length }}
             </div>
             <CustomButton
               label="Tambah Obat"
@@ -176,7 +181,7 @@ function updateVisibility(value: boolean) {
             />
           </div>
           <hr class="my-4 bg-grey-200 border-1" />
-          <div class="flex flex-col gap-3 overflow-y-auto max-h-[400px]">
+          <div class="flex flex-col gap-3 overflow-y-auto max-h-[600px]">
             <div v-for="(field, index) in fields" :key="index">
               <CustomAccordion headerClass="bg-adameds-50">
                 <template #header>Obat {{ index + 1 }}</template>
@@ -284,7 +289,7 @@ function updateVisibility(value: boolean) {
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
+        <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"

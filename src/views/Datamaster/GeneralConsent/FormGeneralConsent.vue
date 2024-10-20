@@ -35,7 +35,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama General Consent harus diisi"),
     isiSurat: yup.string().required("Isi General consent harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

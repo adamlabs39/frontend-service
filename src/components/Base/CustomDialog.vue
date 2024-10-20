@@ -39,6 +39,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['closeDialog'])
+
 const dialog = ref();
 
 const maximize = () => {
@@ -53,6 +55,7 @@ const maximize = () => {
     modal
     class=""
     @show="maximize"
+    @hide="emit('closeDialog')"
     :maximizable="fullScreen"
     :position="position"
     :pt:header:class="`rounded-t-[10px] ${headerBg} ${headerHeight}`"

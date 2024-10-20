@@ -5,6 +5,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import FormTarifTindakan from "./FormTarifTindakan.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 const props = defineProps({
   payload: {
     type: Array,
@@ -19,8 +20,8 @@ const onRowSelect = (event: any) => {
   selectedData.value = event.data;
   FormTindakanDialog("detail", "Detail Data", selectedData.value);
 };
-const hapusDataDialog = ref(false);
 const isTambahTindakanDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
 const dialogConfig = ref<any>({
   method: "add",
   title: "Tambah Data",
@@ -33,6 +34,18 @@ const FormTindakanDialog = (
 ) => {
   dialogConfig.value = { method, title, data };
   isTambahTindakanDialogVisible.value = true;
+};
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+const emit = defineEmits(["deleteItem"]);
+
+const confirmDelete = () => {
+  if (dialogConfig.value.data) {
+    emit("deleteItem", dialogConfig.value.data);
+    isDeleteDialogVisible.value = false;
+  }
 };
 </script>
 
@@ -123,7 +136,7 @@ const FormTindakanDialog = (
         <div class="w-full font-semibold text-center">Status</div>
       </template>
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-center min-w-[120px]">
           <CustomChip
             :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
             :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
@@ -157,8 +170,14 @@ const FormTindakanDialog = (
           <CustomButton
             label=""
             background-color="bg-danger-300 rounded-lg"
-            @click="hapusDataDialog = true"
             class="h-6 w-[26px] p-0"
+            @click="
+              deleteDialog(
+                'delete',
+                `Tarif Tindakan ${slotProps.data.code}-${slotProps.data.name}`,
+                slotProps.data
+              )
+            "
           >
             <img src="@/assets/icons/delete.svg" alt="" />
           </CustomButton>
@@ -172,5 +191,11 @@ const FormTindakanDialog = (
     :title="dialogConfig.title"
     :method="dialogConfig.method"
     :payload="dialogConfig.data"
+  />
+  <DialogDelete
+    v-model:isDialogVisible="isDeleteDialogVisible"
+    :title="dialogConfig.title"
+    :itemToDelete="dialogConfig.data"
+    @delete="confirmDelete"
   />
 </template>

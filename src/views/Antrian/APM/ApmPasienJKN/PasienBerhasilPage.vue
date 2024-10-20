@@ -101,17 +101,11 @@ const tiketAntrian = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/sidebar-icon/BPJS.svg"
-                    class="shrink-0 w-[30px] h-[30px]"
-                  />
+                  <BPJSIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->
-                <div
-                  class="px-2 py-1 font-bold rounded-xl text-adameds-300"
-                >
+                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
                   Pasien JKN
                 </div>
               </div>

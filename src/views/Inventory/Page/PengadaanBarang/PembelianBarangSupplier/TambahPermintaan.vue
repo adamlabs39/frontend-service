@@ -12,7 +12,8 @@ import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import DialogPermintaanMultiple from "./DialogPermintaanMultiple.vue";
+import DialogPermintaanMultiple from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/DialogPermintaanMultiple.vue";
+
 
 function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit

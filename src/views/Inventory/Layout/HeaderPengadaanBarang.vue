@@ -17,7 +17,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["tambahPermintaan"]);
+const emit = defineEmits(["tambahPermintaan", "tambahRetur"]);
 const noPO = ref<string>("");
 
 // onMounted(() => {
@@ -51,6 +51,17 @@ const noPO = ref<string>("");
           "
           icon="PhPlus"
           label="Permintaan"
+          class="mr-[10px]"
+        />
+        <CustomButton
+          v-else-if="pageType == 'retur-penggantian-barang-supplier'"
+          @click="
+            pageType == 'retur-penggantian-barang-supplier'
+              ? emit('tambahRetur')
+              : ''
+          "
+          icon="PhPlus"
+          label="Retur"
           class="mr-[10px]"
         />
       </div>

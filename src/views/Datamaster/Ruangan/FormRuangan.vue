@@ -67,7 +67,7 @@ const schema = toTypedSchema(
     noRoom: yup.number().required("Nomor Kamar harus diisi"),
     kelasRuangan: yup.number().required("Kelas Ruangan harus dipilih"),
     status: yup.bool(),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({

@@ -22,7 +22,7 @@ import FormImplementation from "@/components/Fisioterapi/Implementation/FormImpl
 import FormEvaluation from "@/components/Fisioterapi/Evaluation/FormEvaluation.vue";
 import FormReassesment from "@/components/Fisioterapi/Reassesment/FormReassesment.vue";
 import FormOrderObat from "@/components/RekamMedis/OrderObat/AccordionOrderObat.vue";
-import FormOrderAlkes from "@/components/RekamMedis/OrderAlkes/FormOrderAlkes.vue";
+import FormOrderAlkes from "@/components/RekamMedis/OrderAlkes/AccordionOrderAlkes.vue";
 import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vue";
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";

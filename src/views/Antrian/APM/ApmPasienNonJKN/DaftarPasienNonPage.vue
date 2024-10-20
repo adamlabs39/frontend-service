@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -8,9 +9,12 @@ const router = useRouter();
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+const handleData = () => {
+  router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
 };
+// const handleBerhasil = () => {
+//   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+// };
 
 const props = defineProps({
   isDialogVisible: {
@@ -83,11 +87,7 @@ const props = defineProps({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/vector-plus.svg"
-                    class="shrink-0 w-[30px] h-[30px] p-[2px]"
-                  />
+                  <PlusIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->
@@ -126,7 +126,7 @@ const props = defineProps({
             <CustomButton
               label="Lanjutkan"
               class="w-2/5 mt-10 mr-5"
-              @click="handleBerhasil"
+              @click="handleData"
             />
           </div>
         </div>

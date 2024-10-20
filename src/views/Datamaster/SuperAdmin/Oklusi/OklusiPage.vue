@@ -52,7 +52,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchOklusiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -134,8 +134,8 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      system:"Referensi Sistem SATUSEHAT",
-      code:"Code SATUSEHAT",
+      system: "Referensi Sistem SATUSEHAT",
+      code: "Code SATUSEHAT",
       Display: "Display SATUSEHAT",
       Nama: "Oklusi",
       Status: "Status",
@@ -166,7 +166,14 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -214,15 +221,15 @@ const downloadExportExcel = async () => {
 };
 
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()  
-  dataUpload.append('file',file);
- 
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
   try {
     const response = await oklusiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchOklusiData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchOklusiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -331,7 +338,13 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Oklusi Gigi ${slotProps.data.code}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Oklusi Gigi ${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

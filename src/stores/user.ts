@@ -6,9 +6,28 @@ export const useUserStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(payload = {}) {
-      const response = await apiAuthGet("/user", payload);
-      return response;
+    // async getApi(payload = {}) {
+    //   const response = await apiAuthGet("/user", payload);
+    //   return response;
+    // },
+    async getApi(
+      params: {
+        page?: number;
+        limit?: number;
+       
+        payload?: object;
+      } = {}
+    ) {
+      const {
+        page = 1,
+        limit = 10,
+      
+        payload = {},
+      } = params;
+      return apiAuthGet(
+        `/user?page=${page}&total=${limit}`,
+        payload
+      );
     },
   },
 });
