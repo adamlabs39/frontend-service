@@ -324,8 +324,9 @@ const resetSearch = () => {
               </div>
             </div>
             </div>
-            <CustomInputNumber
+            <CustomTextfield
               label="No. Handphone"
+              v-model="phone"
               placeholder="08xx-xxxx-xxxx"
               class="col-span-6"
               :invalid="!!errors.phone"

@@ -105,7 +105,11 @@ interface Penjamin {
   penjaminUuid: string;
   harga: number;
 }
-const { remove, push, fields:filedsPenjamin } = useFieldArray<Penjamin>("tarifPenjamin");
+const {
+  remove,
+  push,
+  fields: filedsPenjamin,
+} = useFieldArray<Penjamin>("tarifPenjamin");
 
 const myPushFunction = () => {
   push({ penjaminUuid: "", harga: 0 });
@@ -167,7 +171,7 @@ watch(
           ...props.payload,
           unitPelayanan: props.payload.pelayanan[0].unitPelayanan,
           ruanganUuid: props.payload.ruangan[0].ruanganUuid,
-          tarifPenjamin:props.payload.penjamin
+          tarifPenjamin: props.payload.penjamin,
         });
       }
     } else {
@@ -178,7 +182,6 @@ watch(
 );
 </script>
 <template>
- 
   <CustomDialog
     width="600px"
     :visible="isDialogVisible"
@@ -200,6 +203,7 @@ watch(
             placeholder="Kode Tarif"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
+            :required="errors.code ? true : false"
           />
           <CustomTextfield
             v-model="name"
@@ -217,6 +221,7 @@ watch(
             place-holder="Pelayanan"
             :invalid="!!errors.unitPelayanan"
             :invalidMessage="errors.unitPelayanan"
+            :required="errors.unitPelayanan ? true : false"
           />
           <CustomSelect
             label="Ruangan"
@@ -228,6 +233,7 @@ watch(
             class="col-span-6"
             :invalid="!!errors.ruanganUuid"
             :invalidMessage="errors.ruanganUuid"
+            :required="errors.ruanganUuid ? true : false"
           />
           <DataTable
             :value="filedsPenjamin"

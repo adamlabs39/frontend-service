@@ -372,7 +372,7 @@ const grandTotalFormatted = computed(() => {
       {{ unitPelayananSelected }}
       <div
         v-if="method !== 'detail'"
-        class="flex flex-col overflow-hidden h-[25pc]"
+        class="flex flex-col overflow-hidden h-full"
       >
         <div class="flex flex-col h-full min-h-screen gap-5">
           <!-- Grid Section -->

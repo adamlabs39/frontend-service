@@ -10,24 +10,38 @@ export const useUserStore = defineStore({
     //   const response = await apiAuthGet("/user", payload);
     //   return response;
     // },
+    // async getApi(
+    //   params: {
+    //     page?: number;
+    //     limit?: number;
+    //     role?: string;
+    //     payload?: object;
+    //   } = {}
+    // ) {
+    //   const { page = 1, limit = 10, role = "", payload = {} } = params;
+    //   return apiAuthGet(
+    //     `/user?page=${page}&total=${limit}&role=${role}`,
+    //     payload
+    //   );
+    // },
     async getApi(
       params: {
         page?: number;
         limit?: number;
-       role?: string;
+        role?: string;
         payload?: object;
       } = {}
     ) {
-      const {
-        page = 1,
-        limit = 10,
-      role='',
-        payload = {},
-      } = params;
-      return apiAuthGet(
-        `/user?page=${page}&total=${limit}&role=${role}`,
-        payload
-      );
+      const { page = 1, limit = 10, role, payload = {} } = params;
+    
+      // Bangun URL secara dinamis
+      let url = `/user?page=${page}&total=${limit}`;
+      if (role) {
+        url += `&role=${role}`;
+      }
+    
+      return apiAuthGet(url, payload);
     },
+    
   },
 });
