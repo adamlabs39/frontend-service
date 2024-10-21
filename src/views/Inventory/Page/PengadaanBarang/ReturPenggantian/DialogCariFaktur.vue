@@ -13,6 +13,37 @@ const props = defineProps({
   },
 });
 
+const faktur = ref<any[]>([]);
+const selectedFaktur = ref<any[]>([]);
+
+onMounted(() => {
+  faktur.value = [
+    {
+      noPenerimaan: "TRM123456",
+      tglPenerimaan: "01-01-2024",
+      noFaktur: "FKT1234",
+      tglFaktur: "01-01-2024",
+      supplier: "PT.Sanbe",
+      datas: [
+        {
+          namaItems: "Paracetamol",
+          jumlahBeli: 2,
+          hargaSatuan: 1000,
+          satuanBeli: "Box/100",
+          jumlahPermintaan: 100000,
+        },
+      ],
+    },
+    {
+      noPenerimaan: "TRM123456",
+      tglPenerimaan: "01-01-2024",
+      noFaktur: "FKT1234",
+      tglFaktur: "01-01-2024",
+      supplier: "PT.Kimia Klinik",
+    },
+  ];
+});
+
 const alasan = ref("");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "reject"]);
@@ -62,7 +93,57 @@ const onSubmit = () => {
             </div>
           </div>
         </div>
-        looko
+        <DataTable
+          v-model:selection="selectedFaktur"
+          :value="faktur"
+          tableStyle="min-width: 50rem"
+          scrollable
+          scrollHeight="240px"
+          :pt="{ headerRow: 'text-SM' }"
+        >
+          <Column headerClass="bg-adameds-50" class="w-[40px]">
+            <template #header>
+              <div class="w-full font-semibold text-center text-SM">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="w-full text-center text-SM">
+                {{ slotProps.index + 1 }}
+              </div>
+            </template>
+          </Column>
+          <Column field="Nomor" headerClass="bg-adameds-50" class="w-[200px]">
+            <template #header>
+              <div class="font-semibold">Nomor</div>
+            </template>
+            <template #body="slotProps">
+                <div class="font-semibold underline text-SM">No Penerimaan</div>
+                <div class="text-SM">{{ slotProps.data.noPenerimaan }}</div>
+                <div class="font-semibold underline text-SM">No Faktur</div>
+                <div class="text-SM">{{ slotProps.data.noFaktur }}</div>
+            </template>
+          </Column>
+          <Column field="Tanggal" headerClass="bg-adameds-50"  class="w-[200px]">
+            <template #header>
+              <div class="font-semibold">Tanggal</div>
+            </template>
+            <template #body="slotProps">
+                <div class="font-semibold underline text-SM">Tgl Penerimaan</div>
+                <div class="text-SM">{{ slotProps.data.tglPenerimaan}}</div>
+                <div class="font-semibold underline text-SM">Tgl Faktur</div>
+                <div class="text-SM">{{ slotProps.data.tglFaktur }}</div>
+            </template>
+          </Column>
+          <Column field="Supplier" headerClass="bg-adameds-50"  class="w-[200px]">
+            <template #header>
+              <div class="font-semibold">Supplier</div>
+            </template>
+            <template #body="slotProps">
+               
+                <div class="text-SM">{{ slotProps.data.supplier}}</div>
+              
+            </template>
+          </Column>
+        </DataTable>
         <!-- <div>   </div> UNTUK TABEL -->
       </div>
     </template>

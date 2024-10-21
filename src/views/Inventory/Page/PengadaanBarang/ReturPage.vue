@@ -62,6 +62,10 @@ onMounted(() => {
       kategoriItem: "Medis",
       lokasiPenerima: "Gudang Farmasi",
       noPembelian: "PO8872",
+      noPenerimaan: "TRM123456",
+      tglPenerimaan: "01-01-2024",
+      noFaktur: "FKT1234",
+      tglFaktur: "01-01-2024",
       datas: [
         {
           namaItems: "Paracetamol",
