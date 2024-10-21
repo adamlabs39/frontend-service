@@ -62,6 +62,10 @@ const onSubmit = () => {
   alasan.value = "";
   closeDialog();
 };
+
+const tes = (data:any) => {
+  console.log(data);
+}
 </script>
 
 <template>
@@ -73,79 +77,86 @@ const onSubmit = () => {
   >
     <template #header>Faktur Penerimaan </template>
     <template #body>
-      <div class="pt-5">
-        <div class="flex items-center">
-          <div class="flex flex-col justify-center">
-            <div class="font-semibold underline text-SM">Lokasi Gudang</div>
-            <div class="font-normal text-normal">Gudang Farmasi</div>
-          </div>
-          <hr class="mt-1 mx-12 min-h-16 border-[1px] border-adameds-300" />
-          <div class="flex items-end gap-5">
-            <CustomTextfield
-              label="Cari No. Faktur"
-              placeholder="Cari Berdasarkan No. Faktur"
-              class="w-[350px]"
+      <div class="flex items-center py-4">
+        <div class="flex flex-col justify-center">
+          <div class="font-semibold underline text-SM">Lokasi Gudang</div>
+          <div class="font-normal text-normal">Gudang Farmasi</div>
+        </div>
+        <hr class="mx-10 min-h-16 border-[1px] border-adameds-300" />
+        <div class="flex items-end gap-5">
+          <CustomTextfield
+            label="Cari No. Faktur"
+            prepend-icon="PhMagnifyingGlass"
+            placeholder="Cari Berdasarkan No. Faktur"
+            class="w-[360px]"
+          />
+          <CustomDatePicker label="Tgl. Faktur" />
+          <div class="flex gap-2.5">
+            <CustomButton
+              class="my-auto"
+              label="Cari"
+              icon="PhMagnifyingGlass"
             />
-            <CustomDatePicker label="Tgl. Faktur" />
-            <div class="flex gap-2.5">
-              <CustomButton class="my-auto bg-danger-300" label="Cari" />
-              <CustomButton label="Reset" class="my-auto bg-adameds-300" />
-            </div>
+            <CustomButton
+              label="Reset"
+              class="my-auto bg-transparent"
+              border-color="border-adameds-300 border-2"
+              text-color="text-adameds-300"
+            />
           </div>
         </div>
-        <DataTable
-          v-model:selection="selectedFaktur"
-          :value="faktur"
-          tableStyle="min-width: 50rem"
-          scrollable
-          scrollHeight="240px"
-          :pt="{ headerRow: 'text-SM' }"
-        >
-          <Column headerClass="bg-adameds-50" class="w-[40px]">
-            <template #header>
-              <div class="w-full font-semibold text-center text-SM">No.</div>
-            </template>
-            <template #body="slotProps">
-              <div class="w-full text-center text-SM">
-                {{ slotProps.index + 1 }}
-              </div>
-            </template>
-          </Column>
-          <Column field="Nomor" headerClass="bg-adameds-50" class="w-[200px]">
-            <template #header>
-              <div class="font-semibold">Nomor</div>
-            </template>
-            <template #body="slotProps">
-                <div class="font-semibold underline text-SM">No Penerimaan</div>
-                <div class="text-SM">{{ slotProps.data.noPenerimaan }}</div>
-                <div class="font-semibold underline text-SM">No Faktur</div>
-                <div class="text-SM">{{ slotProps.data.noFaktur }}</div>
-            </template>
-          </Column>
-          <Column field="Tanggal" headerClass="bg-adameds-50"  class="w-[200px]">
-            <template #header>
-              <div class="font-semibold">Tanggal</div>
-            </template>
-            <template #body="slotProps">
-                <div class="font-semibold underline text-SM">Tgl Penerimaan</div>
-                <div class="text-SM">{{ slotProps.data.tglPenerimaan}}</div>
-                <div class="font-semibold underline text-SM">Tgl Faktur</div>
-                <div class="text-SM">{{ slotProps.data.tglFaktur }}</div>
-            </template>
-          </Column>
-          <Column field="Supplier" headerClass="bg-adameds-50"  class="w-[200px]">
-            <template #header>
-              <div class="font-semibold">Supplier</div>
-            </template>
-            <template #body="slotProps">
-               
-                <div class="text-SM">{{ slotProps.data.supplier}}</div>
-              
-            </template>
-          </Column>
-        </DataTable>
-        <!-- <div>   </div> UNTUK TABEL -->
       </div>
+      <DataTable
+        v-model:selection="selectedFaktur"
+        :value="faktur"
+        @row-click="tes"
+        tableStyle="min-width: 50rem"
+        scrollable
+        scrollHeight="240px"
+        :pt="{ headerRow: 'text-SM' }"
+      >
+        <Column headerClass="bg-adameds-50" class="w-[40px]">
+          <template #header>
+            <div class="w-full font-semibold text-center text-SM">No.</div>
+          </template>
+          <template #body="slotProps">
+            <div class="w-full text-center text-SM">
+              {{ slotProps.index + 1 }}
+            </div>
+          </template>
+        </Column>
+        <Column field="Nomor" headerClass="bg-adameds-50" class="w-[200px]">
+          <template #header>
+            <div class="font-semibold">Nomor</div>
+          </template>
+          <template #body="slotProps">
+            <div class="font-semibold underline text-SM">No Penerimaan</div>
+            <div class="text-SM">{{ slotProps.data.noPenerimaan }}</div>
+            <div class="font-semibold underline text-SM">No Faktur</div>
+            <div class="text-SM">{{ slotProps.data.noFaktur }}</div>
+          </template>
+        </Column>
+        <Column field="Tanggal" headerClass="bg-adameds-50" class="w-[200px]">
+          <template #header>
+            <div class="font-semibold">Tanggal</div>
+          </template>
+          <template #body="slotProps">
+            <div class="font-semibold underline text-SM">Tgl Penerimaan</div>
+            <div class="text-SM">{{ slotProps.data.tglPenerimaan }}</div>
+            <div class="font-semibold underline text-SM">Tgl Faktur</div>
+            <div class="text-SM">{{ slotProps.data.tglFaktur }}</div>
+          </template>
+        </Column>
+        <Column field="Supplier" headerClass="bg-adameds-50" class="w-[200px]">
+          <template #header>
+            <div class="font-semibold">Supplier</div>
+          </template>
+          <template #body="slotProps">
+            <div class="text-SM">{{ slotProps.data.supplier }}</div>
+          </template>
+        </Column>
+      </DataTable>
+      <!-- <div>   </div> UNTUK TABEL -->
     </template>
     <template #footer>
       <div class="flex justify-end">

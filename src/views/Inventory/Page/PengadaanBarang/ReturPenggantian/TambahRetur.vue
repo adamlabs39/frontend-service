@@ -15,7 +15,6 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import DialogPermintaanMultiple from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/DialogPermintaanMultiple.vue";
 import DialogCariFaktur from "./DialogCariFaktur.vue";
 
-
 function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
   return `PO${randomNumber}`; // Gabungkan dengan "PO"
@@ -35,20 +34,19 @@ const props = defineProps({
 //   console.log(props.pageType);
 // });
 
-
 const emit = defineEmits(["kembali", "onSimpanPembelian"]);
 
 const dataPembelians = ref<any[]>([]);
 
-const tambahPermintaanSchema = toTypedSchema(
+const tambahReturSchema = toTypedSchema(
   yup.object({
     noPembelian: yup.string(),
-    lokasiPenerima: yup.string(),
-    kategoriItem: yup.string().required("Harus diisi"),
+    alasanRetur: yup.string(),
+    asalLokasiGudang: yup.string().required("Harus diisi"),
     jenisItem: yup.string().required("Harus Diisi"),
     jenisStok: yup.string().required("Harus Diisi"),
     supplier: yup.string().required("Harus Diisi"),
-    tanggalPembelian: yup
+    tglRetur: yup
       .date()
       .default(() => new Date())
       .required("Harus Diisi"),
@@ -59,36 +57,36 @@ const tambahPermintaanSchema = toTypedSchema(
     ppn: yup.bool().default(false),
     isCito: yup.bool().default(false),
     status: yup.string(),
-    petugasPembuatPO:yup.string()
+    petugasPembuatPO: yup.string(),
   })
 );
 
 const { handleSubmit, resetForm, defineField } = useForm({
-  validationSchema: tambahPermintaanSchema,
+  validationSchema: tambahReturSchema,
   initialValues: {
     noPembelian: generateRandomNoPembelian(),
-    lokasiPenerima: "",
-    kategoriItem: "",
+    alasanRetur: "",
+    asalLokasiGudang: "",
     jenisItem: "",
     jenisStok: "",
     supplier: "",
-    tanggalPembelian: undefined,
+    tglRetur: undefined,
     metodePembelian: "",
     catatan: "",
     diskon: 0,
     materai: 0,
     status: "PENGAJUAN",
-  petugasPembuatPO: "Nama Petugas"
+    petugasPembuatPO: "Nama Petugas",
   },
 });
 
 const [noPembelian] = defineField("noPembelian");
-const [lokasiPenerima] = defineField("lokasiPenerima");
-const [kategoriItem] = defineField("kategoriItem");
+const [alasanRetur] = defineField("alasanRetur");
+const [asalLokasiGudang] = defineField("asalLokasiGudang");
 const [jenisItem] = defineField("jenisItem");
 const [jenisStok] = defineField("jenisStok");
 const [supplier] = defineField("supplier");
-const [tanggalPembelian] = defineField("tanggalPembelian");
+const [tglRetur] = defineField("tglRetur");
 const [metodePembelian] = defineField("metodePembelian");
 const [catatan] = defineField("catatan");
 const [diskon] = defineField("diskon");
@@ -98,14 +96,16 @@ const [isCito] = defineField("isCito");
 const [status] = defineField("status");
 const [petugasPembuatPO] = defineField("petugasPembuatPO");
 
-const listLokasiPenerimas = ref([
-  { id: 1, value: "Gudang Farmasi" },
-  { id: 2, value: "Gudang Rawat Jalan" },
+const listAlasanReturs = ref([
+  { id: 1, value: "Rusak" },
+  { id: 2, value: "Kadaluarsa" },
+  { id: 3, value: "Salah/Ingin diganti" },
+  { id: 4, value: "Sisa Pemakaian Ruangan" },
 ]);
 
-const listKategoriItems = ref([
-  { id: 1, value: "Medis" },
-  { id: 2, value: "Non Medis" },
+const listAsalLokasiGudangs = ref([
+  { id: 1, value: "Gudang Farmasi" },
+  { id: 2, value: "Gudang Rawat Jalan" },
 ]);
 
 const listJenisItems = ref([
@@ -175,8 +175,8 @@ const onSubmit = handleSubmit((values) => {
     datas: JSON.parse(JSON.stringify(dataPembelians.value)), // Tambahkan data dari tabel
     totalItem: dataPembelians.value.length,
   };
-    console.log("Submitted with", payload);
-  emit('onSimpanPembelian', payload)
+  console.log("Submitted with", payload);
+  emit("onSimpanPembelian", payload);
 });
 
 const resetFormFields = () => {
@@ -187,8 +187,8 @@ const resetFormFields = () => {
 const isDialogVisible = ref(false);
 
 const dialogCariFakturConfig = () => {
-    isDialogVisible.value = true
-}
+  isDialogVisible.value = true;
+};
 </script>
 
 <template>
@@ -225,36 +225,38 @@ const dialogCariFakturConfig = () => {
           </div>
         </template>
         <template #content>
-            <div class="flex gap-5 pt-2.5">
-                <CustomDatePicker
-                v-model="tanggalPembelian"
-                label="Tgl. Retur"
-                class="w-[150px]"
-              />
-              <CustomSelect
-                label="Alasan Retur"
-                class="w-[200px]"
-                v-model:modelValue="lokasiPenerima"
-                :options="listLokasiPenerimas"
-                optionLabel="value"
-                optionValue="value"
-              />
-              <CustomSelect
-                label="Asal Lokasi Gudang"
-                class="w-[300px]"
-                v-model:modelValue="kategoriItem"
-                :options="listKategoriItems"
-                optionLabel="value"
-                optionValue="value"
-              />
-              <CustomTextfield
-                label="Catatan"
-                placeholder="Catatan"
-                class="grow"
-                v-model:modelValue="catatan"
-              />
-            </div>
-            <hr class="mt-2 border-grey-200" />
+          <div class="flex gap-5 pt-2.5">
+            <CustomDatePicker
+              v-model="tglRetur"
+              label="Tgl. Retur"
+              class="w-[150px]"
+            />
+            <CustomSelect
+              label="Alasan Retur"
+              class="w-[200px]"
+              v-model:modelValue="alasanRetur"
+              :options="listAlasanReturs"
+              optionLabel="value"
+              optionValue="value"
+              place-holder="Pilih Alasan Retur"
+            />
+            <CustomSelect
+              label="Asal Lokasi Gudang"
+              class="w-[300px]"
+              v-model:modelValue="asalLokasiGudang"
+              :options="listAsalLokasiGudangs"
+              optionLabel="value"
+              optionValue="value"
+              place-holder="Pilih Asal Lokasi Gudang "
+            />
+            <CustomTextfield
+              label="Catatan"
+              placeholder="Catatan"
+              class="grow"
+              v-model:modelValue="catatan"
+            />
+          </div>
+          <hr class="mt-2 border-grey-200" />
         </template>
         <template #collapseIcon>
           <CustomButton
@@ -285,11 +287,10 @@ const dialogCariFakturConfig = () => {
           @click="dialogCariFakturConfig"
         />
       </div>
-      <DialogCariFaktur v-model:isDialogVisible="isDialogVisible"/>
+      <DialogCariFaktur v-model:isDialogVisible="isDialogVisible" />
     </template>
     <template #footer>
       <hr class="pt-2 border-grey-200" />
-      
     </template>
   </Card>
 </template>
