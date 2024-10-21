@@ -39,7 +39,7 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isDeleteDialogVisible.value = true;
 };
-const emit = defineEmits(["deleteItem"]);
+const emit = defineEmits(["deleteItem","updated"]);
 
 const confirmDelete = () => {
   if (dialogConfig.value.data) {
@@ -164,6 +164,7 @@ const confirmDelete = () => {
             label=""
             background-color="bg-[#3D84E5] rounded-lg"
             class="h-6 w-[26px] p-0"
+            @click="FormTindakanDialog('edit', 'Edit Data', slotProps.data)"
           >
             <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>
@@ -191,6 +192,8 @@ const confirmDelete = () => {
     :title="dialogConfig.title"
     :method="dialogConfig.method"
     :payload="dialogConfig.data"
+    @data-updated="$emit('updated')"
+
   />
   <DialogDelete
     v-model:isDialogVisible="isDeleteDialogVisible"

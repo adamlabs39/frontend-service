@@ -234,6 +234,7 @@ const resetForm = () => {
                 <TablesTindakan
                   :payload="tindakanPayload"
                   @deleteItem="handleDeleteItem"
+                  @updated="fetchTarifData()"
                 />
               </div>
               <div v-else class="h-full">
@@ -245,6 +246,7 @@ const resetForm = () => {
                 <TablesRuangan
                   :payload="ruanganPayload"
                   @deleteItem="handleDeleteItem"
+                   @updated="fetchTarifData()"
                 />
               </div>
               <div v-else class="h-full">

@@ -14,18 +14,18 @@ export const useUserStore = defineStore({
       params: {
         page?: number;
         limit?: number;
-       
+       role?: string;
         payload?: object;
       } = {}
     ) {
       const {
         page = 1,
         limit = 10,
-      
+      role='',
         payload = {},
       } = params;
       return apiAuthGet(
-        `/user?page=${page}&total=${limit}`,
+        `/user?page=${page}&total=${limit}&role=${role}`,
         payload
       );
     },

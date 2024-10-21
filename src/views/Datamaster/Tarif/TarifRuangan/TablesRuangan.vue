@@ -33,7 +33,7 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isDeleteDialogVisible.value = true;
 };
-const emit = defineEmits(["deleteItem"]);
+const emit = defineEmits(["deleteItem", "updated"]);
 
 const confirmDelete = () => {
   if (dialogConfig.value.data) {
@@ -185,16 +185,14 @@ const confirmDelete = () => {
           >
           </Column>
           <Column
-
             field="harga"
-            header-class="text-white bg-adameds-300 font-semibold text-SM"
+            header-class="font-semibold text-white bg-adameds-300 text-SM"
             bodyClass="text-end"
-
           >
-          <template #header>
-                      <div class="w-full text-end">Harga Tarif</div>
-                    </template>
-        </Column>
+            <template #header>
+              <div class="w-full text-end">Harga Tarif</div>
+            </template>
+          </Column>
         </DataTable>
       </div>
     </template>
@@ -204,6 +202,7 @@ const confirmDelete = () => {
     :title="dialogConfig.title"
     :method="dialogConfig.method"
     :payload="dialogConfig.data"
+    @data-updated="$emit('updated')"
   />
   <DialogDelete
     v-model:isDialogVisible="isDeleteDialogVisible"

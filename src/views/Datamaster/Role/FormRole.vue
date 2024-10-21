@@ -471,7 +471,7 @@ watch(
             label="Simpan"
             @click="onSubmit"
           />
-          <CustomButton v-if="method === 'detail'" label="Edit" />
+          <CustomButton v-if="method === 'detail'" label="Edit"  @click="handleEdit" />
         </div>
       </div>
     </template>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, type PropType, computed, watch,defineExpose } from "vue";
+import { ref, type PropType, computed, watch, defineExpose } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -44,8 +44,7 @@ const emit = defineEmits([
   "update:selectedFilter",
   "update:selectedFilterSecond",
   "search",
-  "reset"
-  
+  "reset",
 ]);
 
 const pageLabel = computed(() => {
@@ -106,8 +105,8 @@ const valueSelectedFilterSecond = ref();
 
 const resetForm = () => {
   valueSearch.value = ""; // Mengatur ulang pencarian
-  valueSelectedFilter.value = ''; // Reset filter pertama
-  valueSelectedFilterSecond.value = ''; // Reset filter kedua
+  valueSelectedFilter.value = ""; // Reset filter pertama
+  valueSelectedFilterSecond.value = ""; // Reset filter kedua
   // emit("reset");
 };
 
@@ -248,16 +247,24 @@ interface FilterChip {
                 : 'Pilih Kategori'
             "
             :options="props.filterSelect"
-            :optionValue="props.pageType === 'ruangan'
+            :optionValue="
+              props.pageType === 'ruangan'
                 ? 'uuid'
                 : props.pageType === 'tarif'
                 ? 'value'
-                : ''"
-            :optionLabel="props.pageType === 'ruangan'
+                : props.pageType === 'user'
+                ? 'name'
+                : ''
+            "
+            :optionLabel="
+              props.pageType === 'ruangan'
                 ? 'name'
                 : props.pageType === 'tarif'
                 ? 'label'
-                : ''"
+                : props.pageType === 'user'
+                ? 'name'
+                : ''
+            "
             @update:modelValue="
               $emit('update:selectedFilter', valueSelectedFilter)
             "
@@ -281,16 +288,20 @@ interface FilterChip {
                 : 'Pilih Kelas'
             "
             :options="props.filterSelectSecond"
-            :optionValue="props.pageType === 'ruangan'
+            :optionValue="
+              props.pageType === 'ruangan'
                 ? 'value'
                 : props.pageType === 'tarif'
                 ? 'uuid'
-                : ''"
-            :optionLabel="props.pageType === 'ruangan'
+                : ''
+            "
+            :optionLabel="
+              props.pageType === 'ruangan'
                 ? 'label'
                 : props.pageType === 'tarif'
                 ? 'name'
-                : ''"
+                : ''
+            "
             @update:modelValue="
               $emit('update:selectedFilterSecond', valueSelectedFilterSecond)
             "
@@ -299,7 +310,11 @@ interface FilterChip {
             class="flex gap-2.5"
             v-if="['user', 'ruangan', 'tarif'].includes(pageType)"
           >
-            <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="$emit('search')" />
+            <CustomButton
+              label="Cari"
+              icon="PhMagnifyingGlass"
+              @click="$emit('search')"
+            />
             <CustomButton
               label="Reset"
               background-color="bg-white"

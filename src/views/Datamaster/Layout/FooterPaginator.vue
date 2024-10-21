@@ -85,5 +85,8 @@ const onError = (event: any) => {
     />
   </div>
 </template>
-
-
+<style scoped>
+:deep(.p-button-label){
+  @apply font-semibold;
+}
+</style>

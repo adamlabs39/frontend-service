@@ -45,6 +45,16 @@ const handleReset = () => {
   fetchRuanganData(); 
 };
 
+const resetFormRef = ref();
+
+const resetForm = () => {
+  searchQuery.value = ""; 
+  selectedKategoriRuangan.value = "";
+  selectedKelas.value = ""; 
+  ruanganProperties.value.page = 1;
+  resetFormRef.value.resetForm(); 
+};
+
 // Fetch Ruangan Data from API
 const fetchRuanganData = async () => {
   UseUtilsStore.setLoading(true);
@@ -264,15 +274,7 @@ const handleFileUpload = async (file: File) => {
   }
 };
 
-const resetFormRef = ref();
 
-const resetForm = () => {
-  searchQuery.value = ""; 
-  selectedKategoriRuangan.value = "";
-  selectedKelas.value = ""; 
-  ruanganProperties.value.page = 1;
-  resetFormRef.value.resetForm(); 
-};
 </script>
 
 <template>
