@@ -65,7 +65,7 @@ const onRegisterMethodSelect = (label: string) => {
 // !SECTION
 
 // SECTION Rawat Inap
-const filterRoomList = ref(["MAWAR", "MELATI", "ANGGREK"]);
+const filterRoomList = ref(["101", "MAWAR", "MELATI", "ANGGREK"]);
 const selectedFilterRoom = ref<string[]>([]);
 const onFilterRoomSelect = (label: string) => {
   if (selectedFilterRoom.value.includes(label)) {
@@ -91,7 +91,10 @@ const onFilterBedRoomSelect = (label: string) => {
 // !SECTION
 
 // SECTION IGD
-const filterPatientList = ref(["DATA LENGKAP", "DATA TIDAK LENGKAP"]);
+const filterPatientList = ref([
+  { name: "DATA LENGKAP", value: "0" },
+  { name: "DATA TIDAK LENGKAP", value: "1" },
+]);
 const selectedFilterPatient = ref<string[]>([]);
 const onFilterPatientSelect = (label: string) => {
   if (selectedFilterPatient.value.includes(label)) {
@@ -156,10 +159,23 @@ const searchData = () => {
       ? ""
       : selectedPaymentMethod.value[0];
   // FIXME Belum bisa multiple
-  filter.platform = selectedFilterRegisterMethod.value[0];
-  filter.poly = selectedFilterPoli.value[0];
-  // FIXME Belum bisa berjalan
-  filter.dpjp = searchDPJPFilter.value;
+  if (props.pageType == "rawat-jalan") {
+    filter.platform = selectedFilterRegisterMethod.value[0];
+    filter.poly = selectedFilterPoli.value[0];
+  }
+  // FIXME Belum bisa multiple
+  if (props.pageType == "rawat-inap") {
+    filter.room = selectedFilterRoom.value[0];
+  }
+  if (props.pageType == "igd") {
+    filter.withoutIdentity =
+      selectedFilterPatient.value.length > 1 ||
+      !selectedFilterPatient.value.length
+        ? ""
+        : selectedFilterPatient.value[0];
+  }
+  // FIXME Belum bisa berjalan di RJ
+  filter.dpjp = searchDPJPFilter.value ?? "";
 
   return filter;
 };
@@ -174,7 +190,11 @@ defineExpose({
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <CustomButton icon="PhArrowClockwise" class="mr-5" />
+          <CustomButton
+            @click="emit('search')"
+            icon="PhArrowClockwise"
+            class="mr-5"
+          />
           <span v-if="!isSEP" class="leading-10 text-adameds-300 text-heading">
             {{
               pageType == "rawat-jalan"
@@ -224,8 +244,8 @@ defineExpose({
               uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
               name: 'Rudi tabuti',
             },
-            { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-            { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
+            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f8', name: 'dr. Ali' },
+            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f7', name: 'dr. Doom' },
           ]"
           prependIcon="PhMagnifyingGlass"
         />
@@ -326,7 +346,7 @@ defineExpose({
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Ruangan</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(room, index) in filterRoomList"
                 :key="room + index"
@@ -337,7 +357,7 @@ defineExpose({
               />
             </div>
           </div>
-          <div class="flex my-[10px]">
+          <!-- <div class="flex my-[10px]">
             <div class="w-[15%]">Filter Kamar</div>
             <div class="flex">
               |
@@ -350,19 +370,20 @@ defineExpose({
                 @selected="onFilterBedRoomSelect"
               />
             </div>
-          </div>
+          </div> -->
         </div>
         <div v-else-if="pageType == 'igd'">
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Pasien</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(patientType, index) in filterPatientList"
-                :key="patientType + index"
-                :label="patientType"
+                :key="patientType.name + index"
+                :label="patientType.name"
+                :value="patientType.value"
                 class="ml-[10px]"
-                :isSelected="selectedFilterPatient.includes(patientType)"
+                :isSelected="selectedFilterPatient.includes(patientType.value)"
                 @selected="onFilterPatientSelect"
               />
             </div>
@@ -371,7 +392,7 @@ defineExpose({
         <div v-if="!isSEP" class="flex my-[10px]">
           <div class="w-[15%]">Filter Pembayaran</div>
           <div class="flex">
-            |
+            <div class="h-5 my-auto border border-grey-300"></div>
             <CustomChip
               label="TUNAI"
               value="1"

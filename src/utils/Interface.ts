@@ -42,4 +42,6 @@ export interface FilterAdmisi {
   startDate?: string;
   endDate?: string;
   dpjp?: string;
+  room?: string;
+  withoutIdentity?: string;
 }
