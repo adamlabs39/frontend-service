@@ -129,6 +129,8 @@ const onSubmit = handleSubmit(async (values) => {
     } else if (method.value === "add") {
       console.log("Adding new data with values:", allData);
       const response = await roleStore.postApi(allData);
+      console.log("Adding response:", response);
+
       emit("data-updated");
     }
     closeDialog();
@@ -136,8 +138,6 @@ const onSubmit = handleSubmit(async (values) => {
     console.error("Failed to process the data:", error);
   }
 });
-
-
 
 // Update checked status
 const updateCheckedStatus = (
@@ -172,7 +172,7 @@ const updateCheckedStatus = (
   ) {
     // Update specific sub-module
     const subModule =
-    initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex];
+      initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex];
     subModule.checked = checked;
     subModule.features.forEach((feature) => {
       feature.checked = checked;
@@ -196,7 +196,7 @@ const updateCheckedStatus = (
     });
   } else if (typeof allowIndex !== "undefined") {
     const allow =
-    initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex]
+      initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex]
         .features[featureIndex].allows[allowIndex];
     allow.checked = checked;
   }
@@ -281,9 +281,9 @@ initialPermissionsState.value.forEach((module, moduleIndex) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -295,7 +295,7 @@ const handleEdit = () => {
   title.value = "Edit Data";
 };
 
-const resetCheckBox =()=>{
+const resetCheckBox = () => {
   initialPermissionsState.value.forEach((module) => {
     module.checked = false;
     module.sub_modules.forEach((subModule) => {
@@ -311,14 +311,14 @@ const resetCheckBox =()=>{
       });
     });
   });
-} 
+};
 
 // Close dialog
 const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetDialogMode();
   resetForm();
-  resetCheckBox()
+  resetCheckBox();
 };
 
 // Watch for dialog visibility changes
@@ -335,10 +335,11 @@ watch(
     } else {
       resetForm();
       resetDialogMode();
-      resetCheckBox()
+      resetCheckBox();
     }
   }
 );
+
 </script>
 
 <template>
@@ -424,12 +425,12 @@ watch(
         <CustomInfoRow label="Modul">
           <template #value>
             <div
-              v-if="payload.permission && payload.permission.length"
+              v-if="payload.permissions && payload.permissions.length"
               class="flex flex-wrap w-full h-full gap-1"
             >
               <CustomChip
-                v-for="permission in payload.permission"
-                :label="permission"
+                v-for="permission in payload.permissions"
+                :label="permission.module"
                 textColor="text-white"
                 bgColor="bg-adameds-300"
                 borderColor="border-none"
@@ -471,7 +472,11 @@ watch(
             label="Simpan"
             @click="onSubmit"
           />
-          <CustomButton v-if="method === 'detail'" label="Edit" />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

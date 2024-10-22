@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import { useRoleStore } from "@/stores/datamaster/role";
+import { useUserStore } from "@/stores/user";
 import { usePermissionStore } from "@/stores/datamaster/permission";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -17,7 +18,21 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
+const props = defineProps({
+  title: {
+    type: String,
+  },
+  method: {
+    type: String,
+  },
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
 const permissionsStore = usePermissionStore();
+const userStore = useUserStore();
 
 const praktisiStore = usePraktisiStore();
 const faskesStore = useFaskesStore();
@@ -30,57 +45,59 @@ const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = computed(() =>
   toTypedSchema(
-    yup.object({
-      faskesUuid: yup.string(),
-      praktisiUuid: yup.string(),
-      phone: yup
-        .string()
-        .required("No. Handhpone harus diisi")
-        .matches(phoneRegExp, "Format tidak sesuai"),
-      email: yup
-        .string()
-        .required("Email harus diisi")
-        .email("Format email tidak sesuai")
-        .required("Email harus diisi"),
-      username: yup.string().required("Username harus diisi"),
-      password: yup
-        .string()
-        .min(8, "Password minimal 8 karakter")
-        .matches(
-          /[A-Z]/,
-          "Password harus mengandung setidaknya satu huruf besar"
-        )
-        .matches(
-          /[a-z]/,
-          "Password harus mengandung setidaknya satu huruf kecil"
-        )
-        .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-        .matches(
-          /[!@#$%^&*(),.?":{}|<>]/,
-          "Password harus mengandung setidaknya satu simbol khusus"
-        )
-        .required("Password harus diisi"),
-      confirmPassword: yup
-        .string()
-        .min(8, "Password minimal 8 digit")
-        .matches(
-          /[A-Z]/,
-          "Password harus mengandung setidaknya satu huruf besar"
-        )
-        .matches(
-          /[a-z]/,
-          "Password harus mengandung setidaknya satu huruf kecil"
-        )
-        .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-        .matches(
-          /[!@#$%^&*(),.?":{}|<>]/,
-          "Password harus mengandung setidaknya satu simbol khusus"
-        )
-        .required("Password harus diisi")
-        .oneOf([yup.ref("password")], "Password tidak sama"),
-      status: yup.bool(),
-      permission: yup.bool(),
-    }).noUnknown()
+    yup
+      .object({
+        faskesUuid: yup.string(),
+        praktisiUuid: yup.string(),
+        phone: yup
+          .string()
+          .required("No. Handhpone harus diisi")
+          .matches(phoneRegExp, "Format tidak sesuai"),
+        email: yup
+          .string()
+          .required("Email harus diisi")
+          .email("Format email tidak sesuai")
+          .required("Email harus diisi"),
+        username: yup.string().required("Username harus diisi"),
+        password: yup
+          .string()
+          .min(8, "Password minimal 8 karakter")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi"),
+        confirmPassword: yup
+          .string()
+          .min(8, "Password minimal 8 digit")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi")
+          .oneOf([yup.ref("password")], "Password tidak sama"),
+        status: yup.bool(),
+        permission: yup.bool(),
+      })
+      .noUnknown()
   )
 );
 
@@ -147,8 +164,6 @@ onMounted(() => {
   fetchRole();
 });
 
-
-
 const initialPermissionsState = ref(
   permissionsStore.permissionsItem.map((item) => ({
     module: item.module,
@@ -175,7 +190,8 @@ const initialPermissionsState = ref(
     })),
   }))
 );
-const onSubmit = () => {
+
+const onSubmit = handleSubmit(async (values: any) => {
   const permissions = initialPermissionsState.value
     .filter((module) => module.checked)
     .map((module) => ({
@@ -201,14 +217,26 @@ const onSubmit = () => {
             : [],
         })),
     }));
-   
 
-  console.log("Adding new data with values:", permissions);
-
-};
+  try {
+    if (props.method === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await userStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await userStore.postApi(values);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
 
 const selectedPraktisi = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
-  const searchPraktisi = () => {
+const searchPraktisi = () => {
   // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
   selectedPraktisi.value = praktisiPayload.value.find(
     (praktisi) => praktisi.uuid === praktisiUuid.value
@@ -300,32 +328,46 @@ const resetSearch = () => {
                 text-color="text-adameds-300"
                 @click="resetSearch"
               />
-            </div>          
+            </div>
             <div v-if="selectedPraktisi" class="col-span-12">
-              
               <div
-              class="grid grid-flow-col grid-cols-12 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
-            >
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Nama Pegawai</div>
-                <div class="font-normal text-normal">{{ selectedPraktisi.pegawai.name }}</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">NIK</div>
-                <div class="font-normal text-normal">{{ selectedPraktisi.pegawai.nik }}</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Tanggal Lahir</div>
-                <div class="font-normal text-normal">{{ selectedPraktisi.pegawai.tanggalLahir }}</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Jenis Kelamin</div>
-                <div class="font-normal text-normal">{{ selectedPraktisi.pegawai.gender }}</div>
+                class="grid grid-flow-col grid-cols-12 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
+              >
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Nama Pegawai
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.name }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">NIK</div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.nik }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Tanggal Lahir
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.tanggalLahir }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Jenis Kelamin
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.gender }}
+                  </div>
+                </div>
               </div>
             </div>
-            </div>
-            <CustomInputNumber
+            <CustomTextfield
               label="No. Handphone"
+              v-model="phone"
               placeholder="08xx-xxxx-xxxx"
               class="col-span-6"
               :invalid="!!errors.phone"

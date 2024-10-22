@@ -29,33 +29,45 @@ const searchQuery = ref<string>("");
 const selectedKategoriRuangan = ref("");
 const selectedKelas = ref("");
 
-const handleSearchQuery = (searchValue:string) => {
+const handleSearchQuery = (searchValue: string) => {
   searchQuery.value = searchValue;
 };
-const handleSelectedKategoriRuangan = (selectedValue:any) => {
+const handleSelectedKategoriRuangan = (selectedValue: any) => {
   selectedKategoriRuangan.value = selectedValue;
 };
-const handleSelectedKelas = (selectedValue:any) => {
+const handleSelectedKelas = (selectedValue: any) => {
   selectedKelas.value = selectedValue;
 };
 
 // Reset filter fields
 const handleReset = () => {
   resetForm();
-  fetchRuanganData(); 
+  fetchRuanganData();
+};
+
+const resetFormRef = ref();
+
+const resetForm = () => {
+  searchQuery.value = "";
+  selectedKategoriRuangan.value = "";
+  selectedKelas.value = "";
+  ruanganProperties.value.page = 1;
+  resetFormRef.value.resetForm();
 };
 
 // Fetch Ruangan Data from API
 const fetchRuanganData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    
     const response = await ruanganStore.getApi({
       page: ruanganProperties.value.page,
       limit: ruanganProperties.value.page_size,
       name: searchQuery.value,
-      kategori_ruangan_uuid: selectedKategoriRuangan.value !== null ? selectedKategoriRuangan.value : '',
-      kelas_ruangan: selectedKelas.value !== null ? selectedKelas.value : '', 
+      kategori_ruangan_uuid:
+        selectedKategoriRuangan.value !== null
+          ? selectedKategoriRuangan.value
+          : "",
+      kelas_ruangan: selectedKelas.value !== null ? selectedKelas.value : "",
     });
 
     if (response && response.payload) {
@@ -70,7 +82,6 @@ const fetchRuanganData = async () => {
   } finally {
     UseUtilsStore.setLoading(false);
   }
-
 };
 
 const fetchKategoriRuangan = async () => {
@@ -172,17 +183,14 @@ const downloadExportExcel = async () => {
       No: "No",
       Kode: "Kode Ruangan",
       Nama: "Nama Ruangan",
-      Kategori: "Kategori Ruangan",
-      NomorKamar: "Nomor Kamar",
-      KelasRuangan: "Kelas Ruangan",
-      Status: "Status",
+    
     });
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        
       });
     }
 
@@ -204,10 +212,7 @@ const downloadExportExcel = async () => {
       { wch: 5 },
       { wch: 20 },
       { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 10 },
+    
     ];
 
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -263,16 +268,6 @@ const handleFileUpload = async (file: File) => {
     console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
-
-const resetFormRef = ref();
-
-const resetForm = () => {
-  searchQuery.value = ""; 
-  selectedKategoriRuangan.value = "";
-  selectedKelas.value = ""; 
-  ruanganProperties.value.page = 1;
-  resetFormRef.value.resetForm(); 
-};
 </script>
 
 <template>
@@ -285,8 +280,8 @@ const resetForm = () => {
       <HeaderFilter
         page-type="ruangan"
         @update:valueSearch="handleSearchQuery"
-        @update:selectedFilter="handleSelectedKategoriRuangan" 
-        @update:selectedFilterSecond="handleSelectedKelas" 
+        @update:selectedFilter="handleSelectedKategoriRuangan"
+        @update:selectedFilterSecond="handleSelectedKelas"
         @tambah-data="openDialog('add', 'Tambah Data')"
         @reload-data="fetchRuanganData()"
         @search="fetchRuanganData()"
@@ -403,7 +398,13 @@ const resetForm = () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Ruangan ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Ruangan ${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

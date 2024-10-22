@@ -103,47 +103,59 @@ const optionsLab = ref([
 ]);
 
 const schema = toTypedSchema(
-  yup.object({
-    jenisTarif: yup.string().default("Tindakan"),
-    code: yup.string().required("Kode Tarif harus diisi"),
-    name: yup.string(),
-    grandTotal: yup.number(),
-    mode: yup.string(),
-    status: yup.bool().default(false),
-    isMcu: yup.bool().default(false),
-    unitPelayanan: yup.array().of(
-      yup.object({
-        unitPelayanan: yup.number().required("Unit Pelayanan harus dipilih"),
-      })
-    ),
-    penjamin: yup.array().of(
-      yup.object({
-        penjaminUuid: yup.string(),
-      })
-    ),
-    tindakanPoli: yup.array().of(
-      yup.object({
-        tindakanUuid: yup.string().required("Tindakan harus dipilih"),
-        listKomponenTarif: yup.array().of(
-          yup.object({
-            tarifKomponenUuid: yup
-              .string()
-              .required("Komponen Tarif harus dipilih"),
-            tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
-          })
-        ),
-      })
-    ),
-    tarifLab: yup.array().of(
-      yup.object({
-        tarifLabUuid: yup.string().when("isMcu", {
-          is: (value: boolean) => value === true,
-          then: (schema) => schema.required("Tarif Lab harus diisi"),
-          otherwise: (schema) => schema.notRequired(),
-        }),
-      })
-    ),
-  }).noUnknown()
+  yup
+    .object({
+      jenisTarif: yup.string().default("Tindakan"),
+      code: yup.string().required("Kode Tarif harus diisi"),
+      name: yup.string(),
+      grandTotal: yup.number(),
+      mode: yup.string(),
+      status: yup.bool().default(false),
+      isMcu: yup.bool().default(false),
+      unitPelayanan: yup.array().of(
+        yup.object({
+          unitPelayanan: yup.number().required("Unit Pelayanan harus dipilih"),
+        })
+      ),
+      penjamin: yup.array().of(
+        yup.object({
+          penjaminUuid: yup.string(),
+        })
+      ),
+      tindakanPoli: yup.array().of(
+        yup.object({
+          tindakanUuid: yup.string().required("Tindakan harus dipilih"),
+          listKomponenTarif: yup.array().of(
+            yup.object({
+              tarifKomponenUuid: yup
+                .string()
+                .required("Komponen Tarif harus dipilih"),
+              tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
+            })
+          ),
+        })
+      ),
+      tarifLab: yup.array().of(
+        yup.object({
+          tarifLabUuid: yup.string().when("isMcu", {
+            is: (value: boolean) => value === true,
+            then: (schema) => schema.required("Tarif Lab harus diisi"),
+            otherwise: (schema) => schema.notRequired(),
+          }),
+        })
+      ),
+      unitPelayananSelected: yup
+        .array()
+        .of(yup.number().required("Unit Pelayanan harus dipilih"))
+        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+        .required("Unit Pelayanan harus dipilih"),
+      penjaminSelected: yup
+        .array()
+        .of(yup.string().required("Penjamin harus dipilih"))
+        .min(1, "Minimal satu Penjamin harus dipilih")
+        .required("Penjamin harus dipilih"),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -173,7 +185,9 @@ interface Tindakan {
   tindakanUuid: string;
   listKomponenTarif: Array<ListKomponenTarif>;
 }
-
+interface Pelayanan {
+  unitPelayanan: string;
+}
 const {
   remove: removeTindakan,
   push: pushTindakan,
@@ -199,23 +213,18 @@ const removeListKomponenTarif = (
   );
 };
 
-// const onSubmit = handleSubmit(async (values) => {
-//   values.grandTotal = grandTotal.value;
-//   console.log(grandTotal)
-//   console.log(penjamin);
-
-//   console.log("Submitted luar with", values);
-// });
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     values.grandTotal = grandTotal.value;
+    // delete values.unitPelayananSelected;
+    delete values.penjaminSelected;
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("Data updated successfully:", values);
       const response = await tarifStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
@@ -235,18 +244,18 @@ const [isMcu] = defineField("isMcu");
 const [unitPelayanan] = defineField("unitPelayanan");
 const [penjamin] = defineField("penjamin");
 const [status] = defineField("status");
-const unitPelayananSelected = ref([]);
-const penjaminSelected = ref([]);
+const [unitPelayananSelected] = defineField("unitPelayananSelected");
+const [penjaminSelected] = defineField("penjaminSelected");
 
-watch(unitPelayananSelected, (newVal) => {
-  const formattedPelayanan = newVal.map((value) => ({ unitPelayanan: value }));
-  unitPelayanan.value = formattedPelayanan;
-});
+const handleUnitPelayananUpdate = (selectedValues: number[]) => {
+  unitPelayanan.value = selectedValues.map((value) => ({
+    unitPelayanan: value,
+  }));
+};
 
-watch(penjaminSelected, (newVal) => {
-  const formattedPenjamin = newVal.map((value) => ({ penjaminUuid: value }));
-  penjamin.value = formattedPenjamin;
-});
+const handleUnitPenjaminUpdate = (selectedValues: string[]) => {
+  penjamin.value = selectedValues.map((value) => ({ penjaminUuid: value }));
+};
 
 const {
   remove: removeTarifLab,
@@ -299,8 +308,19 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
+        const unitPelayananPayload =
+          props.payload.pelayanan?.map(
+            (item: { unitPelayanan: number }) => item.unitPelayanan
+          ) || [];
+        const penjaminPayload =
+          props.payload.penjamin?.map(
+            (item: { penjaminUuid: string }) => item.penjaminUuid
+          ) || [];
+
         setValues({
           ...props.payload,
+          unitPelayananSelected: unitPelayananPayload,
+          penjaminSelected: penjaminPayload,
         });
       }
     } else {
@@ -342,10 +362,11 @@ const grandTotalFormatted = computed(() => {
     <template #header>{{ title }} Tarif</template>
     <template #body>
       <!-- Form Input -->
-
+      {{ unitPelayanan }}
+      {{ unitPelayananSelected }}
       <div
         v-if="method !== 'detail'"
-        class="flex flex-col h-full overflow-hidden"
+        class="flex flex-col overflow-hidden h-full"
       >
         <div class="flex flex-col h-full min-h-screen gap-5">
           <!-- Grid Section -->
@@ -381,18 +402,26 @@ const grandTotalFormatted = computed(() => {
               v-model="unitPelayananSelected"
               :options="optionsPelayanan"
               optionValue="value"
+              @update:modelValue="handleUnitPelayananUpdate"
               optionLabel="label"
               placeholder="Pelayanan"
               class="col-span-6"
+              :invalid="!!errors.unitPelayananSelected"
+              :invalidMessage="errors.unitPelayananSelected"
+              :required="errors.unitPelayananSelected ? true : false"
             />
             <CustomMultiSelect
               label="Metode Pembayaran"
               v-model="penjaminSelected"
               :options="penjaminPayload"
+              @update:modelValue="handleUnitPenjaminUpdate"
               optionValue="uuid"
               optionLabel="name"
               placeholder="Metode Pembayaran"
               class="col-span-6"
+              :invalid="!!errors.penjaminSelected"
+              :invalidMessage="errors.penjaminSelected"
+              :required="errors.penjaminSelected ? true : false"
             />
           </div>
 
@@ -816,7 +845,7 @@ const grandTotalFormatted = computed(() => {
           </template>
         </CustomAccordion>
         <hr class="col-span-12 border-grey-200" />
-        <div class="flex items-center justify-end gap-4 col-span-12">
+        <div class="flex items-center justify-end col-span-12 gap-4">
           <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">
             Grand Total
           </div>
