@@ -213,13 +213,6 @@ const removeListKomponenTarif = (
   );
 };
 
-// const onSubmit = handleSubmit(async (values) => {
-//   values.grandTotal = grandTotal.value;
-//   console.log(grandTotal)
-//   console.log(penjamin);
-
-//   console.log("Submitted luar with", values);
-// });
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     values.grandTotal = grandTotal.value;
@@ -319,15 +312,15 @@ watch(
           props.payload.pelayanan?.map(
             (item: { unitPelayanan: number }) => item.unitPelayanan
           ) || [];
-        // const penjaminPayload =
-        //   props.payload.penjamin?.map(
-        //     (item: { penjaminUuid: string }) => item.penjaminUuid
-        //   ) || [];
+        const penjaminPayload =
+          props.payload.penjamin?.map(
+            (item: { penjaminUuid: string }) => item.penjaminUuid
+          ) || [];
 
         setValues({
           ...props.payload,
           unitPelayananSelected: unitPelayananPayload,
-          // penjaminSelected: penjaminPayload,
+          penjaminSelected: penjaminPayload,
         });
       }
     } else {
@@ -369,6 +362,7 @@ const grandTotalFormatted = computed(() => {
     <template #header>{{ title }} Tarif</template>
     <template #body>
       <!-- Form Input -->
+      {{ unitPelayanan }}
       {{ unitPelayananSelected }}
       <div
         v-if="method !== 'detail'"

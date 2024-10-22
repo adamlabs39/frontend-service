@@ -86,11 +86,18 @@ const removeSelect = (data: any) => {
   }
 };
 
+// const getLabel = (value: any) => {
+//   const findData: any = props.options.find(
+//     (data: any) => data[`${props.optionValue}`] == value
+//   );
+//   return findData[`${props.optionLabel}`];
+// };
+
 const getLabel = (value: any) => {
   const findData: any = props.options.find(
-    (data: any) => data[`${props.optionValue}`] == value
+    (data: any) => data?.[`${props.optionValue}`] == value
   );
-  return findData[`${props.optionLabel}`];
+  return findData ? findData[`${props.optionLabel}`] : "Unknown";
 };
 </script>
 

@@ -284,13 +284,14 @@ const downloadExportExcel = async () => {
             <div class="flex flex-wrap gap-2">
               <div
                 v-if="
-                  slotProps.data.permission &&
-                  slotProps.data.permission.length > 0
+                  slotProps.data.permissions &&
+                  slotProps.data.permissions.length > 0
                 "
+                class="flex flex-wrap w-full h-full gap-1"
               >
-                <div v-for="items in slotProps.data.permission" :key="items">
+                <div v-for="items in slotProps.data.permissions" :key="items">
                   <CustomChip
-                    :label="items"
+                    :label="items.module"
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
