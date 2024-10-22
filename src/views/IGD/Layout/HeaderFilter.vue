@@ -100,6 +100,7 @@ const executeSearch = () => {
   emit("searchExecuted", true);
 };
 const selectedTab = ref("0");
+const searchBulanFilter = ref<string>("");
 </script>
 
 <template>
@@ -203,22 +204,36 @@ const selectedTab = ref("0");
         />
 
         <!-- DatePicker -->
-        <CustomDatePicker
-          v-model="startDateFilter"
-          label="Tanggal"
-          class="w-[200px]"
-        />
-        <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-        <CustomDatePicker
-          v-model="endDateFilter"
-          :showLabel="false"
-          class="mt-auto w-[200px]"
-        />
-        <CustomDatePicker
-          v-model="endDateFilter"
+        <CustomSelect
+          v-if="
+            [
+              'kunjungan-igd',
+              'pembatalan-dirawat',
+              'rekap-tindakan-pasien',
+            ].includes(pageType)
+          "
+          v-model="searchBulanFilter"
           label="Bulan"
-          class="mt-auto w-[200px]"
+          class="w-1/4"
+          optionLabel=""
+          optionValue=""
+          place-holder="Pilih Bulan"
+          :options="['Januari', 'Februari', 'Maret']"
         />
+        <div v-else class="flex">
+          <CustomDatePicker
+            v-model="startDateFilter"
+            label="Tanggal"
+            class="w-[200px]"
+          />
+          <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+          <CustomDatePicker
+            v-model="endDateFilter"
+            :showLabel="false"
+            class="mt-auto w-[200px]"
+          />
+        </div>
+
         <CustomButton
           icon="PhMagnifyingGlass"
           label="Cari"
@@ -321,7 +336,7 @@ const selectedTab = ref("0");
           </div>
         </div>
       </div>
-     
+
       <hr class="border-grey-200" />
     </template>
 
