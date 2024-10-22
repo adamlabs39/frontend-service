@@ -16,6 +16,9 @@ const props = defineProps({
 const faktur = ref<any[]>([]);
 const selectedFaktur = ref<any[]>([]);
 
+const tglFaktur = ref(new Date());
+const cariNoFaktur = ref("")
+
 onMounted(() => {
   faktur.value = [
     {
@@ -24,12 +27,19 @@ onMounted(() => {
       noFaktur: "FKT1234",
       tglFaktur: "01-01-2024",
       supplier: "PT.Sanbe",
+      jenisItem: "Obat",
+      kategori: "Medis",
+      caraBayar:"Tunai",
+      jenisStok:"Umum",
       datas: [
         {
           namaItems: "Paracetamol",
+          expDate: "01-01-2025",
+          diterima:50,
           jumlahBeli: 2,
-          hargaSatuan: 1000,
           satuanBeli: "Box/100",
+          satuanPenggunaan:"Pcs",
+          hargaSatuan: 1000,
           jumlahPermintaan: 100000,
         },
       ],
@@ -44,9 +54,7 @@ onMounted(() => {
   ];
 });
 
-const alasan = ref("");
-
-const emit = defineEmits(["update:isDialogVisible", "close", "reject"]);
+const emit = defineEmits(["update:isDialogVisible", "close", "sendToTambahRetur"]);
 
 const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
@@ -56,15 +64,9 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
 };
 
-const onSubmit = () => {
-  // console.log(alasan.value);
-  emit("reject", alasan.value);
-  alasan.value = "";
-  closeDialog();
-};
-
-const tes = (data:any) => {
-  console.log(data);
+const sendToTambahRetur = (values: any) => {
+  emit("sendToTambahRetur", values.data)
+  closeDialog()
 }
 </script>
 
@@ -86,11 +88,12 @@ const tes = (data:any) => {
         <div class="flex items-end gap-5">
           <CustomTextfield
             label="Cari No. Faktur"
+            v-model="cariNoFaktur"
             prepend-icon="PhMagnifyingGlass"
             placeholder="Cari Berdasarkan No. Faktur"
             class="w-[360px]"
           />
-          <CustomDatePicker label="Tgl. Faktur" />
+          <CustomDatePicker label="Tgl. Faktur" v-model="tglFaktur" />
           <div class="flex gap-2.5">
             <CustomButton
               class="my-auto"
@@ -109,7 +112,7 @@ const tes = (data:any) => {
       <DataTable
         v-model:selection="selectedFaktur"
         :value="faktur"
-        @row-click="tes"
+        @row-click="sendToTambahRetur"
         tableStyle="min-width: 50rem"
         scrollable
         scrollHeight="240px"
