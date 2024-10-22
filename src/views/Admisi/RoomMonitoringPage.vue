@@ -221,7 +221,7 @@ onMounted(() => {
                 <div class="flex mb-[10px] mt-5">
                   <div class="w-[15%]">Filter Kategori Ruangan</div>
                   <div class="flex">
-                    <div class="border border-grey-300"></div>
+                    <div class="h-5 my-auto border border-grey-300"></div>
                     <CustomChip
                       v-for="(kategoriRuangan, index) in filterRoomCategoryList"
                       :key="kategoriRuangan.uuid + index"

@@ -9,6 +9,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import type { FilterAdmisi } from "@/utils/Interface";
 
 const props = defineProps({
   pageType: {
@@ -25,7 +27,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["daftar", "daftarBayi"]);
+const emit = defineEmits(["daftar", "daftarBayi", "search"]);
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -34,10 +36,10 @@ const searchDPJPFilter = ref<string>("");
 
 // SECTION Rawat Jalan
 const filterPoliList = ref([
-  "POLI UMUM",
-  "POLI ANAK",
-  "POLI GIGI POLI MATA",
-  "APS",
+  { name: "POLI UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
+  { name: "POLI ANAK", uuid: "0191a18a-22e4-773b-8229-a023f420d0bd" },
+  { name: "POLI GIGI POLI MATA", uuid: "0191a18a-22e4-773b-8229-a023f420d0be" },
+  { name: "Faskes Example", uuid: "0191a18a-22e4-773b-8229-a023f420d0bb" },
 ]);
 const selectedFilterPoli = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
@@ -63,7 +65,7 @@ const onRegisterMethodSelect = (label: string) => {
 // !SECTION
 
 // SECTION Rawat Inap
-const filterRoomList = ref(["MAWAR", "MELATI", "ANGGREK"]);
+const filterRoomList = ref(["101", "MAWAR", "MELATI", "ANGGREK"]);
 const selectedFilterRoom = ref<string[]>([]);
 const onFilterRoomSelect = (label: string) => {
   if (selectedFilterRoom.value.includes(label)) {
@@ -89,7 +91,10 @@ const onFilterBedRoomSelect = (label: string) => {
 // !SECTION
 
 // SECTION IGD
-const filterPatientList = ref(["DATA LENGKAP", "DATA TIDAK LENGKAP"]);
+const filterPatientList = ref([
+  { name: "DATA LENGKAP", value: "0" },
+  { name: "DATA TIDAK LENGKAP", value: "1" },
+]);
 const selectedFilterPatient = ref<string[]>([]);
 const onFilterPatientSelect = (label: string) => {
   if (selectedFilterPatient.value.includes(label)) {
@@ -137,8 +142,46 @@ const resetFilter = () => {
   searchPatientFilter.value = "";
   searchDPJPFilter.value = "";
 };
+
+const searchData = () => {
+  let filter = {} as FilterAdmisi;
+
+  filter.startDate = `${dateToEpoch(
+    setTimeForDate(startDateFilter.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(endDateFilter.value, 23, 59, 59)
+  )}`;
+  filter.q = searchPatientFilter.value;
+  filter.paymentMethod =
+    selectedPaymentMethod.value.length > 1 ||
+    !selectedPaymentMethod.value.length
+      ? ""
+      : selectedPaymentMethod.value[0];
+  // FIXME Belum bisa multiple
+  if (props.pageType == "rawat-jalan") {
+    filter.platform = selectedFilterRegisterMethod.value[0];
+    filter.poly = selectedFilterPoli.value[0];
+  }
+  // FIXME Belum bisa multiple
+  if (props.pageType == "rawat-inap") {
+    filter.room = selectedFilterRoom.value[0];
+  }
+  if (props.pageType == "igd") {
+    filter.withoutIdentity =
+      selectedFilterPatient.value.length > 1 ||
+      !selectedFilterPatient.value.length
+        ? ""
+        : selectedFilterPatient.value[0];
+  }
+  // FIXME Belum bisa berjalan di RJ
+  filter.dpjp = searchDPJPFilter.value ?? "";
+
+  return filter;
+};
 defineExpose({
   resetFilter,
+  searchData,
 });
 </script>
 
@@ -147,7 +190,11 @@ defineExpose({
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <CustomButton icon="PhArrowClockwise" class="mr-5" />
+          <CustomButton
+            @click="emit('search')"
+            icon="PhArrowClockwise"
+            class="mr-5"
+          />
           <span v-if="!isSEP" class="leading-10 text-adameds-300 text-heading">
             {{
               pageType == "rawat-jalan"
@@ -190,9 +237,16 @@ defineExpose({
           v-model="searchDPJPFilter"
           label="DPJP"
           class="mr-5 grow"
-          optionLabel=""
-          optionValue=""
-          :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+          optionLabel="name"
+          optionValue="uuid"
+          :options="[
+            {
+              uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+              name: 'Rudi tabuti',
+            },
+            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f8', name: 'dr. Ali' },
+            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f7', name: 'dr. Doom' },
+          ]"
           prependIcon="PhMagnifyingGlass"
         />
         <CustomDatePicker
@@ -207,6 +261,7 @@ defineExpose({
           class="mt-auto w-[150px]"
         />
         <CustomButton
+          @click="emit('search')"
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto"
@@ -258,10 +313,11 @@ defineExpose({
               |
               <CustomChip
                 v-for="(poli, index) in filterPoliList"
-                :key="poli + index"
-                :label="poli"
+                :key="poli.uuid + index"
+                :label="poli.name"
+                :value="poli.uuid"
                 class="ml-[10px]"
-                :isSelected="selectedFilterPoli.includes(poli)"
+                :isSelected="selectedFilterPoli.includes(poli.uuid)"
                 @selected="onPoliSelect"
               />
             </div>
@@ -290,7 +346,7 @@ defineExpose({
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Ruangan</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(room, index) in filterRoomList"
                 :key="room + index"
@@ -301,7 +357,7 @@ defineExpose({
               />
             </div>
           </div>
-          <div class="flex my-[10px]">
+          <!-- <div class="flex my-[10px]">
             <div class="w-[15%]">Filter Kamar</div>
             <div class="flex">
               |
@@ -314,19 +370,20 @@ defineExpose({
                 @selected="onFilterBedRoomSelect"
               />
             </div>
-          </div>
+          </div> -->
         </div>
         <div v-else-if="pageType == 'igd'">
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Pasien</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(patientType, index) in filterPatientList"
-                :key="patientType + index"
-                :label="patientType"
+                :key="patientType.name + index"
+                :label="patientType.name"
+                :value="patientType.value"
                 class="ml-[10px]"
-                :isSelected="selectedFilterPatient.includes(patientType)"
+                :isSelected="selectedFilterPatient.includes(patientType.value)"
                 @selected="onFilterPatientSelect"
               />
             </div>
@@ -335,28 +392,30 @@ defineExpose({
         <div v-if="!isSEP" class="flex my-[10px]">
           <div class="w-[15%]">Filter Pembayaran</div>
           <div class="flex">
-            |
+            <div class="h-5 my-auto border border-grey-300"></div>
             <CustomChip
               label="TUNAI"
+              value="1"
               borderColor="border-adameds-300"
               bgColor="bg-adameds-50"
               iconColor="text-adameds-300"
               textColor="text-adameds-300"
               customClass="h-5"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('TUNAI')"
+              :isSelected="selectedPaymentMethod.includes('1')"
               @selected="onPaymentMethodSelect"
               selectedColor="bg-adameds-300 border-adameds-300"
             />
             <CustomChip
               label="ASURANSI"
+              value="2"
               borderColor="border-warning-300"
               bgColor="bg-warning-50"
               iconColor="text-warning-300"
               textColor="text-warning-300"
               customClass="h-5"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('ASURANSI')"
+              :isSelected="selectedPaymentMethod.includes('2')"
               @selected="onPaymentMethodSelect"
               selectedColor="bg-warning-300 border-warning-300"
             />

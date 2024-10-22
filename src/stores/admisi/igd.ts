@@ -20,13 +20,14 @@ export const useAdmisiIGDStore = defineStore({
         startDate = "",
         endDate = "",
         dpjp = "",
+        withoutIdentity = "",
       },
       payload = {}
     ) {
-      // return apiAdmisiGet(
-      //   `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&dpjp=${endDate}`,
-      //   payload
-      // );
+      return apiAdmisiGet(
+        `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}&without_identity=${withoutIdentity}`,
+        payload
+      );
       return {
         message: "Data IGD berhasil ditampilkan",
         payload: [

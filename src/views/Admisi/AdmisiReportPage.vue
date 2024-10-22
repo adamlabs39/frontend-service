@@ -11,7 +11,7 @@ import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
-import { epochToDate, dateToEpoch } from "@/utils/Helpers";
+import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // NOTE Store
@@ -98,18 +98,6 @@ const penjaminFilter = ref("0");
 const ruanganFilter = ref("");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-
-// Function to set the desired time for startDate and endDate
-const setTimeForDate = (
-  date: Date,
-  hours: number,
-  minutes: number,
-  seconds: number
-) => {
-  const newDate = new Date(date); // Clone the date to avoid mutation
-  newDate.setHours(hours, minutes, seconds, 0);
-  return newDate;
-};
 
 const resetFilter = () => {
   search.value = "";
