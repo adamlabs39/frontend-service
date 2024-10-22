@@ -126,6 +126,15 @@ const apiAuthGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAuthPut = async (url: string, data: object) => {
+  try {
+    let response = await authInstance.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 
 // Setting
 const apiSettingPost = async (url: string, data: object) => {
@@ -260,6 +269,7 @@ export {
   apiAuthPost,
   apiAuthDelete,
   apiAuthGet,
+  apiAuthPut,
   apiSettingPost,
   apiSettingGet,
   apiSettingPut,

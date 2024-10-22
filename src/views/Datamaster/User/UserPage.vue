@@ -15,6 +15,7 @@ import FooterPaginator from "../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailUser from "./DetailUser.vue";
 
+//Breadcumb section
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
@@ -24,11 +25,15 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string) => {
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
   if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
+    dataBreadCrumb.value[0] = tempData;
   } else {
-    dataBreadCrumb.value.push({ label: label });
+    dataBreadCrumb.value.push(tempData);
   }
 };
 
@@ -44,6 +49,9 @@ onBeforeRouteLeave((to, from) => {
 onMounted(() => {
   updatePageType(route.path);
 });
+
+// Filter
+
 const searchQuery = ref<string>("");
 const selectedRole = ref("");
 
@@ -65,6 +73,7 @@ const resetForm = () => {
   selectedRole.value = "";
   resetFormRef.value.resetForm();
 };
+
 const userStore = useUserStore();
 const roleStore = useRoleStore();
 const UseUtilsStore = utilsStore();
@@ -83,6 +92,7 @@ const fetchUserData = async () => {
     const response = await userStore.getApi({
       page: userProperties.value.page,
       limit: userProperties.value.page_size,
+      role: selectedRole.value || undefined,
     });
     console.log("API Response:", response);
 
@@ -122,19 +132,26 @@ const fetchRole = async () => {
   }
 };
 
+onMounted(() => {
+  fetchUserData();
+  fetchRole();
+});
+
 const hasData = computed(
   () => userPayload.value && userPayload.value.length > 0
 );
 
 console.log(userPayload.value);
 
-onMounted(() => {
-  fetchUserData();
-  fetchRole();
-});
-
 const metaKey = ref(true);
 const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  if (event.data) {
+    selectedData.value = event.data;
+    changeSection("Detail");
+  }
+};
 </script>
 
 <template>
@@ -154,6 +171,7 @@ const selectedData = ref();
         @tambah-data="changeSection('Daftar')"
         @reload-data="fetchUserData()"
         :filterSelect="rolePayload"
+        ref="resetFormRef"
       />
     </template>
     <template #content>
@@ -166,7 +184,7 @@ const selectedData = ref();
         class="text-xs"
         scrollable
         scrollHeight="flex"
-        @rowSelect="changeSection('Detail')"
+        @rowSelect="onRowSelect"
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
         selectionMode="single"
@@ -264,5 +282,6 @@ const selectedData = ref();
   <DetailUser
     v-else-if="dataBreadCrumb[0].label == 'Detail'"
     @back="dataBreadCrumb.pop()"
+    :payload="selectedData"
   />
 </template>

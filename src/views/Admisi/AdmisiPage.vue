@@ -14,6 +14,7 @@ import { epochToDate } from "@/utils/Helpers";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import type { FilterAdmisi } from "@/utils/Interface";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -27,6 +28,7 @@ const route = useRoute();
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
+  filterData.value = headerFilterRef.value?.searchData();
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -51,10 +53,23 @@ const properties = ref({
   page_size: 10,
   total: 0,
 });
+
+const filterData = ref<FilterAdmisi>({});
+const search = async () => {
+  filterData.value = headerFilterRef.value?.searchData();
+  if (pageType.value == "rawat-jalan") {
+    patientData.value = await fetchRJPatient();
+  } else if (pageType.value == "rawat-inap") {
+    patientDataRI.value = await fetchRIPatient();
+  } else if (pageType.value == "igd") {
+    patientDataIGD.value = await fetchIGDPatient();
+  }
+};
+
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRJStore.getRJ({});
+    const response = await admisiRJStore.getRJ(filterData.value);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -71,7 +86,7 @@ const fetchRJPatient = async () => {
 const fetchRIPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRIStore.getRI({});
+    const response = await admisiRIStore.getRI(filterData.value);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -88,7 +103,7 @@ const fetchRIPatient = async () => {
 const fetchIGDPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiIGDStore.getIGD({});
+    const response = await admisiIGDStore.getIGD(filterData.value);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -183,6 +198,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
         :pageType="pageType"
         @daftar="changeSection('Daftar')"
         @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
+        @search="search"
       />
     </template>
     <template #content>

@@ -86,11 +86,18 @@ const removeSelect = (data: any) => {
   }
 };
 
+// const getLabel = (value: any) => {
+//   const findData: any = props.options.find(
+//     (data: any) => data[`${props.optionValue}`] == value
+//   );
+//   return findData[`${props.optionLabel}`];
+// };
+
 const getLabel = (value: any) => {
   const findData: any = props.options.find(
-    (data: any) => data[`${props.optionValue}`] == value
+    (data: any) => data?.[`${props.optionValue}`] == value
   );
-  return findData[`${props.optionLabel}`];
+  return findData ? findData[`${props.optionLabel}`] : "Unknown";
 };
 </script>
 
@@ -209,6 +216,6 @@ const getLabel = (value: any) => {
         </template>
       </MultiSelect>
     </InputGroup>
-    <small v-if="invalid" class="text-red-500">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
   </div>
 </template>

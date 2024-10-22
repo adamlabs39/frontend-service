@@ -146,7 +146,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER PEGAWAI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -155,7 +155,7 @@ const downloadExportExcel = async () => {
     data.push({
       No: "No",
       Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Nama: "Nama Pegawai",
       Status: "Status",
     });
 
@@ -224,8 +224,8 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Pegawai");
+    XLSX.writeFile(workbook, `Datamaster Pegawai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -234,6 +234,18 @@ const filterTipePegawai = ref([
   { label: "NAKES", value: 1 },
   { label: "NON-NAKES", value: 2 },
 ]);
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await pegawaiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchPegawaiData();
+    console.log('File uploaded successfully:', response);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  }
+};
 </script>
 
 <template>
@@ -417,6 +429,7 @@ const filterTipePegawai = ref([
         :totalRecords="pegawaiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

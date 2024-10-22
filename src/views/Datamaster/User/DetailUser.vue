@@ -5,6 +5,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
+const props = defineProps({
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 const dataBreadHome = ref({ label: "User", home: true });
 const dataBreadCrumb = ref([{ label: "Detail User" }]);
 const emit = defineEmits(["back"]);
@@ -199,7 +205,7 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Nama</div>
-                <div class="font-normal text-normal">Nama Lengkap</div>
+                <div class="font-normal text-normal">{{ props.payload.name }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">NIK</div>
@@ -215,11 +221,11 @@ onMounted(() => {
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">No. Handphone</div>
-                <div class="font-normal text-normal">0899876567</div>
+                <div class="font-normal text-normal">{{ props.payload.phone }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Email</div>
-                <div class="font-normal text-normal">email@gmail.com</div>
+                <div class="font-normal text-normal">{{ props.payload.email }}</div>
               </div>
             </div>
           </template>
@@ -244,7 +250,7 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Username</div>
-                <div class="font-normal text-normal">username</div>
+                <div class="font-normal text-normal">{{ props.payload.username }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Password</div>

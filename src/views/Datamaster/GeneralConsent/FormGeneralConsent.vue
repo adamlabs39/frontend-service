@@ -210,7 +210,7 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode General Consent" :value="code" />
         <CustomInfoRow label="Nama General Consent" :value="name" />
-        <CustomInfoRow label="Isi General Consent" :value="isiSurat" />
+        <CustomInfoRow label="Isi General Consent" :value="payload.isiSurat ?? '-'" />
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

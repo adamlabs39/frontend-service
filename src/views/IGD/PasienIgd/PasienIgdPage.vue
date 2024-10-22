@@ -8,6 +8,7 @@ import type { DataTableRowClickEvent } from "primevue/datatable";
 import NoData from "@/components/section/NoData.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
+import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 
 const storeUtils = utilsStore();
 
@@ -224,6 +225,11 @@ const confirmCancel = () => {
   showCancelVisit.value = false;
   cancelReason.value = undefined;
 };
+const medicalRecord = ref<any>();
+
+const openDialogRM = () => {
+  medicalRecord.value?.showDialogRM();
+};
 </script>
 
 <template>
@@ -244,7 +250,7 @@ const confirmCancel = () => {
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
-        @rowClick="showPatientDetail"
+        @rowClick="openDialogRM"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -307,8 +313,7 @@ const confirmCancel = () => {
           <template #body="slotProps">
             <div class="flex mb-[5px] text-SM">
               <div>{{ slotProps.data.doctorData.doctor }}</div>
-              <div class="border border-adameds-300 mx-[5px] my-1"></div>
-              <div>{{ slotProps.data.doctorData.schedule }}</div>
+              
             </div>
             <div class="flex flex-wrap">
               <CustomChip
@@ -438,6 +443,7 @@ const confirmCancel = () => {
      
       </DataTable>
       <NoData v-else />
+      <MedicalRecord ref="medicalRecord" />
     </template>
     <template #footer>
       <FooterPagination

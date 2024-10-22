@@ -58,3 +58,15 @@ export function epochToDate(
 
   return date;
 }
+
+// Function to set the desired time for startDate and endDate
+export function setTimeForDate(
+  date: Date,
+  hours: number,
+  minutes: number,
+  seconds: number
+) {
+  const newDate = new Date(date); // Clone the date to avoid mutation
+  newDate.setHours(hours, minutes, seconds, 0);
+  return newDate;
+}

@@ -14,6 +14,9 @@ export const useTindakanStore = defineStore({
     async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
       return apiDatamasterGet(`/datamaster/tindakan?page=${page}&limit=${limit}&name=${name}`, payload);
     },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/tindakan/aktif`, payload);
+    },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/tindakan", payload);
     },

@@ -156,7 +156,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER PRAKTISI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -234,10 +234,22 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster PRAKTISI");
+    XLSX.writeFile(workbook, `Datamaster PRAKTISI.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await praktisiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchPraktisiData();
+    console.log('File uploaded successfully:', response);
+  } catch (error) {
+    console.error('Error uploading file:', error);
   }
 };
 </script>
@@ -408,6 +420,7 @@ const downloadExportExcel = async () => {
         :totalRecords="praktisiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>
