@@ -10,7 +10,7 @@ import HeaderFilter from "./Layout/HeaderFilter.vue";
 import RegisterForm from "./Layout/RegisterForm.vue";
 import NoData from "@/components/section/NoData.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
-import { epochToDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
@@ -28,7 +28,10 @@ const route = useRoute();
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
-  filterData.value = headerFilterRef.value?.searchData();
+  filterData.value = headerFilterRef.value?.searchData() ?? {
+    startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
+    endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
+  };
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -182,6 +185,8 @@ const getDataTable = (type: "data" | "length" = "data") => {
 
   return tempPatient;
 };
+
+const formType = ref<"add" | "edit">("add");
 </script>
 
 <template>
@@ -541,9 +546,10 @@ const getDataTable = (type: "data" | "length" = "data") => {
     :dataBreadCrumb="dataBreadCrumb"
     :pageType="pageType"
     :patientData="openedPatientData"
+    :formType="formType"
     @back="dataBreadCrumb.pop()"
     @goToDetail="dataBreadCrumb[0].label = 'Detail'"
-    @goToEdit="dataBreadCrumb[0].label = 'Detail Edit'"
+    @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>
 
