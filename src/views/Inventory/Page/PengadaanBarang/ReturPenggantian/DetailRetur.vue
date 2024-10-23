@@ -7,8 +7,11 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import Card from "primevue/card";
+import DataTable from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
-import type { PropType } from "vue";
+import { ref, type PropType } from "vue";
+import DialogMultiple from "../PembelianBarangSupplier/DialogPermintaanMultiple.vue";
 
 const props = defineProps({
   pageType: {
@@ -25,6 +28,74 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["kembali"]);
+const tanggalPenggantian = ref<Date>(new Date());
+
+const jenisPenggantian = ref("Barang");
+const listJenisPenggantian = ref([
+  { id: 1, value: "Barang" },
+  { id: 2, value: "Uang" },
+]);
+const namaItems = ref([
+  { id: "1", value: "Paracetamol" },
+  { id: "2", value: "Panadol" },
+  { id: "3", value: "Bodrex" },
+  { id: "4", value: "Decolgen" },
+]);
+
+const satuansIsi = ref([
+  { id: "1", value: "Box/100" },
+  { id: "2", value: "Karton" },
+  { id: "2", value: "Kardus" },
+]);
+
+const myPushFunction = () => {
+  const newData = {
+    id: props.detailReturData?.datas.length + 1, 
+    expDate: "01-01-2025",
+    namaItems: "",
+    jumlahBeli: 0,
+    hargaSatuan: 0,
+    satuanBeli: "",
+    jumlahPermintaan: 0,
+  };
+  props.detailReturData?.datas.push(newData);
+};
+
+const deleteReturItem = (index: number) => {
+  props.detailReturData?.datas.splice(index, 1);
+};
+
+const dialogTambahItemMultiple = ref({
+  isVisible: false,
+  title: "Tambah Item Multiple",
+});
+
+function handleAddMultiple() {
+  dialogTambahItemMultiple.value.isVisible = true;
+}
+
+
+// Setelah tambah data multiple di dialog
+function addToArray(newItems: any[]) {
+//   console.log(newItems); 
+
+
+  newItems.forEach(item => {
+    const newData = {
+      id: (props.detailReturData?.datas.length || 0) + 1,
+      expDate: "01-01-2025",
+      namaItems: item?.namaItems || "",
+      jumlahBeli: item?.jumlahBeli || 0,
+      hargaSatuan: item?.hargaSatuan || 0,
+      satuanBeli: item?.satuanBeli || "",
+        jumlahPermintaan: item?.jumlahPermintaan || 0,
+       sisaStok: item?.sisaStok || 0, 
+      stokTujuan: item?.stokTujuan || 0, 
+    };
+
+    props.detailReturData?.datas.push(newData);
+  });
+}
 </script>
 
 <template>
@@ -190,8 +261,18 @@ const emit = defineEmits(["kembali"]);
             <hr class="h-auto border-[0.5px] border-adameds-300" />
 
             <div class="flex items-center gap-5">
-              <CustomSelect label="Jenis Penggantian" class="w-[200px]" />
-              <CustomDatePicker label="Tgl. Penggantian" />
+              <CustomSelect
+                label="Jenis Penggantian"
+                class="w-[200px]"
+                v-model="jenisPenggantian"
+                :options="listJenisPenggantian"
+                optionLabel="value"
+                optionValue="value"
+              />
+              <CustomDatePicker
+                label="Tgl. Penggantian"
+                v-model:modelValue="tanggalPenggantian"
+              />
             </div>
           </div>
           <hr class="border-1 border-grey-200" />
@@ -212,70 +293,245 @@ const emit = defineEmits(["kembali"]);
         </template>
       </CustomAccordion>
     </template>
-    <template #content> </template>
+    <template #content>
+      <div v-if="jenisPenggantian === 'Barang'">
+        <DataTable
+          :pt="{ headerRow: 'text-SM' }"
+          :value="detailReturData?.datas"
+          scrollable
+          scrollHeight="160px"
+          class="overflow-hidden text-xs rounded-lg bg-adameds-50"
+        >
+          <Column
+            headerClass="bg-adameds-50 font-semibold text-SM"
+            class="w-[20px]"
+          >
+            <template #header>
+              <div class="flex items-center">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.index + 1 }}
+              </div>
+            </template>
+          </Column>
+
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="font-semibold">Nama Item</div>
+            </template>
+            <template #body="slotProps">
+              <CustomSelect
+                prepend-icon="PhMagnifyingGlass"
+                v-model="slotProps.data.namaItems"
+                :options="namaItems"
+                optionValue="value"
+                optionLabel="value"
+                label=""
+                place-holder="Cari & Pilih Item"
+              />
+            </template>
+          </Column>
+          <Column
+            headerClass="bg-adameds-50 font-semibold text-SM"
+            class="w-[100px]"
+          >
+            <template #header>
+              <div class="w-full text-center">Exp. Date</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.data.expDate }}
+              </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50 " class="w-[150px]">
+            <template #header>
+              <div class="w-full font-semibold text-center">Terima Retur</div>
+            </template>
+            <template #body="slotProps">
+              <CustomInputNumber
+                :show-label="false"
+                v-model="slotProps.data.jumlahBeli"
+                :show-buttons="true"
+              />
+            </template>
+          </Column>
+
+          <Column headerClass="bg-adameds-50" class="max-w-[160px]">
+            <template #header>
+              <div class="w-full font-semibold text-center">Satuan/Isi</div>
+            </template>
+            <template #body="slotProps">
+              <CustomSelect
+                v-model="slotProps.data.satuanBeli"
+                :options="satuansIsi"
+                optionValue="value"
+                optionLabel="value"
+                label=""
+                place-holder="Cari & Pilih Item"
+              />
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50 " class="min-w-[150px]">
+            <template #header>
+              <div class="w-full font-semibold text-center">Harga Satuan</div>
+            </template>
+            <template #body="slotProps">
+              <CustomInputNumber
+                v-model="slotProps.data.hargaSatuan"
+                class=""
+                label=""
+              >
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                  >
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50 " class="min-w-[150px]">
+            <template #header>
+              <div class="w-full font-semibold text-center">
+                Jumlah Permintaan
+              </div>
+            </template>
+            <template #body="slotProps">
+              <CustomInputNumber
+                v-model="slotProps.data.jumlahPermintaan"
+                class=""
+                label=""
+              >
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                  >
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">Action</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="deleteReturItem(slotProps.index)"
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" width="14px" />
+                </CustomButton>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+        <div
+          class="flex items-center justify-center m-5 p-5 border border-dashed rounded-lg border-adameds-300 gap-2.5"
+        >
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Item"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="myPushFunction"
+          />
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Item Multiple"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="handleAddMultiple"
+          />
+        </div>
+        <DialogMultiple
+          v-model:isDialogVisible="dialogTambahItemMultiple.isVisible"
+          :title="dialogTambahItemMultiple.title"
+          @add-permintaan="addToArray"
+        />
+      </div>
+      <div v-else class="flex items-center justify-between ">
+        <div class="font-bold text-subHeading">Nominal Penggantian</div>
+         <CustomInputNumber class="" label="">
+            <template #prependText>
+              <div
+                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+              >
+                Rp.
+              </div>
+            </template>
+          </CustomInputNumber>
+      </div>
+    </template>
     <template #footer>
       <hr class="pt-2 border-grey-200" />
-        <div class="flex justify-between">
-          <div class="flex gap-6">
-            <CustomInputNumber v-model="diskon" class="" label="Diskon">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
-            <CustomInputNumber v-model="materai" class="" label="Materai">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
-            <CustomSwitch
-              label="PPN 11%"
-              v-model="ppn"
-              sideLabel="Rp. 2,200"
-              sideLabelTrue="Rp. 2,200"
-            />
-          </div>
-
-          <div class="flex items-center gap-5 pr-16">
-            <hr class="h-3/4 border-x-[1px] border-adameds-300" />
-            <div class="">
-              <div class="font-semibold underline text-SM">Grand Total</div>
-              <div class="font-normal text-MD">Rp. 111,0000</div>
-            </div>
-          </div>
-        </div>
-        <hr class="mt-4 border-grey-200" />
-        <div class="flex items-center justify-between pt-5">
-          <div class="flex gap-6">
-            <div>
-              <div class="font-semibold underline text-SM">Total Item</div>
-              <div class="font-normal text-normal">
-                {{ detailReturData?.datas.length }}
+      <div class="flex justify-between">
+        <div class="flex gap-6">
+          <CustomInputNumber class="" label="Diskon">
+            <template #prependText>
+              <div
+                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+              >
+                Rp.
               </div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-SM">Petugas Retur</div>
-              <div class="font-normal text-normal">{{ petugasRetur }}</div>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <CustomButton
-              label="Reset"
-              textColor="text-[#9DA4B1]"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-[#9DA4B1]"
-              @click="resetFormFields"
-            />
-            <CustomButton label="Simpan Pembelian" @click="onSubmit" />
+            </template>
+          </CustomInputNumber>
+          <CustomInputNumber class="" label="Materai">
+            <template #prependText>
+              <div
+                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+              >
+                Rp.
+              </div>
+            </template>
+          </CustomInputNumber>
+          <CustomSwitch
+            label="PPN 11%"
+            sideLabel="Rp. 2,200"
+            sideLabelTrue="Rp. 2,200"
+          />
+        </div>
+
+        <div class="flex items-center gap-5 pr-16">
+          <hr class="h-3/4 border-x-[1px] border-adameds-300" />
+          <div class="">
+            <div class="font-semibold underline text-SM">Grand Total</div>
+            <div class="font-normal text-MD">Rp. 111,0000</div>
           </div>
         </div>
+      </div>
+      <hr class="mt-4 border-grey-200" />
+      <div class="flex items-center justify-between pt-5">
+        <div class="flex gap-6">
+          <div>
+            <div class="font-semibold underline text-SM">Total Item</div>
+            <div class="font-normal text-normal">
+              {{ detailReturData?.datas.length }} item
+            </div>
+          </div>
+          <div>
+            <div class="font-semibold underline text-SM">Petugas Retur</div>
+            <div class="font-normal text-normal">{{ detailReturData?.petugasRetur }}</div>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <CustomButton
+            label="Reset"
+            textColor="text-[#9DA4B1]"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-[#9DA4B1]"
+          />
+          <CustomButton label="Simpan & Terima Penggantian" />
+        </div>
+      </div>
     </template>
   </Card>
 </template>
