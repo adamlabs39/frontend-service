@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { SelectFilterEvent } from "primevue/select";
 import { ref, computed } from "vue";
 
 const props = defineProps({
@@ -66,11 +67,21 @@ const value = computed({
   set: (value: string) => emit("update:modelValue", value),
 });
 
-const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "change",
+  "clickPrepend",
+  "filter",
+  "blur",
+]);
 
 const showClear = computed(() => {
   return value.value !== "";
 });
+
+const filterData = (event: SelectFilterEvent) => {
+  emit("filter", event.value);
+};
 
 // const onChange = (event: any) => {
 //   console.log(event);
@@ -142,7 +153,23 @@ const showClear = computed(() => {
           focusBorderColor: '#D0D5DD',
           hoverBorderColor: '#D0D5DD',
         }"
+        @filter="filterData"
+        @blur="emit('blur')"
       >
+        <template v-if="$slots.customValue" #value="{ value, placeholder }">
+          <slot name="customValue" :value="value" :placeholder="placeholder" />
+        </template>
+        <template
+          v-if="$slots.customOptions"
+          #option="{ index, option, selected }"
+        >
+          <slot
+            name="customOptions"
+            :index="index"
+            :option="option"
+            :selected="selected"
+          />
+        </template>
         <template #dropdownicon>
           <PhCaretDown
             weight="fill"

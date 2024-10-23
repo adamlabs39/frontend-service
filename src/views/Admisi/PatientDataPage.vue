@@ -133,27 +133,30 @@ const closePatientForm = () => {
 
 const onSubmit = async () => {
   if (patientIdentityForm.value) {
-    storeUtils.setLoading(true);
-    const patientData = await patientIdentityForm.value.onSubmit();
-    try {
-      let tempBirthDate = formatDate(
-        patientData!.birthDetail.birthDate,
-        true
-      );
-      patientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
-      if (method.value == "add") {
-        await masterPasienStore.createMasterPasien(patientData);
-      } else if (method.value == "edit") {
-        await masterPasienStore.updateMasterPasien(
-          openedPatientData.value.uuid,
-          patientData
+    const tempPatientData = await patientIdentityForm.value.onSubmit();
+    if (tempPatientData) {
+      storeUtils.setLoading(true);
+      try {
+        let tempBirthDate = formatDate(
+          tempPatientData!.birthDetail.birthDate,
+          true
         );
+        tempPatientData!.birthDetail.birthDate =
+          tempBirthDate as unknown as Date;
+        if (method.value == "add") {
+          await masterPasienStore.createMasterPasien(tempPatientData);
+        } else if (method.value == "edit") {
+          await masterPasienStore.updateMasterPasien(
+            openedPatientData.value.uuid,
+            tempPatientData
+          );
+        }
+        closePatientForm();
+      } catch (error) {
+        console.error("Failed to process the data:", error);
+      } finally {
+        storeUtils.setLoading(false);
       }
-      closePatientForm();
-    } catch (error) {
-      console.error("Failed to process the data:", error);
-    } finally {
-      storeUtils.setLoading(false);
     }
   }
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, onUpdated, ref, type PropType } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -10,6 +10,10 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
+import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
+
+// NOTE Store
+const masterPasienStore = useAdmisiMasterPasienStore();
 
 const props = defineProps({
   pageType: {
@@ -30,14 +34,7 @@ const props = defineProps({
   },
 });
 
-onMounted(() => {
-  if (
-    props.formType == "Daftar Bayi Baru Lahir" ||
-    (props.patientData && props.patientData.is_newborn)
-  ) {
-    newBorn.value = true;
-  }
-
+const setFormData = () => {
   if (Object.keys(props.patientData).length) {
     let tempPatientData = props.patientData;
     tempPatientData.birthDetail.birthDate = new Date(
@@ -48,40 +45,88 @@ onMounted(() => {
       ...tempPatientData,
     });
   }
+};
+
+onMounted(() => {
+  if (
+    props.formType == "Daftar Bayi Baru Lahir" ||
+    (props.patientData && props.patientData.is_newborn)
+  ) {
+    newBorn.value = true;
+  }
+
+  setFormData();
 });
+
+onUpdated(() => {
+  setFormData();
+});
+
+const timer = ref<any>();
+const listDataPatient = ref([]);
+const loadingSearchPatient = ref(false);
+const searchPatientData = async (filter: string) => {
+  if (timer.value) {
+    clearTimeout(timer.value);
+    timer.value = null;
+  }
+  timer.value = setTimeout(async () => {
+    loadingSearchPatient.value = true;
+    try {
+      const response = await masterPasienStore.getMasterPasien({
+        q: filter,
+      });
+      if (response && response.payload) {
+        listDataPatient.value = response.payload;
+      } else listDataPatient.value = [];
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+      return [];
+    } finally {
+    }
+    loadingSearchPatient.value = false;
+  }, 800);
+};
 
 const newBorn = ref(false);
 const withoutIdentity = ref(false);
+const selectedDataPatient = ref<any>();
 
 const schema = toTypedSchema(
-  yup.object({
-    noRm: yup.string(),
-    title: yup.string().required("Awalan/Gelar harus dipilih"),
-    name: yup.string().required("Nama lengkap harus diisi"),
-    identity: yup.string().required("Identitas harus dipilih"),
-    noIdentity: yup.string().required("No identitas harus diisi"),
-    birthDetail: yup.object({
-      birthPlace: yup.string().required("Tempat lahir harus diisi"),
-      birthDate: yup.date().required("Tanggal lahir harus dipilih"),
-    }),
-    gender: yup.string().required("Jenis kelamin harus dipilih"),
-    phone: yup.string().required("No. Handphone harus diisi"),
-    religion: yup.string().required("Agama harus dipilih"),
-    language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
-    maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
-    motherName: yup.string().required("Nama ibu kandung harus diisi"),
-    address: yup.object({
-      prov: yup.string().required("Provinsi harus dipilih"),
-      city: yup.string().required("Kabupaten / Kota harus dipilih"),
-      district: yup.string().required("Kecamatan harus dipilih"),
-      rt: yup.string().required("RT harus diisi"),
-      rw: yup.string().required("RW harus diisi"),
-      fullAddress: yup.string().required("Alamat harus diisi"),
-      country: yup.string().required("Negara harus diisi"),
-      village: yup.string().required("Kelurahan / Desa harus dipilih"),
-      postalCode: yup.string().required("Kode Pos harus dipilih"),
-    }),
-  })
+  yup
+    .object({
+      noRm: yup.string(),
+      title: yup.string().required("Awalan/Gelar harus dipilih"),
+      name: yup.string().required("Nama lengkap harus diisi"),
+      identity: yup.string().required("Identitas harus dipilih"),
+      noIdentity: yup.string().required("No identitas harus diisi"),
+      birthDetail: yup
+        .object({
+          birthPlace: yup.string().required("Tempat lahir harus diisi"),
+          birthDate: yup.date().required("Tanggal lahir harus dipilih"),
+        })
+        .noUnknown(),
+      gender: yup.string().required("Jenis kelamin harus dipilih"),
+      phone: yup.string().required("No. Handphone harus diisi"),
+      religion: yup.string().required("Agama harus dipilih"),
+      language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
+      maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
+      motherName: yup.string().required("Nama ibu kandung harus diisi"),
+      address: yup
+        .object({
+          prov: yup.string().required("Provinsi harus dipilih"),
+          city: yup.string().required("Kabupaten / Kota harus dipilih"),
+          district: yup.string().required("Kecamatan harus dipilih"),
+          rt: yup.string().required("RT harus diisi"),
+          rw: yup.string().required("RW harus diisi"),
+          fullAddress: yup.string().required("Alamat harus diisi"),
+          country: yup.string().required("Negara harus diisi"),
+          village: yup.string().required("Kelurahan / Desa harus dipilih"),
+          postalCode: yup.string().required("Kode Pos harus dipilih"),
+        })
+        .noUnknown(),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -139,17 +184,29 @@ defineExpose({
       <div class="pt-5">
         <div class="flex">
           <CustomSelect
-            v-if="pageType != 'rawat-inap' && formType != 'Edit Data Pasien'"
+            v-if="
+              pageType != 'rawat-inap' &&
+              formType != 'Edit Data Pasien' &&
+              formType != 'Detail Edit' &&
+              formType != 'Detail'
+            "
+            v-model="selectedDataPatient"
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
-            optionLabel=""
-            optionValue=""
-            :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+            optionLabel="name"
+            optionValue="noRm"
+            :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
             :disabled="withoutIdentity || newBorn || isDetail"
-          />
+            :isLoading="loadingSearchPatient"
+            @filter="searchPatientData"
+          >
+            <template #customOptions="{ option }">
+              {{ option.name }} ~ {{ option.noRm }}
+            </template>
+          </CustomSelect>
           <CustomSwitch
             v-if="pageType == 'igd'"
             v-model="newBorn"
@@ -167,7 +224,12 @@ defineExpose({
             :disabled="isDetail"
           />
           <div
-            v-if="pageType != 'rawat-inap' && formType != 'Edit Data Pasien'"
+            v-if="
+              pageType != 'rawat-inap' &&
+              formType != 'Edit Data Pasien' &&
+              formType != 'Detail Edit' &&
+              formType != 'Detail'
+            "
             class="border-[1px] border-grey-200 mr-[35px]"
           ></div>
           <CustomTextfield
@@ -414,6 +476,7 @@ defineExpose({
           v-if="!withoutIdentity"
           class="grid grid-cols-4 gap-y-5 gap-x-[30px]"
         >
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
             label="Provinsi"
@@ -427,6 +490,7 @@ defineExpose({
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
             label="Kabupaten / Kota"
@@ -440,6 +504,7 @@ defineExpose({
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
             label="Kecamatan"
@@ -457,6 +522,7 @@ defineExpose({
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressVillage"
             label="Kelurahan / Desa"
@@ -494,6 +560,7 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressPostalCode"
             label="Kode Pos"
