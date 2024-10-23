@@ -8,6 +8,7 @@ import ReturSupplier from "./Tabel/ReturPenggantian/ReturSupplier.vue";
 import { computed } from "vue";
 import TambahRetur from "./ReturPenggantian/TambahRetur.vue";
 import DetailRetur from "./ReturPenggantian/DetailRetur.vue";
+import TerimaPenggantian from "./Tabel/ReturPenggantian/TerimaPenggantian.vue";
 
 const route = useRoute();
 const value = ref("1");
@@ -46,7 +47,7 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
-  returData.value = [{}];
+  returData.value = [];
 });
 
 // Hanya menampilkan RETUR saat di tabs RETUR SUPPLIER
@@ -68,9 +69,23 @@ const tes = (value: any) => {
 
   returData.value.push(value);
 };
+
+const diterimaData = (updatedData:any) => {
+  if (returData.value) {
+    // Find the index of the item you want to update
+     const index = returData.value.findIndex((item:any)=> item.noPembelian === updatedData.noPembelian);
+    console.log(index)
+    if (index !== -1) {
+      // Update the existing item
+      returData.value[index] = updatedData;
+      dataBreadCrumb.value[0].label = 'Retur & Penggantian Barang Supplier';
+    }
+  }
+}
 </script>
 
 <template>
+  <!-- {{ returData }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Retur & Penggantian Barang Supplier'"
     pt:content:class="h-full overflow-auto"
@@ -118,7 +133,9 @@ const tes = (value: any) => {
               @row-clicked="changeSection('Detail Retur', $event)"
             />
           </TabPanel>
-          <TabPanel value="2"> kmdsmd </TabPanel>
+          <TabPanel value="2">
+            <TerimaPenggantian :penggantian-data="terimaPenggantianData" @row-clicked="changeSection('Detail Retur', $event)"/>
+          </TabPanel>
         </TabPanels>
       </Tabs>
     </template>
@@ -137,5 +154,6 @@ const tes = (value: any) => {
     :page-type="pageType"
     :detail-retur-data="detailReturData"
     @kembali="dataBreadCrumb[0].label = 'Retur & Penggantian Barang Supplier'"
+    @diterima="diterimaData"
   />
 </template>

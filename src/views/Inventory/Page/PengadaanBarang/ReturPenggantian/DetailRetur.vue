@@ -10,7 +10,7 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import Card from "primevue/card";
 import DataTable from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
-import { ref, type PropType } from "vue";
+import { computed, ref, type PropType } from "vue";
 import DialogMultiple from "../PembelianBarangSupplier/DialogPermintaanMultiple.vue";
 
 const props = defineProps({
@@ -27,7 +27,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali"]);
+const emit = defineEmits(["kembali", "diterima"]);
 const tanggalPenggantian = ref<Date>(new Date());
 
 const jenisPenggantian = ref("Barang");
@@ -50,7 +50,7 @@ const satuansIsi = ref([
 
 const myPushFunction = () => {
   const newData = {
-    id: props.detailReturData?.datas.length + 1, 
+    id: props.detailReturData?.datas.length + 1,
     expDate: "01-01-2025",
     namaItems: "",
     jumlahBeli: 0,
@@ -74,13 +74,11 @@ function handleAddMultiple() {
   dialogTambahItemMultiple.value.isVisible = true;
 }
 
-
 // Setelah tambah data multiple di dialog
 function addToArray(newItems: any[]) {
-//   console.log(newItems); 
+  //   console.log(newItems);
 
-
-  newItems.forEach(item => {
+  newItems.forEach((item) => {
     const newData = {
       id: (props.detailReturData?.datas.length || 0) + 1,
       expDate: "01-01-2025",
@@ -88,14 +86,46 @@ function addToArray(newItems: any[]) {
       jumlahBeli: item?.jumlahBeli || 0,
       hargaSatuan: item?.hargaSatuan || 0,
       satuanBeli: item?.satuanBeli || "",
-        jumlahPermintaan: item?.jumlahPermintaan || 0,
-       sisaStok: item?.sisaStok || 0, 
-      stokTujuan: item?.stokTujuan || 0, 
+      jumlahPermintaan: item?.jumlahPermintaan || 0,
+      sisaStok: item?.sisaStok || 0,
+      stokTujuan: item?.stokTujuan || 0,
     };
 
     props.detailReturData?.datas.push(newData);
   });
 }
+
+const nominalPenggantian = ref(0);
+
+const diskonValue = computed(() => {
+  return (
+    props.detailReturData?.diskon || 0
+  );
+});
+
+const materaiValue = computed(() => {
+  return (
+    props.detailReturData?.materai || 0
+  );
+});
+const ppnValue = computed(() => {
+  return (
+    props.detailReturData?.ppn || 0
+  );
+});
+
+const handleSimpan = () => {
+  if (props.detailReturData) {
+    props.detailReturData.status = "DITERIMA"; // Set status sekali
+    const emitData = jenisPenggantian.value === "Uang"
+      ? { ...props.detailReturData, nominal: nominalPenggantian.value }
+      : props.detailReturData;
+
+    emit("diterima", emitData);
+    console.log(emitData)
+  }
+};
+
 </script>
 
 <template>
@@ -458,24 +488,28 @@ function addToArray(newItems: any[]) {
           @add-permintaan="addToArray"
         />
       </div>
-      <div v-else class="flex items-center justify-between ">
+      <div v-else class="flex items-center justify-between">
         <div class="font-bold text-subHeading">Nominal Penggantian</div>
-         <CustomInputNumber class="" label="">
-            <template #prependText>
-              <div
-                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-              >
-                Rp.
-              </div>
-            </template>
-          </CustomInputNumber>
+        <CustomInputNumber
+          class=""
+          label=""
+          v-model:model-value="nominalPenggantian"
+        >
+          <template #prependText>
+            <div
+              class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+            >
+              Rp.
+            </div>
+          </template>
+        </CustomInputNumber>
       </div>
     </template>
     <template #footer>
       <hr class="pt-2 border-grey-200" />
       <div class="flex justify-between">
         <div class="flex gap-6">
-          <CustomInputNumber class="" label="Diskon">
+          <CustomInputNumber class="" label="Diskon" v-model="diskonValue">
             <template #prependText>
               <div
                 class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
@@ -484,7 +518,7 @@ function addToArray(newItems: any[]) {
               </div>
             </template>
           </CustomInputNumber>
-          <CustomInputNumber class="" label="Materai">
+          <CustomInputNumber class="" label="Materai" v-model="materaiValue">
             <template #prependText>
               <div
                 class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
@@ -495,6 +529,7 @@ function addToArray(newItems: any[]) {
           </CustomInputNumber>
           <CustomSwitch
             label="PPN 11%"
+            v-model:model-value="ppnValue"
             sideLabel="Rp. 2,200"
             sideLabelTrue="Rp. 2,200"
           />
@@ -519,7 +554,9 @@ function addToArray(newItems: any[]) {
           </div>
           <div>
             <div class="font-semibold underline text-SM">Petugas Retur</div>
-            <div class="font-normal text-normal">{{ detailReturData?.petugasRetur }}</div>
+            <div class="font-normal text-normal">
+              {{ detailReturData?.petugasRetur }}
+            </div>
           </div>
         </div>
         <div class="flex gap-3">
@@ -529,7 +566,10 @@ function addToArray(newItems: any[]) {
             backgroundColor="bg-transparent"
             borderColor="border-2 border-[#9DA4B1]"
           />
-          <CustomButton label="Simpan & Terima Penggantian" />
+          <CustomButton
+            label="Simpan & Terima Penggantian"
+            @click="handleSimpan"
+          />
         </div>
       </div>
     </template>
