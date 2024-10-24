@@ -188,7 +188,7 @@ const handleVerifikasi = () => {
           </template>
           <template #body="slotProps">
             <div class="w-full text-center text-SM">
-              {{ slotProps.index + 1 }}TOD
+              {{ slotProps.index + 1 }}
             </div>
           </template>
         </Column>

@@ -155,6 +155,7 @@ import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 import InventoryView from "@/views/Inventory/InventoryView.vue";
 import VerificationPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerificationPurchasePage.vue";
 import ReturPage from "@/views/Inventory/Page/PengadaanBarang/ReturPage.vue";
+import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengirimanUnitPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1202,6 +1203,12 @@ const router = createRouter({
       path: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
       name: "inventory-pengadaan-barang-retur-penggantian-barang-supplier",
       meta: { layout: SidebarLayout, page: ReturPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
+      name: "inventory-pengeluaran-barang-verifikasi-pengiriman-unit",
+      meta: { layout: SidebarLayout, page: PengirimanUnitPage, requiresAuth: true },
       component: InventoryView,
     },
 

@@ -38,13 +38,13 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
       {
         name: "Pengeluaran Barang",
-          type: linkType.DROPDOWN,
+        type: linkType.DROPDOWN,
         icon:"BoxUpIcon",
         child: [
           {
             name: "Verifikasi & Pengiriman Unit",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
           },
           { name: "Pengeluaran Unit", type: linkType.LINK, url: "" },
         ],
