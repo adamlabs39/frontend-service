@@ -103,6 +103,18 @@ const tolakPengirimanData = computed(() => {
   return pengirimanUnitData.value?.filter((item:any )=> item.status === 'DITOLAK') || [];
 });
 
+const updateStatusVerifikasi = (selectedData: any[]) => {
+  selectedData.forEach((item) => {
+    const pengiriman = pengirimanUnitData.value.find(
+      (pengiriman:any) => pengiriman.datas.some((data: any) => data.namaItems === item.namaItems)
+    );
+    
+    if (pengiriman) {
+      pengiriman.status = "DIVERIFIKASI";
+       dataBreadCrumb.value[0].label = 'Verifikasi & Pengiriman Unit';
+    }
+  });
+};
 </script>
 
 <template>
@@ -171,6 +183,7 @@ const tolakPengirimanData = computed(() => {
             <Permintaan :permintaan-data="pengajuanPengirimanData" @row-clicked="changeSection('Detail Pengiriman', $event)"/>
           </TabPanel>
           <TabPanel value="2">
+            <VerifikasiPengiriman/>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -190,5 +203,5 @@ const tolakPengirimanData = computed(() => {
     </template>
   </Card>
 
-  <DetailPengirimanUnit  :data-bread-crumb="dataBreadCrumb" :page-type="pageType" :detail-pengiriman-data="detailPengirimanUnit"  v-else-if="dataBreadCrumb[0].label == 'Detail Pengiriman'"  @kembali="dataBreadCrumb[0].label = 'Verifikasi & Pengiriman Unit'" @penolakan="penolakanData"/>
+  <DetailPengirimanUnit  :data-bread-crumb="dataBreadCrumb" :page-type="pageType" :detail-pengiriman-data="detailPengirimanUnit"  v-else-if="dataBreadCrumb[0].label == 'Detail Pengiriman'"  @kembali="dataBreadCrumb[0].label = 'Verifikasi & Pengiriman Unit'" @penolakan="penolakanData" @verifikasi-pengiriman="updateStatusVerifikasi"/>
 </template>

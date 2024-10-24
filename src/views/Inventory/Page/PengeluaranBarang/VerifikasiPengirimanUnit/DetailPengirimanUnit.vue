@@ -22,7 +22,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali","penolakan"]);
+const emit = defineEmits(["kembali","penolakan", "verifikasiPengiriman"]);
 
 const selectedPengirimanData = ref([]);
 
@@ -68,10 +68,16 @@ const handleReject = (reason:string) => {
     emit('penolakan', props.detailPengirimanData);
   }
 };
+
+const verifikasiPengiriman = () => {
+  // Emit event ke parent component dengan data yang dipilih
+  emit('verifikasiPengiriman', selectedPengirimanData.value);
+};
+
 </script>
 
 <template>
-  <!-- {{ detailPengirimanData }} -->
+  {{ detailPengirimanData }}
   <Card pt:body:class="h-full pt-0" pt:content:class="h-full">
     <template #header>
       <CustomAccordion :openWithHeader="false" noBorder initialState="0">
@@ -378,7 +384,7 @@ const handleReject = (reason:string) => {
               )
             "
           />
-          <CustomButton label="Verifikasi" class="my-auto bg-adameds-300" />
+          <CustomButton label="Verifikasi" class="my-auto bg-adameds-300" @click="verifikasiPengiriman"/>
         </div>
       </div>
     </template>
