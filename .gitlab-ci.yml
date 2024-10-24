@@ -15,7 +15,7 @@ build-image:
 deploy-app:
   stage: deploy
   script:
-    - docker compose up --env-file /home/admin/adameds/.env-adameds-frontend up -d
+    - docker compose --env-file /home/admin/adameds/.env-adameds-frontend up -d
     - echo "Success deploy adaneds frontend ...."
   only:
     - develop-deploy
