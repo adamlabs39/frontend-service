@@ -1,0 +1,21 @@
+stages:
+  - build
+  - deploy
+
+build-image:
+  stage: build
+  before_script:
+    - docker compose down --rmi all
+  script:
+    - docker build -t adameds-frontend:dev ./ --no-cache
+    - echo "success build image ...."
+  only:
+    - develop-deploy
+
+deploy-app:
+  stage: deploy
+  script:
+    - docker compose up --env-file /home/admin/adameds/.env-adameds-frontend up -d
+    - echo "Success deploy adaneds frontend ...."
+  only:
+    - develop-deploy
