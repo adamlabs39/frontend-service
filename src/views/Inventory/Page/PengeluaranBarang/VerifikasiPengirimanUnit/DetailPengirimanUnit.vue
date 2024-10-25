@@ -23,7 +23,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali", "penolakan", "verifikasiPengiriman", "kirimBarang"]);
+const emit = defineEmits([
+  "kembali",
+  "penolakan",
+  "verifikasiPengiriman",
+  "kirimBarang",
+]);
 
 const selectedPengirimanData = ref([]);
 
@@ -75,12 +80,11 @@ const verifikasiPengiriman = () => {
   emit("verifikasiPengiriman", selectedPengirimanData.value);
 };
 
-const catatanPengiriman = ref("")
+const catatanPengiriman = ref("");
 
 const kirimBarang = () => {
-    
-    emit('kirimBarang', props.detailPengirimanData, catatanPengiriman.value);
-}
+  emit("kirimBarang", props.detailPengirimanData, catatanPengiriman.value);
+};
 </script>
 
 <template>
@@ -203,9 +207,11 @@ const kirimBarang = () => {
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
               </div>
-              
+
               <div>
-                <div class="font-semibold underline text-SM">Petugas Verifikasi</div>
+                <div class="font-semibold underline text-SM">
+                  Petugas Verifikasi
+                </div>
                 <div class="font-normal text-normal">
                   {{ detailPengirimanData?.petugasVerifikasi }}
                 </div>
@@ -328,20 +334,20 @@ const kirimBarang = () => {
           </template>
           <template #body="slotProps">
             <CustomInputNumber
-            v-if="detailPengirimanData?.status == 'PENGAJUAN'"
+              v-if="detailPengirimanData?.status == 'PENGAJUAN'"
               :show-label="false"
               v-model="slotProps.data.pengiriman"
               :show-buttons="true"
               disabled
             />
             <div class="text-center text-SM" v-else>
-              {{ slotProps.data.pengiriman }} 
+              {{ slotProps.data.pengiriman }}
             </div>
           </template>
         </Column>
 
         <Column
-        v-if="detailPengirimanData?.status == 'PENGAJUAN'"
+          v-if="detailPengirimanData?.status == 'PENGAJUAN'"
           header="Action"
           body-class="text-center"
           selectionMode="multiple"
@@ -394,12 +400,18 @@ const kirimBarang = () => {
             </div>
           </div>
           <CustomTextfield
-          v-if="detailPengirimanData?.status == 'DIVERIFIKASI'"
+            v-if="detailPengirimanData?.status == 'DIVERIFIKASI'"
             label=""
             v-model:model-value="catatanPengiriman"
             placeholder="Catatan Pengiriman"
             class="w-[300px]"
           />
+          <div  v-else-if="detailPengirimanData?.status == 'DIKIRIM'">
+            <div class="font-semibold underline text-SM">Catatan</div>
+            <div class="font-normal text-normal">
+              {{ detailPengirimanData?.catatanPengiriman}}
+            </div>
+          </div>
         </div>
         <div
           class="flex gap-3"

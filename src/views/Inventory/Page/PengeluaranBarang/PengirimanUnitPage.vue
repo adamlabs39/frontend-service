@@ -8,6 +8,8 @@ import Paginator from "primevue/paginator";
 import Permintaan from "@/views/Inventory/Page/PengeluaranBarang/Tabel/PengirimanUnit/Permintaan.vue";
 import DetailPengirimanUnit from "./VerifikasiPengirimanUnit/DetailPengirimanUnit.vue";
 import VerifikasiPengiriman from "./Tabel/PengirimanUnit/VerifikasiPengiriman.vue";
+import Dikirim from "./Tabel/PengirimanUnit/Dikirim.vue";
+import Ditolak from "./Tabel/PengirimanUnit/Ditolak.vue";
 
 const route = useRoute();
 const value = ref("1");
@@ -113,6 +115,13 @@ const diverifikasiPengirimanData = computed(() => {
     ) || []
   );
 });
+const dikirimData = computed(() => {
+  return (
+    pengirimanUnitData.value?.filter(
+      (item: any) => item.status === "DIKIRIM"
+    ) || []
+  );
+});
 const tolakPengirimanData = computed(() => {
   return (
     pengirimanUnitData.value?.filter(
@@ -143,6 +152,7 @@ const updateStatusKirim = (detailPengirimanData: any, catatanPengiriman: string)
     );
 
     if (index !== -1) {
+      pengirimanUnitData.value[index].status = "DIKIRIM"
       pengirimanUnitData.value[index].catatanPengiriman = catatanPengiriman;
     } else {
       pengirimanUnitData.value.push({
@@ -227,6 +237,14 @@ const updateStatusKirim = (detailPengirimanData: any, catatanPengiriman: string)
             <VerifikasiPengiriman
               :verifikasi-data="diverifikasiPengirimanData"
               @row-clicked="changeSection('Detail Pengiriman', $event)"
+            />
+          </TabPanel>
+          <TabPanel value="3">
+            <Dikirim :dikirim-data="dikirimData" @row-clicked="changeSection('Detail Pengiriman', $event)"
+            />
+          </TabPanel>
+          <TabPanel value="4">
+            <Ditolak :ditolak-data="tolakPengirimanData" @row-clicked="changeSection('Detail Pengiriman', $event)"
             />
           </TabPanel>
         </TabPanels>
