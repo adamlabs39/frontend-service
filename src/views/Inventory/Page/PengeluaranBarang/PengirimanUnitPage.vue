@@ -7,6 +7,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import Paginator from "primevue/paginator";
 import Permintaan from "@/views/Inventory/Page/PengeluaranBarang/Tabel/PengirimanUnit/Permintaan.vue";
 import DetailPengirimanUnit from "./VerifikasiPengirimanUnit/DetailPengirimanUnit.vue";
+import VerifikasiPengiriman from "./Tabel/PengirimanUnit/VerifikasiPengiriman.vue";
 
 const route = useRoute();
 const value = ref("1");
@@ -82,45 +83,82 @@ onMounted(() => {
 });
 
 // Saat sudah dibatalkan dari page DetailPengirimanUnit
-const penolakanData = ((updatedData: any) => {
-   if (pengirimanUnitData.value) {
+const penolakanData = (updatedData: any) => {
+  if (pengirimanUnitData.value) {
     // Find the index of the item you want to update
-     const index = pengirimanUnitData.value.findIndex((item:any)=> item.noPembelian === updatedData.noPembelian);
-    console.log(index)
+    const index = pengirimanUnitData.value.findIndex(
+      (item: any) => item.noPembelian === updatedData.noPembelian
+    );
+    console.log(index);
     if (index !== -1) {
       // Update the existing item
       pengirimanUnitData.value[index] = updatedData;
-      dataBreadCrumb.value[0].label = 'Verifikasi & Pengiriman Unit';
+      dataBreadCrumb.value[0].label = "Verifikasi & Pengiriman Unit";
     }
   }
-})
+};
 
 // Hanya menampilkan pengajuan saat di tabs Pengajuan Pembelian
 const pengajuanPengirimanData = computed(() => {
-  return pengirimanUnitData.value?.filter((item:any )=> item.status === 'PENGAJUAN') || [];
+  return (
+    pengirimanUnitData.value?.filter(
+      (item: any) => item.status === "PENGAJUAN"
+    ) || []
+  );
+});
+const diverifikasiPengirimanData = computed(() => {
+  return (
+    pengirimanUnitData.value?.filter(
+      (item: any) => item.status === "DIVERIFIKASI"
+    ) || []
+  );
 });
 const tolakPengirimanData = computed(() => {
-  return pengirimanUnitData.value?.filter((item:any )=> item.status === 'DITOLAK') || [];
+  return (
+    pengirimanUnitData.value?.filter(
+      (item: any) => item.status === "DITOLAK"
+    ) || []
+  );
 });
 
 const updateStatusVerifikasi = (selectedData: any[]) => {
   selectedData.forEach((item) => {
-    const pengiriman = pengirimanUnitData.value.find(
-      (pengiriman:any) => pengiriman.datas.some((data: any) => data.namaItems === item.namaItems)
+    const pengiriman = pengirimanUnitData.value.find((pengiriman: any) =>
+      pengiriman.datas.some((data: any) => data.namaItems === item.namaItems)
     );
-    
+
     if (pengiriman) {
       pengiriman.status = "DIVERIFIKASI";
-       dataBreadCrumb.value[0].label = 'Verifikasi & Pengiriman Unit';
+      dataBreadCrumb.value[0].label = "Verifikasi & Pengiriman Unit";
     }
   });
+};
+
+// Saat Klik Kirim Barang dari DetailPengirimanUnit
+const updateStatusKirim = (detailPengirimanData: any, catatanPengiriman: string) => {
+
+  if (pengirimanUnitData.value) {
+    const index = pengirimanUnitData.value.findIndex(
+      (item: any) => item.noPengeluaran === detailPengirimanData.noPengeluaran
+    );
+
+    if (index !== -1) {
+      pengirimanUnitData.value[index].catatanPengiriman = catatanPengiriman;
+    } else {
+      pengirimanUnitData.value.push({
+        ...detailPengirimanData,
+        catatanPengiriman, // Add new property
+      });
+    }
+    dataBreadCrumb.value[0].label = "Verifikasi & Pengiriman Unit";
+  }
 };
 </script>
 
 <template>
   <!-- {{ pengirimanUnitData }} -->
   <Card
-   v-if="dataBreadCrumb[0].label == 'Verifikasi & Pengiriman Unit'"
+    v-if="dataBreadCrumb[0].label == 'Verifikasi & Pengiriman Unit'"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
@@ -180,10 +218,16 @@ const updateStatusVerifikasi = (selectedData: any[]) => {
       <Tabs v-model:value="value">
         <TabPanels>
           <TabPanel value="1">
-            <Permintaan :permintaan-data="pengajuanPengirimanData" @row-clicked="changeSection('Detail Pengiriman', $event)"/>
+            <Permintaan
+              :permintaan-data="pengajuanPengirimanData"
+              @row-clicked="changeSection('Detail Pengiriman', $event)"
+            />
           </TabPanel>
           <TabPanel value="2">
-            <VerifikasiPengiriman/>
+            <VerifikasiPengiriman
+              :verifikasi-data="diverifikasiPengirimanData"
+              @row-clicked="changeSection('Detail Pengiriman', $event)"
+            />
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -203,5 +247,14 @@ const updateStatusVerifikasi = (selectedData: any[]) => {
     </template>
   </Card>
 
-  <DetailPengirimanUnit  :data-bread-crumb="dataBreadCrumb" :page-type="pageType" :detail-pengiriman-data="detailPengirimanUnit"  v-else-if="dataBreadCrumb[0].label == 'Detail Pengiriman'"  @kembali="dataBreadCrumb[0].label = 'Verifikasi & Pengiriman Unit'" @penolakan="penolakanData" @verifikasi-pengiriman="updateStatusVerifikasi"/>
+  <DetailPengirimanUnit
+    :data-bread-crumb="dataBreadCrumb"
+    :page-type="pageType"
+    :detail-pengiriman-data="detailPengirimanUnit"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Pengiriman'"
+    @kembali="dataBreadCrumb[0].label = 'Verifikasi & Pengiriman Unit'"
+    @penolakan="penolakanData"
+    @verifikasi-pengiriman="updateStatusVerifikasi"
+    @kirim-barang="updateStatusKirim"
+  />
 </template>

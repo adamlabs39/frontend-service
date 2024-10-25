@@ -4,6 +4,7 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import LayoutDialog from "@/views/Inventory/Layout/LayoutDialog.vue";
 import type { MenuItem } from "primevue/menuitem";
 import { ref, type PropType } from "vue";
@@ -22,7 +23,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali","penolakan", "verifikasiPengiriman"]);
+const emit = defineEmits(["kembali", "penolakan", "verifikasiPengiriman", "kirimBarang"]);
 
 const selectedPengirimanData = ref([]);
 
@@ -33,8 +34,8 @@ const dialogConfig = ref({
   buttonFooterLeft: "",
   buttonFooterRight: "",
   message: "",
-    spanMessage: "",
-  extendedMessage:""
+  spanMessage: "",
+  extendedMessage: "",
 });
 
 const handleDialog = (
@@ -43,8 +44,8 @@ const handleDialog = (
   buttonFooterLeft: string,
   buttonFooterRight: string,
   message: string,
-    spanMessage: string,
-  extendedMessage:string,
+  spanMessage: string,
+  extendedMessage: string
 ) => {
   dialogConfig.value = {
     title,
@@ -52,32 +53,38 @@ const handleDialog = (
     buttonFooterLeft,
     buttonFooterRight,
     message,
-      spanMessage,
-    extendedMessage
+    spanMessage,
+    extendedMessage,
   };
   console.log(dialogConfig.value);
   isDialogVisible.value = true;
 };
 
-const handleReject = (reason:string) => {
+const handleReject = (reason: string) => {
   // Update the status to DIBATALKAN and set the reason
   if (props.detailPengirimanData) {
-    props.detailPengirimanData.status = 'DITOLAK';
+    props.detailPengirimanData.status = "DITOLAK";
     props.detailPengirimanData.alasan = reason;
 
-    emit('penolakan', props.detailPengirimanData);
+    emit("penolakan", props.detailPengirimanData);
   }
 };
 
 const verifikasiPengiriman = () => {
   // Emit event ke parent component dengan data yang dipilih
-  emit('verifikasiPengiriman', selectedPengirimanData.value);
+  emit("verifikasiPengiriman", selectedPengirimanData.value);
 };
 
+const catatanPengiriman = ref("")
+
+const kirimBarang = () => {
+    
+    emit('kirimBarang', props.detailPengirimanData, catatanPengiriman.value);
+}
 </script>
 
 <template>
-  {{ detailPengirimanData }}
+  <!-- {{ detailPengirimanData }} -->
   <Card pt:body:class="h-full pt-0" pt:content:class="h-full">
     <template #header>
       <CustomAccordion :openWithHeader="false" noBorder initialState="0">
@@ -121,7 +128,13 @@ const verifikasiPengiriman = () => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="detailPengirimanData?.status"
-                bgColor="bg-grey-300"
+                :bgColor="
+                  detailPengirimanData?.status === 'DIVERIFIKASI'
+                    ? 'bg-aqua-300'
+                    : detailPengirimanData?.status === 'DIKIRIM'
+                    ? 'bg-mint-300'
+                    : 'bg-grey-300'
+                "
                 textColor="text-white"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
               />
@@ -189,6 +202,13 @@ const verifikasiPengiriman = () => {
                   textColor="text-white"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
+              </div>
+              
+              <div>
+                <div class="font-semibold underline text-SM">Petugas Verifikasi</div>
+                <div class="font-normal text-normal">
+                  {{ detailPengirimanData?.petugasVerifikasi }}
+                </div>
               </div>
               <div>
                 <div class="font-semibold underline text-SM">Catatan</div>
@@ -296,7 +316,7 @@ const verifikasiPengiriman = () => {
           </template>
           <template #body="slotProps">
             <div class="text-center text-SM">
-              {{ slotProps.data.jumlahPermintaan }}
+              {{ slotProps.data.jumlahPermintaan }} Box
             </div>
           </template>
         </Column>
@@ -308,15 +328,20 @@ const verifikasiPengiriman = () => {
           </template>
           <template #body="slotProps">
             <CustomInputNumber
+            v-if="detailPengirimanData?.status == 'PENGAJUAN'"
               :show-label="false"
               v-model="slotProps.data.pengiriman"
               :show-buttons="true"
               disabled
             />
+            <div class="text-center text-SM" v-else>
+              {{ slotProps.data.pengiriman }} 
+            </div>
           </template>
         </Column>
 
         <Column
+        v-if="detailPengirimanData?.status == 'PENGAJUAN'"
           header="Action"
           body-class="text-center"
           selectionMode="multiple"
@@ -342,9 +367,9 @@ const verifikasiPengiriman = () => {
       />
     </template>
     <template #footer>
-      <hr class="mt-4 border-grey-200" />
-      <div class="flex items-center justify-between pt-5">
-        <div class="flex gap-6">
+      <hr class="my-4 border-grey-200" />
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
           <CustomButton
             label="Cetak"
             class="my-auto bg-adameds-300"
@@ -358,12 +383,23 @@ const verifikasiPengiriman = () => {
           </div>
           <div>
             <div class="font-semibold underline text-SM">
-              Petugas Verifikasi
+              {{
+                detailPengirimanData?.status === "PENGAJUAN"
+                  ? "Petugas Verifikasi"
+                  : "Petugas Kirim Barang"
+              }}
             </div>
             <div class="font-normal text-normal">
               {{ detailPengirimanData?.petugasVerifikasi }}
             </div>
           </div>
+          <CustomTextfield
+          v-if="detailPengirimanData?.status == 'DIVERIFIKASI'"
+            label=""
+            v-model:model-value="catatanPengiriman"
+            placeholder="Catatan Pengiriman"
+            class="w-[300px]"
+          />
         </div>
         <div
           class="flex gap-3"
@@ -384,7 +420,21 @@ const verifikasiPengiriman = () => {
               )
             "
           />
-          <CustomButton label="Verifikasi" class="my-auto bg-adameds-300" @click="verifikasiPengiriman"/>
+          <CustomButton
+            label="Verifikasi"
+            class="my-auto bg-adameds-300"
+            @click="verifikasiPengiriman"
+          />
+        </div>
+        <div
+          class="flex gap-3"
+          v-else-if="detailPengirimanData?.status == 'DIVERIFIKASI'"
+        >
+          <CustomButton
+            label="Kirim Barang"
+            class="my-auto bg-adameds-300"
+            @click="kirimBarang"
+          />
         </div>
       </div>
     </template>
