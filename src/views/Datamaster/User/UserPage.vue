@@ -25,11 +25,23 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string, data: any = null) => {
-  let tempData = { label: label };
-  if (data) {
-    tempData = { ...tempData, ...data };
-  }
+// const changeSection = (label: string, data: any = null) => {
+//   let tempData = { label: label };
+//   if (data) {
+//     tempData = { ...tempData, ...data };
+//   }
+//   if (dataBreadCrumb.value.length) {
+//     dataBreadCrumb.value[0] = tempData;
+//   } else {
+//     dataBreadCrumb.value.push(tempData);
+//   }
+// };
+const changeSection = (
+  label: string,
+  mode: string = "add",
+  data: any = null
+) => {
+  let tempData = { label: label, mode: mode, data: data }; // Include mode and data
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
@@ -168,7 +180,7 @@ const onRowSelect = (event: any) => {
         @update:selectedFilter="handleSelectedRole"
         @search="fetchUserData()"
         @reset="handleReset()"
-        @tambah-data="changeSection('Daftar')"
+        @tambah-data="changeSection('Daftar', 'add')"
         @reload-data="fetchUserData()"
         :filterSelect="rolePayload"
         ref="resetFormRef"
@@ -252,6 +264,7 @@ const onRowSelect = (event: any) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="changeSection('Daftar', 'edit', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -278,6 +291,8 @@ const onRowSelect = (event: any) => {
   <TambahDataUserPage
     v-else-if="dataBreadCrumb[0].label == 'Daftar'"
     @back="dataBreadCrumb.pop()"
+    :method="dataBreadCrumb[0].mode"
+    :payload="dataBreadCrumb[0].data"
   />
   <DetailUser
     v-else-if="dataBreadCrumb[0].label == 'Detail'"

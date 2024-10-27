@@ -235,6 +235,7 @@ const confirmDelete = async (item: any) => {
         @page="handlePage"
         :showExport="false"
         :showImport="false"
+        :showDownload="false"
       />
     </template>
   </Card>

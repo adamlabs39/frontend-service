@@ -121,7 +121,10 @@ watch(
         setValues({
           ...props.payload,
           tanggalLahir: new Date(props.payload.tanggalLahir)
+
         });
+        console.log(tanggalLahir)
+
       }
     } else {
       resetForm();
@@ -140,6 +143,7 @@ watch(
   >
     <template #header>{{ title }} Pegawai</template>
     <template #body>
+      {{ props.payload.tanggalLahir }}
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <!-- Form Input -->
         <CustomSelect

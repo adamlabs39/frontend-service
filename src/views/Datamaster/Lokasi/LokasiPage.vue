@@ -142,6 +142,7 @@ const downloadExportExcel = async () => {
       KodeAntrianPoli: "Kode Antrian Poli",
       Description: "Deskripsi",
       Phone: "No. Telephone",
+      email:"Email",
       Url: "URL",
       Tipe: "Tipe",
       Kelas: "Kelas",
@@ -159,11 +160,11 @@ const downloadExportExcel = async () => {
         Kode: rows[i].code,
         Nama: rows[i].name,
         KodeAntrianPoli: rows[i].codeAntrianPoli ?? '-',
-        description:rows[i].description,
+        Description:rows[i].description ?? '-',
         Phone:rows[i].phone,
         email:rows[i].email,
         Url:rows[i].url,
-        Tipe:rows[i].type,
+        Tipe:rows[i].locationType,
         Kelas:rows[i].className ?? '-',
         PartOf:rows[i].partOf ?? '-',
         PartOfName:rows[i].partOfName ?? '-',
@@ -179,7 +180,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 13 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 15 } }];
 
     // Style Title
     worksheet["A1"].s = {

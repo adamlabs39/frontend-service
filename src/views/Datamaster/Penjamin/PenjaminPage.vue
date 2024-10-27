@@ -216,6 +216,44 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode Penjamin*",
+      Name: "Nama Penjamin*",
+      Tlp:"No. Telepon",
+      Alamat:"Alamat"
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "BP-001", Name: "BPJS", Tlp:"(032) 888 987",Alamat:"Surabaya" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Penjamin");
+    XLSX.writeFile(workbook, `Format Datamaster Penjamin.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData()
   dataUpload.append('file',file);
@@ -364,6 +402,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

@@ -30,6 +30,7 @@ import OpenBoxIcon from "./OpenBoxIcon.vue";
 import BoxPlusIcon from "./BoxPlusIcon.vue";
 import BoxUpIcon from "./BoxUpIcon.vue";
 import BoxDownIcon from "./BoxDownIcon.vue";
+import DownloadIcon from "./DownloadIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -60,6 +61,8 @@ export default {
     app.component("FileImportIcon", FileImportIcon);
     app.component("TrashFillIcon", TrashFillIcon);
     app.component("HandshakeIcon", HandshakeIcon);
+    app.component("DownloadIcon", DownloadIcon);
+    
     // NOTE Inventory
     app.component("OpenBoxIcon", OpenBoxIcon);
     app.component("BoxPlusIcon", BoxPlusIcon);

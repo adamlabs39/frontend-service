@@ -19,9 +19,13 @@ const props = defineProps({
     type: Boolean,
     default: true, // Default to show import button
   },
+  showDownload: {
+    type: Boolean,
+    default: true, // Default to show import button
+  },
 });
 
-const emit = defineEmits(["page", "export", "import"]);
+const emit = defineEmits(["page", "export", "import","download"]);
 
 const handlePage = (event: any) => {
   emit("page", event);
@@ -72,6 +76,12 @@ const onError = (event: any) => {
         label="Eksport"
         @click="emit('export')"
         icon="FileImportIcon"
+      />
+      <CustomButton
+        v-if="showDownload"
+        label="Download"
+        @click="emit('download')"
+        icon="DownloadIcon"
       />
     </div>
 

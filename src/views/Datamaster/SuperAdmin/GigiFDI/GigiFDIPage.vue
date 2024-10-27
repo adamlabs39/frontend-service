@@ -220,6 +220,43 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Code SATUSEHAT*",
+      Display: "Display SATUSEHAT*",
+      Name: "Gigi*"
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "GG-001",Display:"Structure of permanent maxillary right central incisor", Name: "14" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Gigi");
+    XLSX.writeFile(workbook, `Format Datamaster Gigi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
@@ -369,6 +406,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

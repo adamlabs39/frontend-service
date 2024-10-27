@@ -66,14 +66,12 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama lokasi harus diisi"),
     description: yup.string().required("Deskripsi harus diisi"),
     phone: yup
-      .string()
-      .required("No. Telepon harus diisi")
-      .matches(phoneRegExp, "Format tidak sesuai"),
+      .string(),
     email: yup
       .string()
       .required("Email harus diisi")
       .email("Format email tidak sesuai"),
-    url: yup.string(),
+    url: yup.string().required("URL Website harus diisi"),
     locationType: yup.string().required("Tipe harus diisi"),
     className: yup.string(),
     partOf: yup.string(),

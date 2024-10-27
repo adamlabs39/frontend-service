@@ -166,7 +166,6 @@ const confirmDelete = async (item: any) => {
     }
   }
 };
-
 const downloadExportExcel = async () => {
   try {
     const response = await ruanganStore.exportApi();
@@ -176,50 +175,62 @@ const downloadExportExcel = async () => {
       return;
     }
 
-    const title = ["DATAMASTER RUANGAN"];
+    // Prepare Data for Export
+    const title = ["DATAMASTER ICD-9 CM"];
     const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
     data.push({});
     data.push({
       No: "No",
       Kode: "Kode Ruangan",
       Nama: "Nama Ruangan",
-    
+      Kategori: "Kategori Ruangan",
+      nomorKamar: "Nama Ruangan",
+      kelasRuangan: "Nama Ruangan",
+      Status: "Status",
     });
+
+    // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        
+        Kategori: rows[i].kategoriRuangan,
+        nomorKamar: rows[i].noRoom,
+        kelasRuangan: rows[i].kelasRuangan,
+        Status: rows[i].status,
       });
     }
 
+    // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
+    // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
 
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
-
+    // Style Title
     worksheet["A1"].s = {
-      alignment: {
-        horizontal: "center",
-        vertical: "center",
-      },
+      alignment: { horizontal: "center", vertical: "center" },
       font: { bold: true, sz: 14 },
     };
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-    
-    ];
 
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-    for (let row = range.s.r; row <= range.e.r; row++) {
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
         // Apply border only to row 3 and beyond (table rows)
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
@@ -248,13 +259,102 @@ const downloadExportExcel = async () => {
       }
     }
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Ruangan");
-
-    XLSX.writeFile(workbook, `Datamaster Ruangan.xlsx`);
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
+
+// const downloadExportExcel = async () => {
+//   try {
+//     const response = await ruanganStore.exportApi();
+//     const rows = response.payload;
+//     if (!rows || rows.length === 0) {
+//       console.error("No data available for export");
+//       return;
+//     }
+
+//     const title = ["DATAMASTER RUANGAN"];
+//     const data = [];
+//     data.push({});
+//     data.push({
+//       No: "No",
+//       Kode: "Kode Ruangan",
+//       Nama: "Nama Ruangan",
+//       Kategori: "Kategori Ruangan",
+//       nomorKamar: "Nama Ruangan",
+//       kelasRuangan: "Nama Ruangan",
+//     });
+
+//     for (let i = 0; i < rows.length; i++) {
+//       data.push({
+//         No: i + 1,
+//         Kode: rows[i].code,
+//         Nama: rows[i].name,
+//         Kategori: rows[i].kategoriRuangan.name,
+//         nomorKamar: rows[i].noRoom,
+//         kelasRuangan: rows[i].kelasRuangan,
+//       });
+//     }
+
+//     const workbook = XLSX.utils.book_new();
+//     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+//     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+
+//     worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+
+//     worksheet["A1"].s = {
+//       alignment: {
+//         horizontal: "center",
+//         vertical: "center",
+//       },
+//       font: { bold: true, sz: 14 },
+//     };
+//     worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }];
+
+//     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+//     for (let row = range.s.r; row <= range.e.r; row++) {
+//       for (let col = range.s.c; col <= range.e.c; col++) {
+//         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+//         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+//         // Apply border only to row 3 and beyond (table rows)
+//         if (row >= 2) {
+//           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+//           worksheet[cellAddress].s.border = {
+//             top: { style: "thin" },
+//             bottom: { style: "thin" },
+//             left: { style: "thin" },
+//             right: { style: "thin" },
+//           };
+//         }
+
+//         // Align header cells (row 3)
+//         if (row === 2 || col === 0) {
+//           worksheet[cellAddress].s.alignment = {
+//             horizontal: "center",
+//             vertical: "center",
+//           };
+//         }
+
+//         // Fill header with background color (row 3)
+//         if (row === 2) {
+//           worksheet[cellAddress].s.fill = {
+//             fgColor: { rgb: "9fe2db" },
+//           };
+//         }
+//       }
+//     }
+
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Ruangan");
+
+//     XLSX.writeFile(workbook, `Datamaster Ruangan.xlsx`);
+//   } catch (error) {
+//     console.error("Error while exporting Excel", error);
+//   }
+// };
 
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
