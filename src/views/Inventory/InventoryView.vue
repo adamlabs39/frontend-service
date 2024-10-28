@@ -46,7 +46,10 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.LINK,
             url: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
           },
-          { name: "Pengeluaran Unit", type: linkType.LINK, url: "" },
+          {
+            name: "Pengeluaran Unit", type: linkType.LINK, url: "/inventory/pengeluaran-barang/pengeluaran-unit" 
+            
+          },
         ],
       },
       {

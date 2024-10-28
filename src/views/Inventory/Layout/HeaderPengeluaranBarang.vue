@@ -18,6 +18,8 @@ const props = defineProps({
 });
 
 
+const emit = defineEmits(["tambahPengeluaran"]);
+
 const noPermintaan = ref<string>("");
 
 // onMounted(() => {
@@ -42,6 +44,17 @@ const noPermintaan = ref<string>("");
           >
           </CustomBreadCrumb>
         </div>
+        <CustomButton
+          v-if="pageType == 'pengeluaran-unit'"
+          @click="
+            pageType == 'pengeluaran-unit'
+              ? emit('tambahPengeluaran')
+              : ''
+          "
+          icon="PhPlus"
+          label="Pengeluaran"
+          class="mr-[10px]"
+        />
       </div>
     </template>
     <template #content>
@@ -51,7 +64,7 @@ const noPermintaan = ref<string>("");
           prependIcon="PhMagnifyingGlass"
           label="Pencarian"
           placeholder="Cari Nama Pasien"
-          class=" grow"
+          class="grow"
         />
       </div>
       <slot name="tabs"></slot>
