@@ -262,7 +262,8 @@ const formType = ref<"add" | "edit">("add");
               <CustomChip
                 v-if="
                   pageType == 'rawat-jalan' &&
-                  slotProps.data.platform != 'ADMISI'
+                  slotProps.data.platform != 'ADMISI' &&
+                  slotProps.data.platform
                 "
                 :showCheckedIcon="false"
                 :label="slotProps.data.platform"

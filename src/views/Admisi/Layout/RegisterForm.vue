@@ -10,8 +10,9 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import PatientIdentityForm from "../Section/PatientIdentityForm.vue";
-import DoctorVisitDetail from "../Section/DoctorVisitDetailForm.vue";
+import PatientIdentityFormRJ from "../Forms/PatientIdentityFormRJ.vue";
+import PatientIdentityFormIGD from "../Forms/PatientIdentityFormIGD.vue";
+import DoctorVisitDetail from "../Forms/DoctorVisitDetailForm.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
@@ -70,13 +71,31 @@ onBeforeMount(async () => {
 });
 
 const setDetailDoctorVisitData = (patientData: any) => {
-  if (props.pageType == "rawat-jalan") {
-    openedDoctorVisitData.value = {
+  if (props.pageType == "rawat-jalan" || props.pageType == "igd") {
+    let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
       jadwalDokterUuid: patientData.jadwalDokterUuid,
       maternity: patientData.maternity,
       complaint: patientData.complaint,
       note: patientData.note,
+      assuranceAccountId: patientData.insurance,
+      practitionerUuid: patientData.practitionerUuid,
+    };
+    if (props.pageType == "rawat-jalan") {
+      delete tempOpenedDoctorVisit.practitionerUuid;
+    } else {
+      delete tempOpenedDoctorVisit.jadwalDokterUuid;
+    }
+    openedDoctorVisitData.value = tempOpenedDoctorVisit;
+  }
+  if (props.pageType == "rawat-inap") {
+    openedDoctorVisitData.value = {
+      paymentMethod: patientData.paymentMethod,
+      practitionerUuid: patientData.practitionerUuid,
+      complaint: patientData.complaint,
+      familyBill: patientData.familyBill,
+      noSpri: patientData.noSpri,
+      monitoringRoomUuid: patientData.monitoringRoomUuid,
       assuranceAccountId: patientData.insurance,
     };
   }
@@ -95,6 +114,13 @@ const fetchDetailPatientData = async () => {
     }
     if (response && response.payload) {
       openedPatientData.value = response.payload.patient;
+      openedPatientData.value.withoutIdentity =
+        response.payload.withoutIdentity;
+      if (openedPatientData.value.isNewBorn) {
+        openedPatientData.value.multipleBirth = response.payload.multipleBirth
+          ? true
+          : false;
+      }
 
       setDetailDoctorVisitData(response.payload);
     }
@@ -105,15 +131,23 @@ const fetchDetailPatientData = async () => {
   }
 };
 
-const patientIdentityForm = ref<InstanceType<
-  typeof PatientIdentityForm
+// NOTE Patient form
+const patientIdentityFormRJ = ref<InstanceType<
+  typeof PatientIdentityFormRJ
+> | null>(null);
+const patientIdentityFormIGD = ref<InstanceType<
+  typeof PatientIdentityFormIGD
 > | null>(null);
 const doctorVisitDetail = ref<InstanceType<typeof DoctorVisitDetail> | null>(
   null
 );
 const closeRegisterForm = () => {
-  if (patientIdentityForm.value) {
-    patientIdentityForm.value.onResetForm();
+  if (patientIdentityFormRJ.value) {
+    patientIdentityFormRJ.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormIGD.value) {
+    patientIdentityFormIGD.value.onResetForm();
     openedPatientData.value = {};
   }
   if (doctorVisitDetail.value) {
@@ -124,8 +158,17 @@ const closeRegisterForm = () => {
 };
 
 const postRegisterPatient = async () => {
-  const tempPatientData = await patientIdentityForm.value?.onSubmit();
+  let tempPatientData;
+
+  if (props.pageType == "rawat-jalan") {
+    tempPatientData = await patientIdentityFormRJ.value?.onSubmit();
+  } else if (props.pageType == "igd") {
+    tempPatientData = await patientIdentityFormIGD.value?.onSubmit();
+  }
   const tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+  console.log("tempPatientData", tempPatientData);
+  console.log("tempDocterVisitData", tempDocterVisitData);
+
   if (tempPatientData && tempDocterVisitData) {
     let tempBirthDate = formatDate(
       tempPatientData!.birthDetail.birthDate,
@@ -134,27 +177,42 @@ const postRegisterPatient = async () => {
     tempPatientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
     let payload = { patientData: tempPatientData, ...tempDocterVisitData };
     storeUtils.setLoading(true);
+
     try {
+      let response;
       if (props.pageType == "rawat-jalan") {
         if (props.formType == "add") {
-          await admisiRJStore.registRJ(payload);
+          response = await admisiRJStore.registRJ(payload);
         } else {
-          await admisiRJStore.updateRJ(props.patientData.uuid, payload);
+          response = await admisiRJStore.updateRJ(
+            props.patientData.uuid,
+            payload
+          );
         }
       } else if (props.pageType == "rawat-inap") {
         if (props.formType == "add") {
-          await admisiRIStore.registNewBorn(payload);
+          response = await admisiRIStore.registNewBorn(payload);
         } else {
-          await admisiRIStore.updateRI(props.patientData.uuid, payload);
+          response = await admisiRIStore.updateRI(
+            props.patientData.uuid,
+            payload
+          );
         }
       } else if (props.pageType == "igd") {
         if (props.formType == "add") {
-          await admisiIGDStore.registIGD(payload);
+          response = await admisiIGDStore.registIGD(payload);
         } else {
-          await admisiIGDStore.updateIGD(props.patientData.uuid, payload);
+          response = await admisiIGDStore.updateIGD(
+            props.patientData.uuid,
+            payload
+          );
         }
       }
-      await fetchDetailPatientData();
+      if (response && response.payload) {
+        openedPatientData.value = response.payload.patientData;
+
+        setDetailDoctorVisitData(response.payload);
+      }
       emit("goToDetail");
     } catch (error) {
       console.error("Failed to process the data:", error);
@@ -236,8 +294,17 @@ const registPatient = async (type: string) => {
       </template>
     </Card>
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-      <PatientIdentityForm
-        ref="patientIdentityForm"
+      <PatientIdentityFormRJ
+        v-if="pageType == 'rawat-jalan'"
+        ref="patientIdentityFormRJ"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+      />
+      <PatientIdentityFormIGD
+        v-else-if="pageType == 'igd'"
+        ref="patientIdentityFormIGD"
         :pageType="pageType"
         :isDetail="isDetail()"
         :formType="dataBreadCrumb[0].label?.toString()"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -114,6 +114,14 @@ const setPoliDpjpJadwal = (uuid: any) => {
   }
 };
 
+const listKelasRuangan = ref([
+  { label: "kelas 1", value: 1 },
+  { label: "kelas 2", value: 2 },
+  { label: "kelas 3", value: 3 },
+  { label: "VIP", value: 4 },
+  { label: "VVIP", value: 5 },
+]);
+
 const mergeBill = ref(false);
 const selectedRoomCategory = ref();
 const selectedRoomClass = ref();
@@ -127,17 +135,27 @@ const onPaymentMethodSelect = (label: string) => {
   paymentMethod.value = label;
 };
 
-const schema = toTypedSchema(
-  yup
-    .object({
-      paymentMethod: yup.string(),
-      jadwalDokterUuid: yup.string().required("DPJP harus dipilih"),
-      maternity: yup.boolean(),
-      complaint: yup.string().required("Keluhan Utama harus diisi"),
-      note: yup.string().required("Catatan harus diisi"),
-      assuranceAccountId: yup.string().required("Nama Penjamin harus dipilih"),
-    })
-    .noUnknown()
+const schema = computed(() =>
+  toTypedSchema(
+    yup
+      .object({
+        paymentMethod: yup.string().default("TUNAI"),
+        jadwalDokterUuid: yup.string().required("Jadwal harus dipilih"),
+        maternity: yup.boolean(),
+        complaint: yup.string(),
+        note: yup.string(),
+        assuranceAccountId: yup
+          .string()
+          .when("paymentMethod", ([paymentMethod], schema) => {
+            return paymentMethod != "TUNAI"
+              ? schema.required("Nama Penjamin Harus Dipilih")
+              : schema;
+          }),
+        // NOTE Rawat Inap
+        practitionerUuid: yup.string().required("DPJP harus dipilih"),
+      })
+      .noUnknown()
+  )
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -145,11 +163,14 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 });
 
 const [paymentMethod] = defineField("paymentMethod");
-const [jadwalDokterUuid] = defineField("jadwalDokterUuid");
 const [maternity] = defineField("maternity");
 const [complaint] = defineField("complaint");
 const [note] = defineField("note");
 const [assuranceAccountId] = defineField("assuranceAccountId");
+// NOTE Rawat Jalan
+const [jadwalDokterUuid] = defineField("jadwalDokterUuid");
+// NOTE Rawat Inap
+const [practitionerUuid] = defineField("practitionerUuid");
 
 const onSubmit = handleSubmit(async (values) => {
   return values;
@@ -208,94 +229,102 @@ defineExpose({
         <div
           class="grid gap-y-5 gap-x-[30px]"
           :class="[
-            patientData.is_newborn &&
-            formType == 'Daftar Bayi Baru Lahir' &&
+            (patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir') &&
             pageType == 'rawat-inap'
               ? 'grid-cols-5'
               : 'grid-cols-2',
           ]"
         >
-          <!-- FIXME Dummy data -->
-          <CustomSelect
-            v-if="pageType == 'rawat-jalan'"
-            v-model="jadwalDokterUuid"
-            @update:model-value="setPoliDpjpJadwal"
-            label="Jadwal"
-            placeHolder="Pilih Jadwal"
-            class="col-span-2"
-            optionLabel="name"
-            optionValue="uuid"
-            :showFilter="false"
-            :options="listDataJadwalDokter"
-            :disabled="isDetail"
+          <div
+            class="gap-x-[30px]"
+            :class="[
+              (patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir') &&
+              pageType == 'rawat-inap'
+                ? 'col-span-4'
+                : 'col-span-2',
+              pageType == 'rawat-jalan'
+                ? 'grid grid-cols-3'
+                : 'grid grid-cols-4',
+            ]"
           >
-            <template #customOptions="{ option }">
-              {{ option.poli }} ({{ option.name }}) | {{ option.day }} -
-              {{ option.startTime }}
-            </template>
-          </CustomSelect>
-          <CustomTextfield
-            v-if="pageType == 'rawat-jalan'"
-            v-model="selectedJadwalPoli"
-            label="Poli"
-            placeholder="Poli"
-            class=""
-            readOnly
-            :disabled="isDetail"
-          />
-          <!-- <CustomSelect
-            v-if="pageType == 'rawat-jalan'"
-            label="Poli"
-            placeHolder="Pilih Poli"
-            class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['POLI UMUM', 'POLI ANAK', 'POLI GIGI POLI MATA']"
-            :disabled="isDetail"
-          /> -->
-          <CustomTextfield
-            v-if="pageType == 'rawat-jalan'"
-            v-model="selectedJadwalDpjp"
-            label="DPJP"
-            placeholder="DPJP"
-            class=""
-            readOnly
-            :disabled="isDetail"
-          />
-          <CustomSelect
-            v-else
-            label="DPJP"
-            placeHolder="Pilih DPJP"
-            :class="{
-              'col-span-2':
-                patientData.is_newborn &&
-                formType == 'Daftar Bayi Baru Lahir' &&
-                pageType == 'rawat-inap',
-            }"
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
-            :disabled="isDetail"
-          />
-          <CustomTextfield
-            v-if="pageType == 'igd' || pageType == 'rawat-inap'"
-            v-model="complaint"
-            label="Keluhan Utama"
-            :class="{
-              'col-span-2':
-                patientData.is_newborn &&
-                formType == 'Daftar Bayi Baru Lahir' &&
-                pageType == 'rawat-inap',
-            }"
-            placeholder="Keluhan Utama"
-            :disabled="isDetail"
-          />
+            <CustomSelect
+              v-if="pageType == 'rawat-jalan'"
+              v-model="selectedJadwalPoli"
+              label="Poli"
+              placeHolder="Pilih Poli"
+              class=""
+              optionLabel=""
+              optionValue=""
+              :showFilter="false"
+              :options="['POLI UMUM', 'POLI ANAK', 'POLI GIGI POLI MATA']"
+              :disabled="isDetail"
+            />
+            <!-- FIXME Dummy Data -->
+            <!-- v-model="selectedJadwalDpjp" -->
+            <CustomSelect
+              v-model="practitionerUuid"
+              label="DPJP"
+              placeHolder="Pilih DPJP"
+              :class="{
+                'col-span-2':
+                  ((patientData.isNewBorn ||
+                    formType == 'Daftar Bayi Baru Lahir') &&
+                    pageType == 'rawat-inap') ||
+                  pageType == 'igd',
+              }"
+              optionLabel="name"
+              optionValue="uuid"
+              :options="[
+                {
+                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+                  name: 'Rudi tabuti',
+                },
+                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
+                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
+              ]"
+              :showFilter="false"
+              :disabled="isDetail"
+            />
+            <!-- FIXME Dummy data -->
+            <!-- NOTE Harus ada api baru untuk menampilkan data jadwal dengan filter dokter poli dan jam saat ini -->
+            <CustomSelect
+              v-if="pageType == 'rawat-jalan'"
+              v-model="jadwalDokterUuid"
+              @update:model-value="setPoliDpjpJadwal"
+              label="Jadwal"
+              placeHolder="Pilih Jadwal"
+              class=""
+              optionLabel="name"
+              optionValue="uuid"
+              :showFilter="false"
+              :options="listDataJadwalDokter"
+              :disabled="isDetail"
+              :invalid="!!errors.jadwalDokterUuid"
+              :invalidMessage="errors.jadwalDokterUuid"
+            >
+              <template #customOptions="{ option }">
+                {{ option.poli }} ({{ option.name }}) | {{ option.day }} -
+                {{ option.startTime }}
+              </template>
+            </CustomSelect>
+            <CustomTextfield
+              v-if="pageType == 'igd' || pageType == 'rawat-inap'"
+              v-model="complaint"
+              label="Keluhan Utama"
+              :class="{
+                'col-span-2':
+                  ((patientData.isNewBorn ||
+                    formType == 'Daftar Bayi Baru Lahir') &&
+                    pageType == 'rawat-inap') ||
+                  pageType == 'igd',
+              }"
+              placeholder="Keluhan Utama"
+              :disabled="isDetail"
+            />
+          </div>
           <CustomSwitch
             v-if="
-              patientData.is_newborn &&
-              formType == 'Daftar Bayi Baru Lahir' &&
+              (patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir') &&
               pageType == 'rawat-inap'
             "
             :disabled="!mergeBill || isDetail"
@@ -305,8 +334,8 @@ defineExpose({
         </div>
         <div
           v-if="
-            ((!patientData.is_newborn ||
-              formType != 'Daftar Bayi Baru Lahir') &&
+            (!patientData.isNewBorn &&
+              formType != 'Daftar Bayi Baru Lahir' &&
               pageType == 'rawat-inap') ||
             pageType != 'rawat-inap'
           "
@@ -385,6 +414,7 @@ defineExpose({
               ]"
               :disabled="isDetail"
             />
+            <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield
               label="No. Penjamin"
               class=""
@@ -402,15 +432,18 @@ defineExpose({
               placeholder="SPRI"
               disabled
             />
+            <!-- FIXME Dummy Data -->
             <CustomSelect
               v-model="selectedRoomCategory"
               label="Kategori Ruangan"
               placeHolder="Pilih Kategori Ruangan"
               class="col-span-2"
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               :showFilter="false"
-              :options="['Rawatan Umum']"
+              :options="[
+                { name: 'VIP', uuid: '0191690f-1cb3-7884-afeb-6ad62f0e0a1a' },
+              ]"
               :disabled="isDetail"
             />
             <CustomSelect
@@ -418,21 +451,24 @@ defineExpose({
               label="Kelas"
               placeHolder="Pilih Kelas"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="label"
+              optionValue="value"
               :showFilter="false"
-              :options="['Kelas 2']"
+              :options="listKelasRuangan"
               :disabled="isDetail"
             />
+            <!-- FIXME Dummy Data -->
             <CustomSelect
               v-model="selectedRoom"
               label="Ruangan"
               placeHolder="Pilih Ruangan"
               class="col-span-2"
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               :showFilter="false"
-              :options="['Mawar']"
+              :options="[
+                { name: '101', uuid: '0191690f-1cb3-7a48-8bad-b21700bd19f4' },
+              ]"
               :disabled="isDetail"
             />
           </div>

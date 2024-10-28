@@ -10,7 +10,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import ExaminationHistoryCard from "./Section/ExaminationHistoryCard.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import NoData from "@/components/section/NoData.vue";
-import PatientIdentityForm from "./Section/PatientIdentityForm.vue";
+import PatientIdentityForm from "./Forms/PatientIdentityFormRJ.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
 import type { DataTableRowClickEvent } from "primevue/datatable";
