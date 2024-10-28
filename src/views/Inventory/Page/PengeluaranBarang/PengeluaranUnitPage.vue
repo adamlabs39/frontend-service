@@ -5,6 +5,7 @@ import { onMounted, ref } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import TambahPengeluaran from "./PengeluaranUnit/TambahPengeluaran.vue";
+import DetailPengeluaran from "./PengeluaranUnit/DetailPengeluaran.vue";
 
 const route = useRoute();
 
@@ -38,8 +39,9 @@ onMounted(() => {
       noPengeluaran: "PGL.1234",
       kategoriItem: "Medis",
       jenisStok: "Umum",
-      jenisItem: "Obat",
-      jenisPengeluaran: "Pemakaian Unit",
+          jenisItem: "Obat",
+          jenisPengeluaran: "Pemakaian Unit",
+      tujuanPengeluaran:"Poli Mata",
       petugasPengeluaran: "Nama Petugas",
       catatan: "-",
       datas: [
@@ -76,9 +78,22 @@ const changeSection = (label: string, data: any = null) => {
     detailPengeluaranUnitData.value = data; // Simpan data detail
   }
 };
+
+const handleSimpanPengeluaran = (data: any) => {
+  if (pengeluaranUnitData.value === null) {
+    pengeluaranUnitData.value = [];
+  }
+  pengeluaranUnitData.value.push(data);
+  dataBreadCrumb.value[0].label = "Pengeluaran Unit";
+};
+
+const handleRowClick = (rowData: any) => {
+  changeSection("Detail Pengeluaran", rowData.data);
+};
 </script>
 
 <template>
+  <!-- {{ pengeluaranUnitData }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Pengeluaran Unit'"
     pt:body:class="h-full pt-0 overflow-auto"
@@ -96,6 +111,7 @@ const changeSection = (label: string, data: any = null) => {
     <template #content>
       <DataTable
         v-if="pengeluaranUnitData.length"
+        @row-click="handleRowClick"
         :value="pengeluaranUnitData"
         tableStyle="min-width: 50rem"
         scrollable
@@ -176,6 +192,14 @@ const changeSection = (label: string, data: any = null) => {
     v-else-if="dataBreadCrumb[0].label == 'Tambah Pengeluaran'"
     :pageType="pageType"
     :dataBreadCrumb="dataBreadCrumb"
-    @kembali="dataBreadCrumb[0].label = 'Pembelian Barang Supplier'"
+    @kembali="dataBreadCrumb[0].label = 'Pengeluaran Unit'"
+    @on-simpan-pengeluaran="handleSimpanPengeluaran"
+  />
+
+  <DetailPengeluaran
+    v-else-if="(dataBreadCrumb[0].label = 'Detail Pengeluaran')"
+    :page-type="pageType"
+    :detail-data="detailPengeluaranUnitData"
+    @kembali="dataBreadCrumb[0].label = 'Pengeluaran Unit'"
   />
 </template>

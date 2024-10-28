@@ -12,8 +12,23 @@ import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import DialogPermintaanMultiple from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/DialogPermintaanMultiple.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import DialogPengeluaranMultiple from "./DialogPengeluaranMultiple.vue";
+
+
+
+function generateRandomNoPengeluaran() {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
+  return `PGL${randomNumber}`; // Gabungkan dengan "PO"
+}
+
+function formatDate(date:any) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Menambah 1 karena bulan dimulai dari 0
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
 
 const props = defineProps({
   pageType: {
@@ -36,6 +51,7 @@ const dataPengeluarans = ref<any[]>([]);
 
 const tambahPermintaanSchema = toTypedSchema(
   yup.object({
+    noPengeluaran: yup.string(),
     jenisPengeluaran: yup.string(),
     startDateFilter: yup.date(),
     endDateFilter: yup.date(),
@@ -50,7 +66,8 @@ const tambahPermintaanSchema = toTypedSchema(
 
 const { handleSubmit, resetForm, defineField } = useForm({
   validationSchema: tambahPermintaanSchema,
-  initialValues: {
+    initialValues: {
+    noPengeluaran:generateRandomNoPengeluaran(),
     jenisPengeluaran: "",
     startDateFilter: new Date(),
     endDateFilter: new Date(),
@@ -63,6 +80,7 @@ const { handleSubmit, resetForm, defineField } = useForm({
   },
 });
 
+const [noPengeluaran] = defineField("noPengeluaran");
 const [jenisPengeluaran] = defineField("jenisPengeluaran");
 const [startDateFilter] = defineField("startDateFilter");
 const [endDateFilter] = defineField("endDateFilter");
@@ -130,17 +148,17 @@ const myPushFunction = () => {
   });
 };
 
-const dialogTambahMultiplePermintaan = ref({
+const dialogTambahMultiplePengeluaran = ref({
   isVisible: false,
   title: "Tambah Item Multiple",
 });
 
 function handleAddMultiple() {
-  dialogTambahMultiplePermintaan.value.isVisible = true;
+  dialogTambahMultiplePengeluaran.value.isVisible = true;
 }
 
-function addToArray(newPermintaan: any) {
-  dataPengeluarans.value.push(...newPermintaan);
+function addToArray(newPengeluaran: any) {
+  dataPengeluarans.value.push(...newPengeluaran);
   console.log(dataPengeluarans.value);
 }
 
@@ -149,6 +167,7 @@ const onSubmit = handleSubmit((values) => {
     ...values,
     datas: JSON.parse(JSON.stringify(dataPengeluarans.value)), // Tambahkan data dari tabel
     totalItem: dataPengeluarans.value.length,
+    tanggalPengeluaran: formatDate(new Date()),
   };
   console.log("Submitted with", payload);
   emit("onSimpanPengeluaran", payload);
@@ -200,8 +219,9 @@ const resetFormFields = () => {
                 label="Jenis Pengeluaran"
                 v-model:modelValue="jenisPengeluaran"
                 :options="listJenisPengeluaran"
-                optionLabel="value"
                 placeholder=""
+                optionLabel="value"
+                optionValue="value"
               />
               <div>
                 <div class="font-semibold text-normal">Tanggal Pengeluaran</div>
@@ -429,10 +449,10 @@ const resetFormFields = () => {
           @click="handleAddMultiple"
         />
 
-        <DialogPermintaanMultiple
-          v-model:isDialogVisible="dialogTambahMultiplePermintaan.isVisible"
-          :title="dialogTambahMultiplePermintaan.title"
-          @add-permintaan="addToArray"
+        <DialogPengeluaranMultiple
+          v-model:isDialogVisible="dialogTambahMultiplePengeluaran.isVisible"
+          :title="dialogTambahMultiplePengeluaran.title"
+          @add-pengeluaran="addToArray"
         />
       </div>
     </template>
@@ -443,7 +463,7 @@ const resetFormFields = () => {
           <div>
             <div class="font-semibold underline text-SM">Total Item</div>
             <div class="font-normal text-normal">
-              {{ dataPengeluarans.length }}
+              {{ dataPengeluarans.length }} item
             </div>
           </div>
           <div>

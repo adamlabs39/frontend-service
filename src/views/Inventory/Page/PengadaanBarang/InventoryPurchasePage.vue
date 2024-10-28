@@ -86,7 +86,7 @@ const pembatalanPembelianData = computed(() => {
 </script>
 
 <template>
-  <!-- {{ pembelianData  }} -->
+  {{ pembelianData  }}
   <Card
     v-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
     pt:body:class="h-full pt-0 overflow-auto"
