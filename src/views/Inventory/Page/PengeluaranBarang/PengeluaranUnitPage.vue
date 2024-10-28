@@ -6,6 +6,7 @@ import type { MenuItem } from "primevue/menuitem";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import TambahPengeluaran from "./PengeluaranUnit/TambahPengeluaran.vue";
 import DetailPengeluaran from "./PengeluaranUnit/DetailPengeluaran.vue";
+import Paginator from "primevue/paginator";
 
 const route = useRoute();
 
@@ -39,9 +40,9 @@ onMounted(() => {
       noPengeluaran: "PGL.1234",
       kategoriItem: "Medis",
       jenisStok: "Umum",
-          jenisItem: "Obat",
-          jenisPengeluaran: "Pemakaian Unit",
-      tujuanPengeluaran:"Poli Mata",
+      jenisItem: "Obat",
+      jenisPengeluaran: "Pemakaian Unit",
+      tujuanPengeluaran: "Poli Mata",
       petugasPengeluaran: "Nama Petugas",
       catatan: "-",
       datas: [
@@ -185,6 +186,19 @@ const handleRowClick = (rowData: any) => {
           </template>
         </Column>
       </DataTable>
+    </template>
+    <template #footer>
+      <div class="flex justify-end">
+        <Paginator
+          :rows="10"
+          :totalRecords="120"
+          :rowsPerPageOptions="[10, 20, 30]"
+          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate="{currentPage}"
+        >
+          <template #start="slotProps">Total Data: 0</template>
+        </Paginator>
+      </div>
     </template>
   </Card>
 
