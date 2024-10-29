@@ -57,7 +57,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           type: linkType.DROPDOWN,
         icon:"BoxDownIcon",
         child: [
-          { name: "Penerimaan Pembelian", type: linkType.LINK, url: "" },
+          { name: "Penerimaan Pembelian", type: linkType.LINK, url: "/inventory/penerimaan-barang/penerimaan-pembelian" },
           { name: "Penerimaan Retur Unit", type: linkType.LINK, url: "" },
         ],
       },
