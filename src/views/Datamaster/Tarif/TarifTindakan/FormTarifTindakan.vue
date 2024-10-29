@@ -61,9 +61,7 @@ interface Tindakan {
 interface LabEntry {
   tarifLabUuid: string;
 }
-interface FieldEntry {
-  value: LabEntry;
-}
+
 
 //Fetch data
 
@@ -402,6 +400,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     values.grandTotal = grandTotal.value;
     delete values.unitPelayananSelected;
     delete values.penjaminSelected;
+
     tempDeleteTindakan.value.forEach((deletedTindakan) => {
       const indexToReplace = values.tindakanPoli.findIndex(
         (tindakan: Tindakan) =>
@@ -414,17 +413,20 @@ const onSubmit = handleSubmit(async (values: any) => {
         values.tindakanPoli.push(deletedTindakan);
       }
     });
+
     if (!values.isMcu) {
       delete values.tarifLab;
+    } else {
+      // Only combine `tarifLab` and `tempDeletedLab.value` if `isMcu` is true
+      const combinedPenjaminData = [
+        ...values.tarifLab,
+        ...tempDeletedLab.value,
+      ];
+      const parseItem = JSON.parse(JSON.stringify(combinedPenjaminData));
+      // Update the values with the combined data
+      values.tarifLab = parseItem;
     }
 
-    const combinedPenjaminData = [
-      ...values.tarifLab,
-      ...tempDeletedLab.value,
-    ];
-    const parseItem = JSON.parse(JSON.stringify(combinedPenjaminData));
-    // Update the values with the combined data
-    values.tarifLab = parseItem;
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -443,6 +445,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     console.error("Failed to process the data:", error);
   }
 });
+
 
 const method = ref(props.method);
 const title = ref(props.title);
@@ -514,6 +517,8 @@ watch(
       resetForm();
       resetDialogMode();
       tempDeleteTindakan.value = [];
+      tempTarifLab.value = [];
+      tempDeletedLab.value=[];
     }
   }
 );
@@ -566,8 +571,9 @@ const getHargaLab = (labUuid: string) => {
     <template #header>{{ title }} Tarif</template>
     <template #body>
       <!-- Form Input -->
-      field tindakan: {{ isMcu }} <br><br>
-      lab: {{ fieldsTarifLab }}
+      {{ fieldsTarifLab }} <br/><br/>
+      {{ errors }}
+
       <div
         v-if="method !== 'detail'"
         class="flex flex-col h-full overflow-hidden"
@@ -659,7 +665,6 @@ const getHargaLab = (labUuid: string) => {
               <template #content>
                 <!-- Field Array -->
                 <div
-                  v-if="fieldsTindakan && fieldsTindakan.length > 0"
                   v-for="(fieldTindakan, idx) in fieldsTindakan"
                   :key="idx"
                   class="mt-5"
@@ -709,7 +714,7 @@ const getHargaLab = (labUuid: string) => {
                             <CustomSelect
                               v-model="slotProps.data.tarifKomponenUuid"
                               label=""
-                              place-holder="Pilih Tindakan"
+                              place-holder="Pilih Komponen Tarif"
                               :options="komponenTarifPayload"
                               option-label="name"
                               optionValue="uuid"
@@ -782,9 +787,7 @@ const getHargaLab = (labUuid: string) => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="mt-5 h-[200px]">
-                  <NoData />
-                </div>
+               
               </template>
               <template #collapseIcon>
                 <CustomButton
@@ -833,7 +836,7 @@ const getHargaLab = (labUuid: string) => {
                 >
                   <Column headerClass="bg-adameds-300 text-white" class="w-4/6">
                     <template #header>
-                      <div>List Tarif</div>
+                      <div>List Tarif Lab</div>
                     </template>
                     <template #body="slotProps">
                       <CustomSelect
@@ -842,13 +845,14 @@ const getHargaLab = (labUuid: string) => {
                         :options="optionsLab"
                         option-label="name"
                         option-value="uuid"
-                        place-holder="Pilih Komponen Tarif"
+                        place-holder="Pilih Tarif Lab"
                         :invalid="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`] ? true : false"
                         :invalidMessage="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`]"
-                        
                       />
-                      <!-- :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true : false"
-              :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`]" -->
+                      <ErrorMessage
+                    :name="`tarifLab[${slotProps.index}].tarifLabUuid`"
+                    class="text-danger-300"
+                  />
                     </template>
                   </Column>
                   <Column headerClass="bg-adameds-300 ">
@@ -927,8 +931,6 @@ const getHargaLab = (labUuid: string) => {
 
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="grid grid-cols-12 gap-5 mt-5">
-        <!-- <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
-        <CustomInfoRow label="Nama ICD 9 CM" :value="name" /> -->
         <div class="flex flex-col col-span-4">
           <div class="font-semibold underline text-SM">Kode Tarif</div>
           <div class="font-normal text-normal">
@@ -1051,6 +1053,47 @@ const getHargaLab = (labUuid: string) => {
               textColor="text-adameds-300"
             />
           </template>
+        </CustomAccordion>
+        <CustomAccordion v-if="props.payload.isMcu"  class="col-span-12"
+          initial-state="0"
+          :open-with-header="false"
+          no-border>
+          <template #header> List Tindakan Laboratorium </template>
+          <template #content>
+            <DataTable
+                  :value="fieldsTarifLab"
+                  tableStyle="min-width: 50rem"
+                  class="mt-5 overflow-hidden text-xs rounded-lg "
+                >
+                  <Column
+                    header="List Tarif Lab"
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #body="slotProps">
+                      {{slotProps.data.value.tarifLabUuid }}
+                    </template>
+                  </Column>
+                  <Column
+                    headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                    class="w-6/12 text-end"
+                    bodyClass="align-top text-end"
+                  >
+                    <template #header>
+                      <div class="w-full text-end">Rupiah (Rp)</div>
+                    </template>
+                    <template #body="slotProps">
+                      <span
+                        >Rp.
+                        {{
+                          getHargaLab(slotProps.data.value.tarifLabUuid)
+                        }}</span
+                      >
+                    </template>
+                  </Column>
+                </DataTable>
+          </template>
+          
         </CustomAccordion>
         <hr class="col-span-12 border-grey-200" />
         <div class="flex items-center justify-end col-span-12 gap-4">

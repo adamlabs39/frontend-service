@@ -15,8 +15,6 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
@@ -87,14 +85,49 @@ const schema = computed(() =>
       .object({
         faskesUuid: yup.string(),
         praktisiUuid: yup.string(),
-        phone: yup.string(),
-        email: yup.string(),
-        username: yup.string(),
-        password: yup.string(),
-        confirmPassword: yup.string(),
-        status: yup.bool(),
-        permission: yup.bool(),
-        roleUuid: yup.string(),
+        name: yup.string().default('admin'),
+        inventoryMedis:yup.bool().default(true),
+        inventoryNonMedis:yup.bool().default(true),
+        phone: yup.string().required("No. Handhpone harus diisi"),
+        email: yup.string().required("Email harus diisi"),
+        username: yup.string().required("Username harus diisi"),
+        password: yup
+          .string()
+          .min(8, "Password minimal 8 karakter")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi"),
+        confirmPassword: yup
+          .string()
+          .min(8, "Password minimal 8 digit")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi")
+          .oneOf([yup.ref("password")], "Password tidak sama"),
+        status: yup.bool().default(false),
+        roleUuid: yup.string().required("Role harus dipilih"),
       })
       .noUnknown()
   )
@@ -415,6 +448,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     }));
   console.log(permissions);
   try {
+    delete values.confirmPassword;
     const allData = {
       ...values,
       permissions,
@@ -429,7 +463,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       // const response = await userStore.putApi(uuid, allData);
     } else if (props.method === "add") {
       console.log("Adding new data with values:", allData);
-      // const response = await userStore.postApi(allData);
+      const response = await userStore.postApi(allData);
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
@@ -461,6 +495,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       </div>
     </template>
     <template #content>
+      payload:{{ props.payload }}
       <CustomAccordion v-if="isSuperAdmin" no-border initial-state="0">
         <template #header> Data Faskes </template>
         <template #content>
@@ -472,6 +507,8 @@ const onSubmit = handleSubmit(async (values: any) => {
             option-label="name"
             option-value="uuid"
             class="mt-5"
+            :invalid="!!errors.faskesUuid"
+              :invalidMessage="errors.faskesUuid"
           />
         </template>
         <template #collapseIcon>
@@ -502,6 +539,8 @@ const onSubmit = handleSubmit(async (values: any) => {
                 option-label="pegawai.name"
                 option-value="uuid"
                 class="grow"
+                :invalid="!!errors.praktisiUuid"
+              :invalidMessage="errors.praktisiUuid"
               />
               <CustomButton
                 label="Cari"
@@ -597,12 +636,13 @@ const onSubmit = handleSubmit(async (values: any) => {
               :invalid="!!errors.username"
               :invalidMessage="errors.username"
               class="col-span-4"
+              autocomplete="off"
             />
 
             <CustomTextfield
               v-model="password"
               label="Password"
-              placeholder="**"
+              placeholder="********"
               :type="showPassword ? 'text' : 'password'"
               :invalid="errors.password ? true : false"
               :invalidMessage="errors.password"
@@ -613,7 +653,7 @@ const onSubmit = handleSubmit(async (values: any) => {
             <CustomTextfield
               v-model="confirmPassword"
               label="Verify Password"
-              placeholder="**"
+              placeholder="********"
               :type="showConfirmPassword ? 'text' : 'password'"
               :invalid="errors.confirmPassword ? true : false"
               :invalidMessage="errors.confirmPassword"
@@ -652,6 +692,8 @@ const onSubmit = handleSubmit(async (values: any) => {
               :options="rolePayload"
               option-label="name"
               option-value="uuid"
+              :invalid="errors.roleUuid ? true : false"
+              :invalidMessage="errors.roleUuid"
             />
 
             <!-- Loop through all modules -->
@@ -853,6 +895,15 @@ const onSubmit = handleSubmit(async (values: any) => {
           />
         </template>
       </CustomAccordion>
+      <hr class="border-grey-200" />
+      <CustomSwitch
+        v-model="status"
+        :show-label="true"
+        label="Status"
+        sideLabel="NON-AKTIF"
+        sideLabelTrue="AKTIF"
+        class="mt-5"
+      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2.5 px-5 py-2.5">

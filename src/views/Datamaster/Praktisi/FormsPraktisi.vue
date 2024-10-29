@@ -370,6 +370,9 @@ const tempPoli = ref([]);
           class="col-span-8"
           optionValue="uuid"
           optionLabel="name"
+          :invalid="!!errors.practitionerPoliSelected"
+          :invalidMessage="errors.practitionerPoliSelected"
+          :required="errors.practitionerPoliSelected ? true : false"
         />
 
         <hr class="col-span-12 border-grey-200" />

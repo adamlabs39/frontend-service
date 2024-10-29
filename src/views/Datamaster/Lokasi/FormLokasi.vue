@@ -107,6 +107,8 @@ const [status] = defineField("status");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    values.statusOperasional = statusOperasional.value ? "occupied" : "non-occupied";
+
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -165,6 +167,7 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          statusOperasional: props.payload.statusOperasional === 'occupied' ? true : false,
         });
       }
     } else {

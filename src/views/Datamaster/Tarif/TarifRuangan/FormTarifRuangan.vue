@@ -1,5 +1,6 @@
+-
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -12,7 +13,6 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -81,8 +81,8 @@ const schema = toTypedSchema(
       ruanganUuid: yup.string().required("Ruangan harus dipilih"),
       tarifPenjamin: yup.array().of(
         yup.object({
-          penjaminUuid: yup.string().required("Jenis pembayaran harus diisi"),
-          harga: yup.number().required("Harga bed harus diisi"),
+          penjaminUuid: yup.string().required("Jenis Pembayaran harus dipilih"),
+          harga: yup.number().required("Harga Bed harus diisi"),
         })
       ),
       status: yup.bool().default(false),
@@ -92,10 +92,17 @@ const schema = toTypedSchema(
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
   validationSchema: schema,
+  initialValues: {
+    tarifPenjamin: [
+      {
+        penjaminUuid: "",
+        harga: 0,
+      },
+    ],
+  },
 });
 const [code] = defineField("code");
 const [name] = defineField("name");
-const [tarifPenjamin] = defineField("tarifPenjamin");
 const [unitPelayanan] = defineField("unitPelayanan");
 const [ruanganUuid] = defineField("ruanganUuid");
 const [status] = defineField("status");
@@ -144,13 +151,6 @@ const handleDelete = (index: number) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    const combinedPenjaminData = [
-      ...values.tarifPenjamin,
-      ...tempDeleteData.value,
-    ];
-    const parseItem = JSON.parse(JSON.stringify(combinedPenjaminData));
-    // Update the values with the combined data
-    values.tarifPenjamin = parseItem;
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -271,7 +271,6 @@ watch(
           />
           <div class="col-span-12">
             <DataTable
-              v-if="filedsPenjamin && filedsPenjamin.length > 0"
               :value="filedsPenjamin"
               tableStyle="min-width: 30rem"
               class="overflow-hidden text-xs rounded-lg bg-adameds-50"
@@ -291,6 +290,7 @@ watch(
                     :invalid="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`] ? true : false"
                     :invalidMessage="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`]"
                   />
+                  
                 </template>
               </Column>
               <Column headerClass="bg-adameds-300 text-white">
@@ -314,7 +314,7 @@ watch(
                     </template>
                   </CustomInputNumber>
                   <ErrorMessage
-                    :name="`datas[${slotProps.index}].harga`"
+                    :name="`tarifPenjamin[${slotProps.index}].harga`"
                     class="text-danger-300"
                   />
                 </template>
@@ -337,9 +337,6 @@ watch(
                 </template>
               </Column>
             </DataTable>
-            <div v-else class="mt-5 h-[200px]">
-              <NoData />
-            </div>
           </div>
 
           <div

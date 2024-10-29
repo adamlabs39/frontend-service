@@ -148,8 +148,8 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Snomed: rows[i].snomedDetail.name ?? '-',
-        icd: rows[i].icd9Detail.name ?? '-',
+        Snomed: rows[i].snomed?.name ?? '-',
+        icd: rows[i].icd9?.name ?? '-',
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }

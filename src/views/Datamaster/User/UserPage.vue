@@ -5,10 +5,8 @@ import type { MenuItem } from "primevue/menuitem";
 import { useUserStore } from "@/stores/user";
 import { utilsStore } from "@/stores/utils";
 import { useRoleStore } from "@/stores/datamaster/role";
-import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import TambahDataUserPage from "./TambahDataUserPage.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
@@ -25,23 +23,12 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-// const changeSection = (label: string, data: any = null) => {
-//   let tempData = { label: label };
-//   if (data) {
-//     tempData = { ...tempData, ...data };
-//   }
-//   if (dataBreadCrumb.value.length) {
-//     dataBreadCrumb.value[0] = tempData;
-//   } else {
-//     dataBreadCrumb.value.push(tempData);
-//   }
-// };
 const changeSection = (
   label: string,
   mode: string = "add",
   data: any = null
 ) => {
-  let tempData = { label: label, mode: mode, data: data }; // Include mode and data
+  let tempData = { label: label, mode: mode, data: data }; 
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
@@ -63,7 +50,6 @@ onMounted(() => {
 });
 
 // Filter
-
 const searchQuery = ref<string>("");
 const selectedRole = ref("");
 
@@ -104,6 +90,7 @@ const fetchUserData = async () => {
     const response = await userStore.getApi({
       page: userProperties.value.page,
       limit: userProperties.value.page_size,
+      name: searchQuery .value,
       role: selectedRole.value || undefined,
     });
     console.log("API Response:", response);
