@@ -231,7 +231,12 @@ const apiAdmisiGet = async (url: string, data: object) => {
 const apiAdmisiPost = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.post(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -239,7 +244,12 @@ const apiAdmisiPost = async (url: string, data: object) => {
 const apiAdmisiPut = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.put(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -247,7 +257,12 @@ const apiAdmisiPut = async (url: string, data: object) => {
 const apiAdmisiPatch = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.patch(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -255,7 +270,12 @@ const apiAdmisiPatch = async (url: string, data: object) => {
 const apiAdmisiDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.delete(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }

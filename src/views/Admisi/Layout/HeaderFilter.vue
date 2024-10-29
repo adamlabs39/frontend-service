@@ -310,7 +310,7 @@ defineExpose({
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Poli</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(poli, index) in filterPoliList"
                 :key="poli.uuid + index"
@@ -325,7 +325,7 @@ defineExpose({
           <div v-if="!isSEP" class="flex my-[10px]">
             <div class="w-[15%]">Filter Cara Daftar</div>
             <div class="flex">
-              |
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(method, index) in filterRegisterMethod"
                 :key="method + index"

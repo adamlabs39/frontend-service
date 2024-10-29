@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { SelectFilterEvent } from "primevue/select";
-import { ref, computed } from "vue";
+import { ref, computed, type PropType } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -20,7 +20,9 @@ const props = defineProps({
     default: "",
   },
   modelValue: {
-    type: [String, Number, Boolean],
+    type: [String, Number, Boolean, Object] as PropType<
+      string | number | boolean | null
+    >,
     default: "",
   },
   options: {

@@ -10,9 +10,12 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
+import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
+import { setTimeToDate } from "@/utils/Helpers";
 
 // NOTE Store
+const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 
 const props = defineProps({
@@ -34,13 +37,23 @@ const props = defineProps({
   },
 });
 
-const setFormData = () => {
-  if (Object.keys(props.patientData).length) {
-    let tempPatientData = props.patientData;
+const setFormData = (data: any, uuid: string = "") => {
+  if (Object.keys(data).length) {
+    let tempPatientData = data;
     tempPatientData.birthDetail.birthDate = new Date(
       tempPatientData.birthDetail.birthDate
     );
 
+    if (data.isNewBorn) {
+      let tempBirthTime = setTimeToDate(
+        tempPatientData.isNewBorn.birthTimeBaby
+      );
+      tempPatientData.birthDetail.birthTime = tempBirthTime;
+    }
+
+    if (uuid) {
+      tempPatientData.patientUuid = uuid;
+    }
     setValues({
       ...tempPatientData,
     });
@@ -48,18 +61,11 @@ const setFormData = () => {
 };
 
 onMounted(() => {
-  if (
-    props.formType == "Daftar Bayi Baru Lahir" ||
-    (props.patientData && props.patientData.is_newborn)
-  ) {
-    newBorn.value = true;
-  }
-
-  setFormData();
+  setFormData(props.patientData);
 });
 
 onUpdated(() => {
-  setFormData();
+  setFormData(props.patientData);
 });
 
 const timer = ref<any>();
@@ -88,15 +94,47 @@ const searchPatientData = async (filter: string) => {
   }, 800);
 };
 
-const newBorn = ref(false);
-const withoutIdentity = ref(false);
+const setSelectedPatientData = async (data: any) => {
+  // FIXME Data kurang lengkap
+  storeUtils.setLoading(true);
+  try {
+    const response = await masterPasienStore.getDetailMasterPasien(data.uuid);
+    if (response && response.payload) {
+      setFormData(response.payload, data.uuid);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+  // if (data) {
+  //   setValues({
+  //     ...data,
+  //     patientUuid: data.uuid,
+  //   });
+  // } else {
+  //   resetForm();
+  // }
+};
+
+// const isNewBorn = ref(false);
+// const withoutIdentity = ref(false);
 const selectedDataPatient = ref<any>();
 
 const schema = toTypedSchema(
   yup
     .object({
+      patientUuid: yup.string(),
+      isNewBorn: yup.boolean().default(false),
+      withoutIdentity: yup.boolean().default(false),
       noRm: yup.string(),
-      title: yup.string().required("Awalan/Gelar harus dipilih"),
+      title: yup
+        .string()
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity
+            ? schema.nullable()
+            : schema.required("Awalan/Gelar harus dipilih")
+        ),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
       noIdentity: yup.string().required("No identitas harus diisi"),
@@ -104,26 +142,74 @@ const schema = toTypedSchema(
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
           birthDate: yup.date().required("Tanggal lahir harus dipilih"),
+          // NOTE Daftar bayi baru lahir
+          birthTime: yup
+            .date()
+            .when("isNewBorn", ([isNewBorn], schema) =>
+              isNewBorn
+                ? schema.required("Tanggal lahir harus dipilih")
+                : schema
+            ),
         })
         .noUnknown(),
       gender: yup.string().required("Jenis kelamin harus dipilih"),
       phone: yup.string().required("No. Handphone harus diisi"),
-      religion: yup.string().required("Agama harus dipilih"),
-      language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
-      maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
-      motherName: yup.string().required("Nama ibu kandung harus diisi"),
+      religion: yup
+        .string()
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity ? schema.nullable() : schema.required("Agama harus dipilih")
+        ),
+      language: yup
+        .string()
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity
+            ? schema
+            : schema.required("Bahasa yang dikuasai harus dipilih")
+        ),
+      maritialStatus: yup
+        .string()
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity
+            ? schema
+            : schema.required("Status pernikahan harus dipilih")
+        ),
+      motherName: yup
+        .string()
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity
+            ? schema.nullable()
+            : schema.required("Nama ibu kandung harus diisi")
+        ),
       address: yup
-        .object({
-          prov: yup.string().required("Provinsi harus dipilih"),
-          city: yup.string().required("Kabupaten / Kota harus dipilih"),
-          district: yup.string().required("Kecamatan harus dipilih"),
-          rt: yup.string().required("RT harus diisi"),
-          rw: yup.string().required("RW harus diisi"),
-          fullAddress: yup.string().required("Alamat harus diisi"),
-          country: yup.string().required("Negara harus diisi"),
-          village: yup.string().required("Kelurahan / Desa harus dipilih"),
-          postalCode: yup.string().required("Kode Pos harus dipilih"),
+        .object()
+        .shape({
+          prov: yup.string().nullable(),
+          city: yup.string().nullable(),
+          district: yup.string().nullable(),
+          rt: yup.string().nullable(),
+          rw: yup.string().nullable(),
+          fullAddress: yup.string().nullable(),
+          country: yup.string().nullable(),
+          village: yup.string().nullable(),
+          postalCode: yup.string().nullable(),
         })
+        .when("withoutIdentity", ([withoutIdentity], schema) =>
+          withoutIdentity
+            ? schema
+            : schema.shape({
+                prov: yup.string().required("Provinsi harus dipilih"),
+                city: yup.string().required("Kabupaten / Kota harus dipilih"),
+                district: yup.string().required("Kecamatan harus dipilih"),
+                rt: yup.string().required("RT harus diisi"),
+                rw: yup.string().required("RW harus diisi"),
+                fullAddress: yup.string().required("Alamat harus diisi"),
+                country: yup.string().required("Negara harus diisi"),
+                village: yup
+                  .string()
+                  .required("Kelurahan / Desa harus dipilih"),
+                postalCode: yup.string().required("Kode Pos harus dipilih"),
+              })
+        )
         .noUnknown(),
     })
     .noUnknown()
@@ -133,6 +219,8 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
+const [isNewBorn] = defineField("isNewBorn");
+const [withoutIdentity] = defineField("withoutIdentity");
 const [noRm] = defineField("noRm");
 const [title] = defineField("title");
 const [name] = defineField("name");
@@ -140,6 +228,7 @@ const [identity] = defineField("identity");
 const [noIdentity] = defineField("noIdentity");
 const [birthDetailPlace] = defineField("birthDetail.birthPlace");
 const [birthDetailDate] = defineField("birthDetail.birthDate");
+const [birthDetailTime] = defineField("birthDetail.birthTime");
 const [gender] = defineField("gender");
 const [phone] = defineField("phone");
 const [religion] = defineField("religion");
@@ -182,24 +271,25 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
+        {{ errors }}
         <div class="flex">
           <CustomSelect
             v-if="
-              pageType != 'rawat-inap' &&
               formType != 'Edit Data Pasien' &&
               formType != 'Detail Edit' &&
               formType != 'Detail'
             "
             v-model="selectedDataPatient"
+            @update:model-value="setSelectedPatientData"
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
             optionLabel="name"
-            optionValue="noRm"
+            optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
-            :disabled="withoutIdentity || newBorn || isDetail"
+            :disabled="withoutIdentity || isNewBorn || isDetail"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
           >
@@ -208,24 +298,22 @@ defineExpose({
             </template>
           </CustomSelect>
           <CustomSwitch
-            v-if="pageType == 'igd'"
-            v-model="newBorn"
+            v-if="!withoutIdentity"
+            v-model="isNewBorn"
             label="Bayi Baru Lahir"
             class="mr-[50px]"
             @update:model-value="withoutIdentity = false"
             :disabled="isDetail"
           />
           <CustomSwitch
-            v-if="pageType == 'igd'"
             v-model="withoutIdentity"
             label="Tanpa Identitas"
             class="mr-[35px]"
-            @update:model-value="newBorn = false"
+            @update:model-value="isNewBorn = false"
             :disabled="isDetail"
           />
           <div
             v-if="
-              pageType != 'rawat-inap' &&
               formType != 'Edit Data Pasien' &&
               formType != 'Detail Edit' &&
               formType != 'Detail'
@@ -242,10 +330,11 @@ defineExpose({
         </div>
         <hr class="mt-5 mb-[30px]" />
         <div
-          v-if="newBorn || withoutIdentity"
+          v-if="isNewBorn || withoutIdentity"
           class="grid grid-cols-2 mb-5 gap-x-[30px]"
         >
           <CustomTextfield
+            v-model="name"
             label="Nama Lengkap"
             class="w-full mr-[30px]"
             placeholder="Nama Lengkap"
@@ -253,6 +342,7 @@ defineExpose({
           />
           <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
             <CustomSelect
+              v-model="identity"
               label="Identitas"
               placeHolder="Pilih Identitas"
               class="mr-[10px]"
@@ -263,7 +353,8 @@ defineExpose({
               :disabled="isDetail"
             />
             <CustomTextfield
-              :label="newBorn ? 'No. KTP Ibu' : ''"
+              v-model="noIdentity"
+              :label="isNewBorn ? 'No. KTP Ibu' : ''"
               class="col-span-3"
               :class="{ 'mt-auto': withoutIdentity }"
               placeholder="KTP"
@@ -348,7 +439,8 @@ defineExpose({
             :invalidMessage="errors['birthDetail.birthDate']"
           />
           <CustomDatePicker
-            v-if="newBorn"
+            v-if="isNewBorn"
+            v-model="birthDetailTime"
             label="Jam Lahir"
             placeHolder="00:00"
             class=""
@@ -380,7 +472,7 @@ defineExpose({
           />
           <!-- Row 2 -->
           <CustomTextfield
-            v-if="!newBorn"
+            v-if="!isNewBorn"
             v-model="phone"
             label="No. Handphone"
             class=""
@@ -390,7 +482,7 @@ defineExpose({
             :invalidMessage="errors.phone"
           />
           <CustomSelect
-            v-if="!newBorn && !withoutIdentity"
+            v-if="!isNewBorn && !withoutIdentity"
             v-model="religion"
             label="Agama"
             placeHolder="Pilih Agama"
@@ -412,7 +504,7 @@ defineExpose({
             :invalidMessage="errors.religion"
           />
           <CustomSelect
-            v-if="!newBorn && !withoutIdentity"
+            v-if="!isNewBorn && !withoutIdentity"
             v-model="addressCountry"
             label="Negara"
             placeHolder="Pilih Negara"
@@ -426,7 +518,7 @@ defineExpose({
             :invalidMessage="errors['address.country']"
           />
           <CustomSelect
-            v-if="!newBorn && !withoutIdentity"
+            v-if="!isNewBorn && !withoutIdentity"
             v-model="language"
             label="Bahasa yang Dikuasai"
             placeHolder="Pilih Bahasa yang Dikuasai"
@@ -441,7 +533,7 @@ defineExpose({
           />
           <!-- Row 3 -->
           <CustomSelect
-            v-if="!newBorn && !withoutIdentity"
+            v-if="!isNewBorn && !withoutIdentity"
             v-model="maritialStatus"
             label="Status Pernikahan"
             placeHolder="Pilih Status Pernikahan"
@@ -458,14 +550,14 @@ defineExpose({
             v-if="!withoutIdentity"
             v-model="motherName"
             label="Nama Ibu Kandung"
-            :class="[newBorn ? 'col-span-2' : 'col-span-3']"
+            :class="[isNewBorn ? 'col-span-2' : 'col-span-3']"
             placeholder="Nama Ibu Kandung"
             :disabled="isDetail"
             :invalid="!!errors.motherName"
             :invalidMessage="errors.motherName"
           />
           <CustomSwitch
-            v-if="newBorn"
+            v-if="isNewBorn"
             label="Bayi Kembar"
             class=""
             :disabled="isDetail"
