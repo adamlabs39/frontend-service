@@ -2,6 +2,7 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onMounted, ref, type PropType } from "vue";
@@ -16,7 +17,6 @@ const props = defineProps({
     default: () => [],
   },
 });
-
 
 const emit = defineEmits(["tambahPengeluaran"]);
 
@@ -47,14 +47,43 @@ const noPermintaan = ref<string>("");
       </div>
     </template>
     <template #content>
-      <div class="mb-2.5">
+      <div
+        class="mb-2.5"
+        :class="{
+          flex: dataBreadCrumb[0].label === 'Penerimaan Retur Unit',
+          'gap-6': dataBreadCrumb[0].label === 'Penerimaan Retur Unit',
+        }"
+      >
         <CustomTextfield
           v-model="noPermintaan"
           prependIcon="PhMagnifyingGlass"
           label="Pencarian"
           placeholder="Cari Nama Pasien"
+          :class="
+            dataBreadCrumb[0].label === 'Penerimaan Retur Unit'
+              ? 'w-[600px]'
+              : 'grow'
+          "
+        />
+        <CustomSelect
+          v-if="dataBreadCrumb[0].label === 'Penerimaan Retur Unit'"
+          label="Alasan Retur"
           class="grow"
         />
+        <div class="flex items-end gap-2.5" v-if="dataBreadCrumb[0].label === 'Penerimaan Retur Unit'">
+          <CustomButton
+            icon="PhMagnifyingGlass"
+            label="Cari"
+            class="w-[95px]"
+          />
+          <CustomButton
+            label="Reset"
+            outlined
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            class=" w-[70px]"
+          />
+        </div>
       </div>
       <slot name="tabs"></slot>
     </template>
