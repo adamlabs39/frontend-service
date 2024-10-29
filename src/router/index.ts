@@ -158,6 +158,7 @@ import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 import InventoryView from "@/views/Inventory/InventoryView.vue";
 import VerificationPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerificationPurchasePage.vue";
 import ReturPage from "@/views/Inventory/Page/PengadaanBarang/ReturPage.vue";
+import TrainingView from "@/views/Training/TrainingView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1217,6 +1218,18 @@ const router = createRouter({
       component: InventoryView,
     },
 
+    // NOTE Training
+    {
+      path: "/training",
+      name: "training",
+      redirect: "training/daftar-kelas",
+    },
+    {
+      path: "/training/daftar-kelas",
+      name: "training-daftar-kelas",
+      meta: { layout: SidebarLayout, page: InventoryPurchasePage, requiresAuth: true },
+      component: TrainingView,
+    },
     // NOTE Test Component
     {
       path: "/component-fahmi",

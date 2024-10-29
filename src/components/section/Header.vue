@@ -76,7 +76,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Training",
     icon: "TrainingIcon",
-    url: "tbc",
+    url: "/training",
   },
   {
     title: "Pembayaran",
