@@ -9,6 +9,7 @@ import BelumDiterima from "./Tabel/BelumDiterima.vue";
 import { computed } from "vue";
 
 import DetailPenerimaan from "./PenerimaanPembelian/DetailPenerimaan.vue";
+import Diterima from "./Tabel/Diterima.vue";
 
 const route = useRoute();
 const value = ref("1");
@@ -30,7 +31,7 @@ const updatePageType = (path: string) => {
     },
   ];
   //   console.log(pageType.value);
-}; 
+};
 
 const changeSection = (label: string, data: any = null) => {
   dataBreadCrumb.value = [{ label }]; // Pastikan ini direset
@@ -38,7 +39,6 @@ const changeSection = (label: string, data: any = null) => {
     detailPenerimaanPembelianData.value = data; // Simpan data detail
   }
 };
-
 
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -69,11 +69,13 @@ onMounted(() => {
       noPembelian: "PO8872",
       datas: [
         {
-          namaItems: "Paracetamol",
-          jumlahBeli: 2,
-          hargaSatuan: 1000,
+          namaItems: "Masker",
+          hargaSatuan: 100000,
           satuanBeli: "Box/100",
-          jumlahPermintaan: 100000,
+          supplierItem: "PT. Sanbe",
+          order: 2,
+          expDate:"01-01-2025",
+          terima: 2,
         },
       ],
       totalItem: 1,
@@ -83,11 +85,38 @@ onMounted(() => {
 
 // Hanya menampilkan pengajuan saat di tabs Pengajuan Pembelian
 const belumDiterimaData = computed(() => {
-  return penerimaanPembelianData.value?.filter((item:any )=> item.status === 'BELUM DITERIMA') || [];
+  return (
+    penerimaanPembelianData.value?.filter(
+      (item: any) => item.status === "BELUM DITERIMA"
+    ) || []
+  );
 });
+
+const sudahDiterimaData = computed(() => {
+    return (
+    penerimaanPembelianData.value?.filter(
+      (item: any) => item.status === "DITERIMA"
+    ) || []
+  );
+})
+
+// Saat sudah diverifikasi dari page DetailPenerimaan
+const diterimaData = ((updatedData: any) => {
+   if (penerimaanPembelianData) {
+    // Find the index of the item you want to update
+     const index = penerimaanPembelianData.value.findIndex((item:any)=> item.noPembelian === updatedData.noPembelian);
+    console.log(index)
+    if (index !== -1) {
+      // Update the existing item
+      penerimaanPembelianData.value[index] = updatedData;
+      dataBreadCrumb.value[0].label = 'Penerimaan Pembelian';
+    }
+  }
+})
 </script>
 
 <template>
+    <!-- {{ penerimaanPembelianData }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     v-if="dataBreadCrumb[0].label == 'Penerimaan Pembelian'"
@@ -135,7 +164,7 @@ const belumDiterimaData = computed(() => {
             />
           </TabPanel>
           <TabPanel value="2">
-            solks
+            <Diterima :sudah-diterima-data="sudahDiterimaData" @row-clicked="changeSection('Detail Penerimaan', $event)"/>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -154,5 +183,12 @@ const belumDiterimaData = computed(() => {
       </div>
     </template>
   </Card>
-  <DetailPenerimaan :dataBreadCrumb="dataBreadCrumb" :pageType="pageType" :detailData="detailPenerimaanPembelianData" v-else-if="dataBreadCrumb[0].label == 'Detail Penerimaan'" @kembali="dataBreadCrumb[0].label = 'Penerimaan Pembelian'" />
+  <DetailPenerimaan
+    :dataBreadCrumb="dataBreadCrumb"
+    :pageType="pageType"
+    :detailData="detailPenerimaanPembelianData"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Penerimaan'"
+    @kembali="dataBreadCrumb[0].label = 'Penerimaan Pembelian'"
+    @diterima="diterimaData"
+  />
 </template>
