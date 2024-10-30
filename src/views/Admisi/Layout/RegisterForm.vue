@@ -158,7 +158,7 @@ const closeRegisterForm = () => {
 };
 
 const postRegisterPatient = async () => {
-  let tempPatientData;
+  let tempPatientData: any;
 
   if (props.pageType == "rawat-jalan") {
     tempPatientData = await patientIdentityFormRJ.value?.onSubmit();
@@ -175,7 +175,7 @@ const postRegisterPatient = async () => {
       true
     );
     tempPatientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
-    let payload = { patientData: tempPatientData, ...tempDocterVisitData };
+    let payload: any = { patientData: tempPatientData, ...tempDocterVisitData };
     storeUtils.setLoading(true);
 
     try {
@@ -199,6 +199,9 @@ const postRegisterPatient = async () => {
           );
         }
       } else if (props.pageType == "igd") {
+        payload.withoutIdentity = tempPatientData.withoutIdentity;
+        payload.isNewborn = tempPatientData.isNewBorn;
+        payload.multipleBirth = tempPatientData.multipleBirth;
         if (props.formType == "add") {
           response = await admisiIGDStore.registIGD(payload);
         } else {
@@ -209,7 +212,7 @@ const postRegisterPatient = async () => {
         }
       }
       if (response && response.payload) {
-        openedPatientData.value = response.payload.patientData;
+        openedPatientData.value = response.payload.patient;
 
         setDetailDoctorVisitData(response.payload);
       }

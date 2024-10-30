@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -9,7 +9,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import type { FilterAdmisi } from "@/utils/Interface";
 
 const props = defineProps({
@@ -24,6 +24,10 @@ const props = defineProps({
   dataBreadCrumb: {
     type: Array as PropType<MenuItem[]>,
     default: () => [],
+  },
+  filterData: {
+    type: Object as PropType<FilterAdmisi>,
+    default: {},
   },
 });
 
@@ -143,6 +147,28 @@ const resetFilter = () => {
   searchDPJPFilter.value = "";
 };
 
+const setFilter = (dataFilter: FilterAdmisi) => {
+  selectedFilterPoli.value = dataFilter.poly ? [dataFilter.poly] : [];
+  selectedFilterRegisterMethod.value = dataFilter.platform
+    ? [dataFilter.platform]
+    : [];
+  selectedFilterRoom.value = dataFilter.room ? [dataFilter.room] : [];
+  selectedFilterPatient.value = dataFilter.withoutIdentity
+    ? [dataFilter.withoutIdentity]
+    : [];
+  selectedPaymentMethod.value = dataFilter.paymentMethod
+    ? [dataFilter.paymentMethod]
+    : [];
+  startDateFilter.value = dataFilter.startDate
+    ? (epochToDate(parseInt(dataFilter.startDate)) as Date)
+    : new Date();
+  endDateFilter.value = dataFilter.endDate
+    ? (epochToDate(parseInt(dataFilter.endDate)) as Date)
+    : new Date();
+  searchPatientFilter.value = dataFilter.q ?? "";
+  searchDPJPFilter.value = dataFilter.dpjp ?? "";
+};
+
 const searchData = () => {
   let filter = {} as FilterAdmisi;
 
@@ -179,6 +205,11 @@ const searchData = () => {
 
   return filter;
 };
+
+onMounted(() => {
+  setFilter(props.filterData);
+});
+
 defineExpose({
   resetFilter,
   searchData,
@@ -251,12 +282,14 @@ defineExpose({
         />
         <CustomDatePicker
           v-model="startDateFilter"
+          :maxDate="endDateFilter"
           label="Tanggal"
           class="w-[150px]"
         />
         <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
         <CustomDatePicker
           v-model="endDateFilter"
+          :minDate="startDateFilter"
           :showLabel="false"
           class="mt-auto w-[150px]"
         />

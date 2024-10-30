@@ -69,6 +69,15 @@ const search = async () => {
   }
 };
 
+const getPatientList = async () => {
+  if (pageType.value == "rawat-jalan") {
+    patientData.value = await fetchRJPatient();
+  } else if (pageType.value == "rawat-inap") {
+    patientDataRI.value = await fetchRIPatient();
+  } else if (pageType.value == "igd") {
+    patientDataIGD.value = await fetchIGDPatient();
+  }
+};
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
@@ -127,13 +136,7 @@ const updatePageType = async (path: string) => {
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[2] ?? "";
 
-  if (pageType.value == "rawat-jalan") {
-    patientData.value = await fetchRJPatient();
-  } else if (pageType.value == "rawat-inap") {
-    patientDataRI.value = await fetchRIPatient();
-  } else if (pageType.value == "igd") {
-    patientDataIGD.value = await fetchIGDPatient();
-  }
+  await getPatientList();
 };
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -153,6 +156,7 @@ const cancelReason = ref<string>();
 const openedPatientData = ref<any>({});
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
+
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.status_rj == "1") {
       changeSection("Checkin", { platform: openedPatientData.value.platform });
@@ -187,6 +191,10 @@ const getDataTable = (type: "data" | "length" = "data") => {
 };
 
 const formType = ref<"add" | "edit">("add");
+const closeRegistrationForm = () => {
+  dataBreadCrumb.value.pop();
+  getPatientList();
+};
 </script>
 
 <template>
@@ -201,6 +209,7 @@ const formType = ref<"add" | "edit">("add");
       <HeaderFilter
         ref="headerFilterRef"
         :pageType="pageType"
+        :filterData="filterData"
         @daftar="changeSection('Daftar')"
         @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
         @search="search"
@@ -292,7 +301,7 @@ const formType = ref<"add" | "edit">("add");
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.patient.phone"
+                :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -548,7 +557,7 @@ const formType = ref<"add" | "edit">("add");
     :pageType="pageType"
     :patientData="openedPatientData"
     :formType="formType"
-    @back="dataBreadCrumb.pop()"
+    @back="closeRegistrationForm"
     @goToDetail="dataBreadCrumb[0].label = 'Detail'"
     @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
