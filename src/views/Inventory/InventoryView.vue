@@ -75,7 +75,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Supplier",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/datamaster/supplier",
             icon: "",
           },
         ],

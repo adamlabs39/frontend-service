@@ -162,6 +162,7 @@ import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/Pengiri
 import PengeluaranUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnitPage.vue";
 import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
 import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
+import DatamasterSupplierPage from "@/views/Inventory/Page/Datamaster/DatamasterSupplierPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1242,6 +1243,12 @@ const router = createRouter({
       path: "/inventory/penerimaan-barang/penerimaan-retur-unit",
       name: "inventory-penerimaan-barang-penerimaan-retur-unit",
       meta: { layout: SidebarLayout, page: PenerimaanReturUnitPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/datamaster/supplier",
+      name: "inventory-datamaster-supplier",
+      meta: { layout: SidebarLayout, page: DatamasterSupplierPage, requiresAuth: true },
       component: InventoryView,
     },
 
