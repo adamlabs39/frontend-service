@@ -14,6 +14,9 @@ export const useKategoriRuanganStore = defineStore({
       async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
         return apiDatamasterGet(`/datamaster/kategori_ruangan?page=${page}&limit=${limit}&name=${name}`, payload);
       },
+      async getAktifApi(payload = {}) {      
+        return apiDatamasterGet(`/datamaster/kategori_ruangan/aktif`, payload);
+      },
       async postApi(payload = {}) {
         return apiDatamasterPost("/datamaster/kategori_ruangan", payload);
       },

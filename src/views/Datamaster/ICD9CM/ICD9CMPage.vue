@@ -241,9 +241,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="icd9-cm"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchIcd9Data()"
       />
     </template>
     <template #content>
@@ -335,7 +335,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `ICD 9 CM ${slotProps.data.code}`,
+                    `ICD 9 CM ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

@@ -13,16 +13,13 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 
 const props = defineProps({
   isDialogVisible: {
-    type: Boolean,
     default: false,
   },
   title: {
     type: String,
-    default: "",
   },
   method: {
     type: String,
-    default: "detail",
   },
   payload: {
     type: Object,
@@ -37,7 +34,7 @@ const schema = toTypedSchema(
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Kategori harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -56,17 +53,17 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (method.value === "edit") {
+    if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await kategoriGigiStore.postApi(values);
+      emit("data-updated");
+    } else if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
       const response = await kategoriGigiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
-      const response = await kategoriGigiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -78,9 +75,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -114,7 +111,6 @@ watch(
     }
   }
 );
-
 </script>
 
 <template>
@@ -134,6 +130,7 @@ watch(
           placeholder="Masukkan Referensi Sistem SATUSEHAT"
           :invalid="!!errors.system"
           :invalidMessage="errors.system"
+          :required="errors.system ? true : false"
         />
         <CustomTextfield
           v-model="code"
@@ -141,6 +138,7 @@ watch(
           placeholder="Masukkan Code SATUSEHAT"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           v-model="display"
@@ -148,6 +146,7 @@ watch(
           placeholder="Masukkan Display SATUSEHAT"
           :invalid="!!errors.display"
           :invalidMessage="errors.display"
+          :required="errors.display ? true : false"
         />
         <CustomTextfield
           v-model="name"
@@ -155,6 +154,7 @@ watch(
           placeholder="Masukkan Nama Kategori"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
@@ -173,6 +173,7 @@ watch(
         <CustomInfoRow label="Code SATUSEHAT" :value="code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Nama Kategori" :value="name" />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -185,7 +186,6 @@ watch(
             />
           </template>
         </CustomInfoRow>
-        
       </div>
     </template>
 

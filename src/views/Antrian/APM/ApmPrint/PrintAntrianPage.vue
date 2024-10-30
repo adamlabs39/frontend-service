@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import AddPrint from "@/components/icons/AddPrint.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -83,17 +84,16 @@ const props = defineProps({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
+                  <!-- <img
                     loading="lazy"
                     src="@/assets/icons/icon-park-solid_add-print.svg"
                     class="shrink-0 w-[30px] h-[30px] p-[2px] filter invert"
-                  />
+                  /> -->
+                  <AddPrint class="text-white" :size="30"/>
                 </div>
 
                 <!-- Text Container with Background -->
-                <div
-                  class="px-2 py-1 font-bold rounded-xl text-adameds-300"
-                >
+                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
                   Print
                 </div>
               </div>
@@ -114,7 +114,7 @@ const props = defineProps({
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="w-[120px]"
-                      @click="handleHome"
+                @click="handleHome"
               />
             </div>
           </div>
@@ -125,7 +125,11 @@ const props = defineProps({
               :placeholder="`Masukkan No. Kode Booking`"
               class="w-2/5 mt-16 mr-5"
             ></CustomTextfield>
-            <CustomButton label="Print" class="w-2/5 mt-10 mr-5" @click="handleData"/>
+            <CustomButton
+              label="Print"
+              class="w-2/5 mt-10 mr-5"
+              @click="handleData"
+            />
           </div>
         </div>
       </div>

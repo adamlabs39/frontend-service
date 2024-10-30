@@ -8,9 +8,9 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePegawaiStore } from "@/stores/datamaster/pegawai";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -35,13 +35,16 @@ const tipePraktisi = ref([
   { name: "Dokter", value: true },
   { name: "Non-Dokter", value: false },
 ]);
+
 const pegawaiStore = usePegawaiStore();
 const praktisiStore = usePraktisiStore();
+const lokasiStore = useLokasiStore();
 const pegawaiPayload = ref<any[]>([]);
+const lokasiPayload = ref<any[]>([]);
 
 const fetchPegawai = async () => {
   try {
-    const response = await pegawaiStore.getApi();
+    const response = await pegawaiStore.getAktifApi();
     if (response && response.payload) {
       pegawaiPayload.value = response.payload;
     } else {
@@ -52,9 +55,23 @@ const fetchPegawai = async () => {
     pegawaiPayload.value = [];
   }
 };
+const fetchLokasi = async () => {
+  try {
+    const response = await lokasiStore.getAktifApi();
+    if (response && response.payload) {
+      lokasiPayload.value = response.payload;
+    } else {
+      lokasiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data lokasi", error);
+    lokasiPayload.value = [];
+  }
+};
 
 onMounted(() => {
   fetchPegawai();
+  fetchLokasi();
 });
 
 const selectedPegawai = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
@@ -64,11 +81,6 @@ const searchPegawai = () => {
   selectedPegawai.value = pegawaiPayload.value.find(
     (pegawai) => pegawai.uuid === pegawaiUuid.value
   );
-
-  // Jika pegawai tidak ditemukan, bisa tambahkan logika penanganan di sini
-  if (!selectedPegawai.value) {
-    console.warn("Pegawai tidak ditemukan");
-  }
 };
 
 const resetSearch = () => {
@@ -79,16 +91,23 @@ const resetSearch = () => {
 const schema = toTypedSchema(
   yup.object({
     pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-    codeBpjs: yup.number(),
-    sip: yup.number(),
-    str: yup.number(),
-    isDokter: yup.boolean().required("Tipe Praktisi harus dipilih"),
-    codeAntrianDokter: yup.string().required("Pegawai harus dipilih"),
-    practisionerPoli: yup
-      .array()
-      .of(yup.string().required("Permission harus dipilih")),
+    codeBpjs: yup.string(),
+    sip: yup.string(),
+    str: yup.string(),
+    isDoctor: yup.boolean(),
+    codeAntrianDokter: yup.string().when("isDoctor", {
+      is: (value: boolean) => value === true,
+      then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    practitionerPoli: yup.array().of(
+      yup.object().shape({
+        lokasiUuid: yup.string().required("Unit Pelayanan harus dipilih"),
+      })
+    ),
+
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -99,12 +118,17 @@ const [pegawaiUuid] = defineField("pegawaiUuid");
 const [codeBpjs] = defineField("codeBpjs");
 const [sip] = defineField("sip");
 const [str] = defineField("str");
-const [isDokter] = defineField("isDokter");
+const [isDoctor] = defineField("isDoctor");
 const [codeAntrianDokter] = defineField("codeAntrianDokter");
-const [practisionerPoli] = defineField("practisionerPoli");
+const [practitionerPoli] = defineField("practitionerPoli");
 const [status] = defineField("status");
-
+const poliSelected = ref([]);
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
+
+watch(poliSelected, (newVal) => {
+  const formattedPelayanan = newVal.map((value) => ({ lokasiUuid: value }));
+  practitionerPoli.value = formattedPelayanan;
+});
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -163,9 +187,11 @@ watch(
     } else {
       resetForm();
       resetDialogMode();
+      resetSearch();
     }
   }
 );
+
 </script>
 
 <template>
@@ -180,15 +206,16 @@ watch(
       <!-- Form Input -->
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomSelect
-          v-model="isDokter"
+          v-model="isDoctor"
           label="Tipe Praktisi"
           :options="tipePraktisi"
           option-label="name"
           option-value="value"
           place-holder="Cari & Pilih Praktisi"
           class="w-1/2 col-span-12"
-          :invalid="!!errors.isDokter"
-          :invalidMessage="errors.isDokter"
+          :invalid="!!errors.isDoctor"
+          :invalidMessage="errors.isDoctor"
+          :required="errors.isDoctor ? true : false"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomSelect
@@ -201,6 +228,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.pegawaiUuid"
           :invalidMessage="errors.pegawaiUuid"
+          :required="errors.pegawaiUuid ? true : false"
         />
 
         <div class="flex items-end justify-between col-span-4">
@@ -250,40 +278,45 @@ watch(
             </div>
           </div>
         </div>
-        <CustomInputNumber
-          v-if="isDokter"
+        <CustomTextfield
+          v-if="isDoctor"
           label="Kode HFIS (BPJS)"
           v-model="codeBpjs"
           placeholder="000"
           class="col-span-4"
         />
-        <CustomInputNumber
-          v-if="isDokter"
+        <CustomTextfield
+          v-if="isDoctor"
           label="SIP"
           v-model="sip"
           placeholder="000"
           class="col-span-4"
         />
-        <CustomInputNumber
-          v-if="isDokter"
+        <CustomTextfield
           label="STR"
           v-model="str"
           placeholder="0"
-          :class="isDokter ? 'col-span-4' : 'col-span-12'"
+          :class="isDoctor ? 'col-span-4' : 'col-span-12'"
         />
         <CustomTextfield
-          v-if="isDokter"
+          v-if="isDoctor"
           label="Kode Antrian Dokter"
           v-model="codeAntrianDokter"
           placeholder="Kode Antrian Dokter"
           class="col-span-4"
+          :invalid="!!errors.codeAntrianDokter"
+          :invalidMessage="errors.codeAntrianDokter"
+          :required="errors.codeAntrianDokter ? true : false"
         />
         <CustomMultiSelect
-          v-if="isDokter"
+          v-if="isDoctor"
           label="Poli"
-          v-model="practisionerPoli"
+          v-model="poliSelected"
+          :options="lokasiPayload"
           placeholder="Pilih Poli"
           class="col-span-8"
+          optionValue="uuid"
+          optionLabel="name"
         />
 
         <hr class="col-span-12 border-grey-200" />
@@ -301,45 +334,64 @@ watch(
         <div class="font-bold text-heading">
           Data Pegawai -
           {{
-            Number(payload.detailPegawai.tipe) === 1
-              ? "DOKTER"
-              : Number(payload.detailPegawai.tipe) === 2
-              ? "NON DOKTER"
-              : "Unknown"
+            payload.isDoctor ? 'DOKTOR' : 'NON-DOKTOR'
           }}
         </div>
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Nama Lengkap" :value="payload.detailPegawai.name" />
+        <CustomInfoRow
+          label="Nama Lengkap"
+          :value="`${
+            payload.detailPegawai.firstTitle
+              ? payload.detailPegawai.firstTitle + '. '
+              : ''
+          }${payload.detailPegawai.name}${
+            payload.detailPegawai.lastTitle
+              ? ', ' + payload.detailPegawai.lastTitle
+              : ''
+          }`"
+        />
         <CustomInfoRow label="NIK" :value="payload.detailPegawai.nik" />
-        <CustomInfoRow label="Tanggal Lahir" :value="payload.detailPegawai.tanggalLahir" />
-        <CustomInfoRow label="Jenis Kelamin" :value="payload.detailPegawai.gender" />
         <CustomInfoRow
-          v-if="payload.detailPegawai.tipe === 1"
+          label="Tanggal Lahir"
+          :value="payload.detailPegawai.tanggalLahir"
+        />
+        <CustomInfoRow
+          label="Jenis Kelamin"
+          :value="payload.detailPegawai.gender"
+        />
+        <CustomInfoRow
+          v-if="payload.isDoctor"
           label="Kode HFIS (BPJS)"
-          :value="payload.codeBpjs"
+          :value="payload.codeBpjs ?? '-'"
         />
         <CustomInfoRow
-          v-if="payload.detailPegawai.tipe === 1"
+          v-if="payload.isDoctor"
           label="SIP"
-          :value="`${sip}`"
+          :value="payload.sip ?? '-'"
         />
-        <CustomInfoRow label="STR" :value="`${str}`" />
+        <CustomInfoRow label="STR" :value="payload.str ?? '-'" />
         <CustomInfoRow
-          v-if="payload.detailPegawai.tipe === 1"
+          v-if="payload.isDoctor"
           label="Kode Antrian Dokter"
-          :value="codeAntrianDokter"
+          :value="codeAntrianDokter ?? '-'"
         />
-        <CustomInfoRow v-if="payload.detailPegawai.tipe === 1" label="Poli">
+        <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
-            <CustomChip
-              v-for="poli in practisionerPoli"
-              :label="poli"
-              textColor="text-white"
-              bgColor="bg-adameds-300"
-              borderColor="border-none"
-              :showCheckedIcon="false"
-              customClass="text-xs font-semibold h-5 flex w-fit"
-            />
+            <div
+              v-if="practitionerPoli && practitionerPoli.length"
+              class="flex flex-wrap w-full h-full gap-1"
+            >
+              <CustomChip
+                v-for="poli in payload.practitionerPoli"
+                :label="poli.lokasiName"
+                textColor="text-white"
+                bgColor="bg-adameds-300"
+                borderColor="border-none"
+                :showCheckedIcon="false"
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </div>
+            <div v-else>-</div>
           </template>
         </CustomInfoRow>
         <hr class="border-grey-200" />

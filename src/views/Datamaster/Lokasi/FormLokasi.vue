@@ -85,7 +85,7 @@ const schema = toTypedSchema(
     statusOperasional: yup.bool().default(false),
     isPoli: yup.bool().default(false),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -194,6 +194,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Lokasi"
@@ -202,6 +203,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <CustomSwitch
           v-model="isPoli"
@@ -219,6 +221,7 @@ watch(
          :disabled="!isPoli"
           :invalid="isPoli && !!errors.codeAntrianPoli"
           :invalidMessage="errors.codeAntrianPoli"
+          :required="errors.codeAntrianPoli ? true : false"
         />
         <CustomTextfield
           v-model="description"
@@ -227,6 +230,7 @@ watch(
           :invalid="!!errors.description"
           :invalidMessage="errors.description"
           class="col-span-12"
+          :required="errors.description ? true : false"
         />
         <CustomTextfield
           label="No. Telepon"
@@ -235,6 +239,7 @@ watch(
           class="col-span-6"
           :invalid="!!errors.phone"
           :invalidMessage="errors.phone"
+          :required="errors.phone ? true : false"
         />
         <CustomTextfield
           v-model="email"
@@ -243,6 +248,7 @@ watch(
           class="col-span-6"
           :invalid="!!errors.email"
           :invalidMessage="errors.email"
+          :required="errors.email ? true : false"
         />
         <CustomTextfield
           label="URL Website"

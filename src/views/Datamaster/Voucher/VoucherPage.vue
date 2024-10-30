@@ -241,9 +241,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="voucher"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchVoucherData()"
       />
     </template>
     <template #content>
@@ -354,7 +354,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Voucher ${slotProps.data.code}`,
+                    `Voucher ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

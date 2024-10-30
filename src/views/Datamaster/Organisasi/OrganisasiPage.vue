@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchOrganisasiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -161,15 +161,15 @@ const downloadExportExcel = async () => {
         Phone: rows[i].phone,
         Email: rows[i].email,
         Url: rows[i].url,
-        Provinsi: rows[i].detailAlamat.provinsi ?? '-',
-        Kabupaten: rows[i].detailAlamat.kabupaten ?? '-',
-        Kecamatan: rows[i].detailAlamat.kecamatan ?? '-',
-        Kelurahan: rows[i].detailAlamat.kelurahan ,
+        Provinsi: rows[i].detailAlamat.provinsi ?? "-",
+        Kabupaten: rows[i].detailAlamat.kabupaten ?? "-",
+        Kecamatan: rows[i].detailAlamat.kecamatan ?? "-",
+        Kelurahan: rows[i].detailAlamat.kelurahan,
         KodePos: rows[i].kodePos,
         Alamat: rows[i].alamat,
-        PartOf: rows[i].PartOf ?? '-',
-        PartOfName: rows[i].partOfName ?? '-',
-        IDSatusehat: rows[i].satuSehatId ?? '-',
+        PartOf: rows[i].PartOf ?? "-",
+        PartOfName: rows[i].partOfName ?? "-",
+        IDSatusehat: rows[i].satuSehatId ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -189,7 +189,24 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -237,15 +254,15 @@ const downloadExportExcel = async () => {
 };
 
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await organisasiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchOrganisasiData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchOrganisasiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -259,9 +276,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="organisasi"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchOrganisasiData()"
       />
     </template>
 
@@ -363,7 +380,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Organisasi ${slotProps.data.code}`,
+                    `Organisasi ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

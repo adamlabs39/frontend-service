@@ -100,7 +100,9 @@ import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
 import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
+import PasienDataPage from "@/views/Antrian/APM/ApmPasienJKN/PasienDataPage.vue";
 import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
+import PasienNonDataPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonDataPage.vue";
 import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
 import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilPage.vue";
 import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
@@ -133,6 +135,7 @@ import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
 
 // NOTE ORDER FISIOTERAPI
 import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
+import PenjadwalanTerapiPage from "@/views/Fisioterapi/PenjadwalanTerapiPage.vue";
 
 // NOTE FISIOTERAPI/LAPORAN
 import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
@@ -634,16 +637,6 @@ const router = createRouter({
       component: AntrianView,
     },
     {
-      path: "/antrian/monitoring-antrian",
-      name: "antrian-monitoring-antrian",
-      meta: {
-        layout: SidebarLayout,
-        page: LayarAntrianPage,
-        requiresAuth: true,
-      },
-      component: AntrianView,
-    },
-    {
       path: "/antrian/layar",
       name: "antrian-layar",
       meta: {
@@ -672,6 +665,12 @@ const router = createRouter({
       component: DaftarPasienPage,
     },
     {
+      path: "/antrian/apm/aktif/pasien/jkn/data-pasien",
+      name: "antrian-apm-aktif-pasien-jkn-data-pasien",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienDataPage,
+    },
+    {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",
       name: "antrian-apm-aktif-pasien-jkn-berhasil",
       meta: { layout: DefaultLayout, requiresAuth: true },
@@ -682,6 +681,12 @@ const router = createRouter({
       name: "antrian-apm-aktif-pasien-non-jkn",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: DaftarPasienNonPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
+      name: "antrian-apm-aktif-pasien-non-jkn-data-pasien",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienNonDataPage,
     },
     {
       path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
@@ -1156,6 +1161,13 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
       component: FisioterapiView,
     },
+    {
+      path: "/fisioterapi/penjadwalan-fisioterapi",
+      name: "fisioterapi-penjadwalan-fisioterapi",
+      meta: { layout: SidebarLayout, page: PenjadwalanTerapiPage, requiresAuth: true },
+      component: FisioterapiView,
+    },
+
 
     // NOTE FISIOTERAPI LAPORAN
 

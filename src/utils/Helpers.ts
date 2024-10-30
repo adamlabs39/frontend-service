@@ -1,9 +1,10 @@
-export function formatDate(date: Date) {
+export function formatDate(date: Date, reverse: boolean = false) {
   if (date) {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    if (reverse) return `${year}-${month}-${day}`;
+    else return `${day}-${month}-${year}`;
   } else return "";
 }
 
@@ -55,5 +56,34 @@ export function epochToDate(
     return formatTime(date);
   }
 
-  return date.toString();
+  return date;
+}
+
+// Function to set the desired time for startDate and endDate
+export function setTimeForDate(
+  date: Date,
+  hours: number,
+  minutes: number,
+  seconds: number
+) {
+  const newDate = new Date(date); // Clone the date to avoid mutation
+  newDate.setHours(hours, minutes, seconds, 0);
+  return newDate;
+}
+
+export function setTimeToDate(time: string) {
+  let date = new Date();
+  const [hours, minutes, seconds] = time.split(":").map(Number);
+  date.setHours(hours);
+  date.setHours(minutes);
+  date.setHours(seconds);
+  return date;
+}
+
+export function setDateToTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}`;
 }

@@ -14,6 +14,9 @@ export const useRoleStore = defineStore({
     async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
       return apiDatamasterGet(`/datamaster/role?page=${page}&limit=${limit}&name=${name}`, payload);
     },
+    async getAktifApi(payload = {}) {      
+      return apiDatamasterGet(`/datamaster/role/aktif`, payload);
+    },
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/role", payload);
     },

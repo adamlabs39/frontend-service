@@ -21,18 +21,37 @@ const pegawaiProperties = ref({
   total: 0,
 });
 
-// Search Query
+// Filter
 const searchQuery = ref<string>("");
+
+const selectedFilters = ref<number[]>([]);
+const onFilterChange = (filters: number[]) => {
+  selectedFilters.value = filters;
+  fetchPegawaiData();
+};
 
 // Fetch Pegawai Data from API
 const fetchPegawaiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await pegawaiStore.getApi(
-      pegawaiProperties.value.page,
-      pegawaiProperties.value.page_size,
-      searchQuery.value
-    );
+    let typeValue = "";
+
+    if (
+      selectedFilters.value.length === 2 &&
+      selectedFilters.value.includes(1) &&
+      selectedFilters.value.includes(2)
+    ) {
+      typeValue = "";
+    } else if (selectedFilters.value.length === 1) {
+      typeValue = `${selectedFilters.value[0]}`;
+    }
+
+    const response = await pegawaiStore.getApi({
+      page: pegawaiProperties.value.page,
+      limit: pegawaiProperties.value.page_size,
+      name: searchQuery.value,
+      type: typeValue,
+    });
 
     if (response && response.payload) {
       pegawaiProperties.value.total = response.properties.total;
@@ -53,7 +72,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchPegawaiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -127,7 +146,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER PEGAWAI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -136,7 +155,7 @@ const downloadExportExcel = async () => {
     data.push({
       No: "No",
       Kode: "Kode",
-      Nama: "Nama ICD-9 CM",
+      Nama: "Nama Pegawai",
       Status: "Status",
     });
 
@@ -205,10 +224,26 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Pegawai");
+    XLSX.writeFile(workbook, `Datamaster Pegawai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+const filterTipePegawai = ref([
+  { label: "NAKES", value: 1 },
+  { label: "NON-NAKES", value: 2 },
+]);
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await pegawaiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchPegawaiData();
+    console.log('File uploaded successfully:', response);
+  } catch (error) {
+    console.error('Error uploading file:', error);
   }
 };
 </script>
@@ -222,7 +257,11 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="pegawai"
+        @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchPegawaiData()"
+        :filterChipList="filterTipePegawai"
+        @filterChange="onFilterChange"
       />
     </template>
 
@@ -260,15 +299,24 @@ const downloadExportExcel = async () => {
           </template>
         </Column>
         <Column field="nik" header="NIK" headerClass="bg-adameds-50"></Column>
-        <Column
-          field="name"
-          header="Nama Pegawai"
-          headerClass="bg-adameds-50"
-        ></Column>
+        <Column header="Nama Pegawai" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            <div>
+              {{
+                slotProps.data.firstTitle
+                  ? slotProps.data.firstTitle + ". "
+                  : ""
+              }}{{ slotProps.data.name
+              }}{{
+                slotProps.data.lastTitle ? ", " + slotProps.data.lastTitle : ""
+              }}
+            </div>
+          </template></Column
+        >
         <Column header="Tipe Pegawai" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <CustomChip
-            :label="slotProps.data.tipe === 1 ? 'NAKES' : 'NON NAKES'"
+              :label="slotProps.data.tipe === 1 ? 'NAKES' : 'NON NAKES'"
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
@@ -346,7 +394,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Pegawai ${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Pegawai ${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -375,6 +429,7 @@ const downloadExportExcel = async () => {
         :totalRecords="pegawaiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

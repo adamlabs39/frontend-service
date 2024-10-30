@@ -53,9 +53,7 @@ const onError = (event: any) => {
         auto
         :pt="{
           pcButton: {
-            
               class: 'font-back', // OR { class: 'w-64' }
-            
           },
         }"
         class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
@@ -85,5 +83,8 @@ const onError = (event: any) => {
     />
   </div>
 </template>
-
-
+<style scoped>
+:deep(.p-button-label){
+  @apply font-semibold;
+}
+</style>

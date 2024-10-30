@@ -260,23 +260,21 @@ const resetFormFields = () => {
           />
 
           <CustomSwitch label="Obat Pulang" v-model="obatPulang" />
-          <hr class="h-auto border border-adameds-300" />
+          <!-- <hr class="h-auto border border-adameds-300" /> -->
 
-          <div class="grid items-center grid-cols-3 gap-3">
-            <div>
-              <div class="font-semibold underline text-XS">Penulis Resep</div>
-              <div class="font-normal text-SM">-</div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-XS">Tgl Order</div>
-              <div class="font-normal text-SM">-</div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-XS">
-                Lokasi Tujuan Order
-              </div>
-              <div class="font-normal text-SM">-</div>
-            </div>
+          <div class="flex items-end gap-2.5">
+            <CustomButton
+              icon="PhPlus"
+              label="Obat"
+              textColor="text-white"
+              @click="handleAdd"
+            />
+            <CustomButton
+              icon="PhPlus"
+              label="Obat Racikan"
+              textColor="text-white"
+              @click="handleAddRacikan"
+            />
           </div>
         </div>
 
@@ -401,26 +399,7 @@ const resetFormFields = () => {
           </Column>
         </DataTable>
       </div>
-      <div
-        class="flex items-center justify-center p-5 my-7 border border-dashed rounded-lg border-adameds-300 gap-2.5"
-      >
-        <CustomButton
-          icon="PhPlus"
-          label="Tambah Obat"
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          backgroundColor="bg-white"
-          @click="handleAdd"
-        />
-        <CustomButton
-          icon="PhPlus"
-          label="Tambah Obat Racikan"
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          backgroundColor="bg-white"
-          @click="handleAddRacikan"
-        />
-      </div>
+    
       <!-- DialogTambahObat -->
       <DialogTambahObat
         v-model:isDialogVisible="dialogTambahData.isVisible"

@@ -238,9 +238,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="komponen-tarif"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchKomponenTarifData()"
       />
     </template>
     <template #content>
@@ -337,7 +337,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Komponen Tarif ${slotProps.data.code}`,
+                    `Komponen Tarif ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

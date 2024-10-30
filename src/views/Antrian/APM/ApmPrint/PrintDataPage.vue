@@ -4,6 +4,9 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import { ref } from "vue";
+import AddPrint from "@/components/icons/AddPrint.vue";
+import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
+import HouseFill from "@/components/icons/HouseFill.vue";
 
 const router = useRouter();
 
@@ -98,11 +101,12 @@ const tiketAntrian = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
+                  <!-- <img
                     loading="lazy"
                     src="@/assets/icons/icon-park-solid_add-print.svg"
                     class="shrink-0 w-[30px] h-[30px] p-[2px] filter invert"
-                  />
+                  /> -->
+                  <AddPrint  class="text-white" :size="30"/>
                 </div>
 
                 <!-- Text Container with Background -->
@@ -118,11 +122,13 @@ const tiketAntrian = ref({
             <div
               class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
             >
-              Data Ditemukan
+              <div class="pr-2">Data Ditemukan</div> 
+              <CheckCircleIcon class="text-adameds-300" :size="30"/>
             </div>
 
             <!-- Button Container (Right) -->
             <div class="flex items-center justify-end col-span-1 mr-6">
+              <!-- <HouseFill class="text-adameds-300" :size="20"/> -->
               <CustomButton
                 label="< &nbsp Halaman Utama"
                 outlined

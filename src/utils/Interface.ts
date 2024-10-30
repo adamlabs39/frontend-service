@@ -31,3 +31,17 @@ export interface ListMenu {
   iconWeight?: string;
   url: string;
 }
+
+export interface FilterAdmisi {
+  q?: string;
+  paymentMethod?: string;
+  page?: number;
+  limit?: number;
+  platform?: string;
+  poly?: string;
+  startDate?: string;
+  endDate?: string;
+  dpjp?: string;
+  room?: string;
+  withoutIdentity?: string;
+}

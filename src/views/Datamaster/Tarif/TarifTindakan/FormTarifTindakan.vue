@@ -17,6 +17,8 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import TableKomponenTarifTindakan from "@/components/Datamaster/TableKomponenTarifTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -101,47 +103,59 @@ const optionsLab = ref([
 ]);
 
 const schema = toTypedSchema(
-  yup.object({
-    jenisTarif: yup.string().default("Tindakan"),
-    code: yup.string().required("Code harus diisi"),
-    name: yup.string(),
-    grandTotal: yup.number(),
-    mode: yup.string(),
-    status: yup.bool().default(false),
-    isMcu: yup.bool().default(false),
-    unitPelayanan: yup.array().of(
-      yup.object({
-        unitPelayanan: yup.number().required("Unit Pelayanan harus dipilih"),
-      })
-    ),
-    penjamin: yup.array().of(
-      yup.object({
-        penjaminUuid: yup.string(),
-      })
-    ),
-    tindakanPoli: yup.array().of(
-      yup.object({
-        tindakanUuid: yup.string().required("Tindakan harus dipilih"),
-        listKomponenTarif: yup.array().of(
-          yup.object({
-            tarifKomponenUuid: yup
-              .string()
-              .required("Komponen Tarif harus dipilih"),
-            tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
-          })
-        ),
-      })
-    ),
-    tarifLab: yup.array().of(
-      yup.object({
-        tarifLabUuid: yup.string().when("isPoli", {
-          is: (value: boolean) => value === true,
-          then: (schema) => schema.required("Tarif Lab harus diisi"),
-          otherwise: (schema) => schema.notRequired(),
-        }),
-      })
-    ),
-  })
+  yup
+    .object({
+      jenisTarif: yup.string().default("Tindakan"),
+      code: yup.string().required("Kode Tarif harus diisi"),
+      name: yup.string(),
+      grandTotal: yup.number(),
+      mode: yup.string(),
+      status: yup.bool().default(false),
+      isMcu: yup.bool().default(false),
+      unitPelayanan: yup.array().of(
+        yup.object({
+          unitPelayanan: yup.number().required("Unit Pelayanan harus dipilih"),
+        })
+      ),
+      penjamin: yup.array().of(
+        yup.object({
+          penjaminUuid: yup.string(),
+        })
+      ),
+      tindakanPoli: yup.array().of(
+        yup.object({
+          tindakanUuid: yup.string().required("Tindakan harus dipilih"),
+          listKomponenTarif: yup.array().of(
+            yup.object({
+              tarifKomponenUuid: yup
+                .string()
+                .required("Komponen Tarif harus dipilih"),
+              tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
+            })
+          ),
+        })
+      ),
+      tarifLab: yup.array().of(
+        yup.object({
+          tarifLabUuid: yup.string().when("isMcu", {
+            is: (value: boolean) => value === true,
+            then: (schema) => schema.required("Tarif Lab harus diisi"),
+            otherwise: (schema) => schema.notRequired(),
+          }),
+        })
+      ),
+      unitPelayananSelected: yup
+        .array()
+        .of(yup.number().required("Unit Pelayanan harus dipilih"))
+        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+        .required("Unit Pelayanan harus dipilih"),
+      penjaminSelected: yup
+        .array()
+        .of(yup.string().required("Penjamin harus dipilih"))
+        .min(1, "Minimal satu Penjamin harus dipilih")
+        .required("Penjamin harus dipilih"),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -153,7 +167,8 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
         listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
       },
     ],
-    tarifLab: [{ tarifLabUuid: "" }],
+
+    // tarifLab: [{ tarifLabUuid: "" }],
   },
 });
 
@@ -170,7 +185,9 @@ interface Tindakan {
   tindakanUuid: string;
   listKomponenTarif: Array<ListKomponenTarif>;
 }
-
+interface Pelayanan {
+  unitPelayanan: string;
+}
 const {
   remove: removeTindakan,
   push: pushTindakan,
@@ -196,12 +213,28 @@ const removeListKomponenTarif = (
   );
 };
 
-const onSubmit = handleSubmit(async (values) => {
-  values.grandTotal = grandTotal.value;
-  console.log(grandTotal)
-  console.log(penjamin);
-
-  console.log("Submitted luar with", values);
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    values.grandTotal = grandTotal.value;
+    // delete values.unitPelayananSelected;
+    delete values.penjaminSelected;
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      console.log("Data updated successfully:", values);
+      const response = await tarifStore.putApi(uuid, values);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await tarifStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
 });
 
 const [code] = defineField("code");
@@ -211,18 +244,18 @@ const [isMcu] = defineField("isMcu");
 const [unitPelayanan] = defineField("unitPelayanan");
 const [penjamin] = defineField("penjamin");
 const [status] = defineField("status");
-const unitPelayananSelected = ref([]);
-const penjaminSelected = ref([]);
+const [unitPelayananSelected] = defineField("unitPelayananSelected");
+const [penjaminSelected] = defineField("penjaminSelected");
 
-watch(unitPelayananSelected, (newVal) => {
-  const formattedPelayanan = newVal.map((value) => ({ unitPelayanan: value }));
-  unitPelayanan.value = formattedPelayanan;
-});
+const handleUnitPelayananUpdate = (selectedValues: number[]) => {
+  unitPelayanan.value = selectedValues.map((value) => ({
+    unitPelayanan: value,
+  }));
+};
 
-watch(penjaminSelected, (newVal) => {
-  const formattedPenjamin = newVal.map((value) => ({ penjaminUuid: value }));
-  penjamin.value = formattedPenjamin;
-});
+const handleUnitPenjaminUpdate = (selectedValues: string[]) => {
+  penjamin.value = selectedValues.map((value) => ({ penjaminUuid: value }));
+};
 
 const {
   remove: removeTarifLab,
@@ -275,8 +308,19 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
+        const unitPelayananPayload =
+          props.payload.pelayanan?.map(
+            (item: { unitPelayanan: number }) => item.unitPelayanan
+          ) || [];
+        const penjaminPayload =
+          props.payload.penjamin?.map(
+            (item: { penjaminUuid: string }) => item.penjaminUuid
+          ) || [];
+
         setValues({
           ...props.payload,
+          unitPelayananSelected: unitPelayananPayload,
+          penjaminSelected: penjaminPayload,
         });
       }
     } else {
@@ -297,14 +341,14 @@ const grandTotal = computed(() => {
     return total + komponenTotal;
   }, 0);
 
- 
-  
   return totalKomponen;
 });
 
-
 const grandTotalFormatted = computed(() => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(grandTotal.value);
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(grandTotal.value);
 });
 </script>
 
@@ -315,9 +359,15 @@ const grandTotalFormatted = computed(() => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah Tarif</template>
+    <template #header>{{ title }} Tarif</template>
     <template #body>
-      <div class="flex flex-col h-full overflow-hidden">
+      <!-- Form Input -->
+      {{ unitPelayanan }}
+      {{ unitPelayananSelected }}
+      <div
+        v-if="method !== 'detail'"
+        class="flex flex-col overflow-hidden h-full"
+      >
         <div class="flex flex-col h-full min-h-screen gap-5">
           <!-- Grid Section -->
           <div class="grid grid-cols-12 gap-x-[30px] gap-y-5 mt-5">
@@ -328,6 +378,7 @@ const grandTotalFormatted = computed(() => {
               placeholder="Kode Tarif"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
             />
             <CustomTextfield
               class="col-span-5"
@@ -351,19 +402,26 @@ const grandTotalFormatted = computed(() => {
               v-model="unitPelayananSelected"
               :options="optionsPelayanan"
               optionValue="value"
+              @update:modelValue="handleUnitPelayananUpdate"
               optionLabel="label"
               placeholder="Pelayanan"
               class="col-span-6"
+              :invalid="!!errors.unitPelayananSelected"
+              :invalidMessage="errors.unitPelayananSelected"
+              :required="errors.unitPelayananSelected ? true : false"
             />
-            {{ penjamin }}
             <CustomMultiSelect
               label="Metode Pembayaran"
               v-model="penjaminSelected"
               :options="penjaminPayload"
+              @update:modelValue="handleUnitPenjaminUpdate"
               optionValue="uuid"
               optionLabel="name"
               placeholder="Metode Pembayaran"
               class="col-span-6"
+              :invalid="!!errors.penjaminSelected"
+              :invalidMessage="errors.penjaminSelected"
+              :required="errors.penjaminSelected ? true : false"
             />
           </div>
 
@@ -447,7 +505,7 @@ const grandTotalFormatted = computed(() => {
                               v-model="slotProps.data.tarifKomponenUuid"
                               label=""
                               place-holder="Pilih Tindakan"
-                              :options="tindakanPayload"
+                              :options="komponenTarifPayload"
                               option-label="name"
                               optionValue="uuid"
                               :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true : false"
@@ -644,7 +702,7 @@ const grandTotalFormatted = computed(() => {
               Grand Total
             </div>
             <div class="min-w-[300px] text-end font-bold text-MD">
-             {{ grandTotalFormatted }}
+              {{ grandTotalFormatted }}
             </div>
           </div>
           <hr class="border-200" />
@@ -658,18 +716,179 @@ const grandTotalFormatted = computed(() => {
           />
         </div>
       </div>
+
+      <!-- Detail Data -->
+      <div v-if="method === 'detail'" class="grid grid-cols-12 gap-5 mt-5">
+        <!-- <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
+        <CustomInfoRow label="Nama ICD 9 CM" :value="name" /> -->
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Kode Tarif</div>
+          <div class="font-normal text-normal">
+            {{ payload.code }}
+          </div>
+        </div>
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Nama Tarif Tindakan</div>
+          <div class="font-normal text-normal">
+            {{ payload.name }}
+          </div>
+        </div>
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Mode Pilih Tarif</div>
+          <div class="font-normal text-normal">
+            {{ payload.mode }}
+          </div>
+        </div>
+        <div class="flex flex-col col-span-6">
+          <div class="font-semibold underline text-SM">Pelayanan</div>
+          <div
+            v-if="payload.pelayanan && payload.pelayanan.length"
+            class="flex flex-wrap w-full h-full gap-1"
+          >
+            <CustomChip
+              v-for="pelayanan in payload.pelayanan"
+              :label="pelayanan.unitPelayananName"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              :showCheckedIcon="false"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Mode Pembayaran</div>
+          <div
+            v-if="payload.penjamin && payload.penjamin.length"
+            class="flex flex-wrap w-full h-full gap-1"
+          >
+            <CustomChip
+              v-for="penjamin in payload.penjamin"
+              :label="penjamin.penjaminName"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              :showCheckedIcon="false"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </div>
+        </div>
+        <CustomAccordion
+          class="col-span-12"
+          initial-state="0"
+          :open-with-header="false"
+          no-border
+        >
+          <template #header> List Tindakan </template>
+          <template #content>
+            <div
+              v-for="(tindakanPoli, idx) in payload.tindakanPoli"
+              :key="idx"
+              class="mt-5"
+            >
+              <div
+                class="flex flex-col gap-5 p-5 pt-5 mb-5 -mx-4 border border-adameds-300 rounded-xl"
+              >
+                <div class="flex gap-2.5 items-center">
+                  <CustomButton
+                    :label="`${idx + 1}`"
+                    class="w-10 h-10 p-3 rounded"
+                  />
+                  <div class="font-semibold text-normal">
+                    {{ tindakanPoli.tindakanName }}
+                  </div>
+                </div>
+                <DataTable
+                  :value="tindakanPoli.listKomponenTarif"
+                  tableStyle="min-width: 50rem"
+                  class="overflow-hidden text-xs rounded-lg"
+                >
+                  <Column
+                    header="Komponen Tarif"
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifPerKomponenName || "-" }}
+                    </template>
+                  </Column>
+                  <Column
+                    headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                    class="w-6/12 text-end"
+                    bodyClass="align-top text-end"
+                  >
+                    <template #header>
+                      <div class="w-full text-end">Rupiah (Rp)</div>
+                    </template>
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifPerKomponen || "-" }}
+                    </template>
+                  </Column>
+                </DataTable>
+              </div>
+            </div>
+          </template>
+          <template #collapseIcon>
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+
+          <template #expandIcon>
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+        </CustomAccordion>
+        <hr class="col-span-12 border-grey-200" />
+        <div class="flex items-center justify-end col-span-12 gap-4">
+          <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">
+            Grand Total
+          </div>
+          <div class="min-w-[300px] text-end font-bold text-MD">
+            {{ payload.grandTotal }}
+          </div>
+        </div>
+        <hr class="col-span-12 border-grey-200" />
+        <CustomInfoRow label="Status" class="col-span-12">
+          <template #value>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Batal"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-          >
-          </CustomButton>
-          <CustomButton @click="onSubmit" label="Simpan" />
+            @click="closeDialog"
+          />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

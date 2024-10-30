@@ -21,18 +21,47 @@ const praktisiProperties = ref({
   total: 0,
 });
 
-// Search Query
+// Filter
 const searchQuery = ref<string>("");
+
+const filterTipePraktisi = ref([
+  { label: "DOCTOR", value: "dokter" },
+  { label: "NON-DOCTOR", value: "non-dokter" },
+]);
+
+// Filter Chip
+const selectedFilters = ref<string[]>([]);
+const onFilterChange = (filters: string[]) => {
+  selectedFilters.value = filters; // Update selected filters
+  fetchPraktisiData(); // Fetch data with the new filters
+};
 
 // Fetch praktisi Data from API
 const fetchPraktisiData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
-    const response = await praktisiStore.getApi(
-      praktisiProperties.value.page,
-      praktisiProperties.value.page_size,
-      searchQuery.value
-    );
+    let isDoctor = false;
+    let isNonDoctor = false;
+
+    if (
+      selectedFilters.value.includes("dokter") &&
+      selectedFilters.value.includes("non-dokter")
+    ) {
+      isDoctor = true;
+      isNonDoctor = true;
+    } else if (selectedFilters.value.includes("dokter")) {
+      isDoctor = true;
+    } else if (selectedFilters.value.includes("non-dokter")) {
+      isNonDoctor = true;
+    }
+
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchQuery.value,
+      doctor: isDoctor,
+      non_doctor: isNonDoctor ,
+    });
 
     if (response && response.payload) {
       praktisiProperties.value.total = response.properties.total;
@@ -44,7 +73,7 @@ const fetchPraktisiData = async () => {
     console.error("Failed to fetch data", error);
     praktisiPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -53,7 +82,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchPraktisiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -103,14 +132,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await praktisiStore.deleteApi(item.uuid);
       fetchPraktisiData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -127,12 +156,12 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ICD-9 CM"];
+    const title = ["DATAMASTER PRAKTISI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Praktisi",
@@ -205,10 +234,22 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster PRAKTISI");
+    XLSX.writeFile(workbook, `Datamaster PRAKTISI.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await praktisiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchPraktisiData();
+    console.log('File uploaded successfully:', response);
+  } catch (error) {
+    console.error('Error uploading file:', error);
   }
 };
 </script>
@@ -222,15 +263,17 @@ const downloadExportExcel = async () => {
     <template #header>
       <HeaderFilter
         page-type="praktisi"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchPraktisiData()"
+        :filterChipList="filterTipePraktisi"
+        @filterChange="onFilterChange"
       />
     </template>
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-       v-else
+        v-else
         :value="praktisiPayload"
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"
@@ -259,25 +302,41 @@ const downloadExportExcel = async () => {
             </div>
           </template>
         </Column>
-        <Column
-          field="codeBpjs"
-          header="kode HFIS (BPJS)"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column field="sip" header="SIP" headerClass="bg-adameds-50"></Column>
-        <Column field="str" header="STR" headerClass="bg-adameds-50"></Column>
-        <Column
-          field="detailPegawai.name"
-          header="Nama Praktisi"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          header="Tipe Praktisi"
-          headerClass="bg-adameds-50"
-        >
-        <template #body="slotProps">
+        <Column header="kode HFIS (BPJS)" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            {{ slotProps.data.codeBpjs || "-" }}
+          </template>
+        </Column>
+        <Column header="SIP" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            {{ slotProps.data.sip || "-" }}
+          </template>
+        </Column>
+        <Column header="STR" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            {{ slotProps.data.str || "-" }}
+          </template>
+        </Column>
+        <Column header="Nama Praktisi" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            <div>
+              {{
+                slotProps.data.detailPegawai.firstTitle
+                  ? slotProps.data.detailPegawai.firstTitle + ". "
+                  : ""
+              }}{{ slotProps.data.detailPegawai.name
+              }}{{
+                slotProps.data.detailPegawai.lastTitle
+                  ? ", " + slotProps.data.detailPegawai.lastTitle
+                  : ""
+              }}
+            </div>
+          </template>
+        </Column>
+        <Column header="Tipe Praktisi" headerClass="bg-adameds-50">
+          <template #body="slotProps">
             <CustomChip
-            :label="slotProps.data.detailPegawai.tipe === 1 ? 'DOKTOR' : 'NON-DOKTOR'"
+              :label="slotProps.data.isDoctor ? 'DOKTOR' : 'NON-DOKTOR'"
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
@@ -325,8 +384,13 @@ const downloadExportExcel = async () => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Praktisi ${slotProps.data}`, slotProps.data)"
-
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `Praktisi ${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -336,7 +400,7 @@ const downloadExportExcel = async () => {
       </DataTable>
       <!-- Dialog for Tambah Data Dokter -->
       <FormPraktisi
-      v-model:isDialogVisible="isTambahDataDialogVisible"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
@@ -356,6 +420,7 @@ const downloadExportExcel = async () => {
         :totalRecords="praktisiProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
       />
     </template>
   </Card>

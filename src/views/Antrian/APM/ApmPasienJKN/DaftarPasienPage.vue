@@ -8,6 +8,10 @@ const router = useRouter();
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
+
+const handleData = () => {
+  router.push("/antrian/apm/aktif/pasien/jkn/data-pasien");
+};
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/jkn/berhasil");
 };
@@ -83,11 +87,7 @@ const props = defineProps({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <img
-                    loading="lazy"
-                    src="@/assets/icons/sidebar-icon/BPJS.svg"
-                    class="shrink-0 w-[30px] h-[30px]"
-                  />
+                  <BPJSIcon class="text-white" :size="30"/>
                 </div>
 
                 <!-- Text Container with Background -->
@@ -131,7 +131,7 @@ const props = defineProps({
             <CustomButton
               label="Lanjutkan"
               class="w-2/5 mt-10 mr-5"
-              @click="handleBerhasil"
+              @click="handleData"
             />
           </div>
         </div>

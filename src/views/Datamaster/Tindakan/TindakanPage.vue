@@ -26,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch tindakan Data from API
 const fetchTindakanData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await tindakanStore.getApi(
       tindakanProperties.value.page,
@@ -44,7 +44,7 @@ const fetchTindakanData = async () => {
     console.error("Failed to fetch data", error);
     tindakanPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -68,17 +68,17 @@ const handlePage = (event: any) => {
 };
 
 // Check if Data Exists
-const hasData = computed(
-  () => tindakanPayload.value && tindakanPayload.value.length > 0
-);
+const hasData = computed(() => tindakanPayload.value.length > 0);
 
 // Selected Row
 const metaKey = ref(true);
-const selectedData = ref();
+const selectedData = ref<any>(null); // Perbaiki tipe data
 
 const onRowSelect = (event: any) => {
-  selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  if (event.data) {
+    selectedData.value = event.data;
+    openDialog("detail", "Detail Data", selectedData.value);
+  }
 };
 
 // Dialog Management
@@ -103,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await tindakanStore.deleteApi(item.uuid);
       fetchTindakanData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -239,9 +239,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="tindakan"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchTindakanData()"
       />
     </template>
     <template #content>
@@ -290,7 +290,7 @@ const handleFileUpload = async (file: File) => {
             <div class="underline">Snomed-CT</div>
             <div class="mb-3 font-bold">
               {{
-                slotProps.data.snomedDetail
+                slotProps.data.snomedDetail && slotProps.data.snomedDetail.name 
                   ? slotProps.data.snomedDetail.name
                   : "Tidak ada data"
               }}
@@ -298,10 +298,11 @@ const handleFileUpload = async (file: File) => {
             <div class="underline">ICD-9 CM</div>
             <div class="font-bold">
               {{
-                slotProps.data.icd9Detail
+                slotProps.data.icd9Detail && slotProps.data.icd9Detail.name
                   ? slotProps.data.icd9Detail.name
                   : "Tidak ada data"
               }}
+
             </div>
           </template>
         </Column>
@@ -349,7 +350,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Tindakan ${slotProps.data.code}`, slotProps.data)"
+                @click="deleteDialog('delete', `Tindakan ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

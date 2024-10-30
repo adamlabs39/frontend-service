@@ -31,7 +31,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode LOINC harus diisi"),
     name: yup.string().required("Nama LOINC harus diisi"),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -125,6 +125,7 @@ watch(
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
           class="col-span-4"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama LOINC"
@@ -133,6 +134,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
@@ -149,6 +151,7 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode LOINC" :value="code" />
         <CustomInfoRow label="Nama LOINC" :value="name" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip

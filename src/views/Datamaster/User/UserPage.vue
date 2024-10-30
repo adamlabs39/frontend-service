@@ -4,15 +4,18 @@ import { useRoute, onBeforeRouteLeave } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import { useUserStore } from "@/stores/user";
 import { utilsStore } from "@/stores/utils";
+import { useRoleStore } from "@/stores/datamaster/role";
 import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
-import TambahDataUserPage from "./TambahDataUser/TambahDataUserPage.vue";
+import TambahDataUserPage from "./TambahDataUserPage.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
+import DetailUser from "./DetailUser.vue";
 
+//Breadcumb section
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
@@ -22,11 +25,15 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string) => {
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
   if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
+    dataBreadCrumb.value[0] = tempData;
   } else {
-    dataBreadCrumb.value.push({ label: label });
+    dataBreadCrumb.value.push(tempData);
   }
 };
 
@@ -43,19 +50,55 @@ onMounted(() => {
   updatePageType(route.path);
 });
 
+// Filter
+
+const searchQuery = ref<string>("");
+const selectedRole = ref("");
+
+const handleSearchQuery = (searchValue: string) => {
+  searchQuery.value = searchValue;
+};
+const handleSelectedRole = (selectedValue: any) => {
+  selectedRole.value = selectedValue;
+};
+const handleReset = () => {
+  resetForm();
+  fetchUserData();
+};
+
+const resetFormRef = ref();
+
+const resetForm = () => {
+  searchQuery.value = "";
+  selectedRole.value = "";
+  resetFormRef.value.resetForm();
+};
+
 const userStore = useUserStore();
+const roleStore = useRoleStore();
 const UseUtilsStore = utilsStore();
 const userPayload = ref<any[]>([]);
+const userProperties = ref({
+  page: 0,
+  page_size: 10,
+  total: 0,
+});
+const rolePayload = ref<any[]>([]);
 
 // Fetch User Data from API
 const fetchUserData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await userStore.getApi();
+    const response = await userStore.getApi({
+      page: userProperties.value.page,
+      limit: userProperties.value.page_size,
+      role: selectedRole.value || undefined,
+    });
     console.log("API Response:", response);
 
     if (response && response.payload) {
       console.log("Response contains payload:", response.payload);
+      userProperties.value.total = response.properties.totalItem;
       userPayload.value = response.payload;
     } else {
       userPayload.value = [];
@@ -68,15 +111,47 @@ const fetchUserData = async () => {
   }
 };
 
+// Handle Page Change
+const handlePage = (event: any) => {
+  userProperties.value.page = event.page;
+  userProperties.value.page_size = event.rows;
+  fetchUserData();
+};
+
+const fetchRole = async () => {
+  try {
+    const response = await roleStore.getAktifApi();
+    if (response && response.payload) {
+      rolePayload.value = response.payload;
+    } else {
+      rolePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch role", error);
+    rolePayload.value = [];
+  }
+};
+
+onMounted(() => {
+  fetchUserData();
+  fetchRole();
+});
+
 const hasData = computed(
   () => userPayload.value && userPayload.value.length > 0
 );
 
 console.log(userPayload.value);
 
-onMounted(() => {
-  fetchUserData();
-});
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  if (event.data) {
+    selectedData.value = event.data;
+    changeSection("Detail");
+  }
+};
 </script>
 
 <template>
@@ -87,7 +162,17 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <HeaderFilter page-type="user" @tambah-data="changeSection('Daftar')" />
+      <HeaderFilter
+        page-type="user"
+        @update:valueSearch="handleSearchQuery"
+        @update:selectedFilter="handleSelectedRole"
+        @search="fetchUserData()"
+        @reset="handleReset()"
+        @tambah-data="changeSection('Daftar')"
+        @reload-data="fetchUserData()"
+        :filterSelect="rolePayload"
+        ref="resetFormRef"
+      />
     </template>
     <template #content>
       <NoData v-if="!hasData" />
@@ -99,6 +184,17 @@ onMounted(() => {
         class="text-xs"
         scrollable
         scrollHeight="flex"
+        @rowSelect="onRowSelect"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        selectionMode="single"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50 font-semibold text-SM">
           <template #header>
@@ -172,11 +268,20 @@ onMounted(() => {
       </DataTable>
     </template>
     <template #footer>
-      <FooterPaginator :rows="4" :totalRecords="5" />
+      <FooterPaginator
+        :rows="userProperties.page_size"
+        :totalRecords="userProperties.total"
+        @page="handlePage"
+      />
     </template>
   </Card>
   <TambahDataUserPage
     v-else-if="dataBreadCrumb[0].label == 'Daftar'"
     @back="dataBreadCrumb.pop()"
+  />
+  <DetailUser
+    v-else-if="dataBreadCrumb[0].label == 'Detail'"
+    @back="dataBreadCrumb.pop()"
+    :payload="selectedData"
   />
 </template>

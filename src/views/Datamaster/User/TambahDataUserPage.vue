@@ -6,6 +6,8 @@ import * as yup from "yup";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import { useRoleStore } from "@/stores/datamaster/role";
+import { useUserStore } from "@/stores/user";
+import { usePermissionStore } from "@/stores/datamaster/permission";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -16,9 +18,25 @@ import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
+const props = defineProps({
+  title: {
+    type: String,
+  },
+  method: {
+    type: String,
+  },
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+const permissionsStore = usePermissionStore();
+const userStore = useUserStore();
+
 const praktisiStore = usePraktisiStore();
 const faskesStore = useFaskesStore();
-const roleStore = useFaskesStore();
+const roleStore = useRoleStore();
 const praktisiPayload = ref<any[]>([]);
 const faskesPayload = ref<any[]>([]);
 const rolePayload = ref<any[]>([]);
@@ -27,57 +45,59 @@ const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = computed(() =>
   toTypedSchema(
-    yup.object({
-      faskesUuid: yup.string(),
-      praktisiUuid: yup.string(),
-      phone: yup
-        .string()
-        .required("No. Handhpone harus diisi")
-        .matches(phoneRegExp, "Format tidak sesuai"),
-      email: yup
-        .string()
-        .required("Email harus diisi")
-        .email("Format email tidak sesuai")
-        .required("Email harus diisi"),
-      username: yup.string().required("Username harus diisi"),
-      password: yup
-        .string()
-        .min(8, "Password minimal 8 karakter")
-        .matches(
-          /[A-Z]/,
-          "Password harus mengandung setidaknya satu huruf besar"
-        )
-        .matches(
-          /[a-z]/,
-          "Password harus mengandung setidaknya satu huruf kecil"
-        )
-        .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-        .matches(
-          /[!@#$%^&*(),.?":{}|<>]/,
-          "Password harus mengandung setidaknya satu simbol khusus"
-        )
-        .required("Password harus diisi"),
-      confirmPassword: yup
-        .string()
-        .min(8, "Password minimal 8 digit")
-        .matches(
-          /[A-Z]/,
-          "Password harus mengandung setidaknya satu huruf besar"
-        )
-        .matches(
-          /[a-z]/,
-          "Password harus mengandung setidaknya satu huruf kecil"
-        )
-        .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-        .matches(
-          /[!@#$%^&*(),.?":{}|<>]/,
-          "Password harus mengandung setidaknya satu simbol khusus"
-        )
-        .required("Password harus diisi")
-        .oneOf([yup.ref("password")], "Password tidak sama"),
-      status: yup.bool(),
-      permission: yup.bool(),
-    })
+    yup
+      .object({
+        faskesUuid: yup.string(),
+        praktisiUuid: yup.string(),
+        phone: yup
+          .string()
+          .required("No. Handhpone harus diisi")
+          .matches(phoneRegExp, "Format tidak sesuai"),
+        email: yup
+          .string()
+          .required("Email harus diisi")
+          .email("Format email tidak sesuai")
+          .required("Email harus diisi"),
+        username: yup.string().required("Username harus diisi"),
+        password: yup
+          .string()
+          .min(8, "Password minimal 8 karakter")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi"),
+        confirmPassword: yup
+          .string()
+          .min(8, "Password minimal 8 digit")
+          .matches(
+            /[A-Z]/,
+            "Password harus mengandung setidaknya satu huruf besar"
+          )
+          .matches(
+            /[a-z]/,
+            "Password harus mengandung setidaknya satu huruf kecil"
+          )
+          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password harus mengandung setidaknya satu simbol khusus"
+          )
+          .required("Password harus diisi")
+          .oneOf([yup.ref("password")], "Password tidak sama"),
+        status: yup.bool(),
+        permission: yup.bool(),
+      })
+      .noUnknown()
   )
 );
 
@@ -100,7 +120,7 @@ const dataBreadCrumb = ref([{ label: "Tambah Data" }]);
 
 const fetchPraktisi = async () => {
   try {
-    const response = await praktisiStore.getApi();
+    const response = await praktisiStore.getAktifApi();
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
@@ -113,7 +133,7 @@ const fetchPraktisi = async () => {
 };
 const fetchFaskes = async () => {
   try {
-    const response = await faskesStore.getApi();
+    const response = await faskesStore.getAktifApi();
     if (response && response.payload) {
       faskesPayload.value = response.payload;
     } else {
@@ -126,15 +146,15 @@ const fetchFaskes = async () => {
 };
 const fetchRole = async () => {
   try {
-    const response = await roleStore.getApi();
+    const response = await roleStore.getAktifApi();
     if (response && response.payload) {
-      faskesPayload.value = response.payload;
+      rolePayload.value = response.payload;
     } else {
-      faskesPayload.value = [];
+      rolePayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch role", error);
-    faskesPayload.value = [];
+    rolePayload.value = [];
   }
 };
 
@@ -144,368 +164,10 @@ onMounted(() => {
   fetchRole();
 });
 
-const permissionsItem = ref([
-  {
-    module: "Antrian",
-    sub_modules: [
-      {
-        name: "Konfigurasi",
-        allows: ["READ", "CREATE", "UPDATE", "DELETE"],
-      },
-      {
-        name: "Data Antrian",
-        allows: ["READ"],
-      },
-      {
-        name: "Layar",
-        allows: ["READ"],
-      },
-      {
-        name: "Apm",
-        allows: [
-          "CREATE PASIEN JKN",
-          "CREATE PASIEN NON-JKN",
-          "CHECKIN",
-          "PRINT",
-        ],
-      },
-    ],
-  },
-  {
-    module: "Admisi",
-    sub_modules: [
-      {
-        name: "Antrian",
-        allows: ["PANGGIL", "LEWATI", "PROSES", "SELESAI", "CHECKIN"],
-      },
-      {
-        name: "RJ",
-        allows: [
-          "READ",
-          "CREATE PASIEN RJ",
-          "CREATE GENERAL CONSENT",
-          "UPDATE ADMISI RJ",
-          "UPDATE GENERAl CONSENT",
-          "CETAK KUNJUNGAN",
-          "CETAK LABEL",
-          "BATAL RJ",
-        ],
-      },
-      {
-        name: "RI",
-        allows: [
-          "READ",
-          "CREATE BAYI BARU LAHIR",
-          "CREATE GENERAL CONSENT",
-          "UPDATE ADMISI RI",
-          "UPDATE GENERAL CONSENT",
-          "BATAL REQUEST RI",
-          "CETAK GENERAL CONSENT",
-          "CETAK KUNJUNGAN",
-          "CETAK LABEL",
-        ],
-      },
-      {
-        name: "IGD",
-        allows: [
-          "READ",
-          "CREATE PASIEN IGD",
-          "CREATE GENERAL CONSENT",
-          "UPDATE ADMISI IGD",
-          "UPDATE GENERAL CONSENT",
-          "BATAL IGD",
-          "CETAK GENERAL CONSENT",
-          "CETAK KUNJUNGAN",
-          "CETAK LABEL",
-        ],
-      },
-      {
-        name: "SEP",
-        allows: [
-          "READ",
-          "CREATE SEP",
-          "CREATE SEP MANUAL",
-          "DELETE SEP",
-          "SIMPAN SEP MANUAL",
-        ],
-      },
-      {
-        name: "Data Pasien",
-        allows: [
-          "READ",
-          "CREATE PASIEN",
-          "UPDATE BERKAS RM",
-          "UPDATE DATA PASIEN",
-          "DELETE PASIEN",
-          "DELETE BERKAS RM",
-          "IMPORT DATA PASIEN",
-          "CETAK KARTU PASIEN",
-          "UPLOAD BERKAS RM",
-          "PREVIEW BERKAS RM",
-          "GENERAL CONSENT",
-        ],
-      },
-      {
-        name: "Monitoring Kamar",
-        allows: ["READ", "SETTING BED", "CREATE BED", "DELETE BED"],
-      },
-    ],
-  },
-  {
-    module: "Rawat Jalan",
-    sub_modules: [
-      {
-        name: "Antrian",
-        allows: ["PANGGIL", "LEWATI", "PROSSES", "SELESAI"],
-      },
-      {
-        name: "Poli",
-        allows: ["READ", "BATAL KUNJUNGAN"],
-      },
-      {
-        name: "BPJS-PCARE",
-        features: [
-          {
-            name: "Monitoring Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-          {
-            name: "Monitoring Riwayat Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-          {
-            name: "Monitoring Obat Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-        ],
-      },
-      {
-        name: "Laporan Rawat Jalan",
-        features: [
-          {
-            name: "Pembatalan Poli",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-          {
-            name: "rekap Pembatalan Pasien",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-        ],
-      },
-      {
-        name: "RME",
-        features: [
-          {
-            name: "Rekap Medis",
-            allows: [
-              "READ",
-              "UPDATE PEMERIKSAAN GIGI",
-              "UPDATE PEMERIKSAAN MATA",
-              "UPDATE PEMERIKSAAN FISIK",
-              "UPDATE DERAJAT LUKA BAKAR",
-              "UPDATE PEMERIKSAAN DAN TINDAKAN",
-              "UPDATE REKAM MEDIS",
-              "CETAK LABEL",
-              "TUTUP SEMUA FORM",
-              "BUKAN SEMUA FORM",
-              "RIWAYAT",
-              "SEMBUNYIKAN DETAIL PASIEN",
-              "TAMPILKAN DETAIL PASIEN",
-            ],
-          },
-          {
-            name: "Asemen",
-            allows: [
-              "READ",
-              "CETAK LABEL",
-              "RIWAYAT",
-              "SEMBUNYIKAN DETAIL PASIEN",
-              "CREATE DIAGNOSIS",
-              "DELETE DIAGNOSIS",
-              "UPDATE CATATAN PERAWAT",
-              "BALAS CATATAN PERAWAT",
-              "KIRIM CATATAN",
-              "KIRIM INTRUKSI",
-              "CREATE TINDAKAN",
-              "CREATE MULTIPLE TINDAKAN",
-              "DELETE TINDAKAN",
-            ],
-          },
-          {
-            name: "SOAP",
-            allows: [
-              "READ",
-              "CETAK LABEL",
-              "RIWAYAT",
-              "SEMBUNYIKAN DATA PASIEN",
-              "TUTUP SEMUA FORM",
-              "BUKA SEMUA FORM",
-              "CREATE OBAT",
-              "CREATE RACIKAN OBAT",
-              "ITEM OBAT RACIKAN",
-              "UPDATE OBAT",
-              "DELETE OBAT",
-              "DELETE ITEM OBAT RACIKAN",
-            ],
-          },
-          {
-            name: "Akses Dan Penunjang",
-            allows: [
-              "READ",
-              "CREATE ALKES",
-              "CREATE MULTIPLE ALKES",
-              "DELETE LIST ALKES",
-              "DELETE MULTIPLE ITEM ALKES",
-              "DELETE SEMUA",
-              "CREATE TINDAKAN",
-              "DELETE LIST TINDAKAN",
-            ],
-          },
-          {
-            name: "Inform Consent",
-            allows: ["READ"],
-          },
-          {
-            name: "Unggah Berkas",
-            allows: ["READ", "UPDATE FILE", "DELETE FILE", ""],
-          },
-          {
-            name: "Resume Dan Discarge",
-            allows: ["READ"],
-          },
-          {
-            name: "Cetak Hasil Dan Surat",
-            allows: [
-              "READ",
-              "CREATE SURAT KETERANGAN",
-              "DELETE SURAT KETERANGAN",
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    module: "Rawat Inap",
-    sub_modules: [
-      {
-        name: "Rawat Inap",
-        allows: ["READ","BATAL DIRAWAT"],
-      },
-      {
-        name: "Perpindahan Bangsal",
-        allows: ["READ", "BATAL TERIMA", "SETUJU DAN TERIMA"],
-      },
-      {
-        name: "BPJS-PCARE",
-        features: [
-          {
-            name: "Monitoring Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-          {
-            name: "Monitoring Riwayat Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-          {
-            name: "Monitoring Obat Kunjungan",
-            allows: ["READ", "CETAK BPJS"],
-          },
-        ],
-      },
-      {
-        name: "Laporan",
-        features: [
-          {
-            name: "Monitoring Rawat Inap",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-          {
-            name: "Perpindahan Pasien",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-          {
-            name: "Pembatalan Berobat",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-          {
-            name: "Rekap Tindakan Pasien",
-            allows: ["READ", "CETAK LAPORAN"],
-          },
-        ],
-      },
-      {
-        name: "Detail Pasien",
-        features: [
-          {
-            name: "Rekam Medis",
-            allows: [
-              "READ",
-              "UPDATE PEMERIKSAAN FISIK",
-              "UPDATE DERAJAT LUKA BAKAR",
-              "UPDATE PEMERIKSAAN DAN TINDAKAN",
-              "UPDATE REKAM MEDIS",
-              "DELETE SESI",
-              "",
-            ],
-          },
-          {
-            name: "Asesmen",
-            allows: [
-              "READ",
-              "CREATE DIAGNOSIS",
-              "DELETE DIAGNOSIS",
-              "UPDATE CATATAN PERAWAT",
-              "BALAS CATATAN PERAWAT",
-              "KIRIM CATATAN PERAWAT",
-              "KIRIM INTERUKSI MEDIS",
-              "CREATE MULTIPLE TINDAKAN",
-              "DELETE TINDAKAN",
-              "DELETE MULTIPLE TINDAKAN",
-              "DELETE SEMUA",
-            ],
-          },
-          {
-            name: "SOAP Dokter",
-            allows: [
-              "READ",
-              "CREATE OBAT",
-              "CREATE RACIKAN",
-              "UPDATE OBAT",
-              "DELETE OBAT",
-              "DELETE ITEM OBAT RACIKAN",
-            ],
-          },
-          {
-            name: "Inform Consent",
-            allows: ["READ"],
-          },
-          {
-            name: "Inform Consent",
-            allows: ["READ"],
-          },
-          {
-            name: "Alkes Dan Penunjang",
-            allows: [
-              "CREATE ALKES",
-              "CREATE MULTIPLE ALKES",
-              "DELETE ALKES",
-              "DELETE MULTIPLE ALKES",
-              "DELETE SEMUA",
-              "CREATE TINDAKAN",
-              "DELETE TINDAKAN",
-            ],
-          },
-        ],
-      },
-    ],
-  },
-]);
-
-const permissions = ref(
-  permissionsItem.value.map((item) => ({
-    modul: item.module,
-    checked: false, // Track if the module is checked
+const initialPermissionsState = ref(
+  permissionsStore.permissionsItem.map((item) => ({
+    module: item.module,
+    checked: false,
     sub_modules: item.sub_modules.map((subItem) => ({
       name: subItem.name,
       checked: false,
@@ -518,88 +180,73 @@ const permissions = ref(
               checked: false,
             })),
           }))
-        : [], // If no features, set empty array
-      // If no features, map allows directly on the sub_module level
+        : [],
       allows: subItem.allows
         ? subItem.allows.map((allow) => ({
             name: allow,
-            checked: false, // Track if the allow is checked
+            checked: false,
           }))
-        : [], // If no allows, set empty array
+        : [],
     })),
   }))
 );
 
-// const onSubmit = handleSubmit(async (values: any) => {
-//   const selectedPermissions = permissions.value
-//     .filter((module) => module.checked) // Only selected modules
-//     .map((module) => ({
-//       modul: module.modul,
-//       sub_modules: module.sub_modules
-//         .filter((subModule) => subModule.checked) // Only selected sub_modules
-//         .map((subModule) => ({
-//           name: subModule.name,
-
-//           // If subModule has features, map selected features and their allows
-//           features: subModule.features
-//             ? subModule.features
-//                 .filter((feature) => feature.checked) // Only selected features
-//                 .map((feature) => ({
-//                   name: feature.name,
-//                   allows: feature.allows
-//                     .filter((allow) => allow.checked) // Only selected allows in features
-//                     .map((allow) => allow.name),
-//                 }))
-//             : [],
-
-//           // Map allows if there are no features
-//           allows: subModule.allows
-//             ? subModule.allows
-//                 .filter((allow) => allow.checked) // Only selected allows in sub_modules
-//                 .map((allow) => allow.name)
-//             : [],
-//         })),
-//     }));
-//     console.log([...values.datas, ...selectedPermissions])
-//     console.log(values);
-//     console.log(selectedPermissions);
-
-// });
-// Method to submit selected permissions
-const onSubmit = () => {
-   const selectedPermissions = permissions.value
-    .filter((module) => module.checked) // Only selected modules
+const onSubmit = handleSubmit(async (values: any) => {
+  const permissions = initialPermissionsState.value
+    .filter((module) => module.checked)
     .map((module) => ({
-      modul: module.modul,
+      module: module.module,
       sub_modules: module.sub_modules
-        .filter((subModule) => subModule.checked) // Only selected sub_modules
+        .filter((subModule) => subModule.checked)
         .map((subModule) => ({
           name: subModule.name,
-
-          // If subModule has features, map selected features and their allows
           features: subModule.features
             ? subModule.features
-                .filter((feature) => feature.checked) // Only selected features
+                .filter((feature) => feature.checked)
                 .map((feature) => ({
                   name: feature.name,
                   allows: feature.allows
-                    .filter((allow) => allow.checked) // Only selected allows in features
+                    .filter((allow) => allow.checked)
                     .map((allow) => allow.name),
                 }))
             : [],
-
-          // Map allows if there are no features
           allows: subModule.allows
             ? subModule.allows
-                .filter((allow) => allow.checked) // Only selected allows in sub_modules
+                .filter((allow) => allow.checked)
                 .map((allow) => allow.name)
             : [],
         })),
     }));
 
-  console.log(selectedPermissions); // Log the selected permissions for testing
+  try {
+    if (props.method === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await userStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
+    } else if (props.method === "add") {
+      console.log("Adding new data with values:", values);
+      const response = await userStore.postApi(values);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+});
+
+const selectedPraktisi = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
+const searchPraktisi = () => {
+  // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
+  selectedPraktisi.value = praktisiPayload.value.find(
+    (praktisi) => praktisi.uuid === praktisiUuid.value
+  );
 };
 
+const resetSearch = () => {
+  praktisiUuid.value = ""; // Reset pegawaiUuid
+  selectedPraktisi.value = null; // Reset selectedPegawai
+};
 </script>
 
 <template>
@@ -664,7 +311,7 @@ const onSubmit = () => {
                 v-model="praktisiUuid"
                 place-holder="Cari & Pilih Praktisi"
                 :options="praktisiPayload"
-                option-label="name"
+                option-label="pegawai.name"
                 option-value="uuid"
                 class="grow"
               />
@@ -672,36 +319,53 @@ const onSubmit = () => {
                 label="Cari"
                 icon="PhMagnifyingGlass"
                 class="ml-5 mr-2.5"
+                @click="searchPraktisi"
               />
               <CustomButton
                 label="Reset"
                 background-color="bg-transparent"
                 border-color="border-adameds-300"
                 text-color="text-adameds-300"
+                @click="resetSearch"
               />
             </div>
-            <div
-              class="grid grid-flow-col grid-cols-12 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
-            >
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Nama Pegawai</div>
-                <div class="font-normal text-normal">Nama Lengkap1</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">NIK</div>
-                <div class="font-normal text-normal">Nama Lengkap2</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Tanggal Lahir</div>
-                <div class="font-normal text-normal">Nama Lengkap3</div>
-              </div>
-              <div class="flex flex-col col-span-4">
-                <div class="font-semibold underline text-SM">Jenis Kelamin</div>
-                <div class="font-normal text-normal">Nama Lengkap4</div>
+            <div v-if="selectedPraktisi" class="col-span-12">
+              <div
+                class="grid grid-flow-col grid-cols-12 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 col-span-12 p-5"
+              >
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Nama Pegawai
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.name }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">NIK</div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.nik }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Tanggal Lahir
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.tanggalLahir }}
+                  </div>
+                </div>
+                <div class="flex flex-col col-span-4">
+                  <div class="font-semibold underline text-SM">
+                    Jenis Kelamin
+                  </div>
+                  <div class="font-normal text-normal">
+                    {{ selectedPraktisi.pegawai.gender }}
+                  </div>
+                </div>
               </div>
             </div>
-
-            <CustomInputNumber
+            <CustomTextfield
               label="No. Handphone"
               v-model="phone"
               placeholder="08xx-xxxx-xxxx"
@@ -796,12 +460,15 @@ const onSubmit = () => {
               label="Role"
               place-holder="Pilih Role"
               class="col-span-12"
+              :options="rolePayload"
+              option-label="name"
+              option-value="uuid"
             />
 
             <!-- Loop through all modules -->
             <div
-              v-for="(menuItem, menuIndex) in permissions"
-              :key="menuItem.modul"
+              v-for="(menuItem, menuIndex) in initialPermissionsState"
+              :key="menuItem.module"
               class="col-span-12"
             >
               <!-- Module level -->
@@ -813,8 +480,8 @@ const onSubmit = () => {
                   <div class="flex items-center gap-2.5">
                     <Checkbox
                       v-model="menuItem.checked"
-                      :inputId="menuItem.modul"
-                      :value="menuItem.modul"
+                      :inputId="menuItem.module"
+                      :value="menuItem.module"
                       name="menuItem"
                       :dt="{
                         checkedBackground: '#14B8A6',
@@ -822,7 +489,7 @@ const onSubmit = () => {
                         borderColor: '#98A2B3',
                       }"
                     />
-                    <label :for="menuItem.modul">{{ menuItem.modul }}</label>
+                    <label :for="menuItem.module">{{ menuItem.module }}</label>
                   </div>
                 </template>
 

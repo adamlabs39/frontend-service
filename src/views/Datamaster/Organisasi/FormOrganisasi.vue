@@ -29,6 +29,7 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
 const organisasiStore = useOrganisasiStore();
 const organisasiPayload = ref<any[]>([]);
 
@@ -123,11 +124,11 @@ const schema = toTypedSchema(
     email: yup.string().required("Email harus diisi"),
     url: yup.string().required("URL harus diisi"),
     addressCode: yup.string(),
-    kodePos: yup.string(),
-    alamat: yup.string(),
+    kodePos: yup.string().required("Kode Pos harus diisi"),
+    alamat: yup.string().required("Alamat harus diisi"),
     partOfUuid: yup.string(),
     status: yup.bool().default(false),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -276,6 +277,7 @@ watch(
           class="col-span-4"
           :invalid="!!errors.code"
           :invalidMessage="errors.code"
+          :required="errors.code ? true : false"
         />
         <CustomTextfield
           label="Nama Organisasi"
@@ -284,6 +286,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.name"
           :invalidMessage="errors.name"
+          :required="errors.name ? true : false"
         />
         <CustomTextfield
           label="No. Telepon"
@@ -292,6 +295,7 @@ watch(
           class="col-span-4"
           :invalid="!!errors.phone"
           :invalidMessage="errors.phone"
+          :required="errors.phone ? true : false"
         />
         <CustomTextfield
           label="Email"
@@ -300,6 +304,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.email"
           :invalidMessage="errors.email"
+          :required="errors.email ? true : false"
         />
         <CustomTextfield
           label="URL"
@@ -308,6 +313,7 @@ watch(
           class="col-span-12"
            :invalid="!!errors.url"
           :invalidMessage="errors.url"
+          :required="errors.url ? true : false"
         />
         <CustomSelect
           label="Provinsi"
@@ -350,12 +356,18 @@ watch(
           v-model="kodePos"
           placeholder="Pilih Kode Pos"
           class="col-span-4"
+          :invalid="!!errors.kodePos"
+          :invalidMessage="errors.kodePos"
+          :required="errors.kodePos ? true : false"
         />
         <CustomTextArea
           label="Alamat"
           v-model="alamat"
           place-holder="Alamat"
           class="col-span-8"
+          :invalid="!!errors.alamat"
+          :invalidMessage="errors.alamat"
+          :required="errors.kodePos ? true : false"
         />
         <CustomSelect
           label="Part Of"
@@ -366,7 +378,7 @@ watch(
           place-holder="Pilih Part Of"
           class="col-span-12"
         />
-        <hr class="border-grey-200 col-span-12" />
+        <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
           :show-label="true"
@@ -378,7 +390,7 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
-        <div class="font-bold text-heading leading-8">Data Organisasi</div>
+        <div class="font-bold leading-8 text-heading">Data Organisasi</div>
         <hr class="border-grey-200" />
         <CustomInfoRow label="Kode Organisasi" :value="payload.code" />
         <CustomInfoRow label="Nama Organisasi" :value="payload.name" />
@@ -412,7 +424,6 @@ watch(
           label="ID SATUSEHAT"
           :value="payload.satuSehatId ?? '-'"
         />
-
         <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

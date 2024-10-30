@@ -233,9 +233,9 @@ const handleFileUpload = async (file: File) => {
     <template #header>
       <HeaderFilter
         page-type="loinc"
-        :value-search="searchQuery"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
+        @reload-data="fetchLoincData()"
       />
     </template>
 
@@ -324,7 +324,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `LOINC ${slotProps.data.code}`,
+                    `LOINC ${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

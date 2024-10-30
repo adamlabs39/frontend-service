@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -10,7 +10,16 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import ExaminationHistoryCard from "./Section/ExaminationHistoryCard.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import NoData from "@/components/section/NoData.vue";
-import PatientIdentityForm from "./Section/PatientIdentityForm.vue";
+import PatientIdentityForm from "./Forms/PatientIdentityFormRJ.vue";
+import { utilsStore } from "@/stores/utils";
+import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
+import type { DataTableRowClickEvent } from "primevue/datatable";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { formatDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const masterPasienStore = useAdmisiMasterPasienStore();
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
@@ -22,100 +31,7 @@ const changeSection = (label: string) => {
   }
 };
 
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "2",
-    new_patient: false,
-    platform: "ADMISI",
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: true,
-    platform: "APM",
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
-    platform: "MOBILE APP",
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
-    platform: "APM",
-  },
-]);
+const itemsPasien = ref<any[]>([]);
 const itemsMedicalRecord = ref([
   {
     fileName: "Berkas File Pasien Lama - adameds bin adam",
@@ -132,6 +48,134 @@ const isDetail = () => {
   if (typeof label == "string" && label.includes("Detail")) return true;
   else return false;
 };
+
+const timer = ref<any>();
+const searchData = () => {
+  if (timer.value) {
+    clearTimeout(timer.value);
+    timer.value = null;
+  }
+  timer.value = setTimeout(async () => {
+    await fetchData();
+  }, 800);
+};
+
+const properties = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+});
+const search = ref("");
+
+const fetchData = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await masterPasienStore.getMasterPasien({
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+      q: search.value,
+    });
+    if (response && response.payload) {
+      properties.value.total = response.properties.totalData;
+      itemsPasien.value = response.payload;
+    } else itemsPasien.value = [];
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const openedPatientData = ref<any>({});
+const showDetailPatient = async (event: DataTableRowClickEvent) => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await masterPasienStore.getDetailMasterPasien(
+      event.data.uuid
+    );
+    if (response && response.payload) {
+      openedPatientData.value = response.payload;
+      detailPatientDialog.value = true;
+    } else {
+      openedPatientData.value = {};
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const patientIdentityForm = ref<InstanceType<
+  typeof PatientIdentityForm
+> | null>(null);
+
+const method = ref<"add" | "edit">("add");
+const openPatientForm = (type: "add" | "edit") => {
+  method.value = type;
+
+  if (type == "add") {
+    openedPatientData.value = {};
+    changeSection("Tambah Data Pasien");
+  } else {
+    changeSection("Edit Data Pasien");
+  }
+};
+const closePatientForm = () => {
+  if (patientIdentityForm.value) {
+    patientIdentityForm.value.onResetForm();
+    openedPatientData.value = {};
+    dataBreadCrumb.value.pop();
+    fetchData();
+  }
+};
+
+const onSubmit = async () => {
+  if (patientIdentityForm.value) {
+    const tempPatientData = await patientIdentityForm.value.onSubmit();
+    if (tempPatientData) {
+      storeUtils.setLoading(true);
+      try {
+        let tempBirthDate = formatDate(
+          tempPatientData!.birthDetail.birthDate,
+          true
+        );
+        tempPatientData!.birthDetail.birthDate =
+          tempBirthDate as unknown as Date;
+        if (method.value == "add") {
+          await masterPasienStore.createMasterPasien(tempPatientData);
+        } else if (method.value == "edit") {
+          await masterPasienStore.updateMasterPasien(
+            openedPatientData.value.uuid,
+            tempPatientData
+          );
+        }
+        closePatientForm();
+      } catch (error) {
+        console.error("Failed to process the data:", error);
+      } finally {
+        storeUtils.setLoading(false);
+      }
+    }
+  }
+};
+
+const resetForm = async () => {
+  if (patientIdentityForm.value) {
+    patientIdentityForm.value.onResetForm();
+  }
+};
+
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.pageSize = event.rows;
+  fetchData();
+};
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <template>
@@ -147,7 +191,11 @@ const isDetail = () => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  @click="fetchData"
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Data Pasien',
@@ -165,7 +213,7 @@ const isDetail = () => {
                   class="mr-[10px]"
                 />
                 <CustomButton
-                  @click="changeSection('Tambah Data Pasien')"
+                  @click="openPatientForm('add')"
                   icon="PhPlus"
                   label="Pasien"
                   class="mr-[10px]"
@@ -175,6 +223,8 @@ const isDetail = () => {
           </template>
           <template #content>
             <CustomTextfield
+              v-model="search"
+              @update:model-value="searchData"
               label="Pencarian"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Nama / address / No. RM"
@@ -206,7 +256,7 @@ const isDetail = () => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="detailPatientDialog = true"
+          @rowClick="showDetailPatient"
         >
           <Column
             field="nomor"
@@ -216,56 +266,47 @@ const isDetail = () => {
             <template #header>
               <div class="w-full font-semibold text-center">Nomor</div>
             </template>
-            <template #body="slotProps">
+            <template #body="{ data }">
               <div class="text-center">
-                <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
+                <div class="text-SM">{{ data.noRm }}</div>
               </div>
             </template>
           </Column>
           <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
-            <template #body="slotProps">
+            <template #body="{ data }">
               <div class="text-SM">
-                <span class="font-semibold">{{ slotProps.data.name }}</span>
+                <span class="font-semibold">{{ data.name }}</span>
                 <span class="text-grey-300">
-                  ({{ slotProps.data.age_year }}Th
-                  {{ slotProps.data.age_month }}Bln
-                  {{ slotProps.data.age_day }}Hr)
+                  ({{ data.birthDetail.ageYear }}Th
+                  {{ data.birthDetail.ageMonth }}Bln
+                  {{ data.birthDetail.ageDay }}Hr)
                 </span>
               </div>
-              <div class="text-XS">{{ slotProps.data.address }}</div>
+              <div class="text-XS">{{ data.address.fullAddress }}</div>
               <div class="flex flex-wrap">
-                <PhUserCirclePlus
-                  v-if="slotProps.data.new_patient"
+                <!-- <PhUserCirclePlus
+                  v-if="data.new_patient"
                   :size="22"
                   class="text-adameds-300 mt-auto mr-[5px]"
                   weight="fill"
-                />
-                <CustomChip
-                  v-if="slotProps.data.platform != 'ADMISI'"
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.platform"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
-                />
+                /> -->
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="
-                    slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                  "
+                  :label="data.gender == 'Female' ? 'Perempuan' : 'Laki-laki'"
                   :bgColor="
-                    slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                    data.gender == 'Female' ? 'bg-female-75' : 'bg-male-75'
                   "
                   :textColor="
-                    slotProps.data.gender == 'P'
+                    data.gender == 'Female'
                       ? 'text-female-300'
                       : 'text-male-300'
                   "
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
+                <!-- FIXME Belum Ada -->
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.phone"
+                  :label="data.phone"
                   bgColor="bg-adameds-75"
                   textColor="text-adameds-300"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -283,15 +324,11 @@ const isDetail = () => {
             class="my-auto bg-danger-300"
             label="Hapus Pasien"
           />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+          <CustomPaginator
+            :rows="properties.pageSize"
+            :totalRecords="properties.total"
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>
@@ -309,7 +346,7 @@ const isDetail = () => {
             />
             <div class="flex">
               <CustomButton
-                @click="dataBreadCrumb.pop()"
+                @click="closePatientForm"
                 icon="PhCaretLeft"
                 label="Kembali"
                 class="mr-[10px]"
@@ -319,7 +356,7 @@ const isDetail = () => {
               />
               <CustomButton
                 v-if="isDetail()"
-                @click="changeSection('Edit Data Pasien')"
+                @click="openPatientForm('edit')"
                 label="Edit"
                 class="mr-[10px]"
                 backgroundColor="bg-adameds-300"
@@ -329,7 +366,13 @@ const isDetail = () => {
         </template>
       </Card>
       <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-        <PatientIdentityForm pageType="datamaster" :isDetail="isDetail()" />
+        <PatientIdentityForm
+          ref="patientIdentityForm"
+          pageType="datamaster"
+          :formType="dataBreadCrumb[0].label as string"
+          :isDetail="isDetail()"
+          :patientData="openedPatientData"
+        />
       </div>
       <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
         <template #content>
@@ -351,6 +394,7 @@ const isDetail = () => {
           </div>
           <div v-else class="flex justify-end">
             <CustomButton
+              @click="resetForm"
               label="Reset"
               class="mr-[10px]"
               outlined
@@ -358,7 +402,7 @@ const isDetail = () => {
               textColor="text-grey-300"
             />
             <CustomButton
-              @click="() => {}"
+              @click="onSubmit"
               label="Simpan"
               class=""
               backgroundColor="bg-adameds-300"
@@ -372,21 +416,33 @@ const isDetail = () => {
       <template #header>
         <div class="flex">
           <div class="bg-white rounded-lg text-adameds-300 px-[10px]">
-            RM.123456
+            {{ openedPatientData.noRm }}
           </div>
-          <span class="mx-[10px]">Adam Bin Adam</span>
-          <span class="font-normal leading-6 text-normal">(20Th 3Bln 5Hr)</span>
+          <span class="mx-[10px]">{{ openedPatientData.name }}</span>
+          <span class="font-normal leading-6 text-normal"
+            >({{ openedPatientData.birthDetail.ageYear }}Th
+            {{ openedPatientData.birthDetail.ageMonth }}Bln
+            {{ openedPatientData.birthDetail.ageDay }}Hr)</span
+          >
         </div>
       </template>
       <template #body>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
+        <CustomAccordion
+          noBorder
+          headerClass="text-black py-[15px]"
+          initialState="0"
+        >
           <template #header>Riwayat Pemeriksaan</template>
           <template #content>
             <div class="pt-[10px]"></div>
             <ExaminationHistoryCard v-for="data in [1, 2]" class="mt-[10px]" />
           </template>
         </CustomAccordion>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
+        <CustomAccordion
+          noBorder
+          headerClass="text-black py-[15px]"
+          initialState="0"
+        >
           <template #header>Riwayat Unggah Berkas Rekam Medis</template>
           <template #content>
             <DataTable
@@ -502,22 +558,61 @@ const isDetail = () => {
             </div>
           </template>
         </CustomAccordion>
-        <CustomAccordion noBorder headerClass="text-black py-[15px]" initialState="0">
+        <CustomAccordion
+          noBorder
+          headerClass="text-black py-[15px]"
+          initialState="0"
+        >
           <template #header>Data Lengkap Pasien</template>
           <template #content>
             <div class="grid grid-cols-2 gap-y-[10px] mt-5">
-              <CustomInfoRow label="No. RM" value="123456" />
-              <CustomInfoRow label="Nama Lengkap" value="Adam Bin Adam" />
-              <CustomInfoRow label="Tempat Lahir" value="Surabaya" />
-              <CustomInfoRow label="Tanggal lahir" value="10 Jan 2000" />
-              <CustomInfoRow label="Umur" value="24" />
-              <CustomInfoRow label="Jenis kelamin" value="laki-laki" />
-              <CustomInfoRow label="No. Handphone" value="0820-1234-5678" />
-              <CustomInfoRow label="Agama" value="Islam" />
-              <CustomInfoRow label="Provinsi" value="Jawa Barat" />
-              <CustomInfoRow label="Kabupaten/Kota" value="Surabaya" />
-              <CustomInfoRow label="Kecamatan" value="Keputih" />
-              <CustomInfoRow label="Alamat" value="Eastern Park, No. 23" />
+              <CustomInfoRow label="No. RM" :value="openedPatientData.noRm" />
+              <CustomInfoRow
+                label="Nama Lengkap"
+                :value="openedPatientData.name"
+              />
+              <CustomInfoRow
+                label="Tempat Lahir"
+                :value="openedPatientData.birthDetail.birthPlace"
+              />
+              <CustomInfoRow
+                label="Tanggal lahir"
+                :value="openedPatientData.birthDetail.birthDate"
+              />
+              <CustomInfoRow
+                label="Umur"
+                :value="`${openedPatientData.birthDetail.ageYear} Tahun, ${openedPatientData.birthDetail.ageMonth} Bulan, ${openedPatientData.birthDetail.ageDay} Hari`"
+              />
+              <CustomInfoRow
+                label="Jenis kelamin"
+                :value="
+                  openedPatientData.gender == 'Male' ? 'laki-laki' : 'Perempuan'
+                "
+              />
+              <CustomInfoRow
+                label="No. Handphone"
+                :value="openedPatientData.phone"
+              />
+              <CustomInfoRow
+                label="Agama"
+                :value="openedPatientData.religion"
+              />
+              <CustomInfoRow
+                label="Provinsi"
+                :value="openedPatientData.address.prov"
+              />
+              <CustomInfoRow
+                label="Kabupaten/Kota"
+                :value="openedPatientData.address.city"
+              />
+              <CustomInfoRow
+                label="Kecamatan"
+                :value="openedPatientData.address.district"
+              />
+              <CustomInfoRow
+                label="Alamat"
+                :value="openedPatientData.address.fullAddress"
+              />
             </div>
           </template>
         </CustomAccordion>
@@ -548,9 +643,7 @@ const isDetail = () => {
               backgroundColor="bg-adameds-300"
             />
             <CustomButton
-              @click="
-                (detailPatientDialog = false), changeSection('Edit Data Pasien')
-              "
+              @click="(detailPatientDialog = false), openPatientForm('edit')"
               label="Edit Data Pasien"
               class=""
               backgroundColor="bg-adameds-300"

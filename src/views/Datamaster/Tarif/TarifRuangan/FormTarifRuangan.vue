@@ -36,13 +36,12 @@ const penjaminPayload = ref<any[]>([]);
 const ruanganPayload = ref<any[]>([]);
 const optionsPelayanan = ref([
   { label: "IGD", value: 1 },
-  { label: "Rawat Jalan", value: 2 },
   { label: "Rawat Inap", value: 3 },
 ]);
 
 const fetchPenjamin = async () => {
   try {
-    const response = await penjaminStore.getApi();
+    const response = await penjaminStore.getAktifApi();
     if (response && response.payload) {
       penjaminPayload.value = response.payload;
     } else {
@@ -56,7 +55,7 @@ const fetchPenjamin = async () => {
 
 const fetchRuangan = async () => {
   try {
-    const response = await ruanganStore.getApi();
+    const response = await ruanganStore.getAktifApi();
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
     } else {
@@ -72,22 +71,22 @@ onMounted(() => {
   fetchRuangan();
 });
 const schema = toTypedSchema(
-  yup.object({
-    jenisTarif: yup.string().default("Ruangan"),
-    code: yup.string().required("Code Tarif harus diisi"),
-    name: yup.string(),
-    unitPelayanan: yup.number().required("Pelayanan harus dipilih"),
-    ruanganUuid: yup.string().required("Ruangan harus dipilih"),
-    tarifPenjamin: yup.array().of(
-      yup.object({
-        penjaminUuid: yup.string().required("Jenis pembayaran harus diisi"),
-        harga: yup
-          .number()
-          .required("Harga bed harus diisi")
-      })
-    ),
-    status: yup.bool().default(false),
-  })
+  yup
+    .object({
+      jenisTarif: yup.string().default("Ruangan"),
+      code: yup.string().required("Code Tarif harus diisi"),
+      name: yup.string(),
+      unitPelayanan: yup.number().required("Pelayanan harus dipilih"),
+      ruanganUuid: yup.string().required("Ruangan harus dipilih"),
+      tarifPenjamin: yup.array().of(
+        yup.object({
+          penjaminUuid: yup.string().required("Jenis pembayaran harus diisi"),
+          harga: yup.number().required("Harga bed harus diisi"),
+        })
+      ),
+      status: yup.bool().default(false),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -102,10 +101,18 @@ const [unitPelayanan] = defineField("unitPelayanan");
 const [ruanganUuid] = defineField("ruanganUuid");
 const [status] = defineField("status");
 
-const { remove, push, fields } = useFieldArray("tarifPenjamin");
+interface Penjamin {
+  penjaminUuid: string;
+  harga: number;
+}
+const {
+  remove,
+  push,
+  fields: filedsPenjamin,
+} = useFieldArray<Penjamin>("tarifPenjamin");
 
 const myPushFunction = () => {
-  push({ jenisPembayaran: "", harga: "" });
+  push({ penjaminUuid: "", harga: 0 });
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
@@ -129,20 +136,14 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 });
 
-
-const jenisBayarOptions = ref([
-  { label: "Tunai", value: "tunai" },
-  { label: "BPJS", value: "bpjs" },
-]);
-
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -168,6 +169,9 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          unitPelayanan: props.payload.pelayanan[0].unitPelayanan,
+          ruanganUuid: props.payload.ruangan[0].ruanganUuid,
+          tarifPenjamin: props.payload.penjamin,
         });
       }
     } else {
@@ -176,7 +180,6 @@ watch(
     }
   }
 );
-
 </script>
 <template>
   <CustomDialog
@@ -187,7 +190,11 @@ watch(
   >
     <template #header>Tambah Tarif</template>
     <template #body>
-      <div class="flex flex-col h-full overflow-hidden">
+      <!-- Form Input -->
+      <div
+        v-if="method !== 'detail'"
+        class="flex flex-col h-full overflow-hidden"
+      >
         <div class="grid grid-cols-12 gap-5 mt-5">
           <CustomTextfield
             v-model="code"
@@ -196,6 +203,7 @@ watch(
             placeholder="Kode Tarif"
             :invalid="!!errors.code"
             :invalidMessage="errors.code"
+            :required="errors.code ? true : false"
           />
           <CustomTextfield
             v-model="name"
@@ -213,6 +221,7 @@ watch(
             place-holder="Pelayanan"
             :invalid="!!errors.unitPelayanan"
             :invalidMessage="errors.unitPelayanan"
+            :required="errors.unitPelayanan ? true : false"
           />
           <CustomSelect
             label="Ruangan"
@@ -224,11 +233,12 @@ watch(
             class="col-span-6"
             :invalid="!!errors.ruanganUuid"
             :invalidMessage="errors.ruanganUuid"
+            :required="errors.ruanganUuid ? true : false"
           />
           <DataTable
-            :value="fields"
+            :value="filedsPenjamin"
             tableStyle="min-width: 30rem"
-            class="overflow-hidden text-xs rounded-lg bg-adameds-50 col-span-12"
+            class="col-span-12 overflow-hidden text-xs rounded-lg bg-adameds-50"
           >
             <Column headerClass="bg-adameds-300 text-white" class="w-1/2">
               <template #header>
@@ -242,11 +252,8 @@ watch(
                   optionLabel="name"
                   label=""
                   place-holder="Jenis Pembayaran Lain"
-                  :invalid="!slotProps.data.value.penjaminUuid"
-                />
-                <ErrorMessage
-                  :name="`datas[${slotProps.index}].penjaminUuid`"
-                  class="text-danger-300"
+                  :invalid="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`] ? true : false"
+                  :invalidMessage="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`]"
                 />
               </template>
             </Column>
@@ -259,7 +266,8 @@ watch(
                   v-model="slotProps.data.value.harga"
                   label=""
                   align-number="text-end"
-                  :invalid="!slotProps.data.value.harga"
+                  :invalid="(errors as any)[`tarifPenjamin[${slotProps.index}].harga`] ? true : false"
+                  :invalidMessage="(errors as any)[`tarifPenjamin[${slotProps.index}].harga`]"
                 >
                   <template #prependText>
                     <div
@@ -284,7 +292,7 @@ watch(
                   <CustomButton
                     label=""
                     background-color="bg-danger-300 rounded-lg"
-                     class="h-6 w-[26px] p-0"
+                    class="h-6 w-[26px] p-0"
                     @click="remove(slotProps.index)"
                   >
                     <img src="@/assets/icons/delete.svg" alt="" />
@@ -294,7 +302,7 @@ watch(
             </Column>
           </DataTable>
           <div
-            class="flex items-center justify-center p-5 m-5 border border-dashed rounded-lg border-adameds-300 col-span-12"
+            class="flex items-center justify-center col-span-12 p-5 m-5 border border-dashed rounded-lg border-adameds-300"
           >
             <CustomButton
               icon="PhPlus"
@@ -305,7 +313,7 @@ watch(
               @click="myPushFunction"
             />
           </div>
-          <hr class="border-200 col-span-12" />
+          <hr class="col-span-12 border-200" />
           <CustomSwitch
             v-model="status"
             :show-label="true"
@@ -321,13 +329,18 @@ watch(
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Batal"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-          >
-          </CustomButton>
-          <CustomButton @click="onSubmit" label="Simpan" />
+            @click="closeDialog"
+          />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
         </div>
       </div>
     </template>
