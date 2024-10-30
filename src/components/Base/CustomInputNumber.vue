@@ -141,14 +141,14 @@ defineExpose({
         v-model="value"
         class="text-black text-SM"
         @input="onInput"
-        :pt:pcInput:root:class="{
+        :pt:pcInputText:root:class="{
           'border-danger-300 text-danger-300': invalid,
           'border-grey-200 bg-grey-100 text-grey-300': disabled,
           'border-grey-200': !disabled && !invalid && !readOnly,
           'border-adameds-300': readOnly,
           'rounded-r-none border-r-0': $slots.appendText,
           'rounded-l-none border-l-0': $slots.prependText,
-          'h-10 pt-1 text-black text-SM ': true,
+          'h-10 pt-1 text-black text-SM': true,
           'text-center px-0': showButtons,
           'text-start ': !showButtons,
           'cursor-not-allowed': readOnly,
