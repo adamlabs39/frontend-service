@@ -106,7 +106,7 @@ const filterData = (event: SelectFilterEvent) => {
     <InputGroup>
       <InputGroupAddon
         v-if="prependIcon"
-        class="rounded-l-lg"
+        class="px-3 py-2 rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
           'border-grey-200': !disabled && !invalid,

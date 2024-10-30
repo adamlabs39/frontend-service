@@ -25,7 +25,7 @@
     "compressorjs": "^1.2.1",
     "pdfmake": "^0.2.10",
     "pinia": "^2.1.7",
-    "primevue": "^4.0.1",
+    "primevue": "^4.1.1",
     "qrcode.vue": "^3.4.1",
     "quill": "^2.0.2",
     "vee-validate": "^4.13.2",
