@@ -17,7 +17,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Daftar Kelas",
         icon: "TrainingIcon",
         type: linkType.LINK,
-        url: "/igd/pasien-igd",
+        url: "/training/daftar-kelas",
       },
     ],
   },
@@ -29,7 +29,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Booking Kelas",
         icon: "PhAddressBook",
         type: linkType.LINK,
-        url: "/igd/pasien-igd",
+        url: "/training/booking-kelas",
       },
     ],
   },
@@ -42,7 +42,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "PhDatabase",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Kelas", type: linkType.LINK, url: '/igd/bpjs/monitoring-kunjungan'},
+          { name: "Kelas", type: linkType.LINK, url: '/training/datamaster/kelas'},
         ],
       }
     ],
@@ -56,7 +56,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "FileReportIcon",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Rekapitulasi Kunjungan Kelas Training", type: linkType.LINK, url: '/igd/bpjs/monitoring-kunjungan'},
+          { name: "Rekapitulasi Kunjungan Kelas Training", type: linkType.LINK, url: '/training/laporan/rekapitulasi'},
         ],
       }
     ],
