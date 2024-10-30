@@ -62,45 +62,10 @@ defineExpose({
     <template #content>
       <div class="pt-5">
         <div class="flex">
-          <CustomSelect
-            v-if="pageType != 'rawat-inap'"
-            label="Cari Nama / No. RM"
-            placeHolder="Cari Nama / No. RM"
-            class="grow"
-            :class="{ 'mr-[30px]': pageType != 'datamaster' }"
-            optionLabel=""
-            optionValue=""
-            :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
-            prependIcon="PhMagnifyingGlass"
-            :disabled="
-              noIdentity || newBorn || isDetail || pageType == 'datamaster'
-            "
-          />
-          <CustomSwitch
-            v-if="pageType == 'igd'"
-            v-model="newBorn"
-            label="Bayi Baru Lahir"
-            class="mr-[50px]"
-            @update:model-value="noIdentity = false"
-            :disabled="isDetail"
-          />
-          <CustomSwitch
-            v-if="pageType == 'igd'"
-            v-model="noIdentity"
-            label="Tanpa Identitas"
-            class="mr-[35px]"
-            @update:model-value="newBorn = false"
-            :disabled="isDetail"
-          />
-          <div
-            v-if="pageType != 'rawat-inap'"
-            class="border-[1px] border-grey-200 mr-[35px]"
-          ></div>
           <CustomTextfield
             label="No. RM"
             class="w-[23.5%]"
             placeholder="No. RM"
-            disabled
           />
         </div>
         <hr class="mt-5 mb-[30px]" />

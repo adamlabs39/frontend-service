@@ -26,6 +26,12 @@ import HistoryIcon from "./HistoryIcon.vue";
 import FileImportIcon from "./FileImportIcon.vue";
 import TrashFillIcon from "./TrashFillIcon.vue";
 import HandshakeIcon from "./HandshakeIcon.vue";
+import SolarUserCheckIcon from "./SolarUserCheckIcon.vue";
+import CheckCircleIcon from "./CheckCircleIcon.vue";
+import HouseFill from "./HouseFill.vue";
+import AddPrint from "./AddPrint.vue";
+import Stethoscop from "./Stethoscop.vue";
+import PlusIcon from "./PlusIcon.vue";
 import OpenBoxIcon from "./OpenBoxIcon.vue";
 import BoxPlusIcon from "./BoxPlusIcon.vue";
 import BoxUpIcon from "./BoxUpIcon.vue";
@@ -61,6 +67,12 @@ export default {
     app.component("FileImportIcon", FileImportIcon);
     app.component("TrashFillIcon", TrashFillIcon);
     app.component("HandshakeIcon", HandshakeIcon);
+    app.component("SolarUserCheckIcon", SolarUserCheckIcon);
+    app.component("CheckCircleIcon", CheckCircleIcon);
+    app.component("HouseFill", HouseFill);
+    app.component("AddPrint", AddPrint);
+    app.component("Stethoscop", Stethoscop);
+    app.component("PlusIcon", PlusIcon);
     app.component("DownloadIcon", DownloadIcon);
     
     // NOTE Inventory

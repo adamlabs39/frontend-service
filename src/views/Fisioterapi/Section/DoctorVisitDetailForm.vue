@@ -28,7 +28,7 @@ const props = defineProps({
     required: true,
   },
 });
-const status = ref(false)
+const status = ref(false);
 
 const storeUtils = utilsStore();
 
@@ -67,7 +67,7 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false" class="mt-[10px]" initialState="1">
+  <CustomAccordion :openWithHeader="false" class="mt-[10px]" initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
@@ -103,11 +103,7 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-        <div
-          class="flex gap-y-5 gap-x-[30px]"
-          
-        >
-         
+        <div class="flex gap-y-5 gap-x-[30px]">
           <CustomSelect
             label="Unit Asal"
             placeHolder="Pilih Unit Asal"
@@ -122,39 +118,26 @@ defineExpose({
             placeholder="Dokter Pengirim"
             class="w-1/3 mr-3"
           />
-         <CustomSwitch
-         
-            
-            
+          <CustomSwitch
             v-model="status"
-              :show-label="true"
-                label="Pasien Maternitas"
-              sideLabel="Tidak"
-              sideLabelTrue="Iya"
-              class="w-[150px] mr-3"
-
+            :show-label="true"
+            label="Pasien Maternitas"
+            sideLabel="Tidak"
+            sideLabelTrue="Iya"
+            class="w-[150px] mr-3"
           />
         </div>
-        <div
-         
-          class="flex gap-y-5 gap-x-[30px] mt-5"
-          
-        >
+        <div class="flex gap-y-5 gap-x-[30px] mt-5">
           <CustomTextfield
-           
             label="Keluhan Utama"
             class="w-1/2 col-span-2 mr-3 grow"
             placeholder="Keluhan Utama"
-            
           />
           <CustomTextArea
-            
             label="Catatan"
             class="w-1/2 col-span-2 mr-3"
-            
             placeholder="Catatan"
             height="h-10"
-           
           />
         </div>
         <div v-if="selectedPaymentMethod.includes('ASURANSI')">

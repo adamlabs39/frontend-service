@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem";
-import { computed, ref, type PropType } from "vue";
+import { computed, onBeforeMount, onMounted, ref, type PropType } from "vue";
 import Qrcode from "qrcode.vue";
 import { getDateNow } from "@/utils/Helpers";
 
@@ -10,8 +10,14 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import PatientIdentityForm from "../Section/PatientIdentityForm.vue";
-import DoctorVisitDetail from "../Section/DoctorVisitDetailForm.vue";
+import PatientIdentityFormRJ from "../Forms/PatientIdentityFormRJ.vue";
+import PatientIdentityFormIGD from "../Forms/PatientIdentityFormIGD.vue";
+import DoctorVisitDetail from "../Forms/DoctorVisitDetailForm.vue";
+import { utilsStore } from "@/stores/utils";
+import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
+import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
+import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import { formatDate } from "@/utils/Helpers";
 
 const props = defineProps({
   pageType: {
@@ -26,7 +32,17 @@ const props = defineProps({
     type: Object as PropType<any>,
     required: true,
   },
+  formType: {
+    type: String as PropType<"add" | "edit">,
+    default: "add",
+  },
 });
+
+// NOTE Store
+const storeUtils = utilsStore();
+const admisiRJStore = useAdmisiRJStore();
+const admisiRIStore = useAdmisiRIStore();
+const admisiIGDStore = useAdmisiIGDStore();
 
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
@@ -44,6 +60,175 @@ const onFilterBedRoomSelect = (label: string) => {
 const isDetail = () => {
   if (props.dataBreadCrumb[0].label == "Detail") return true;
   else return false;
+};
+
+const openedPatientData = ref<any>({});
+const openedDoctorVisitData = ref<any>({});
+onBeforeMount(async () => {
+  if (!props.dataBreadCrumb[0].label?.toString().includes("Daftar")) {
+    await fetchDetailPatientData();
+  }
+});
+
+const setDetailDoctorVisitData = (patientData: any) => {
+  if (props.pageType == "rawat-jalan" || props.pageType == "igd") {
+    let tempOpenedDoctorVisit = {
+      paymentMethod: patientData.paymentMethod,
+      jadwalDokterUuid: patientData.jadwalDokterUuid,
+      maternity: patientData.maternity,
+      complaint: patientData.complaint,
+      note: patientData.note,
+      assuranceAccountId: patientData.insurance,
+      practitionerUuid: patientData.practitionerUuid,
+    };
+    if (props.pageType == "rawat-jalan") {
+      delete tempOpenedDoctorVisit.practitionerUuid;
+    } else {
+      delete tempOpenedDoctorVisit.jadwalDokterUuid;
+    }
+    openedDoctorVisitData.value = tempOpenedDoctorVisit;
+  }
+  if (props.pageType == "rawat-inap") {
+    openedDoctorVisitData.value = {
+      paymentMethod: patientData.paymentMethod,
+      practitionerUuid: patientData.practitionerUuid,
+      complaint: patientData.complaint,
+      familyBill: patientData.familyBill,
+      noSpri: patientData.noSpri,
+      monitoringRoomUuid: patientData.monitoringRoomUuid,
+      assuranceAccountId: patientData.insurance,
+    };
+  }
+};
+
+const fetchDetailPatientData = async () => {
+  storeUtils.setLoading(true);
+  try {
+    let response;
+    if (props.pageType == "rawat-jalan") {
+      response = await admisiRJStore.getDetailRJ(props.patientData.uuid);
+    } else if (props.pageType == "rawat-inap") {
+      response = await admisiRIStore.getDetailRI(props.patientData.uuid);
+    } else if (props.pageType == "igd") {
+      response = await admisiIGDStore.getDetailIGD(props.patientData.uuid);
+    }
+    if (response && response.payload) {
+      openedPatientData.value = response.payload.patient;
+      openedPatientData.value.withoutIdentity =
+        response.payload.withoutIdentity;
+      if (openedPatientData.value.isNewBorn) {
+        openedPatientData.value.multipleBirth = response.payload.multipleBirth
+          ? true
+          : false;
+      }
+
+      setDetailDoctorVisitData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+// NOTE Patient form
+const patientIdentityFormRJ = ref<InstanceType<
+  typeof PatientIdentityFormRJ
+> | null>(null);
+const patientIdentityFormIGD = ref<InstanceType<
+  typeof PatientIdentityFormIGD
+> | null>(null);
+const doctorVisitDetail = ref<InstanceType<typeof DoctorVisitDetail> | null>(
+  null
+);
+const closeRegisterForm = () => {
+  if (patientIdentityFormRJ.value) {
+    patientIdentityFormRJ.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormIGD.value) {
+    patientIdentityFormIGD.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (doctorVisitDetail.value) {
+    doctorVisitDetail.value.onResetForm();
+    openedDoctorVisitData.value = {};
+  }
+  emit("back");
+};
+
+const postRegisterPatient = async () => {
+  let tempPatientData;
+
+  if (props.pageType == "rawat-jalan") {
+    tempPatientData = await patientIdentityFormRJ.value?.onSubmit();
+  } else if (props.pageType == "igd") {
+    tempPatientData = await patientIdentityFormIGD.value?.onSubmit();
+  }
+  const tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+  console.log("tempPatientData", tempPatientData);
+  console.log("tempDocterVisitData", tempDocterVisitData);
+
+  if (tempPatientData && tempDocterVisitData) {
+    let tempBirthDate = formatDate(
+      tempPatientData!.birthDetail.birthDate,
+      true
+    );
+    tempPatientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
+    let payload = { patientData: tempPatientData, ...tempDocterVisitData };
+    storeUtils.setLoading(true);
+
+    try {
+      let response;
+      if (props.pageType == "rawat-jalan") {
+        if (props.formType == "add") {
+          response = await admisiRJStore.registRJ(payload);
+        } else {
+          response = await admisiRJStore.updateRJ(
+            props.patientData.uuid,
+            payload
+          );
+        }
+      } else if (props.pageType == "rawat-inap") {
+        if (props.formType == "add") {
+          response = await admisiRIStore.registNewBorn(payload);
+        } else {
+          response = await admisiRIStore.updateRI(
+            props.patientData.uuid,
+            payload
+          );
+        }
+      } else if (props.pageType == "igd") {
+        if (props.formType == "add") {
+          response = await admisiIGDStore.registIGD(payload);
+        } else {
+          response = await admisiIGDStore.updateIGD(
+            props.patientData.uuid,
+            payload
+          );
+        }
+      }
+      if (response && response.payload) {
+        openedPatientData.value = response.payload.patientData;
+
+        setDetailDoctorVisitData(response.payload);
+      }
+      emit("goToDetail");
+    } catch (error) {
+      console.error("Failed to process the data:", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
+};
+
+const registPatient = async (type: string) => {
+  if (type == "lewati") {
+    await postRegisterPatient();
+    confirmSaveDialog.value = false;
+  } else if (type == "setuju-simpan") {
+    inputGeneralConsentDialog.value = false;
+  }
 };
 </script>
 
@@ -89,7 +274,7 @@ const isDetail = () => {
           </CustomBreadCrumb>
           <div class="flex">
             <CustomButton
-              @click="emit('back')"
+              @click="closeRegisterForm"
               icon="PhCaretLeft"
               label="Kembali"
               class="mr-[10px]"
@@ -109,17 +294,29 @@ const isDetail = () => {
       </template>
     </Card>
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-      <PatientIdentityForm
+      <PatientIdentityFormRJ
+        v-if="pageType == 'rawat-jalan'"
+        ref="patientIdentityFormRJ"
         :pageType="pageType"
         :isDetail="isDetail()"
-        :formType="dataBreadCrumb[0].label as string"
-        :patientData="patientData"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+      />
+      <PatientIdentityFormIGD
+        v-else-if="pageType == 'igd'"
+        ref="patientIdentityFormIGD"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
       />
       <DoctorVisitDetail
+        ref="doctorVisitDetail"
         :pageType="pageType"
         :isDetail="isDetail()"
-        :formType="dataBreadCrumb[0].label as string"
-        :patientData="patientData"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+        :doctorVisitData="openedDoctorVisitData"
       />
     </div>
     <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
@@ -196,22 +393,24 @@ const isDetail = () => {
         </div>
       </template>
       <template #footer>
-        <CustomButton
-          @click="emit('goToDetail'), (confirmSaveDialog = false)"
-          label="Lewati"
-          outlined
-          class=""
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-        />
-        <CustomButton
-          @click="
-            (confirmSaveDialog = false), (inputGeneralConsentDialog = true)
-          "
-          label="Buat"
-          class=""
-          backgroundColor="bg-adameds-300"
-        />
+        <div class="flex justify-end">
+          <CustomButton
+            @click="registPatient('lewati')"
+            label="Lewati"
+            outlined
+            class="mr-[10px]"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+          />
+          <CustomButton
+            @click="
+              (confirmSaveDialog = false), (inputGeneralConsentDialog = true)
+            "
+            label="Buat"
+            class=""
+            backgroundColor="bg-adameds-300"
+          />
+        </div>
       </template>
     </CustomDialog>
 
@@ -386,7 +585,7 @@ const isDetail = () => {
             textColor="text-grey-300"
           />
           <CustomButton
-            @click="emit('goToDetail'), (inputGeneralConsentDialog = false)"
+            @click="registPatient('setuju-simpan')"
             label="Setuju & Simpan"
             class=""
             backgroundColor="bg-adameds-300"

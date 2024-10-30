@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import BPJSIcon from '../icons/BPJSIcon.vue';
+import PlusIcon from '../icons/PlusIcon.vue';
+
 const props = defineProps({
   cardPasien: {
     type: Object as () => { keterangan: string},
@@ -19,18 +22,14 @@ const props = defineProps({
         <div
           class="rounded-r-xl w-[100px] h-[100px] flex items-center justify-center bg-adameds-300"
         >
-          <img
+          <!-- <img
             v-if="cardPasien.keterangan === 'Pasien JKN'"
             src="@/assets/icons/sidebar-icon/BPJS.svg"
             alt=""
             class="w-[60px] h-[60px]"
-          />
-          <img
-            v-if="cardPasien.keterangan === 'Pasien Non-JKN'"
-            src="@/assets/icons/vector-plus.svg"
-            alt=""
-            class="w-[50px] h-[50px]"
-          />
+          /> -->
+          <BPJSIcon class="text-white" :size="50" v-if="cardPasien.keterangan === 'Pasien JKN'"/>
+          <PlusIcon class="text-white" :size="50" v-if="cardPasien.keterangan === 'Pasien Non-JKN'"/>
         </div>
         <div class="items-center justify-center my-auto ml-5">
           <div

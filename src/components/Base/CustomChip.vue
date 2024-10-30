@@ -7,6 +7,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  value: {
+    type: String,
+    default: null,
+  },
   isSelected: {
     type: Boolean,
     default: false,
@@ -64,7 +68,8 @@ const props = defineProps({
 const emit = defineEmits(["selected"]);
 
 const onSelectedValue = () => {
-  emit("selected", props.label);
+  if (props.value) emit("selected", props.value);
+  else emit("selected", props.label);
 };
 
 const customizedClass = computed(() => props.customClass);

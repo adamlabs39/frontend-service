@@ -46,7 +46,7 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false" initialState="1">
+  <CustomAccordion :openWithHeader="false" initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">

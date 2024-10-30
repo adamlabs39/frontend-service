@@ -2,6 +2,7 @@ import {
   baseInstance,
   settingInstance,
   baseInstanceDatamaster,
+  baseInstanceAdmisi,
   authInstance,
 } from "./Api";
 import { app } from "@/main";
@@ -219,6 +220,68 @@ const apiDatamasterDelete = async (url: string, data: object) => {
   }
 };
 
+//Admisi
+const apiAdmisiGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiPatch = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.patch(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAdmisiDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceAdmisi.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -236,4 +299,9 @@ export {
   apiDatamasterPost,
   apiDatamasterPut,
   apiDatamasterDelete,
+  apiAdmisiGet,
+  apiAdmisiPost,
+  apiAdmisiPut,
+  apiAdmisiPatch,
+  apiAdmisiDelete,
 };

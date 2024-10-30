@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import Textarea from "primevue/textarea";
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: String as PropType<string | null>,
     default: "",
   },
   autoResize: {
@@ -49,7 +49,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const value = computed({
   get: () => props.modelValue,
-  set: (value: string) => emit("update:modelValue", value),
+  set: (value: string | null) => emit("update:modelValue", value),
 });
 </script>
 
