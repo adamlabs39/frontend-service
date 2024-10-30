@@ -110,7 +110,7 @@ const value = computed({
           dateFormat="dd-mm-yy"
           :manualInput="false"
           fluid
-          :pt:pcInput:root:class="{
+          :pt:pcInputText:root:class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200': !disabled && !invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
@@ -122,6 +122,8 @@ const value = computed({
         />
       </IconField>
     </div>
-    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>

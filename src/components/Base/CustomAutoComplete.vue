@@ -81,7 +81,7 @@ const search = (event: any) => {
     <AutoComplete
       v-model="value"
       class="h-10"
-      pt:pcInput:root:class="w-full rounded-lg border-grey-400"
+      pt:pcInputText:root:class="w-full rounded-lg border-grey-400"
       pt:inputMultiple:class="rounded-lg border-grey-400"
       :suggestions="filteredData"
       :optionLabel="optionLabel"
