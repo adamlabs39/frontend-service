@@ -5,11 +5,17 @@ import { onMounted, ref } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import FileUpload from "primevue/fileupload";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import DialogTambahSupplier from "@/views/Inventory/Page/Datamaster/DialogTambahSupplier.vue";
+import DialogDetailSupplier from "./DialogDetailSupplier.vue";
 
 const route = useRoute();
 
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([{}]);
+const datamasterSupplierData = ref<any | null>(null);
+
+const detailSupplierData = ref(null);
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
@@ -28,7 +34,44 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+  datamasterSupplierData.value = [
+    {
+      id: 1,
+      code: "SPL1234",
+      name: "Supplier 1",
+      noTelpon: "022-12345",
+      status: true,
+      alamat: "Jalan Jalan",
+    },
+  ];
 });
+
+const dialogTambahSupplier = ref({
+  isVisible: false,
+  title: "",
+});
+const dialogDetailSupplier = ref({
+  isVisible: false,
+  title: "",
+});
+
+function handleTambahSupplier() {
+  dialogTambahSupplier.value.isVisible = true;
+  dialogTambahSupplier.value.title = "Tambah Data Supplier";
+}
+
+function handleDetailSupplier(values: any) {
+//   console.log(values.data);
+
+  dialogDetailSupplier.value.isVisible = true;
+  dialogDetailSupplier.value.title = "Detail Data Supplier";
+  detailSupplierData.value = values.data;
+}
+
+// Function untuk menambah data baru ke array datamasterSupplierData
+const handleSupplierDataSubmit = (data: any) => {
+  datamasterSupplierData.value.push(data); // Tambah data yang diterima ke array
+};
 </script>
 
 <template>
@@ -41,10 +84,116 @@ onMounted(() => {
       <HeaderDatamaster
         :data-bread-crumb="dataBreadCrumb"
         :page-type="pageType"
+        @tambah-supplier="handleTambahSupplier"
       >
       </HeaderDatamaster>
     </template>
-    <template #content> dlmpdm </template>
+    <template #content>
+      <DataTable
+        :value="datamasterSupplierData"
+        @row-click="handleDetailSupplier"
+        tableStyle="min-width: 50rem"
+        scrollable
+        scrollHeight="240px"
+        :pt="{ headerRow: 'text-SM' }"
+      >
+        <Column field="no" headerClass="bg-adameds-50" class="w-[50px]">
+          <template #header>
+            <div class="font-semibold">No</div>
+          </template>
+          <template #body="slotProps">
+            <div>
+              <div class="text-center text-SM">{{ slotProps.index + 1 }}</div>
+            </div>
+          </template>
+        </Column>
+        <Column field="kodeOrganisasi" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="font-semibold">Kode Organisasi</div>
+          </template>
+          <template #body="slotProps">
+            <div>
+              <div class="text-SM">{{ slotProps.data.code }}</div>
+            </div>
+          </template>
+        </Column>
+        <Column field="namaOrganisasi" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="font-semibold">Nama Organisasi</div>
+          </template>
+          <template #body="slotProps">
+            <div>
+              <div class="text-SM">{{ slotProps.data.name }}</div>
+            </div>
+          </template>
+        </Column>
+        <Column field="noTelpon" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="font-semibold">No. Telepon</div>
+          </template>
+          <template #body="slotProps">
+            <div>
+              <div class="text-SM">{{ slotProps.data.noTelpon }}</div>
+            </div>
+          </template>
+        </Column>
+        <Column field="status" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Status</div>
+          </template>
+          <template #body="slotProps">
+            <div class="flex items-center justify-center">
+              <CustomChip
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="noTelpon" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Action</div>
+          </template>
+          <template #body="slotProps">
+            <div class="flex justify-center gap-1.5">
+              <CustomButton
+                label=""
+                background-color="bg-[#3D84E5] rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
+                <img src="@/assets/icons/edit.svg" alt="Edit" />
+              </CustomButton>
+              <CustomButton
+                label=""
+                background-color="bg-danger-300 rounded-lg"
+                class="h-6 w-[26px] p-0"
+              >
+                <img src="@/assets/icons/delete.svg" alt="Delete" />
+              </CustomButton>
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+      <DialogTambahSupplier
+        v-model:is-dialog-visible="dialogTambahSupplier.isVisible"
+        :title="dialogTambahSupplier.title"
+        @submit-supplier-data="handleSupplierDataSubmit"
+      />
+
+      <DialogDetailSupplier
+        v-model:is-dialog-visible="dialogDetailSupplier.isVisible"
+        :title="dialogDetailSupplier.title"
+        :detail-data="detailSupplierData"
+      />
+    </template>
     <template #footer>
       <div class="flex justify-between py-2.5">
         <div class="flex items-center gap-2.5">
@@ -90,7 +239,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-:deep(.p-button-label){
+:deep(.p-button-label) {
   @apply font-semibold;
 }
 </style>
