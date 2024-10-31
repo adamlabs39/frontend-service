@@ -223,14 +223,14 @@ const downloadFormatExcel = async () => {
 
     // Header Row
   data.push({
-      No: "No",
+    No: "No",
       Code: "Kode Komponen Tarif*",
       Name: "Nama Komponen Tarif*",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
     
-      data.push({ No: "1", Code: "KT-001", Name: "Jasa dokter" });
+      data.push({No: "1", Code: "KT-001", Name: "Jasa dokter" });
 
 
     // Create Workbook and Worksheet
@@ -245,12 +245,13 @@ const downloadFormatExcel = async () => {
 
   
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Komponen Tarif");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Komponen Tarif");
     XLSX.writeFile(workbook, `Format Datamaster Komponen Tarif.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
@@ -372,7 +373,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Komponen Tarif ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -404,7 +405,8 @@ const handleFileUpload = async (file: File) => {
         :totalRecords="komponenTarifProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
-        @import="downloadFormatExcel"
+        @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

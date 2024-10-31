@@ -365,7 +365,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Snomed CT ${slotProps.data.code}`,
+                    `${slotProps.data.code}`,
                     slotProps.data
                   )
                 "

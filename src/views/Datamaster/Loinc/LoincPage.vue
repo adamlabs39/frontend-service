@@ -5,7 +5,7 @@ import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Footer from "../Layout/FooterPaginator.vue";
+import FooterPaginator from "../Layout/FooterPaginator.vue";
 import FormLoinc from "./FormLoinc.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
@@ -359,7 +359,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `LOINC ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -386,12 +386,6 @@ const handleFileUpload = async (file: File) => {
     </template>
 
     <template #footer>
-      <Footer
-        :rows="loincProperties.page_size"
-        :totalRecords="loincProperties.total"
-        @page="handlePage"
-        @export="downloadExportExcel"
-      />
       <FooterPaginator
         :rows="loincProperties.page_size"
         :totalRecords="loincProperties.total"

@@ -42,8 +42,8 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Pegawai harus diisi"),
     nik: yup.string().required("NIK harus diisi"),
     tipe: yup.number().required("Tipe Pegawai harus diisi"),
-    firstTitle: yup.string(),
-    lastTitle: yup.string(),
+    firstTitle: yup.string().notRequired(),
+    lastTitle: yup.string().notRequired(),
     gender: yup.string().required("Jenis Kelamin harus diisi"),
     tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir harus diisi"),
     status: yup.bool().default(false),
@@ -121,8 +121,6 @@ watch(
         setValues({
           ...props.payload,
         });
-        console.log(tanggalLahir)
-
       }
     } else {
       resetForm();
@@ -141,8 +139,6 @@ watch(
   >
     <template #header>{{ title }} Pegawai</template>
     <template #body>
-      {{ new Date() }}
-      {{ tanggalLahir }}
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <!-- Form Input -->
         <CustomSelect

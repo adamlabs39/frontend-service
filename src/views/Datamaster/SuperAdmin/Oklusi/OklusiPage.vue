@@ -379,7 +379,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Oklusi Gigi ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

@@ -142,7 +142,7 @@ const downloadExportExcel = async () => {
       KodeAntrianPoli: "Kode Antrian Poli",
       Description: "Deskripsi",
       Phone: "No. Telephone",
-      email:"Email",
+      email: "Email",
       Url: "URL",
       Tipe: "Tipe",
       Kelas: "Kelas",
@@ -159,17 +159,17 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        KodeAntrianPoli: rows[i].codeAntrianPoli ?? '-',
-        Description:rows[i].description ?? '-',
-        Phone:rows[i].phone,
-        email:rows[i].email,
-        Url:rows[i].url,
-        Tipe:rows[i].locationType,
-        Kelas:rows[i].className ?? '-',
-        PartOf:rows[i].partOf ?? '-',
-        PartOfName:rows[i].partOfName ?? '-',
-        OrganisasiId:rows[i].OrganisasiId ?? '-',
-        IdSatuSehat:rows[i].satuSehatId ?? '-',
+        KodeAntrianPoli: rows[i].codeAntrianPoli ?? "-",
+        Description: rows[i].description ?? "-",
+        Phone: rows[i].phone,
+        email: rows[i].email,
+        Url: rows[i].url,
+        Tipe: rows[i].locationType,
+        Kelas: rows[i].className ?? "-",
+        PartOf: rows[i].partOf ?? "-",
+        PartOfName: rows[i].partOfName ?? "-",
+        OrganisasiId: rows[i].OrganisasiId ?? "-",
+        IdSatuSehat: rows[i].satuSehatId ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -189,7 +189,22 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -236,16 +251,73 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Lokasi*",
+      Nama: "Nama Lokasi*",
+      Description: "Deskripsi*",
+      Phone: "No. Telepon*",
+      email: "Email*",
+      Url: "URL Website*",
+      Tipe: "Tipe",
+      Status: "Status Operasional",
+      Kelas: "Kelas",
+      PartOf: "Part Of",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      Kode: "ANA-001",
+      Nama: "Poli Umum",
+      Description: "Poli Umum AVC",
+      Phone: "(032) 888 987",
+      email: "polianak@gmail.com",
+      Url: "https://polianak.com",
+      Tipe: "Building",
+      Status: "Occupied",
+      Kelas: "Kelas VVIP",
+      PartOf: "-",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Lokasi"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Lokasi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await lokasiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchLokasiData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchLokasiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -370,7 +442,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Lokasi ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -403,6 +475,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

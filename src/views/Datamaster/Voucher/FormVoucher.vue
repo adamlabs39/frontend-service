@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from "vue";
-import { useForm } from "vee-validate";
+import { useForm, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { dateToEpoch, formatDate, epochToDate } from "@/utils/Helpers";
@@ -32,16 +32,21 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Voucher harus diisi"),
-    name: yup.string().required("Nama Voucher harus diisi"),
-    qty: yup.number().required("Jumlah Voucher harus diisi"),
-    startDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
-    endDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
-    type: yup.string(),
-    value: yup.number(),
-    status: yup.bool().default(false),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode Voucher harus diisi"),
+      name: yup.string().required("Nama Voucher harus diisi"),
+      qty: yup.number().required("Jumlah Voucher harus diisi"),
+      startDate: yup
+        .date()
+        .default(new Date())
+        .required("Tanggal harus diplih"),
+      endDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
+      type: yup.string().required("Tipe Voucher harus dipilih"),
+      value: yup.number().required("Tarif Voucher harus diisi"),
+      status: yup.bool().default(false),
+    })
+    .noUnknown()
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -201,23 +206,29 @@ watch(
         />
         <div class="grid items-end w-full grid-cols-2 col-span-7 gap-5">
           <div class="col-span-2 -mb-4 font-semibold text-normal">
-            Tipe Voucher
+            Tipe Voucher<span v-if="errors.type ? true : false" class="text-danger-300">*</span>
           </div>
           <CustomRadio
             v-for="data in opsiType"
             v-model="type"
             :sideLabel="data.label"
             :value="data.value"
+            :invalid="!!errors.type"
+            :required="errors.type ? true : false"
+          />
+          <ErrorMessage
+            :name="`type`"
+            class="-mt-5 font-medium text-danger-300 text-XS"
           />
         </div>
         <div class="flex flex-col col-span-5">
           <div class="block font-semibold text-normal">Tarif Voucher</div>
-          <div class="grid grid-cols-3 items-end gap-5">
+          <div class="grid items-end grid-cols-3 gap-5">
             <CustomInputNumber
               v-model="persenValue"
               label=""
               class="col-span-1"
-              :disabled="type === 'potongan'"
+              :disabled="type === 'potongan' || !type"
             >
               <template #appendText>
                 <div class="flex items-center justify-center mr-2.5">%</div>
@@ -227,7 +238,8 @@ watch(
               v-model="potonganValue"
               class="col-span-2"
               label=""
-              :disabled="type === 'persentase'"
+              :disabled="type === 'persentase' || !type"
+              
             >
               <template #prependText>
                 <div

@@ -74,7 +74,7 @@ const schema = toTypedSchema(
     url: yup.string().required("URL Website harus diisi"),
     locationType: yup.string().required("Tipe harus diisi"),
     className: yup.string(),
-    partOf: yup.string(),
+    partOf: yup.string().notRequired(),
     codeAntrianPoli: yup.string().when("isPoli", {
       is: (value: boolean) => value === true,
       then: (schema) => schema.required("Kode Antrian harus diisi"),
@@ -114,6 +114,8 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("Data updated successfully:", values);
+
       const response = await lokasiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");

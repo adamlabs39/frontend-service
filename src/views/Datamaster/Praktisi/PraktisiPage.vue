@@ -256,7 +256,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -458,7 +458,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Praktisi ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

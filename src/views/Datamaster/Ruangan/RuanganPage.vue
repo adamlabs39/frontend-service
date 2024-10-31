@@ -198,7 +198,7 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Kategori: rows[i].kategoriRuangan?.name??'-',
+        Kategori: rows[i].kategoriRuangan?.name ?? "-",
         nomorKamar: rows[i].noRoom,
         kelasRuangan: rows[i].kelasRuangan,
         Status: rows[i].status,
@@ -220,7 +220,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -267,6 +275,49 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Code: "Kode Ruangan*",
+      Name: "Nama Ruangan*",
+      Kategori: "Kategori Ruangan*",
+      Nomor: "Nomor Kamar*",
+      KelasRuangan: "Kelas Ruangan*",
+    });
+
+    data.push({ No: "1",
+      Code: "MWR-01",
+      Name: "Mawar",
+      Kategori: "Rawatan Umum",
+      Nomor: "1",
+      KelasRuangan: "Kelas 3", });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Ruangan"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Ruangan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
 
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
@@ -413,7 +464,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Ruangan ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -446,6 +497,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

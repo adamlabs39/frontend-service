@@ -92,9 +92,9 @@ const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string(),
-      sip: yup.string(),
-      str: yup.string(),
+      codeBpjs: yup.string().required("Kode HFIS (BPJS) harus diisi"),
+      sip: yup.string().required("SIP harus diisi"),
+      str: yup.string().required("STR harus diisi"),
       isDoctor: yup.boolean(),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
@@ -336,6 +336,9 @@ const tempPoli = ref([]);
           v-model="codeBpjs"
           placeholder="000"
           class="col-span-4"
+          :invalid="!!errors.codeBpjs"
+          :invalidMessage="errors.codeBpjs"
+          :required="errors.codeBpjs ? true : false"
         />
         <CustomTextfield
           v-if="isDoctor"

@@ -149,11 +149,11 @@ const downloadExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        Kategori: rows[i].kategoriGigiName,
-        Referensi: rows[i].referensi,
+        Kategori: rows[i].kategoriGigi.name,
+        Referensi: rows[i].system,
         Code: rows[i].code,
         Display: rows[i].display,
-        Nama: rows[i].name,
+        Name: rows[i].name,
         Catatan: rows[i].catatan ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
@@ -238,12 +238,12 @@ const downloadFormatExcel = async () => {
     // Header Row
   data.push({
       No: "No",
-      kategpri:"",
-      Referensi:"",
+      Kategori:"Kategori*",
+      Referensi:"Referensi*",
       Code: "Kode Diagnosis*",
-      Display:"",
+      Display:"Display*",
       Name: "Nama Diagnosis (ICD-10)*",
-      Catatan:""
+      Catatan:"Catatan"
     });
 
     // Add Empty Rows (4 empty rows to match the example)
@@ -406,7 +406,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Item Gigi ${slotProps.data.name}`,
+                    `${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

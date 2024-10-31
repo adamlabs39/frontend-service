@@ -65,7 +65,7 @@ const onError = (event: any) => {
         custom-upload
         name="dems[]"
       >
-        <template #uploadicon>
+        <template #chooseicon>
           <FileImportIcon />
         </template>
       </FileUpload>

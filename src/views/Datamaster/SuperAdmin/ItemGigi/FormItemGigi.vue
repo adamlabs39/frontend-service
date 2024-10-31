@@ -61,7 +61,7 @@ const schema = toTypedSchema(
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Gigi harus diisi"),
     image: yup.string(),
-    catatan: yup.string(),
+    catatan: yup.string().notRequired(),
     status: yup.bool().default(false),
   }).noUnknown()
 );

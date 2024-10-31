@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
+import { epochToDate } from "@/utils/Helpers";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import * as XLSX from "xlsx-js-style";
@@ -146,8 +147,8 @@ const downloadExportExcel = async () => {
         Kode: rows[i].code,
         Nama: rows[i].name,
         Jumlah: rows[i].qty,
-        Start: rows[i].startDate,
-        End: rows[i].endDate,
+        Start: epochToDate(rows[i].startDate),
+        End: epochToDate(rows[i].endDate),
         Type: rows[i].type,
         Tarif: rows[i].value,
         Using: rows[i].using,
@@ -395,7 +396,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Voucher ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

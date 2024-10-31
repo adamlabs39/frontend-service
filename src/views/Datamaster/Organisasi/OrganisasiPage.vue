@@ -253,6 +253,63 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+    No: "No",
+      Kode: "Kode Organisasi*",
+      Nama: "Nama Organisasi*",
+      Phone: "No. Telepon*",
+      Email: "Email*",
+      Url: "URL*",
+      Provinsi: "Provinsi",
+      Kabupaten: "Kab/Kota",
+      Kecamatan: "Kecamatan",
+      Kelurahan: "Kelurahan/Desa",
+      KodePos: "Kode Pos*",
+      Alamat: "Alamat*",
+      PartOf: "Part Of*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Kode: "DLB-005",
+      Nama: "Departemen Laboratorium",
+      Phone: "(032) 888 987",
+      Email: "dept.lab@gmail.com",
+      Url: "https://lab.com/",
+      Provinsi: "Jawa Timur",
+      Kabupaten: "Surabaya",
+      Kecamatan: "Sukolilo",
+      Kelurahan: "Keputih",
+      KodePos: "62271",
+      Alamat: "Sukolilo regency park 01",
+      PartOf: "-", });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Organisasi");
+    XLSX.writeFile(workbook, `Format Datamaster Organisasi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
@@ -380,7 +437,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Organisasi ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -414,6 +471,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

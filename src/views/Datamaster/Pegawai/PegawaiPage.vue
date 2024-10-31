@@ -161,6 +161,7 @@ const downloadExportExcel = async () => {
       NIK: "NIK",
       TglLahir: "Tanggal Lahir",
       Gender: "Jenis Kelamin",
+      Status:"Status"
     });
 
     // Data Rows
@@ -174,7 +175,6 @@ const downloadExportExcel = async () => {
         NIK: rows[i].nik,
         TglLahir: rows[i].tanggalLahir,
         Gender : rows[i].gender === "perempuan" ? "Perempuan" : "Laki-Laki",
-
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -477,7 +477,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Pegawai ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
