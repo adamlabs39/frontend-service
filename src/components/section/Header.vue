@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {  watch } from "vue";
 import type { ListMenu, Module } from "@/utils/Interface";
 import { onMounted, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
@@ -6,6 +7,9 @@ import { utilsStore } from "@/stores/utils";
 import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
+import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
+import { useFaskesStore } from "@/stores/datamaster/faskes";
+import CustomSelect from "../Base/CustomSelect.vue";
 
 
 interface userData {
@@ -16,7 +20,8 @@ interface userData {
 const authStore = useAuthStore();
 
 const UseUtilsStore = utilsStore();
-
+const faskesStore = useFaskesStore();
+const faskesPayload = ref<any[]>([]);
 const router = useRouter();
 const route = useRoute();
 const goToPage = (url: string) => {
@@ -127,8 +132,9 @@ const logout = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
-
+const faskesSelected = ref(localStorage.getItem("faskes") || "");
 onMounted(() => {
+  fetchFaskes();
   listMenu.value.push(templistMenu.value[0]);
   userData.value = JSON.parse(localStorage.getItem("user") ?? "");
   const listPermissionStr = localStorage.getItem("permission");
@@ -148,6 +154,46 @@ const checkActiveTab = (url: string) => {
   return `/${split[1]}` == url;
  
 };
+const fetchFaskes = async () => {
+  try {
+    const response = await faskesStore.getAktifApi();
+    if (response && response.payload) {
+      faskesPayload.value = response.payload;
+    } else {
+      faskesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch faskes", error);
+    faskesPayload.value = [];
+  }
+};
+
+const putDataFaskes = async () =>{
+  const response = await authStore.tokenApi(faskesSelected.value);
+  localStorage.setItem("access_token", `Bearer ${response.payload.newToken}`);
+  console.log(faskesSelected.value)
+  localStorage.setItem("faskes", `${faskesSelected.value}`);
+
+  console.log(localStorage.getItem("faskes"))
+}
+
+const getUserRole = () => {
+  const userDataString = localStorage.getItem("user");
+  if (userDataString) {
+    try {
+      const userData = JSON.parse(userDataString);
+      return userData.role;
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const isSuperAdmin = getUserRole() === "super admin";
+
+
 </script>
 
 <template>
@@ -192,7 +238,17 @@ const checkActiveTab = (url: string) => {
                 <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
                 <span class="font-semibold text-adameds-300 text-[8px]">{{ userData?.role }}</span>
               </div>
-              <hr class="border-[#D9DCE1] border-1" />
+              <RMCustomSelect
+              v-if="isSuperAdmin"
+                  v-model="faskesSelected"
+                  :options="faskesPayload"
+                  place-holder="Pilih Faskes"
+                  optionLabel="name"
+                  optionValue="uuid"
+                  :showCal="false"
+                  @update:modelValue="putDataFaskes()"
+                />
+              <hr class="border-[#D9DCE1] border-1 mt-2.5" />
               <div class="flex flex-col items-start py-2">
                 <CustomButton label="Profile" text-color="text-gray-300" outlined @click="profileEdit" icon="PhUser" iconPos="left" pt:label:class="font-normal text-SM" />
                 <CustomButton label="Setting" text-color="text-gray-300" outlined @click="clickSetting" iconPos="left" icon="PhGearSix" pt:label:class="font-normal text-SM " />

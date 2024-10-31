@@ -4,7 +4,6 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
-import { useFaskesStore } from "@/stores/datamaster/faskes";
 import { useRoleStore } from "@/stores/datamaster/role";
 import { useUserStore } from "@/stores/user";
 import { usePermissionStore } from "@/stores/datamaster/permission";
@@ -27,28 +26,11 @@ const props = defineProps({
   },
 });
 
-const getUserRole = () => {
-  const userDataString = localStorage.getItem("user");
-  if (userDataString) {
-    try {
-      const userData = JSON.parse(userDataString);
-      return userData.role;
-    } catch (error) {
-      console.error("Error parsing user data from localStorage:", error);
-      return null;
-    }
-  }
-  return null;
-};
-
-const isSuperAdmin = getUserRole() === "super admin";
 const permissionsStore = usePermissionStore();
 const userStore = useUserStore();
 const praktisiStore = usePraktisiStore();
-const faskesStore = useFaskesStore();
 const roleStore = useRoleStore();
 const praktisiPayload = ref<any[]>([]);
-const faskesPayload = ref<any[]>([]);
 const selectedPraktisi = ref<any>();
 const selectedRole = ref<any>();
 const rolePayload = ref<any[]>([]);
@@ -83,7 +65,6 @@ const schema = computed(() =>
   toTypedSchema(
     yup
       .object({
-        faskesUuid: yup.string(),
         praktisiUuid: yup.string(),
         name: yup.string().default('admin'),
         inventoryMedis:yup.bool().default(true),
@@ -137,7 +118,6 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const [faskesUuid] = defineField("faskesUuid");
 const [praktisiUuid] = defineField("praktisiUuid");
 const [phone] = defineField("phone");
 const [email] = defineField("email");
@@ -166,19 +146,7 @@ const fetchPraktisi = async () => {
     praktisiPayload.value = [];
   }
 };
-const fetchFaskes = async () => {
-  try {
-    const response = await faskesStore.getAktifApi();
-    if (response && response.payload) {
-      faskesPayload.value = response.payload;
-    } else {
-      faskesPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch faskes", error);
-    faskesPayload.value = [];
-  }
-};
+
 const fetchRole = async () => {
   try {
     const response = await roleStore.dummy();
@@ -195,7 +163,6 @@ const fetchRole = async () => {
 
 onMounted(() => {
   fetchPraktisi();
-  fetchFaskes();
   fetchRole();
 });
 
@@ -495,37 +462,6 @@ const onSubmit = handleSubmit(async (values: any) => {
       </div>
     </template>
     <template #content>
-      payload:{{ props.payload }}
-      <CustomAccordion v-if="isSuperAdmin" no-border initial-state="0">
-        <template #header> Data Faskes </template>
-        <template #content>
-          <CustomSelect
-            label="Faskes"
-            v-model="faskesUuid"
-            place-holder="Pilih Faskes"
-            :options="faskesPayload"
-            option-label="name"
-            option-value="uuid"
-            class="mt-5"
-            :invalid="!!errors.faskesUuid"
-              :invalidMessage="errors.faskesUuid"
-          />
-        </template>
-        <template #collapseIcon>
-          <CustomButton
-            icon="PhCaretUp"
-            backgroundColor="bg-transparent"
-            textColor="text-adameds-300"
-          />
-        </template>
-        <template #expandIcon>
-          <CustomButton
-            icon="PhCaretDown"
-            backgroundColor="bg-transparent"
-            textColor="text-adameds-300"
-          />
-        </template>
-      </CustomAccordion>
       <CustomAccordion no-border initial-state="0">
         <template #header> Data User </template>
         <template #content>
