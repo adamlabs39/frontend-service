@@ -44,7 +44,7 @@ onMounted(() => {
       kecamatan:"Keputih",
       noTelpon: "022-12345",
       status: true,
-      kategoriItem:1,
+      kategoriItem:"1",
       alamat: "Jalan Jalan",
     },
   ];

@@ -89,7 +89,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Riwayat Tarif",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/riwayat-tarif",
         icon: "OpenBoxIcon",
       },
       {
