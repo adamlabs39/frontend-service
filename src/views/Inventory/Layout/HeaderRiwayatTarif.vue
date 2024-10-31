@@ -36,11 +36,9 @@ const noSupplier = ref<string>("");
           <CustomButton icon="PhArrowClockwise" class="mr-5" />
           <CustomBreadCrumb
             :home="{
-              label: 'Datamaster',
+              label: 'Riwayat Tarif',
               home: true,
             }"
-            :model="dataBreadCrumb"
-            class=""
           >
           </CustomBreadCrumb>
         </div>
