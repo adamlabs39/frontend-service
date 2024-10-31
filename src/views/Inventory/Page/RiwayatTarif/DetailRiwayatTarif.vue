@@ -242,7 +242,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.konversiIsi}}
+                    {{ slotProps.data.konversiIsi}} Pcs
                   </div>
                 </div>
               </template>
@@ -310,7 +310,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.hargaDasar}}
+                    Rp. {{ slotProps.data.hargaDasar}}
                   </div>
                 </div>
               </template>
@@ -322,7 +322,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.HNA}}
+                    Rp. {{ slotProps.data.HNA}}
                   </div>
                 </div>
               </template>
@@ -334,7 +334,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.HPP}}
+                    Rp. {{ slotProps.data.HPP}}
                   </div>
                 </div>
               </template>
