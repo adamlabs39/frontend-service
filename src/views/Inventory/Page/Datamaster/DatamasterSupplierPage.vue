@@ -39,8 +39,12 @@ onMounted(() => {
       id: 1,
       code: "SPL1234",
       name: "Supplier 1",
+      provinsi: "Jawa Timur",
+      kabupaten: "Surabaya",
+      kecamatan:"Keputih",
       noTelpon: "022-12345",
       status: true,
+      kategoriItem:1,
       alamat: "Jalan Jalan",
     },
   ];
@@ -214,8 +218,9 @@ const handleSupplierDataSubmit = (data: any) => {
             custom-upload
             name="dems[]"
           >
-            <template #uploadicon>
+            <template #chooseicon>
               <FileImportIcon />
+              
             </template>
           </FileUpload>
 
