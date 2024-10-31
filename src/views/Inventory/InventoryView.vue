@@ -121,8 +121,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.DROPDOWN,
         icon:"FileReportIcon",
         child: [
-          { name: "Obat Expired", type: linkType.LINK, url: "" },
-          { name: "Persediaan", type: linkType.LINK, url: "" },
+          { name: "Obat Expired", type: linkType.LINK, url: "/inventory/laporan/obat-expired" },
+          { name: "Persediaan", type: linkType.LINK, url: "/inventory/laporan/persediaan" },
         ],
       },
     ],

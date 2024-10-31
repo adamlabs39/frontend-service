@@ -164,6 +164,8 @@ import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/Pen
 import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
 import DatamasterSupplierPage from "@/views/Inventory/Page/Datamaster/DatamasterSupplierPage.vue";
 import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
+import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
+import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1256,6 +1258,18 @@ const router = createRouter({
       path: "/inventory/riwayat-tarif",
       name: "inventory-riwayat-tarif",
       meta: { layout: SidebarLayout, page: RiwayatTarifPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/laporan/obat-expired",
+      name: "inventory-laporan-obat-expired",
+      meta: { layout: SidebarLayout, page: ObatExpiredPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/laporan/persediaan",
+      name: "inventory-laporan-persediaan",
+      meta: { layout: SidebarLayout, page: PersediaanPage, requiresAuth: true },
       component: InventoryView,
     },
 
