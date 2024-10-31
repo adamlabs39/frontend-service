@@ -107,7 +107,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Stok Adjustment",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/stok-adjustment",
         icon: "OpenBoxIcon",
       },
     ],
