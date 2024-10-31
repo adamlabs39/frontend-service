@@ -1229,7 +1229,7 @@ const router = createRouter({
     {
       path: "/training",
       name: "training",
-      redirect: "training/daftar-kelas",
+      redirect: "/training/daftar-kelas",
     },
     {
       path: "/training/daftar-kelas",

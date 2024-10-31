@@ -1,9 +1,11 @@
 <script setup lang="tsx">
 import { onMounted, ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import HeaderFilterTraining from "../Layout/HeaderFilterTraining.vue";
+import FooterPaginationTraining from "../Layout/FooterPaginationTraining.vue";
 const itemsPasien = ref([
   {
-    noOrder:'TRN1234',
+    noOrder: "TRN1234",
     noreg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     gender: "L",
@@ -14,15 +16,15 @@ const itemsPasien = ref([
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
     noRM: "00-00-00",
     paymentMethod: "tunai",
-    tanggalKelas:"10-10-2024",
-    kelas:"Gym",
-    kelasSesi:"Sesi 1",
-    orderStatus:"Lunas",
-    slot:"02",
+    tanggalKelas: "10-10-2024",
+    kelas: "Gym",
+    kelasSesi: "Sesi 1",
+    orderStatus: "Lunas",
+    slot: "02",
     new_patient: true,
   },
   {
-    noOrder:'TRN1234',
+    noOrder: "TRN1234",
     noreg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     gender: "L",
@@ -33,15 +35,15 @@ const itemsPasien = ref([
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
     noRM: "00-00-00",
     paymentMethod: "tunai",
-    tanggalKelas:"10-10-2024",
-    kelas:"Gym",
-    kelasSesi:"Sesi 1",
-    orderStatus:"Lunas",
-    slot:"02",
+    tanggalKelas: "10-10-2024",
+    kelas: "Gym",
+    kelasSesi: "Sesi 1",
+    orderStatus: "Lunas",
+    slot: "02",
     new_patient: true,
   },
   {
-    noOrder:'TRN1234',
+    noOrder: "TRN1234",
     noreg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     gender: "L",
@@ -52,15 +54,15 @@ const itemsPasien = ref([
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
     noRM: "00-00-00",
     paymentMethod: "tunai",
-    tanggalKelas:"10-10-2024",
-    kelas:"Gym",
-    kelasSesi:"Sesi 1",
-    orderStatus:"Lunas",
-    slot:"02",
+    tanggalKelas: "10-10-2024",
+    kelas: "Gym",
+    kelasSesi: "Sesi 1",
+    orderStatus: "Lunas",
+    slot: "02",
     new_patient: false,
   },
   {
-    noOrder:'TRN1234',
+    noOrder: "TRN1234",
     noreg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     gender: "L",
@@ -71,30 +73,50 @@ const itemsPasien = ref([
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
     noRM: "00-00-00",
     paymentMethod: "tunai",
-    tanggalKelas:"10-10-2024",
-    kelas:"Gym",
-    kelasSesi:"Sesi 1",
-    orderStatus:"Lunas",
-    slot:"02",
+    tanggalKelas: "10-10-2024",
+    kelas: "Gym",
+    kelasSesi: "Sesi 1",
+    orderStatus: "Lunas",
+    slot: "02",
     new_patient: true,
   },
-
 ]);
+const selectedPatient = ref([]);
+
 const showCancelVisit = ref(false);
+const cancelReason = ref<string | undefined>();
+  const toggleCancelVisit = () => {
+  showCancelVisit.value = !showCancelVisit.value;
+};
+
+const confirmCancel = () => {
+  if (!cancelReason.value) {
+    return;
+  }
+  // Logic for confirming cancelation
+  showCancelVisit.value = false;
+  cancelReason.value = undefined;
+};
+
 </script>
 <template>
-    <Card
+  <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
-  <template #content>
+    <template #header>
+      <HeaderFilterTraining page-type="daftar" />
+    </template>
+    <template #content>
       <DataTable
         :value="itemsPasien"
         tableStyle="min-width: 50rem"
+        v-model:selection="selectedPatient"
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
+        stripedRows
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -105,7 +127,6 @@ const showCancelVisit = ref(false);
               <div class="text-SM">{{ slotProps.data.noRM }}</div>
               <div class="text-SM">{{ slotProps.data.noreg }}</div>
               <div class="text-SM">{{ slotProps.data.noOrder }}</div>
-
             </div>
           </template>
         </Column>
@@ -151,14 +172,10 @@ const showCancelVisit = ref(false);
             </div>
           </template>
         </Column>
-        <Column
-          header="Kelas"
-          headerClass="bg-adameds-50"
-        >
+        <Column header="Kelas" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex mb-[5px] text-SM">
               <div>{{ slotProps.data.kelas }}</div>
-              
             </div>
             <div class="flex flex-wrap">
               <CustomChip
@@ -205,15 +222,10 @@ const showCancelVisit = ref(false);
                 "
                 customClass="h-5 pr-[6px] mr-[5px]"
               />
-          
-          
             </div>
           </template>
         </Column>
-        <Column
-        field="kelasSesi"
-          header="Sesi"
-          headerClass="bg-adameds-50">
+        <Column field="kelasSesi" header="Sesi" headerClass="bg-adameds-50">
         </Column>
         <Column
           field="data-kunjungan"
@@ -248,7 +260,7 @@ const showCancelVisit = ref(false);
             </div>
           </template>
         </Column>
-      
+
         <Column
           v-if="showCancelVisit"
           selectionMode="multiple"
@@ -256,9 +268,19 @@ const showCancelVisit = ref(false);
           headerClass="bg-adameds-50"
           class="custom-checkbox"
         ></Column>
-     
       </DataTable>
       <MedicalRecord ref="medicalRecord" />
+    </template>
+    <template #footer>
+      <FooterPaginationTraining
+      cancleButton
+      :value-cancle="cancelReason"
+        :show-cancel-visit="showCancelVisit"
+        :cancel-reason="cancelReason"
+        @toggle-cancel-visit="toggleCancelVisit"
+        @confirm-cancel="confirmCancel"
+        @update:valueCancle="cancelReason = $event"
+       />
     </template>
   </Card>
 </template>
