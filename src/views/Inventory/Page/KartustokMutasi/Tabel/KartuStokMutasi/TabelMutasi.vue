@@ -1,0 +1,5 @@
+<template>
+    <DataTable>
+        
+    </DataTable>
+</template>

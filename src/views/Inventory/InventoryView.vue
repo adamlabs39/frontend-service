@@ -95,7 +95,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Kartu Stok & Mutasi",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/kartustok-mutasi",
         icon: "OpenBoxIcon",
       },
       {

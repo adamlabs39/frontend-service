@@ -167,6 +167,7 @@ import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPa
 import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
 import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
+import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1259,6 +1260,12 @@ const router = createRouter({
       path: "/inventory/riwayat-tarif",
       name: "inventory-riwayat-tarif",
       meta: { layout: SidebarLayout, page: RiwayatTarifPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/kartustok-mutasi",
+      name: "inventory-kartustok-mutasi",
+      meta: { layout: SidebarLayout, page: KartustokMutasiPage, requiresAuth: true },
       component: InventoryView,
     },
     {
