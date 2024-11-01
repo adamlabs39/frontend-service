@@ -133,9 +133,11 @@ import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
 // NOTE FISIOTERAPI DATAMASTER
 import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
 
-// NOTE ORDER FISIOTERAPI
+// NOTE MENU FISIOTERAPI
 import OrderFisioterapiPage from "@/views/Fisioterapi/OrderFisioterapiPage.vue";
 import PenjadwalanTerapiPage from "@/views/Fisioterapi/PenjadwalanTerapiPage.vue";
+import EvaluasiTerapiPage from "@/views/Fisioterapi/EvaluasiTerapiPage.vue";
+import BookingTerapiPage from "@/views/Fisioterapi/BookingTerapiPage.vue";
 
 // NOTE FISIOTERAPI/LAPORAN
 import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
@@ -714,7 +716,7 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintDataPage,
     },
-    
+
     // NOTE Laboratorium
     {
       path: "/laboratorium",
@@ -1002,7 +1004,11 @@ const router = createRouter({
     {
       path: "/farmasi/laporan/rekap-pendapatan-dokter-resep-per-apotik",
       name: "farmasi-laporan-rekap-pendapatan-dokter-resep-per-apotik",
-      meta: { layout: SidebarLayout, page: RevenueRecapPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RevenueRecapPage,
+        requiresAuth: true,
+      },
       component: PharmacyView,
     },
 
@@ -1021,7 +1027,11 @@ const router = createRouter({
     {
       path: "/rawat-inap/perpindahan-bangsal",
       name: "rawat-inap-perpindahan-bangsal",
-      meta: { layout: SidebarLayout, page: PerpindahanBangsal, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PerpindahanBangsal,
+        requiresAuth: true,
+      },
       component: RawatInapView,
     },
     {
@@ -1138,7 +1148,11 @@ const router = createRouter({
     {
       path: "/fisioterapi/order-fisioterapi",
       name: "fisioterapi-order-fisioterapi",
-      meta: { layout: SidebarLayout, page: DoctorPrescriptionPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DoctorPrescriptionPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
 
@@ -1154,16 +1168,43 @@ const router = createRouter({
     {
       path: "/fisioterapi/order-fisioterapi",
       name: "fisioterapi-order-fisioterapi",
-      meta: { layout: SidebarLayout, page: OrderFisioterapiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: OrderFisioterapiPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
     {
       path: "/fisioterapi/penjadwalan-fisioterapi",
       name: "fisioterapi-penjadwalan-fisioterapi",
-      meta: { layout: SidebarLayout, page: PenjadwalanTerapiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PenjadwalanTerapiPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
-
+    {
+      path: "/fisioterapi/evaluasi-terapi",
+      name: "fisioterapi-evaluasi-terapi",
+      meta: {
+        layout: SidebarLayout,
+        page: EvaluasiTerapiPage,
+        requiresAuth: true,
+      },
+      component: FisioterapiView,
+    },
+    {
+      path: "/fisioterapi/booking-terapi",
+      name: "fisioterapi-booking-terapi",
+      meta: {
+        layout: SidebarLayout,
+        page: BookingTerapiPage,
+        requiresAuth: true,
+      },
+      component: FisioterapiView,
+    },
 
     // NOTE FISIOTERAPI LAPORAN
 
@@ -1176,19 +1217,31 @@ const router = createRouter({
     {
       path: "/fisioterapi/laporan/rekapitulasi-kunjungan-jenis-fisioterapi",
       name: "fisioterapi-laporan-rekapitulasi-kunjungan-jenis-fisioterapi",
-      meta: { layout: SidebarLayout, page: RekapitulasiKunjunganJenisFisioterapiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapitulasiKunjunganJenisFisioterapiPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
     {
       path: "/fisioterapi/laporan/rekapitulasi-terapi",
       name: "fisioterapi-laporan-rekapitulasi-terapi",
-      meta: { layout: SidebarLayout, page: RekapitulasiTerapiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapitulasiTerapiPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
     {
       path: "/fisioterapi/laporan/rekapitulasi-pendapatan-fisioterapi",
       name: "fisioterapi-laporan-rekapitulasi-pendapatan-fisioterapi",
-      meta: { layout: SidebarLayout, page: RekapitulasiPendapatanFisioterapiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapitulasiPendapatanFisioterapiPage,
+        requiresAuth: true,
+      },
       component: FisioterapiView,
     },
 
@@ -1201,7 +1254,11 @@ const router = createRouter({
     {
       path: "/inventory/pengadaan-barang/pembelian-barang-supplier",
       name: "inventory-pengadaan-barang-pembelian-barang-supplier",
-      meta: { layout: SidebarLayout, page: InventoryPurchasePage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: InventoryPurchasePage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {

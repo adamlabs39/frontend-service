@@ -642,7 +642,7 @@ const handleBack = () => {
               v-if="!showCancelVisit"
               @click="showCancelVisit = true"
               class="my-auto bg-danger-300"
-              label="Batal Kunjungan"
+              label="Batal Order"
             />
 
             <CustomButton
@@ -668,7 +668,7 @@ const handleBack = () => {
               v-model="cancelReason"
               :showLabel="false"
               class="my-auto w-[400px]"
-              placeholder="Alasan Batal Kunjungan"
+              placeholder="Alasan Batal Order"
             />
           </div>
           <CustomPaginator
