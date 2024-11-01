@@ -168,6 +168,7 @@ import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue"
 import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
 import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
+import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1266,6 +1267,12 @@ const router = createRouter({
       path: "/inventory/kartustok-mutasi",
       name: "inventory-kartustok-mutasi",
       meta: { layout: SidebarLayout, page: KartustokMutasiPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/stok-opname",
+      name: "inventory-stok-opname",
+      meta: { layout: SidebarLayout, page: StokOpnamePage, requiresAuth: true },
       component: InventoryView,
     },
     {
