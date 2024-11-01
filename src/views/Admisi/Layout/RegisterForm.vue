@@ -11,8 +11,10 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import PatientIdentityFormRJ from "../Forms/PatientIdentityFormRJ.vue";
+import PatientIdentityFormRI from "../Forms/PatientIdentityFormRI.vue";
 import PatientIdentityFormIGD from "../Forms/PatientIdentityFormIGD.vue";
 import DoctorVisitDetail from "../Forms/DoctorVisitDetailForm.vue";
+import VisitRoomDetail from "../Forms/VisitRoomDetailForm.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
@@ -94,9 +96,18 @@ const setDetailDoctorVisitData = (patientData: any) => {
       practitionerUuid: patientData.practitionerUuid,
       complaint: patientData.complaint,
       familyBill: patientData.familyBill,
-      noSpri: patientData.noSpri,
-      monitoringRoomUuid: patientData.monitoringRoomUuid,
+      maternity: patientData.maternity,
+      entrustedPatient: patientData.entrustedPatient,
+      upgradeClass: patientData.upgradeClass,
+      previousBill: patientData.previousBill,
       assuranceAccountId: patientData.insurance,
+      noSpri: patientData.noSpri,
+      kategoriRuanganUuid: patientData.monitoringRoom.kategoriRuanganUuid,
+      roomClass: patientData.monitoringRoom.roomClass,
+      roomUuid: patientData.monitoringRoom.roomUuid,
+      monitoringRoomUuid: patientData.monitoringRoomUuid,
+      spareBed: patientData.spareBed,
+      boxBaby: patientData.boxBaby,
     };
   }
 };
@@ -135,23 +146,37 @@ const fetchDetailPatientData = async () => {
 const patientIdentityFormRJ = ref<InstanceType<
   typeof PatientIdentityFormRJ
 > | null>(null);
+const patientIdentityFormRI = ref<InstanceType<
+  typeof PatientIdentityFormRI
+> | null>(null);
 const patientIdentityFormIGD = ref<InstanceType<
   typeof PatientIdentityFormIGD
 > | null>(null);
+// NOTE Visit detail
 const doctorVisitDetail = ref<InstanceType<typeof DoctorVisitDetail> | null>(
   null
 );
+const visitRoomDetail = ref<InstanceType<typeof VisitRoomDetail> | null>(null);
 const closeRegisterForm = () => {
   if (patientIdentityFormRJ.value) {
     patientIdentityFormRJ.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormRI.value) {
+    patientIdentityFormRI.value.onResetForm();
     openedPatientData.value = {};
   }
   if (patientIdentityFormIGD.value) {
     patientIdentityFormIGD.value.onResetForm();
     openedPatientData.value = {};
   }
+
   if (doctorVisitDetail.value) {
     doctorVisitDetail.value.onResetForm();
+    openedDoctorVisitData.value = {};
+  }
+  if (visitRoomDetail.value) {
+    visitRoomDetail.value.onResetForm();
     openedDoctorVisitData.value = {};
   }
   emit("back");
@@ -159,13 +184,21 @@ const closeRegisterForm = () => {
 
 const postRegisterPatient = async () => {
   let tempPatientData: any;
+  let tempDocterVisitData: any;
 
   if (props.pageType == "rawat-jalan") {
     tempPatientData = await patientIdentityFormRJ.value?.onSubmit();
+  } else if (props.pageType == "rawat-inap") {
+    tempPatientData = await patientIdentityFormRI.value?.onSubmit();
   } else if (props.pageType == "igd") {
     tempPatientData = await patientIdentityFormIGD.value?.onSubmit();
   }
-  const tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+
+  if (props.pageType == "rawat-inap") {
+    tempDocterVisitData = await visitRoomDetail.value?.onSubmit();
+  } else {
+    tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+  }
   console.log("tempPatientData", tempPatientData);
   console.log("tempDocterVisitData", tempDocterVisitData);
 
@@ -305,6 +338,14 @@ const registPatient = async (type: string) => {
         :formType="dataBreadCrumb[0].label?.toString()"
         :patientData="openedPatientData"
       />
+      <PatientIdentityFormRI
+        v-else-if="pageType == 'rawat-inap'"
+        ref="patientIdentityFormRI"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+      />
       <PatientIdentityFormIGD
         v-else-if="pageType == 'igd'"
         ref="patientIdentityFormIGD"
@@ -313,7 +354,17 @@ const registPatient = async (type: string) => {
         :formType="dataBreadCrumb[0].label?.toString()"
         :patientData="openedPatientData"
       />
+      <VisitRoomDetail
+        v-if="pageType == 'rawat-inap'"
+        ref="visitRoomDetail"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+        :doctorVisitData="openedDoctorVisitData"
+      />
       <DoctorVisitDetail
+        v-else
         ref="doctorVisitDetail"
         :pageType="pageType"
         :isDetail="isDetail()"

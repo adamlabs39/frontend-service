@@ -121,7 +121,7 @@ const test = (data: any) => {
       :disabled="disabled"
       class="my-auto ml-[3px]"
       @update:model-value="test"
-      @click.stop
+      @click.stop.prevent="toggleCheckbox"
       :dt="{
         checkedBackground: bgSwitch,
         checkedHoverBackground: bgSwitch,

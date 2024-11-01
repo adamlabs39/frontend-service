@@ -193,6 +193,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
 const formType = ref<"add" | "edit">("add");
 const closeRegistrationForm = () => {
   dataBreadCrumb.value.pop();
+  openedPatientData.value = {}
   getPatientList();
 };
 </script>
@@ -210,7 +211,7 @@ const closeRegistrationForm = () => {
         ref="headerFilterRef"
         :pageType="pageType"
         :filterData="filterData"
-        @daftar="changeSection('Daftar')"
+        @daftar="changeSection('Daftar'), formType = 'add'"
         @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
         @search="search"
       />
