@@ -57,11 +57,11 @@ onMounted(() => {
   ];
   mutasiData.value = [
     {
-      kodeTransaksi: 1283129,
+      kodeTransaksi: "PER1283129",
       lokasiTransaksi: "Inventory",
       tglTransaksi: "01-01-2024",
       itemTransaksi: "Masker",
-      kodeItem: 123456,
+      kodeItem: "MK123456",
       jenisStok: "Umum",
       jenisItem: "Alkes",
       kategoriItem: "Medis",
@@ -73,6 +73,22 @@ onMounted(() => {
       stokAwal: 100,
       mutasiStok: 10,
       sisaStok: 110,
+    },
+    {
+      kodeTransaksi: "ORD1283129",
+      lokasiTransaksi: "Pelayanan",
+      tglTransaksi: "01-01-2024",
+      itemTransaksi: "Kasa",
+      kodeItem: "KS123456",
+      jenisStok: "Umum",
+      jenisItem: "Alkes",
+      kategoriItem: "Medis",
+      expDate: "01-01-2025",
+      keterangan: "Order Alkes",
+      petugas: "Nama Petugas",
+      stokAwal: 100,
+      mutasiStok: -10,
+      sisaStok: 90,
     },
   ];
 });
@@ -118,7 +134,7 @@ onMounted(() => {
             <TabelKartuStok :tabel-data="kartuStokData" />
           </TabPanel>
           <TabPanel value="2">
-            <TabelMutasi />
+            <TabelMutasi :tabel-data="mutasiData"/>
           </TabPanel>
         </TabPanels>
       </Tabs>
