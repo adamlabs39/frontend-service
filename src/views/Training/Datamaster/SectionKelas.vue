@@ -172,6 +172,7 @@ const openDialog = (method: string, title: string, data: any = null) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -187,10 +188,12 @@ const openDialog = (method: string, title: string, data: any = null) => {
         </Column>
       </DataTable>
       <FormKelas
-      v-model:isDialogVisible="isTambahDataDialogVisible"
+        v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
+        :payload="dialogConfig.data"
       />
+      
     </template>
     <template #footer>
       <FooterPaginationTraining exportImport />

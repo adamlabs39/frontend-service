@@ -53,6 +53,11 @@ const onPembayaranSelect = (label: string) => {
     selectedFilterPembayaran.value.push(label);
   }
 };
+
+const kelasOption=ref(['Zumba','Gym','Pilates'])
+const kelasSelected=ref()
+const search=ref()
+
 </script>
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
@@ -107,6 +112,7 @@ const onPembayaranSelect = (label: string) => {
     <template #content>
       <div class="flex mt-[16px] mb-2.5 items-end">
         <CustomTextfield
+        v-model="search"
         v-if="!['laporan'].includes(pageType)"
           :label="
             props.pageType === 'datamaster' ? 'Cari Kelas' : 'Cari Pasien'
@@ -121,7 +127,11 @@ const onPembayaranSelect = (label: string) => {
         />
         <CustomSelect
           v-if="['daftar', 'booking','laporan'].includes(pageType)"
+          v-model="kelasSelected"
           label="Kelas"
+          :options="kelasOption"
+          option-value=""
+          option-label=""
           placeHolder="Pilih Kelas"
           class="w-full"
         />

@@ -33,7 +33,7 @@ const schema = toTypedSchema(
   yup
     .object({
       kode: yup.string().required("Kode Kelas harus diisi"),
-      nama: yup.string().required("Nama ICD 9 CM harus diisi"),
+      nama: yup.string().required("Nama Kelas harus diisi"),
       isSesi: yup.bool().default(false),
       jumlahSlot: yup.number().required("Jumlah Slot harus diisi"),
       harga: yup.number().required("Harga harus diisi"),
