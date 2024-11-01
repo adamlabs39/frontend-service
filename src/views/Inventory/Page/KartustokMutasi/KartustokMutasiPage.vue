@@ -140,8 +140,9 @@ onMounted(() => {
       </Tabs>
     </template>
     <template #footer>
-      <div class="flex justify-between">
+      <div :class="value === '2' ? 'flex justify-end' : 'flex justify-between'">
         <CustomButton
+        v-if="value==='1'"
           label="Cetak"
           class="my-auto bg-adameds-300"
           icon="PhPrinter"
