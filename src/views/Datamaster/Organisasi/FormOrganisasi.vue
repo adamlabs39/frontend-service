@@ -123,7 +123,7 @@ const schema = toTypedSchema(
     phone: yup.string().required("No. Telepon harus diisi"),
     email: yup.string().required("Email harus diisi"),
     url: yup.string().required("URL harus diisi"),
-    addressCode: yup.string(),
+    addressCode: yup.string().required("Kelurahan harus dipilih"),
     kodePos: yup.string().required("Kode Pos harus diisi"),
     alamat: yup.string().required("Alamat harus diisi"),
     partOfUuid: yup.string(),
@@ -350,6 +350,9 @@ watch(
           :options="kelurahanPayload"
           option-label="name"
           option-value="code"
+          :invalid="!!errors.addressCode"
+          :invalidMessage="errors.addressCode"
+          :required="errors.addressCode ? true : false"
         />
         <CustomTextfield
           label="Kode Pos"

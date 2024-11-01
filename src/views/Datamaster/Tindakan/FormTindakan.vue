@@ -91,6 +91,12 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    if (values.snomedUuid === "") {
+      delete values.snomedUuid;
+    }
+    if (values.icd9Uuid === "") {
+      delete values.icd9Uuid;
+    }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");

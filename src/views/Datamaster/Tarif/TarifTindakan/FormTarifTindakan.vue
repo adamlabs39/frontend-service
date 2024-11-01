@@ -62,7 +62,6 @@ interface LabEntry {
   tarifLabUuid: string;
 }
 
-
 //Fetch data
 
 const fetchPenjamin = async () => {
@@ -159,15 +158,18 @@ const schema = toTypedSchema(
           ),
         })
       ),
-      tarifLab: yup.array().of(
-        yup.object({
-          tarifLabUuid: yup.string().when("isMcu", {
-            is: (value: boolean) => value === true,
-            then: (schema) => schema.required("Tarif Lab harus diisi"),
-            otherwise: (schema) => schema.notRequired(),
-          }),
+      tarifLab: yup
+        .array()
+        .when("isMcu", {
+          is: (value: boolean) => value === true,
+          then: (schema) => schema.required("Tarif Lab harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
         })
-      ),
+        .of(
+          yup.object({
+            tarifLabUuid: yup.string().required("Tarif Lab harus diisi"),
+          })
+        ),
       unitPelayananSelected: yup
         .array()
         .of(yup.number().required("Unit Pelayanan harus dipilih"))
@@ -302,24 +304,33 @@ interface TempTarifLab {
   isDeleted?: boolean;
 }
 const handleRemoveLab = (index: number) => {
+  // if (fieldsTarifLab.value.length === 1) {
+  //   // Set isMcu to false if this is the last item
+  //   isMcu.value = false;
+  // }
+
   const komponenToRemove = fieldsTarifLab.value[index].value;
   const parseItem = JSON.parse(JSON.stringify(komponenToRemove));
-  // Check if the item is in tempPenjamin
-  const tempKomponen = tempTarifLab.value.find(
-    (temp: any) => temp.tarifLabUuid === parseItem.tarifLabUuid
-  );
 
-  if (tempKomponen) {
-    // Mark the component as deleted and add to tempDeleteData
-    const deletedItem = { ...tempKomponen, isDeleted: true };
-    tempDeletedLab.value.push(deletedItem);
+  // Check if tarifLabUuid is an empty string
+  if (!parseItem.tarifLabUuid) {
+    // Remove the last item from tempDeletedLab if the UUID is empty
+    tempDeletedLab.value.pop();
+  } else {
+    // Check if the item is in tempPenjamin
+    const tempKomponen = tempTarifLab.value.find(
+      (temp: any) => temp.tarifLabUuid === parseItem.tarifLabUuid
+    );
+
+    if (tempKomponen) {
+      const deletedItem = { ...tempKomponen, isDeleted: true };
+      tempDeletedLab.value.push(deletedItem);
+    }
   }
 
   // Remove the component from the fields array
   removeTarifLab(index);
 };
-
-
 
 const handlePushTindakan = () => {
   pushTindakan({
@@ -329,7 +340,7 @@ const handlePushTindakan = () => {
 };
 
 const handlePushTarifLab = () => {
-  pushTarifLab({ tarifLabUuid: ""});
+  pushTarifLab({ tarifLabUuid: "" });
 };
 
 const handleUnitPelayananUpdate = (selectedValues: number[]) => {
@@ -413,18 +424,17 @@ const onSubmit = handleSubmit(async (values: any) => {
         values.tindakanPoli.push(deletedTindakan);
       }
     });
-
     if (!values.isMcu) {
-      delete values.tarifLab;
+      values.tarifLab = (values.tarifLab || []).map((lab: any) => ({
+        ...lab,
+        isDeleted: true,
+      }));
     } else {
-      // Only combine `tarifLab` and `tempDeletedLab.value` if `isMcu` is true
       const combinedPenjaminData = [
-        ...values.tarifLab,
+        ...(values.tarifLab || []),
         ...tempDeletedLab.value,
       ];
-      const parseItem = JSON.parse(JSON.stringify(combinedPenjaminData));
-      // Update the values with the combined data
-      values.tarifLab = parseItem;
+      values.tarifLab = JSON.parse(JSON.stringify(combinedPenjaminData));
     }
 
     if (method.value === "edit") {
@@ -445,7 +455,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     console.error("Failed to process the data:", error);
   }
 });
-
 
 const method = ref(props.method);
 const title = ref(props.title);
@@ -511,14 +520,14 @@ watch(
         tempPelayanan.value = tempUnitPelayanan;
         tempPenjamin.value = tempPenjaminObject;
         tempTindakan.value = props.payload.tindakanPoli;
-        tempTarifLab.value=props.payload.lab;
+        tempTarifLab.value = props.payload.lab;
       }
     } else {
       resetForm();
       resetDialogMode();
       tempDeleteTindakan.value = [];
       tempTarifLab.value = [];
-      tempDeletedLab.value=[];
+      tempDeletedLab.value = [];
     }
   }
 );
@@ -571,9 +580,6 @@ const getHargaLab = (labUuid: string) => {
     <template #header>{{ title }} Tarif</template>
     <template #body>
       <!-- Form Input -->
-      {{ fieldsTarifLab }} <br/><br/>
-      {{ errors }}
-
       <div
         v-if="method !== 'detail'"
         class="flex flex-col h-full overflow-hidden"
@@ -787,7 +793,6 @@ const getHargaLab = (labUuid: string) => {
                     </div>
                   </div>
                 </div>
-               
               </template>
               <template #collapseIcon>
                 <CustomButton
@@ -849,10 +854,6 @@ const getHargaLab = (labUuid: string) => {
                         :invalid="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`] ? true : false"
                         :invalidMessage="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`]"
                       />
-                      <ErrorMessage
-                    :name="`tarifLab[${slotProps.index}].tarifLabUuid`"
-                    class="text-danger-300"
-                  />
                     </template>
                   </Column>
                   <Column headerClass="bg-adameds-300 ">
@@ -1054,46 +1055,46 @@ const getHargaLab = (labUuid: string) => {
             />
           </template>
         </CustomAccordion>
-        <CustomAccordion v-if="props.payload.isMcu"  class="col-span-12"
+        <CustomAccordion
+          v-if="props.payload.isMcu"
+          class="col-span-12"
           initial-state="0"
           :open-with-header="false"
-          no-border>
+          no-border
+        >
           <template #header> List Tindakan Laboratorium </template>
           <template #content>
             <DataTable
-                  :value="fieldsTarifLab"
-                  tableStyle="min-width: 50rem"
-                  class="mt-5 overflow-hidden text-xs rounded-lg "
-                >
-                  <Column
-                    header="List Tarif Lab"
-                    headerClass="bg-adameds-300 text-white"
-                    bodyClass="align-top"
+              :value="fieldsTarifLab"
+              tableStyle="min-width: 50rem"
+              class="mt-5 overflow-hidden text-xs rounded-lg"
+            >
+              <Column
+                header="List Tarif Lab"
+                headerClass="bg-adameds-300 text-white"
+                bodyClass="align-top"
+              >
+                <template #body="slotProps">
+                  {{ slotProps.data.value.tarifLabUuid }}
+                </template>
+              </Column>
+              <Column
+                headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                class="w-6/12 text-end"
+                bodyClass="align-top text-end"
+              >
+                <template #header>
+                  <div class="w-full text-end">Rupiah (Rp)</div>
+                </template>
+                <template #body="slotProps">
+                  <span
+                    >Rp.
+                    {{ getHargaLab(slotProps.data.value.tarifLabUuid) }}</span
                   >
-                    <template #body="slotProps">
-                      {{slotProps.data.value.tarifLabUuid }}
-                    </template>
-                  </Column>
-                  <Column
-                    headerClass="bg-adameds-300 text-white font-semibold text-SM"
-                    class="w-6/12 text-end"
-                    bodyClass="align-top text-end"
-                  >
-                    <template #header>
-                      <div class="w-full text-end">Rupiah (Rp)</div>
-                    </template>
-                    <template #body="slotProps">
-                      <span
-                        >Rp.
-                        {{
-                          getHargaLab(slotProps.data.value.tarifLabUuid)
-                        }}</span
-                      >
-                    </template>
-                  </Column>
-                </DataTable>
+                </template>
+              </Column>
+            </DataTable>
           </template>
-          
         </CustomAccordion>
         <hr class="col-span-12 border-grey-200" />
         <div class="flex items-center justify-end col-span-12 gap-4">

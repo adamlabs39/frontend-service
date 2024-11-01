@@ -92,9 +92,9 @@ const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string().required("Kode HFIS (BPJS) harus diisi"),
-      sip: yup.string().required("SIP harus diisi"),
-      str: yup.string().required("STR harus diisi"),
+      codeBpjs: yup.string(),
+      sip: yup.string().notRequired(),
+      str: yup.string().notRequired(),
       isDoctor: yup.boolean(),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
