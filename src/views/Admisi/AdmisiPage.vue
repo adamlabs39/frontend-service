@@ -156,9 +156,10 @@ const cancelReason = ref<string>();
 const openedPatientData = ref<any>({});
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
+  console.log("🚀 ~ showPatientDetail ~ openedPatientData:", openedPatientData)
 
   if (pageType.value == "rawat-jalan") {
-    if (openedPatientData.value.status_rj == "1") {
+    if (openedPatientData.value.statusRj == "1") {
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
       formType.value = "detail";
@@ -166,8 +167,8 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
     }
   } else if (pageType.value == "rawat-inap") {
     if (
-      openedPatientData.value.status_ri == "1" ||
-      openedPatientData.value.status_ri == "2"
+      openedPatientData.value.statusRi == "1" ||
+      openedPatientData.value.statusRi == "2"
     ) {
       changeSection("Daftar");
     } else {

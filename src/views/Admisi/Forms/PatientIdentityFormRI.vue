@@ -12,7 +12,7 @@ import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
-import { setTimeToDate } from "@/utils/Helpers";
+import { setDateToTime, setTimeToDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -46,7 +46,7 @@ const setFormData = (data: any, uuid: string = "") => {
 
     if (data.isNewBorn) {
       let tempBirthTime = setTimeToDate(tempPatientData.newBorn.birthTimeBaby);
-      tempPatientData.birthDetail.birthTime = tempBirthTime;
+      tempPatientData.birthTime = tempBirthTime;
     }
 
     if (uuid) {
@@ -63,7 +63,7 @@ onMounted(() => {
     props.formType == "Daftar Bayi Baru Lahir" ||
     (props.patientData && props.patientData.isNewBorn)
   ) {
-    newBorn.value = true;
+    isNewBorn.value = true;
   }
 
   setFormData(props.patientData);
@@ -74,7 +74,7 @@ onUpdated(() => {
     props.formType == "Daftar Bayi Baru Lahir" ||
     (props.patientData && props.patientData.isNewBorn)
   ) {
-    newBorn.value = true;
+    isNewBorn.value = true;
   }
   setFormData(props.patientData);
 });
@@ -127,10 +127,6 @@ const setSelectedPatientData = async (data: any) => {
   //   resetForm();
   // }
 };
-
-const newBorn = ref(false);
-const withoutIdentity = ref(false);
-const selectedDataPatient = ref<any>();
 
 const schema = toTypedSchema(
   yup
@@ -231,6 +227,8 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
+const [isNewBorn] = defineField("isNewBorn");
+const [multipleBirth] = defineField("multipleBirth");
 const [noRm] = defineField("noRm");
 const [title] = defineField("title");
 const [name] = defineField("name");
@@ -256,6 +254,10 @@ const [addressVillage] = defineField("address.village");
 const [addressPostalCode] = defineField("address.postalCode");
 
 const onSubmit = handleSubmit(async (values) => {
+  if (values.isNewBorn) {
+    values.birthTime = setDateToTime(values.birthTime as Date) as any;
+    values.title = "By. (Bayi)";
+  }
   return values;
 });
 const onResetForm = () => {
@@ -292,7 +294,7 @@ defineExpose({
           />
         </div>
         <hr class="mt-5 mb-[30px]" />
-        <div v-if="newBorn" class="grid grid-cols-2 mb-5 gap-x-[30px]">
+        <div v-if="isNewBorn" class="grid grid-cols-2 mb-5 gap-x-[30px]">
           <CustomTextfield
             v-model="name"
             label="Nama Lengkap"
@@ -318,7 +320,7 @@ defineExpose({
             />
             <CustomTextfield
               v-model="noIdentity"
-              :label="newBorn ? 'No. KTP Ibu' : ''"
+              :label="isNewBorn ? 'No. KTP Ibu' : ''"
               class="col-span-3"
               placeholder="KTP"
               :disabled="isDetail"
@@ -403,7 +405,7 @@ defineExpose({
             :invalidMessage="errors['birthDetail.birthDate']"
           />
           <CustomDatePicker
-            v-if="newBorn"
+            v-if="isNewBorn"
             v-model="birthTime"
             label="Jam Lahir"
             placeHolder="00:00"
@@ -438,7 +440,7 @@ defineExpose({
           />
           <!-- Row 2 -->
           <CustomTextfield
-            v-if="!newBorn"
+            v-if="!isNewBorn"
             v-model="phone"
             label="No. Handphone"
             class=""
@@ -448,7 +450,7 @@ defineExpose({
             :invalidMessage="errors.phone"
           />
           <CustomSelect
-            v-if="!newBorn"
+            v-if="!isNewBorn"
             v-model="religion"
             label="Agama"
             placeHolder="Pilih Agama"
@@ -470,7 +472,6 @@ defineExpose({
             :invalidMessage="errors.religion"
           />
           <CustomSelect
-            v-if="!newBorn"
             v-model="addressCountry"
             label="Negara"
             placeHolder="Pilih Negara"
@@ -484,7 +485,7 @@ defineExpose({
             :invalidMessage="errors['address.country']"
           />
           <CustomSelect
-            v-if="!newBorn"
+            v-if="!isNewBorn"
             v-model="language"
             label="Bahasa yang Dikuasai"
             placeHolder="Pilih Bahasa yang Dikuasai"
@@ -499,7 +500,7 @@ defineExpose({
           />
           <!-- Row 3 -->
           <CustomSelect
-            v-if="!newBorn"
+            v-if="!isNewBorn"
             v-model="maritialStatus"
             label="Status Pernikahan"
             placeHolder="Pilih Status Pernikahan"
@@ -515,14 +516,15 @@ defineExpose({
           <CustomTextfield
             v-model="motherName"
             label="Nama Ibu Kandung"
-            :class="[newBorn ? 'col-span-2' : 'col-span-3']"
+            :class="[isNewBorn ? 'col-span-2' : 'col-span-3']"
             placeholder="Nama Ibu Kandung"
             :disabled="isDetail"
             :invalid="!!errors.motherName"
             :invalidMessage="errors.motherName"
           />
           <CustomSwitch
-            v-if="newBorn"
+            v-if="isNewBorn"
+            v-model="multipleBirth"
             label="Bayi Kembar"
             class=""
             :disabled="isDetail"

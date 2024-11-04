@@ -6,7 +6,6 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -50,6 +49,7 @@ const setFormData = () => {
     selectedRoomCategory.value = tempDoctorVisitData.kategoriRuanganUuid ?? "";
     selectedRoomClass.value = tempDoctorVisitData.roomClass ?? "";
     selectedRoom.value = tempDoctorVisitData.roomUuid ?? "";
+    selectedBed.value = [tempDoctorVisitData.monitoringRoomUuid ?? ""];
     if (selectedRoom.value) {
       fetchListBedData(selectedRoom.value);
     }
@@ -145,6 +145,12 @@ const onPaymentMethodSelect = (label: string) => {
   paymentMethod.value = label;
 };
 
+const setSelectedBed = (data: any) => {
+  if (data.length) {
+    monitoringRoomUuid.value = data[0];
+  }
+};
+
 const schema = computed(() =>
   toTypedSchema(
     yup
@@ -155,7 +161,7 @@ const schema = computed(() =>
         entrustedPatient: yup.boolean().default(false),
         upgradeClass: yup.boolean().default(false),
         previousBill: yup.boolean().default(false),
-        complaint: yup.string(),
+        complaint: yup.string().default(""),
         note: yup.string().default(""),
         assuranceAccountId: yup
           .string()
@@ -164,7 +170,6 @@ const schema = computed(() =>
               ? schema.required("Nama Penjamin Harus Dipilih")
               : schema;
           }),
-        // NOTE Rawat Inap
         practitionerUuid: yup.string().required("DPJP harus dipilih"),
         monitoringRoomUuid: yup
           .string()
@@ -359,6 +364,8 @@ defineExpose({
                 },
               ]"
               :disabled="isDetail"
+              :invalid="!!errors.assuranceAccountId"
+              :invalidMessage="errors.assuranceAccountId"
             />
             <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield
@@ -432,10 +439,10 @@ defineExpose({
                   Pilih Bed
                 </div>
                 <div class="grid grid-cols-2 gap-[10px] mr-[15px]">
-                  <!-- FIXME Uncomment on prod -->
                   <CustomCheckbox
                     v-for="(data, index) in listBed"
                     v-model="selectedBed"
+                    @update:model-value="setSelectedBed"
                     :title="data.patientUuid ? data.patient.name : '-'"
                     :subTitle="'Bed ' + data.noBed"
                     :endText="
@@ -452,7 +459,8 @@ defineExpose({
                     :disabled="
                       !!data.patientUuid ||
                       isDetail ||
-                      formType == 'Daftar Bayi Baru Lahir'
+                      formType == 'Daftar Bayi Baru Lahir' ||
+                      doctorVisitData.statusRi == 3
                     "
                   />
                 </div>
@@ -467,6 +475,7 @@ defineExpose({
                   <CustomCheckbox
                     v-for="(data, index) in listBedCadangan"
                     v-model="selectedBed"
+                    @update:model-value="setSelectedBed"
                     :title="data.patientUuid ? data.patient.name : '-'"
                     :subTitle="'Bed ' + data.noBed"
                     :endText="
@@ -481,9 +490,10 @@ defineExpose({
                     :value="`${data.uuid}`"
                     :multiple="false"
                     :disabled="
-                      data.patientUuid ||
+                      !!data.patientUuid ||
                       isDetail ||
-                      formType == 'Daftar Bayi Baru Lahir'
+                      formType == 'Daftar Bayi Baru Lahir' ||
+                      doctorVisitData.statusRi == 3
                     "
                   />
                 </div>
@@ -498,6 +508,7 @@ defineExpose({
                   <CustomCheckbox
                     v-for="(data, index) in listBoxBayi"
                     v-model="selectedBed"
+                    @update:model-value="setSelectedBed"
                     :title="data.patientUuid ? data.patient.name : '-'"
                     :subTitle="'Box ' + data.noBed"
                     :endText="
@@ -511,7 +522,11 @@ defineExpose({
                     :binary="false"
                     :value="`${data.uuid}`"
                     :multiple="false"
-                    :disabled="data.patientUuid || isDetail"
+                    :disabled="
+                      !!data.patientUuid ||
+                      isDetail ||
+                      doctorVisitData.statusRi == 3
+                    "
                   />
                 </div>
               </div>
@@ -526,14 +541,14 @@ defineExpose({
                 class="mb-[30px]"
                 sideLabel="Bed Cadangan"
                 sideLabelTrue="Bed Cadangan"
-                :disabled="isDetail"
+                :disabled="isDetail || doctorVisitData.statusRi == 3"
               />
               <CustomSwitch
                 v-model="boxBaby"
                 label=""
                 sideLabel="Box Bayi"
                 sideLabelTrue="Box Bayi"
-                :disabled="isDetail"
+                :disabled="isDetail || doctorVisitData.statusRi == 3"
               />
             </div>
           </div>

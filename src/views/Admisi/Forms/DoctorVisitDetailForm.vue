@@ -335,6 +335,8 @@ defineExpose({
                 },
               ]"
               :disabled="isDetail"
+              :invalid="!!errors.assuranceAccountId"
+              :invalidMessage="errors.assuranceAccountId"
             />
             <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield

@@ -108,12 +108,14 @@ const setDetailDoctorVisitData = (patientData: any) => {
       previousBill: patientData.previousBill,
       assuranceAccountId: patientData.insurance,
       noSpri: patientData.noSpri,
+      // FIXME Belum ada
       kategoriRuanganUuid: patientData.monitoringRoom.kategoriRuanganUuid,
       roomClass: patientData.monitoringRoom.roomClass,
       roomUuid: patientData.monitoringRoom.roomUuid,
       monitoringRoomUuid: patientData.monitoringRoomUuid,
       spareBed: patientData.spareBed,
       boxBaby: patientData.boxBaby,
+      statusRi: patientData.statusRi,
     };
   }
 };

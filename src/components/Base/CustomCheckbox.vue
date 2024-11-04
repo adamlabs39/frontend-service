@@ -17,7 +17,7 @@ const props = defineProps({
     type: String,
     default: "#14B8A6",
   },
-  borderColor:{
+  borderColor: {
     type: String,
     default: "#14B8A6",
   },
@@ -87,6 +87,7 @@ const toggleCheckbox = () => {
           checked.value.push(props.value);
         }
       }
+      emit("update:modelValue", checked.value);
     }
   }
 };
@@ -125,7 +126,7 @@ const test = (data: any) => {
       :dt="{
         checkedBackground: bgSwitch,
         checkedHoverBackground: bgSwitch,
-        borderColor:borderColor,
+        borderColor: borderColor,
       }"
     />
     <div class="ml-[10px] flex flex-col justify-center">
