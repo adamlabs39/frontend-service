@@ -37,6 +37,7 @@ import BoxPlusIcon from "./BoxPlusIcon.vue";
 import BoxUpIcon from "./BoxUpIcon.vue";
 import BoxDownIcon from "./BoxDownIcon.vue";
 import DownloadIcon from "./DownloadIcon.vue";
+import HospitalFillIcon from "./HospitalFillIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -74,7 +75,8 @@ export default {
     app.component("Stethoscop", Stethoscop);
     app.component("PlusIcon", PlusIcon);
     app.component("DownloadIcon", DownloadIcon);
-    
+    app.component("HospitalFillIcon", HospitalFillIcon);
+
     // NOTE Inventory
     app.component("OpenBoxIcon", OpenBoxIcon);
     app.component("BoxPlusIcon", BoxPlusIcon);

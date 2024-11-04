@@ -206,13 +206,13 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
         <Column
-          field="name"
+          field="username"
           header="Nama User"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"
         ></Column>
         <Column
-          field="role"
+          field="role.name"
           header="Role"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"

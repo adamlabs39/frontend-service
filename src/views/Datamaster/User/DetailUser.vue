@@ -181,7 +181,6 @@ onMounted(() => {
   >
     <template #header>
       <div class="flex items-center justify-between gap-5 p-5">
-        <CustomButton label="" icon="PhArrowClockwise" @click="" />
         <CustomBreadCrumb
           :home="dataBreadHome"
           :model="dataBreadCrumb"
@@ -205,27 +204,33 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Nama</div>
-                <div class="font-normal text-normal">{{ props.payload.name }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.username }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">NIK</div>
-                <div class="font-normal text-normal">345678</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.nik }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Tanggal Lahir</div>
-                <div class="font-normal text-normal">01-01-2000</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.tanggalLahir }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Jenis Kelamin</div>
-                <div class="font-normal text-normal">Laki-Laki</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.gender }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">No. Handphone</div>
-                <div class="font-normal text-normal">{{ props.payload.phone }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.phone }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Email</div>
-                <div class="font-normal text-normal">{{ props.payload.email }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.email }}
+                </div>
               </div>
             </div>
           </template>
@@ -250,7 +255,9 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Username</div>
-                <div class="font-normal text-normal">{{ props.payload.username }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.username }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Password</div>
@@ -277,8 +284,12 @@ onMounted(() => {
           <template #header> Modul & Permission </template>
           <template #content>
             <div class="flex flex-col gap-5 mt-5">
+              <div class="flex flex-col">
+                <div class="underline font-normal text-normal">Role</div>
+                <div class="font-semibold text-MD">{{ props.payload.role.name }}</div>
+              </div>
               <div
-                v-for="(menuItem, menuIndex) in payload.permission"
+                v-for="(menuItem, menuIndex) in props.payload.permissions"
                 :key="menuIndex"
               >
                 <CustomAccordion
@@ -290,7 +301,7 @@ onMounted(() => {
                     <div
                       v-for="(
                         subMenuItem, subMenuIndex
-                      ) in menuItem.sub_modules"
+                      ) in menuItem.subModule"
                       :key="subMenuItem.name"
                     >
                       <CustomAccordion

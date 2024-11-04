@@ -1,5 +1,12 @@
 <script lang="ts" setup>
-import { ref, watch, defineProps, computed, onMounted } from "vue";
+import {
+  ref,
+  watch,
+  defineProps,
+  computed,
+  onMounted,
+  onBeforeMount,
+} from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -65,50 +72,17 @@ const schema = computed(() =>
   toTypedSchema(
     yup
       .object({
-        praktisiUuid: yup.string(),
-        name: yup.string().default('admin'),
-        inventoryMedis:yup.bool().default(true),
-        inventoryNonMedis:yup.bool().default(true),
+        practitionerUuid: yup.string(),
         phone: yup.string().required("No. Handhpone harus diisi"),
         email: yup.string().required("Email harus diisi"),
         username: yup.string().required("Username harus diisi"),
-        password: yup
-          .string()
-          .min(8, "Password minimal 8 karakter")
-          .matches(
-            /[A-Z]/,
-            "Password harus mengandung setidaknya satu huruf besar"
-          )
-          .matches(
-            /[a-z]/,
-            "Password harus mengandung setidaknya satu huruf kecil"
-          )
-          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-          .matches(
-            /[!@#$%^&*(),.?":{}|<>]/,
-            "Password harus mengandung setidaknya satu simbol khusus"
-          )
-          .required("Password harus diisi"),
+        password: yup.string().notRequired(),
         confirmPassword: yup
           .string()
-          .min(8, "Password minimal 8 digit")
-          .matches(
-            /[A-Z]/,
-            "Password harus mengandung setidaknya satu huruf besar"
-          )
-          .matches(
-            /[a-z]/,
-            "Password harus mengandung setidaknya satu huruf kecil"
-          )
-          .matches(/\d/, "Password harus mengandung setidaknya satu angka")
-          .matches(
-            /[!@#$%^&*(),.?":{}|<>]/,
-            "Password harus mengandung setidaknya satu simbol khusus"
-          )
-          .required("Password harus diisi")
-          .oneOf([yup.ref("password")], "Password tidak sama"),
+          .oneOf([yup.ref("password")], "Password tidak sama")
+          .notRequired(),
         status: yup.bool().default(false),
-        roleUuid: yup.string().required("Role harus dipilih"),
+        roleUuid: yup.string().notRequired(),
       })
       .noUnknown()
   )
@@ -118,7 +92,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const [praktisiUuid] = defineField("praktisiUuid");
+const [practitionerUuid] = defineField("practitionerUuid");
 const [phone] = defineField("phone");
 const [email] = defineField("email");
 const [username] = defineField("username");
@@ -253,7 +227,7 @@ const setRolePermissions = (rolePermissions: Module[]) => {
 const searchPraktisi = () => {
   // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
   selectedPraktisi.value = praktisiPayload.value.find(
-    (praktisi) => praktisi.uuid === praktisiUuid.value
+    (praktisi) => praktisi.uuid === practitionerUuid.value
   );
 };
 
@@ -268,7 +242,7 @@ watch(roleUuid, (newUuid) => {
 });
 
 const resetSearch = () => {
-  praktisiUuid.value = "";
+  practitionerUuid.value = "";
   selectedPraktisi.value = null;
 };
 
@@ -415,7 +389,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     }));
   console.log(permissions);
   try {
-    delete values.confirmPassword;
     const allData = {
       ...values,
       permissions,
@@ -426,14 +399,24 @@ const onSubmit = handleSubmit(async (values: any) => {
       }
       const uuid = props.payload.uuid;
       console.log("Adding new data with edit:", allData);
-
-      // const response = await userStore.putApi(uuid, allData);
+      const response = await userStore.putApi(uuid, allData);
+      emit('back')
     } else if (props.method === "add") {
       console.log("Adding new data with values:", allData);
       const response = await userStore.postApi(allData);
+      emit('back')
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
+  }
+});
+
+onBeforeMount(async () => {
+  if (props.method === "edit" && props.payload) {
+    setValues({
+      ...props.payload,
+      practitionerUuid: props.payload.practitioner.uuid,
+    });
   }
 });
 </script>
@@ -445,7 +428,6 @@ const onSubmit = handleSubmit(async (values: any) => {
   >
     <template #header>
       <div class="flex items-center justify-between gap-5 p-5">
-        <CustomButton label="" icon="PhArrowClockwise" @click="" />
         <CustomBreadCrumb
           :home="dataBreadHome"
           :model="dataBreadCrumb"
@@ -469,14 +451,14 @@ const onSubmit = handleSubmit(async (values: any) => {
             <div class="flex items-end col-span-12 gap-y-5">
               <CustomSelect
                 label="Praktisi"
-                v-model="praktisiUuid"
+                v-model="practitionerUuid"
                 place-holder="Cari & Pilih Praktisi"
                 :options="praktisiPayload"
                 option-label="pegawai.name"
                 option-value="uuid"
                 class="grow"
-                :invalid="!!errors.praktisiUuid"
-              :invalidMessage="errors.praktisiUuid"
+                :invalid="!!errors.practitionerUuid"
+                :invalidMessage="errors.practitionerUuid"
               />
               <CustomButton
                 label="Cari"
