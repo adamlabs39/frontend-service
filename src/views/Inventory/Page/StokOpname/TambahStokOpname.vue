@@ -9,6 +9,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import NoData from "@/components/section/NoData.vue";
 import type { MenuItem } from "primevue/menuitem";
+import { computed } from "vue";
 import { ref, type PropType } from "vue";
 
 const props = defineProps({
@@ -22,7 +23,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali"]);
+const emit = defineEmits(["kembali", "onSimpanDraft"]);
 
 const jenisStok = ref([
   { id: 1, name: "Umum" },
@@ -52,8 +53,8 @@ const dataItems = ref([
     stokMasuk: 900,
     stokKeluar: 900,
     stokSistem: 900,
-    stokFisik: 100,
-    selisih: 100,
+    stokFisik: 0,
+    selisih: 0,
     hargaDasar: 12000,
     hargaAkhir: 10000,
     expDate: "01-01-25",
@@ -69,14 +70,14 @@ const dataItems = ref([
     stokKeluar: 900,
     stokSistem: 900,
     stokFisik: 0,
-    selisih: 100,
+    selisih: -1,
     hargaDasar: 600,
     hargaAkhir: 500,
     expDate: "01-01-25",
   },
 ]);
 
-const selectedDataItem = ref([]);
+const selectedDataItem = ref<typeof dataItems.value>([]);
 const rekonsilTitle = ref<string | null>(null);
 
 const rekonsilDariMasterItem = () => {
@@ -90,6 +91,32 @@ const rekonsilDariStokItem = () => {
   rekonsilTitle.value = "Rekonsil Dari Stok Item";
   console.log("Data dari Stok Item di-fetch");
 };
+
+
+
+const onSubmitDraft = () => {
+  const selectedItems = selectedDataItem.value
+    .map((item) => {
+      return dataItems.value.find((data) => data.id === item.id);
+    })
+    .filter((item) => item !== undefined);
+
+  const payload = {
+    tglCutOff: "01-01-2024",
+    noStokOpname: "1243",
+    judul: "Judul Stok Opname",
+    petugasStokOpname: "Nama Petugas",
+    datas: selectedItems,
+    totalItem: selectedItems.length,
+    status: "DRAFT",
+    jenisStok: "Umum",
+    jenisItem: "Alkes",
+    kategoriItem: "Medis",
+  };
+
+  console.log("Submitted with", payload);
+  emit("onSimpanDraft", payload);
+};
 </script>
 
 <template>
@@ -98,7 +125,7 @@ const rekonsilDariStokItem = () => {
       <CustomAccordion :openWithHeader="false" noBorder initialState="0">
         <template #header>
           <div class="flex items-center justify-between w-full align-middle">
-            <div class="flex">
+            <div class="flex items-center">
               <CustomButton icon="PhArrowClockwise" class="mr-5" />
               <CustomBreadCrumb
                 :home="{
@@ -110,6 +137,13 @@ const rekonsilDariStokItem = () => {
                 ]"
                 class=""
               />
+
+              <div v-if="isDataAvailable" class="flex">
+                <hr class="h-6 mx-2.5 border-2 border-adameds-300" />
+                <div class="font-semibold text-adameds-300 text-MD">
+                  Tgl. Cut off : 01-01-2024
+                </div>
+              </div>
             </div>
             <CustomButton
               @click="emit('kembali')"
@@ -204,15 +238,23 @@ const rekonsilDariStokItem = () => {
               icon="PhDownloadSimple"
               label="Kartu Stok"
               class="mr-[10px]"
-              @click="rekonsilDariMasterItem"
             />
             <CustomButton
               icon="PhUploadSimple"
               label="Import Excel"
-              @click="rekonsilDariStokItem"
+              class="mr-[10px]"
+            />
+
+            <!-- <hr class="pt-5 border-grey-200" /> -->
+            <CustomButton
+              v-if="selectedDataItem.length > 0"
+              icon="PhTrash"
+              label="Hapus Item"
+              class="bg-danger-300"
             />
           </div>
         </div>
+        <hr class="py-2 border-grey-200" />
         <div v-if="isDataAvailable" class="flex flex-col gap-5">
           <div class="flex items-end gap-7">
             <CustomTextfield
@@ -240,11 +282,18 @@ const rekonsilDariStokItem = () => {
           </div>
 
           <DataTable
-          v-model:selection="selectedDataItem"
+            :rowClass="
+              (data) => ({
+                'bg-danger-50': selectedDataItem.includes(data),
+              })
+            "
+            dataKey="id"
+            selectionMode="multiple"
+            v-model:selection="selectedDataItem"
             :value="dataItems"
             tableStyle="min-width: 50rem"
             scrollable
-            scrollHeight="240px"
+            scrollHeight="250px"
             :pt="{ headerRow: 'text-SM' }"
           >
             <Column headerClass="bg-adameds-50" class="w-[40px]">
@@ -350,7 +399,7 @@ const rekonsilDariStokItem = () => {
             </Column>
             <Column headerClass="bg-adameds-50" class="w-[130px]">
               <template #header>
-                <div class="w-full font-semibold">Stok Fisik</div>
+                <div class="w-full font-semibold text-center">Stok Fisik</div>
               </template>
               <template #body="slotProps">
                 <CustomInputNumber
@@ -371,11 +420,29 @@ const rekonsilDariStokItem = () => {
                 <div class="w-full font-semibold">Selisih</div>
               </template>
               <template #body="slotProps">
-                <div class="font-normal text-SM">
-                  {{ slotProps.data.selisih }}
-                </div>
-                <div class="font-normal text-[8px] text-adameds-300">
-                  Tablet
+                <div class="flex gap-1 ustify-between i">
+                  <div class="flex flex-col">
+                    <div class="text-SM">
+                      {{ Math.abs(slotProps.data.selisih) }}
+                    </div>
+                    <div class="font-normal text-[8px] text-adameds-300">
+                      Tablet
+                    </div>
+                  </div>
+
+                  <!-- Conditionally render PhArrowCircleDown or PhArrowCircleUp based on mutasiStok value -->
+                  <PhArrowCircleDown
+                    v-if="slotProps.data.selisih < 0"
+                    :size="18"
+                    color="#E9594C"
+                    weight="fill"
+                  />
+                  <PhArrowCircleUp
+                    v-else
+                    :size="18"
+                    color="#E89F29"
+                    weight="fill"
+                  />
                 </div>
               </template>
             </Column>
@@ -419,6 +486,17 @@ const rekonsilDariStokItem = () => {
             >
             </Column>
           </DataTable>
+          <div class="flex justify-end">
+            <Paginator
+              :rows="10"
+              :totalRecords="120"
+              :rowsPerPageOptions="[10, 20, 30]"
+              template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+              currentPageReportTemplate="{currentPage}"
+            >
+              <template #start="slotProps">Total Data: 0</template>
+            </Paginator>
+          </div>
         </div>
 
         <NoData v-else />
@@ -427,7 +505,11 @@ const rekonsilDariStokItem = () => {
     <template #footer>
       <hr class="pt-5 border-grey-200" />
       <div class="flex justify-between">
-        <div class="grid grid-cols-2 gap-7">
+        <div
+          :class="`grid gap-7 ${
+            isDataAvailable ? 'grid-cols-3' : 'grid-cols-2'
+          }`"
+        >
           <div>
             <div class="font-semibold underline text-SM">Total Item SO</div>
             <div class="font-normal text-normal">0 item</div>
@@ -436,17 +518,22 @@ const rekonsilDariStokItem = () => {
             <div class="font-semibold underline text-SM">Tgl. Selesai SO</div>
             <div class="font-normal text-normal">01-01-2024</div>
           </div>
+          <div v-if="isDataAvailable">
+            <div class="font-semibold underline text-SM">Petugas SO</div>
+            <div class="font-normal text-normal">Nama Petugas</div>
+          </div>
         </div>
         <div>
           <CustomButton
             label="Simpan (Draft)"
-            class="my-auto mr-2 bg-adameds-300"
-            disabled
+            class="my-auto mr-2 bg-warning-300"
+            :disabled="!isDataAvailable"
+            @click="onSubmitDraft"
           />
           <CustomButton
             label="Simpan & Akhiri SO"
             class="my-auto bg-adameds-300"
-            disabled
+             :disabled="!isDataAvailable"
           />
         </div>
       </div>
@@ -456,7 +543,7 @@ const rekonsilDariStokItem = () => {
 
 <style>
 .custom-checkbox .p-checkbox-checked .p-checkbox-box {
-  @apply border-adameds-300 bg-adameds-300; /* Kelas Tailwind untuk border dan warna latar */
+  @apply border-danger-300 bg-danger-300; /* Kelas Tailwind untuk border dan warna latar */
 }
 
 .custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon {
