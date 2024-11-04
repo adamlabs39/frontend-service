@@ -161,7 +161,7 @@ const confirmDelete = () => {
             @click="
               deleteDialog(
                 'delete',
-                `Tarif Ruangan ${slotProps.data.code}-${slotProps.data.name}`,
+                `${slotProps.data.code}-${slotProps.data.name}`,
                 slotProps.data
               )
             "

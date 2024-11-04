@@ -25,6 +25,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showCal: {
+    type: Boolean,
+    default: true,
+  },
+  placeHolder: {
+    type: String,
+    default: "",
+  },
 });
 
 const value = computed({
@@ -39,6 +47,7 @@ const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
   <div class="">
     <InputGroup>
       <InputGroupAddon
+        v-if="showCal"
         class="h-6 border-2 border-r-0 rounded-l-lg border-adameds-300"
       >
         <PhCalendarDots
@@ -54,7 +63,11 @@ const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
         :optionLabel="optionLabel"
         :optionValue="optionValue"
         :loading="isLoading"
-        class="h-6 border-2 border-l-0 rounded-lg rounded-l-none text-SM border-adameds-300"
+        :placeholder="placeHolder"
+        class="h-6 border-2 rounded-lg text-SM border-adameds-300"
+        :class="{
+          'border-l-0 rounded-l-none ': showCal,
+        }"
         fluid
         :filter="false"
         filterPlaceholder="Search"
@@ -63,11 +76,7 @@ const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
         pt:pcFilter:root:class="text-black border-grey-200 text-SM"
       >
         <template #dropdownicon>
-          <PhCaretDown
-            weight="bold"
-            :size="20"
-            class="text-adameds-300"
-          />
+          <PhCaretDown weight="bold" :size="20" class="text-adameds-300" />
         </template>
       </Select>
     </InputGroup>

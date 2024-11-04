@@ -149,11 +149,11 @@ const downloadExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        Kategori: rows[i].kategoriGigiName,
-        Referensi: rows[i].referensi,
+        Kategori: rows[i].kategoriGigi.name,
+        Referensi: rows[i].system,
         Code: rows[i].code,
         Display: rows[i].display,
-        Nama: rows[i].name,
+        Name: rows[i].name,
         Catatan: rows[i].catatan ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
@@ -225,6 +225,45 @@ const downloadExportExcel = async () => {
     // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Item Gigi");
     XLSX.writeFile(workbook, `Datamaster Item Gigi.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Kategori:"Kategori*",
+      Referensi:"Referensi*",
+      Code: "Kode Diagnosis*",
+      Display:"Display*",
+      Name: "Nama Diagnosis (ICD-10)*",
+      Catatan:"Catatan"
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1",Kategori:"Permukaan Gigi",Referensi:"[reference sistem satu sehat] 1", Code: "IG-001",Display:"Surface [Identifier] Tooth 1", Name: "Partial Erupterd", Catatan:"-" });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Item Gigi");
+    XLSX.writeFile(workbook, `Format Datamaster Item Gigi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -367,7 +406,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Item Gigi ${slotProps.data.name}`,
+                    `${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -399,6 +438,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

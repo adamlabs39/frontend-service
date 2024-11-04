@@ -5,16 +5,14 @@ import type { MenuItem } from "primevue/menuitem";
 import { useUserStore } from "@/stores/user";
 import { utilsStore } from "@/stores/utils";
 import { useRoleStore } from "@/stores/datamaster/role";
-import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import TambahDataUserPage from "./TambahDataUserPage.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailUser from "./DetailUser.vue";
-
+import DialogDelete from "../Layout/DialogDelete.vue";
 //Breadcumb section
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -25,11 +23,12 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const changeSection = (label: string, data: any = null) => {
-  let tempData = { label: label };
-  if (data) {
-    tempData = { ...tempData, ...data };
-  }
+const changeSection = (
+  label: string,
+  mode: string = "add",
+  data: any = null
+) => {
+  let tempData = { label: label, mode: mode, data: data }; 
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
@@ -51,7 +50,6 @@ onMounted(() => {
 });
 
 // Filter
-
 const searchQuery = ref<string>("");
 const selectedRole = ref("");
 
@@ -92,6 +90,7 @@ const fetchUserData = async () => {
     const response = await userStore.getApi({
       page: userProperties.value.page,
       limit: userProperties.value.page_size,
+      name: searchQuery .value,
       role: selectedRole.value || undefined,
     });
     console.log("API Response:", response);
@@ -152,6 +151,33 @@ const onRowSelect = (event: any) => {
     changeSection("Detail");
   }
 };
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await userStore.deleteApi(item.uuid);
+      fetchUserData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
 </script>
 
 <template>
@@ -168,7 +194,7 @@ const onRowSelect = (event: any) => {
         @update:selectedFilter="handleSelectedRole"
         @search="fetchUserData()"
         @reset="handleReset()"
-        @tambah-data="changeSection('Daftar')"
+        @tambah-data="changeSection('Daftar', 'add')"
         @reload-data="fetchUserData()"
         :filterSelect="rolePayload"
         ref="resetFormRef"
@@ -213,7 +239,7 @@ const onRowSelect = (event: any) => {
           class="w-4/12"
         ></Column>
         <Column
-          field="role"
+          field="role.name"
           header="Role"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"
@@ -252,6 +278,7 @@ const onRowSelect = (event: any) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="changeSection('Daftar', 'edit', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -259,6 +286,13 @@ const onRowSelect = (event: any) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -266,6 +300,12 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
       </DataTable>
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
+      />
     </template>
     <template #footer>
       <FooterPaginator
@@ -278,10 +318,14 @@ const onRowSelect = (event: any) => {
   <TambahDataUserPage
     v-else-if="dataBreadCrumb[0].label == 'Daftar'"
     @back="dataBreadCrumb.pop()"
+    :method="dataBreadCrumb[0].mode"
+    :payload="dataBreadCrumb[0].data"
+    @data-updated="fetchUserData"
   />
   <DetailUser
     v-else-if="dataBreadCrumb[0].label == 'Detail'"
     @back="dataBreadCrumb.pop()"
     :payload="selectedData"
   />
+ 
 </template>

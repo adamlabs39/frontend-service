@@ -207,8 +207,8 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Role");
+    XLSX.writeFile(workbook, `Datamaster Role.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -353,7 +353,7 @@ const downloadExportExcel = async () => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Role ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

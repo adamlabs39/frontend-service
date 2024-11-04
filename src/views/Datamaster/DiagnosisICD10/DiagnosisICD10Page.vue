@@ -137,7 +137,7 @@ const downloadExportExcel = async () => {
     data.push({
       No: "No",
       Kode: "Kode Diagnosis",
-      Nama: "Nama Diagnosis",
+      Nama: "Nama Diagnosis (ICD-10)",
       Status: "Status",
     });
 
@@ -212,6 +212,42 @@ const downloadExportExcel = async () => {
       "Datamaster Diagnosis (ICD 10)"
     );
     XLSX.writeFile(workbook, `Datamaster Diagnosis (ICD 10).xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode Diagnosis*",
+      Name: "Nama Diagnosis (ICD-10)*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "DIAG-001", Name: "Diagnosis 1" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Diagnosis");
+    XLSX.writeFile(workbook, `Format Datamaster Diagnosis (ICD-10).xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -334,7 +370,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Diagnosis (ICD 10) ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -366,6 +402,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

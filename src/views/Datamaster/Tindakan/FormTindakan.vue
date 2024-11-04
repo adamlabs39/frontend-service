@@ -71,9 +71,9 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Tindakan harus diisi"),
     name: yup.string().required("Nama Tindakan harus diisi"),
-    snomedUuid: yup.string(),
-    icd9Uuid: yup.string(),
-    status: yup.bool(),
+    snomedUuid: yup.string().notRequired(),
+    icd9Uuid: yup.string().notRequired(),
+    status: yup.bool().default(false),
   }).noUnknown()
 );
 
@@ -91,11 +91,18 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    if (values.snomedUuid === "") {
+      delete values.snomedUuid;
+    }
+    if (values.icd9Uuid === "") {
+      delete values.icd9Uuid;
+    }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("edit data with values:", values);
       const response = await tindakanStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
@@ -215,8 +222,8 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Tindakan" :value="code" />
         <CustomInfoRow label="Nama Tindaka" :value="name" />
-        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail.name ?? '-'" />
-        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail.name ?? '-'" />
+        <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail?.name ?? '-'" />
+        <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail?.name ?? '-'" />
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
