@@ -27,6 +27,7 @@ const emit = defineEmits([
   "selectedTab",
   "search",
   "reset",
+  "back",
 ]);
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -54,10 +55,9 @@ const onPembayaranSelect = (label: string) => {
   }
 };
 
-const kelasOption=ref(['Zumba','Gym','Pilates'])
-const kelasSelected=ref()
-const search=ref()
-
+const kelasOption = ref(["Zumba", "Gym", "Pilates"]);
+const kelasSelected = ref();
+const search = ref();
 </script>
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
@@ -70,13 +70,15 @@ const search=ref()
             @click="emit('reload-data')"
           />
           <CustomBreadCrumb
-            v-if="['datamaster', 'laporan'].includes(pageType)"
+            v-if="['datamaster', 'laporan', 'cari-kelas'].includes(pageType)"
             :home="{
               label:
                 pageType === 'datamaster'
                   ? 'Datamaster'
                   : pageType === 'laporan'
                   ? 'Laporan'
+                  : pageType === 'cari-kelas'
+                  ? 'Booking Kelas'
                   : '',
               home: true,
             }"
@@ -93,7 +95,7 @@ const search=ref()
           </span>
         </div>
         <CustomButton
-          v-if="!['laporan'].includes(pageType)"
+          v-if="!['laporan','cari-kelas'].includes(pageType)"
           @click="emit('tambah-data')"
           icon="PhPlus"
           :label="
@@ -107,13 +109,23 @@ const search=ref()
           "
           class="mr-[10px]"
         />
+        <CustomButton
+          v-if="pageType === 'cari-kelas'"
+          label="Kembali"
+          icon="PhCaretLeft"
+          @click="emit('back')"
+          background-color="bg-white"
+          border-color="border-adameds-300"
+          text-color="text-adameds-300"
+          class="mr-[10px]"
+        />
       </div>
     </template>
     <template #content>
       <div class="flex mt-[16px] mb-2.5 items-end">
         <CustomTextfield
-        v-model="search"
-        v-if="!['laporan'].includes(pageType)"
+          v-model="search"
+          v-if="!['laporan'].includes(pageType)"
           :label="
             props.pageType === 'datamaster' ? 'Cari Kelas' : 'Cari Pasien'
           "
@@ -126,7 +138,7 @@ const search=ref()
           class="mr-5 w-full"
         />
         <CustomSelect
-          v-if="['daftar', 'booking','laporan'].includes(pageType)"
+          v-if="['daftar', 'booking', 'laporan'].includes(pageType)"
           v-model="kelasSelected"
           label="Kelas"
           :options="kelasOption"
@@ -213,7 +225,11 @@ const search=ref()
               :iconColor="index === 0 ? 'text-grey-300' : 'text-success-300'"
               :textColor="index === 0 ? 'text-grey-500' : 'text-success-300'"
               :bg-color="index === 0 ? 'bg-grey-75' : 'bg-success-50'"
-              :selectedColor="index === 0 ? 'bg-grey-300 border-grey-300' : 'bg-success-300 border-success-300'"
+              :selectedColor="
+                index === 0
+                  ? 'bg-grey-300 border-grey-300'
+                  : 'bg-success-300 border-success-300'
+              "
             >
             </CustomChip>
           </div>
@@ -237,7 +253,11 @@ const search=ref()
               :iconColor="index === 0 ? 'text-adameds-300' : 'text-warning-300'"
               :textColor="index === 0 ? 'text-adameds-500' : 'text-warning-300'"
               :bg-color="index === 0 ? 'bg-adameds-50' : 'bg-warning-50'"
-              :selectedColor="index === 0 ? 'bg-adameds-300 border-adameds-300' : 'bg-warning-300 border-warning-300'"
+              :selectedColor="
+                index === 0
+                  ? 'bg-adameds-300 border-adameds-300'
+                  : 'bg-warning-300 border-warning-300'
+              "
             >
             </CustomChip>
           </div>

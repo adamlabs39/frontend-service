@@ -15,9 +15,9 @@ const updatePageType = (path: string) => {
   dataBreadCrumb.value = [
     {
       label:
-        pageType.value == "rekap"
+        pageType.value == "rekapitulasi"
           ? "Rekapitulasi Kunjungan Kelas Training"
-          : "Rekapitulasi Kunjungan Kelas Training",
+          : "",
     },
   ];
 };
