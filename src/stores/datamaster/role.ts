@@ -17,8 +17,8 @@ export const useRoleStore = defineStore({
         payload: [
           {
             id: 1,
-            uuid: "019192d9-a435-7f92-8fbd-1fa30cedf33f",
-            code: "ROLE-0001",
+            uuid: "0192f686-bbde-7488-bae6-633c794d6198",
+            code: "SPR-ADM",
             name: "Super Admin",
             permission: [
               {
@@ -55,8 +55,8 @@ export const useRoleStore = defineStore({
           },
           {
             id: 2,
-            uuid: "019192d9-a435-7f92-8fbd-1fa30cedf44f",
-            code: "ROLE-0002",
+            uuid: "0192f686-bc4e-78ca-831f-8322605073d1",
+            code: "ADM",
             name: "Admin",
             permission: [
               {

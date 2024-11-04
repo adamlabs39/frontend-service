@@ -12,7 +12,7 @@ import TambahDataUserPage from "./TambahDataUserPage.vue";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailUser from "./DetailUser.vue";
-
+import DialogDelete from "../Layout/DialogDelete.vue";
 //Breadcumb section
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -151,6 +151,33 @@ const onRowSelect = (event: any) => {
     changeSection("Detail");
   }
 };
+const isTambahDataDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await userStore.deleteApi(item.uuid);
+      fetchUserData();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
 </script>
 
 <template>
@@ -206,7 +233,7 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
         <Column
-          field="username"
+          field="name"
           header="Nama User"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"
@@ -259,6 +286,13 @@ const onRowSelect = (event: any) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -266,6 +300,12 @@ const onRowSelect = (event: any) => {
           </template>
         </Column>
       </DataTable>
+      <DialogDelete
+        v-model:isDialogVisible="isDeleteDialogVisible"
+        :title="dialogConfig.title"
+        :itemToDelete="dialogConfig.data"
+        @delete="confirmDelete"
+      />
     </template>
     <template #footer>
       <FooterPaginator
@@ -280,10 +320,12 @@ const onRowSelect = (event: any) => {
     @back="dataBreadCrumb.pop()"
     :method="dataBreadCrumb[0].mode"
     :payload="dataBreadCrumb[0].data"
+    @data-updated="fetchUserData"
   />
   <DetailUser
     v-else-if="dataBreadCrumb[0].label == 'Detail'"
     @back="dataBreadCrumb.pop()"
     :payload="selectedData"
   />
+ 
 </template>

@@ -64,7 +64,7 @@ interface Module {
   checked: boolean;
   sub_modules: SubModule[];
 }
-const emit = defineEmits(["back"]);
+const emit = defineEmits(["back","data-updated"]);
 
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -398,14 +398,15 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("Adding new data with edit:", allData);
+      console.log("Eddit new data with edit:", allData);
       const response = await userStore.putApi(uuid, allData);
-      emit('back')
+      emit("data-updated");
     } else if (props.method === "add") {
       console.log("Adding new data with values:", allData);
       const response = await userStore.postApi(allData);
-      emit('back')
+      emit("data-updated");
     }
+    emit('back')
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
@@ -416,7 +417,9 @@ onBeforeMount(async () => {
     setValues({
       ...props.payload,
       practitionerUuid: props.payload.practitioner.uuid,
+      roleUuid:props.payload.role.uuid,
     });
+    setRolePermissions(props.payload.permissions);
   }
 });
 </script>

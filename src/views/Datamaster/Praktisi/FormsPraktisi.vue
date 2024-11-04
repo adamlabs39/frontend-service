@@ -92,7 +92,7 @@ const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string(),
+      codeBpjs: yup.string().notRequired(),
       sip: yup.string().notRequired(),
       str: yup.string().notRequired(),
       isDoctor: yup.boolean(),
@@ -103,13 +103,17 @@ const schema = toTypedSchema(
       }),
       practitionerPoli: yup.array().of(
         yup.object().shape({
-          lokasiUuid: yup.string().required("Unit Pelayanan harus dipilih"),
+          lokasiUuid: yup.string().notRequired(),
         })
       ),
 
       status: yup.bool().default(false),
       practitionerPoliSelected: yup
-        .array()
+        .array().when("isDoctor", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Poli harus dipilih"),
+        otherwise: (schema) => schema.notRequired(),
+      })
         .of(yup.string().required("Poli harus dipilih"))
         .min(1, "Minimal satu Unit Pelayanan harus dipilih")
         .required("Unit Pelayanan harus dipilih"),
