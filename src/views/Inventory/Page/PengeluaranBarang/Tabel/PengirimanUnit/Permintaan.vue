@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
-  returData: {
+  permintaanData: {
     type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
     default: null,
   },
@@ -15,34 +15,34 @@ const emit = defineEmits(['row-clicked']);  // Define emit event
 
 
   
-const selectedPengajuanRetur = ref<any[]>([]);
-const pengajuanReturs = ref<any[]>([]);
+const selectedPenganjuanPermintaan = ref<any[]>([]);;
+const pengajuanPermintaans = ref<any[]>([]);;
 
 
 watch(
-  () => props.returData,
-  (newReturData) => {
-    if (Array.isArray(newReturData)) {
-      // Jika returData adalah array, langsung assign ke pengajuanReturs tanpa memetakan ulang
-      pengajuanReturs.value = newReturData;
-    } 
+  () => props.permintaanData,
+  (newPermintaanData) => {
+    if (Array.isArray(newPermintaanData)) {
+      pengajuanPermintaans.value = newPermintaanData
+    }
   },
   { immediate: true }
 );
 
+
 const handleRowClick = (rowData:any) => {
-  console.log(rowData.data)
   emit('row-clicked', rowData.data);
+  console.log(rowData.data)
 };
 
 </script>
 
 <template>
-  <!-- {{ props.returData}} -->
+  <!-- {{ pengajuanPermintaans }} -->
   <DataTable
-    v-if="pengajuanReturs.length"
-    v-model:selection="selectedPengajuanRetur"
-    :value="pengajuanReturs"
+    v-if="pengajuanPermintaans.length"
+    v-model:selection="selectedPenganjuanPermintaan"
+    :value="pengajuanPermintaans"
     @row-click="handleRowClick"
     tableStyle="min-width: 50rem"
     scrollable
@@ -56,18 +56,18 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.tglPenerimaan }}</div>
+          <div class="text-SM">{{ slotProps.data.tglPermintaan }}</div>
         </div>
       </template>
     </Column>
 
     <Column field="noPembelian" headerClass="bg-adameds-50">
       <template #header>
-        <div class="font-semibold">No. Pembelian</div>
+        <div class="font-semibold">No. Pengeluaran</div>
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.noRetur }}</div>
+          <div class="text-SM">{{ slotProps.data.noPengeluaran }}</div>
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.kategori"
@@ -89,17 +89,24 @@ const handleRowClick = (rowData:any) => {
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
+          <CustomChip
+            :showCheckedIcon="false"
+            :label="slotProps.data.isCito ? 'CITO' : slotProps.data.isCito"
+            bgColor="bg-danger-300"
+            textColor="text-white"
+            customClass="h-5 pr-[6px] border-none mr-[5px]"
+          />
         </div>
       </template>
     </Column>
 
     <Column field="supplier" headerClass="bg-adameds-50">
       <template #header>
-        <div class="w-full font-semibold">Supplier</div>
+        <div class="w-full font-semibold">Tujuan Permintaan</div>
       </template>
       <template #body="slotProps">
         <div>
-          <div class="font-bold text-SM">{{ slotProps.data.supplier }}</div>
+          <div class="font-bold text-SM">{{ slotProps.data.tujuanPermintaan }}</div>
         </div>
       </template>
     </Column>
@@ -110,7 +117,7 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.petugasRetur}}</div>
+          <div class="text-SM">{{ slotProps.data.petugasVerifikasi }}</div>
         </div>
       </template>
     </Column>
@@ -124,7 +131,7 @@ const handleRowClick = (rowData:any) => {
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.status"
-            bgColor="bg-lavender-300"
+            bgColor="bg-grey-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
@@ -132,7 +139,6 @@ const handleRowClick = (rowData:any) => {
       </template>
     </Column>
   </DataTable>
-  
   <NoData v-else />
 
 

@@ -1,31 +1,27 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
-  returData: {
-    type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
+  penggantianData: {
+    type: Object as () => Record<string, any> | null, // Izinkan null sebagai nilai default
     default: null,
   },
-
 });
 
-const emit = defineEmits(['row-clicked']);  // Define emit event
+const emit = defineEmits(["row-clicked"]); // Define emit event
 
-
-  
-const selectedPengajuanRetur = ref<any[]>([]);
-const pengajuanReturs = ref<any[]>([]);
-
+const selectedTerimaPenggantian = ref([]);
+const terimaPenggantians = ref<any[]>([]);
 
 watch(
-  () => props.returData,
+  () => props.penggantianData,
   (newReturData) => {
     if (Array.isArray(newReturData)) {
       // Jika returData adalah array, langsung assign ke pengajuanReturs tanpa memetakan ulang
-      pengajuanReturs.value = newReturData;
-    } 
+      terimaPenggantians.value = newReturData;
+    }
   },
   { immediate: true }
 );
@@ -37,12 +33,14 @@ const handleRowClick = (rowData:any) => {
 
 </script>
 
+
+
 <template>
-  <!-- {{ props.returData}} -->
+    <!-- {{ penggantianData }} -->
   <DataTable
-    v-if="pengajuanReturs.length"
-    v-model:selection="selectedPengajuanRetur"
-    :value="pengajuanReturs"
+    v-if="terimaPenggantians.length"
+    v-model:selection="selectedTerimaPenggantian"
+    :value="terimaPenggantians"
     @row-click="handleRowClick"
     tableStyle="min-width: 50rem"
     scrollable
@@ -106,11 +104,21 @@ const handleRowClick = (rowData:any) => {
     
     <Column field="petugas" headerClass="bg-adameds-50">
       <template #header>
+        <div class="font-semibold">Alasan Retur</div>
+      </template>
+      <template #body="slotProps">
+        <div>
+          <div class="text-SM">{{ slotProps.data.alasanRetur }}</div>
+        </div>
+      </template>
+    </Column>
+    <Column field="petugas" headerClass="bg-adameds-50">
+      <template #header>
         <div class="font-semibold">Petugas</div>
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.petugasRetur}}</div>
+          <div class="text-SM">{{ slotProps.data.petugasRetur }}</div>
         </div>
       </template>
     </Column>
@@ -124,7 +132,7 @@ const handleRowClick = (rowData:any) => {
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.status"
-            bgColor="bg-lavender-300"
+            bgColor="bg-mint-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
@@ -132,11 +140,5 @@ const handleRowClick = (rowData:any) => {
       </template>
     </Column>
   </DataTable>
-  
   <NoData v-else />
-
-
-  <!-- <div class="mt-8">
-    {{ pengajuanPembelians }}
-  </div> -->
 </template>

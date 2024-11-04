@@ -4,7 +4,7 @@ import NoData from "@/components/section/NoData.vue";
 import { onMounted, ref, watch } from "vue";
 
 const props = defineProps({
-  returData: {
+  belumDiterimaData: {
     type: Object as () => Record<string, any> | null,  // Izinkan null sebagai nilai default
     default: null,
   },
@@ -15,34 +15,34 @@ const emit = defineEmits(['row-clicked']);  // Define emit event
 
 
   
-const selectedPengajuanRetur = ref<any[]>([]);
-const pengajuanReturs = ref<any[]>([]);
+const selectedBelumDiterima = ref<any[]>([]);
+const belumDiterimas = ref<any[]>([]);
 
 
 watch(
-  () => props.returData,
-  (newReturData) => {
-    if (Array.isArray(newReturData)) {
+  () => props.belumDiterimaData,
+  (newBelumDiterimaData) => {
+     if (Array.isArray(newBelumDiterimaData)) {
       // Jika returData adalah array, langsung assign ke pengajuanReturs tanpa memetakan ulang
-      pengajuanReturs.value = newReturData;
+      belumDiterimas.value = newBelumDiterimaData;
     } 
   },
   { immediate: true }
 );
 
 const handleRowClick = (rowData:any) => {
-  console.log(rowData.data)
   emit('row-clicked', rowData.data);
+  console.log(rowData.data)
 };
 
 </script>
 
 <template>
-  <!-- {{ props.returData}} -->
+  <!-- {{ pembelianData }} -->
   <DataTable
-    v-if="pengajuanReturs.length"
-    v-model:selection="selectedPengajuanRetur"
-    :value="pengajuanReturs"
+    v-if="belumDiterimas.length"
+    v-model:selection="selectedBelumDiterima"
+    :value="belumDiterimas"
     @row-click="handleRowClick"
     tableStyle="min-width: 50rem"
     scrollable
@@ -56,7 +56,7 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.tglPenerimaan }}</div>
+          <div class="text-SM">{{ slotProps.data.tanggalPembelian }}</div>
         </div>
       </template>
     </Column>
@@ -67,10 +67,10 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.noRetur }}</div>
+          <div class="text-SM">{{ slotProps.data.noPembelian }}</div>
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.kategori"
+            :label="slotProps.data.kategoriItem"
             bgColor="bg-adameds-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -110,7 +110,7 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.petugasRetur}}</div>
+          <div class="text-SM">{{ slotProps.data.petugasPembelian }}</div>
         </div>
       </template>
     </Column>
@@ -124,7 +124,7 @@ const handleRowClick = (rowData:any) => {
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.status"
-            bgColor="bg-lavender-300"
+            bgColor="bg-grey-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
@@ -132,7 +132,6 @@ const handleRowClick = (rowData:any) => {
       </template>
     </Column>
   </DataTable>
-  
   <NoData v-else />
 
 

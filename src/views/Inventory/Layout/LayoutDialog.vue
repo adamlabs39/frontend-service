@@ -29,6 +29,9 @@ const props = defineProps({
   spanMessage: {
     type: String,
   },
+  extendedMessage: {
+    type:String
+  }
 });
 
 const alasan = ref("");
@@ -74,6 +77,7 @@ const onSubmit = (() => {
         <div class="italic font-normal text-normal text-danger-300">
           {{ message }}
           <span class="font-bold text-normal">{{ spanMessage }}</span>
+          <span>{{ extendedMessage }}</span>
         </div>
       </div>
     </template>

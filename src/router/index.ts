@@ -160,6 +160,17 @@ import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 import InventoryView from "@/views/Inventory/InventoryView.vue";
 import VerificationPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerificationPurchasePage.vue";
 import ReturPage from "@/views/Inventory/Page/PengadaanBarang/ReturPage.vue";
+import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengirimanUnitPage.vue";
+import PengeluaranUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnitPage.vue";
+import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
+import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
+import DatamasterSupplierPage from "@/views/Inventory/Page/Datamaster/DatamasterSupplierPage.vue";
+import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
+import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
+import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
+import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
+import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
+import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1271,6 +1282,72 @@ const router = createRouter({
       path: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
       name: "inventory-pengadaan-barang-retur-penggantian-barang-supplier",
       meta: { layout: SidebarLayout, page: ReturPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
+      name: "inventory-pengeluaran-barang-verifikasi-pengiriman-unit",
+      meta: { layout: SidebarLayout, page: PengirimanUnitPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/pengeluaran-barang/pengeluaran-unit",
+      name: "inventory-pengeluaran-barang-pengeluaran-unit",
+      meta: { layout: SidebarLayout, page: PengeluaranUnitPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/penerimaan-barang/penerimaan-pembelian",
+      name: "inventory-penerimaan-barang-penerimaan-pembelian",
+      meta: { layout: SidebarLayout, page: PenerimaanPembelianPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/penerimaan-barang/penerimaan-retur-unit",
+      name: "inventory-penerimaan-barang-penerimaan-retur-unit",
+      meta: { layout: SidebarLayout, page: PenerimaanReturUnitPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/datamaster/supplier",
+      name: "inventory-datamaster-supplier",
+      meta: { layout: SidebarLayout, page: DatamasterSupplierPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/riwayat-tarif",
+      name: "inventory-riwayat-tarif",
+      meta: { layout: SidebarLayout, page: RiwayatTarifPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/kartustok-mutasi",
+      name: "inventory-kartustok-mutasi",
+      meta: { layout: SidebarLayout, page: KartustokMutasiPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/stok-opname",
+      name: "inventory-stok-opname",
+      meta: { layout: SidebarLayout, page: StokOpnamePage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/stok-adjustment",
+      name: "inventory-stok-adjustment",
+      meta: { layout: SidebarLayout, page: StokAdjustmentPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/laporan/obat-expired",
+      name: "inventory-laporan-obat-expired",
+      meta: { layout: SidebarLayout, page: ObatExpiredPage, requiresAuth: true },
+      component: InventoryView,
+    },
+    {
+      path: "/inventory/laporan/persediaan",
+      name: "inventory-laporan-persediaan",
+      meta: { layout: SidebarLayout, page: PersediaanPage, requiresAuth: true },
       component: InventoryView,
     },
 
