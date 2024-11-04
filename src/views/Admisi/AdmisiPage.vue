@@ -161,6 +161,7 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
     if (openedPatientData.value.status_rj == "1") {
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
+      formType.value = "detail";
       changeSection("Detail");
     }
   } else if (pageType.value == "rawat-inap") {
@@ -170,9 +171,11 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
     ) {
       changeSection("Daftar");
     } else {
+      formType.value = "detail";
       changeSection("Detail");
     }
   } else {
+    formType.value = "detail";
     changeSection("Detail");
   }
 };
@@ -190,10 +193,10 @@ const getDataTable = (type: "data" | "length" = "data") => {
   return tempPatient;
 };
 
-const formType = ref<"add" | "edit">("add");
+const formType = ref<"add" | "edit" | "detail">("add");
 const closeRegistrationForm = () => {
   dataBreadCrumb.value.pop();
-  openedPatientData.value = {}
+  openedPatientData.value = {};
   getPatientList();
 };
 </script>
@@ -211,7 +214,7 @@ const closeRegistrationForm = () => {
         ref="headerFilterRef"
         :pageType="pageType"
         :filterData="filterData"
-        @daftar="changeSection('Daftar'), formType = 'add'"
+        @daftar="changeSection('Daftar'), (formType = 'add')"
         @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
         @search="search"
       />
