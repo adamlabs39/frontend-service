@@ -75,5 +75,6 @@ onMounted(() => {
      v-else-if="dataBreadCrumb[0].label == 'Tambah Stok Opname'"
     :pageType="pageType"
     :dataBreadCrumb="dataBreadCrumb"
+    @kembali = "dataBreadCrumb[0].label = 'Stok Opname'"
   />
 </template>
