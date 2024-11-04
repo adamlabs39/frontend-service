@@ -147,6 +147,13 @@ import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/Re
 // NOTE Page Inventory
 import InventoryPurchasePage from "@/views/Inventory/Page/PengadaanBarang/InventoryPurchasePage.vue";
 
+// NOTE Training
+import TrainingView from "@/views/Training/TrainingView.vue";
+import DaftarKelasPage from "@/views/Training/DaftarKelas/DaftarKelasPage.vue";
+import BookingKelasPage from "@/views/Training/BookingKelas/BookingKelasPage.vue";
+import SectionKelas from "@/views/Training/Datamaster/SectionKelas.vue";
+import SectionRekapitulasi from "@/views/Training/Laporan/SectionRekapitulasi.vue";
+
 // !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -171,6 +178,7 @@ import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
 import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -1350,6 +1358,38 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: PersediaanPage, requiresAuth: true },
       component: InventoryView,
     },
+
+    // NOTE Training
+    {
+      path: "/training",
+      name: "training",
+      redirect: "/training/daftar-kelas",
+    },
+    {
+      path: "/training/daftar-kelas",
+      name: "training-daftar-kelas",
+      meta: { layout: SidebarLayout, page: DaftarKelasPage, requiresAuth: true },
+      component: TrainingView,
+    },
+    {
+      path: "/training/booking-kelas",
+      name: "training-booking-kelas",
+      meta: { layout: SidebarLayout, page: BookingKelasPage, requiresAuth: true },
+      component: TrainingView,
+    },
+    {
+      path: "/training/datamaster/kelas",
+      name: "training-datamaster-kelas",
+      meta: { layout: SidebarLayout, page: SectionKelas, requiresAuth: true },
+      component: TrainingView,
+    },
+    {
+      path: "/training/laporan/rekapitulasi",
+      name: "training-laporan-rekapitulasi",
+      meta: { layout: SidebarLayout, page: SectionRekapitulasi, requiresAuth: true },
+      component: TrainingView,
+    },
+
 
     // NOTE Test Component
     {
