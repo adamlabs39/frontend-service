@@ -1,9 +1,10 @@
 <script setup lang="tsx">
 import CustomChip from "@/components/Base/CustomChip.vue";
 import { onMounted, ref } from "vue";
-
+import type { MenuItem } from "primevue/menuitem";
 import HeaderFilterTraining from "../Layout/HeaderFilterTraining.vue";
 import FooterPaginationTraining from "../Layout/FooterPaginationTraining.vue";
+import CariJadwal from "./CariJadwal.vue";
 const itemsPasien = ref([
   {
     noOrder: "TRN1234",
@@ -97,15 +98,33 @@ const confirmCancel = () => {
   showCancelVisit.value = false;
   cancelReason.value = undefined;
 };
+
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = tempData;
+  } else {
+    dataBreadCrumb.value.push(tempData);
+  }
+};
 </script>
 <template>
   <Card
+    v-if="dataBreadCrumb.length == 0"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <HeaderFilterTraining page-type="booking" />
+      <HeaderFilterTraining
+        page-type="booking"
+        @tambah-data="changeSection('Daftar')"
+      />
     </template>
     <template #content>
       <DataTable
@@ -282,4 +301,8 @@ const confirmCancel = () => {
       />
     </template>
   </Card>
+  <CariJadwal
+    v-else-if="dataBreadCrumb[0].label == 'Daftar'"
+    @back="dataBreadCrumb.pop()"
+  />
 </template>
