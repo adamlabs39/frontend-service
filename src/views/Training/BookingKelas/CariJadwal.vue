@@ -71,7 +71,7 @@ const bookPayload = ref([
             <div class="flex items-center justify-center">
               {{
                 slotProps.index +
-                1 +
+                1
               }}
             </div>
           </template>
