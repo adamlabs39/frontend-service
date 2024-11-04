@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem";
-import { computed, onBeforeMount, onMounted, ref, type PropType } from "vue";
+import { computed, onBeforeMount, ref, type PropType } from "vue";
 import Qrcode from "qrcode.vue";
-import { getDateNow } from "@/utils/Helpers";
+import { epochToDate, getDateNow } from "@/utils/Helpers";
 
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -11,13 +11,20 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import PatientIdentityFormRJ from "../Forms/PatientIdentityFormRJ.vue";
+import PatientIdentityFormRI from "../Forms/PatientIdentityFormRI.vue";
 import PatientIdentityFormIGD from "../Forms/PatientIdentityFormIGD.vue";
 import DoctorVisitDetail from "../Forms/DoctorVisitDetailForm.vue";
+import VisitRoomDetail from "../Forms/VisitRoomDetailForm.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import { useAdmisiGeneralConsent } from "@/stores/admisi/admisionGeneralConsent";
 import { formatDate } from "@/utils/Helpers";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+import { createGeneralConsentPdf } from "@/utils/PdfMake";
 
 const props = defineProps({
   pageType: {
@@ -33,7 +40,7 @@ const props = defineProps({
     required: true,
   },
   formType: {
-    type: String as PropType<"add" | "edit">,
+    type: String as PropType<"add" | "edit" | "detail">,
     default: "add",
   },
 });
@@ -43,6 +50,7 @@ const storeUtils = utilsStore();
 const admisiRJStore = useAdmisiRJStore();
 const admisiRIStore = useAdmisiRIStore();
 const admisiIGDStore = useAdmisiIGDStore();
+const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
@@ -51,9 +59,9 @@ const inputGeneralConsentDialog = ref(false);
 const generalConsentDialog = ref(false);
 const generalConsentDialogInputType = ref("create");
 
-const generalConsentType = ref(["Pasien", "Keluarga"]);
-const selectedGeneralConsent = ref("Pasien");
-const onFilterBedRoomSelect = (label: string) => {
+const listGeneralConsentType = ref(["Pasien", "Keluarga"]);
+const selectedGeneralConsent = ref<"Pasien" | "Keluarga">("Pasien");
+const onGeneralConsentTypeSelect = (label: "Pasien" | "Keluarga") => {
   selectedGeneralConsent.value = label;
 };
 
@@ -94,9 +102,20 @@ const setDetailDoctorVisitData = (patientData: any) => {
       practitionerUuid: patientData.practitionerUuid,
       complaint: patientData.complaint,
       familyBill: patientData.familyBill,
-      noSpri: patientData.noSpri,
-      monitoringRoomUuid: patientData.monitoringRoomUuid,
+      maternity: patientData.maternity,
+      entrustedPatient: patientData.entrustedPatient,
+      upgradeClass: patientData.upgradeClass,
+      previousBill: patientData.previousBill,
       assuranceAccountId: patientData.insurance,
+      noSpri: patientData.noSpri,
+      // FIXME Belum ada
+      kategoriRuanganUuid: patientData.monitoringRoom.kategoriRuanganUuid,
+      roomClass: patientData.monitoringRoom.roomClass,
+      roomUuid: patientData.monitoringRoom.roomUuid,
+      monitoringRoomUuid: patientData.monitoringRoomUuid,
+      spareBed: patientData.spareBed,
+      boxBaby: patientData.boxBaby,
+      statusRi: patientData.statusRi,
     };
   }
 };
@@ -135,37 +154,59 @@ const fetchDetailPatientData = async () => {
 const patientIdentityFormRJ = ref<InstanceType<
   typeof PatientIdentityFormRJ
 > | null>(null);
+const patientIdentityFormRI = ref<InstanceType<
+  typeof PatientIdentityFormRI
+> | null>(null);
 const patientIdentityFormIGD = ref<InstanceType<
   typeof PatientIdentityFormIGD
 > | null>(null);
+// NOTE Visit detail
 const doctorVisitDetail = ref<InstanceType<typeof DoctorVisitDetail> | null>(
   null
 );
+const visitRoomDetail = ref<InstanceType<typeof VisitRoomDetail> | null>(null);
 const closeRegisterForm = () => {
   if (patientIdentityFormRJ.value) {
     patientIdentityFormRJ.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormRI.value) {
+    patientIdentityFormRI.value.onResetForm();
     openedPatientData.value = {};
   }
   if (patientIdentityFormIGD.value) {
     patientIdentityFormIGD.value.onResetForm();
     openedPatientData.value = {};
   }
+
   if (doctorVisitDetail.value) {
     doctorVisitDetail.value.onResetForm();
+    openedDoctorVisitData.value = {};
+  }
+  if (visitRoomDetail.value) {
+    visitRoomDetail.value.onResetForm();
     openedDoctorVisitData.value = {};
   }
   emit("back");
 };
 
 const postRegisterPatient = async () => {
-  let tempPatientData;
+  let tempPatientData: any;
+  let tempDocterVisitData: any;
 
   if (props.pageType == "rawat-jalan") {
     tempPatientData = await patientIdentityFormRJ.value?.onSubmit();
+  } else if (props.pageType == "rawat-inap") {
+    tempPatientData = await patientIdentityFormRI.value?.onSubmit();
   } else if (props.pageType == "igd") {
     tempPatientData = await patientIdentityFormIGD.value?.onSubmit();
   }
-  const tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+
+  if (props.pageType == "rawat-inap") {
+    tempDocterVisitData = await visitRoomDetail.value?.onSubmit();
+  } else {
+    tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
+  }
   console.log("tempPatientData", tempPatientData);
   console.log("tempDocterVisitData", tempDocterVisitData);
 
@@ -175,7 +216,7 @@ const postRegisterPatient = async () => {
       true
     );
     tempPatientData!.birthDetail.birthDate = tempBirthDate as unknown as Date;
-    let payload = { patientData: tempPatientData, ...tempDocterVisitData };
+    let payload: any = { patientData: tempPatientData, ...tempDocterVisitData };
     storeUtils.setLoading(true);
 
     try {
@@ -199,6 +240,9 @@ const postRegisterPatient = async () => {
           );
         }
       } else if (props.pageType == "igd") {
+        payload.withoutIdentity = tempPatientData.withoutIdentity;
+        payload.isNewborn = tempPatientData.isNewBorn;
+        payload.multipleBirth = tempPatientData.multipleBirth;
         if (props.formType == "add") {
           response = await admisiIGDStore.registIGD(payload);
         } else {
@@ -209,7 +253,7 @@ const postRegisterPatient = async () => {
         }
       }
       if (response && response.payload) {
-        openedPatientData.value = response.payload.patientData;
+        openedPatientData.value = response.payload.patient;
 
         setDetailDoctorVisitData(response.payload);
       }
@@ -227,8 +271,149 @@ const registPatient = async (type: string) => {
     await postRegisterPatient();
     confirmSaveDialog.value = false;
   } else if (type == "setuju-simpan") {
-    inputGeneralConsentDialog.value = false;
+    await onSubmitGeneralConsent();
   }
+};
+
+// NOTE General Consent
+const schema = computed(() =>
+  toTypedSchema(
+    yup
+      .object({
+        familyData: yup
+          .object({
+            name:
+              selectedGeneralConsent.value == "Pasien"
+                ? yup.string().nullable()
+                : yup.string().required("Nama harus diisi"),
+            gender:
+              selectedGeneralConsent.value == "Pasien"
+                ? yup.string().nullable()
+                : yup.string().required("Jenis kelamin harus dipilih"),
+            relationship:
+              selectedGeneralConsent.value == "Pasien"
+                ? yup.string().nullable()
+                : yup.string().required("Hubungan keluarga harus dipilih"),
+          })
+          .noUnknown(),
+        name: yup.string().required("Format general consent harus dipilih"),
+        generalConsent: yup.string().notRequired(),
+      })
+      .noUnknown()
+  )
+);
+
+const {
+  errors,
+  handleSubmit: submitGeneralConsent,
+  defineField,
+  resetForm,
+  setValues,
+} = useForm({
+  validationSchema: schema,
+});
+
+const [familyDataName] = defineField("familyData.name");
+const [familyDataGender] = defineField("familyData.gender");
+const [familyDataRelationship] = defineField("familyData.relationship");
+const [name] = defineField("name");
+
+const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
+  storeUtils.setLoading(true);
+  try {
+    if (props.formType == "add") {
+      await postRegisterPatient();
+    }
+
+    values.familyData = Object.keys(values.familyData).length
+      ? values.familyData
+      : (null as any);
+    const tempGeneralConsentData = createGeneralConsentPdf({ data: "" });
+    values.generalConsent = await new Promise((resolve, reject) => {
+      tempGeneralConsentData.getBase64((base64) => {
+        if (base64) {
+          resolve(base64);
+        } else {
+          reject("Gagal mendapatkan Base64 dari dokumen PDF.");
+        }
+      });
+    });
+    await admisiGeneralConsentStore.createGeneralConsent(
+      openedPatientData.value.uuid,
+      values
+    );
+    inputGeneralConsentDialog.value = false;
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
+
+const listOpenedPatientGeneralConsent = ref<any[]>([]);
+const urlGeneralConsent = ref();
+const showDialogGeneralConsent = async (
+  type: "detail" | "list" | "add",
+  uuid = ""
+) => {
+  generalConsentDialogInputType.value = type;
+  if (type == "add") {
+    confirmSaveDialog.value = false;
+    selectedGeneralConsent.value = "Pasien";
+    inputGeneralConsentDialog.value = true;
+  }
+  if (type == "list") {
+    try {
+      storeUtils.setLoading(true);
+      const response =
+        await admisiGeneralConsentStore.getAllPatientGeneralConsent(
+          openedPatientData.value.uuid
+        );
+      if (response && response.payload) {
+        listOpenedPatientGeneralConsent.value = response.payload;
+      }
+      generalConsentDialog.value = true;
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
+  if (type == "detail") {
+    try {
+      storeUtils.setLoading(true);
+      const response = await admisiGeneralConsentStore.getDetailGeneralConsent(
+        uuid
+      );
+      if (response && response.payload) {
+        setValues({
+          ...response.payload,
+        });
+        selectedGeneralConsent.value = response.payload.patientFamily
+          ? "Keluarga"
+          : "Pasien";
+        inputGeneralConsentDialog.value = true;
+        const blob = base64toBlob(response.payload.generalConsent);
+        urlGeneralConsent.value = URL.createObjectURL(blob);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
+};
+
+const base64toBlob = (data: string) => {
+  const bytes = atob(data);
+  let length = bytes.length;
+  let out = new Uint8Array(length);
+
+  while (length--) {
+    out[length] = bytes.charCodeAt(length);
+  }
+
+  return new Blob([out], { type: "application/pdf" });
 };
 </script>
 
@@ -302,6 +487,14 @@ const registPatient = async (type: string) => {
         :formType="dataBreadCrumb[0].label?.toString()"
         :patientData="openedPatientData"
       />
+      <PatientIdentityFormRI
+        v-else-if="pageType == 'rawat-inap'"
+        ref="patientIdentityFormRI"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+      />
       <PatientIdentityFormIGD
         v-else-if="pageType == 'igd'"
         ref="patientIdentityFormIGD"
@@ -310,7 +503,17 @@ const registPatient = async (type: string) => {
         :formType="dataBreadCrumb[0].label?.toString()"
         :patientData="openedPatientData"
       />
+      <VisitRoomDetail
+        v-if="pageType == 'rawat-inap'"
+        ref="visitRoomDetail"
+        :pageType="pageType"
+        :isDetail="isDetail()"
+        :formType="dataBreadCrumb[0].label?.toString()"
+        :patientData="openedPatientData"
+        :doctorVisitData="openedDoctorVisitData"
+      />
       <DoctorVisitDetail
+        v-else
         ref="doctorVisitDetail"
         :pageType="pageType"
         :isDetail="isDetail()"
@@ -338,7 +541,7 @@ const registPatient = async (type: string) => {
           />
           <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
           <CustomButton
-            @click="generalConsentDialog = true"
+            @click="showDialogGeneralConsent('list')"
             label="General Consent"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
@@ -403,9 +606,7 @@ const registPatient = async (type: string) => {
             textColor="text-adameds-300"
           />
           <CustomButton
-            @click="
-              (confirmSaveDialog = false), (inputGeneralConsentDialog = true)
-            "
+            @click="showDialogGeneralConsent('add')"
             label="Buat"
             class=""
             backgroundColor="bg-adameds-300"
@@ -414,13 +615,22 @@ const registPatient = async (type: string) => {
       </template>
     </CustomDialog>
 
-    <CustomDialog v-model:visible="inputGeneralConsentDialog" width="1000px">
+    <CustomDialog
+      v-model:visible="inputGeneralConsentDialog"
+      width="1000px"
+      @closeDialog="resetForm"
+    >
       <template #header>
         <div class="flex">
           <div>General Consent</div>
+          <!-- v-for="(GC, index) in listGeneralConsentType" -->
           <CustomChip
-            v-for="(GC, index) in generalConsentType"
-            :label="GC"
+            v-if="
+              (generalConsentDialogInputType != 'add' &&
+                selectedGeneralConsent == 'Pasien') ||
+              generalConsentDialogInputType == 'add'
+            "
+            label="Pasien"
             borderColor="border-white"
             iconColor="text-white"
             textColor="text-white"
@@ -429,9 +639,26 @@ const registPatient = async (type: string) => {
             :iconSize="16"
             class="ml-[10px]"
             selectedColor="bg-white border-white"
-            :isSelected="selectedGeneralConsent == GC"
-            @selected="onFilterBedRoomSelect"
-            :key="GC + index"
+            :isSelected="selectedGeneralConsent == 'Pasien'"
+            @selected="onGeneralConsentTypeSelect"
+          />
+          <CustomChip
+            v-if="
+              (generalConsentDialogInputType != 'add' &&
+                selectedGeneralConsent == 'Keluarga') ||
+              generalConsentDialogInputType == 'add'
+            "
+            label="Keluarga"
+            borderColor="border-white"
+            iconColor="text-white"
+            textColor="text-white"
+            selected-icon-color="text-adameds-300"
+            selectedTextColor="text-adameds-300"
+            :iconSize="16"
+            class="ml-[10px]"
+            selectedColor="bg-white border-white"
+            :isSelected="selectedGeneralConsent == 'Keluarga'"
+            @selected="onGeneralConsentTypeSelect"
           />
         </div>
       </template>
@@ -442,12 +669,16 @@ const registPatient = async (type: string) => {
             class="grid grid-cols-2 gap-x-[30px] gap-y-5 mb-5"
           >
             <CustomTextfield
+              v-model="familyDataName"
               label="Nama Lengkap Keluarga"
               class="col-span-2"
               placeholder="Nama Lengkap Keluarga"
               :disabled="generalConsentDialogInputType == 'detail'"
+              :invalid="!!errors['familyData.name']"
+              :invalidMessage="errors['familyData.name']"
             />
             <CustomSelect
+              v-model="familyDataGender"
               label="Jenis Kelamin"
               placeHolder="Pilih Jenis Kelamin"
               class=""
@@ -456,8 +687,11 @@ const registPatient = async (type: string) => {
               :showFilter="false"
               :options="['Laki-laki', 'Perempuan']"
               :disabled="generalConsentDialogInputType == 'detail'"
+              :invalid="!!errors['familyData.gender']"
+              :invalidMessage="errors['familyData.gender']"
             />
             <CustomSelect
+              v-model="familyDataRelationship"
               label="Hubungan Dengan Pasien"
               placeHolder="Pilih Hubungan Dengan Pasien"
               class=""
@@ -487,9 +721,12 @@ const registPatient = async (type: string) => {
                 'Family Lain',
               ]"
               :disabled="generalConsentDialogInputType == 'detail'"
+              :invalid="!!errors['familyData.relationship']"
+              :invalidMessage="errors['familyData.relationship']"
             />
           </div>
           <CustomSelect
+            v-model="name"
             label="Format General Consent"
             :placeHolder="`General Consent ${
               pageType == 'rawat-jalan'
@@ -504,15 +741,28 @@ const registPatient = async (type: string) => {
             :options="['Format 1', 'Format 2', 'Format 3']"
             prependIcon="PhMagnifyingGlass"
             :disabled="generalConsentDialogInputType == 'detail'"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
           />
           <div
+            v-if="generalConsentDialogInputType == 'add'"
             class="h-[400px] border-[1px] border-grey-200 border-dashed rounded-[10px] mt-5 flex"
           >
             <div class="m-auto font-semibold text-normal">
               Default General Consent Rawat Jalan Pilihan Awal
             </div>
           </div>
-          <div class="grid grid-cols-2 mt-10 text-center">
+          <iframe
+            v-else
+            :src="urlGeneralConsent"
+            height="400px"
+            width="100%"
+            class="mt-5"
+          ></iframe>
+          <div
+            v-if="generalConsentDialogInputType == 'add'"
+            class="grid grid-cols-2 mt-10 text-center"
+          >
             <div class="font-semibold text-normal">Petugas</div>
             <div class="font-semibold text-normal">
               {{ selectedGeneralConsent == "Pasien" ? "Pasien" : "Keluarga" }}
@@ -553,10 +803,12 @@ const registPatient = async (type: string) => {
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="generalConsentDialogInputType = 'edit'"
-            label="Edit"
-            class=""
+            @click="() => {}"
+            label="Hapus"
+            class="bg-danger-300"
             backgroundColor="bg-adameds-300"
+            icon="PhTrash"
+            iconType="fill"
           />
         </div>
         <div v-else-if="generalConsentDialogInputType == 'edit'" class="flex">
@@ -598,19 +850,15 @@ const registPatient = async (type: string) => {
       <template #header>General Consent</template>
       <template #body>
         <div class="mt-[10px]">
-          <div v-for="data in [1, 2]">
+          <div v-for="data in listOpenedPatientGeneralConsent">
             <div
-              @click="
-                (generalConsentDialogInputType = 'detail'),
-                  (inputGeneralConsentDialog = true)
-              "
+              @click="showDialogGeneralConsent('detail', data.uuid)"
               class="text-black cursor-pointer text-SM"
             >
               <div class="font-bold">
-                General Consent
-                {{ data == 1 ? " Umum" : "Tidak Menggunakan BPJS" }}
+                {{ data.name }}
               </div>
-              <div class="text-adameds-300">Rawat Jalan</div>
+              <!-- <div class="text-adameds-300">Rawat Jalan</div> -->
               <div class="flex">
                 Tanggal
                 <PhArrowRight
@@ -618,7 +866,7 @@ const registPatient = async (type: string) => {
                   class="mx-5 ml-2 mr-3 text-success-300"
                   weight="bold"
                 />
-                2024-3-10 10:00
+                {{ epochToDate(data.createdAt, "dateTime") }}
               </div>
             </div>
             <hr class="my-[10px]" />
@@ -628,8 +876,7 @@ const registPatient = async (type: string) => {
           >
             <CustomButton
               @click="
-                (generalConsentDialog = false),
-                  (inputGeneralConsentDialog = true)
+                (generalConsentDialog = false), showDialogGeneralConsent('add')
               "
               icon="PhPlus"
               label="General Consent Baru"

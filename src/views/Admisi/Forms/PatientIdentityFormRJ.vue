@@ -85,16 +85,18 @@ const searchPatientData = async (filter: string) => {
 };
 
 const setSelectedPatientData = async (data: any) => {
-  storeUtils.setLoading(true);
-  try {
-    const response = await masterPasienStore.getDetailMasterPasien(data.uuid);
-    if (response && response.payload) {
-      setFormData(response.payload, data.uuid);
+  if (data) {
+    storeUtils.setLoading(true);
+    try {
+      const response = await masterPasienStore.getDetailMasterPasien(data.uuid);
+      if (response && response.payload) {
+        setFormData(response.payload, data.uuid);
+      }
+    } catch (error) {
+      console.error("Failed to process the data:", error);
+    } finally {
+      storeUtils.setLoading(false);
     }
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  } finally {
-    storeUtils.setLoading(false);
   }
 };
 
@@ -367,10 +369,10 @@ defineExpose({
             label="Negara"
             placeHolder="Pilih Negara"
             class=""
-            optionLabel=""
-            optionValue=""
+            optionLabel="label"
+            optionValue="value"
             :showFilter="false"
-            :options="['Indonesia', 'Jepang', 'Amerika Serikat']"
+            :options="[{ label: 'Indonesia', value: 'id-ID' }]"
             :disabled="isDetail"
             :invalid="!!errors['address.country']"
             :invalidMessage="errors['address.country']"
@@ -380,10 +382,10 @@ defineExpose({
             label="Bahasa yang Dikuasai"
             placeHolder="Pilih Bahasa yang Dikuasai"
             class=""
-            optionLabel=""
-            optionValue=""
+            optionLabel="label"
+            optionValue="value"
             :showFilter="false"
-            :options="['Bahasa Indonesia', 'Bahasa Inggris', 'Bahasa Jawa']"
+            :options="[{ label: 'Bahasa Indonesia', value: 'ID' }]"
             :disabled="isDetail"
             :invalid="!!errors.language"
             :invalidMessage="errors.language"
