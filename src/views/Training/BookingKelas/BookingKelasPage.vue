@@ -5,10 +5,10 @@ import type { MenuItem } from "primevue/menuitem";
 import HeaderFilterTraining from "../Layout/HeaderFilterTraining.vue";
 import FooterPaginationTraining from "../Layout/FooterPaginationTraining.vue";
 import CariJadwal from "./CariJadwal.vue";
+import DetailBooking from "./DetailBooking.vue";
 const itemsPasien = ref([
   {
-    noOrder: "TRN1234",
-    noreg: "REG2407010049",
+    noOrder: "BOKN020",
     name: "Nama Pasien Lengkap",
     gender: "L",
     phone: "082112341234",
@@ -26,8 +26,7 @@ const itemsPasien = ref([
     new_patient: true,
   },
   {
-    noOrder: "TRN1234",
-    noreg: "REG2407010049",
+    noOrder: "BOKN020",
     name: "Nama Pasien Lengkap",
     gender: "L",
     phone: "082112341234",
@@ -45,8 +44,7 @@ const itemsPasien = ref([
     new_patient: true,
   },
   {
-    noOrder: "TRN1234",
-    noreg: "REG2407010049",
+    noOrder: "BOKN020",
     name: "Nama Pasien Lengkap",
     gender: "L",
     phone: "082112341234",
@@ -64,8 +62,7 @@ const itemsPasien = ref([
     new_patient: false,
   },
   {
-    noOrder: "TRN1234",
-    noreg: "REG2407010049",
+    noOrder: "BOKN020",
     name: "Nama Pasien Lengkap",
     gender: "L",
     phone: "082112341234",
@@ -112,6 +109,9 @@ const changeSection = (label: string, data: any = null) => {
     dataBreadCrumb.value.push(tempData);
   }
 };
+const selectedData = ref([]);
+const metaKey = ref(true);
+const isDialogVisible = ref(false);
 </script>
 <template>
   <Card
@@ -130,11 +130,13 @@ const changeSection = (label: string, data: any = null) => {
       <DataTable
         :value="itemsPasien"
         tableStyle="min-width: 50rem"
-        v-model:selection="selectedBook"
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
         stripedRows
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="isDialogVisible = true"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -143,7 +145,6 @@ const changeSection = (label: string, data: any = null) => {
           <template #body="slotProps">
             <div class="text-center">
               <div class="text-SM">{{ slotProps.data.noRM }}</div>
-              <div class="text-SM">{{ slotProps.data.noreg }}</div>
               <div class="text-SM">{{ slotProps.data.noOrder }}</div>
             </div>
           </template>
@@ -218,28 +219,6 @@ const changeSection = (label: string, data: any = null) => {
                 "
                 customClass="h-5 pr-[6px] mr-[5px]"
               />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="
-                  slotProps.data.paymentMethod == 'tunai' ? 'TUNAI' : 'ASURANSI'
-                "
-                :bgColor="
-                  slotProps.data.paymentMethod == 'tunai'
-                    ? 'bg-adameds-50'
-                    : 'bg-warning-50'
-                "
-                :textColor="
-                  slotProps.data.paymentMethod == 'tunai'
-                    ? 'text-adameds-300'
-                    : 'text-warning-300'
-                "
-                :borderColor="
-                  slotProps.data.paymentMethod == 'tunai'
-                    ? 'border-adameds-300'
-                    : 'border-warning-300'
-                "
-                customClass="h-5 pr-[6px] mr-[5px]"
-              />
             </div>
           </template>
         </Column>
@@ -287,6 +266,10 @@ const changeSection = (label: string, data: any = null) => {
           class="custom-checkbox"
         ></Column>
       </DataTable>
+      <DetailBooking
+        v-model:isDialogVisible="isDialogVisible"
+        :payload="selectedData"
+      />
       <MedicalRecord ref="medicalRecord" />
     </template>
     <template #footer>

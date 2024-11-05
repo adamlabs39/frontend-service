@@ -245,7 +245,7 @@ const changeSection = (label: string, data: any = null) => {
             </div>
           </template>
         </Column>
-        <Column field="kelasSesi" header="Sesi" headerClass="bg-adameds-50">
+        <Column field="kelasSesi" header="Sesi" headerClass="bg-adameds-50" body-class="text-SM font-normal" >
         </Column>
         <Column
           field="data-kunjungan"

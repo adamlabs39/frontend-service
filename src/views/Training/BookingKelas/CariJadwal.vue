@@ -4,7 +4,9 @@ import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import HeaderFilterTraining from "../Layout/HeaderFilterTraining.vue";
-
+import CustomButton from "@/components/Base/CustomButton.vue";
+import DataPasienBooking from "./DataPasienBooking.vue";
+import DetailBooking from "./DetailBooking.vue";
 const emit = defineEmits(["back"]);
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
@@ -18,6 +20,13 @@ const updatePageType = (path: string) => {
       label: pageType.value == "booking-kelas" ? "Cari Jadwal & Kelas" : "",
     },
   ];
+};
+
+const changeSection = (label: string, data: any = null) => {
+  dataBreadCrumb.value = [{ label }]; // Pastikan ini direset
+  if (data) {
+    dataPasienBook.value = data; // Simpan data detail
+  }
 };
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -36,18 +45,21 @@ const bookPayload = ref([
     nama: "Nama Lengkap",
     status: false,
   },
-  
 ]);
+const dataPasienBook = ref();
+
+
 </script>
 <template>
   <Card
+    v-if="dataBreadCrumb[0]?.label == 'Cari Jadwal & Kelas'"
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
       <HeaderFilterTraining
-        page-type="cari-kelas"
+        :page-type="pageType"
         :dataBreadCrumb="dataBreadCrumb"
         @back="emit('back')"
       />
@@ -55,13 +67,11 @@ const bookPayload = ref([
     <template #content>
       <DataTable
         :value="bookPayload"
-        selectionMode="single"
         tableStyle="min-width: 50rem"
         stripedRows
         class="text-xs"
         scrollable
         scrollHeight="flex"
-     
       >
         <Column headerClass="bg-adameds-50">
           <template #header>
@@ -69,20 +79,13 @@ const bookPayload = ref([
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{
-                slotProps.index +
-                1 +
-              }}
+              {{ slotProps.index + 1 }}
             </div>
           </template>
         </Column>
+        <Column field="slot" header="Slot" headerClass="bg-adameds-50"></Column>
         <Column
-          field="slot"
-          header="Slot"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="name"
+          field="nama"
           header="Nama Pasien"
           class="w-1/2"
           headerClass="bg-adameds-50"
@@ -98,24 +101,27 @@ const bookPayload = ref([
           <template #body="slotProps">
             <div class="flex items-center gap-2.5 justify-center">
               <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                class="h-6 w-[26px] p-0"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                class="h-6 w-[26px] p-0"
-                
-              >
-                <img src="@/assets/icons/delete.svg" alt="" />
-              </CustomButton>
+                :label="slotProps.data.status ? 'BOOK' : 'BOOKED'"
+                :background-color="
+                  slotProps.data.status ? 'bg-adameds-300' : 'bg-transparent'
+                "
+                :text-color="
+                  slotProps.data.status ? 'text-white' : 'text-grey-300'
+                "
+                size="small"
+                class="px-2.5 h-[24px]"
+                @click="changeSection('Daftar')"
+              />
             </div>
           </template>
         </Column>
       </DataTable>
+      
     </template>
   </Card>
+  <DataPasienBooking
+    v-else-if="dataBreadCrumb[0]?.label == 'Daftar'"
+    :dataBreadCrumb="dataBreadCrumb"
+    @back="dataBreadCrumb[0].label = 'Cari Jadwal & Kelas'"
+  />
 </template>
