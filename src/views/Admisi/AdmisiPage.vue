@@ -148,15 +148,11 @@ onMounted(() => {
     changeSection("Daftar");
   }
 });
-const selectedPatient = ref([]);
-
-const showCancelVisit = ref(false);
-const cancelReason = ref<string>();
 
 const openedPatientData = ref<any>({});
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
-  console.log("🚀 ~ showPatientDetail ~ openedPatientData:", openedPatientData)
+  console.log("🚀 ~ showPatientDetail ~ openedPatientData:", openedPatientData);
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
@@ -199,6 +195,37 @@ const closeRegistrationForm = () => {
   dataBreadCrumb.value.pop();
   openedPatientData.value = {};
   getPatientList();
+};
+
+const selectedPatient = ref<any[]>([]);
+
+const showCancelVisit = ref(false);
+const cancelReason = ref<string>();
+const cancelVisit = async () => {
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      cancelReason: cancelReason.value,
+    };
+    selectedPatient.value.forEach((patientData: any) => {
+      payload.listUuid.push(patientData.uuid);
+    });
+    if (pageType.value == "rawat-jalan") {
+      await admisiRJStore.cancelVisitRJ(payload);
+    } else if (pageType.value == "rawat-inap") {
+      await admisiRIStore.cancelVisitRI(payload);
+    } else if (pageType.value == "igd") {
+      await admisiIGDStore.cancelVisitIGD(payload);
+    }
+    showCancelVisit.value = false
+    cancelReason.value = undefined
+    await getPatientList()
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 </script>
 
@@ -525,7 +552,7 @@ const closeRegistrationForm = () => {
           />
           <CustomButton
             v-if="showCancelVisit"
-            @click="showCancelVisit = true"
+            @click="cancelVisit"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
             :disabled="!cancelReason"

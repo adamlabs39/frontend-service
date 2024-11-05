@@ -100,8 +100,8 @@ const searchPatientData = async (filter: string) => {
       console.error("Failed to fetch data", error);
       return [];
     } finally {
+      loadingSearchPatient.value = false;
     }
-    loadingSearchPatient.value = false;
   }, 800);
 };
 
