@@ -202,6 +202,17 @@ const search = ref();
         <CustomButton
           label="DAFTAR"
           class="grow"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
+        />
+        <CustomButton
+          label="BATAL"
+          class="grow"
           :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
           :border-color="
             selectedTab === '1' ? 'border-none' : 'border-adameds-300'
@@ -209,17 +220,6 @@ const search = ref();
           :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
           @click="$emit('selectedTab', (selectedTab = '1'))"
           :outlined="selectedTab !== '1'"
-        />
-        <CustomButton
-          label="BATAL"
-          class="grow"
-          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
-          :border-color="
-            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
-          "
-          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '2'))"
-          :outlined="selectedTab !== '2'"
         />
       </div>
       <div class="font-semibold text-SM text-grey-300">
