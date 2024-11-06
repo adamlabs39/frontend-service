@@ -6,6 +6,8 @@ import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 import TambahStokOpname from "./TambahStokOpname.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import DetailSelesaiSO from "./DetailSelesaiSO.vue";
+import DetailDraft from "./DetailDraft.vue";
 
 const route = useRoute();
 
@@ -55,9 +57,42 @@ const handleSimpanAkhiriSO = (data: any) => {
   dataStokOpname.value.push(data);
   dataBreadCrumb.value[0].label = "Stok Opname";
 };
+
+const handleRowClick = (rowData: any) => {
+  if (rowData.data.status === "SELESAI") {
+    changeSection("Detail Stok Selesai", rowData.data);
+  } else if (rowData.data.status === "DRAFT") {
+    changeSection("Detail Stok Draft", rowData.data);
+  }
+};
+
+const handleSimpanDraftdariDetail = () => {
+  dataBreadCrumb.value[0].label = "Stok Opname";
+}
+
+const handleSimpanAkhiriSOdariDetail = (data: any) => {
+  if (!dataStokOpname.value) {
+    dataStokOpname.value = [];
+  }
+
+  // Find the index of the item in dataStokOpname that matches the id or another unique property in `data`
+  const index = dataStokOpname.value.findIndex(item => item.id === data.id);
+  
+  if (index !== -1) {
+    // Update the status to 'SELESAI' for the found item
+    dataStokOpname.value[index].status = "SELESAI";
+  } else {
+    // If the item is not found, push the data as a new entry with status SELESAI
+    dataStokOpname.value.push({ ...data, status: "SELESAI" });
+  }
+
+  // Emit the event if needed, or just update the breadcrumb label
+  dataBreadCrumb.value[0].label = "Stok Opname";
+};
 </script>
 
 <template>
+  <!-- {{ dataStokOpname }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Stok Opname'"
     pt:body:class="h-full pt-0 overflow-auto"
@@ -74,6 +109,7 @@ const handleSimpanAkhiriSO = (data: any) => {
     <template #content>
       <DataTable
         v-if="dataStokOpname && dataStokOpname.length"
+        @row-click="handleRowClick"
         :value="dataStokOpname"
         tableStyle="min-width: 50rem"
         scrollable
@@ -201,5 +237,23 @@ const handleSimpanAkhiriSO = (data: any) => {
     @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
     @on-simpan-draft="handleSimpanDraft"
     @on-simpan-akhiri-s-o="handleSimpanAkhiriSO"
+  />
+
+  <DetailSelesaiSO
+    :data-bread-crumb="dataBreadCrumb"
+    :page-type="pageType"
+    :detail-data="detailStokOpname"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Selesai'"
+    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
+  />
+
+  <DetailDraft
+    :data-bread-crumb="dataBreadCrumb"
+    :page-type="pageType"
+    :detail-data="detailStokOpname"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Draft'"
+    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
+     @on-simpan-draft="handleSimpanDraftdariDetail"
+     @on-simpan-akhiri-s-o="handleSimpanAkhiriSOdariDetail"
   />
 </template>
