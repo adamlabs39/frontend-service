@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
+import { usePendapatanStore } from "@/stores/laporanFarmasi/pendapatan";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -9,92 +12,70 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const reportData = ref([
-  {
-    noRM: "00-00-00",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI Anak",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-]);
 const expandedRows = ref();
 const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
+// State Management
+const PendapatanStore = usePendapatanStore();
+const UseUtilsStore = utilsStore();
+const PendapatanPayload = ref<any[]>([]);
+const PendapatanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+
+// Check if Data Exists
+const hasData = computed(
+  () => PendapatanPayload.value && PendapatanPayload.value.length > 0
+);
+
+// Fetch Pendapatan
+const fetchPendapatan = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await PendapatanStore.getApi(
+      PendapatanProperties.value.page,
+      PendapatanProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      PendapatanProperties.value.total = response.properties.total;
+      PendapatanPayload.value = response.payload;
+    } else {
+      PendapatanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    PendapatanPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
 
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchPendapatan();
+  }, 500); 
 });
 
+// Handle Pagination
+const handlePage = (event: any) => {
+  PendapatanProperties.value.page = event.page + 1;
+  PendapatanProperties.value.page_size = event.rows;
+  fetchPendapatan();
+};
+
 onMounted(() => {
-  updatePageType(route.path);
+  fetchPendapatan();
 });
 </script>
 
@@ -154,19 +135,35 @@ onMounted(() => {
               </div>
             </div>
             <div class="flex mt-[10px]">
-              <CustomSelect label="Jenis Pelayanan" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'IGD', 'RAJAL', 'RANAP']" place-holder="Semua" />
-              <CustomSelect label="Metode Pembayaran" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Lunas', 'Piutang']" place-holder="Semua" />
-              <CustomSelect label="Pendapatan" class="w-1/3 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Resep Dokter', 'Penjualan Obat']" place-holder="Semua" />
-            </div>
-
-            <!-- baris kedua -->
-            <div class="flex mt-[10px]">
-              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-5" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
+              <CustomTextfield
+                label="Cari Pasien"
+                prependIcon="PhMagnifyingGlass"
+                placeholder="Cari Asal Resep / No. RM"
+                class="mr-5 grow"
+              />
+              <CustomDatePicker
+                v-model="startDateFilter"
+                label="Tanggal"
+                class="w-[150px]"
+              />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
-              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
+              <CustomDatePicker
+                v-model="endDateFilter"
+                :showLabel="false"
+                class="mt-auto w-[150px]"
+              />
+              <CustomButton
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
+              />
             </div>
           </template>
           <template #collapseIcon>
@@ -177,9 +174,16 @@ onMounted(() => {
           </template>
         </CustomAccordion>
       </template>
-
       <template #content>
-        <DataTable v-if="reportData.length" v-model:expandedRows="expandedRows" :value="reportData" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }" class="text-SM">
+        <NoData v-if="!hasData" />
+        <DataTable
+          v-model:expandedRows="expandedRows" 
+          :value="PendapatanPayload" 
+          scrollable 
+          scrollHeight="flex" 
+          :pt="{ headerRow: 'text-SM' }" 
+          class="text-SM"
+        >
           <Column expander style="width: 40px" header-class="text-black bg-adameds-50" />
           <!-- No -->
           <Column field="no" header="No." header-class="text-black bg-adameds-50" style="width: 40px">
@@ -221,15 +225,16 @@ onMounted(() => {
             </div>
           </template>
         </DataTable>
-
-        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-between">
           <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
-          <Paginator :rows="10" :totalRecords="120" :rowsPerPageOptions="[10, 20, 30]" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown" currentPageReportTemplate="{currentPage}">
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+          <CustomPaginator
+            :rows="PendapatanProperties.page_size"
+            :totalRecords="PendapatanProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>

@@ -305,7 +305,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="showDetail"
         >
           <!-- Penjualan -->
           <Column field="penjualan" header="Penjualan" headerClass="bg-adameds-50">
@@ -320,7 +319,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
               </div>
             </template>
           </Column>
-
           <!-- Pembeli -->
           <Column field="pembeli" header="Pembeli" headerClass="bg-adameds-50">
             <template #body="slotProps">
@@ -339,7 +337,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
               </div>
             </template>
           </Column>
-
           <!-- Harga -->
           <Column field="harga" header="Harga" headerClass="bg-adameds-50">
             <template #body="slotProps">

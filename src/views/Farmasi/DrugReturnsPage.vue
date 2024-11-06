@@ -8,7 +8,6 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from '@/components/Base/CustomPaginator.vue';
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 
@@ -640,7 +639,7 @@ const dataBreadCrumb = ref<MenuItem[]>([]);
         <hr class="mt-5 border-[1px] border-grey-200">
         <div class="flex justify-end">
           <div class="mt-3">
-            <p class="text-xs font-bold underline underline-offset-2">Diretur Oleh</p>
+            <p class="text-xs font-bold text-right underline underline-offset-2">Diretur Oleh</p>
             <p>Nama Petugas</p>
           </div>
           <div class="mt-3">

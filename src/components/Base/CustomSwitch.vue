@@ -39,7 +39,15 @@ const props = defineProps({
     default: "#14B8A6",
   },
   modelValue: {
-    type: Boolean,
+    type: [Boolean, String],
+    default: false,
+  },
+  trueValue: {
+    type: [Boolean, String],
+    default: true,
+  },
+  falseValue: {
+    type: [Boolean, String],
     default: false,
   },
   disabled: {
@@ -58,7 +66,7 @@ const props = defineProps({
 
 const checked = computed({
   get: () => props.modelValue,
-  set: (value: Boolean) => emit("update:modelValue", value),
+  set: (value: Boolean | String) => emit("update:modelValue", value),
 });
 const emit = defineEmits(["update:modelValue", "change"]);
 </script>
@@ -75,6 +83,8 @@ const emit = defineEmits(["update:modelValue", "change"]);
       <ToggleSwitch
         v-model="checked"
         :disabled="disabled"
+        :trueValue="trueValue"
+        :falseValue="falseValue"
         fluid
         :invalid="invalid"
         :class="{ 'order-2': leftLabel }"
@@ -92,11 +102,11 @@ const emit = defineEmits(["update:modelValue", "change"]);
         v-if="sideLabel"
         class="mt-1 text-SM"
         :class="[
-          checked ? sideLabelColorTrue : sideLabelColor,
+          checked == trueValue ? sideLabelColorTrue : sideLabelColor,
           leftLabel ? 'mr-[10px] order-1' : 'ml-[10px]',
         ]"
       >
-        {{ checked ? sideLabelTrue : sideLabel }}
+        {{ checked == trueValue ? sideLabelTrue : sideLabel }}
       </div>
     </div>
     <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>

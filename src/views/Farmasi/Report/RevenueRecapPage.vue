@@ -13,19 +13,12 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const reportType = ref("");
-const reportData = ref([1]);
-const expandedRows = ref();
+const reportData = ref([]);
 const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
