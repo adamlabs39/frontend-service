@@ -9,6 +9,41 @@ import NoData from "@/components/section/NoData.vue";
 import DataKunjunganRawatJalan from "../Layout/Tabel/Laporan/DataKunjunganRawatJalan.vue";
 import DataPembatalanPoli from "../Layout/Tabel/Laporan/DataPembatalanPoli.vue";
 import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPasien.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
+
+const rekapTindakanPasienProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+const useUtilsStore = utilsStore();
+
+const rekapTindakanPasienStore = useRekapTindakanStore();
+
+const rekapTindakanPasien = ref([]);
+
+const fetchRekapTindakanPasienData = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await rekapTindakanPasienStore.getTindakanPasien(
+      rekapTindakanPasienProperties.value.page,
+      rekapTindakanPasienProperties.value.page_size
+    );
+    if (response) {
+      rekapTindakanPasien.value = response.payload;
+      rekapTindakanPasienProperties.value.total = response.properties.totalData;
+      useUtilsStore.setLoading(false);
+      console.log(rekapTindakanPasien.value);
+    } else {
+      console.error("Unexpected response Structure", response);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  }
+};
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
@@ -35,17 +70,24 @@ const updatePageType = (path: string) => {
     },
   ];
 };
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
   updatePageType(route.path);
+  fetchRekapTindakanPasienData();
 });
 
-
+const handlePage = (event: any) => {
+  rekapTindakanPasienProperties.value.page = event.page + 1;
+  rekapTindakanPasienProperties.value.page_size = event.rows;
+  fetchRekapTindakanPasienData();
+};
 </script>
 
 <template>
+  <!-- {{ rekapTindakanPasienProperties }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
@@ -104,9 +146,12 @@ onMounted(() => {
     </template>
     <template #content>
       <!-- <NoData /> -->
-       <DataKunjunganRawatJalan  v-if="pageType === 'kunjungan-rawat-jalan'"/>
-       <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'"/>
-       <DataRekapTindakanPasien v-if="pageType==='rekap-tindakan-pasien'"/>
+      <DataKunjunganRawatJalan v-if="pageType === 'kunjungan-rawat-jalan'" />
+      <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'" />
+      <DataRekapTindakanPasien
+        v-if="pageType === 'rekap-tindakan-pasien'"
+        :rekapTindakanPasienData="rekapTindakanPasien"
+      />
     </template>
     <template #footer>
       <div class="flex justify-between">
@@ -117,15 +162,11 @@ onMounted(() => {
           class="my-auto bg-adameds-300"
           label="Cetak"
         />
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="rekapTindakanPasienProperties.page_size"
+          :totalRecords="rekapTindakanPasienProperties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>

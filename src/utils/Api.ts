@@ -241,10 +241,53 @@ baseInstanceAdmisi.interceptors.response.use(
   }
 );
 
+// Rawat Jalan
+const baseInstanceRawatJalan = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_LAPORAN,
+});
+
+baseInstanceRawatJalan.interceptors.request.use(
+  (config) => {
+    const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlVXVpZCI6IjAxOTJiMzFmLTM2NWQtNzMxYy04YjE2LTNhNDU2NWM5NDc1ZSIsInVzZXJuYW1lIjoiYWxsaWFuby1kZXYiLCJmYXNrZXNVdWlkIjoiMDE5MmIzMWYtMzY1ZC03MzFjLThiMTYtM2E0NTY1Yzk0NzVlIiwidXNlclV1aWQiOiIwMTkyYjMxZi0zNjVkLTczMWMtOGIxNi0zYTQ1NjVjOTQ3NWUiLCJpYXQiOjE3MzA4NjI3MDgsImV4cCI6MTczMDk0OTEwOCwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.dpqjDILDC67icpW-4H8D7eAx1prQiOBAg6bHhT0dz-ekSL7IbEkJvxXtL7LUZtgiIZ7Q7KM1Bq_MsdwyJR13H1cCMYdzXCAR9ke_yhbKYhAteuyesLRbMIjJbVb3iW2s8HEBXl9YzrpwVcSLRrWDWMsJlJc-V3E9TNaUuQ6lH6nMC9swGfaz45xlXvveUHIGSY_0tJtXrm5wT8cXWUG6us9t-UArQfNLF2IuOTGCahEzqvYwzopif3a_X2Xk0N9FAwSVsy4CS5mlIp9HDfQ73zsYFvX4ZBLj-X_QHeGY0EEtF_kdi9IsR2HKJQoJCUtkeS2qOTBRN0_9N8PMu1eslw";
+
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+
+baseInstanceRawatJalan.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 export {
   baseInstance,
   authInstance,
   settingInstance,
   baseInstanceDatamaster,
   baseInstanceAdmisi,
+  baseInstanceRawatJalan
 };
