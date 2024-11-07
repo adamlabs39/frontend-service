@@ -113,23 +113,29 @@ const handlePage = (event: any) => {
   searchData();
 };
 
+
 const setFilter = () => {
   let filter = {} as Filter;
 
-  // Menetapkan properti dasar yang diperlukan
-  filter.page = properties.value.page
-  filter.limit = properties.value.page_size
-  filter.q = valueSearchRM.value; // Kata kunci pencarian
-  filter.practitionerUuid = valueSearchDPJP.value ?? ""; // ID praktisi/dokter
-  filter.startDate = `${dateToEpoch(
-    setTimeForDate(valueStartedDate.value, 0, 0, 0)
-  )}`;
-  filter.endDate = `${dateToEpoch(
-    setTimeForDate(valueEndedDate.value, 23, 59, 59)
-  )}`;
-  if (pageType.value == 'kunjungan-rawat-jalan') {
-  filter.jenisKunjungan = 'RJ'
+  // Set common filter properties
+  filter.page = properties.value.page;
+  filter.limit = properties.value.page_size;
+
+  if (pageType.value === "rekap-tindakan-pasien") {
+    // Set specific filter fields for "rekap-tindakan-pasien" pageType
+    filter.name = valueSearchRM.value;                    // `q` becomes `name`
+    filter.searchPraktisiFilter = valueSearchDPJP.value;  // `practitioner_uuid` becomes `searchPraktisiFilter`
+    filter.bulan = valueBulan.value;                      // `month` becomes `bulan`
+    filter.poliklinik = searchPoliklinikFilter.value;     // `lokasi_uuid` becomes `poliklinik`
+    filter.jenisKunjungan = searchJenisKunjungan.value;   // `pelayanan` becomes `jenis kunjungan`
+  } else if (pageType.value === "kunjungan-rawat-jalan") {
+    filter.jenisKunjungan = "RJ";
+    filter.q = valueSearchRM.value;
   }
+
+  // Set date filters
+  filter.startDate = `${dateToEpoch(setTimeForDate(valueStartedDate.value, 0, 0, 0))}`;
+  filter.endDate = `${dateToEpoch(setTimeForDate(valueEndedDate.value, 23, 59, 59))}`;
 
   return filter;
 };
@@ -138,8 +144,7 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-
-
+const valueBulan = ref()
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -149,19 +154,22 @@ const handleSearchDPJP = (searchDPJP: string) => {
 };
 
 const handleStartedDate = (startedDate: any) => {
-  valueStartedDate.value = startedDate
-}
+  valueStartedDate.value = startedDate;
+};
 const handleEndedDate = (endedDate: any) => {
-  valueEndedDate.value = endedDate
-}
+  valueEndedDate.value = endedDate;
+};
 
-const resetFormRef = ref()
+const handleBulan = (bulan: any) => {
+  valueBulan.value = bulan;
+}
+const resetFormRef = ref();
 
 const resetForm = () => {
   valueSearchRM.value = "";
   valueSearchDPJP.value = "";
   valueStartedDate.value = new Date();
-  valueEndedDate.value= new Date();
+  valueEndedDate.value = new Date();
   resetFormRef.value.resetForm();
 };
 
@@ -172,8 +180,8 @@ const handleReset = () => {
 };
 
 const handleRefreshPage = () => {
-  searchData()
-}
+  searchData();
+};
 </script>
 
 <template>
@@ -190,6 +198,7 @@ const handleRefreshPage = () => {
         @update:selected-dokter-d-p-j-p="handleSearchDPJP"
         @update:started-date-filter="handleStartedDate"
         @update:ended-date-filter="handleEndedDate"
+        @update:value-bulan-filter="handleBulan"
         @search="searchData"
         @reset="handleReset"
         @refresh-page="handleRefreshPage"
@@ -244,11 +253,14 @@ const handleRefreshPage = () => {
     </template>
     <template #content>
       <!-- <NoData /> -->
-      <DataKunjunganRawatJalan v-if="pageType === 'kunjungan-rawat-jalan'" :kunjunganData ="reportData" />
+      <DataKunjunganRawatJalan
+        v-if="pageType === 'kunjungan-rawat-jalan'"
+        :kunjunganData="reportData"
+      />
       <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'" />
-      <!-- <DataRekapTindakanPasien
+      <DataRekapTindakanPasien
         v-if="pageType === 'rekap-tindakan-pasien'"
-      /> -->
+      />
     </template>
     <template #footer>
       <div class="flex justify-between">
