@@ -40,7 +40,7 @@ const fetchReportData = async (filter: Filter = {}) => {
     if (pageType.value == "kunjungan") {
       response = await admisiLaporanStore.getKunjunganReport(filter);
     } else if (pageType.value == "penjamin") {
-      response = await admisiLaporanStore.getPenjaminReport(filter);
+    response = await admisiLaporanStore.getPenjaminReport(filter);
     } else if (pageType.value == "batal-kunjungan") {
       response = await admisiLaporanStore.getBatalKunjunganReport(filter);
     } else if (pageType.value == "status-kamar") {
@@ -130,7 +130,7 @@ const setFilter = () => {
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
   )}`;
-  filter.endDate = `${dateToEpoch(
+filter.endDate = `${dateToEpoch(
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   if (pageType.value == "kunjungan") {

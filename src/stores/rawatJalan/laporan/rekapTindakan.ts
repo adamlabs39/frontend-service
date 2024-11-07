@@ -7,24 +7,20 @@ export const useRekapTindakanStore = defineStore({
     getters: {},
     actions: {
         getTindakanPasien(
-            page: number = 1,
-            limit: number = 10,
-            name: string = "",
-            practitioner_uuid: string = "",
-            month: string | null = null, // Ganti `month?: any = null` dengan ini
-            lokasi_uuid: string = "",
-            pelayanan: string = "rj",
+            {
+                page = 1,
+                limit = 10,
+                name = "",
+                practitioner_uuid = "",
+                month = "", // Ganti `month?: any = null` dengan ini
+                lokasi_uuid = "",
+                pelayanan = "",
+            },
             payload = {}
         ) {
-            // Menyusun URL query dengan kondisi untuk month
-            let url = `/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitioner_uuid}&lokasi_uuid=${lokasi_uuid}&pelayanan=${pelayanan}`;
+            // Menyusun URL query dengan kondisi untuk mont
 
-            // Jika month tidak null, tambahkan ke query
-            if (month !== null) {
-                url += `&month=${month}`;
-            }
-
-            return apiRawatJalanGet(url, payload);
+            return apiRawatJalanGet(`/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitioner_uuid}&month=${month}&lokasi_uuid=${lokasi_uuid}&pelayanan=${pelayanan}`,payload);
         },
     },
 });
