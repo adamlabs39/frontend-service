@@ -16,6 +16,7 @@ import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 
+
 const properties = ref({
   page: 1,
   page_size: 10,
@@ -28,10 +29,11 @@ const rekapTindakanPasienStore = useRekapTindakanStore();
 
 const kunjunganRawatJalanStore = useAdmisiIGDStore();
 
-const praktisiStore = usePraktisiStore()
+const praktisiStore = usePraktisiStore();
 
 const reportData = ref([]);
-const praktisiPayload = ref<any[]>([])
+const praktisiPayload = ref<any[]>([]);
+
 const fetchLaporanData = async (filter: Filter = {}) => {
   useUtilsStore.setLoading(true);
   let response;
@@ -39,7 +41,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
     if (pageType.value == "kunjungan-rawat-jalan") {
       response = await kunjunganRawatJalanStore.getKunjunganReport(filter);
     } else if (pageType.value == "pembatalan-poli") {
-      console.log("Halo");
+      response = await kunjunganRawatJalanStore.getBatalKunjunganReport(filter);
     } else {
       response = await rekapTindakanPasienStore.getTindakanPasien(filter);
     }
@@ -101,8 +103,6 @@ interface Filter {
   ruangan?: string;
   startDate?: string;
   endDate?: string;
-
-  
 }
 
 const searchData = async () => {
@@ -122,16 +122,16 @@ const handlePage = (event: any) => {
 
 const fetchPraktisi = async () => {
   try {
-    const response = await praktisiStore.getAktifApi()
+    const response = await praktisiStore.getAktifApi();
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
-      praktisiPayload.value = []
+      praktisiPayload.value = [];
     }
   } catch (error) {
-    praktisiPayload.value = []
+    praktisiPayload.value = [];
   }
-}
+};
 
 const setFilter = () => {
   let filter = {} as Filter;
@@ -140,13 +140,18 @@ const setFilter = () => {
   filter.page = properties.value.page;
   filter.limit = properties.value.page_size;
   filter.q = valueSearchRM.value;
-  filter.practitionerUuid = valueSearchDPJP.value
-  filter.jenisKunjungan = 'RJ'
+  filter.jenisKunjungan = "RJ";
 
- filter.startDate = `${dateToEpoch(
+  if (pageType.value == "kunjungan-rawat-jalan") {
+    filter.practitionerUuid = valueSearchDPJP.value ?? "";
+  } else if (pageType.value == "pembatalan-poli") {
+    filter.practitionerUuid = searchDokterDPJPFilter.value ?? "";
+  }
+
+  filter.startDate = `${dateToEpoch(
     setTimeForDate(valueStartedDate.value, 0, 0, 0)
   )}`;
-filter.endDate = `${dateToEpoch(
+  filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
 
@@ -157,7 +162,7 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref()
+const valueBulan = ref();
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -175,7 +180,7 @@ const handleEndedDate = (endedDate: any) => {
 
 const handleBulan = (bulan: any) => {
   valueBulan.value = bulan;
-}
+};
 const resetFormRef = ref();
 
 const resetForm = () => {
@@ -198,7 +203,8 @@ const handleRefreshPage = () => {
 </script>
 
 <template>
-  <!-- {{ reportData }} -->
+  <!-- {{ pageType}} -->
+    <!-- {{ reportData }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
@@ -245,10 +251,17 @@ const handleRefreshPage = () => {
               v-model="searchDokterDPJPFilter"
               label="Dokter DPJP"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
+              :options="[
+                {
+                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+                  name: 'Rudi tabuti',
+                },
+                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
+                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
+              ]"
               place-holder="Pilih Dokter"
-              :options="['Semua', 'Beberapa', 'Banyak']"
             />
             <CustomSelect
               v-if="pageType === 'rekap-tindakan-pasien'"
@@ -270,8 +283,11 @@ const handleRefreshPage = () => {
         v-if="pageType === 'kunjungan-rawat-jalan'"
         :kunjunganData="reportData"
       />
-      <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'" />
-     
+      <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'"  :pembatalanPoliData="reportData"/>
+       <DataRekapTindakanPasien :rekapTindakanPasienData="reportData"
+        v-if="pageType === 'rekap-tindakan-pasien'"
+      />
+
     </template>
     <template #footer>
       <div class="flex justify-between">
