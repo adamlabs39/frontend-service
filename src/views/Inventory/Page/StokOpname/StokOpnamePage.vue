@@ -6,6 +6,8 @@ import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 import TambahStokOpname from "./TambahStokOpname.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import DetailSelesaiSO from "./DetailSelesaiSO.vue";
+import DetailDraft from "./DetailDraft.vue";
 
 const route = useRoute();
 
@@ -47,9 +49,50 @@ const handleSimpanDraft = (data: any) => {
   dataStokOpname.value.push(data);
   dataBreadCrumb.value[0].label = "Stok Opname";
 };
+
+const handleSimpanAkhiriSO = (data: any) => {
+  if (dataStokOpname.value === null) {
+    dataStokOpname.value = [];
+  }
+  dataStokOpname.value.push(data);
+  dataBreadCrumb.value[0].label = "Stok Opname";
+};
+
+const handleRowClick = (rowData: any) => {
+  if (rowData.data.status === "SELESAI") {
+    changeSection("Detail Stok Selesai", rowData.data);
+  } else if (rowData.data.status === "DRAFT") {
+    changeSection("Detail Stok Draft", rowData.data);
+  }
+};
+
+const handleSimpanDraftdariDetail = () => {
+  dataBreadCrumb.value[0].label = "Stok Opname";
+}
+
+const handleSimpanAkhiriSOdariDetail = (data: any) => {
+  if (!dataStokOpname.value) {
+    dataStokOpname.value = [];
+  }
+
+  // Find the index of the item in dataStokOpname that matches the id or another unique property in `data`
+  const index = dataStokOpname.value.findIndex(item => item.id === data.id);
+  
+  if (index !== -1) {
+    // Update the status to 'SELESAI' for the found item
+    dataStokOpname.value[index].status = "SELESAI";
+  } else {
+    // If the item is not found, push the data as a new entry with status SELESAI
+    dataStokOpname.value.push({ ...data, status: "SELESAI" });
+  }
+
+  // Emit the event if needed, or just update the breadcrumb label
+  dataBreadCrumb.value[0].label = "Stok Opname";
+};
 </script>
 
 <template>
+  <!-- {{ dataStokOpname }} -->
   <Card
     v-if="dataBreadCrumb[0].label == 'Stok Opname'"
     pt:body:class="h-full pt-0 overflow-auto"
@@ -65,11 +108,12 @@ const handleSimpanDraft = (data: any) => {
     </template>
     <template #content>
       <DataTable
-      v-if="dataStokOpname && dataStokOpname.length"
-   :value="dataStokOpname"
+        v-if="dataStokOpname && dataStokOpname.length"
+        @row-click="handleRowClick"
+        :value="dataStokOpname"
         tableStyle="min-width: 50rem"
         scrollable
-        scrollHeight="240px"
+        scrollHeight="380px"
         :pt="{ headerRow: 'text-SM' }"
       >
         <Column headerClass="bg-adameds-50">
@@ -88,7 +132,7 @@ const handleSimpanDraft = (data: any) => {
           </template>
           <template #body="slotProps">
             <div>
-              <div class="text-SM">SO{{ slotProps.data.noStokOpname}}</div>
+              <div class="text-SM">SO{{ slotProps.data.noStokOpname }}</div>
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.kategoriItem"
@@ -131,8 +175,18 @@ const handleSimpanDraft = (data: any) => {
             <div class="w-full font-semibold">Petugas</div>
           </template>
           <template #body="slotProps">
-            <div class="font-semibold underline text-SM">Petugas Stok Opname</div>
-            <div class="font-normal text-normal">{{slotProps.data.petugasStokOpname}}</div>
+            <div class="font-semibold underline text-SM">
+              Petugas Stok Opname
+            </div>
+            <div class="font-normal text-normal">
+              {{ slotProps.data.petugasStokOpname }}
+            </div>
+            <div class="font-semibold underline text-SM">
+              Petugas Yang Merubah
+            </div>
+            <div class="font-normal text-normal">
+              {{ slotProps.data.petugasStokOpname }}
+            </div>
           </template>
         </Column>
 
@@ -141,17 +195,25 @@ const handleSimpanDraft = (data: any) => {
             <div class="font-semibold">Status</div>
           </template>
           <template #body="slotProps">
-              <CustomChip
-            :showCheckedIcon="false"
-            :label="slotProps.data.status"
-            bgColor="bg-warning-75"
-            textColor="text-warning-300"
-            customClass="h-5 pr-[6px] border-none mr-[5px]"
-          />
+            <CustomChip
+              :showCheckedIcon="false"
+              :label="slotProps.data.status"
+              :bgColor="
+                slotProps.data.status === 'SELESAI'
+                  ? 'bg-mint-75'
+                  : 'bg-warning-75'
+              "
+              :textColor="
+                slotProps.data.status === 'SELESAI'
+                  ? 'text-mint-400'
+                  : 'text-warning-300'
+              "
+              customClass="h-5 pr-[6px] border-none mr-[5px]"
+            />
           </template>
         </Column>
       </DataTable>
-      <NoData v-else/>
+      <NoData v-else />
     </template>
     <template #footer>
       <div class="flex justify-end">
@@ -174,5 +236,24 @@ const handleSimpanDraft = (data: any) => {
     :dataBreadCrumb="dataBreadCrumb"
     @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
     @on-simpan-draft="handleSimpanDraft"
+    @on-simpan-akhiri-s-o="handleSimpanAkhiriSO"
+  />
+
+  <DetailSelesaiSO
+    :data-bread-crumb="dataBreadCrumb"
+    :page-type="pageType"
+    :detail-data="detailStokOpname"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Selesai'"
+    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
+  />
+
+  <DetailDraft
+    :data-bread-crumb="dataBreadCrumb"
+    :page-type="pageType"
+    :detail-data="detailStokOpname"
+    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Draft'"
+    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
+     @on-simpan-draft="handleSimpanDraftdariDetail"
+     @on-simpan-akhiri-s-o="handleSimpanAkhiriSOdariDetail"
   />
 </template>
