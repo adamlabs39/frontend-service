@@ -11,6 +11,7 @@ import NoData from "@/components/section/NoData.vue";
 import type { MenuItem } from "primevue/menuitem";
 import { computed } from "vue";
 import { ref, type PropType } from "vue";
+import LayoutDialog from "../../Layout/LayoutDialog.vue";
 
 const props = defineProps({
   pageType: {
@@ -23,7 +24,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["kembali", "onSimpanDraft"]);
+const emit = defineEmits(["kembali", "onSimpanDraft", "onSimpanAkhiriSO"]);
 
 const jenisStok = ref([
   { id: 1, name: "Umum" },
@@ -95,19 +96,13 @@ const rekonsilDariStokItem = () => {
 
 
 const onSubmitDraft = () => {
-  const selectedItems = selectedDataItem.value
-    .map((item) => {
-      return dataItems.value.find((data) => data.id === item.id);
-    })
-    .filter((item) => item !== undefined);
-
   const payload = {
     tglCutOff: "01-01-2024",
     noStokOpname: "1243",
     judul: "Judul Stok Opname",
     petugasStokOpname: "Nama Petugas",
-    datas: selectedItems,
-    totalItem: selectedItems.length,
+    datas: dataItems.value,
+    totalItem: dataItems.value.length,
     status: "DRAFT",
     jenisStok: "Umum",
     jenisItem: "Alkes",
@@ -117,6 +112,32 @@ const onSubmitDraft = () => {
   console.log("Submitted with", payload);
   emit("onSimpanDraft", payload);
 };
+
+const onSubmitAkhiriSO = () => {
+  const payload = {
+    tglCutOff: "01-01-2024",
+    noStokOpname: "1243",
+    judul: "Judul Stok Opname",
+    petugasStokOpname: "Nama Petugas",
+    datas: dataItems.value,
+    totalItem: dataItems.value.length,
+    status: "SELESAI",
+    jenisStok: "Umum",
+    jenisItem: "Alkes",
+    kategoriItem: "Medis",
+  };
+   console.log("Submitted with", payload);
+  emit("onSimpanAkhiriSO", payload);
+}
+
+const isDialogVisible = ref(false);
+
+const dialogConfig = ref({
+  title: "",
+  buttonFooterLeft: "",
+  buttonFooterRight: "",
+  message: "",
+});
 </script>
 
 <template>
@@ -501,6 +522,14 @@ const onSubmitDraft = () => {
 
         <NoData v-else />
       </div>
+       <LayoutDialog
+        v-model:isDialogVisible="isDialogVisible"
+        :buttonFooterLeft="dialogConfig.buttonFooterLeft"
+        :buttonFooterRight="dialogConfig.buttonFooterRight"
+        :message="dialogConfig.message"
+
+        :title="dialogConfig.title"
+      />
     </template>
     <template #footer>
       <hr class="pt-5 border-grey-200" />
@@ -534,6 +563,7 @@ const onSubmitDraft = () => {
             label="Simpan & Akhiri SO"
             class="my-auto bg-adameds-300"
              :disabled="!isDataAvailable"
+             @click ="onSubmitAkhiriSO"
           />
         </div>
       </div>

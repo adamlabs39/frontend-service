@@ -41,11 +41,23 @@ onMounted(() => {
       satuan: "Pcs",
       konversiIsi: 1,
     },
-    ];
-    riwayatPenerimaanPembelianData.value = [
-        {tanggal:"01-01-2024",expDate:"01-01-2025", hargaDasar:10000, HNA:10000, HPP:10000},
-        {tanggal:"01-01-2024",expDate:"01-01-2025", hargaDasar:10000, HNA:10000, HPP:10000}
-    ]
+  ];
+  riwayatPenerimaanPembelianData.value = [
+    {
+      tanggal: "01-01-2024",
+      expDate: "01-01-2025",
+      hargaDasar: 10000,
+      HNA: 10000,
+      HPP: 10000,
+    },
+    {
+      tanggal: "01-01-2024",
+      expDate: "01-01-2025",
+      hargaDasar: 10000,
+      HNA: 10000,
+      HPP: 10000,
+    },
+  ];
 });
 </script>
 
@@ -65,28 +77,10 @@ onMounted(() => {
                 }"
                 :model="[
                   {
-                    namaItem: detailData?.namaItem,
+                    label: detailData?.namaItem,
                   },
                 ]"
               >
-                <template #customItem="{ item }">
-                  <div class="flex">
-                    <div
-                      v-if="item.namaItem"
-                      class="rounded-lg bg-adameds-300 px-[10px] text-white mr-[10px]"
-                    >
-                      {{ item.namaItem }}
-                    </div>
-                    <span
-                      :class="{
-                        'text-adameds-300': item.home,
-                        'text-grey-400': !item.home,
-                      }"
-                    >
-                      {{ item.label }}
-                    </span>
-                  </div>
-                </template>
               </CustomBreadCrumb>
             </div>
             <CustomButton
@@ -198,9 +192,14 @@ onMounted(() => {
       </CustomAccordion>
     </template>
     <template #content>
-      <CustomAccordion :openWithHeader="false" noBorder initialState="0" header-class="-mt-4">
+      <CustomAccordion
+        :openWithHeader="false"
+        noBorder
+        initialState="0"
+        header-class="-mt-4"
+      >
         <template #header>
-            <div class="-mx-4"> Konversi Satuan</div>
+          <div class="-mx-4">Konversi Satuan</div>
         </template>
         <template #content>
           <DataTable
@@ -218,31 +217,31 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.jenisSatuan}}
+                    {{ slotProps.data.jenisSatuan }}
                   </div>
                 </div>
               </template>
             </Column>
-            <Column field="satuan" headerClass="bg-adameds-50" >
+            <Column field="satuan" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Satuan</div>
               </template>
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.satuan}}
+                    {{ slotProps.data.satuan }}
                   </div>
                 </div>
               </template>
             </Column>
-            <Column field="konversiIsi" headerClass="bg-adameds-50" >
+            <Column field="konversiIsi" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Konversi Isi</div>
               </template>
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.konversiIsi}} Pcs
+                    {{ slotProps.data.konversiIsi }} Pcs
                   </div>
                 </div>
               </template>
@@ -264,11 +263,14 @@ onMounted(() => {
           />
         </template>
       </CustomAccordion>
-      <CustomAccordion :openWithHeader="false" noBorder initialState="0" header-class="-mt-4">
+      <CustomAccordion
+        :openWithHeader="false"
+        noBorder
+        initialState="0"
+        header-class="-mt-4"
+      >
         <template #header>
-            <div class="-mx-4">
-                Riwayat Penerimaan Pembelian
-            </div>
+          <div class="-mx-4">Riwayat Penerimaan Pembelian</div>
         </template>
         <template #content>
           <DataTable
@@ -286,56 +288,50 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.tanggal}}
+                    {{ slotProps.data.tanggal }}
                   </div>
                 </div>
               </template>
             </Column>
-            <Column field="expDate" headerClass="bg-adameds-50" >
+            <Column field="expDate" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Exp Date</div>
               </template>
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.expDate}}
+                    {{ slotProps.data.expDate }}
                   </div>
                 </div>
               </template>
             </Column>
-            <Column field="hargaDasar" headerClass="bg-adameds-50" >
+            <Column field="hargaDasar" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Harga Dasar</div>
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">
-                    Rp. {{ slotProps.data.hargaDasar}}
-                  </div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hargaDasar }}</div>
                 </div>
               </template>
             </Column>
-            <Column field="HNA" headerClass="bg-adameds-50" >
+            <Column field="HNA" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">HNA</div>
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">
-                    Rp. {{ slotProps.data.HNA}}
-                  </div>
+                  <div class="text-SM">Rp. {{ slotProps.data.HNA }}</div>
                 </div>
               </template>
             </Column>
-            <Column field="HPP" headerClass="bg-adameds-50" >
+            <Column field="HPP" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">HPP</div>
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">
-                    Rp. {{ slotProps.data.HPP}}
-                  </div>
+                  <div class="text-SM">Rp. {{ slotProps.data.HPP }}</div>
                 </div>
               </template>
             </Column>
