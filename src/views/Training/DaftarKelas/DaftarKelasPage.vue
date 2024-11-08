@@ -114,6 +114,11 @@ const changeSection = (label: string, data: any = null) => {
     dataBreadCrumb.value.push(tempData);
   }
 };
+const selectedTab = ref("0");
+const handleSelectedTab = (newTab: string) => {
+  selectedTab.value = newTab;
+};
+
 </script>
 <template>
   <Card
@@ -126,6 +131,7 @@ const changeSection = (label: string, data: any = null) => {
       <HeaderFilterTraining
         page-type="daftar"
         @tambah-data="changeSection('Daftar')"
+        @selected-tab="handleSelectedTab"
       />
     </template>
     <template #content>
@@ -245,7 +251,7 @@ const changeSection = (label: string, data: any = null) => {
             </div>
           </template>
         </Column>
-        <Column field="kelasSesi" header="Sesi" headerClass="bg-adameds-50">
+        <Column field="kelasSesi" header="Sesi" headerClass="bg-adameds-50" body-class="text-SM font-normal" >
         </Column>
         <Column
           field="data-kunjungan"

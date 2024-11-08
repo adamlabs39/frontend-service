@@ -29,6 +29,7 @@ const emit = defineEmits([
   "reset",
   "back",
 ]);
+const tanggal= ref<Date>(new Date());
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const selectedTab = ref("0");
@@ -70,14 +71,14 @@ const search = ref();
             @click="emit('reload-data')"
           />
           <CustomBreadCrumb
-            v-if="['datamaster', 'laporan', 'cari-kelas'].includes(pageType)"
+            v-if="['datamaster', 'laporan', 'booking-kelas'].includes(pageType)"
             :home="{
               label:
                 pageType === 'datamaster'
                   ? 'Datamaster'
                   : pageType === 'laporan'
                   ? 'Laporan'
-                  : pageType === 'cari-kelas'
+                  : pageType === 'booking-kelas'
                   ? 'Booking Kelas'
                   : '',
               home: true,
@@ -95,7 +96,7 @@ const search = ref();
           </span>
         </div>
         <CustomButton
-          v-if="!['laporan','cari-kelas'].includes(pageType)"
+          v-if="!['laporan','booking-kelas'].includes(pageType)"
           @click="emit('tambah-data')"
           icon="PhPlus"
           :label="
@@ -110,7 +111,7 @@ const search = ref();
           class="mr-[10px]"
         />
         <CustomButton
-          v-if="pageType === 'cari-kelas'"
+          v-if="pageType === 'booking-kelas'"
           label="Kembali"
           icon="PhCaretLeft"
           @click="emit('back')"
@@ -122,10 +123,16 @@ const search = ref();
       </div>
     </template>
     <template #content>
-      <div class="flex mt-[16px] mb-2.5 items-end">
+      <div class="flex mt-[16px] mb-2.5 items-end gap-5">
+        <CustomDatePicker
+        v-if="['booking-kelas'].includes(pageType)"
+            v-model="tanggal"
+            label="Tanggal"
+            class="w-full"
+          />
         <CustomTextfield
           v-model="search"
-          v-if="!['laporan'].includes(pageType)"
+          v-if="!['laporan','booking-kelas'].includes(pageType)"
           :label="
             props.pageType === 'datamaster' ? 'Cari Kelas' : 'Cari Pasien'
           "
@@ -135,10 +142,10 @@ const search = ref();
               : 'Cari Nama / Alamat / No. RM'
           "
           prependIcon="PhMagnifyingGlass"
-          class="mr-5 w-full"
+          class="w-full"
         />
         <CustomSelect
-          v-if="['daftar', 'booking', 'laporan'].includes(pageType)"
+          v-if="['daftar', 'booking', 'laporan','booking-kelas'].includes(pageType)"
           v-model="kelasSelected"
           label="Kelas"
           :options="kelasOption"
@@ -147,8 +154,18 @@ const search = ref();
           placeHolder="Pilih Kelas"
           class="w-full"
         />
+        <CustomSelect
+          v-if="['booking-kelas'].includes(pageType)"
+          v-model="kelasSelected"
+          label="Sesi"
+          :options="kelasOption"
+          option-value=""
+          option-label=""
+          placeHolder="Pilih Sesi"
+          class="w-full"
+        />
         <div
-          class="flex mx-5"
+          class="flex"
           v-if="['daftar', 'booking', 'laporan'].includes(pageType)"
         >
           <CustomDatePicker
@@ -165,7 +182,7 @@ const search = ref();
         </div>
         <div
           class="flex gap-2.5"
-          v-if="['daftar', 'booking'].includes(pageType)"
+          v-if="['daftar', 'booking','booking-kelas'].includes(pageType)"
         >
           <CustomButton
             icon="PhMagnifyingGlass"
@@ -185,6 +202,17 @@ const search = ref();
         <CustomButton
           label="DAFTAR"
           class="grow"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
+        />
+        <CustomButton
+          label="BATAL"
+          class="grow"
           :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
           :border-color="
             selectedTab === '1' ? 'border-none' : 'border-adameds-300'
@@ -192,17 +220,6 @@ const search = ref();
           :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
           @click="$emit('selectedTab', (selectedTab = '1'))"
           :outlined="selectedTab !== '1'"
-        />
-        <CustomButton
-          label="BATAL"
-          class="grow"
-          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
-          :border-color="
-            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
-          "
-          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '2'))"
-          :outlined="selectedTab !== '2'"
         />
       </div>
       <div class="font-semibold text-SM text-grey-300">
