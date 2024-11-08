@@ -14,6 +14,7 @@ import { utilsStore } from "@/stores/utils";
 import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
 import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 
 const properties = ref({
   page: 1,
@@ -27,8 +28,10 @@ const rekapTindakanPasienStore = useRekapTindakanStore();
 
 const kunjunganRawatJalanStore = useAdmisiIGDStore();
 
-const reportData = ref([]);
+const praktisiStore = usePraktisiStore()
 
+const reportData = ref([]);
+const praktisiPayload = ref<any[]>([])
 const fetchLaporanData = async (filter: Filter = {}) => {
   useUtilsStore.setLoading(true);
   let response;
@@ -98,6 +101,8 @@ interface Filter {
   ruangan?: string;
   startDate?: string;
   endDate?: string;
+
+  
 }
 
 const searchData = async () => {
@@ -113,6 +118,20 @@ const handlePage = (event: any) => {
   searchData();
 };
 
+// Untuk mendapat data Praktisi
+
+const fetchPraktisi = async () => {
+  try {
+    const response = await praktisiStore.getAktifApi()
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload;
+    } else {
+      praktisiPayload.value = []
+    }
+  } catch (error) {
+    praktisiPayload.value = []
+  }
+}
 
 const setFilter = () => {
   let filter = {} as Filter;
@@ -120,22 +139,16 @@ const setFilter = () => {
   // Set common filter properties
   filter.page = properties.value.page;
   filter.limit = properties.value.page_size;
+  filter.q = valueSearchRM.value;
+  filter.practitionerUuid = valueSearchDPJP.value
+  filter.jenisKunjungan = 'RJ'
 
-  if (pageType.value === "rekap-tindakan-pasien") {
-    // Set specific filter fields for "rekap-tindakan-pasien" pageType
-    filter.name = valueSearchRM.value;                    // `q` becomes `name`
-    filter.searchPraktisiFilter = valueSearchDPJP.value;  // `practitioner_uuid` becomes `searchPraktisiFilter`
-    filter.bulan = valueBulan.value;                      // `month` becomes `bulan`
-    filter.poliklinik = searchPoliklinikFilter.value;     // `lokasi_uuid` becomes `poliklinik`
-    filter.jenisKunjungan = searchJenisKunjungan.value;   // `pelayanan` becomes `jenis kunjungan`
-  } else if (pageType.value === "kunjungan-rawat-jalan") {
-    filter.jenisKunjungan = "RJ";
-    filter.q = valueSearchRM.value;
-  }
-
-  // Set date filters
-  filter.startDate = `${dateToEpoch(setTimeForDate(valueStartedDate.value, 0, 0, 0))}`;
-  filter.endDate = `${dateToEpoch(setTimeForDate(valueEndedDate.value, 23, 59, 59))}`;
+ filter.startDate = `${dateToEpoch(
+    setTimeForDate(valueStartedDate.value, 0, 0, 0)
+  )}`;
+filter.endDate = `${dateToEpoch(
+    setTimeForDate(valueEndedDate.value, 23, 59, 59)
+  )}`;
 
   return filter;
 };
@@ -258,9 +271,7 @@ const handleRefreshPage = () => {
         :kunjunganData="reportData"
       />
       <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'" />
-      <DataRekapTindakanPasien
-        v-if="pageType === 'rekap-tindakan-pasien'"
-      />
+     
     </template>
     <template #footer>
       <div class="flex justify-between">
