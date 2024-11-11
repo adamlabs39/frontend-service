@@ -41,7 +41,7 @@ const props = defineProps({
           class="text-adameds-300"
           :size="40"
           v-if="
-            ['Umum', 'Anak', 'Mata', 'Kandungan'].includes(
+            ['Umum', 'Anak', 'Mata', 'Kandungan', 'Gigi', 'THT', 'Tulang', 'Kulit'].includes(
               cardAktivitas.keterangan
             )
           "

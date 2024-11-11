@@ -265,7 +265,7 @@ function updateVisibility(value: boolean) {
                       </div>
                       <div class="flex gap-7">
                         <CustomSwitch
-                          label="Obat Kronis"
+                          label="Obat Kronis "
                           v-model="field.value.obatKronis"
                         />
                         <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->

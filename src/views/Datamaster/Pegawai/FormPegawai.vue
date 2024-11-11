@@ -42,8 +42,8 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Pegawai harus diisi"),
     nik: yup.string().required("NIK harus diisi"),
     tipe: yup.number().required("Tipe Pegawai harus diisi"),
-    firstTitle: yup.string(),
-    lastTitle: yup.string(),
+    firstTitle: yup.string().notRequired(),
+    lastTitle: yup.string().notRequired(),
     gender: yup.string().required("Jenis Kelamin harus diisi"),
     tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir harus diisi"),
     status: yup.bool().default(false),
@@ -120,7 +120,6 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
-          tanggalLahir: new Date(props.payload.tanggalLahir)
         });
       }
     } else {

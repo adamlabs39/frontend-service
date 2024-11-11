@@ -15,163 +15,6 @@ const dataBreadHome = ref({ label: "User", home: true });
 const dataBreadCrumb = ref([{ label: "Detail User" }]);
 const emit = defineEmits(["back"]);
 
-const payload = ref({
-  name: "John Doe",
-  phone: "+6281234567890",
-  email: "john.doe@example.com",
-  username: "johndoe",
-  password: "hashedpassword",
-  inventory_medis: true,
-  inventory_nonMedis: false,
-  status: true,
-  photo: "base64encodedstring",
-  awalan_gelar: "Dr.",
-  akhiran_gelar: "Sp.A",
-  permission: [
-    {
-      module: "Antrian",
-      sub_modules: [
-        {
-          name: "Konfigurasi",
-          allows: ["READ", "CREATE", "UPDATE", "DELETE"],
-        },
-        {
-          name: "Data Antrian",
-          allows: ["READ"],
-        },
-        {
-          name: "Layar",
-          allows: ["READ"],
-        },
-        {
-          name: "Apm",
-          allows: [
-            "CREATE PASIEN JKN",
-            "CREATE PASIEN NON-JKN",
-            "CHECKIN",
-            "PRINT",
-          ],
-        },
-      ],
-    },
-    {
-      module: "Admisi",
-      sub_modules: [
-        {
-          name: "Antrian",
-          allows: ["PANGGIL", "LEWATI", "PROSES", "SELESAI", "CHECKIN"],
-        },
-        {
-          name: "RJ",
-          allows: [
-            "READ",
-            "CREATE PASIEN RJ",
-            "CREATE GENERAL CONSENT",
-            "UPDATE ADMISI RJ",
-            "UPDATE GENERAl CONSENT",
-            "CETAK KUNJUNGAN",
-            "CETAK LABEL",
-            "BATAL RJ",
-          ],
-        },
-        {
-          name: "RI",
-          allows: [
-            "READ",
-            "CREATE BAYI BARU LAHIR",
-            "CREATE GENERAL CONSENT",
-            "UPDATE ADMISI RI",
-            "UPDATE GENERAL CONSENT",
-            "BATAL REQUEST RI",
-            "CETAK GENERAL CONSENT",
-            "CETAK KUNJUNGAN",
-            "CETAK LABEL",
-          ],
-        },
-        {
-          name: "IGD",
-          allows: [
-            "READ",
-            "CREATE PASIEN IGD",
-            "CREATE GENERAL CONSENT",
-            "UPDATE ADMISI IGD",
-            "UPDATE GENERAL CONSENT",
-            "BATAL IGD",
-            "CETAK GENERAL CONSENT",
-            "CETAK KUNJUNGAN",
-            "CETAK LABEL",
-          ],
-        },
-        {
-          name: "SEP",
-          allows: [
-            "READ",
-            "CREATE SEP",
-            "CREATE SEP MANUAL",
-            "DELETE SEP",
-            "SIMPAN SEP MANUAL",
-          ],
-        },
-        {
-          name: "Data Pasien",
-          allows: [
-            "READ",
-            "CREATE PASIEN",
-            "UPDATE BERKAS RM",
-            "UPDATE DATA PASIEN",
-            "DELETE PASIEN",
-            "DELETE BERKAS RM",
-            "IMPORT DATA PASIEN",
-            "CETAK KARTU PASIEN",
-            "UPLOAD BERKAS RM",
-            "PREVIEW BERKAS RM",
-            "GENERAL CONSENT",
-          ],
-        },
-        {
-          name: "Monitoring Kamar",
-          allows: ["READ", "SETTING BED", "CREATE BED", "DELETE BED"],
-        },
-        {
-          name: "Laporan Admisi",
-          features: [
-            {
-              name: "Kunjungan",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "penjamin",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "Batal Kunjungan",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "Status kamar",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "Keperawatan Inap Pasien",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "Bayi Baru Lahir",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-            {
-              name: "Rekap Jumlah Pasien BPJS",
-              allows: ["READ", "CETAK LAPORAN"],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
-onMounted(() => {
-  payload;
-});
 </script>
 
 <template>
@@ -181,7 +24,6 @@ onMounted(() => {
   >
     <template #header>
       <div class="flex items-center justify-between gap-5 p-5">
-        <CustomButton label="" icon="PhArrowClockwise" @click="" />
         <CustomBreadCrumb
           :home="dataBreadHome"
           :model="dataBreadCrumb"
@@ -205,27 +47,33 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Nama</div>
-                <div class="font-normal text-normal">{{ props.payload.name }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.name }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">NIK</div>
-                <div class="font-normal text-normal">345678</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.nik }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Tanggal Lahir</div>
-                <div class="font-normal text-normal">01-01-2000</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.tanggalLahir }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Jenis Kelamin</div>
-                <div class="font-normal text-normal">Laki-Laki</div>
+                <div class="font-normal text-normal">{{ props.payload.practitioner.gender }}</div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">No. Handphone</div>
-                <div class="font-normal text-normal">{{ props.payload.phone }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.phone }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Email</div>
-                <div class="font-normal text-normal">{{ props.payload.email }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.email }}
+                </div>
               </div>
             </div>
           </template>
@@ -250,7 +98,9 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-5 mt-5">
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Username</div>
-                <div class="font-normal text-normal">{{ props.payload.username }}</div>
+                <div class="font-normal text-normal">
+                  {{ props.payload.username }}
+                </div>
               </div>
               <div class="flex flex-col">
                 <div class="font-semibold underline text-SM">Password</div>
@@ -277,8 +127,12 @@ onMounted(() => {
           <template #header> Modul & Permission </template>
           <template #content>
             <div class="flex flex-col gap-5 mt-5">
+              <div class="flex flex-col">
+                <div class="underline font-normal text-normal">Role</div>
+                <div class="font-semibold text-MD">{{ props.payload.role.name }}</div>
+              </div>
               <div
-                v-for="(menuItem, menuIndex) in payload.permission"
+                v-for="(menuItem, menuIndex) in props.payload.permissions"
                 :key="menuIndex"
               >
                 <CustomAccordion
@@ -290,7 +144,7 @@ onMounted(() => {
                     <div
                       v-for="(
                         subMenuItem, subMenuIndex
-                      ) in menuItem.sub_modules"
+                      ) in menuItem.subModule"
                       :key="subMenuItem.name"
                     >
                       <CustomAccordion

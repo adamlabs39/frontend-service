@@ -15,10 +15,10 @@ import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import TableKomponenTarifTindakan from "@/components/Datamaster/TableKomponenTarifTindakan.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -42,11 +42,31 @@ const tindakanStore = useTindakanStore();
 const komponenTarifStore = useKomponenTarifStore();
 const penjaminPayload = ref<any[]>([]);
 const tindakanPayload = ref<any[]>([]);
+const tempPelayanan = ref<any>([]);
+const tempPenjamin = ref<any>([]);
 const komponenTarifPayload = ref<any[]>([]);
+const tempDeleteTindakan = ref<Tindakan[]>([]);
+const tempTindakan = ref<Tindakan[]>([]);
+
+interface ListKomponenTarif {
+  tarifKomponenUuid: string;
+  tarifPerKomponen: number;
+}
+
+interface Tindakan {
+  tindakanUuid: string;
+  listKomponenTarif: Array<ListKomponenTarif>;
+}
+
+interface LabEntry {
+  tarifLabUuid: string;
+}
+
+//Fetch data
 
 const fetchPenjamin = async () => {
   try {
-    const response = await penjaminStore.getApi();
+    const response = await penjaminStore.getAktifApi();
     if (response && response.payload) {
       penjaminPayload.value = response.payload;
     } else {
@@ -60,7 +80,7 @@ const fetchPenjamin = async () => {
 
 const fetchTindakan = async () => {
   try {
-    const response = await tindakanStore.getApi();
+    const response = await tindakanStore.getAktifApi();
     if (response && response.payload) {
       tindakanPayload.value = response.payload;
     } else {
@@ -71,9 +91,10 @@ const fetchTindakan = async () => {
     tindakanPayload.value = [];
   }
 };
+
 const fetchKomponenTarif = async () => {
   try {
-    const response = await komponenTarifStore.getApi();
+    const response = await komponenTarifStore.getAktifApi();
     if (response && response.payload) {
       komponenTarifPayload.value = response.payload;
     } else {
@@ -98,9 +119,11 @@ const optionsPelayanan = ref([
 ]);
 
 const optionsLab = ref([
-  { name: "SGOT", harga: 50000, uuid: "456789" },
-  { name: "SGPT", harga: 10000, uuid: "987654" },
+  { name: "SGOT", harga: 50000, uuid: "0192426b-260a-7f6e-9cb2-ee03c83710a4" },
+  { name: "SGPT", harga: 10000, uuid: "0192426b-260a-7f6e-9cb2-ee03c83710a5" },
 ]);
+
+const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const schema = toTypedSchema(
   yup
@@ -114,7 +137,7 @@ const schema = toTypedSchema(
       isMcu: yup.bool().default(false),
       unitPelayanan: yup.array().of(
         yup.object({
-          unitPelayanan: yup.number().required("Unit Pelayanan harus dipilih"),
+          unitPelayanan: yup.number(),
         })
       ),
       penjamin: yup.array().of(
@@ -135,15 +158,18 @@ const schema = toTypedSchema(
           ),
         })
       ),
-      tarifLab: yup.array().of(
-        yup.object({
-          tarifLabUuid: yup.string().when("isMcu", {
-            is: (value: boolean) => value === true,
-            then: (schema) => schema.required("Tarif Lab harus diisi"),
-            otherwise: (schema) => schema.notRequired(),
-          }),
+      tarifLab: yup
+        .array()
+        .when("isMcu", {
+          is: (value: boolean) => value === true,
+          then: (schema) => schema.required("Tarif Lab harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
         })
-      ),
+        .of(
+          yup.object({
+            tarifLabUuid: yup.string().required("Tarif Lab harus diisi"),
+          })
+        ),
       unitPelayananSelected: yup
         .array()
         .of(yup.number().required("Unit Pelayanan harus dipilih"))
@@ -168,73 +194,8 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
       },
     ],
 
-    // tarifLab: [{ tarifLabUuid: "" }],
+    tarifLab: [{ tarifLabUuid: "" }],
   },
-});
-
-const listKomponenTarifRefs = ref<
-  Array<InstanceType<typeof TableKomponenTarifTindakan> | null>
->([]);
-
-interface ListKomponenTarif {
-  tarifKomponenUuid: string;
-  tarifPerKomponen: number;
-}
-
-interface Tindakan {
-  tindakanUuid: string;
-  listKomponenTarif: Array<ListKomponenTarif>;
-}
-interface Pelayanan {
-  unitPelayanan: string;
-}
-const {
-  remove: removeTindakan,
-  push: pushTindakan,
-  fields: fieldsTindakan,
-} = useFieldArray<Tindakan>("tindakanPoli");
-
-// Fungsi untuk menambah listKomponenTarif
-const addListKomponenTarif = (index: number) => {
-  fieldsTindakan.value[index].value.listKomponenTarif.push({
-    tarifKomponenUuid: "",
-    tarifPerKomponen: 0,
-  });
-};
-
-// Fungsi untuk menghapus listKomponenTarif
-const removeListKomponenTarif = (
-  tindakanIndex: number,
-  komponenIndex: number
-) => {
-  fieldsTindakan.value[tindakanIndex].value.listKomponenTarif.splice(
-    komponenIndex,
-    1
-  );
-};
-
-const onSubmit = handleSubmit(async (values: any) => {
-  try {
-    values.grandTotal = grandTotal.value;
-    // delete values.unitPelayananSelected;
-    delete values.penjaminSelected;
-    if (method.value === "edit") {
-      if (!props.payload || !props.payload.uuid) {
-        throw new Error("UUID is missing for edit operation");
-      }
-      const uuid = props.payload.uuid;
-      console.log("Data updated successfully:", values);
-      const response = await tarifStore.putApi(uuid, values);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
-      const response = await tarifStore.postApi(values);
-      emit("data-updated");
-    }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  }
 });
 
 const [code] = defineField("code");
@@ -247,21 +208,129 @@ const [status] = defineField("status");
 const [unitPelayananSelected] = defineField("unitPelayananSelected");
 const [penjaminSelected] = defineField("penjaminSelected");
 
-const handleUnitPelayananUpdate = (selectedValues: number[]) => {
-  unitPelayanan.value = selectedValues.map((value) => ({
-    unitPelayanan: value,
-  }));
-};
+const {
+  remove: removeTindakan,
+  push: pushTindakan,
+  fields: fieldsTindakan,
+} = useFieldArray<Tindakan>("tindakanPoli");
 
-const handleUnitPenjaminUpdate = (selectedValues: string[]) => {
-  penjamin.value = selectedValues.map((value) => ({ penjaminUuid: value }));
-};
-
+const { push: pushUnitPelayanan } = useFieldArray("unitPelayanan");
+const { push: pushPenjamin } = useFieldArray("penjamin");
 const {
   remove: removeTarifLab,
   push: pushTarifLab,
   fields: fieldsTarifLab,
-} = useFieldArray("tarifLab");
+} = useFieldArray<LabEntry>("tarifLab"); // Specify the type here
+
+// Fungsi untuk menambah listKomponenTarif
+const addListKomponenTarif = (index: number) => {
+  fieldsTindakan.value[index].value.listKomponenTarif.push({
+    tarifKomponenUuid: "",
+    tarifPerKomponen: 0,
+  });
+};
+
+const removeListKomponenTarif = (
+  tindakanIndex: number,
+  komponenIndex: number
+) => {
+  const tindakanToRemove = fieldsTindakan.value[tindakanIndex].value;
+  const komponenToRemove =
+    fieldsTindakan.value[tindakanIndex].value.listKomponenTarif[komponenIndex];
+
+  const tempTindakanToCheck = tempTindakan.value?.find(
+    (tempTindakan: Tindakan) =>
+      tempTindakan.tindakanUuid === tindakanToRemove.tindakanUuid
+  );
+
+  if (tempTindakanToCheck) {
+    const tempKomponen = tempTindakanToCheck.listKomponenTarif.find(
+      (tempKomponen: ListKomponenTarif) =>
+        tempKomponen.tarifKomponenUuid === komponenToRemove.tarifKomponenUuid
+    );
+
+    if (tempKomponen) {
+      const deletedKomponen = {
+        ...tempKomponen,
+        isDeleted: true,
+      };
+
+      const deletedTindakan = {
+        ...tindakanToRemove,
+        listKomponenTarif: tindakanToRemove.listKomponenTarif.map((komponen) =>
+          komponen.tarifKomponenUuid === deletedKomponen.tarifKomponenUuid
+            ? deletedKomponen
+            : komponen
+        ),
+      };
+      const existingTindakanIndex = tempDeleteTindakan.value.findIndex(
+        (temp: Tindakan) => temp.tindakanUuid === deletedTindakan.tindakanUuid
+      );
+
+      if (existingTindakanIndex !== -1) {
+        tempDeleteTindakan.value[existingTindakanIndex] = deletedTindakan;
+      } else {
+        tempDeleteTindakan.value.push(deletedTindakan);
+      }
+    }
+  }
+  console.log("tempDeleteTindakan", tempDeleteTindakan);
+  fieldsTindakan.value[tindakanIndex].value.listKomponenTarif.splice(
+    komponenIndex,
+    1
+  );
+};
+
+const handleRemoveTindakan = (tindakanIndex: number) => {
+  const tindakanToRemove = fieldsTindakan.value[tindakanIndex].value;
+  tindakanToRemove.listKomponenTarif.forEach((komponen: any) => {
+    komponen.isDeleted = true;
+  });
+  tempDeleteTindakan.value.push(tindakanToRemove);
+  console.log("tempDeleteTindakan hendele tindakan", tempDeleteTindakan);
+  removeTindakan(tindakanIndex);
+  console.log(
+    "Removed tindakan and marked komponen as deleted:",
+    tindakanToRemove
+  );
+};
+
+const tempDeletedLab = ref<TempTarifLab[]>([]);
+
+interface TempTarifLab {
+  harga: number;
+  name: string;
+  tarifLabUuid: string;
+  isDeleted?: boolean;
+}
+const handleRemoveLab = (index: number) => {
+  // if (fieldsTarifLab.value.length === 1) {
+  //   // Set isMcu to false if this is the last item
+  //   isMcu.value = false;
+  // }
+
+  const komponenToRemove = fieldsTarifLab.value[index].value;
+  const parseItem = JSON.parse(JSON.stringify(komponenToRemove));
+
+  // Check if tarifLabUuid is an empty string
+  if (!parseItem.tarifLabUuid) {
+    // Remove the last item from tempDeletedLab if the UUID is empty
+    tempDeletedLab.value.pop();
+  } else {
+    // Check if the item is in tempPenjamin
+    const tempKomponen = tempTarifLab.value.find(
+      (temp: any) => temp.tarifLabUuid === parseItem.tarifLabUuid
+    );
+
+    if (tempKomponen) {
+      const deletedItem = { ...tempKomponen, isDeleted: true };
+      tempDeletedLab.value.push(deletedItem);
+    }
+  }
+
+  // Remove the component from the fields array
+  removeTarifLab(index);
+};
 
 const handlePushTindakan = () => {
   pushTindakan({
@@ -274,10 +343,118 @@ const handlePushTarifLab = () => {
   pushTarifLab({ tarifLabUuid: "" });
 };
 
-defineExpose({
-  onSubmit,
+const handleUnitPelayananUpdate = (selectedValues: number[]) => {
+  unitPelayanan.value = tempPelayanan.value.map(
+    (item: { unitPelayanan: number; uuid: string }) => {
+      if (!selectedValues.includes(item.unitPelayanan)) {
+        return {
+          unitPelayanan: item.unitPelayanan,
+          uuid: item.uuid,
+          isDelete: true,
+        };
+      } else {
+        return {
+          unitPelayanan: item.unitPelayanan,
+          uuid: item.uuid,
+        };
+      }
+    }
+  );
+
+  selectedValues.forEach((value) => {
+    const existsInTemp = tempPelayanan.value.some(
+      (item: { unitPelayanan: number }) => item.unitPelayanan === value
+    );
+
+    if (!existsInTemp) {
+      console.log("Menambahkan unitPelayanan baru:", value);
+      pushUnitPelayanan({
+        unitPelayanan: value,
+      });
+    }
+  });
+};
+
+const handlePenjaminUpdate = (selectedValues: string[]) => {
+  penjamin.value = tempPenjamin.value.map(
+    (item: { penjaminUuid: string; uuid: string }) => {
+      if (!selectedValues.includes(item.penjaminUuid)) {
+        return {
+          penjaminUuid: item.penjaminUuid,
+          uuid: item.uuid,
+          isDeleted: true,
+        };
+      } else {
+        return {
+          penjaminUuid: item.penjaminUuid,
+          uuid: item.uuid,
+        };
+      }
+    }
+  );
+
+  selectedValues.forEach((value) => {
+    const existsInTemp = tempPenjamin.value.some(
+      (item: { penjaminUuid: string }) => item.penjaminUuid === value
+    );
+
+    if (!existsInTemp) {
+      pushPenjamin({
+        penjaminUuid: value,
+      });
+    }
+  });
+};
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    values.grandTotal = grandTotal.value;
+    delete values.unitPelayananSelected;
+    delete values.penjaminSelected;
+
+    tempDeleteTindakan.value.forEach((deletedTindakan) => {
+      const indexToReplace = values.tindakanPoli.findIndex(
+        (tindakan: Tindakan) =>
+          tindakan.tindakanUuid === deletedTindakan.tindakanUuid
+      );
+
+      if (indexToReplace !== -1) {
+        values.tindakanPoli[indexToReplace] = deletedTindakan;
+      } else {
+        values.tindakanPoli.push(deletedTindakan);
+      }
+    });
+    if (!values.isMcu) {
+      values.tarifLab = (values.tarifLab || []).map((lab: any) => ({
+        ...lab,
+        isDeleted: true,
+      }));
+    } else {
+      const combinedPenjaminData = [
+        ...(values.tarifLab || []),
+        ...tempDeletedLab.value,
+      ];
+      values.tarifLab = JSON.parse(JSON.stringify(combinedPenjaminData));
+    }
+
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      console.log("value edit", values);
+      const response = await tarifStore.putApi(uuid, values);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      console.log(values);
+      const response = await tarifStore.postApi(values);
+      emit("data-updated");
+    }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
 });
-const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const method = ref(props.method);
 const title = ref(props.title);
@@ -300,6 +477,7 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetDialogMode();
   resetForm();
+  tempDeleteTindakan.value = [];
 };
 
 watch(
@@ -310,25 +488,50 @@ watch(
       if (props.method !== "add" && props.payload) {
         const unitPelayananPayload =
           props.payload.pelayanan?.map(
-            (item: { unitPelayanan: number }) => item.unitPelayanan
+            (item: { unitPelayanan: number; uuid: string }) =>
+              item.unitPelayanan
+          ) || [];
+
+        const tempUnitPelayanan =
+          props.payload.pelayanan?.map(
+            (item: { unitPelayanan: number; uuid: string }) => ({
+              unitPelayanan: item.unitPelayanan,
+              uuid: item.uuid,
+            })
           ) || [];
         const penjaminPayload =
           props.payload.penjamin?.map(
             (item: { penjaminUuid: string }) => item.penjaminUuid
+          ) || [];
+        const tempPenjaminObject =
+          props.payload.penjamin?.map(
+            (item: { penjaminUuid: string; uuid: string }) => ({
+              penjaminUuid: item.penjaminUuid,
+              uuid: item.uuid,
+            })
           ) || [];
 
         setValues({
           ...props.payload,
           unitPelayananSelected: unitPelayananPayload,
           penjaminSelected: penjaminPayload,
+          tarifLab: props.payload.lab,
         });
+        tempPelayanan.value = tempUnitPelayanan;
+        tempPenjamin.value = tempPenjaminObject;
+        tempTindakan.value = props.payload.tindakanPoli;
+        tempTarifLab.value = props.payload.lab;
       }
     } else {
       resetForm();
       resetDialogMode();
+      tempDeleteTindakan.value = [];
+      tempTarifLab.value = [];
+      tempDeletedLab.value = [];
     }
   }
 );
+const tempTarifLab = ref<TempTarifLab[]>([]);
 
 // Fungsi untuk menghitung grandTotal
 const grandTotal = computed(() => {
@@ -344,12 +547,27 @@ const grandTotal = computed(() => {
   return totalKomponen;
 });
 
+const totalLabPrices = computed(() => {
+  return fieldsTarifLab.value.reduce((total, entry) => {
+    const lab = optionsLab.value.find(
+      (option) => option.uuid === entry.value.tarifLabUuid
+    );
+    return total + (lab ? lab.harga : 0);
+  }, 0);
+});
+
 const grandTotalFormatted = computed(() => {
+  const total = grandTotal.value + totalLabPrices.value;
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-  }).format(grandTotal.value);
+  }).format(total);
 });
+
+const getHargaLab = (labUuid: string) => {
+  const lab = optionsLab.value.find((option) => option.uuid === labUuid);
+  return lab ? lab.harga : 0;
+};
 </script>
 
 <template>
@@ -362,11 +580,9 @@ const grandTotalFormatted = computed(() => {
     <template #header>{{ title }} Tarif</template>
     <template #body>
       <!-- Form Input -->
-      {{ unitPelayanan }}
-      {{ unitPelayananSelected }}
       <div
         v-if="method !== 'detail'"
-        class="flex flex-col overflow-hidden h-full"
+        class="flex flex-col h-full overflow-hidden"
       >
         <div class="flex flex-col h-full min-h-screen gap-5">
           <!-- Grid Section -->
@@ -414,7 +630,7 @@ const grandTotalFormatted = computed(() => {
               label="Metode Pembayaran"
               v-model="penjaminSelected"
               :options="penjaminPayload"
-              @update:modelValue="handleUnitPenjaminUpdate"
+              @update:modelValue="handlePenjaminUpdate"
               optionValue="uuid"
               optionLabel="name"
               placeholder="Metode Pembayaran"
@@ -480,7 +696,7 @@ const grandTotalFormatted = computed(() => {
                       />
                       <CustomButton
                         background-color="bg-danger-300"
-                        @click="removeTindakan"
+                        @click="handleRemoveTindakan(idx)"
                       >
                         <img src="@/assets/icons/delete.svg" alt="" />
                         <span class="font-semibold text-normal">Hapus</span>
@@ -504,7 +720,7 @@ const grandTotalFormatted = computed(() => {
                             <CustomSelect
                               v-model="slotProps.data.tarifKomponenUuid"
                               label=""
-                              place-holder="Pilih Tindakan"
+                              place-holder="Pilih Komponen Tarif"
                               :options="komponenTarifPayload"
                               option-label="name"
                               optionValue="uuid"
@@ -625,7 +841,7 @@ const grandTotalFormatted = computed(() => {
                 >
                   <Column headerClass="bg-adameds-300 text-white" class="w-4/6">
                     <template #header>
-                      <div>List Tarif</div>
+                      <div>List Tarif Lab</div>
                     </template>
                     <template #body="slotProps">
                       <CustomSelect
@@ -634,10 +850,10 @@ const grandTotalFormatted = computed(() => {
                         :options="optionsLab"
                         option-label="name"
                         option-value="uuid"
-                        place-holder="Pilih Komponen Tarif"
+                        place-holder="Pilih Tarif Lab"
+                        :invalid="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`tarifLab[${slotProps.index}].tarifLabUuid`]"
                       />
-                      <!-- :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true : false"
-              :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`]" -->
                     </template>
                   </Column>
                   <Column headerClass="bg-adameds-300 ">
@@ -649,15 +865,12 @@ const grandTotalFormatted = computed(() => {
                       </div>
                     </template>
                     <template #body="slotProps">
-                      <CustomInputNumber label="" align-number="text-end">
-                        <template #prependText>
-                          <div
-                            class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                          >
-                            Rp.
-                          </div>
-                        </template>
-                      </CustomInputNumber>
+                      <span
+                        >Rp.
+                        {{
+                          getHargaLab(slotProps.data.value.tarifLabUuid)
+                        }}</span
+                      >
                     </template>
                   </Column>
                   <Column
@@ -669,7 +882,7 @@ const grandTotalFormatted = computed(() => {
                         label=""
                         background-color="bg-danger-300 rounded-lg"
                         class="h-6 w-[26px] p-0"
-                        @click="removeTarifLab(slotProps.index)"
+                        @click="handleRemoveLab(slotProps.index)"
                       >
                         <!-- <TrashFillIcon class="text-white w-[15px]"/> -->
 
@@ -719,8 +932,6 @@ const grandTotalFormatted = computed(() => {
 
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="grid grid-cols-12 gap-5 mt-5">
-        <!-- <CustomInfoRow label="Kode ICD 9 CM" :value="code" />
-        <CustomInfoRow label="Nama ICD 9 CM" :value="name" /> -->
         <div class="flex flex-col col-span-4">
           <div class="font-semibold underline text-SM">Kode Tarif</div>
           <div class="font-normal text-normal">
@@ -844,13 +1055,54 @@ const grandTotalFormatted = computed(() => {
             />
           </template>
         </CustomAccordion>
+        <CustomAccordion
+          v-if="props.payload.isMcu"
+          class="col-span-12"
+          initial-state="0"
+          :open-with-header="false"
+          no-border
+        >
+          <template #header> List Tindakan Laboratorium </template>
+          <template #content>
+            <DataTable
+              :value="fieldsTarifLab"
+              tableStyle="min-width: 50rem"
+              class="mt-5 overflow-hidden text-xs rounded-lg"
+            >
+              <Column
+                header="List Tarif Lab"
+                headerClass="bg-adameds-300 text-white"
+                bodyClass="align-top"
+              >
+                <template #body="slotProps">
+                  {{ slotProps.data.value.tarifLabUuid }}
+                </template>
+              </Column>
+              <Column
+                headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                class="w-6/12 text-end"
+                bodyClass="align-top text-end"
+              >
+                <template #header>
+                  <div class="w-full text-end">Rupiah (Rp)</div>
+                </template>
+                <template #body="slotProps">
+                  <span
+                    >Rp.
+                    {{ getHargaLab(slotProps.data.value.tarifLabUuid) }}</span
+                  >
+                </template>
+              </Column>
+            </DataTable>
+          </template>
+        </CustomAccordion>
         <hr class="col-span-12 border-grey-200" />
         <div class="flex items-center justify-end col-span-12 gap-4">
           <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">
             Grand Total
           </div>
           <div class="min-w-[300px] text-end font-bold text-MD">
-            {{ payload.grandTotal }}
+            {{ grandTotalFormatted }}
           </div>
         </div>
         <hr class="col-span-12 border-grey-200" />

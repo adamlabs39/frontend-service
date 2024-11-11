@@ -1,4 +1,4 @@
-import { apiAuthPost, apiAuthDelete } from "@/utils/apiHandler";
+import { apiAuthPost, apiAuthDelete, apiAuthPut} from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore({
@@ -24,7 +24,12 @@ export const useAuthStore = defineStore({
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
+      localStorage.removeItem("faskes");
       return response;
+    },
+
+    async tokenApi(faskesUuid: string,payload = {}) {
+      return apiAuthPut(`/token/${faskesUuid}`,payload);
     },
   },
 });

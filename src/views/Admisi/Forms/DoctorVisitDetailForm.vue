@@ -116,8 +116,8 @@ const schema = computed(() =>
             ? yup.string()
             : yup.string().required("Jadwal harus dipilih"),
         maternity: yup.boolean(),
-        complaint: yup.string(),
-        note: yup.string(),
+        complaint: yup.string().default(""),
+        note: yup.string().default(""),
         assuranceAccountId: yup
           .string()
           .when("paymentMethod", ([paymentMethod], schema) => {
@@ -206,7 +206,6 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-        {{ errors }}
         <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
           <div
             class="gap-x-[30px] col-span-2"
@@ -249,6 +248,8 @@ defineExpose({
               ]"
               :showFilter="false"
               :disabled="isDetail"
+              :invalid="!!errors.practitionerUuid"
+              :invalidMessage="errors.practitionerUuid"
             />
             <!-- FIXME Dummy data -->
             <!-- NOTE Harus ada api baru untuk menampilkan data jadwal dengan filter dokter poli dan jam saat ini -->
@@ -334,6 +335,8 @@ defineExpose({
                 },
               ]"
               :disabled="isDetail"
+              :invalid="!!errors.assuranceAccountId"
+              :invalidMessage="errors.assuranceAccountId"
             />
             <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield

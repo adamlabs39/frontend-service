@@ -38,15 +38,18 @@ const sidebarBodyList = ref<SidebarBody[]>([
       },
       {
         name: "Pengeluaran Barang",
-          type: linkType.DROPDOWN,
+        type: linkType.DROPDOWN,
         icon:"BoxUpIcon",
         child: [
           {
             name: "Verifikasi & Pengiriman Unit",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
           },
-          { name: "Pengeluaran Unit", type: linkType.LINK, url: "" },
+          {
+            name: "Pengeluaran Unit", type: linkType.LINK, url: "/inventory/pengeluaran-barang/pengeluaran-unit" 
+            
+          },
         ],
       },
       {
@@ -54,8 +57,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
           type: linkType.DROPDOWN,
         icon:"BoxDownIcon",
         child: [
-          { name: "Penerimaan Pembelian", type: linkType.LINK, url: "" },
-          { name: "Penerimaan Retur Unit", type: linkType.LINK, url: "" },
+          { name: "Penerimaan Pembelian", type: linkType.LINK, url: "/inventory/penerimaan-barang/penerimaan-pembelian" },
+          { name: "Penerimaan Retur Unit", type: linkType.LINK, url: "/inventory/penerimaan-barang/penerimaan-retur-unit" },
         ],
       },
     ],
@@ -72,7 +75,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
           {
             name: "Supplier",
             type: linkType.LINK,
-            url: "",
+            url: "/inventory/datamaster/supplier",
             icon: "",
           },
         ],
@@ -86,25 +89,25 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Riwayat Tarif",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/riwayat-tarif",
         icon: "OpenBoxIcon",
       },
       {
         name: "Kartu Stok & Mutasi",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/kartustok-mutasi",
         icon: "OpenBoxIcon",
       },
       {
         name: "Stok Opname",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/stok-opname",
         icon: "OpenBoxIcon",
       },
       {
         name: "Stok Adjustment",
         type: linkType.LINK,
-        url: "",
+        url: "/inventory/stok-adjustment",
         icon: "OpenBoxIcon",
       },
     ],
@@ -118,8 +121,8 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.DROPDOWN,
         icon:"FileReportIcon",
         child: [
-          { name: "Obat Expired", type: linkType.LINK, url: "" },
-          { name: "Persediaan", type: linkType.LINK, url: "" },
+          { name: "Obat Expired", type: linkType.LINK, url: "/inventory/laporan/obat-expired" },
+          { name: "Persediaan", type: linkType.LINK, url: "/inventory/laporan/persediaan" },
         ],
       },
     ],

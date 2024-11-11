@@ -30,7 +30,7 @@ const props = defineProps({
 });
 
 const dataPasien = ref({
-  noRM: "001827",
+  noRM: "00-00-00",
   noBPJS: "523214315123123",
   nik: "327012371204102",
   nama: "Nama Lengkap Pasien Jika",
@@ -49,6 +49,18 @@ const cardAktivitasMata = ref({
 });
 const cardAktivitasKandungan = ref({
   keterangan: "Kandungan",
+});
+const cardAktivitasGigi = ref({
+  keterangan: "Gigi",
+});
+const cardAktivitasTHT = ref({
+  keterangan: "THT",
+});
+const cardAktivitasTulang = ref({
+  keterangan: "Tulang",
+});
+const cardAktivitasKulit = ref({
+  keterangan: "Kulit",
 });
 </script>
 
@@ -114,7 +126,7 @@ const cardAktivitasKandungan = ref({
                 </div>
 
                 <!-- Text Container with Background -->
-                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
+                <div class="px-2 py-16 font-bold rounded-xl text-adameds-300">
                   Pasien JKN
                 </div>
               </div>
@@ -140,57 +152,111 @@ const cardAktivitasKandungan = ref({
             </div>
           </div>
 
-          <div class="flex flex-col items-center px-20">
-            <div class="grid grid-cols-9 text-sm pt-14 gap-x-4 gap-y-2">
+          <div class="flex flex-col items-center px-20 pb-4">
+            <div class="grid grid-cols-9 pt-10 text-sm gap-x-4 gap-y-2">
               <div class="font-bold">NIK</div>
               <div class="col-span-2">: &nbsp {{ dataPasien.nik }}</div>
               <div class="font-bold">Nama</div>
               <div class="col-span-2">: &nbsp {{ dataPasien.nama }}</div>
-              <div class="pr-2 font-bold">Jenis Kelamin</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.gender }}</div>
-
-              <div class="font-bold">No.RM</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.noRM }}</div>
               <div class="font-bold">Tgl. Lahir</div>
               <div class="col-span-2">
                 : &nbsp {{ dataPasien.tanggalLahir }}
               </div>
+
+              <div class="font-bold">No.BPJS</div>
+              <div class="col-span-2">: &nbsp {{ dataPasien.noBPJS }}</div>
+              <div class="font-bold">No.RM</div>
+              <div class="col-span-2">: &nbsp {{ dataPasien.noRM }}</div>
+              <div class="pr-2 font-bold">Jenis Kelamin</div>
+              <div class="col-span-2">: &nbsp {{ dataPasien.gender }}</div>
             </div>
           </div>
 
-          <div class="px-20 pt-8">
-            <div class="justify-start pl-1 text-lg font-bold">Daftar Poli</div>
-            <hr class="bg-black h-[2px] my-2 ml-1" />
-            <div class="justify-start pl-1 text-sm text-adameds-300">
-              Silahkan Pilih Poli
+          <div class="grid grid-cols-[1fr_min-content_1fr_1fr_1fr_1fr_1fr]">
+            <div class="pl-6 w-[240px]">
+              <div class="justify-start pl-1 text-lg font-bold">
+                No. Referensi
+              </div>
+              <hr class="bg-black h-[2px] my-2 ml-1" />
+              <div class="justify-start pl-1 text-sm text-adameds-300">
+                Silahkan Cari No. Referensi
+              </div>
+              <div>
+                <CustomButton label="Cari" class="w-full mx-2 my-1" @click="" />
+                <CustomTextfield
+                  :show-label="false"
+                  :placeholder="`No. Referensi`"
+                  class="w-full mx-2"
+                ></CustomTextfield>
+              </div>
             </div>
-          </div>
 
-          <div class="flex flex-col items-center h-[220px] justify-center">
-            <div class="grid grid-cols-4 gap-x-12">
-              <div class="w-[180px] h-[140px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasUmum"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
+            <div class="ml-12 border-2 border-adameds-300 h-[345px]"></div>
+
+            <div class="col-span-5">
+              <div class="px-8">
+                <div class="justify-start pl-1 text-lg font-bold">
+                  Daftar Poli
+                </div>
+                <hr class="bg-black h-[2px] my-2 ml-1" />
+                <div class="justify-start pl-1 mb-8 text-sm text-adameds-300">
+                  Silahkan Pilih Poli
+                </div>
               </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasAnak"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
-              </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasMata"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
-              </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasKandungan"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
+
+              <div class="flex flex-col items-center h-[220px] justify-center">
+                <div style="transform: scale(0.9)">
+                  <div class="grid grid-cols-4 gap-x-6 gap-y-6">
+                    <div class="w-[220px] h-[140px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasUmum"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasAnak"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasMata"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasKandungan"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px] h-[140px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasGigi"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasTHT"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasTulang"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                    <div class="w-[220px]">
+                      <CardAktivitas
+                        :cardAktivitas="cardAktivitasKulit"
+                        class="transition-transform duration-300 hover:scale-95"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

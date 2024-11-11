@@ -195,6 +195,45 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Code: "Kode Kategori Ruangan*",
+      Name: "Nama Kategori Ruangan*",
+    });
+
+    data.push({ No: "1",
+      Code: "RWU",
+      Name: "Rawatan Umum",
+      });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Kategori Ruangan"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Kategori Ruangan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData()
   dataUpload.append('file',file);
@@ -311,7 +350,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Kategori Ruangan ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -341,6 +380,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

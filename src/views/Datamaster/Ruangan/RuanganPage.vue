@@ -166,7 +166,6 @@ const confirmDelete = async (item: any) => {
     }
   }
 };
-
 const downloadExportExcel = async () => {
   try {
     const response = await ruanganStore.exportApi();
@@ -176,50 +175,70 @@ const downloadExportExcel = async () => {
       return;
     }
 
+    // Prepare Data for Export
     const title = ["DATAMASTER RUANGAN"];
     const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
     data.push({});
     data.push({
       No: "No",
       Kode: "Kode Ruangan",
       Nama: "Nama Ruangan",
-    
+      Kategori: "Kategori Ruangan",
+      nomorKamar: "Nama Ruangan",
+      kelasRuangan: "Nama Ruangan",
+      Status: "Status",
     });
+
+    // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        
+        Kategori: rows[i].kategoriRuangan?.name ?? "-",
+        nomorKamar: rows[i].noRoom,
+        kelasRuangan: rows[i].kelasRuangan,
+        Status: rows[i].status,
       });
     }
 
+    // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
+    // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-
     worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
+    // Style Title
     worksheet["A1"].s = {
-      alignment: {
-        horizontal: "center",
-        vertical: "center",
-      },
+      alignment: { horizontal: "center", vertical: "center" },
       font: { bold: true, sz: 14 },
     };
+
+    // Column Widths
     worksheet["!cols"] = [
       { wch: 5 },
       { wch: 20 },
       { wch: 20 },
-    
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
     ];
 
+    // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-    for (let row = range.s.r; row <= range.e.r; row++) {
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
         // Apply border only to row 3 and beyond (table rows)
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
@@ -248,9 +267,53 @@ const downloadExportExcel = async () => {
       }
     }
 
+    // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Ruangan");
-
     XLSX.writeFile(workbook, `Datamaster Ruangan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Code: "Kode Ruangan*",
+      Name: "Nama Ruangan*",
+      Kategori: "Kategori Ruangan*",
+      Nomor: "Nomor Kamar*",
+      KelasRuangan: "Kelas Ruangan*",
+    });
+
+    data.push({ No: "1",
+      Code: "MWR-01",
+      Name: "Mawar",
+      Kategori: "Rawatan Umum",
+      Nomor: "1",
+      KelasRuangan: "Kelas 3", });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Ruangan"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Ruangan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -401,7 +464,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Ruangan ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -434,6 +497,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

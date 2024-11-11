@@ -74,9 +74,10 @@ export function setTimeForDate(
 export function setTimeToDate(time: string) {
   let date = new Date();
   const [hours, minutes, seconds] = time.split(":").map(Number);
+
   date.setHours(hours);
-  date.setHours(minutes);
-  date.setHours(seconds);
+  date.setMinutes(minutes);
+  date.setSeconds(seconds);
   return date;
 }
 

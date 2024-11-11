@@ -27,5 +27,7 @@ import PermissionMenuPage from './SettingPage/Template/PermissionMenu/Permission
          <FormPersetujuanPasien/>
          <FormUnggahBerkas/>
          <!-- <CustomUpload/> -->
+
+         <PermissionMenuPage/>
     </div>
 </template>

@@ -216,6 +216,8 @@ const getLabel = (value: any) => {
         </template>
       </MultiSelect>
     </InputGroup>
-    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>

@@ -5,7 +5,7 @@ import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Footer from "../Layout/FooterPaginator.vue";
+import FooterPaginator from "../Layout/FooterPaginator.vue";
 import FormLoinc from "./FormLoinc.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
@@ -211,6 +211,41 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode LOINC*",
+      Name: "Nama LOINC*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "LOINC-001", Name: "Kalium" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster LOINC");
+    XLSX.writeFile(workbook, `Format Datamaster LOINC.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
@@ -324,7 +359,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `LOINC ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -351,18 +386,13 @@ const handleFileUpload = async (file: File) => {
     </template>
 
     <template #footer>
-      <Footer
-        :rows="loincProperties.page_size"
-        :totalRecords="loincProperties.total"
-        @page="handlePage"
-        @export="downloadExportExcel"
-      />
       <FooterPaginator
         :rows="loincProperties.page_size"
         :totalRecords="loincProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

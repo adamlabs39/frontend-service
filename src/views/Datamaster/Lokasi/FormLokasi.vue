@@ -66,17 +66,15 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama lokasi harus diisi"),
     description: yup.string().required("Deskripsi harus diisi"),
     phone: yup
-      .string()
-      .required("No. Telepon harus diisi")
-      .matches(phoneRegExp, "Format tidak sesuai"),
+      .string(),
     email: yup
       .string()
       .required("Email harus diisi")
       .email("Format email tidak sesuai"),
-    url: yup.string(),
+    url: yup.string().required("URL Website harus diisi"),
     locationType: yup.string().required("Tipe harus diisi"),
     className: yup.string(),
-    partOf: yup.string(),
+    partOf: yup.string().notRequired(),
     codeAntrianPoli: yup.string().when("isPoli", {
       is: (value: boolean) => value === true,
       then: (schema) => schema.required("Kode Antrian harus diisi"),
@@ -109,11 +107,15 @@ const [status] = defineField("status");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    values.statusOperasional = statusOperasional.value ? "occupied" : "non-occupied";
+
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("Data updated successfully:", values);
+
       const response = await lokasiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
@@ -167,6 +169,7 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          statusOperasional: props.payload.statusOperasional === 'occupied' ? true : false,
         });
       }
     } else {

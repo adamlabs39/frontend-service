@@ -22,40 +22,23 @@ const pengajuanReturs = ref<any[]>([]);
 watch(
   () => props.returData,
   (newReturData) => {
-    if (newReturData) {
-      pengajuanReturs.value = newReturData.map((item:any) => ({
-        tanggalPembelian: new Date(item.tanggalPembelian).toLocaleDateString(),
-        noPembelian: item.noPembelian,
-        kategoriItem: item.kategoriItem,
-        jenisItem: item.jenisItem,
-        jenisStok: item.jenisStok,
-        supplier: item.supplier,
-        petugasPembuatPO: item.petugasPembuatPO,
-        lokasiPenerima:item.lokasiPenerima,
-        status: item.status,
-        isCito: item.isCito,
-        ppn: item.ppn,
-        materai: item.materai,
-        diskon: item.diskon,
-        catatan: item.catatan,
-        metodePembelian: item.metodePembelian,
-        totalItem: item.totalItem,
-        datas: item.datas, // Menyimpan data items
-      }));
-    }
+    if (Array.isArray(newReturData)) {
+      // Jika returData adalah array, langsung assign ke pengajuanReturs tanpa memetakan ulang
+      pengajuanReturs.value = newReturData;
+    } 
   },
   { immediate: true }
 );
 
 const handleRowClick = (rowData:any) => {
-  emit('row-clicked', rowData.data);
   console.log(rowData.data)
+  emit('row-clicked', rowData.data);
 };
 
 </script>
 
 <template>
-  <!-- {{ pembelianData }} -->
+  <!-- {{ props.returData}} -->
   <DataTable
     v-if="pengajuanReturs.length"
     v-model:selection="selectedPengajuanRetur"
@@ -73,7 +56,7 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.tanggalPembelian }}</div>
+          <div class="text-SM">{{ slotProps.data.tglPenerimaan }}</div>
         </div>
       </template>
     </Column>
@@ -84,10 +67,10 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.noPembelian }}</div>
+          <div class="text-SM">{{ slotProps.data.noRetur }}</div>
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.kategoriItem"
+            :label="slotProps.data.kategori"
             bgColor="bg-adameds-300"
             textColor="text-white"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -127,7 +110,7 @@ const handleRowClick = (rowData:any) => {
       </template>
       <template #body="slotProps">
         <div>
-          <div class="text-SM">{{ slotProps.data.petugasPembuatPO }}</div>
+          <div class="text-SM">{{ slotProps.data.petugasRetur}}</div>
         </div>
       </template>
     </Column>
@@ -149,6 +132,7 @@ const handleRowClick = (rowData:any) => {
       </template>
     </Column>
   </DataTable>
+  
   <NoData v-else />
 
 

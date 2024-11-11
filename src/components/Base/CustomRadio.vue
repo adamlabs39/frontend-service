@@ -21,6 +21,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  invalid: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -46,11 +50,14 @@ const selectRadio = (value: string | boolean) => {
     </label>
     <div
       @click="selectRadio(value)"
-      class="flex px-3 py-2 border-2 border-gray-200 rounded-lg cursor-pointer"
+      class="flex px-3 py-2 border rounded-lg cursor-pointer"
       :class="{
-        'bg-adameds-50': checked===value ,
+        'bg-adameds-50': checked === value,
+        'text-danger-300 border-danger-300': invalid,
+        'border-gray-200': !invalid,
+        'text-grey-300': disabled,
+        'text-black': !disabled && !invalid,
       }"
-  
     >
       <RadioButton
         v-model="checked"
@@ -62,6 +69,6 @@ const selectRadio = (value: string | boolean) => {
         }"
       />
       <div class="leading-5 text-normal">{{ sideLabel }}</div>
-  </div>
+    </div>
   </div>
 </template>

@@ -36,6 +36,10 @@ import OpenBoxIcon from "./OpenBoxIcon.vue";
 import BoxPlusIcon from "./BoxPlusIcon.vue";
 import BoxUpIcon from "./BoxUpIcon.vue";
 import BoxDownIcon from "./BoxDownIcon.vue";
+import DownloadIcon from "./DownloadIcon.vue";
+import HospitalFillIcon from "./HospitalFillIcon.vue";
+import BellNotificationIcon from "./BellNotificationIcon.vue";
+import UserAccountIcon from "./UserAccountIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -72,6 +76,11 @@ export default {
     app.component("AddPrint", AddPrint);
     app.component("Stethoscop", Stethoscop);
     app.component("PlusIcon", PlusIcon);
+    app.component("DownloadIcon", DownloadIcon);
+    app.component("HospitalFillIcon", HospitalFillIcon);
+    app.component("BellNotificationIcon",BellNotificationIcon)
+    app.component("UserAccountIcon",UserAccountIcon)
+
     // NOTE Inventory
     app.component("OpenBoxIcon", OpenBoxIcon);
     app.component("BoxPlusIcon", BoxPlusIcon);
