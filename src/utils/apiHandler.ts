@@ -12,9 +12,12 @@ const errorApiHandler = (error: any) => {
   let tempDetail = ``;
   if (error.response) {
     if (
-      error.response.data.message == "Authentikasi gagal" &&
+      (error.response.data.message == "Authentikasi gagal" ||
+        error.response.data.message == "Authorization gagal") &&
       (error.response.data.errors[0].type == "Invalid token" ||
-        error.response.data.errors[0].type == "Invalid signature")
+        error.response.data.errors[0].type == "Invalid signature" ||
+        (error.response.data.errors[0].type == "auth" &&
+          error.response.data.errors[0].message == "jwt expired"))
     ) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
