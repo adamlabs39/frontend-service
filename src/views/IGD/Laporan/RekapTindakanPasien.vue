@@ -1,29 +1,21 @@
 <script lang="ts" setup>
-import DataTable from "primevue/datatable";
-import { ref } from "vue";
-
-const rekapTindakanPasien = ref([
-  {
-    tindakan: "Pemeriksaan TTV",
-    jumlah: 5,
+const props = defineProps({
+  payload: {
+    type: Array,
+    default: () => [],
   },
-  {
-    tindakan: "Pasang Perban",
-    jumlah: 3,
-  },
-]);
+});
 </script>
 
 <template>
   <DataTable
-    v-if="rekapTindakanPasien.length"
-    :value="rekapTindakanPasien"
+    :value="props.payload"
     tableStyle="min-width: 50rem"
     scrollable
-     scrollHeight="flex"
+    scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
   >
-    <Column field="no" headerClass="bg-adameds-50" header="No" class="w-[10px]" >
+    <Column field="no" headerClass="bg-adameds-50" header="No" class="w-[10px]">
       <template #body="slotProps">
         <div class="text-SM">
           {{ slotProps.index + 1 }}
@@ -31,28 +23,18 @@ const rekapTindakanPasien = ref([
       </template>
     </Column>
     <Column
-      field="tindakan"
+      field="namaTindakan"
       header="Tindakan"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
+      class="w-[100px] text-SM"
     >
-      <template #body="slotProps">
-        <div class="text-SM">
-          <div>{{ slotProps.data.tindakan }}</div>
-        </div>
-      </template>
     </Column>
     <Column
-      field="jumlah"
+      field="jumlahTindakan"
       header="Jumlah"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
+      class="w-[100px] text-SM"
     >
-      <template #body="slotProps">
-        <div class="text-SM">
-          <div>{{ slotProps.data.jumlah }}</div>
-        </div>
-      </template>
     </Column>
   </DataTable>
 </template>

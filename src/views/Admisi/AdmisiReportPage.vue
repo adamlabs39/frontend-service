@@ -124,8 +124,8 @@ interface Filter {
 const setFilter = () => {
   let filter = {} as Filter;
 
-  filter.page = properties.value.page
-  filter.limit = properties.value.pageSize
+  filter.page = properties.value.page;
+  filter.limit = properties.value.pageSize;
   filter.q = search.value;
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)

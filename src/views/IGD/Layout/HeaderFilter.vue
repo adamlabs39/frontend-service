@@ -20,94 +20,93 @@ const props = defineProps({
     type: Array as PropType<MenuItem[]>,
     default: () => [],
   },
-  currentRouteName: {
-    type: String,
+  filterSelect: {
+    type: Array,
+    default: () => [],
   },
 });
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
-const searchNoAnggotaFilter = ref<string>("");
-const searchNamaObatFilter = ref<string>("");
-const searchDokterFilter = ref<string>("");
-const searchPelayananFilter = ref<string>("");
 
-// SECTION Rawat Jalan
-const filterDataPasien = ref(["DATA LENGKAP", "DATA TIDAK LENGKAP"]);
-
+const filterPatientList = ref([
+  { name: "DATA LENGKAP", value: "0" },
+  { name: "DATA TIDAK LENGKAP", value: "1" },
+]);
 // UNTUK CHIP DI FILTER POLI
-const selectedFilterPoli = ref<string[]>([]);
-const onPoliSelect = (label: string) => {
-  console.log(selectedFilterPoli.value);
-  if (selectedFilterPoli.value.includes(label)) {
-    selectedFilterPoli.value = selectedFilterPoli.value.filter(
-      (item) => item != label
-    );
+const selectedFilterPasien = ref<string[]>([]);
+const onPasienSelect = (value: string) => {
+  const index = selectedFilterPasien.value.indexOf(value);
+  if (index === -1) {
+    selectedFilterPasien.value.push(value);
   } else {
-    selectedFilterPoli.value.push(label);
+    selectedFilterPasien.value.splice(index, 1);
   }
+  emit("filterChipPasien", selectedFilterPasien.value);
 };
 
 // CHIP UNTUK FILTER PEMBAYARAN.
 const selectedPaymentMethod = ref<string[]>([]);
-const onPaymentMethodSelect = (label: string) => {
-  if (selectedPaymentMethod.value.includes(label)) {
-    selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
-      (item) => item != label
-    );
+const onPaymentMethodSelect = (value: string) => {
+  const index = selectedPaymentMethod.value.indexOf(value);
+  if (index === -1) {
+    selectedPaymentMethod.value.push(value);
   } else {
-    selectedPaymentMethod.value.push(label);
+    selectedPaymentMethod.value.splice(index, 1);
   }
+  emit("filterChipPayment", selectedPaymentMethod.value);
 };
 
-const filters = [selectedFilterPoli, selectedPaymentMethod];
+const emit = defineEmits([
+  "selectedTab",
+  "update:selectedFilter",
+  "reload-data",
+  "update:valueSearch",
+  "search",
+  "update:selectedMonth",
+  "reset",
+  "update:startDateFilter",
+  "update:endDateFilter",
+  "filterChipPasien",
+  "filterChipPayment",
+]);
 
-const resetFilter = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
-
-  switch (props.currentRouteName) {
-    case "rawat-jalan-poli":
-      searchPatientFilter.value = "";
-      searchDokterFilter.value = "";
-      selectedFilterPoli.value = [];
-      break;
-    case "monitoring-kunjungan":
-    case "monitoring-riwayat-kunjungan":
-      searchNoAnggotaFilter.value = "";
-      searchPelayananFilter.value = "";
-      break;
-    case "monitoring-obat-kunjungan":
-      searchNamaObatFilter.value = "";
-      searchPelayananFilter.value = "";
-      break;
-    default:
-      break;
-  }
-  // Resetting payment method for all routes
-  selectedPaymentMethod.value = [];
-};
-defineExpose({
-  resetFilter,
-});
-
-const emit = defineEmits(["searchExecuted", "selectedTab"]);
-
-// Ketika tombol "Cari" diklik, emit event searchExecuted
-const executeSearch = () => {
-  // Emit event dengan nilai true
-  emit("searchExecuted", true);
-};
 const selectedTab = ref("0");
 const searchBulanFilter = ref<string>("");
+const optionBulan = ref([
+  { label: "Januari", value: 1 },
+  { label: "Februari", value: 2 },
+  { label: "Maret", value: 3 },
+  { label: "April", value: 4 },
+  { label: "Mei", value: 5 },
+  { label: "Juni", value: 6 },
+  { label: "Juli", value: 7 },
+  { label: "Agustus", value: 8 },
+  { label: "September", value: 9 },
+  { label: "Oktober", value: 10 },
+  { label: "November", value: 11 },
+  { label: "Desember", value: 12 },
+]);
+const valueSelectedFilter = ref();
+const resetForm = () => {
+  searchPatientFilter.value = "";
+  valueSelectedFilter.value = "";
+  searchBulanFilter.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+};
+
+defineExpose({
+  resetForm,
+});
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton icon="PhArrowClockwise" />
+        <CustomButton icon="PhArrowClockwise" @click="emit('reload-data')" />
         <CustomBreadCrumb
           :home="{
             label:
@@ -165,9 +164,10 @@ const searchBulanFilter = ref<string>("");
               : ''
           "
           class="mr-5 grow"
+          @update:modelValue="$emit('update:valueSearch', searchPatientFilter)"
         />
         <CustomSelect
-          v-model="searchDokterFilter"
+          v-model="valueSelectedFilter"
           :label="
             props.pageType === 'pasien-igd' ||
             pageType === 'monitoring-kunjungan'
@@ -183,8 +183,10 @@ const searchBulanFilter = ref<string>("");
               : ''
           "
           class="mr-5 grow"
-          optionLabel=""
-          optionValue=""
+          :optionLabel="
+            pageType === 'rekap-tindakan-pasien' ? 'pegawai.name' : 'name'
+          "
+          optionValue="uuid"
           :place-holder="
             props.pageType === 'pasien-igd' ||
             pageType === 'monitoring-kunjungan'
@@ -199,38 +201,40 @@ const searchBulanFilter = ref<string>("");
               ? 'Pilih Praktisi'
               : ''
           "
-          :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+          :options="filterSelect"
           prependIcon="PhMagnifyingGlass"
+          @update:modelValue="
+            $emit('update:selectedFilter', valueSelectedFilter)
+          "
         />
 
         <!-- DatePicker -->
         <CustomSelect
-          v-if="
-            [
-              'kunjungan-igd',
-              'pembatalan-dirawat',
-              'rekap-tindakan-pasien',
-            ].includes(pageType)
-          "
+          v-if="['rekap-tindakan-pasien'].includes(pageType)"
           v-model="searchBulanFilter"
           label="Bulan"
           class="w-1/4"
-          optionLabel=""
-          optionValue=""
+          optionLabel="label"
+          optionValue="value"
           place-holder="Pilih Bulan"
-          :options="['Januari', 'Februari', 'Maret']"
+          :options="optionBulan"
+          @update:modelValue="$emit('update:selectedMonth', searchBulanFilter)"
         />
-        <div v-else class="flex">
+        <div v-else class="flex w-1/4">
           <CustomDatePicker
             v-model="startDateFilter"
             label="Tanggal"
-            class="w-[200px]"
+            class="mt-auto"
+            @update:modelValue="
+              $emit('update:startDateFilter', startDateFilter)
+            "
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
             v-model="endDateFilter"
             :showLabel="false"
-            class="mt-auto w-[200px]"
+            class="mt-auto"
+            @update:modelValue="$emit('update:endDateFilter', endDateFilter)"
           />
         </div>
 
@@ -238,7 +242,7 @@ const searchBulanFilter = ref<string>("");
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
-          @click="executeSearch"
+          @click="$emit('search')"
         />
         <CustomButton
           label="Reset"
@@ -246,6 +250,7 @@ const searchBulanFilter = ref<string>("");
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           class="mt-auto w-[70px]"
+          @click="$emit('reset')"
         />
       </div>
       <!-- Filter for pasien igd -->
@@ -298,11 +303,12 @@ const searchBulanFilter = ref<string>("");
           <div class="flex gap-2.5">
             <hr class="h-auto w-[1px] bg-grey-300" />
             <CustomChip
-              v-for="(option, index) in filterDataPasien"
-              :key="option + index"
-              :label="option"
-              :isSelected="selectedFilterPoli.includes(option)"
-              @selected="onPoliSelect"
+              v-for="(option, index) in filterPatientList"
+              :key="option.value + index"
+              :label="option.name"
+              :value="option.value"
+              :isSelected="selectedFilterPasien.includes(option.value)"
+              @selected="onPasienSelect(option.value)"
             >
             </CustomChip>
           </div>
@@ -313,24 +319,26 @@ const searchBulanFilter = ref<string>("");
             <hr class="h-auto w-[1px] bg-grey-300" />
             <CustomChip
               label="TUNAI"
+              value="1"
               borderColor="border-adameds-300"
               bgColor="bg-adameds-50"
               iconColor="text-adameds-300"
               textColor="text-adameds-300"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('TUNAI')"
-              @selected="onPaymentMethodSelect"
+              :isSelected="selectedPaymentMethod.includes('1')"
+              @selected="onPaymentMethodSelect('1')"
               selectedColor="bg-adameds-300 border-adameds-300"
             />
             <CustomChip
               label="ASURANSI"
+              value="2"
               borderColor="border-warning-300"
               bgColor="bg-warning-50"
               iconColor="text-warning-300"
               textColor="text-warning-300"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('ASURANSI')"
-              @selected="onPaymentMethodSelect"
+              :isSelected="selectedPaymentMethod.includes('2')"
+              @selected="onPaymentMethodSelect('2')"
               selectedColor="bg-warning-300 border-warning-300"
             />
           </div>

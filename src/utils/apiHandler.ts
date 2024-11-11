@@ -3,6 +3,7 @@ import {
   settingInstance,
   baseInstanceDatamaster,
   baseInstanceAdmisi,
+  baseInstanceIgd,
   authInstance,
 } from "./Api";
 import { app } from "@/main";
@@ -282,6 +283,56 @@ const apiAdmisiDelete = async (url: string, data: object) => {
   }
 };
 
+//Igd
+const apiIgdGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiIgdPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiIgdPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+const apiIgdDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -304,4 +355,8 @@ export {
   apiAdmisiPut,
   apiAdmisiPatch,
   apiAdmisiDelete,
+  apiIgdGet,
+  apiIgdPost,
+  apiIgdPut,
+  apiIgdDelete,
 };
