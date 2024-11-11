@@ -387,6 +387,7 @@ defineExpose({
               v-model:expandedRows="expandedRows"
               :value="reportData"
               tableStyle="min-width: 50rem"
+              stripedRows
               scrollable
               scrollHeight="flex"
               :pt="{ headerRow: 'text-SM' }"

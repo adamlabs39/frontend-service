@@ -278,6 +278,7 @@ onMounted(() => {
           <div class="overflow-auto">
             <DataTable
               :value="itemsRoom"
+              stripedRows
               scrollable
               scrollHeight="flex"
               :pt="{ headerRow: 'text-SM' }"
@@ -428,6 +429,7 @@ onMounted(() => {
           <DataTable
             :value="fields"
             class="overflow-hidden rounded-[10px]"
+            stripedRows
             scrollable
             scrollHeight="flex"
             :pt="{ headerRow: 'text-SM' }"
