@@ -20,7 +20,7 @@ const updatePageType = (path: string) => {
     {
       label:
         pageType.value == "kunjungan-igd"
-          ? "Kunjungan IGD"
+        ? "Kunjungan IGD"
           : pageType.value == "pembatalan-dirawat"
           ? "Pembatalan Dirawat"
           : pageType.value == "rekap-tindakan-pasien"

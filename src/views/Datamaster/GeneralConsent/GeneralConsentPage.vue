@@ -151,6 +151,20 @@ const confirmDelete = async (item: any) => {
           rowStripedBackground: '#F8F8F8',
         }"
       >
+      <Column headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">No.</div>
+          </template>
+          <template #body="slotProps">
+            <div class="flex items-center justify-center">
+              {{
+                (generalConsentProperties.page - 1) * generalConsentProperties.page_size +
+                slotProps.index +
+                1
+              }}
+            </div>
+          </template>
+        </Column>
         <Column
           field="code"
           header="Kode General Consent"

@@ -37,11 +37,8 @@ const schema = toTypedSchema(
       code: yup.string().required("Kode Voucher harus diisi"),
       name: yup.string().required("Nama Voucher harus diisi"),
       qty: yup.number().required("Jumlah Voucher harus diisi"),
-      startDate: yup
-        .date()
-        .default(new Date())
-        .required("Tanggal harus diplih"),
-      endDate: yup.date().default(new Date()).required("Tanggal harus diplih"),
+      startDate: yup.date().required("Tanggal harus diplih"),
+      endDate: yup.date().required("Tanggal harus diplih"),
       type: yup.string().required("Tipe Voucher harus dipilih"),
       value: yup.number().required("Tarif Voucher harus diisi"),
       status: yup.bool().default(false),
@@ -62,15 +59,25 @@ const opsiType = ref([
 
 const voucherStore = useVoucherStore();
 
+const valueVoucher = () => {
+  if (type.value === "persentase") {
+    value.value = persenValue.value || 0;
+  } else if (type.value === "potongan") {
+    value.value = potonganValue.value || 0;
+  } else {
+    value.value = 0;
+  }
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
   console.log(type);
 
   try {
-    if (values.type === "persentase") {
-      values.value = persenValue.value;
-    } else if (values.type === "potongan") {
-      values.value = potonganValue.value;
-    }
+    // if (values.type === "persentase") {
+    //   values.value = persenValue.value;
+    // } else if (values.type === "potongan") {
+    //   values.value = potonganValue.value;
+    // }
     values.startDate = dateToEpoch(new Date(values.startDate));
     values.endDate = dateToEpoch(new Date(values.endDate));
     if (method.value === "edit") {
@@ -99,6 +106,7 @@ const [startDate] = defineField("startDate");
 const [endDate] = defineField("endDate");
 const [type] = defineField("type");
 const [status] = defineField("status");
+const [value] = defineField("value");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
@@ -126,11 +134,12 @@ const closeDialog = () => {
 };
 watch(type, (newType) => {
   if (newType === "persentase") {
-    potonganValue.value = 0; // Clear potongan value if switching to percentage
+    potonganValue.value = 0;
   } else if (newType === "potongan") {
-    persenValue.value = 0; // Clear percentage value if switching to potongan
+    persenValue.value = 0;
   }
 });
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -189,13 +198,34 @@ watch(
           :required="errors.name ? true : false"
         />
         <div class="flex flex-col grid-cols-12 col-span-7 gap-1">
-          <div class="col-span-12 font-semibold text-normal">Tanggal</div>
-          <div class="flex justify-between items-center gap-2.5">
-            <CustomDatePicker v-model="startDate" :showLabel="false" />
-            <PhMinus class="mt-auto mb-3 text-black" />
-            <CustomDatePicker v-model="endDate" :showLabel="false" />
+          <div class="col-span-12 font-semibold text-normal">
+            Tanggal<span
+              v-if="errors.startDate && errors.endDate"
+              class="text-danger-300"
+              >*</span
+            >
+          </div>
+          <div
+            class="flex justify-between items-start gap-2.5"
+          >
+            <CustomDatePicker
+              v-model="startDate"
+              placeHolder="01-01-2024"
+              :showLabel="false"
+              :invalid="!!errors.startDate"
+              :invalidMessage="errors.startDate"
+            />
+            <PhMinus class="mt-3 text-black" />
+            <CustomDatePicker
+              v-model="endDate"
+              placeHolder="01-01-2024"
+              :showLabel="false"
+              :invalid="!!errors.endDate"
+              :invalidMessage="errors.endDate"
+            />
           </div>
         </div>
+
         <CustomInputNumber
           v-model="qty"
           label="Jumlah Voucher"
@@ -206,7 +236,11 @@ watch(
         />
         <div class="grid items-end w-full grid-cols-2 col-span-7 gap-5">
           <div class="col-span-2 -mb-4 font-semibold text-normal">
-            Tipe Voucher<span v-if="errors.type ? true : false" class="text-danger-300">*</span>
+            Tipe Voucher<span
+              v-if="errors.type ? true : false"
+              class="text-danger-300"
+              >*</span
+            >
           </div>
           <CustomRadio
             v-for="data in opsiType"
@@ -222,13 +256,21 @@ watch(
           />
         </div>
         <div class="flex flex-col col-span-5">
-          <div class="block font-semibold text-normal">Tarif Voucher</div>
+          <div class="col-span-12 font-semibold text-normal">
+            Tarif Voucher<span
+              v-if="errors.value && errors.value"
+              class="text-danger-300"
+              >*</span
+            >
+          </div>
           <div class="grid items-end grid-cols-3 gap-5">
             <CustomInputNumber
               v-model="persenValue"
               label=""
               class="col-span-1"
-              :disabled="type === 'potongan' || !type"
+              @update:modelValue="valueVoucher"
+              :disabled="type==='potongan'"
+              :invalid="!!errors.value"
             >
               <template #appendText>
                 <div class="flex items-center justify-center mr-2.5">%</div>
@@ -238,8 +280,9 @@ watch(
               v-model="potonganValue"
               class="col-span-2"
               label=""
-              :disabled="type === 'persentase' || !type"
-              
+              @update:modelValue="valueVoucher"
+              :disabled="type==='persentase'"
+              :invalid="!!errors.value"
             >
               <template #prependText>
                 <div
@@ -250,6 +293,10 @@ watch(
               </template>
             </CustomInputNumber>
           </div>
+          <ErrorMessage
+            :name="`value`"
+            class="mt-2 font-medium text-danger-300 text-XS"
+          />
         </div>
         <hr class="col-span-12 border-grey-200" />
 

@@ -3,8 +3,9 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { parse } from "date-fns";
 import { usePegawaiStore } from "@/stores/datamaster/pegawai";
-import { dateToEpoch,formatDate } from "@/utils/Helpers";
+import { dateToEpoch, formatDate } from "@/utils/Helpers";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -35,19 +36,25 @@ const optionsPegawai = ref([
   { label: "NON NAKES", value: 2 },
 ]);
 
-const optionsGender = ref(["Perempuan", "Laki-Laki"]);
+const optionsGender = ref(["Perempuan", "Laki-laki"]);
 
 const schema = toTypedSchema(
-  yup.object({
-    name: yup.string().required("Nama Pegawai harus diisi"),
-    nik: yup.string().required("NIK harus diisi"),
-    tipe: yup.number().required("Tipe Pegawai harus diisi"),
-    firstTitle: yup.string().notRequired(),
-    lastTitle: yup.string().notRequired(),
-    gender: yup.string().required("Jenis Kelamin harus diisi"),
-    tanggalLahir: yup.date().default(new Date()).required("Tanggal Lahir harus diisi"),
-    status: yup.bool().default(false),
-  }).noUnknown()
+  yup
+    .object({
+      name: yup.string().required("Nama Pegawai harus diisi"),
+      nik: yup
+        .string()
+        .required("NIK harus diisi")
+        .matches(/^[0-9]+$/, "NIK harus berupa angka")
+        .length(16, "NIK harus terdiri dari 16 digit"),
+      tipe: yup.number().required("Tipe Pegawai harus diisi"),
+      firstTitle: yup.string().notRequired(),
+      lastTitle: yup.string().notRequired(),
+      gender: yup.string().required("Jenis Kelamin harus diisi"),
+      tanggalLahir: yup.date().required("Tanggal Lahir harus diisi"),
+      status: yup.bool().default(false),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -69,7 +76,7 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    values.tanggalLahir = formatDate(new Date(values.tanggalLahir)); 
+    values.tanggalLahir = formatDate(new Date(values.tanggalLahir));
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
@@ -120,6 +127,11 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          tanggalLahir: parse(
+            props.payload.tanggalLahir,
+            "dd-MM-yyyy",
+            new Date()
+          ),
         });
       }
     } else {
@@ -184,11 +196,12 @@ watch(
           class="col-span-12"
           :invalid="!!errors.nik"
           :invalidMessage="errors.nik"
-          :required="errors.nik ? true : false"
+          :required="errors.nik === 'NIK harus diisi'"
         />
         <CustomDatePicker
           v-model="tanggalLahir"
           class="col-span-6"
+          placeHolder="01-01-2024"
           label="Tanggal Lahir"
           :invalid="!!errors.tanggalLahir"
           :invalidMessage="errors.tanggalLahir"
@@ -232,7 +245,7 @@ watch(
         <CustomInfoRow label="Nama Lengkap" :value="name" />
         <CustomInfoRow label="NIK" :value="nik" />
         <CustomInfoRow label="Tanggal Lahir" :value="payload.tanggalLahir" />
-        <CustomInfoRow label="Jenis Kelamin" :value="gender"/>
+        <CustomInfoRow label="Jenis Kelamin" :value="gender" />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

@@ -187,21 +187,23 @@ const downloadExportExcel = async () => {
       Kode: "Kode Ruangan",
       Nama: "Nama Ruangan",
       Kategori: "Kategori Ruangan",
-      nomorKamar: "Nama Ruangan",
-      kelasRuangan: "Nama Ruangan",
+      nomorKamar: "Nomor Ruangan",
+      kelasRuangan: "Kelas Ruangan",
       Status: "Status",
     });
 
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
+      const kelasLabel = optionsKelas.value.find(kelas => kelas.value === rows[i].kelasRuangan)?.label || "-";
+
       data.push({
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
         Kategori: rows[i].kategoriRuangan?.name ?? "-",
         nomorKamar: rows[i].noRoom,
-        kelasRuangan: rows[i].kelasRuangan,
-        Status: rows[i].status,
+        kelasRuangan: kelasLabel,
+        Status: rows[i].status? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -220,15 +222,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-    ];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -382,7 +384,11 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (ruanganProperties.page - 1) * ruanganProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -423,7 +429,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="

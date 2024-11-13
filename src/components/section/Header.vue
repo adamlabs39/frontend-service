@@ -176,6 +176,8 @@ const putDataFaskes = async () => {
   const response = await authStore.tokenApi(faskesSelected.value);
   localStorage.setItem("access_token", `Bearer ${response.payload.newToken}`);
   localStorage.setItem("faskes", JSON.stringify(response.payload));
+  loadFaskesFromLocalStorage();
+  
 };
 
 const loadFaskesFromLocalStorage = () => {
@@ -257,7 +259,7 @@ const isSuperAdmin = getUserRole() === "super admin";
         class="flex gap-2.5 bg-white px-3 rounded-[75px] text-adameds-300 items-center justify-center min-w-[156px] h-8"
       >
         <HospitalFillIcon class="text-adameds-300" />
-        <div class="font-semibold text-MD truncate">
+        <div class="font-semibold truncate text-MD">
           {{ faskesName }}
         </div>
       </div>
@@ -291,6 +293,8 @@ const isSuperAdmin = getUserRole() === "super admin";
           v-model:visible="isDialogVisible"
           position="topright"
           pt:root:class="rounded-2xl"
+          :dismissableMask="true"
+           :modal="true"
         >
           <template #container>
             <div class="p-2.5 rounded-2xl w-[180px]">

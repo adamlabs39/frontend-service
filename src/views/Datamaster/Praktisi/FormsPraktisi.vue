@@ -74,18 +74,16 @@ onMounted(() => {
   fetchLokasi();
 });
 
-const selectedPegawai = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
-
+const selectedPegawai = ref<any>(null); 
 const searchPegawai = () => {
-  // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
   selectedPegawai.value = pegawaiPayload.value.find(
     (pegawai) => pegawai.uuid === pegawaiUuid.value
   );
 };
 
 const resetSearch = () => {
-  pegawaiUuid.value = ""; // Reset pegawaiUuid
-  selectedPegawai.value = null; // Reset selectedPegawai
+  pegawaiUuid.value = ""; 
+  selectedPegawai.value = null; 
 };
 
 const schema = toTypedSchema(
@@ -280,14 +278,15 @@ const tempPoli = ref([]);
           :options="pegawaiPayload"
           optionValue="uuid"
           optionLabel="name"
+          @update:modelValue="searchPegawai"
           place-holder="Cari & Pilih Pegawai"
-          class="col-span-8"
+          class="col-span-12"
           :invalid="!!errors.pegawaiUuid"
           :invalidMessage="errors.pegawaiUuid"
           :required="errors.pegawaiUuid ? true : false"
         />
 
-        <div class="flex items-end justify-between col-span-4">
+        <!-- <div class="flex items-end justify-between col-span-4">
           <CustomButton
             label="Cari"
             icon="PhMagnifyingGlass"
@@ -300,7 +299,7 @@ const tempPoli = ref([]);
             text-color="text-adameds-300"
             @click="resetSearch"
           />
-        </div>
+        </div> -->
         <div v-if="selectedPegawai" class="col-span-12">
           <div
             class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 p-5"

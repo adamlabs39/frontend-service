@@ -115,19 +115,24 @@ onMounted(() => {
   fetchOrganisasi();
   fetchProvinsi();
 });
-
+const phoneRegExp =
+  /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Organisasi harus diisi"),
     name: yup.string().required("Nama Organisasi harus diisi"),
-    phone: yup.string().required("No. Telepon harus diisi"),
-    email: yup.string().required("Email harus diisi"),
-    url: yup.string().required("URL harus diisi"),
-    addressCode: yup.string().required("Kelurahan harus dipilih"),
+    phone: yup.string().required("No. Telepon harus diisi").matches(phoneRegExp, "Format tidak sesuai"),
+    email: yup.string().required("Email harus diisi").email("Format email tidak sesuai"),
+    url: yup.string().required("URL harus diisi").matches(/^https:\/\//, "URL harus dimulai dengan https://"),
+    addressCode: yup.string().default('Gunung ANyar').required("Kelurahan harus dipilih"),
     kodePos: yup.string().required("Kode Pos harus diisi"),
     alamat: yup.string().required("Alamat harus diisi"),
-    partOfUuid: yup.string(),
+    partOfName:yup.string().notRequired(),
+    partOf: yup.string().notRequired(),
     status: yup.bool().default(false),
+    provinsi:yup.string().required("Provinsi harus dipilih"),
+    kabupaten:yup.string().required("Kab/Kota harus dipilih"),
+    kecamatan:yup.string().required("Kecamatan harus dipilih"),
   }).noUnknown()
 );
 
@@ -143,11 +148,12 @@ const [url] = defineField("url");
 const [addressCode] = defineField("addressCode");
 const [kodePos] = defineField("kodePos");
 const [alamat] = defineField("alamat");
-const [partOfUuid] = defineField("partOfUuid");
+const [partOf] = defineField("partOf");
 const [status] = defineField("status");
-const provinsi = ref();
-const kabupaten = ref();
-const kecamatan = ref();
+const [provinsi] = defineField("provinsi");
+const [kabupaten] = defineField("kabupaten");
+const [kecamatan] = defineField("kecamatan");
+const [partOfName] = defineField("partOfName");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
@@ -195,31 +201,29 @@ const closeDialog = () => {
   resetForm();
 };
 
-// Watcher untuk Provinsi
-watch(provinsi, (newProvinsi) => {
-  if (newProvinsi) {
-    fetchKabupaten(newProvinsi); // Ambil data kabupaten ketika provinsi berubah
-    kabupaten.value = null; // Reset kabupaten dan kecamatan saat provinsi berubah
-    kecamatan.value = null;
-    kelurahanPayload.value = [];
-  }
-});
+const onProvinsiUpdate = async (newProvinsi: string) => {
+  await fetchKabupaten(newProvinsi);
+  kabupaten.value = '';
+  kecamatan.value = '';
+  kelurahanPayload.value = [];
+};
 
-// Watcher untuk Kabupaten
-watch(kabupaten, (newKabupaten) => {
-  if (newKabupaten) {
-    fetchKecamatan(newKabupaten); // Ambil data kecamatan ketika kabupaten berubah
-    kecamatan.value = null; // Reset kecamatan dan kelurahan saat kabupaten berubah
-    kelurahanPayload.value = [];
-  }
-});
+const onKabupatenUpdate = async (newKabupaten: string) => {
+  await fetchKecamatan(newKabupaten);
+  kecamatan.value = '';
+  kelurahanPayload.value = [];
+};
 
-// Watcher untuk Kecamatan
-watch(kecamatan, (newKecamatan) => {
-  if (newKecamatan) {
-    fetchKelurahan(newKecamatan); // Ambil data kelurahan ketika kecamatan berubah
-  }
-});
+const onKecamatanUpdate = async (newKecamatan: string) => {
+  await fetchKelurahan(newKecamatan);
+};
+
+const selectedPartOf = () => {
+  const selectedItem = organisasiPayload.value.find(
+    (item) => item.uuid === partOf.value
+  );
+  partOfName.value = selectedItem ? selectedItem.name : "";
+};
 
 watch(
   () => props.isDialogVisible,
@@ -232,23 +236,21 @@ watch(
         setValues({
           ...props.payload,
         });
-
-        // Set provinsi, kabupaten, kecamatan, and kelurahan based on payload data
         if (props.payload.detailAlamat) {
           // Set provinsi
-          provinsi.value = props.payload.detailAlamat.provinsi.code;
-          await fetchKabupaten(provinsi.value);  // Fetch kabupaten after provinsi is set
+          provinsi.value = props.payload?.detailAlamat?.provinsi.code as string;
+          await fetchKabupaten(provinsi.value);  
 
           // Set kabupaten
-          kabupaten.value = props.payload.detailAlamat.kabupaten.code;
-          await fetchKecamatan(kabupaten.value);  // Fetch kecamatan after kabupaten is set
+          kabupaten.value = props.payload?.detailAlamat?.kabupaten.code as string;
+          await fetchKecamatan(kabupaten.value);  
 
           // Set kecamatan
-          kecamatan.value = props.payload.detailAlamat.kecamatan.code;
-          await fetchKelurahan(kecamatan.value);  // Fetch kelurahan after kecamatan is set
+          kecamatan.value = props.payload?.detailAlamat?.kecamatan.code as string;
+          await fetchKelurahan(kecamatan.value);  
 
           // Set kelurahan
-          addressCode.value = props.payload.detailAlamat.kelurahan.code;
+          addressCode.value = props.payload?.detailAlamat?.kelurahan.code as string;
         }
       }
     } else {
@@ -295,7 +297,7 @@ watch(
           class="col-span-4"
           :invalid="!!errors.phone"
           :invalidMessage="errors.phone"
-          :required="errors.phone ? true : false"
+          :required="errors.phone === 'No. Telepon harus diisi' ? true : false"
         />
         <CustomTextfield
           label="Email"
@@ -304,7 +306,7 @@ watch(
           class="col-span-8"
           :invalid="!!errors.email"
           :invalidMessage="errors.email"
-          :required="errors.email ? true : false"
+          :required="errors.email === 'Email harus diisi' ? true : false"
         />
         <CustomTextfield
           label="URL"
@@ -313,7 +315,7 @@ watch(
           class="col-span-12"
            :invalid="!!errors.url"
           :invalidMessage="errors.url"
-          :required="errors.url ? true : false"
+          :required="errors.url ==='URL harus diisi' ? true : false"
         />
         <CustomSelect
           label="Provinsi"
@@ -323,6 +325,10 @@ watch(
           :options="provinsiPayload"
           option-label="name"
           option-value="code"
+          @update:modelValue="onProvinsiUpdate"
+          :invalid="!!errors.provinsi"
+          :invalidMessage="errors.provinsi"
+          :required="errors.provinsi ? true : false"
         />
         <CustomSelect
           label="Kab/Kota"
@@ -332,6 +338,11 @@ watch(
           :options="kabupatenPayload"
           option-label="name"
           option-value="code"
+          @update:modelValue="onKabupatenUpdate"
+          :invalid="!!errors.kabupaten"
+          :invalidMessage="errors.kabupaten"
+          :required="errors.kabupaten ? true : false"
+
         />
         <CustomSelect
           label="Kecamatan"
@@ -341,6 +352,10 @@ watch(
           :options="kecamatanPayload"
           option-label="name"
           option-value="code"
+          @update:modelValue="onKecamatanUpdate"
+          :invalid="!!errors.kecamatan"
+          :invalidMessage="errors.kecamatan"
+          :required="errors.kecamatan ? true : false"
         />
         <CustomSelect
           label="Kelurahan/Desa"
@@ -374,12 +389,13 @@ watch(
         />
         <CustomSelect
           label="Part Of"
-          v-model="partOfUuid"
+          v-model="partOf"
           :options="organisasiPayload"
           option-label="name"
           option-value="uuid"
           place-holder="Pilih Part Of"
           class="col-span-12"
+          @update:modelValue="selectedPartOf"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch

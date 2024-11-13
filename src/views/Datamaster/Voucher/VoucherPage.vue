@@ -170,19 +170,16 @@ const downloadExportExcel = async () => {
       },
       font: { bold: true, sz: 14 },
     };
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 10 },
-    ];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
 
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:J1");
     for (let row = range.s.r; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
@@ -313,7 +310,11 @@ const handleFileUpload = async (file: File) => {
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (voucherProperties.page - 1) * voucherProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -359,7 +360,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
