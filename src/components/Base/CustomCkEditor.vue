@@ -23,6 +23,36 @@ import { computed, ref } from "vue";
 import "ckeditor5/ckeditor5.css";
 import "ckeditor5-premium-features/ckeditor5-premium-features.css";
 
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: "",
+  },
+  showLabel: {
+    type: Boolean,
+    default: true,
+  },
+  label: {
+    type: String,
+    default: "Label",
+  },
+  required: {
+    type: Boolean,
+    default: false,
+  },
+  invalid: {
+    type: Boolean,
+    default: false,
+  },
+  invalidMessage: {
+    type: String,
+    default: "",
+  },
+  placeholder: {
+    type: String,
+    default: "CK Editor Vue....",
+  },
+});
 const editor = ref(ClassicEditor);
 const editorConfig = ref({
   plugins: [
@@ -65,21 +95,7 @@ const editorConfig = ref({
   table: {
     contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
   },
-});
-
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: "<p>Hello from CKEditor 5 in Vue!</p>",
-  },
-  showLabel: {
-    type: Boolean,
-    default: true,
-  },
-  label: {
-    type: String,
-    default: "Label",
-  },
+  placeholder: props.placeholder,
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -91,12 +107,30 @@ const value = computed({
 
 <template>
   <label
-      v-if="props.showLabel"
-      class="block font-semibold text-normal mb-[5px]"
-    >
-      {{ props.label }}
-    </label>
-  <div class="max-w-full prose">
+    v-if="showLabel"
+    class="block font-semibold mb-[5px] truncate text-normal"
+  >
+    {{ label }}<span v-if="required" class="text-danger-300">*</span>
+  </label>
+  <div
+    class="max-w-full prose"
+    :class="{
+      'border border-danger-300': props.invalid,
+      'invalid-placeholder': props.invalid,
+    }"
+  >
     <ckeditor v-model="value" :editor="editor" :config="editorConfig" />
   </div>
+  <small v-if="invalid" class="text-danger-300 text-XS">{{
+    invalidMessage
+  }}</small>
 </template>
+<style>
+.ck .ck-editor__main {
+  color: #000000;
+  font-size: 12px;
+}
+.invalid-placeholder .ck.ck-editor__editable > .ck-placeholder::before {
+  color: #e9594c;
+}
+</style>

@@ -30,12 +30,14 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode General Consent harus diisi"),
-    name: yup.string().required("Nama General Consent harus diisi"),
-    isiSurat: yup.string().required("Isi General consent harus diisi"),
-    status: yup.bool().default(false),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode General Consent harus diisi"),
+      name: yup.string().required("Nama General Consent harus diisi"),
+      isiSurat: yup.string().required("Isi General consent harus diisi"),
+      status: yup.bool().default(false),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -114,11 +116,11 @@ watch(
 </script>
 <template>
   <CustomDialog
-  :width="method === 'detail' ? '600px' : '1000px'"
-  :visible="isDialogVisible"
-  @update:visible="updateVisibility"
-  headerBg="bg-adameds-300"
->
+    :width="method === 'detail' ? '600px' : '1000px'"
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    headerBg="bg-adameds-300"
+  >
     <template #header>Tambah General Consent</template>
     <template #body>
       <!-- Form Input -->
@@ -200,7 +202,14 @@ watch(
             </template>
           </CustomAccordion>
         </div>
-        <CustomCkEditor v-model="isiSurat" label="Isi General Consent" />
+        <CustomCkEditor
+          v-model="isiSurat"
+          label="Isi General Consent"
+          :invalid="!!errors.isiSurat"
+          :invalidMessage="errors.isiSurat"
+          :required="errors.isiSurat ? true : false"
+          placeholder="Isi General Consent"
+        />
 
         <hr class="col-span-12 my-5 border-grey-200" />
         <CustomSwitch v-model="status" label="Status" class="col-span-12" />
@@ -210,7 +219,10 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode General Consent" :value="code" />
         <CustomInfoRow label="Nama General Consent" :value="name" />
-        <CustomInfoRow label="Isi General Consent" :value="payload.isiSurat ?? '-'" />
+        <CustomInfoRow
+          label="Isi General Consent"
+          :value="payload.isiSurat ?? '-'"
+        />
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
