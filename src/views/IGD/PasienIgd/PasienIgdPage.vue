@@ -268,7 +268,7 @@ const dokterDJP = ref([
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-SM">{{ slotProps.data.noRM }}</div>
+              <div class="text-SM">{{ slotProps.data.noRm }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
             </div>
           </template>
