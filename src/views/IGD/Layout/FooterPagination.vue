@@ -19,6 +19,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  cancleSelected:{
+    type:Array,
+    default: () => []
+  }
 
 });
 const emit = defineEmits([
@@ -26,12 +30,19 @@ const emit = defineEmits([
   "confirm-cancel",
   "update:valueCancle",
   "page",
-  "update:cancleReason"
+  "update:cancleReason",
+  "update:cancleSelected"
 ]);
 const cancleReason=ref<string>("")
 const handlePage = (event: any) => {
   emit("page", event);
 };
+
+const handleCancleVisit=()=>{
+  cancleReason.value='';
+  emit('update:cancleSelected', []);
+  emit('toggle-cancel-visit', false)
+}
 </script>
 
 <template>
@@ -45,7 +56,7 @@ const handlePage = (event: any) => {
       />
       <CustomButton
         v-if="showCancelVisit"
-        @click="$emit('toggle-cancel-visit', false)"
+        @click="handleCancleVisit"
         class="my-auto mr-[10px]"
         label="Batal"
         outlined
@@ -57,7 +68,7 @@ const handlePage = (event: any) => {
         @click="$emit('confirm-cancel')"
         class="my-auto mr-5 bg-danger-300"
         label="Iya, Batalkan"
-        :disabled="!cancleReason"
+        :disabled="!cancleReason || cancleSelected.length === 0"
       />
       <CustomTextfield
         v-if="showCancelVisit"

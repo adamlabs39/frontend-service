@@ -478,6 +478,8 @@ const dokterDJP = ref([
         @toggle-cancel-visit="toggleCancelVisit"
         @confirm-cancel="confirmCancel"
         @update:cancleReason="handleCancleReason"
+        :cancleSelected="selectedPatient"
+        @update:cancleSelected="selectedPatient = $event"
       />
     </template>
   </Card>
