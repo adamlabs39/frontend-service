@@ -79,6 +79,7 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
+  filter.dpjp = selectedFilterValue.value ?? "";
   return filter;
 };
 const handleStartDate = (value: any) => {
@@ -144,6 +145,7 @@ const openedPatientData = ref<any>({});
 const selectedTab = ref("2");
 const selectedFilterPatient = ref<string[]>([]);
 const selectedFilterPayment = ref<string[]>([]);
+const selectedFilterValue = ref("");
 
 // const showPatientDetail = (event: DataTableRowClickEvent) => {
 //   openedPatientData.value = event.data;
@@ -170,9 +172,12 @@ const selectedFilterPayment = ref<string[]>([]);
 const handleSelectedTab = (newTab: string) => {
   selectedTab.value = newTab;
 };
-
+const handleSelectedPraktisi = (value: any) => {
+  selectedFilterValue.value = value;
+};
 const toggleCancelVisit = () => {
   showCancelVisit.value = !showCancelVisit.value;
+  cancelReason.value="";
 };
 
 const confirmCancel = async () => {
@@ -212,6 +217,15 @@ const handlePage = (event: any) => {
   reloadData();
 };
 
+const dokterDJP = ref([
+  {
+    uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
+    name: "Rudi tabuti",
+  },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6089", name: "dr. Ali" },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
+]);
+
 </script>
 
 <template>
@@ -224,6 +238,7 @@ const handlePage = (event: any) => {
       <HeaderFilter
         pageType="pasien-igd"
         @update:valueSearch="handleSearchQuery"
+        @update:selectedFilter="handleSelectedPraktisi"
         @selected-tab="handleSelectedTab"
         @reload-data="reloadData()"
         @search="reloadData()"
@@ -232,6 +247,7 @@ const handlePage = (event: any) => {
         @filterChipPasien="onFilterCipPasien"
         @filterChipPayment="onFilterCipPayment"
         @reset="handleReset()"
+        :filterSelect="dokterDJP"
         ref="resetFormRef"
       />
     </template>
@@ -425,7 +441,7 @@ const handlePage = (event: any) => {
             <div>
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.statusPembayaran"
+                label="Lunas"
                 customClass="h-5 pr-[5px] mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusPembayaran == 'Belum Lunas'
