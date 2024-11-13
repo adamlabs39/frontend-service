@@ -14,6 +14,7 @@ const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
 const schema = toTypedSchema(
   yup.object({
+    noSurat: yup.string().default("No. 12345").notRequired(),
     tanggalPemeriksaan: yup
       .date()
       .required("Tanggal Pemeriksaan harus dipilih"),
@@ -24,13 +25,14 @@ const schema = toTypedSchema(
     butaWarna: yup.bool().default(false),
     pernyataan: yup.string().required("Pernyataan harus dipilih"),
     keperluan: yup.string().required("Keperluan harus diisi"),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
 
+const [noSurat] = defineField("noSurat");
 const [tanggalPemeriksaan] = defineField("tanggalPemeriksaan");
 const [beratBadan] = defineField("beratBadan");
 const [tinggiBadan] = defineField("tinggiBadan");
@@ -73,7 +75,12 @@ defineExpose({
     </template>
     <template #content>
       <div class="grid grid-cols-12 gap-5 pt-5">
-        <CustomInputNumber label="No. Surat" class="col-span-5" />
+        <CustomTextfield
+          label="No. Surat"
+          v-model="noSurat"
+          class="col-span-5"
+          :disabled="true"
+        />
         <CustomDatePicker
           v-model="tanggalPemeriksaan"
           label="Tanggal Pemeriksaan"
