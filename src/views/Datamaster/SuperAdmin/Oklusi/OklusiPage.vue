@@ -145,6 +145,8 @@ const downloadExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
+        system: rows[i].system,
+        code:rows[i].code,
         Display: rows[i].display,
         Nama: rows[i].name,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",

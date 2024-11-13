@@ -135,7 +135,7 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      code: "Code SATUSEHAT",
+      Code: "Code SATUSEHAT",
       Gigi: "Gigi",
       Display: "Display SATUSEHAT",
       Status: "Status",
