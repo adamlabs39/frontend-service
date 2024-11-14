@@ -19,10 +19,7 @@ function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
   return `PO${randomNumber}`; // Gabungkan dengan "PO"
 }
-function generateRandomNoPembelian() {
-  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
-  return `PO${randomNumber}`; // Gabungkan dengan "PO"
-}
+
 const props = defineProps({
   pageType: {
     type: String,
@@ -62,16 +59,14 @@ const tambahPermintaanSchema = toTypedSchema(
     ppn: yup.bool().default(false),
     isCito: yup.bool().default(false),
     status: yup.string(),
-    petugasPembuatPO:yup.string()
-    status: yup.string(),
-    petugasPembuatPO:yup.string()
+    petugasPembuatPO:yup.string(),
+   
   })
 );
 
 const { handleSubmit, resetForm, defineField } = useForm({
   validationSchema: tambahPermintaanSchema,
   initialValues: {
-    noPembelian: generateRandomNoPembelian(),
     noPembelian: generateRandomNoPembelian(),
     lokasiPenerima: "",
     kategoriItem: "",
@@ -84,9 +79,7 @@ const { handleSubmit, resetForm, defineField } = useForm({
     diskon: 0,
     materai: 0,
     status: "PENGAJUAN",
-  petugasPembuatPO: "Nama Petugas"
-    status: "PENGAJUAN",
-    petugasPembuatPO: "SURATO"
+  petugasPembuatPO: "Nama Petugas",
   },
 });
 
@@ -103,10 +96,7 @@ const [diskon] = defineField("diskon");
 const [materai] = defineField("materai");
 const [ppn] = defineField("ppn");
 const [isCito] = defineField("isCito");
-const [status] = defineField("status");
-const [petugasPembuatPO] = defineField("petugasPembuatPO");
-const [status] = defineField("status");
-const [petugasPembuatPO] = defineField("petugasPembuatPO");
+
 
 const listLokasiPenerimas = ref([
   { id: 1, value: "Gudang Farmasi" },
