@@ -516,8 +516,7 @@ const resetFormFields = () => {
           </div>
           <div>
             <div class="font-semibold underline text-SM">Petugas Pembelian</div>
-            <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
-            <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
+            <div class="font-normal text-normal">kefoejo</div>
           </div>
         </div>
         <div class="flex gap-3">
