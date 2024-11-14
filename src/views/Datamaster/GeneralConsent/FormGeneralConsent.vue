@@ -35,7 +35,7 @@ const schema = toTypedSchema(
       code: yup.string().required("Kode General Consent harus diisi"),
       name: yup.string().required("Nama General Consent harus diisi"),
       isiSurat: yup.string().required("Isi General consent harus diisi"),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );
@@ -164,9 +164,9 @@ watch(
                     <span v-pre class="font-bold">{{}}</span>, contoh :
                     <hr class="border-grey-200 my-2.5" />
                   </div>
-                  <div v-pre>Nama : {{ Nama }}</div>
-                  <div v-pre>Alamat : {{ Alamat }}</div>
-                  <div v-pre>No. Telepon : {{ Telepon }}</div>
+                  <div v-pre>Nama : {{ nama }}</div>
+                  <div v-pre>Alamat : {{ alamat }}</div>
+                  <div v-pre>No. Telepon : {{ telepon }}</div>
                 </div>
                 <div class="w-1/2">
                   <div class="">list data dinamis</div>

@@ -31,7 +31,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Komponen harus diisi"),
     name: yup.string().required("Nama Komponen Tarif harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

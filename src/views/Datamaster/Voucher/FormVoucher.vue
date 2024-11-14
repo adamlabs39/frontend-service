@@ -41,7 +41,7 @@ const schema = toTypedSchema(
       endDate: yup.date().required("Tanggal harus diplih"),
       type: yup.string().required("Tipe Voucher harus dipilih"),
       value: yup.number().required("Tarif Voucher harus diisi"),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );

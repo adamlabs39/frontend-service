@@ -129,7 +129,7 @@ const schema = toTypedSchema(
     alamat: yup.string().required("Alamat harus diisi"),
     partOfName:yup.string().notRequired(),
     partOf: yup.string().notRequired(),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
     provinsi:yup.string().required("Provinsi harus dipilih"),
     kabupaten:yup.string().required("Kab/Kota harus dipilih"),
     kecamatan:yup.string().required("Kecamatan harus dipilih"),

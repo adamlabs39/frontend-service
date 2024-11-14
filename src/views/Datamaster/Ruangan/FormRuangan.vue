@@ -66,7 +66,7 @@ const schema = toTypedSchema(
     kategoriRuanganUuid: yup.string().required("Kategori Ruangan harus dipilih"),
     noRoom: yup.number().required("Nomor Kamar harus diisi"),
     kelasRuangan: yup.number().required("Kelas Ruangan harus dipilih"),
-    status: yup.bool(),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

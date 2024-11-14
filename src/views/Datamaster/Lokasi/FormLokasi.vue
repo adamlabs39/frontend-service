@@ -84,7 +84,7 @@ const schema = toTypedSchema(
     }),
     statusOperasional: yup.bool().default(false),
     isPoli: yup.bool().default(false),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -337,7 +337,7 @@ watch(
         <CustomInfoRow label="Deskripsi" :value="description" />
         <CustomInfoRow label="No. Telephone" :value="payload.phone" />
         <CustomInfoRow label="Url" :value="url" />
-        <CustomInfoRow label="Tipe" :value="payload.type" />
+        <CustomInfoRow label="Tipe" :value="payload.locationType" />
         <CustomInfoRow label="Kelas" :value="payload.className ?? '-'" />
         <CustomInfoRow label="Part of Id" :value="partOf ?? '-'" />
         <CustomInfoRow label="Part of Name" :value="payload.partOfName ?? '-'" />

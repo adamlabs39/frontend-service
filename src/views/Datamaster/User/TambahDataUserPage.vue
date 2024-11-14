@@ -81,7 +81,7 @@ const schema = computed(() =>
           .string()
           .oneOf([yup.ref("password")], "Password tidak sama")
           .notRequired(),
-        status: yup.bool().default(false),
+        status: yup.bool().default(true),
         roleUuid: yup.string().notRequired(),
       })
       .noUnknown()

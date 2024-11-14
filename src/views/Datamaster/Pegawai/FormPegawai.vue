@@ -52,7 +52,7 @@ const schema = toTypedSchema(
       lastTitle: yup.string().notRequired(),
       gender: yup.string().required("Jenis Kelamin harus diisi"),
       tanggalLahir: yup.date().required("Tanggal Lahir harus diisi"),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );

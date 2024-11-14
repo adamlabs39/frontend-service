@@ -133,7 +133,7 @@ const schema = toTypedSchema(
       name: yup.string(),
       grandTotal: yup.number(),
       mode: yup.string(),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
       isMcu: yup.bool().default(false),
       unitPelayanan: yup.array().of(
         yup.object({

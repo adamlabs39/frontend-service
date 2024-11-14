@@ -104,8 +104,7 @@ const schema = toTypedSchema(
           lokasiUuid: yup.string().notRequired(),
         })
       ),
-
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
       practitionerPoliSelected: yup
         .array().when("isDoctor", {
         is: (value: boolean) => value === true,
@@ -170,6 +169,13 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     delete values.practitionerPoliSelected;
+    delete values.codeBpjs;
+    if (values.sip === "") {
+      delete values.sip;
+    }
+    if (values.str === "") {
+      delete values.str;
+    }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");

@@ -32,7 +32,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Penjamin harus diisi"),
     phone: yup.string().notRequired(),
     address: yup.string().notRequired(),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

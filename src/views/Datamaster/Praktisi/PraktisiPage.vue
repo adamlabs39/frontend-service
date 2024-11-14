@@ -239,8 +239,8 @@ const downloadExportExcel = async () => {
       data.push({
         No: i + 1,
         Tipe: rows[i].isDoctor ? "Dokter" : "Non-Dokter",
-        Name: rows[i].codeBpjs,
-        Code: rows[i].codeBpjs,
+        Name: rows[i].pegawai.name,
+        Code: rows[i].codeBpjs?? '-',
         SIP: rows[i].sip ?? '-',
         STR: rows[i].str ?? '-',
         Antrian: rows[i].codeAntrianDokter ?? '-',
@@ -421,7 +421,7 @@ const handleFileUpload = async (file: File) => {
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
-              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white text-nowrap"
             />
           </template>
         </Column>

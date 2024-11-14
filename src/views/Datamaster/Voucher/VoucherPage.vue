@@ -117,6 +117,7 @@ const confirmDelete = async (item: any) => {
   }
 };
 
+
 const downloadExportExcel = async () => {
   try {
     const response = await voucherStore.exportApi();
@@ -126,8 +127,12 @@ const downloadExportExcel = async () => {
       return;
     }
 
+    // Prepare Data for Export
     const title = ["DATAMASTER VOUCHER"];
     const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
     data.push({});
     data.push({
       No: "No",
@@ -141,6 +146,8 @@ const downloadExportExcel = async () => {
       Using: "Using",
       Status: "Status",
     });
+
+    // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
@@ -150,26 +157,31 @@ const downloadExportExcel = async () => {
         Start: epochToDate(rows[i].startDate),
         End: epochToDate(rows[i].endDate),
         Type: rows[i].type,
-        Tarif: rows[i].value,
+        Tarif:  rows[i].type === "potongan"
+            ? `Rp. ${rows[i].value}`
+            : rows[i].type === "persentase"
+            ? `${rows[i].value}%`
+            : rows[i].value,
         Using: rows[i].using,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
+    // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
+    // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-
     worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
 
+    // Style Title
     worksheet["A1"].s = {
-      alignment: {
-        horizontal: "center",
-        vertical: "center",
-      },
+      alignment: { horizontal: "center", vertical: "center" },
       font: { bold: true, sz: 14 },
     };
+
+    // Column Widths
     const columnWidths = data.reduce((widths:any, row:any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
@@ -179,42 +191,52 @@ const downloadExportExcel = async () => {
     }, []);
 
     worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
-    
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:J1");
-    for (let row = range.s.r; row <= range.e.r; row++) {
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
-        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-        worksheet[cellAddress].s.border = {
-          top: { style: "thin" },
-          bottom: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-        };
 
-        if (row === 1 || col === 0) {
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
           worksheet[cellAddress].s.alignment = {
             horizontal: "center",
             vertical: "center",
           };
         }
 
-        if (row === 1) {
+        // Fill header with background color (row 3)
+        if (row === 2) {
           worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "a4c2f4" },
+            fgColor: { rgb: "9fe2db" },
           };
         }
       }
     }
 
+    // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Voucher");
-
     XLSX.writeFile(workbook, `Datamaster Voucher.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
+
 
 const downloadFormatExcel = async () => {
   try {
@@ -243,7 +265,15 @@ const downloadFormatExcel = async () => {
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");

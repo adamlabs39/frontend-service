@@ -62,7 +62,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Gigi harus diisi"),
     image: yup.string(),
     catatan: yup.string().notRequired(),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

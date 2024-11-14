@@ -73,7 +73,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Tindakan harus diisi"),
     snomedUuid: yup.string().notRequired(),
     icd9Uuid: yup.string().notRequired(),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

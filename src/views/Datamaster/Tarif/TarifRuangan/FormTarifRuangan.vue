@@ -85,7 +85,7 @@ const schema = toTypedSchema(
           harga: yup.number().required("Harga Bed harus diisi"),
         })
       ),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );

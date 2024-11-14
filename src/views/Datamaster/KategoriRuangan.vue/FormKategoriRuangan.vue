@@ -31,7 +31,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Kategori Ruangan harus diisi"),
     name: yup.string().required("Nama Kategori Ruangan harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
