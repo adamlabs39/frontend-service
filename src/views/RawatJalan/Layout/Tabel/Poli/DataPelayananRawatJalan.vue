@@ -2,19 +2,45 @@
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
   showCancelVisit: {
     type: Boolean,
     default:false
+  },
+  isResetPatient: {
+    type: Boolean
   }
 })
 
+
+const emit = defineEmits(["handleSelectedPatient", "handleUnselectedPatient", "isResetPatient", 'selectedAll', 'handleUnselectAll']);
+
+
 const medicalRecord = ref<any>();
+
+const handleSelectionChange = () => {
+
+  console.log('IJofoefjoefj', selectedPatient.value)
+  emit('handleSelectedPatient', selectedPatient.value);
+};
+
 const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
+
+const handleRowUnselect = () => {
+  emit('handleUnselectedPatient', selectedPatient.value);
+};
+
+const handleSelectedAll = (dataPatient:any) => {
+  emit('selectedAll', dataPatient.data)
+}
+
+const handleUnselectAll = (dataPatient:any) => {
+  emit('handleUnselectAll', dataPatient.data)
+}
 const selectedPatient = ref([]);
 const itemsPasien = ref([
   {
@@ -127,9 +153,28 @@ const itemsPasien = ref([
     statusPelayanan: "DIBATALKAN",
   },
 ]);
+
+watch(
+  () => props.isResetPatient,
+  (newValue) => {
+    if (newValue) {
+      resetSelection();
+      // Reset the prop value after performing reset
+      emit('isResetPatient', false);  // Emit event to reset the prop value
+    }
+  }
+);
+
+
+// Function to reset the selected patient
+const resetSelection = () => {
+  selectedPatient.value = [];
+};
 </script>
 
 <template>
+  {{ selectedPatient }}
+
   <DataTable
     v-if="itemsPasien.length"
     v-model:selection="selectedPatient"
@@ -139,6 +184,10 @@ const itemsPasien = ref([
     scrollHeight="240px"
     class="-m-4"
     @row-click="openDialogRM"
+    @row-select-all="handleSelectedAll"
+    @row-unselect-all="handleUnselectAll"
+    @row-select="handleSelectionChange" 
+    @row-unselect="handleRowUnselect"
     :pt="{ headerRow: 'text-SM' }"
   >
     <Column field="nomor" headerClass="bg-adameds-50">
@@ -295,7 +344,7 @@ const itemsPasien = ref([
               slotProps.data.statusPelayanan == 'DIPERIKSA'
                 ? 'bg-blueJeans-75'
                 : slotProps.data.statusPelayanan == 'ANTRI'
-                ? 'bg-grey-75'
+              ? 'bg-grey-75'
                 : 'bg-danger-75'
             "
             :textColor="
@@ -337,6 +386,8 @@ const itemsPasien = ref([
   <!-- Else -->
   <NoData v-else />
    <MedicalRecord ref="medicalRecord" />
+
+   
 </template>
 
 

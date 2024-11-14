@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
   belumDiterimaData: {
@@ -35,6 +35,58 @@ const handleRowClick = (rowData:any) => {
   console.log(rowData.data)
 };
 
+
+interface PengajuanPembelian {
+  tanggalPembelian: string;
+  noPembelian: string;
+  kategoriItem: string;
+  jenisItem: string;
+  jenisStok: string;
+  supplier: string;
+  petugasPembuatPO: string;
+  status: string;
+  originalData: Record<string, any>;
+}
+  
+const selectedPengajuanPembelian = ref([]);
+const pengajuanPembelians = ref<PengajuanPembelian[]>([]);
+
+watch(
+  () => props.pembelianData,
+  (newPembelianData) => {
+    if (newPembelianData) {
+      // Mengambil data asli dan mengecualikan properti yang diambil
+      const {
+        tanggalPembelian,
+        noPembelian,
+        kategoriItem,
+        jenisItem,
+        jenisStok,
+        supplier,
+        petugasPembuatPO,
+        status,
+        ...originalData // Mengambil sisa properti sebagai originalData
+      } = newPembelianData;
+
+      // Format data sesuai kebutuhan
+      const formattedData: PengajuanPembelian = {
+        tanggalPembelian: new Date(tanggalPembelian).toLocaleDateString(),
+        noPembelian,
+        kategoriItem,
+        jenisItem,
+        jenisStok,
+        supplier,
+        petugasPembuatPO,
+        status,
+        originalData, // Menyimpan data asli tanpa properti yang sudah diambil
+      };
+
+      // Tambahkan data ke dalam array pengajuanPembelians
+      pengajuanPembelians.value.push(formattedData);
+    }
+  },
+  { immediate: true } 
+);
 </script>
 
 <template>
@@ -104,16 +156,18 @@ const handleRowClick = (rowData:any) => {
       </template>
     </Column>
     
-    <Column field="petugas" headerClass="bg-adameds-50">
-      <template #header>
-        <div class="font-semibold">Petugas</div>
-      </template>
-      <template #body="slotProps">
-        <div>
-          <div class="text-SM">{{ slotProps.data.petugasPembelian }}</div>
-        </div>
-      </template>
-    </Column>
+  <Column field="petugas" headerClass="bg-adameds-50">
+  <template #header>
+    <div class="font-semibold">Petugas</div>
+  </template>
+  <template #body="slotProps">
+    <div>
+      <div class="text-SM">{{ slotProps.data.petugasPembelian }}</div>
+      <div class="text-SM">{{ slotProps.data.petugasPembuatPO }}</div>
+    </div> <!-- Closing the div for `slotProps.data.petugasPembelian` and `slotProps.data.petugasPembuatPO` -->
+  </template>
+</Column>
+
 
     <Column field="status" headerClass="bg-adameds-50">
       <template #header>
@@ -138,4 +192,9 @@ const handleRowClick = (rowData:any) => {
   <!-- <div class="mt-8">
     {{ pengajuanPembelians }}
   </div> -->
+
+  <NoData v-else />
+  <div class="mt-8">
+    {{ pengajuanPembelians }}
+  </div>
 </template>

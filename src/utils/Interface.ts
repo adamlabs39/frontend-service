@@ -4,6 +4,7 @@ export interface SidebarBody {
   name: string;
   icon?: string;
   type: linkType;
+  datas?: any;
   url?: string;
   child?: SidebarBody[];
 }

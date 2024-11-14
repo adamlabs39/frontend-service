@@ -11,6 +11,7 @@ import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import CustomSelect from "../Base/CustomSelect.vue";
 
+
 interface userData {
   name: string;
   role: string;
@@ -154,6 +155,7 @@ onMounted(() => {
 const checkActiveTab = (url: string) => {
   let split = route.path.split("/");
   return `/${split[1]}` == url;
+ 
 };
 const fetchFaskes = async () => {
   try {
@@ -257,7 +259,7 @@ const isSuperAdmin = getUserRole() === "super admin";
         class="flex gap-2.5 bg-white px-3 rounded-[75px] text-adameds-300 items-center justify-center min-w-[156px] h-8"
       >
         <HospitalFillIcon class="text-adameds-300" />
-        <div class="font-semibold text-MD truncate">
+        <div class="font-semibold truncate text-MD">
           {{ faskesName }}
         </div>
       </div>

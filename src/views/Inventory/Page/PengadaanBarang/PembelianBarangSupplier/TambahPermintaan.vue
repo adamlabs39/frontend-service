@@ -19,6 +19,10 @@ function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
   return `PO${randomNumber}`; // Gabungkan dengan "PO"
 }
+function generateRandomNoPembelian() {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
+  return `PO${randomNumber}`; // Gabungkan dengan "PO"
+}
 const props = defineProps({
   pageType: {
     type: String,
@@ -59,12 +63,15 @@ const tambahPermintaanSchema = toTypedSchema(
     isCito: yup.bool().default(false),
     status: yup.string(),
     petugasPembuatPO:yup.string()
+    status: yup.string(),
+    petugasPembuatPO:yup.string()
   })
 );
 
 const { handleSubmit, resetForm, defineField } = useForm({
   validationSchema: tambahPermintaanSchema,
   initialValues: {
+    noPembelian: generateRandomNoPembelian(),
     noPembelian: generateRandomNoPembelian(),
     lokasiPenerima: "",
     kategoriItem: "",
@@ -78,6 +85,8 @@ const { handleSubmit, resetForm, defineField } = useForm({
     materai: 0,
     status: "PENGAJUAN",
   petugasPembuatPO: "Nama Petugas"
+    status: "PENGAJUAN",
+    petugasPembuatPO: "SURATO"
   },
 });
 
@@ -94,6 +103,8 @@ const [diskon] = defineField("diskon");
 const [materai] = defineField("materai");
 const [ppn] = defineField("ppn");
 const [isCito] = defineField("isCito");
+const [status] = defineField("status");
+const [petugasPembuatPO] = defineField("petugasPembuatPO");
 const [status] = defineField("status");
 const [petugasPembuatPO] = defineField("petugasPembuatPO");
 
@@ -515,6 +526,7 @@ const resetFormFields = () => {
           </div>
           <div>
             <div class="font-semibold underline text-SM">Petugas Pembelian</div>
+            <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
             <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
           </div>
         </div>
