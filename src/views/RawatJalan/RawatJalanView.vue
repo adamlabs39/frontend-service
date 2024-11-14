@@ -66,7 +66,15 @@ const sidebarBodyList = ref<SidebarBody[]>([
         name: "Poli",
         icon: "PhStethoscope",
         type: linkType.DROPDOWN,
-        child: [], // Ini akan diupdate dengan data dari API
+        child: [
+          {
+            name:"Semua Poli",
+            icon: "",
+            datas:"",
+            type: linkType.LINK,
+            url: "/rawat-jalan/poli",
+          }
+        ], // Ini akan diupdate dengan data dari API
       },
     ],
   },
@@ -106,9 +114,9 @@ const updateSidebarBodyList = () => {
   const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
 
   // Menambahkan data dari `lokasiPayload` ke dalam `poliSection`
-  lokasiPayload.value.forEach((item) => {
+  lokasiPayload.value.forEach((item, index) => {
     if (item.status && item.isPoli) { // Hanya menambahkan item dengan status true dan isPoli true
-      poliSection.push({
+      poliSection.splice(index + 1, 0, {
         name: item.name, // Menggunakan nama dari payload
         datas: item.uuid, // UUID sebagai filter atau identifier
         icon: "",

@@ -26,6 +26,7 @@ import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // const filterPoliList = ref([
 //   { name: "POLI UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
@@ -157,13 +158,49 @@ const handleResetPatient = () => {
   isResetPatient.value = false
 };
 
+const confirmCancel = async () => {
+  console.log(selectedPatient.value);
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      cancelReason: cancelReason.value,
+    };
+    selectedPatient.value.forEach((patient) => {
+      payload.listUuid.push(patient.uuid);
+    });
+    console.log("Payload:", payload);
+    const response = await admisiRJStore.cancelVisitRJ(payload);
+    console.log("Response:", response);
+    showCancelVisit.value = false
+    if (response) {
+      resetCancelVisit();
+      search();
+    }
+   
+  } catch (error) {
+  ;
+    console.error("Failed to cancel visit", error);
+  } finally {
+    storeUtils.setLoading(false);
+    
+  }
+}
 
+
+// Pagination
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  search();
+};
 
 </script>
 
 <template>
-  {{selectedPatient.length}}
-  {{ selectedPatient }}
+  {{ showCancelVisit }}
+ <!-- {{ selectedPatient }} -->
+  
   <!-- {{ currentRouteName }} -->
   <!-- {{ filterData }} -->
   <Card
@@ -225,8 +262,21 @@ const handleResetPatient = () => {
     <template #content>
       <Tabs v-model:value="value">
         <TabPanels>
+          <TabPanel value="0">
+           <Pelayanan
+            :data-patient="patientData"
+            :isResetPatient ="isResetPatient"
+              :show-cancel-visit="showCancelVisit"
+              @handle-selected-patient="updateSelectedPatient"
+              @handle-unselected-patient="updateUnselectedPatient"
+              @selectedAll="updateSelectedPatient"
+              @handle-unselect-all="updateUnselectAll"
+              @is-reset-patient="handleResetPatient"
+            />
+          </TabPanel>
           <TabPanel value="1">
             <Pelayanan
+            :data-patient="patientData"
             :isResetPatient ="isResetPatient"
               :show-cancel-visit="showCancelVisit"
               @handle-selected-patient="updateSelectedPatient"
@@ -243,8 +293,8 @@ const handleResetPatient = () => {
       </Tabs>
     </template>
     <template #footer>
-      <div :class="value === '1' ? 'flex justify-between' : 'flex justify-end'">
-        <div class="flex" v-if="value == '1'">
+      <div class="flex justify-between">
+        <div class="flex">
           <CustomButton
             v-if="!showCancelVisit"
             @click="showCancelVisit = true"
@@ -262,7 +312,7 @@ const handleResetPatient = () => {
           />
           <CustomButton
             v-if="showCancelVisit"
-            @click="showCancelVisit = true"
+            @click="confirmCancel"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
             :disabled="!cancelReason || selectedPatient.length === 0"
@@ -276,15 +326,11 @@ const handleResetPatient = () => {
             placeholder="Alasan Batal Kunjungan"
           />
         </div>
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="properties.page_size"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>

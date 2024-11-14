@@ -1,29 +1,35 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
+import { epochToDate } from "@/utils/Helpers";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { ref, watch } from "vue";
 
 const props = defineProps({
   showCancelVisit: {
     type: Boolean,
-    default:false
+    default: false,
   },
   isResetPatient: {
-    type: Boolean
-  }
-})
+    type: Boolean,
+  },
+  dataPatient: {
+    type: Array,
+  },
+});
 
-
-const emit = defineEmits(["handleSelectedPatient", "handleUnselectedPatient", "isResetPatient", 'selectedAll', 'handleUnselectAll']);
-
+const emit = defineEmits([
+  "handleSelectedPatient",
+  "handleUnselectedPatient",
+  "isResetPatient",
+  "selectedAll",
+  "handleUnselectAll",
+]);
 
 const medicalRecord = ref<any>();
 
 const handleSelectionChange = () => {
-
-  console.log('IJofoefjoefj', selectedPatient.value)
-  emit('handleSelectedPatient', selectedPatient.value);
+  emit("handleSelectedPatient", selectedPatient.value);
 };
 
 const openDialogRM = () => {
@@ -31,128 +37,17 @@ const openDialogRM = () => {
 };
 
 const handleRowUnselect = () => {
-  emit('handleUnselectedPatient', selectedPatient.value);
+  emit("handleUnselectedPatient", selectedPatient.value);
 };
 
-const handleSelectedAll = (dataPatient:any) => {
-  emit('selectedAll', dataPatient.data)
-}
+const handleSelectedAll = (dataPatient: any) => {
+  emit("selectedAll", dataPatient.data);
+};
 
-const handleUnselectAll = (dataPatient:any) => {
-  emit('handleUnselectAll', dataPatient.data)
-}
+const handleUnselectAll = (dataPatient: any) => {
+  emit("handleUnselectAll", dataPatient.data);
+};
 const selectedPatient = ref([]);
-const itemsPasien = ref([
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-01",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "ANTRI",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-02",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-04",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
-  },
-   {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DIBATALKAN",
-  },
-]);
 
 watch(
   () => props.isResetPatient,
@@ -160,11 +55,10 @@ watch(
     if (newValue) {
       resetSelection();
       // Reset the prop value after performing reset
-      emit('isResetPatient', false);  // Emit event to reset the prop value
+      emit("isResetPatient", false); // Emit event to reset the prop value
     }
   }
 );
-
 
 // Function to reset the selected patient
 const resetSelection = () => {
@@ -173,12 +67,10 @@ const resetSelection = () => {
 </script>
 
 <template>
-  {{ selectedPatient }}
-
   <DataTable
-    v-if="itemsPasien.length"
+    v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"
-    :value="itemsPasien"
+    :value="dataPatient"
     tableStyle="min-width: 50rem"
     scrollable
     scrollHeight="240px"
@@ -186,7 +78,7 @@ const resetSelection = () => {
     @row-click="openDialogRM"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"
-    @row-select="handleSelectionChange" 
+    @row-select="handleSelectionChange"
     @row-unselect="handleRowUnselect"
     :pt="{ headerRow: 'text-SM' }"
   >
@@ -196,13 +88,13 @@ const resetSelection = () => {
       </template>
       <template #body="slotProps">
         <div class="text-center">
-          <div class="text-SM">{{ slotProps.data.noPendaftaran }}</div>
+          <div class="text-SM">{{ slotProps.data.noRm }}</div>
           <div
             class="max-w-[75px] mx-auto bg-adameds-50 text-adameds-300 rounded-[5px] text-SM font-semibold"
           >
-            {{ slotProps.data.noMT }}
+            {{ slotProps.data.polyclinic.code }}
           </div>
-          <div class="text-SM">{{ slotProps.data.noREG }}</div>
+          <div class="text-SM">{{ slotProps.data.noReg }}</div>
         </div>
       </template>
     </Column>
@@ -214,13 +106,16 @@ const resetSelection = () => {
     >
       <template #body="slotProps">
         <div class="text-SM">
-          <span class="font-semibold">{{ slotProps.data.name }}</span>
+          <span class="font-semibold">{{ slotProps.data.patient.name }}</span>
           <span class="text-grey-300">
-            ({{ slotProps.data.ageYear }}Th {{ slotProps.data.ageMonth }}Bln
-            {{ slotProps.data.ageDay }}Hr)
+            ({{ slotProps.data.birthDetail.ageDay }}Th
+            {{ slotProps.data.birthDetail.ageMonth }}Bln
+            {{ slotProps.data.birthDetail.ageDay }}Hr)
           </span>
         </div>
-        <div class="text-XS">{{ slotProps.data.address }}</div>
+        <div class="text-XS">
+          {{ slotProps.data.patient.address.fullAddress }}
+        </div>
         <div class="flex flex-wrap/">
           <PhUserCirclePlus
             v-if="slotProps.data.newPatient"
@@ -230,18 +125,24 @@ const resetSelection = () => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'"
+            :label="
+              slotProps.data.patient.gender == 'Female' ? 'Perempuan' : 'Laki-Laki'
+            "
             :bgColor="
-              slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+              slotProps.data.patient.gender == 'Female'
+                ? 'bg-female-75'
+                : 'bg-male-75'
             "
             :textColor="
-              slotProps.data.gender == 'P' ? 'text-female-300' : 'text-male-300'
+              slotProps.data.patient.gender == 'Female'
+                ? 'text-female-300'
+                : 'text-male-300'
             "
             customClass="h-5 pr-[6px] border-none mr-[5px]"
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.phone"
+            :label="slotProps.data.patient.phone"
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -256,32 +157,38 @@ const resetSelection = () => {
       class="w-[350px]"
     >
       <template #body="slotProps">
-        <div class="flex gap-1.5">
-          <div class="text-SM">{{ slotProps.data.doctor }}</div>
-          <hr class="w-px min-h-5 bg-adameds-300" />
-          <div class="text-SM">{{ slotProps.data.practicHour }}</div>
+        <div class="flex">
+          <div class="text-SM">
+            {{ slotProps.data.practitioner.title }}
+            {{ slotProps.data.practitioner.nama }}
+          </div>
+          <div class="border border-adameds-300 mx-[5px] my-1"></div>
+          <div class="text-SM">
+            {{ slotProps.data.schedule.startTime }} -
+            {{ slotProps.data.schedule.endTime }}
+          </div>
         </div>
         <div class="flex flex-wrap mt-1">
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.polyclinic"
+            :label="slotProps.data.polyclinic.name"
             customClass="h-5 pr-[5px] mr-[5px]"
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.insuranceAccountName"
+            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'BPJS'"
             :bgColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
+              slotProps.data.paymentMethod == '1'
                 ? 'bg-adameds-50'
                 : 'bg-warning-50'
             "
             :textColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
+              slotProps.data.paymentMethod == '1'
                 ? 'text-adameds-300'
                 : 'text-warning-300'
             "
             :borderColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
+              slotProps.data.paymentMethod == '1'
                 ? 'border-adameds-300'
                 : 'border-warning-300'
             "
@@ -304,7 +211,6 @@ const resetSelection = () => {
       header="Data Kunjungan"
       headerClass="bg-adameds-50"
       class="max-w-[240px]"
-      
     >
       <template #body="slotProps">
         <div class="text-SM">
@@ -317,41 +223,58 @@ const resetSelection = () => {
               class="my-auto mr-5 text-grey-300"
               weight="bold"
             />
-            {{ slotProps.data.tanggalDaftar }}
+            {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
           </div>
           <div
             class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
           >
-            Jadwal
+            Diperiksa
             <PhArrowRight
               :size="18"
               class="my-auto mr-5 text-blueJeans-300"
               weight="bold"
             />
-            {{ slotProps.data.tanggalJadwal }}
+            {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
           </div>
         </div>
       </template>
     </Column>
-    <Column field="status" header="Status" headerClass="bg-adameds-50" class="w-[114px]">
+    <Column
+      field="status"
+      header="Status"
+      headerClass="bg-adameds-50"
+      class="w-[114px]"
+    >
       <template #body="slotProps">
         <div>
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.statusPelayanan"
+            :label="
+              slotProps.data.statusRj == '0'
+                ? 'DIBATALKAN'
+                : slotProps.data.statusRj == '1'
+                ? 'BOOKING'
+                : slotProps.data.statusRj == '2'
+                ? 'ANTRI'
+                : slotProps.data.statusRj == '3'
+                ? 'ANTRIAN'
+                : slotProps.data.statusRj == '4'
+                ? 'DIPERIKSA'
+                : 'DISCHARGE'
+            "
             customClass="h-5 pr-[5px] mr-[5px] border-none"
             :bgColor="
-              slotProps.data.statusPelayanan == 'DIPERIKSA'
+              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
+                ? 'bg-grey-75'
+                : slotProps.data.statusRj == '4'
                 ? 'bg-blueJeans-75'
-                : slotProps.data.statusPelayanan == 'ANTRI'
-              ? 'bg-grey-75'
                 : 'bg-danger-75'
             "
             :textColor="
-              slotProps.data.statusPelayanan == 'DIPERIKSA'
-                ? 'text-blueJeans-300'
-                : slotProps.data.statusPelayanan == 'ANTRI'
+              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
                 ? 'text-grey-400'
+                : slotProps.data.statusRj == '4'
+                ? 'text-blueJeans-300'
                 : 'text-danger-300'
             "
           />
@@ -359,7 +282,7 @@ const resetSelection = () => {
         <div v-if="slotProps.data.statusPembayaran">
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.statusPembayaran"
+            label="Belum Lunas"
             customClass="h-5 pr-[5px] mr-[5px] border-none"
             :bgColor="
               slotProps.data.statusPembayaran == 'Belum Lunas'
@@ -385,11 +308,8 @@ const resetSelection = () => {
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-   <MedicalRecord ref="medicalRecord" />
-
-   
+  <MedicalRecord ref="medicalRecord" />
 </template>
-
 
 <style>
 /* TailwindCSS styles */
