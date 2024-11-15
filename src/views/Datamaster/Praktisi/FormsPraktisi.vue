@@ -74,7 +74,7 @@ onMounted(() => {
   fetchLokasi();
 });
 
-const selectedPegawai = ref<any>(null); 
+const selectedPegawai = ref<any>(null);
 const searchPegawai = () => {
   selectedPegawai.value = pegawaiPayload.value.find(
     (pegawai) => pegawai.uuid === pegawaiUuid.value
@@ -82,18 +82,18 @@ const searchPegawai = () => {
 };
 
 const resetSearch = () => {
-  pegawaiUuid.value = ""; 
-  selectedPegawai.value = null; 
+  pegawaiUuid.value = "";
+  selectedPegawai.value = null;
 };
 
 const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string().notRequired(),
-      sip: yup.string().notRequired(),
-      str: yup.string().notRequired(),
-      isDoctor: yup.boolean(),
+      codeBpjs: yup.string().nullable().notRequired(),
+      sip: yup.string().default("").nullable().notRequired(),
+      str: yup.string().default("").nullable().notRequired(),
+      isDoctor: yup.boolean().required("Tipe Praktisi harus diisi"),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
         then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
@@ -106,11 +106,12 @@ const schema = toTypedSchema(
       ),
       status: yup.bool().default(true),
       practitionerPoliSelected: yup
-        .array().when("isDoctor", {
-        is: (value: boolean) => value === true,
-        then: (schema) => schema.required("Poli harus dipilih"),
-        otherwise: (schema) => schema.notRequired(),
-      })
+        .array()
+        .when("isDoctor", {
+          is: (value: boolean) => value === true,
+          then: (schema) => schema.required("Poli harus dipilih"),
+          otherwise: (schema) => schema.notRequired(),
+        })
         .of(yup.string().required("Poli harus dipilih"))
         .min(1, "Minimal satu Unit Pelayanan harus dipilih")
         .required("Unit Pelayanan harus dipilih"),
@@ -169,19 +170,20 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     delete values.practitionerPoliSelected;
-    delete values.codeBpjs;
-    if (values.sip === "") {
-      delete values.sip;
+    if(values.codeBpjs===""){
+      values.codeBpjs=null;
+    }else if(values.sip===""){
+      values.sip=null;
+    }else if(values.str===""){
+      values.str=null;
     }
-    if (values.str === "") {
-      delete values.str;
-    }
+    
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("data delete",values)
+      console.log("data delete", values);
       const response = await praktisiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
@@ -246,12 +248,11 @@ watch(
       resetForm();
       resetDialogMode();
       resetSearch();
-      tempPoli.value=[];
+      tempPoli.value = [];
     }
   }
 );
 const tempPoli = ref([]);
-
 </script>
 
 <template>
@@ -292,20 +293,6 @@ const tempPoli = ref([]);
           :required="errors.pegawaiUuid ? true : false"
         />
 
-        <!-- <div class="flex items-end justify-between col-span-4">
-          <CustomButton
-            label="Cari"
-            icon="PhMagnifyingGlass"
-            @click="searchPegawai"
-          />
-          <CustomButton
-            label="Reset"
-            background-color="bg-transparent"
-            border-color="border-adameds-300"
-            text-color="text-adameds-300"
-            @click="resetSearch"
-          />
-        </div> -->
         <div v-if="selectedPegawai" class="col-span-12">
           <div
             class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 p-5"
@@ -428,19 +415,31 @@ const tempPoli = ref([]);
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="Kode HFIS (BPJS)"
-          :value="payload.codeBpjs ?? '-'"
+          :value="
+            payload.codeBpjs && payload.codeBpjs.trim() !== ''
+              ? payload.codeBpjs
+              : '-'
+          "
         />
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="SIP"
-          :value="payload.sip ?? '-'"
+          :value="payload.sip && payload.sip.trim() !== '' ? payload.sip : '-'"
         />
-        <CustomInfoRow label="STR" :value="payload.str ?? '-'" />
+        <CustomInfoRow
+          label="STR"
+          :value="payload.str && payload.str.trim() !== '' ? payload.str : '-'"
+        />
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="Kode Antrian Dokter"
-          :value="codeAntrianDokter ?? '-'"
+          :value="
+            codeAntrianDokter && codeAntrianDokter.trim() !== ''
+              ? codeAntrianDokter
+              : '-'
+          "
         />
+
         <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
             <div

@@ -167,6 +167,26 @@ const schema = toTypedSchema(
           }),
         })
       ),
+      // tarifLab: yup
+      //   .array()
+      //   .when("isMcu", {
+      //     is: true,
+      //     then: yup.array().of(
+      //       yup.object({
+      //         tarifLabUuid: yup.string().when("isMcu", {
+      //           is: (value: boolean) => value === true,
+      //           then: (schema) => schema.required("Tarif Lab harus diisi"),
+      //           otherwise: (schema) => schema.notRequired(),
+      //         }),
+      //       })
+      //     ),
+      //     otherwise: (schema) => schema.notRequired(),
+      //   })
+      //   .of(
+      //     yup.object({
+      //       tarifLabUuid: yup.string(),
+      //     })
+      //   ),
       unitPelayananSelected: yup
         .array()
         .of(yup.number().required("Unit Pelayanan harus dipilih"))

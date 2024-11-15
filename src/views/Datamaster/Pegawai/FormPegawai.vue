@@ -242,7 +242,18 @@ watch(
           }}
         </div>
         <hr class="border-grey-2 00" />
-        <CustomInfoRow label="Nama Lengkap" :value="name" />
+        <CustomInfoRow
+          label="Nama Lengkap"
+          :value="`${
+            payload.firstTitle
+              ? payload.firstTitle + '. '
+              : ''
+          }${payload.name}${
+            payload.lastTitle
+              ? ', ' + payload.lastTitle
+              : ''
+          }`"
+        />
         <CustomInfoRow label="NIK" :value="nik" />
         <CustomInfoRow label="Tanggal Lahir" :value="payload.tanggalLahir" />
         <CustomInfoRow label="Jenis Kelamin" :value="gender" />
