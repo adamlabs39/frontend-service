@@ -15,6 +15,7 @@ import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan
 import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 
 const properties = ref({
@@ -23,16 +24,33 @@ const properties = ref({
   total: 0,
 });
 
+// Untuk Praktisi
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// Untuk Lokasi Poliklinik
+const lokasiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+
+// STORE
 const useUtilsStore = utilsStore();
-
 const rekapTindakanPasienStore = useRekapTindakanStore();
-
 const kunjunganRawatJalanStore = useAdmisiIGDStore();
-
 const praktisiStore = usePraktisiStore();
+const lokasiStore = useLokasiStore();
 
+
+// Data from Fetch API
 const reportData = ref([]);
 const praktisiPayload = ref<any[]>([]);
+const lokasiPayload = ref<any[]>([]);
 
 const fetchLaporanData = async (filter: Filter = {}) => {
   useUtilsStore.setLoading(true);
@@ -53,6 +71,73 @@ const fetchLaporanData = async (filter: Filter = {}) => {
   } catch (error) {
     console.error("Failed to fetch data", error);
     return [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const searchQuery = ref<string>("");
+
+// Fetch data Praktisi dari API
+const fetchPraktisiData = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    let isDoctor = true;
+    let isNonDoctor = false;
+    
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchQuery.value,
+      doctor: isDoctor,
+      non_doctor: isNonDoctor,
+    });
+
+    if (response && response.payload) {
+      praktisiProperties.value.total = response.properties.total;
+      praktisiPayload.value = [...response.payload];
+      // console.log(`COba`,praktisiPayload.value);
+       if (response.payload.length === praktisiProperties.value.page_size) {
+        praktisiProperties.value.page += 1;
+        await fetchPraktisiData(); 
+      }
+    } else {
+      praktisiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    praktisiPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+const fetchLokasiData = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await lokasiStore.getApi(
+      lokasiProperties.value.page,
+      lokasiProperties.value.page_size
+    );
+    // console.log("API Response:", response);
+
+    if (response && response.payload) {
+      // console.log("Response contains payload:", response.payload);
+      lokasiProperties.value.total = response.properties.total;
+
+      // Gabungkan data baru ke dalam lokasiPayload
+      lokasiPayload.value = [...response.payload];
+
+      // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
+      if (response.payload.length === lokasiProperties.value.page_size) {
+        lokasiProperties.value.page += 1;
+        await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
+      }
+    } else {
+      lokasiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    lokasiPayload.value = [];
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -90,7 +175,8 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
-  // fetchRekapTindakanPasienData();
+  fetchPraktisiData();
+  fetchLokasiData()
 });
 
 interface Filter {
@@ -105,33 +191,21 @@ interface Filter {
   endDate?: string;
 }
 
+// Function to search data
 const searchData = async () => {
   let filter = {} as Filter;
   filter = setFilter();
-
   reportData.value = await fetchLaporanData(filter);
 };
 
+// Function to handle pagination
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.page_size = event.rows;
   searchData();
 };
 
-// Untuk mendapat data Praktisi
 
-const fetchPraktisi = async () => {
-  try {
-    const response = await praktisiStore.getAktifApi();
-    if (response && response.payload) {
-      praktisiPayload.value = response.payload;
-    } else {
-      praktisiPayload.value = [];
-    }
-  } catch (error) {
-    praktisiPayload.value = [];
-  }
-};
 
 const setFilter = () => {
   let filter = {} as Filter;
@@ -163,6 +237,7 @@ const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
 const valueBulan = ref();
+
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -205,6 +280,8 @@ const handleRefreshPage = () => {
 <template>
   <!-- {{ pageType}} -->
     <!-- {{ reportData }} -->
+      <!-- {{ lokasiPayload }} -->
+      <!-- {{ praktisiPayload }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
@@ -223,6 +300,7 @@ const handleRefreshPage = () => {
         @refresh-page="handleRefreshPage"
         :current-route-name="pageType"
         :data-bread-crumb="dataBreadCrumb"
+        :praktisi-payload="praktisiPayload"
         ref="resetFormRef"
       >
         <template
@@ -239,28 +317,21 @@ const handleRefreshPage = () => {
                 pageType === 'rekap-tindakan-pasien'
               "
               v-model="searchPoliklinikFilter"
-              label="Poliklinik"
+              label="Poliklinikll"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               place-holder="Pilih Poliklinik"
-              :options="['Semua', 'Beberapa', 'Banyak']"
+              :options="lokasiPayload"
             />
             <CustomSelect
               v-if="pageType === 'pembatalan-poli'"
               v-model="searchDokterDPJPFilter"
               label="Dokter DPJP"
               class=""
-              optionLabel="name"
+              optionLabel="detailPegawai.name"
               optionValue="uuid"
-              :options="[
-                {
-                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-                  name: 'Rudi tabuti',
-                },
-                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
-              ]"
+              :options="praktisiPayload"
               place-holder="Pilih Dokter"
             />
             <CustomSelect

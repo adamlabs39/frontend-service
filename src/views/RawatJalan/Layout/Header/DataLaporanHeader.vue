@@ -16,6 +16,10 @@ const props = defineProps({
   currentRouteName: {
     type: String,
   },
+  praktisiPayload: {
+    type: Array as PropType<any[]>, // Sesuaikan tipe datanya
+    default: () => [],
+  },
 });
 
 
@@ -39,15 +43,13 @@ const resetForm = () => {
   valueBulanFilter.value = "";
 }
 
-
-
-
 defineExpose({
   resetForm,
 });
 </script>
 
 <template>
+  
   <CustomAccordion :open-with-header="false" initial-state="0" noBorder>
     <template #header>
       <!-- {{ currentRouteName }} -->
@@ -78,16 +80,9 @@ defineExpose({
           v-if="currentRouteName === 'kunjungan-rawat-jalan'"
           v-model="valueDokterDPJPFilter"
           label="Dokter DPJP"
-          optionLabel="name"
+             optionLabel="detailPegawai.name"
           optionValue="uuid"
-          :options="[
-            {
-              uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-              name: 'Rudi tabuti',
-            },
-            { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-            { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
-          ]"
+          :options="praktisiPayload"
           class="mr-5"
           place-holder="Cari Dokter"
           @update:model-value="
