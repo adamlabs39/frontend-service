@@ -39,7 +39,12 @@ const route = useRoute();
 const filterRuang = defineModel("filterRuang");
 
 const showSidebar = ref(true);
-const emit = defineEmits(["filterChanged"]);
+const emit = defineEmits(["filterChanged", 'update:searchPoli']);
+const searchPoli = ref('');
+
+watch(searchPoli, (newValue) => {
+  emit('update:searchPoli', newValue);
+});
 
 const goToPage = (url: string) => {
   router.push(url);
@@ -52,6 +57,8 @@ const goToFilteredPage = (poliUuid: string, poliName: string) => {
   });
   emit("filterChanged",  { uuid: poliUuid, name: poliName });
 };
+
+
   
 const goToRuanganPage = () => {
   router.push({
@@ -213,6 +220,7 @@ const getSVG = (svg: string) => {
                        type="text"
                        class="w-full text-white bg-transparent"
                        placeholder="Cari Poli ..."
+                      v-model="searchPoli"
                      />
                    </div>
    

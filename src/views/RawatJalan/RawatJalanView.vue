@@ -4,6 +4,7 @@ import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { utilsStore } from "@/stores/utils";
 import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
+import { computed } from "vue";
 import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -176,12 +177,39 @@ const updateFilterMenu = (newFilter: { uuid: string; name: string }) => {
   });
 };
 
+const handleSearchPoli = (searchTerm: string) => {
+  const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
+
+  if (searchTerm === "") {
+    // Kembalikan sidebarBodyList ke keadaan semula tanpa menambahkan item baru
+    sidebarBodyList.value[0].child[0].child = [
+      {
+        name: "Semua Poli",
+        icon: "",
+        type: linkType.LINK,
+        url: "/rawat-jalan/poli",
+      },
+      // Tambahkan item asli lainnya jika ada
+    ];
+    updateSidebarBodyList();
+  } else {
+    // Filter poliSection berdasarkan searchTerm
+    setTimeout(() => {
+      // Filter poliSection berdasarkan searchTerm
+      const filteredPoli = poliSection.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      sidebarBodyList.value[0].child[0].child = filteredPoli;
+    }, 300); // P
+  }
+};
+
 // Mengambil data API saat komponen di-mount
 onMounted(() => {
   fetchLokasiData();
 
   // Jika ada query filter pada URL saat halaman dimuat ulang, set filter ke nilai tersebut
-  if(route.query.filter) {
+  if (route.query.filter) {
     filter.value = { uuid: "", name: route.query.filter as string };
   }
 });
@@ -201,6 +229,7 @@ onMounted(() => {
       showStockBtn
       v-model:filter="filter"
       @filter-changed="updateFilterMenu"
+      @update:searchPoli="handleSearchPoli"
     />
     <component
       class="max-h-full overflow-auto grow"

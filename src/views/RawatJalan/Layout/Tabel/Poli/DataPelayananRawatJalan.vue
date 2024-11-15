@@ -108,7 +108,7 @@ const resetSelection = () => {
         <div class="text-SM">
           <span class="font-semibold">{{ slotProps.data.patient.name }}</span>
           <span class="text-grey-300">
-            ({{ slotProps.data.birthDetail.ageDay }}Th
+            ({{ slotProps.data.birthDetail.ageYear }}Th
             {{ slotProps.data.birthDetail.ageMonth }}Bln
             {{ slotProps.data.birthDetail.ageDay }}Hr)
           </span>
