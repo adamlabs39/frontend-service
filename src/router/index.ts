@@ -1436,8 +1436,6 @@ router.beforeEach((to, from, next) => {
       next();
     }
   } else if (to.path == "/login") {
-    console.log("masuk");
-
     if (isAuthenticated()) {
       next({
         path: "/dashboard",

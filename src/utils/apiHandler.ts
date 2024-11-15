@@ -14,7 +14,7 @@ const errorApiHandler = (error: any) => {
     if (
       (error.response.data.message == "Authentikasi gagal" ||
         error.response.data.message == "Authorization gagal") &&
-      (error.response.data.errors[0].type == "Invalid token" ||
+      (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
         error.response.data.errors[0].type == "Invalid signature" ||
         (error.response.data.errors[0].type == "auth" &&
           error.response.data.errors[0].message == "jwt expired"))

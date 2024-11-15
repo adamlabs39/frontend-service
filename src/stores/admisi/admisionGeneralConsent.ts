@@ -19,12 +19,11 @@ export const useAdmisiGeneralConsent = defineStore({
     },
 
     async createGeneralConsent(uuid = "", payload = {}) {
-      return apiAdmisiPost(`general-consent/${uuid}`, payload);
+      return apiAdmisiPost(`/general-consent/${uuid}`, payload);
     },
 
-    // FIXME Tambahan
     async deleteGeneralConsent(uuid = "", payload = {}) {
-      return apiAdmisiDelete(`/${uuid}`, payload);
+      return apiAdmisiDelete(`/general-consent/${uuid}`, payload);
     },
   },
 });

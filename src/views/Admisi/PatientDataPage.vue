@@ -7,7 +7,6 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import ExaminationHistoryCard from "./Section/ExaminationHistoryCard.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import NoData from "@/components/section/NoData.vue";
 import PatientIdentityForm from "./Forms/PatientIdentityFormRJ.vue";
@@ -23,11 +22,14 @@ import { useForm } from "vee-validate";
 import { createGeneralConsentPdf } from "@/utils/PdfMake";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import Qrcode from "qrcode.vue";
+import { useGeneralConsentStore } from "@/stores/datamaster/generalConsent";
+import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
+const generalConsentStore = useGeneralConsentStore();
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
@@ -222,6 +224,10 @@ const schema = computed(() =>
               selectedGeneralConsent.value == "Pasien"
                 ? yup.string().nullable()
                 : yup.string().required("Nama harus diisi"),
+            address:
+              selectedGeneralConsent.value == "Pasien"
+                ? yup.string().nullable()
+                : yup.string().required("Alamat harus diisi"),
             gender:
               selectedGeneralConsent.value == "Pasien"
                 ? yup.string().nullable()
@@ -251,6 +257,7 @@ const {
 
 const [uuid] = defineField("uuid");
 const [familyDataName] = defineField("familyData.name");
+const [familyDataAddress] = defineField("familyData.address");
 const [familyDataGender] = defineField("familyData.gender");
 const [familyDataRelationship] = defineField("familyData.relationship");
 const [name] = defineField("name");
@@ -261,7 +268,11 @@ const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
     values.familyData = Object.keys(values.familyData).length
       ? values.familyData
       : (null as any);
-    const tempGeneralConsentData = createGeneralConsentPdf({ data: "" });
+    const tempGeneralConsentData = createGeneralConsentPdf({
+      data: selectedDataGeneralConsent.value.isiSurat,
+      patientData: openedPatientData.value,
+      familyData: values.familyData,
+    });
     values.generalConsent = await new Promise((resolve, reject) => {
       tempGeneralConsentData.getBase64((base64) => {
         if (base64) {
@@ -271,6 +282,7 @@ const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
         }
       });
     });
+    values.name = selectedDataGeneralConsent.value.name;
     await admisiGeneralConsentStore.createGeneralConsent(
       openedPatientData.value.uuid,
       values
@@ -283,6 +295,31 @@ const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
   }
 });
 
+const listDatamasterGeneralConsent = ref([]);
+const fetchListGeneralConsent = async () => {
+  try {
+    storeUtils.setLoading(true);
+    // FIXME Masih API biasa filter dari FE
+    const response = await generalConsentStore.getApi(1, 9999);
+    if (response && response.payload) {
+      listDatamasterGeneralConsent.value = response.payload.filter(
+        (generalConsent: any) => generalConsent.status
+      );
+    } else listDatamasterGeneralConsent.value = [];
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const selectedDataGeneralConsent = ref();
+const setSelectedGeneralConsent = (uuid: string) => {
+  selectedDataGeneralConsent.value = listDatamasterGeneralConsent.value.find(
+    (gc: any) => gc.uuid == uuid
+  );
+};
+
 const inputGeneralConsentDialog = ref(false);
 const generalConsentDialog = ref(false);
 const generalConsentDialogInputType = ref("create");
@@ -292,6 +329,7 @@ const showDialogGeneralConsent = async (
   type: "detail" | "list" | "add",
   uuid = ""
 ) => {
+  fetchListGeneralConsent();
   generalConsentDialogInputType.value = type;
   if (type == "add") {
     selectedGeneralConsent.value = "Pasien";
@@ -398,20 +436,12 @@ onMounted(() => {
                   class=""
                 />
               </div>
-              <div class="flex">
-                <CustomButton
-                  @click="() => {}"
-                  icon="PhFileArrowDown"
-                  label="Import"
-                  class="mr-[10px]"
-                />
-                <CustomButton
-                  @click="openPatientForm('add')"
-                  icon="PhPlus"
-                  label="Pasien"
-                  class="mr-[10px]"
-                />
-              </div>
+              <CustomButton
+                @click="openPatientForm('add')"
+                icon="PhPlus"
+                label="Pasien"
+                class="mr-[10px]"
+              />
             </div>
           </template>
           <template #content>
@@ -949,7 +979,6 @@ onMounted(() => {
       <template #header>
         <div class="flex">
           <div>General Consent</div>
-          <!-- v-for="(GC, index) in listGeneralConsentType" -->
           <CustomChip
             v-if="
               (generalConsentDialogInputType != 'add' &&
@@ -991,17 +1020,25 @@ onMounted(() => {
       <template #body>
         <div class="mt-5">
           <div
-            v-if="selectedGeneralConsent == 'Keluarga'"
+            v-if="selectedGeneralConsent == 'Keluarga' && generalConsentDialogInputType == 'add'"
             class="grid grid-cols-2 gap-x-[30px] gap-y-5 mb-5"
           >
             <CustomTextfield
               v-model="familyDataName"
               label="Nama Lengkap Keluarga"
-              class="col-span-2"
+              class=""
               placeholder="Nama Lengkap Keluarga"
-              :disabled="generalConsentDialogInputType == 'detail'"
               :invalid="!!errors['familyData.name']"
               :invalidMessage="errors['familyData.name']"
+            />
+            <CustomTextArea
+              v-model="familyDataAddress"
+              label="Alamat"
+              class=""
+              placeholder="Alamat"
+              height="h-10"
+              :invalid="!!errors['familyData.address']"
+              :invalidMessage="errors['familyData.address']"
             />
             <CustomSelect
               v-model="familyDataGender"
@@ -1012,7 +1049,6 @@ onMounted(() => {
               optionValue=""
               :showFilter="false"
               :options="['Laki-laki', 'Perempuan']"
-              :disabled="generalConsentDialogInputType == 'detail'"
               :invalid="!!errors['familyData.gender']"
               :invalidMessage="errors['familyData.gender']"
             />
@@ -1046,29 +1082,42 @@ onMounted(() => {
                 'Lainnya',
                 'Family Lain',
               ]"
-              :disabled="generalConsentDialogInputType == 'detail'"
               :invalid="!!errors['familyData.relationship']"
               :invalidMessage="errors['familyData.relationship']"
             />
           </div>
           <CustomSelect
+            v-if="generalConsentDialogInputType == 'add'"
             v-model="name"
+            @update:model-value="setSelectedGeneralConsent"
             label="Format General Consent"
             placeHolder="General Consent"
             class=""
-            optionLabel=""
-            optionValue=""
-            :options="['Format 1', 'Format 2', 'Format 3']"
+            optionLabel="name"
+            optionValue="uuid"
+            :options="listDatamasterGeneralConsent"
             prependIcon="PhMagnifyingGlass"
-            :disabled="generalConsentDialogInputType == 'detail'"
             :invalid="!!errors.name"
             :invalidMessage="errors.name"
+          />
+          <CustomTextfield
+            v-else
+            v-model="name"
+            label="Format General Consent"
+            class=""
+            placeholder="Format General Consent"
+            :disabled="generalConsentDialogInputType == 'detail'"
           />
           <div
             v-if="generalConsentDialogInputType == 'add'"
             class="h-[400px] border-[1px] border-grey-200 border-dashed rounded-[10px] mt-5 flex"
           >
-            <div class="m-auto font-semibold text-normal">
+            <div
+              v-if="selectedDataGeneralConsent"
+              v-html="selectedDataGeneralConsent.isiSurat"
+              class="w-full px-10"
+            ></div>
+            <div v-else class="m-auto font-semibold text-normal">
               Default General Consent Rawat Jalan Pilihan Awal
             </div>
           </div>

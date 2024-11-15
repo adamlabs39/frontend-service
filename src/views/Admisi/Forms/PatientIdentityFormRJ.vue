@@ -11,10 +11,13 @@ import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
+import { useDistrictStore } from "@/stores/datamaster/district";
+import { countAge } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
+const districtStore = useDistrictStore();
 
 const props = defineProps({
   pageType: {
@@ -35,9 +38,81 @@ const props = defineProps({
   },
 });
 
-const setFormData = (data: any, uuid: string = "") => {
+const fetchProvinsi = async () => {
+  try {
+    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    if (response && response.payload) {
+      provinsiPayload.value = response.payload;
+    } else {
+      provinsiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch provinsi", error);
+    provinsiPayload.value = [];
+  }
+};
+
+const fetchKabupaten = async (provinsiId: string) => {
+  try {
+    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    if (response && response.payload) {
+      kabupatenPayload.value = response.payload;
+    } else {
+      kabupatenPayload.value = [];
+    }
+    addressCity.value = undefined;
+    addressDistrict.value = undefined;
+    addressVillage.value = undefined;
+  } catch (error) {
+    console.error("Failed to fetch kabupaten", error);
+    kabupatenPayload.value = [];
+  }
+};
+
+const fetchKecamatan = async (kabupatenId: string) => {
+  try {
+    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    if (response && response.payload) {
+      kecamatanPayload.value = response.payload;
+    } else {
+      kecamatanPayload.value = [];
+    }
+    addressDistrict.value = undefined;
+    addressVillage.value = undefined;
+  } catch (error) {
+    console.error("Failed to fetch kecamatan", error);
+    kecamatanPayload.value = [];
+  }
+};
+
+const fetchKelurahan = async (kecamatanId: string) => {
+  try {
+    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    if (response && response.payload) {
+      kelurahanPayload.value = response.payload;
+    } else {
+      kelurahanPayload.value = [];
+    }
+    addressVillage.value = undefined;
+  } catch (error) {
+    console.error("Failed to fetch kelurahan", error);
+    kelurahanPayload.value = [];
+  }
+};
+
+const provinsiPayload = ref<any[]>([]);
+const kabupatenPayload = ref<any[]>([]);
+const kecamatanPayload = ref<any[]>([]);
+const kelurahanPayload = ref<any[]>([]);
+
+const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
+
+    await fetchKabupaten(tempPatientData.address.prov)
+    await fetchKecamatan(tempPatientData.address.city)
+    await fetchKelurahan(tempPatientData.address.district)
+
     tempPatientData.birthDetail.birthDate = new Date(
       tempPatientData.birthDetail.birthDate
     );
@@ -47,15 +122,18 @@ const setFormData = (data: any, uuid: string = "") => {
     setValues({
       ...tempPatientData,
     });
+    patientAge.value = `${tempPatientData.birthDetail.ageYear} Tahun, ${tempPatientData.birthDetail.ageMonth} Bulan, ${tempPatientData.birthDetail.ageDay} Hari`;
   }
 };
 
 onMounted(() => {
   setFormData(props.patientData);
+  fetchProvinsi();
 });
 
 onUpdated(() => {
   setFormData(props.patientData);
+  fetchProvinsi();
 });
 
 const timer = ref<any>();
@@ -101,6 +179,7 @@ const setSelectedPatientData = async (data: any) => {
 };
 
 const selectedDataPatient = ref<any>();
+const patientAge = ref("");
 
 const schema = toTypedSchema(
   yup
@@ -172,6 +251,11 @@ const onSubmit = handleSubmit(async (values) => {
 });
 const onResetForm = () => {
   resetForm();
+};
+
+const getAge = (date: Date) => {
+  const { tahun, bulan, hari } = countAge(date);
+  patientAge.value = `${tahun} Tahun, ${bulan} Bulan, ${hari} Hari`;
 };
 
 defineExpose({
@@ -304,6 +388,8 @@ defineExpose({
           />
           <CustomDatePicker
             v-model="birthDetailDate"
+            @update:model-value="getAge"
+            :maxDate="new Date()"
             label="Tanggal Lahir"
             placeHolder="01-01-2024"
             class=""
@@ -312,10 +398,12 @@ defineExpose({
             :invalidMessage="errors['birthDetail.birthDate']"
           />
           <CustomTextfield
+            v-model="patientAge"
             label="Umur"
             class=""
             placeholder="Umur"
             :disabled="isDetail"
+            readOnly
           />
           <CustomSelect
             v-model="gender"
@@ -416,48 +504,41 @@ defineExpose({
         </div>
         <hr class="my-[30px]" />
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
+            @update:model-value="fetchKabupaten"
             label="Provinsi"
             placeHolder="Pilih Provinsi"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['DKI Jakarta', 'Jawa Barat', 'Jawa Timur']"
+            optionLabel="name"
+            optionValue="code"
+            :options="provinsiPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
+            @update:model-value="fetchKecamatan"
             label="Kabupaten / Kota"
             placeHolder="Pilih Kabupaten / Kota"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['Kota Jakarta Pusat', 'Kota Bandung', 'Kota Surabaya']"
+            optionLabel="name"
+            optionValue="code"
+            :options="kabupatenPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
+            @update:model-value="fetchKelurahan"
             label="Kecamatan"
             placeHolder="Pilih Kecamatan"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="[
-              'Kecamatan Gambir',
-              'Kecamatan Cidadap',
-              'Kecamatan Wonokromo',
-            ]"
+            optionLabel="name"
+            optionValue="code"
+            :options="kecamatanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"
@@ -468,14 +549,9 @@ defineExpose({
             label="Kelurahan / Desa"
             placeHolder="Pilih Kelurahan / Desa"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="[
-              'Kelurahan Menteng',
-              'Desa Ciburial',
-              'Kelurahan Dukuh Menanggal',
-            ]"
+            optionLabel="name"
+            optionValue="code"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...kelurahanPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.village']"
             :invalidMessage="errors['address.village']"

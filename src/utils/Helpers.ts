@@ -88,3 +88,26 @@ export function setDateToTime(date: Date) {
 
   return `${hours}:${minutes}:${seconds}`;
 }
+
+export function countAge(date: Date) {
+  const now = new Date();
+  let tahun = now.getFullYear() - date.getFullYear();
+  let bulan = now.getMonth() - date.getMonth();
+  let hari = now.getDate() - date.getDate();
+
+  // Jika bulan kurang dari 0, kurangi satu tahun
+  if (bulan < 0) {
+    tahun--;
+    bulan += 12;
+  }
+
+  // Jika hari kurang dari 0, kurangi satu bulan
+  if (hari < 0) {
+    bulan--;
+    // Ambil jumlah hari dari bulan sebelumnya
+    const bulanSebelumnya = new Date(now.getFullYear(), now.getMonth(), 0);
+    hari += bulanSebelumnya.getDate();
+  }
+
+  return { tahun, bulan, hari };
+}

@@ -15,6 +15,7 @@ import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
 import type { FilterAdmisi } from "@/utils/Interface";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -31,6 +32,7 @@ const resetFilter = () => {
   filterData.value = headerFilterRef.value?.searchData() ?? {
     startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
     endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
+    dpjp: ''
   };
 };
 
@@ -53,7 +55,7 @@ const patientDataRI = ref<any>([]);
 const patientDataIGD = ref<any>([]);
 const properties = ref({
   page: 1,
-  page_size: 10,
+  pageSize: 10,
   total: 0,
 });
 
@@ -152,7 +154,6 @@ onMounted(() => {
 const openedPatientData = ref<any>({});
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
-  console.log("🚀 ~ showPatientDetail ~ openedPatientData:", openedPatientData);
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
@@ -180,11 +181,21 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
 const getDataTable = (type: "data" | "length" = "data") => {
   let tempPatient = [];
   if (pageType.value == "rawat-jalan") {
-    tempPatient = patientData.value;
+    tempPatient = showCancelVisit.value
+      ? patientData.value.filter(
+          (patient: any) => patient.statusRj != 4 && patient.statusRj != 5
+        )
+      : patientData.value;
   } else if (pageType.value == "rawat-inap") {
-    tempPatient = patientDataRI.value;
+    tempPatient = showCancelVisit.value
+      ? patientDataRI.value.filter(
+          (patient: any) => patient.statusRi != 3 && patient.statusRi != 4
+        )
+      : patientDataRI.value;
   } else if (pageType.value == "igd") {
-    tempPatient = patientDataIGD.value;
+    tempPatient = showCancelVisit.value
+      ? patientDataIGD.value.filter((patient: any) => patient.statusRi != 2)
+      : patientDataIGD.value;
   }
 
   return tempPatient;
@@ -218,14 +229,20 @@ const cancelVisit = async () => {
     } else if (pageType.value == "igd") {
       await admisiIGDStore.cancelVisitIGD(payload);
     }
-    showCancelVisit.value = false
-    cancelReason.value = undefined
-    await getPatientList()
+    showCancelVisit.value = false;
+    cancelReason.value = undefined;
+    await getPatientList();
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.pageSize = event.rows;
+  getPatientList();
 };
 </script>
 
@@ -243,7 +260,9 @@ const cancelVisit = async () => {
         :pageType="pageType"
         :filterData="filterData"
         @daftar="changeSection('Daftar'), (formType = 'add')"
-        @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
+        @daftarBayi="
+          changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')
+        "
         @search="search"
       />
     </template>
@@ -254,6 +273,7 @@ const cancelVisit = async () => {
         v-model:selection="selectedPatient"
         :value="getDataTable()"
         tableStyle="min-width: 50rem"
+        stripedRows
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
@@ -385,7 +405,7 @@ const cancelVisit = async () => {
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
-                :label="slotProps.data.monitoringRoom.bedName"
+                :label="`${slotProps.data.monitoringRoom.bedName} ${slotProps.data.monitoringRoom.noBed}`"
                 customClass="h-5 pr-[5px] mr-[5px]"
               />
               <CustomChip
@@ -447,7 +467,7 @@ const cancelVisit = async () => {
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
-                Jadwal
+                Diperiksa
                 <ArrowRightBrokenIcon
                   :size="18"
                   class="my-auto mr-5 text-male-300"
@@ -456,7 +476,9 @@ const cancelVisit = async () => {
                 {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'rawat-jalan'"
+                v-if="
+                  pageType == 'rawat-jalan' && slotProps.data.tanggalCheckin
+                "
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Checkin
@@ -465,11 +487,7 @@ const cancelVisit = async () => {
                   class="my-auto mr-5 text-mint-300"
                   weight="bold"
                 />
-                {{
-                  slotProps.data.tanggalCheckin
-                    ? epochToDate(slotProps.data.tanggalCheckin, "dateTime")
-                    : "-"
-                }}
+                {{ epochToDate(slotProps.data.tanggalCheckin, "dateTime") }}
               </div>
               <div
                 v-if="pageType == 'rawat-inap'"
@@ -484,7 +502,7 @@ const cancelVisit = async () => {
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'rawat-inap'"
+                v-if="pageType == 'rawat-inap' && slotProps.data.tanggalDirawat"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Dirawat
@@ -508,7 +526,7 @@ const cancelVisit = async () => {
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'igd'"
+                v-if="pageType == 'igd' && slotProps.data.tanggalDirawat"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Dirawat
@@ -539,7 +557,13 @@ const cancelVisit = async () => {
             v-if="!showCancelVisit"
             @click="showCancelVisit = true"
             class="my-auto bg-danger-300"
-            label="Batal Kunjungan"
+            :label="`Batal ${
+              pageType == 'igd'
+                ? 'IGD'
+                : pageType == 'rawat-inap'
+                ? 'Rawat Inap'
+                : 'Rawat Jalan'
+            }`"
           />
           <CustomButton
             v-if="showCancelVisit"
@@ -555,7 +579,7 @@ const cancelVisit = async () => {
             @click="cancelVisit"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
-            :disabled="!cancelReason"
+            :disabled="!cancelReason || selectedPatient.length == 0"
           />
           <CustomTextfield
             v-if="showCancelVisit"
@@ -565,15 +589,11 @@ const cancelVisit = async () => {
             placeholder="Alasan Batal Kunjungan"
           />
         </div>
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="properties.pageSize"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>
