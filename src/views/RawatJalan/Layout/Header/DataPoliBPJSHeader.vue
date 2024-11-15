@@ -33,6 +33,8 @@ const props = defineProps({
   },
 });
 
+
+
 // Store
 const praktisiStore = usePraktisiStore();
 const UseUtilsStore = utilsStore();
@@ -147,8 +149,7 @@ const setFilter = (dataFilter: FilterAdmisi) => {
 }
 
 
-const searchData = () => {
-  
+const searchData = (dataString: any) => {
   let filter = {} as FilterAdmisi;
 
   
@@ -168,8 +169,11 @@ const searchData = () => {
   // FIXME Belum bisa multiple
 
   
-  filter.poly = props.filterMenu.uuid;
+  console.log('test',props.filterMenu); 
+  filter.poly = props.filterMenu.uuid ?? "";
   filter.dpjp = searchDokterFilter.value ?? "";
+
+
   return filter;
 };
 
@@ -186,11 +190,12 @@ onMounted(() => {
   fetchPraktisiData();
 
 });
+
+
 // Ketika tombol "Cari" diklik, emit event searchExecuted
 </script>
 
 <template>
-   {{ props.filterMenu}}
    <!-- {{ filterData }} -->
 
    <!-- {{ praktisiPayload }} -->

@@ -59,7 +59,9 @@ const properties = ref({
 const filterData = ref<FilterAdmisi>({});
 
 const search = async () => {
+
   filterData.value = headerPoliBPJSRef.value?.searchData();
+  console.log(`HABIS DI SEARCH`,filterData.value)
   if (currentRouteName.value == "rawat-jalan-poli") {
     patientData.value = await fetchRJPatient();
   }
@@ -68,6 +70,7 @@ const search = async () => {
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
+   
     const response = await admisiRJStore.getRJ(filterData.value);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
@@ -94,20 +97,20 @@ const props = defineProps<{
 // Saat klik Filter Poli
 watch(
   () => props.filter,
-  (newFilter) => {
-    if (newFilter) {
-      resetFilter();
-      filterData.value = {
-        ...filterData.value,
-        poly: newFilter.uuid,
-      };
+  async (newFilter) => {
+    // console.log(`Filter anyar`, newFilter);
+    resetFilter();
 
-      fetchRJPatient();
-    } else {
-      console.warn("Invalid filter format:", newFilter);
-    }
-  }
+    filterData.value = {
+      ...filterData.value,
+      poly: newFilter.uuid,
+    };
+    // console.log(`filter paling baru`, filterData.value);
+    // search();
+    patientData.value = await fetchRJPatient()
+  }, { deep: true }
 );
+
 
 const value = ref("0");
 
@@ -198,7 +201,10 @@ const handlePage = (event: any) => {
 </script>
 
 <template>
-  {{ showCancelVisit }}
+  <!-- {{ filter }} -->
+ 
+  <!-- {{ showCancelVisit }} -->
+    <!-- {{ patientData }} -->
  <!-- {{ selectedPatient }} -->
   
   <!-- {{ currentRouteName }} -->
@@ -211,7 +217,6 @@ const handlePage = (event: any) => {
     <template #header>
       <DataPoliBPJSHeader
         ref="headerPoliBPJSRef"
-        :activeTab="value"
         @search="search"
         @payment="search"
         :filter-menu="filter"

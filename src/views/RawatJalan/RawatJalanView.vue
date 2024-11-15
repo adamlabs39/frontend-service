@@ -33,10 +33,10 @@ const fetchLokasiData = async () => {
     if (response && response.payload) {
       // console.log("Response contains payload:", response.payload);
       lokasiProperties.value.total = response.properties.total;
-      
+
       // Gabungkan data baru ke dalam lokasiPayload
       lokasiPayload.value = [...response.payload];
-      
+
       // Update sidebar body list setiap kali data baru diambil
       updateSidebarBodyList();
 
@@ -68,12 +68,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.DROPDOWN,
         child: [
           {
-            name:"Semua Poli",
+            name: "Semua Poli",
+            datas: "",
             icon: "",
-            datas:"",
             type: linkType.LINK,
             url: "/rawat-jalan/poli",
-          }
+          },
         ], // Ini akan diupdate dengan data dari API
       },
     ],
@@ -87,9 +87,21 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "BPJSIcon",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Monitoring Kunjungan", type: linkType.LINK, url: '/rawat-jalan/bpjs/monitoring-kunjungan' },
-          { name: "Monitoring Riwayat Kunjungan", type: linkType.LINK, url:'/rawat-jalan/bpjs/monitoring-riwayat-kunjungan' },
-          { name: "Monitoring Obat Kunjungan", type: linkType.LINK, url: '/rawat-jalan/bpjs/monitoring-obat-kunjungan' },
+          {
+            name: "Monitoring Kunjungan",
+            type: linkType.LINK,
+            url: "/rawat-jalan/bpjs/monitoring-kunjungan",
+          },
+          {
+            name: "Monitoring Riwayat Kunjungan",
+            type: linkType.LINK,
+            url: "/rawat-jalan/bpjs/monitoring-riwayat-kunjungan",
+          },
+          {
+            name: "Monitoring Obat Kunjungan",
+            type: linkType.LINK,
+            url: "/rawat-jalan/bpjs/monitoring-obat-kunjungan",
+          },
         ],
       },
       {
@@ -97,9 +109,21 @@ const sidebarBodyList = ref<SidebarBody[]>([
         icon: "FileReportIcon",
         type: linkType.DROPDOWN,
         child: [
-          { name: "Kunjungan Rawat Jalan", type: linkType.LINK, url:'/rawat-jalan/laporan/kunjungan-rawat-jalan' },
-          { name: "Pembatalan Poli", type: linkType.LINK, url:'/rawat-jalan/laporan/pembatalan-poli' },
-          { name: "Rekap Tindakan Pasien", type: linkType.LINK, url:'/rawat-jalan/laporan/rekap-tindakan-pasien' },
+          {
+            name: "Kunjungan Rawat Jalan",
+            type: linkType.LINK,
+            url: "/rawat-jalan/laporan/kunjungan-rawat-jalan",
+          },
+          {
+            name: "Pembatalan Poli",
+            type: linkType.LINK,
+            url: "/rawat-jalan/laporan/pembatalan-poli",
+          },
+          {
+            name: "Rekap Tindakan Pasien",
+            type: linkType.LINK,
+            url: "/rawat-jalan/laporan/rekap-tindakan-pasien",
+          },
         ],
       },
     ],
@@ -107,16 +131,17 @@ const sidebarBodyList = ref<SidebarBody[]>([
 ]);
 
 // Filter state
-const filter = ref<{ uuid: string, name: string }>({ uuid: '', name: '' });
+const filter = ref<{ uuid: string; name: string }>({ uuid: "", name: "" });
 
 // Update sidebar body list dengan data dari API
 const updateSidebarBodyList = () => {
   const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
 
   // Menambahkan data dari `lokasiPayload` ke dalam `poliSection`
-  lokasiPayload.value.forEach((item, index) => {
-    if (item.status && item.isPoli) { // Hanya menambahkan item dengan status true dan isPoli true
-      poliSection.splice(index + 1, 0, {
+  lokasiPayload.value.forEach((item) => {
+    if (item.status && item.isPoli) {
+      // Hanya menambahkan item dengan status true dan isPoli true
+      poliSection.push({
         name: item.name, // Menggunakan nama dari payload
         datas: item.uuid, // UUID sebagai filter atau identifier
         icon: "",
@@ -133,36 +158,31 @@ const updateSidebarBodyList = () => {
 
     // Update filter dengan objek { uuid, name }
     filter.value = { uuid: defaultFilter, name: defaultName };
-    
+
     // Mengupdate URL dengan query filter sesuai nilai defaultFilter
     router.replace({
       path: "/rawat-jalan/poli",
-      query: { filter: defaultName }
+      query: { filter: defaultName },
     });
   }
 };
 
 // Update filter value
-const updateFilterMenu = (newFilter: { uuid: string, name: string }) => {
-    filter.value = { uuid: newFilter.uuid, name: newFilter.name };
-    router.replace({
-      path: "/rawat-jalan/poli",
-      query: { filter: newFilter.name }
-    });
+const updateFilterMenu = (newFilter: { uuid: string; name: string }) => {
+  filter.value = { uuid: newFilter.uuid, name: newFilter.name };
+  router.replace({
+    path: "/rawat-jalan/poli",
+    query: { filter: newFilter.name },
+  });
 };
 
 // Mengambil data API saat komponen di-mount
 onMounted(() => {
   fetchLokasiData();
-  
-  // Jika ada query filter pada URL saat halaman dimuat ulang, set filter ke nilai tersebut
-  if (route.query.filter) {
-    const filterName = route.query.filter as string;
-    const selectedItem = lokasiPayload.value.find(item => item.uuid === filterName);
 
-    if (selectedItem) {
-      filter.value = { uuid: selectedItem.uuid, name: selectedItem.name };
-    }
+  // Jika ada query filter pada URL saat halaman dimuat ulang, set filter ke nilai tersebut
+  if(route.query.filter) {
+    filter.value = { uuid: "", name: route.query.filter as string };
   }
 });
 </script>
