@@ -53,7 +53,7 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-         <div class="flex">
+        <div class="flex">
           <CustomSelect
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"

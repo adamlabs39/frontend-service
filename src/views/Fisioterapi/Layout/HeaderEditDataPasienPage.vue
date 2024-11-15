@@ -3,7 +3,9 @@ import type { MenuItem } from "primevue/menuitem";
 import { computed, ref, type PropType } from "vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import EditIdentitasForm from "../Section/EditIdentitasForm.vue";
+import EditIdentitasForm from "../Section/EditOrderFisio/EditIdentitasForm.vue";
+import EditDoctorVisitForm from "../Section/EditOrderFisio/EditDoctorVisitForm.vue";
+import EditOrderTindakanForm from "../Section/EditOrderFisio/EditOrderTindakanForm.vue";
 
 const props = defineProps({
   pageType: {
@@ -38,7 +40,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         <div class="flex justify-between">
           <CustomBreadCrumb
             :home="{
-              label: 'Order Fisioterapi',
+              label: 'Order Fisio',
               home: true,
             }"
             :model="dataBreadCrumb"
@@ -59,6 +61,21 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
     </Card>
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
       <EditIdentitasForm
+        class="mt-2"
+        :dataBreadCrumb="dataBreadCrumb"
+        :pageType="pageType"
+        :patientData="patientData"
+        @back="dataBreadCrumb.pop()"
+      />
+       <EditDoctorVisitForm
+        class="mt-2"
+        :dataBreadCrumb="dataBreadCrumb"
+        :pageType="pageType"
+        :patientData="patientData"
+        @back="dataBreadCrumb.pop()"
+      />
+
+      <EditOrderTindakanForm
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"

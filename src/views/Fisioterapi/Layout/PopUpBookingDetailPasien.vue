@@ -46,7 +46,17 @@ const closeDialog = () => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }}</template>
+    <template #header>
+      <div class="flex justify-between">
+        <div class="flex">
+          {{ title }}
+        </div>
+        <div class="flex ml-[470px]">
+          <div class="bg-white w-[1px] h-[30px]"></div>
+          <p class="text-sm ml-[10px] mt-[3px] mr-5">Tgl. Order : 3-11-2024</p>
+        </div>
+      </div>
+    </template>
 
     <template #body>
       <!-- Form Input -->
@@ -65,7 +75,9 @@ const closeDialog = () => {
                 customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
               />
             </div>
-            <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px] ml-[40px]" ></div>
+            <div
+              class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px] ml-[40px]"
+            ></div>
             <div class="mt-[20px] mr-[40px]">
               <p class="text-xs font-bold underline underline-offset-2">
                 Tgl. Lahir
@@ -85,19 +97,115 @@ const closeDialog = () => {
           </div>
         </div>
       </div>
+      <div class="mt-10">
+        <p class="font-bold text-MD">Profil Pasien</p>
+      </div>
+      <hr class="mt-5 border-[1px]" />
+      <div class="grid grid-cols-3 gap-4 mt-8">
+        <div class="">
+          <p class="text-xs font-bold underline underline-offset-2">KTP</p>
+          <p>1666666666666666</p>
+          <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+            Provinsi
+            <span> </span>
+          </p>
+          <p>Jawa Timur</p>
+          <p class="mt-3 text-xs font-bold underline underline-offset-2">
+            Kelurahahn / Desa
+          </p>
+          <p>Keputih</p>
+          <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+            Alamat
+            <span> </span>
+          </p>
+          <p>Jl. Ijo Abang no. 17</p>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">
+            No. Handphone
+          </p>
+          <p class="">081234567890</p>
+          <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+            Kabupaten / Kota
+          </p>
+          <p class="">Surabaya</p>
+          <div class="flex flex-row mt-[10px]">
+            <div class="basis-1/4">
+              <p class="text-xs font-bold underline underline-offset-2">RT</p>
+              <p>01</p>
+            </div>
+            <div class="basis-1/4">
+              <p class="text-xs font-bold underline underline-offset-2">RW</p>
+              <p>02</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">Agama</p>
+          <p class="">Islam</p>
+          <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+            Kecamatan
+          </p>
+          <p class="">Sukolilo</p>
+          <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+            Kode Pos
+          </p>
+          <p class="">12345</p>
+        </div>
+      </div>
+      <div class="mt-12">
+        <p class="font-bold text-MD">Jadwal & Bed</p>
+      </div>
+      <hr class="mt-5 border-[1px]" />
+      <div class="flex justify-between mt-8">
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">
+            Tanggal Terapi
+          </p>
+          <div class="">
+            01-10-2024
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">
+            Jam Terapi
+          </p>
+          <div class="">
+            08.00 - 10.00
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">
+            Ruangan
+          </p>
+          <div class="">
+            Ruangan A
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-bold underline underline-offset-2">
+            Bed
+          </p>
+          <div class="">
+            Bed 01
+          </div>
+        </div>
+        <div></div>
+      </div>
     </template>
 
     <template #footer>
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
-            label="Batal"
-            border-color="border-grey-200"
-            background-color="bg-white"
-            text-color="text-grey-300"
+            label="Edit Booking"
+            outlined
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
             @click="closeDialog"
           />
-          <CustomButton label="Simpan" @click="" />
+          <CustomButton label="Daftar" @click="" />
         </div>
       </div>
     </template>
