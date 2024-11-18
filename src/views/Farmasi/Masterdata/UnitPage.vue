@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
-import { useUnitStore } from "@/stores/datamasterFarmasi/Unit";
+// FIXME Uncoment on prod
+// import { useUnitStore } from "@/stores/datamasterFarmasi/Unit";
 import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -14,7 +15,8 @@ import AddUnit from "../Masterdata/DialogUnit/AddUnit.vue";
 import DeleteUnit from "../Masterdata/DialogUnit/DeleteUnit.vue";
 
 // State Management
-const UnitStore = useUnitStore();
+// FIXME Uncoment on prod
+// const UnitStore = useUnitStore();
 const UseUtilsStore = utilsStore();
 const UnitPayload = ref<any[]>([]);
 const UnitProperties = ref({
@@ -31,26 +33,27 @@ const hasData = computed(
 
 // Fetch Satuan
 const fetchSatuan = async () => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const response = await UnitStore.getApi(
-      UnitProperties.value.page,
-      UnitProperties.value.page_size,
-      searchQuery.value
-    );
+  // FIXME Uncoment on prod
+  // UseUtilsStore.setLoading(true);
+  // try {
+  //   const response = await UnitStore.getApi(
+  //     UnitProperties.value.page,
+  //     UnitProperties.value.page_size,
+  //     searchQuery.value
+  //   );
 
-    if (response && response.payload) {
-      UnitProperties.value.total = response.properties.total;
-      UnitPayload.value = response.payload;
-    } else {
-      UnitPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    UnitPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
+  //   if (response && response.payload) {
+  //     UnitProperties.value.total = response.properties.total;
+  //     UnitPayload.value = response.payload;
+  //   } else {
+  //     UnitPayload.value = [];
+  //   }
+  // } catch (error) {
+  //   console.error("Failed to fetch data", error);
+  //   UnitPayload.value = [];
+  // } finally {
+  //   UseUtilsStore.setLoading(false);
+  // }
 };
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -70,100 +73,101 @@ const handlePage = (event: any) => {
 
 // Export Excel
 const ExportExcel = async () => {
-  try {
-    const response = await UnitStore.exportApi();
-    const rows = response.payload;
-    if (!rows || rows.length === 0) {
-      console.error("No data available for export");
-      return;
-    }
+  // FIXME Uncoment on prod
+  // try {
+  //   const response = await UnitStore.exportApi();
+  //   const rows = response.payload;
+  //   if (!rows || rows.length === 0) {
+  //     console.error("No data available for export");
+  //     return;
+  //   }
 
-    // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
-    const data = [];
+  //   // Prepare Data for Export
+  //   const title = ["DATAMASTER SATUAN"];
+  //   const data = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({});
-    data.push({});
-    data.push({
-      No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
-      Status: "Status",
-    });
+  //   // Header Row (Kosong untuk baris kedua tanpa border)
+  //   data.push({});
+  //   data.push({});
+  //   data.push({
+  //     No: "No",
+  //     KodeSatuan: "Kode Satuan",
+  //     NamaSatuan: "Nama Satuan",
+  //     SatuanDosis: "Satuan Dosis",
+  //     Status: "Status",
+  //   });
 
-    // Data Rows
-    for (let i = 0; i < rows.length; i++) {
-      data.push({
-        No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
-      });
-    }
+  //   // Data Rows
+  //   for (let i = 0; i < rows.length; i++) {
+  //     data.push({
+  //       No: i + 1,
+  //       KodeSatuan: rows[i].code,
+  //       NamaSatuan: rows[i].name,
+  //       SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
+  //       Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+  //     });
+  //   }
 
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+  //   // Create Workbook and Worksheet
+  //   const workbook = XLSX.utils.book_new();
+  //   const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-    // Add Title and Merge Cells
-    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+  //   // Add Title and Merge Cells
+  //   XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+  //   worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
 
-    // Style Title
-    worksheet["A1"].s = {
-      alignment: { horizontal: "center", vertical: "center" },
-      font: { bold: true, sz: 14 },
-    };
+  //   // Style Title
+  //   worksheet["A1"].s = {
+  //     alignment: { horizontal: "center", vertical: "center" },
+  //     font: { bold: true, sz: 14 },
+  //   };
 
-    // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+  //   // Column Widths
+  //   worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+  //   // Apply Styles to Cells
+  //   const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
 
-    // Start formatting from row 3 (index 2 in array)
-    for (let row = 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+  //   // Start formatting from row 3 (index 2 in array)
+  //   for (let row = 2; row <= range.e.r; row++) {
+  //     for (let col = range.s.c; col <= range.e.c; col++) {
+  //       const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  //       if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
-        if (row >= 2) {
-          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-          worksheet[cellAddress].s.border = {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
+  //       // Apply border only to row 3 and beyond (table rows)
+  //       if (row >= 2) {
+  //         worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+  //         worksheet[cellAddress].s.border = {
+  //           top: { style: "thin" },
+  //           bottom: { style: "thin" },
+  //           left: { style: "thin" },
+  //           right: { style: "thin" },
+  //         };
+  //       }
 
-        // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
+  //       // Align header cells (row 3)
+  //       if (row === 2 || col === 0) {
+  //         worksheet[cellAddress].s.alignment = {
+  //           horizontal: "center",
+  //           vertical: "center",
+  //         };
+  //       }
 
-        // Fill header with background color (row 3)
-        if (row === 2) {
-          worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "9fe2db" },
-          };
-        }
-      }
-    }
+  //       // Fill header with background color (row 3)
+  //       if (row === 2) {
+  //         worksheet[cellAddress].s.fill = {
+  //           fgColor: { rgb: "9fe2db" },
+  //         };
+  //       }
+  //     }
+  //   }
 
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
-  }
+  //   // Append Worksheet to Workbook and Save
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+  //   XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+  // } catch (error) {
+  //   console.error("Error while exporting Excel", error);
+  // }
 };
 
 // Dialog Management
@@ -188,18 +192,19 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   // console.log(item,'item');
-  if (item) {
-    UseUtilsStore.setLoading(true);
-    try {
-      await UnitStore.deleteApi(item.uuid);
-      fetchSatuan();
-    } catch (error) {
-      console.error("Failed to delete data", error);
-    } finally {
-      UseUtilsStore.setLoading(false);
-      DeleteUnitDialog.value = false;
-    }
-  }
+  // FIXME Uncoment on prod
+  // if (item) {
+  //   UseUtilsStore.setLoading(true);
+  //   try {
+  //     await UnitStore.deleteApi(item.uuid);
+  //     fetchSatuan();
+  //   } catch (error) {
+  //     console.error("Failed to delete data", error);
+  //   } finally {
+  //     UseUtilsStore.setLoading(false);
+  //     DeleteUnitDialog.value = false;
+  //   }
+  // }
 };
 
 onMounted(() => {

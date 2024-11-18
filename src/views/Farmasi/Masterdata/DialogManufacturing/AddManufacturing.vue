@@ -3,7 +3,8 @@ import { ref, watch, onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useManufacturingStore } from "@/stores/datamasterFarmasi/manufacturing";
+// FIXME Uncoment on prod
+// import { useManufacturingStore } from "@/stores/datamasterFarmasi/manufacturing";
 import { useDistrictStore } from "@/stores/datamaster/district";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -112,8 +113,8 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-
-const ManufacturingStore = useManufacturingStore();
+// FIXME Uncoment on prod
+// const ManufacturingStore = useManufacturingStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -129,23 +130,24 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   console.log(values, 'values');
-  try {
-    if (method.value === "edit") {
-      if (!props.payload || !props.payload.uuid) {
-        throw new Error("UUID is missing for edit operation");
-      }
-      const uuid = props.payload.uuid;
-      const response = await ManufacturingStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      const response = await ManufacturingStore.postApi(values);
-      emit("data-updated");
-    }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  }
+  // FIXME Uncoment on prod
+  // try {
+  //   if (method.value === "edit") {
+  //     if (!props.payload || !props.payload.uuid) {
+  //       throw new Error("UUID is missing for edit operation");
+  //     }
+  //     const uuid = props.payload.uuid;
+  //     const response = await ManufacturingStore.putApi(uuid, values);
+  //     console.log("Data updated successfully:", response);
+  //     emit("data-updated");
+  //   } else if (method.value === "add") {
+  //     const response = await ManufacturingStore.postApi(values);
+  //     emit("data-updated");
+  //   }
+  //   closeDialog();
+  // } catch (error) {
+  //   console.error("Failed to process the data:", error);
+  // }
 });
 
 const method = ref(props.method);

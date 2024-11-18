@@ -3,7 +3,8 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useDrugCategoryStore } from "@/stores/datamasterFarmasi/DrugCategory";
+// FIXME Uncoment on prod
+// import { useDrugCategoryStore } from "@/stores/datamasterFarmasi/DrugCategory";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -37,8 +38,8 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-
-const kategoriObatStore = useDrugCategoryStore();
+// FIXME Uncoment on prod
+// const kategoriObatStore = useDrugCategoryStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -47,23 +48,24 @@ const [status] = defineField("status");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
-  try {
-    if (method.value === "edit") {
-      if (!props.payload || !props.payload.uuid) {
-        throw new Error("UUID is missing for edit operation");
-      }
-      const uuid = props.payload.uuid;
-      const response = await kategoriObatStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      const response = await kategoriObatStore.postApi(values);
-      emit("data-updated");
-    }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  }
+  // FIXME Uncoment on prod
+  // try {
+  //   if (method.value === "edit") {
+  //     if (!props.payload || !props.payload.uuid) {
+  //       throw new Error("UUID is missing for edit operation");
+  //     }
+  //     const uuid = props.payload.uuid;
+  //     const response = await kategoriObatStore.putApi(uuid, values);
+  //     console.log("Data updated successfully:", response);
+  //     emit("data-updated");
+  //   } else if (method.value === "add") {
+  //     const response = await kategoriObatStore.postApi(values);
+  //     emit("data-updated");
+  //   }
+  //   closeDialog();
+  // } catch (error) {
+  //   console.error("Failed to process the data:", error);
+  // }
 });
 
 const method = ref(props.method);

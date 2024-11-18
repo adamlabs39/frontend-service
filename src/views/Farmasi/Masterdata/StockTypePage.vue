@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
-import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
+// FIXME Uncoment on prod
+// import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
 import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -10,11 +11,13 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-import AddStockType from "../Masterdata/DialogStockType/AddStockType.vue";
-import DeleteStockType from "../Masterdata/DialogStockType/DeleteStockType.vue";
+// FIXME Uncoment on prod
+// import AddStockType from "../Masterdata/DialogStockType/AddStockType.vue";
+// import DeleteStockType from "../Masterdata/DialogStockType/DeleteStockType.vue";
 
 // State Management
-const StockTypeStore = useStockTypeStore();
+// FIXME Uncoment on prod
+// const StockTypeStore = useStockTypeStore();
 const UseUtilsStore = utilsStore();
 const StockTypePayload = ref<any[]>([]);
 const StockTypeProperties = ref({
@@ -32,25 +35,25 @@ const hasData = computed(
 // Fetch Stock Type
 const fetchStockType = async () => {
   UseUtilsStore.setLoading(true);
-  try {
-    const response = await StockTypeStore.getApi(
-      StockTypeProperties.value.page,
-      StockTypeProperties.value.page_size,
-      searchQuery.value
-    );
+  // try {
+  //   const response = await StockTypeStore.getApi(
+  //     StockTypeProperties.value.page,
+  //     StockTypeProperties.value.page_size,
+  //     searchQuery.value
+  //   );
 
-    if (response && response.payload) {
-      StockTypeProperties.value.total = response.properties.total;
-      StockTypePayload.value = response.payload;
-    } else {
-      StockTypePayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    StockTypePayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
+  //   if (response && response.payload) {
+  //     StockTypeProperties.value.total = response.properties.total;
+  //     StockTypePayload.value = response.payload;
+  //   } else {
+  //     StockTypePayload.value = [];
+  //   }
+  // } catch (error) {
+  //   console.error("Failed to fetch data", error);
+  //   StockTypePayload.value = [];
+  // } finally {
+  //   UseUtilsStore.setLoading(false);
+  // }
 };
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -70,100 +73,101 @@ const handlePage = (event: any) => {
 
 // Export Excel
 const ExportExcel = async () => {
-  try {
-    const response = await  StockTypeStore.exportApi();
-    const rows = response.payload;
-    if (!rows || rows.length === 0) {
-      console.error("No data available for export");
-      return;
-    }
+  // FIXME Uncoment on prod
+  // try {
+  //   const response = await  StockTypeStore.exportApi();
+  //   const rows = response.payload;
+  //   if (!rows || rows.length === 0) {
+  //     console.error("No data available for export");
+  //     return;
+  //   }
 
-    // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
-    const data = [];
+  //   // Prepare Data for Export
+  //   const title = ["DATAMASTER SATUAN"];
+  //   const data = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({});
-    data.push({});
-    data.push({
-      No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
-      Status: "Status",
-    });
+  //   // Header Row (Kosong untuk baris kedua tanpa border)
+  //   data.push({});
+  //   data.push({});
+  //   data.push({
+  //     No: "No",
+  //     KodeSatuan: "Kode Satuan",
+  //     NamaSatuan: "Nama Satuan",
+  //     SatuanDosis: "Satuan Dosis",
+  //     Status: "Status",
+  //   });
 
-    // Data Rows
-    for (let i = 0; i < rows.length; i++) {
-      data.push({
-        No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].satuan_dosis ? "AKTIF" : "NON-AKTIF",
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
-      });
-    }
+  //   // Data Rows
+  //   for (let i = 0; i < rows.length; i++) {
+  //     data.push({
+  //       No: i + 1,
+  //       KodeSatuan: rows[i].code,
+  //       NamaSatuan: rows[i].name,
+  //       SatuanDosis: rows[i].satuan_dosis ? "AKTIF" : "NON-AKTIF",
+  //       Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+  //     });
+  //   }
 
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+  //   // Create Workbook and Worksheet
+  //   const workbook = XLSX.utils.book_new();
+  //   const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-    // Add Title and Merge Cells
-    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+  //   // Add Title and Merge Cells
+  //   XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+  //   worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
 
-    // Style Title
-    worksheet["A1"].s = {
-      alignment: { horizontal: "center", vertical: "center" },
-      font: { bold: true, sz: 14 },
-    };
+  //   // Style Title
+  //   worksheet["A1"].s = {
+  //     alignment: { horizontal: "center", vertical: "center" },
+  //     font: { bold: true, sz: 14 },
+  //   };
 
-    // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+  //   // Column Widths
+  //   worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+  //   // Apply Styles to Cells
+  //   const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
 
-    // Start formatting from row 3 (index 2 in array)
-    for (let row = 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+  //   // Start formatting from row 3 (index 2 in array)
+  //   for (let row = 2; row <= range.e.r; row++) {
+  //     for (let col = range.s.c; col <= range.e.c; col++) {
+  //       const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  //       if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
-        if (row >= 2) {
-          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-          worksheet[cellAddress].s.border = {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
+  //       // Apply border only to row 3 and beyond (table rows)
+  //       if (row >= 2) {
+  //         worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+  //         worksheet[cellAddress].s.border = {
+  //           top: { style: "thin" },
+  //           bottom: { style: "thin" },
+  //           left: { style: "thin" },
+  //           right: { style: "thin" },
+  //         };
+  //       }
 
-        // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
+  //       // Align header cells (row 3)
+  //       if (row === 2 || col === 0) {
+  //         worksheet[cellAddress].s.alignment = {
+  //           horizontal: "center",
+  //           vertical: "center",
+  //         };
+  //       }
 
-        // Fill header with background color (row 3)
-        if (row === 2) {
-          worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "9fe2db" },
-          };
-        }
-      }
-    }
+  //       // Fill header with background color (row 3)
+  //       if (row === 2) {
+  //         worksheet[cellAddress].s.fill = {
+  //           fgColor: { rgb: "9fe2db" },
+  //         };
+  //       }
+  //     }
+  //   }
 
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
-  }
+  //   // Append Worksheet to Workbook and Save
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+  //   XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+  // } catch (error) {
+  //   console.error("Error while exporting Excel", error);
+  // }
 };
 
 // Dialog Management
@@ -188,18 +192,19 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   // console.log(item,'item');
-  if (item) {
-    UseUtilsStore.setLoading(true);
-    try {
-      await StockTypeStore.deleteApi(item.uuid);
-      fetchStockType();
-    } catch (error) {
-      console.error("Failed to delete data", error);
-    } finally {
-      UseUtilsStore.setLoading(false);
-      DeleteStockTypeDialog.value = false;
-    }
-  }
+  // FIXME Uncoment on prod
+  // if (item) {
+  //   UseUtilsStore.setLoading(true);
+  //   try {
+  //     await StockTypeStore.deleteApi(item.uuid);
+  //     fetchStockType();
+  //   } catch (error) {
+  //     console.error("Failed to delete data", error);
+  //   } finally {
+  //     UseUtilsStore.setLoading(false);
+  //     DeleteStockTypeDialog.value = false;
+  //   }
+  // }
 };
 
 onMounted(() => {
