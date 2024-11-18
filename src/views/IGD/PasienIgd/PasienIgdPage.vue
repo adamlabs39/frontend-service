@@ -9,23 +9,30 @@ import NoData from "@/components/section/NoData.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
+import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import type { FilterAdmisi } from "@/utils/Interface";
+import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 
 const storeUtils = utilsStore();
-
+const admisiIGDStore = useAdmisiIGDStore();
 const pageType = ref("");
 const route = useRoute();
-
-const headerFilterRef = ref<typeof HeaderFilter>();
-const resetFilter = () => {
-  headerFilterRef.value?.resetFilter();
-};
-
+const searchQuery = ref("");
+const reportData = ref<any[]>([]);
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
+const properties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const updatePageType = (path: string) => {
   resetFilter();
   dataBreadCrumb.value = [];
   const tempArrPath = path.split("/");
   pageType.value = tempArrPath[2] ?? "";
+  reloadData();
 };
 
 const changeSection = (label: string, data: any = null) => {
@@ -51,185 +58,174 @@ onMounted(() => {
     changeSection("Daftar");
   }
 });
+const setFilter = () => {
+  let filter = {} as FilterAdmisi;
+  filter.page = properties.value.page;
+  filter.limit = properties.value.page_size;
+  filter.q = searchQuery.value;
+  filter.paymentMethod =
+    selectedFilterPayment.value.length > 1 ||
+    !selectedFilterPayment.value.length
+      ? ""
+      : selectedFilterPayment.value[0];
+  filter.withoutIdentity =
+    selectedFilterPatient.value.length > 1 ||
+    !selectedFilterPatient.value.length
+      ? ""
+      : selectedFilterPatient.value[0];
+  filter.startDate = `${dateToEpoch(
+    setTimeForDate(startDateFilter.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(endDateFilter.value, 23, 59, 59)
+  )}`;
+  filter.dpjp = selectedFilterValue.value ?? "";
+  return filter;
+};
+const handleStartDate = (value: any) => {
+  startDateFilter.value = value;
+};
+const handleEndDate = (value: any) => {
+  endDateFilter.value = value;
+};
+const handleSearchQuery = (value: string) => {
+  searchQuery.value = value;
+};
 
+const reloadData = async () => {
+  let filter = {} as FilterAdmisi;
+  filter = setFilter();
+  reportData.value = await fetchIGDPatient(filter);
+};
 
-const itemsPasien = ref([
-  {
-    noRM: "00-00-00",
-    noreg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalDirawat: "10-10-2024 10:00",
-    dischargeDate: "10-10-2024 09:30",
-    noSEP: "",
-    paymentMethod: "tunai",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 10,
-    ageMonth: 3,
-    ageDay: 5,
-    no_antrian: "1",
-    new_patient: true,
-    statusIgd: "1",
-    newborn: false,
-    statusPembayaran: "Lunas",
-  },
-  {
-    noRM: "00-00-00",
-    noreg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalDirawat: "10-10-2024 10:00",
-    dischargeDate: "10-10-2024 09:30",
-    noSEP: "",
-    paymentMethod: "tunai",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 10,
-    ageMonth: 3,
-    ageDay: 5,
-    no_antrian: "1",
-    new_patient: true,
-    statusIgd: "2",
-    newborn: false,
-    statusPembayaran: "Lunas",
-  },
-  {
-    noRM: "00-00-00",
-    noreg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalDirawat: "10-10-2024 10:00",
-    dischargeDate: "10-10-2024 09:30",
-    noSEP: "",
-    paymentMethod: "asuransi",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 10,
-    ageMonth: 3,
-    ageDay: 5,
-    no_antrian: "1",
-    new_patient: true,
-    statusIgd: "1",
-    newborn: false,
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noRM: "00-00-00",
-    noreg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalDirawat: "10-10-2024 10:00",
-    dischargeDate: "10-10-2024 09:30",
-    noSEP: "",
-    paymentMethod: "asuransi",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 10,
-    ageMonth: 3,
-    ageDay: 5,
-    no_antrian: "1",
-    new_patient: true,
-    statusIgd: "1",
-    newborn: false,
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noRM: "00-00-00",
-    noreg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalDirawat: "10-10-2024 10:00",
-    dischargeDate: "10-10-2024 09:30",
-    noSEP: "",
-    paymentMethod: "TUNAI",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 10,
-    ageMonth: 3,
-    ageDay: 5,
-    no_antrian: "1",
-    new_patient: true,
-    statusIgd: "2",
-    newborn: false,
-    statusPembayaran: "Belum Lunas",
-  },
-]);
+const onFilterCipPasien = (filters: string[]) => {
+  selectedFilterPatient.value = filters; // Update selected filters
+  reloadData();
+};
+const onFilterCipPayment = (filters: string[]) => {
+  selectedFilterPayment.value = filters; // Update selected filters
+  reloadData();
+};
+const handleReset = () => {
+  resetFilter();
+  reloadData();
+};
+const resetFormRef = ref();
+const resetFilter = () => {
+  searchQuery.value = "";
+  selectedFilterPayment.value = [];
+  selectedFilterPatient.value = [];
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  resetFormRef.value.resetForm();
+};
 
-const selectedPatient = ref([]);
-const showCancelVisit = ref(false);
-const cancelReason = ref<string | undefined>();
-const openedPatientData = ref<any>({});
-const selectedTab = ref("2");
-
-const showPatientDetail = (event: DataTableRowClickEvent) => {
-  openedPatientData.value = event.data;
-  if (pageType.value === "rawat-jalan") {
-    if (openedPatientData.value.status_rj === "1") {
-      changeSection("Checkin", { platform: openedPatientData.value.platform });
+const fetchIGDPatient = async (filter: FilterAdmisi = {}) => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await admisiIGDStore.getIGD(filter);
+    if (response && response.payload) {
+      properties.value.total = response.properties.totalData;
+      return response.payload;
     } else {
-      changeSection("Detail");
+      return [];
     }
-  } else if (pageType.value === "rawat-inap") {
-    if (
-      openedPatientData.value.status_ri === "1" ||
-      openedPatientData.value.status_ri === "2"
-    ) {
-      changeSection("Daftar");
-    } else {
-      changeSection("Detail");
-    }
-  } else {
-    changeSection("Detail");
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    storeUtils.setLoading(false);
   }
 };
+
+const selectedPatient = ref<any[]>([]);
+const showCancelVisit = ref(false);
+const cancelReason = ref<string>();
+const openedPatientData = ref<any>({});
+const selectedTab = ref("2");
+const selectedFilterPatient = ref<string[]>([]);
+const selectedFilterPayment = ref<string[]>([]);
+const selectedFilterValue = ref("");
+
+// const showPatientDetail = (event: DataTableRowClickEvent) => {
+//   openedPatientData.value = event.data;
+//   if (pageType.value === "rawat-jalan") {
+//     if (openedPatientData.value.status_rj === "1") {
+//       changeSection("Checkin", { platform: openedPatientData.value.platform });
+//     } else {
+//       changeSection("Detail");
+//     }
+//   } else if (pageType.value === "rawat-inap") {
+//     if (
+//       openedPatientData.value.status_ri === "1" ||
+//       openedPatientData.value.status_ri === "2"
+//     ) {
+//       changeSection("Daftar");
+//     } else {
+//       changeSection("Detail");
+//     }
+//   } else {
+//     changeSection("Detail");
+//   }
+// };
 
 const handleSelectedTab = (newTab: string) => {
   selectedTab.value = newTab;
 };
-
+const handleSelectedPraktisi = (value: any) => {
+  selectedFilterValue.value = value;
+};
 const toggleCancelVisit = () => {
   showCancelVisit.value = !showCancelVisit.value;
+  cancelReason.value="";
 };
 
-const confirmCancel = () => {
-  if (!cancelReason.value) {
-    return;
+const confirmCancel = async () => {
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      cancelReason: cancelReason.value,
+    };
+    selectedPatient.value.forEach((patientData: any) => {
+      payload.listUuid.push(patientData.uuid);
+    });
+    console.log("payload cancle visit",payload)
+    const response = await admisiIGDStore.cancelVisitIGD(payload);
+    console.log("response data",response)
+    showCancelVisit.value = false;
+    cancelReason.value = undefined;
+    await reloadData();
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
   }
-  // Logic for confirming cancelation
-  showCancelVisit.value = false;
-  cancelReason.value = undefined;
 };
 const medicalRecord = ref<any>();
 
 const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
+
+const handleCancleReason = (value: string) => {
+  cancelReason.value = value;
+};
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  reloadData();
+};
+
+const dokterDJP = ref([
+  {
+    uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
+    name: "Rudi tabuti",
+  },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6089", name: "dr. Ali" },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
+]);
+
 </script>
 
 <template>
@@ -239,13 +235,27 @@ const openDialogRM = () => {
     class=""
   >
     <template #header>
-      <HeaderFilter pageType="pasien-igd" @selected-tab="handleSelectedTab" />
+      <HeaderFilter
+        pageType="pasien-igd"
+        @update:valueSearch="handleSearchQuery"
+        @update:selectedFilter="handleSelectedPraktisi"
+        @selected-tab="handleSelectedTab"
+        @reload-data="reloadData()"
+        @search="reloadData()"
+        @update:startDateFilter="handleStartDate"
+        @update:endDateFilter="handleEndDate"
+        @filterChipPasien="onFilterCipPasien"
+        @filterChipPayment="onFilterCipPayment"
+        @reset="handleReset()"
+        :filterSelect="dokterDJP"
+        ref="resetFormRef"
+      />
     </template>
     <template #content>
       <DataTable
-        v-if="itemsPasien.length"
+        v-if="reportData.length"
         v-model:selection="selectedPatient"
-        :value="itemsPasien"
+        :value="reportData"
         tableStyle="min-width: 50rem"
         scrollable
         scrollHeight="flex"
@@ -258,38 +268,47 @@ const openDialogRM = () => {
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-SM">{{ slotProps.data.noRM }}</div>
-              <div class="text-SM">{{ slotProps.data.noreg }}</div>
+              <div class="text-SM">{{ slotProps.data.noRm }}</div>
+              <div class="text-SM">{{ slotProps.data.noReg }}</div>
             </div>
           </template>
         </Column>
         <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">
-              <span class="font-semibold">{{ slotProps.data.name }}</span>
+              <span class="font-semibold">{{
+                slotProps.data.patient.name
+              }}</span>
               <span class="text-grey-300">
-                ({{ slotProps.data.ageYear }}Th {{ slotProps.data.ageMonth }}Bln
-                {{ slotProps.data.ageDay }}Hr)
+                ({{ slotProps.data.birthDetail.ageYear }}Th
+                {{ slotProps.data.birthDetail.ageMonth }}Bln
+                {{ slotProps.data.birthDetail.ageDay }}Hr)
               </span>
             </div>
-            <div class="text-XS">{{ slotProps.data.address }}</div>
+            <div class="text-XS">
+              {{ slotProps.data.patient.address.full_address }}
+            </div>
             <div class="flex flex-wrap">
-              <PhUserCirclePlus
+              <!-- <PhUserCirclePlus
                 v-if="slotProps.data.new_patient"
                 :size="22"
                 class="text-adameds-300 mt-auto mr-[5px]"
                 weight="fill"
-              />
+              /> -->
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
+                  slotProps.data.patient.gender == 'Female'
+                    ? 'Perempuan'
+                    : 'Laki-laki'
                 "
                 :bgColor="
-                  slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                  slotProps.data.patient.gender == 'Female'
+                    ? 'bg-female-75'
+                    : 'bg-male-75'
                 "
                 :textColor="
-                  slotProps.data.gender == 'P'
+                  slotProps.data.patient.gender == 'Female'
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
@@ -297,7 +316,7 @@ const openDialogRM = () => {
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.phone"
+                :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -312,38 +331,43 @@ const openDialogRM = () => {
         >
           <template #body="slotProps">
             <div class="flex mb-[5px] text-SM">
-              <div>{{ slotProps.data.doctorData.doctor }}</div>
-              
+              <div>
+                {{ slotProps.data.practitioner.title }}
+                {{ slotProps.data.practitioner.nama }}
+              </div>
             </div>
             <div class="flex flex-wrap">
               <CustomChip
                 :showCheckedIcon="false"
-                label="DATA LENGKAP"
+                :label="
+                  slotProps.data.withoutIdentity
+                    ? 'DATA TIDAK TIDAK LENGKAP'
+                    : 'DATA LENGKAP'
+                "
                 customClass="h-5 pr-[5px] mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.paymentMethod == 'tunai' ? 'TUNAI' : 'ASURANSI'
+                  slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
                 "
                 :bgColor="
-                  slotProps.data.paymentMethod == 'tunai'
+                  slotProps.data.paymentMethod == 1
                     ? 'bg-adameds-50'
                     : 'bg-warning-50'
                 "
                 :textColor="
-                  slotProps.data.paymentMethod == 'tunai'
+                  slotProps.data.paymentMethod == 1
                     ? 'text-adameds-300'
                     : 'text-warning-300'
                 "
                 :borderColor="
-                  slotProps.data.paymentMethod == 'tunai'
+                  slotProps.data.paymentMethod == 1
                     ? 'border-adameds-300'
                     : 'border-warning-300'
                 "
                 customClass="h-5 pr-[6px] mr-[5px]"
               />
-          
             </div>
           </template>
         </Column>
@@ -364,7 +388,7 @@ const openDialogRM = () => {
                   class="my-auto mr-5 text-grey-300"
                   weight="bold"
                 />
-                {{ slotProps.data.tanggalDaftar }}
+                {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
               <div
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
@@ -375,7 +399,7 @@ const openDialogRM = () => {
                   class="my-auto mr-5 text-male-300"
                   weight="bold"
                 />
-                {{ slotProps.data.dischargeDate }}
+                30 Juli 2024
               </div>
             </div>
           </template>
@@ -417,7 +441,7 @@ const openDialogRM = () => {
             <div>
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.statusPembayaran"
+                label="Lunas"
                 customClass="h-5 pr-[5px] mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusPembayaran == 'Belum Lunas'
@@ -440,7 +464,6 @@ const openDialogRM = () => {
           headerClass="bg-adameds-50"
           class="custom-checkbox"
         ></Column>
-     
       </DataTable>
       <NoData v-else />
       <MedicalRecord ref="medicalRecord" />
@@ -448,12 +471,15 @@ const openDialogRM = () => {
     <template #footer>
       <FooterPagination
         cancleButton
-        :value-cancle="cancelReason"
+        :rows="properties.page_size"
+        :totalRecords="properties.total"
+        @page="handlePage"
         :show-cancel-visit="showCancelVisit"
-        :cancel-reason="cancelReason"
         @toggle-cancel-visit="toggleCancelVisit"
         @confirm-cancel="confirmCancel"
-        @update:valueCancle="cancelReason = $event"
+        @update:cancleReason="handleCancleReason"
+        :cancleSelected="selectedPatient"
+        @update:cancleSelected="selectedPatient = $event"
       />
     </template>
   </Card>

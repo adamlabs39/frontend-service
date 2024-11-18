@@ -241,10 +241,53 @@ baseInstanceAdmisi.interceptors.response.use(
   }
 );
 
+//IGD
+const baseInstanceIgd = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_IGD,
+});
+
+baseInstanceIgd.interceptors.request.use(
+  (config) => {
+    const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsbGlhbm8tZGV2IiwiZmFza2VzVXVpZCI6IjAxOTJiMzFmLTM2NWQtNzMxYy04YjE2LTNhNDU2NWM5NDc1ZSIsImlhdCI6MTczMDk3MDY4NywiZXhwIjoxNzMxMDU3MDg3LCJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSJ9.IF_KAQG2ziVATkxJQUvnA7hJWsKNZLdoh4aFRX3xmdfi0WUWAACg1ShHqAfKUx2xPckY1fSJbHsBmkxuxP-8sWLAvffIbbpKaf5MFbLf1V2AD0PvW1ibUyZ7wFq4tZrN_uSNf4j5RUHkvsCcWE6ueWytfnI1vxg_FkDSkXO30Vz69V6T9BAIdpXOXtVlpfMHxtSAsakhsqHfIgFsGEqVW1BYMYN6IqULD7DwvJ4_EQkPAmIBfnUID2Oq2e3pATfI1sUy6n9Y2rXQN_3zqsTk4TzLEEi4jl8maAJIYcId8exBIOx1zZR-eAm9VbhTwNQohR4uegE38Xdr1rZQ0xPRYw";
+
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstanceIgd.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export {
   baseInstance,
   authInstance,
   settingInstance,
   baseInstanceDatamaster,
   baseInstanceAdmisi,
+  baseInstanceIgd,
 };

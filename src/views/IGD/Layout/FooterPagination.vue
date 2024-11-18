@@ -8,25 +8,41 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  value: {
-    type: String,
-  },
   showCancelVisit: {
     type: Boolean,
   },
-  cancelReason: {
-    type: String,
+  rows: {
+    type: Number,
+    required: true,
   },
+  totalRecords: {
+    type: Number,
+    required: true,
+  },
+  cancleSelected:{
+    type:Array,
+    default: () => []
+  }
+
 });
 const emit = defineEmits([
   "toggle-cancel-visit",
   "confirm-cancel",
   "update:valueCancle",
+  "page",
+  "update:cancleReason",
+  "update:cancleSelected"
 ]);
-const valueCancle = ref(props.value);
-watch(valueCancle, (newValue) => {
-  emit("update:valueCancle", newValue);
-});
+const cancleReason=ref<string>("")
+const handlePage = (event: any) => {
+  emit("page", event);
+};
+
+const handleCancleVisit=()=>{
+  cancleReason.value='';
+  emit('update:cancleSelected', []);
+  emit('toggle-cancel-visit', false)
+}
 </script>
 
 <template>
@@ -40,7 +56,7 @@ watch(valueCancle, (newValue) => {
       />
       <CustomButton
         v-if="showCancelVisit"
-        @click="$emit('toggle-cancel-visit', false)"
+        @click="handleCancleVisit"
         class="my-auto mr-[10px]"
         label="Batal"
         outlined
@@ -52,15 +68,15 @@ watch(valueCancle, (newValue) => {
         @click="$emit('confirm-cancel')"
         class="my-auto mr-5 bg-danger-300"
         label="Iya, Batalkan"
-        :disabled="!cancelReason"
+        :disabled="!cancleReason || cancleSelected.length === 0"
       />
       <CustomTextfield
         v-if="showCancelVisit"
         :showLabel="false"
-        :value="valueCancle"
-        @input="valueCancle = $event"
+        v-model="cancleReason"
         class="my-auto w-[400px]"
         placeholder="Alasan Batal Kunjungan"
+        @update:modelValue="$emit('update:cancleReason', cancleReason)"
       />
     </div>
     <CustomButton
@@ -71,6 +87,8 @@ watch(valueCancle, (newValue) => {
       class="my-auto bg-adameds-300"
       label="Cetak"
     />
-    <CustomPaginator :rows="2" :totalRecords="10" />
+    <CustomPaginator :rows="rows"
+      :totalRecords="totalRecords"
+      @page="handlePage" />
   </div>
 </template>
