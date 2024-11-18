@@ -130,7 +130,7 @@ const schema = toTypedSchema(
     .object({
       jenisTarif: yup.string().default("Tindakan"),
       code: yup.string().required("Kode Tarif harus diisi"),
-      name: yup.string(),
+      name: yup.string().required("Nama Tarif harus diisi"),
       grandTotal: yup.number(),
       mode: yup.string(),
       status: yup.bool().default(true),
@@ -619,6 +619,9 @@ const getHargaLab = (labUuid: string) => {
               label="Nama Tarif Tindakan"
               v-model="name"
               placeholder="Nama Tarif Tindakan"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+              :required="errors.code ? true : false"
             />
             <div class="grid items-end w-full grid-cols-2 col-span-4 gap-5">
               <div class="col-span-2 -mb-4 font-semibold text-normal">
