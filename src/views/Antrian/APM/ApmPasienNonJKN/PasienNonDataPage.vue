@@ -14,6 +14,9 @@ const handleHome = () => {
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
+const handlePoli = () => {
+  router.push("/antrian/apm/aktif/pasien/non-jkn/poli-umum");
+};
 
 const props = defineProps({
   isDialogVisible: {
@@ -172,6 +175,7 @@ const cardAktivitasKandungan = ref({
                 <CardAktivitas
                   :cardAktivitas="cardAktivitasUmum"
                   class="transition-transform duration-300 hover:scale-95"
+                  @click="handlePoli"
                 />
               </div>
               <div class="w-[180px]">
