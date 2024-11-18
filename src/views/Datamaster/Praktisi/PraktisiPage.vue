@@ -180,16 +180,15 @@ const downloadFormatExcel = async () => {
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-    ];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
@@ -225,14 +224,14 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Tipe: "Tipe Praktisi*",
-      Name: "Nama Praktisi*",
+      Tipe: "Tipe Praktisi",
+      Name: "Nama Praktisi",
       Code: "Kode HFIS (BPJS)",
       SIP: "SIP",
       STR: "STR",
       Antrian: "Kode Antrian Dokter",
       Pelayanan: "Pelayanan*",
-      Status: "Status*",
+      Status: "Status",
     });
 
     // Data Rows
@@ -240,8 +239,8 @@ const downloadExportExcel = async () => {
       data.push({
         No: i + 1,
         Tipe: rows[i].isDoctor ? "Dokter" : "Non-Dokter",
-        Name: rows[i].codeBpjs,
-        Code: rows[i].codeBpjs,
+        Name: rows[i].pegawai.name,
+        Code: rows[i].codeBpjs?? '-',
         SIP: rows[i].sip ?? '-',
         STR: rows[i].str ?? '-',
         Antrian: rows[i].codeAntrianDokter ?? '-',
@@ -265,8 +264,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 20 }];
+ const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
 
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
 
@@ -369,7 +375,11 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (praktisiProperties.page - 1) * praktisiProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -411,7 +421,7 @@ const handleFileUpload = async (file: File) => {
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
-              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+              customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white text-nowrap"
             />
           </template>
         </Column>
@@ -421,7 +431,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="

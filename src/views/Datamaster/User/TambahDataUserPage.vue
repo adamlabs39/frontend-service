@@ -72,7 +72,7 @@ const schema = computed(() =>
   toTypedSchema(
     yup
       .object({
-        practitionerUuid: yup.string(),
+        practitionerUuid: yup.string().required("Praktisi harus dipilih"),
         phone: yup.string().required("No. Handhpone harus diisi"),
         email: yup.string().required("Email harus diisi"),
         username: yup.string().required("Username harus diisi"),
@@ -81,7 +81,7 @@ const schema = computed(() =>
           .string()
           .oneOf([yup.ref("password")], "Password tidak sama")
           .notRequired(),
-        status: yup.bool().default(false),
+        status: yup.bool().default(true),
         roleUuid: yup.string().notRequired(),
       })
       .noUnknown()
@@ -459,22 +459,10 @@ onBeforeMount(async () => {
                 :options="praktisiPayload"
                 option-label="pegawai.name"
                 option-value="uuid"
+                @update:modelValue="searchPraktisi"
                 class="grow"
                 :invalid="!!errors.practitionerUuid"
                 :invalidMessage="errors.practitionerUuid"
-              />
-              <CustomButton
-                label="Cari"
-                icon="PhMagnifyingGlass"
-                class="ml-5 mr-2.5"
-                @click="searchPraktisi"
-              />
-              <CustomButton
-                label="Reset"
-                background-color="bg-transparent"
-                border-color="border-adameds-300"
-                text-color="text-adameds-300"
-                @click="resetSearch"
               />
             </div>
             <div v-if="selectedPraktisi" class="col-span-12">

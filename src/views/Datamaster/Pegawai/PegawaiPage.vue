@@ -174,7 +174,7 @@ const downloadExportExcel = async () => {
         GelarAkhir: rows[i].lastTitle ?? '-',
         NIK: rows[i].nik,
         TglLahir: rows[i].tanggalLahir,
-        Gender : rows[i].gender === "perempuan" ? "Perempuan" : "Laki-Laki",
+        Gender : rows[i].gender === "perempuan" ? "Perempuan" : "Laki-laki",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -194,16 +194,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-    ];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -289,16 +288,15 @@ const downloadFormatExcel = async () => {
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    worksheet["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 20 },
-    ];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
@@ -374,14 +372,18 @@ const handleFileUpload = async (file: File) => {
 
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (pegawaiProperties.page - 1) * pegawaiProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
         <Column field="nik" header="NIK" headerClass="bg-adameds-50"></Column>
         <Column header="Nama Pegawai" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div>
+            <div class="text-pretty">
               {{
                 slotProps.data.firstTitle
                   ? slotProps.data.firstTitle + ". "
@@ -401,6 +403,7 @@ const handleFileUpload = async (file: File) => {
               border-color="border-none"
               bg-color="bg-adameds-300"
               customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+              class="text-nowrap"
             />
           </template>
         </Column>
@@ -411,7 +414,7 @@ const handleFileUpload = async (file: File) => {
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.gender"
                 :show-checked-icon="false"
@@ -440,7 +443,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="

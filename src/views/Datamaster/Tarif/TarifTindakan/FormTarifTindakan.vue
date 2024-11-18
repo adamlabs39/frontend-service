@@ -130,10 +130,10 @@ const schema = toTypedSchema(
     .object({
       jenisTarif: yup.string().default("Tindakan"),
       code: yup.string().required("Kode Tarif harus diisi"),
-      name: yup.string(),
+      name: yup.string().required("Nama Tarif harus diisi"),
       grandTotal: yup.number(),
       mode: yup.string(),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
       isMcu: yup.bool().default(false),
       unitPelayanan: yup.array().of(
         yup.object({
@@ -158,18 +158,35 @@ const schema = toTypedSchema(
           ),
         })
       ),
-      tarifLab: yup
-        .array()
-        .when("isMcu", {
-          is: (value: boolean) => value === true,
-          then: (schema) => schema.required("Tarif Lab harus diisi"),
-          otherwise: (schema) => schema.notRequired(),
+      tarifLab: yup.array().of(
+        yup.object({
+          tarifLabUuid: yup.string().when("isMcu", {
+            is: (value: boolean) => value === true,
+            then: (schema) => schema.required("Tarif Lab harus diisi"),
+            otherwise: (schema) => schema.notRequired(),
+          }),
         })
-        .of(
-          yup.object({
-            tarifLabUuid: yup.string().required("Tarif Lab harus diisi"),
-          })
-        ),
+      ),
+      // tarifLab: yup
+      //   .array()
+      //   .when("isMcu", {
+      //     is: true,
+      //     then: yup.array().of(
+      //       yup.object({
+      //         tarifLabUuid: yup.string().when("isMcu", {
+      //           is: (value: boolean) => value === true,
+      //           then: (schema) => schema.required("Tarif Lab harus diisi"),
+      //           otherwise: (schema) => schema.notRequired(),
+      //         }),
+      //       })
+      //     ),
+      //     otherwise: (schema) => schema.notRequired(),
+      //   })
+      //   .of(
+      //     yup.object({
+      //       tarifLabUuid: yup.string(),
+      //     })
+      //   ),
       unitPelayananSelected: yup
         .array()
         .of(yup.number().required("Unit Pelayanan harus dipilih"))
@@ -579,6 +596,7 @@ const getHargaLab = (labUuid: string) => {
   >
     <template #header>{{ title }} Tarif</template>
     <template #body>
+      {{ isMcu }}
       <!-- Form Input -->
       <div
         v-if="method !== 'detail'"
@@ -601,6 +619,9 @@ const getHargaLab = (labUuid: string) => {
               label="Nama Tarif Tindakan"
               v-model="name"
               placeholder="Nama Tarif Tindakan"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+              :required="errors.code ? true : false"
             />
             <div class="grid items-end w-full grid-cols-2 col-span-4 gap-5">
               <div class="col-span-2 -mb-4 font-semibold text-normal">

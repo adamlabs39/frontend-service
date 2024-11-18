@@ -76,7 +76,7 @@ const schema = toTypedSchema(
     .object({
       jenisTarif: yup.string().default("Ruangan"),
       code: yup.string().required("Code Tarif harus diisi"),
-      name: yup.string(),
+      name: yup.string().required("Nama Tarif harus diisi"),
       unitPelayanan: yup.number().required("Pelayanan harus dipilih"),
       ruanganUuid: yup.string().required("Ruangan harus dipilih"),
       tarifPenjamin: yup.array().of(
@@ -85,7 +85,7 @@ const schema = toTypedSchema(
           harga: yup.number().required("Harga Bed harus diisi"),
         })
       ),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );
@@ -244,6 +244,9 @@ watch(
             class="col-span-6"
             label="Nama Tarif"
             placeholder="Nama Tarif"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
+            :required="errors.name ? true : false"
           />
           <CustomSelect
             v-model="unitPelayanan"
