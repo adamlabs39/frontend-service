@@ -1,29 +1,30 @@
 <script lang="ts" setup>
+import NoData from "@/components/section/NoData.vue";
+import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
+import { utilsStore } from "@/stores/utils";
 import DataTable from "primevue/datatable";
-import { ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 
-const rekapTindakanPasien = ref([
-  {
-    tindakan: "Pemeriksaan TTV",
-    jumlah: 5,
-  },
-  {
-    tindakan: "Pasang Perban",
-    jumlah: 3,
-  },
-]);
+
+const props = defineProps({
+  rekapTindakanPasienData: {
+    type: Array,
+    required: true
+  }
+})
 </script>
 
 <template>
+  <!-- {{ rekapTindakanPasien }} -->
   <DataTable
-    v-if="rekapTindakanPasien.length"
-    :value="rekapTindakanPasien"
+    v-if="rekapTindakanPasienData.length"
+    :value="rekapTindakanPasienData"
     tableStyle="min-width: 50rem"
     scrollable
     scrollHeight="240px"
     :pt="{ headerRow: 'text-SM' }"
   >
-    <Column field="no" headerClass="bg-adameds-50" header="No" class="w-[10px]" >
+    <Column field="no" headerClass="bg-adameds-50" header="No" class="w-[10px]">
       <template #body="slotProps">
         <div class="text-SM">
           {{ slotProps.index + 1 }}
@@ -38,7 +39,7 @@ const rekapTindakanPasien = ref([
     >
       <template #body="slotProps">
         <div class="text-SM">
-          <div>{{ slotProps.data.tindakan }}</div>
+          <div>{{ slotProps.data.namaTindakan }}</div>
         </div>
       </template>
     </Column>
@@ -50,9 +51,10 @@ const rekapTindakanPasien = ref([
     >
       <template #body="slotProps">
         <div class="text-SM">
-          <div>{{ slotProps.data.jumlah }}</div>
+          <div>{{ slotProps.data.jumlahTindakan }}</div>
         </div>
       </template>
     </Column>
   </DataTable>
+  <NoData v-else />
 </template>

@@ -1,5 +1,14 @@
 <script lang="ts" setup>
+import NoData from "@/components/section/NoData.vue";
 import { ref } from "vue";
+
+const props = defineProps({
+  pembatalanPoliData: {
+    type: Array as () => Array<any>,
+    required: true,
+  },
+});
+
 
 const pembatalanPoli = ref([
   {
@@ -25,8 +34,10 @@ const expandedRows = ref<any[]>([]);
 </script>
 
 <template>
+  <!-- {{ pembatalanPoliData }} -->
   <DataTable
-    :value="pembatalanPoli"
+  v-if="pembatalanPoliData.length"
+    :value="pembatalanPoliData"
     responsiveLayout="scroll"
     dataKey="id"
     :expandedRows="expandedRows"
@@ -120,4 +131,5 @@ const expandedRows = ref<any[]>([]);
       </div>
     </template>
   </DataTable>
+  <NoData v-else/>
 </template>

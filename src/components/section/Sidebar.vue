@@ -39,20 +39,27 @@ const route = useRoute();
 const filterRuang = defineModel("filterRuang");
 
 const showSidebar = ref(true);
-const emit = defineEmits(["filterChanged"]);
+const emit = defineEmits(["filterChanged", 'update:searchPoli']);
+const searchPoli = ref('');
+
+watch(searchPoli, (newValue) => {
+  emit('update:searchPoli', newValue);
+});
 
 const goToPage = (url: string) => {
   router.push(url);
 };
 
-const goToFilteredPage = (poliName: string) => {
+const goToFilteredPage = (poliUuid: string, poliName: string) => {
   router.push({
     path: "/rawat-jalan/poli",
-    query: poliName === "Semua Poli" ? {} : { filter: poliName },
+    query: { filter: poliUuid },
   });
-  emit("filterChanged", poliName);
+  emit("filterChanged",  { uuid: poliUuid, name: poliName });
 };
 
+
+  
 const goToRuanganPage = () => {
   router.push({
     path: "/rawat-inap/ruangan",
@@ -213,6 +220,7 @@ const getSVG = (svg: string) => {
                        type="text"
                        class="w-full text-white bg-transparent"
                        placeholder="Cari Poli ..."
+                      v-model="searchPoli"
                      />
                    </div>
    
@@ -221,7 +229,7 @@ const getSVG = (svg: string) => {
                        v-if="row2.type == linkType.LINK"
                        @click="
                          row1.name === 'Poli'
-                           ? goToFilteredPage(row2.name)
+                           ? goToFilteredPage( row2.datas, row2.name)
                            : goToPage(row2.url ?? '')
                        "
                        class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
@@ -230,7 +238,7 @@ const getSVG = (svg: string) => {
                            (row1.name === 'Poli' &&
                              (route.query.filter === row2.name ||
                                (!route.query.filter &&
-                                 row2.name === 'Semua Poli'))) ||
+                                 row2.name === row2.datas && route.path == '/rawat-jalan/poli'))) ||
                            (row1.name !== 'Poli' && route.path === row2.url),
                        }"
                      >

@@ -271,7 +271,38 @@ baseInstanceIgd.interceptors.request.use(
   }
 );
 
-baseInstanceIgd.interceptors.response.use(
+// Rawat Jalan
+const baseInstanceRawatJalan = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_LAPORAN,
+});
+
+baseInstanceRawatJalan.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");;
+
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+
+baseInstanceRawatJalan.interceptors.response.use(
   (response: AxiosResponse) => {
     if (response.data) {
       response.data = toCamelCase(response.data);
@@ -282,7 +313,6 @@ baseInstanceIgd.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 export {
   baseInstance,
   authInstance,
@@ -290,4 +320,5 @@ export {
   baseInstanceDatamaster,
   baseInstanceAdmisi,
   baseInstanceIgd,
+  baseInstanceRawatJalan
 };
