@@ -20,13 +20,20 @@ export const useAdmisiRJStore = defineStore({
         page = 1,
         limit = 10,
         platform = "",
-        poly = "",
+        poly = [] as string[],
         startDate = "",
         endDate = "",
         dpjp = "",
       },
       payload = {}
     ) {
+      let tempFilterPoli = "";
+      poly.forEach((poli, index) => {
+        tempFilterPoli += `${poli}`;
+        if (index + 1 < poly.length) {
+          tempFilterPoli += ",";
+        }
+      });
       return apiAdmisiGet(
         `/rawat-jalan?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&platform=${platform}&poly=${poly}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}`,
         payload

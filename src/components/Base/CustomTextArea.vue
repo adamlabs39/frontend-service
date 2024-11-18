@@ -80,7 +80,7 @@ const value = computed({
         placeholderColor: invalid ? '#e9594c' : '#90969E',
       }"
     />
-    <small v-if="props.invalid" class="text-danger-300 text-XS">{{
+    <small v-if="props.invalid" class="mt-1 text-danger-300 text-XS">{{
       props.invalidMessage
     }}</small>
   </div>

@@ -53,6 +53,14 @@ const setFormData = () => {
     if (selectedRoom.value) {
       fetchListBedData(selectedRoom.value);
     }
+    if (tempDoctorVisitData.paymentMethod == 2) {
+      const tempInsurance = listPenjamin.value.find(
+        (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
+      );
+      if (tempInsurance) {
+        tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
+      } else tempDoctorVisitData.insurance.penjaminUuid = "";
+    }
     setValues({
       ...tempDoctorVisitData,
     });
@@ -132,6 +140,23 @@ const listRuangan = ref<any[]>([]);
 const listBed = ref<any[]>([]);
 const listBedCadangan = ref<any[]>([]);
 const listBoxBayi = ref<any[]>([]);
+const listPenjamin = ref([
+  {
+    uuid: "019304bc-39d4-7e9f-86ab-0c55c786af1f",
+    name: "BPJS Kesehatan",
+    code: "BPJS",
+  },
+  {
+    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e2",
+    name: "Asuransi Prudential",
+    code: "Prudential",
+  },
+  {
+    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e3",
+    name: "Asuransi Allianz",
+    code: "Allianz",
+  },
+]);
 
 const noSpri = ref("");
 const selectedRoomCategory = ref();
@@ -163,13 +188,26 @@ const schema = computed(() =>
         previousBill: yup.boolean().default(false),
         complaint: yup.string().default(""),
         note: yup.string().default(""),
-        assuranceAccountId: yup
-          .string()
+        insurance: yup
+          .object({
+            penjaminUuid: yup.string().nullable(),
+            accountNumber: yup.string().nullable(),
+            classEntitle: yup.string().nullable(),
+          })
           .when("paymentMethod", ([paymentMethod], schema) => {
-            return paymentMethod != "TUNAI"
-              ? schema.required("Nama Penjamin Harus Dipilih")
-              : schema;
-          }),
+            return paymentMethod == "TUNAI"
+              ? schema
+              : schema.shape({
+                  penjaminUuid: yup
+                    .string()
+                    .required("Nama Penjamin harus dipilih"),
+                  accountNumber: yup
+                    .string()
+                    .required("No. Penjamin harus diisi"),
+                  classEntitle: yup.string().required("Kelas harus dipilih"),
+                });
+          })
+          .noUnknown(),
         practitionerUuid: yup.string().required("DPJP harus dipilih"),
         monitoringRoomUuid: yup
           .string()
@@ -193,7 +231,9 @@ const [maternity] = defineField("maternity");
 const [entrustedPatient] = defineField("entrustedPatient");
 const [upgradeClass] = defineField("upgradeClass");
 const [previousBill] = defineField("previousBill");
-const [assuranceAccountId] = defineField("assuranceAccountId");
+const [insuranceUuid] = defineField("insurance.penjaminUuid");
+const [insuranceAccount] = defineField("insurance.accountNumber");
+const [insuranceClass] = defineField("insurance.classEntitle");
 const [monitoringRoomUuid] = defineField("monitoringRoomUuid");
 const [spareBed] = defineField("spareBed");
 const [boxBaby] = defineField("boxBaby");
@@ -252,7 +292,6 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-        {{ errors }}
         <div
           class="grid gap-y-5 gap-x-[30px]"
           :class="[
@@ -339,40 +378,72 @@ defineExpose({
         </div>
         <div v-if="selectedPaymentMethod.includes('ASURANSI')">
           <hr class="my-[30px]" />
-          <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
+          <div class="grid grid-cols-3 gap-y-5 gap-x-[30px]">
             <!-- FIXME Dummy data -->
             <CustomSelect
-              v-model="assuranceAccountId"
+              v-model="insuranceUuid"
               label="Nama Penjamin"
               placeHolder="Pilih Nama Penjamin"
               class=""
               optionLabel="name"
               optionValue="uuid"
               :showFilter="false"
-              :options="[
-                {
-                  uuid: '2ed6a3cb-94aa-47f6-bca1-a99ae568e1e1',
-                  name: 'BPJS Kesehatan',
-                },
-                {
-                  uuid: '2ed6a3cb-94aa-47f6-bca1-a99ae568e1e2',
-                  name: 'Asuransi Prudential',
-                },
-                {
-                  uuid: '2ed6a3cb-94aa-47f6-bca1-a99ae568e1e3',
-                  name: 'Asuransi Allianz',
-                },
-              ]"
+              :options="listPenjamin"
               :disabled="isDetail"
-              :invalid="!!errors.assuranceAccountId"
-              :invalidMessage="errors.assuranceAccountId"
+              :invalid="!!errors['insurance.penjaminUuid']"
+              :invalidMessage="errors['insurance.penjaminUuid']"
             />
             <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield
+              v-model="insuranceAccount"
               label="No. Penjamin"
               class=""
               placeholder="No. Penjamin"
               :disabled="isDetail"
+              :invalid="!!errors['insurance.accountNumber']"
+              :invalidMessage="errors['insurance.accountNumber']"
+            />
+            <CustomSelect
+              v-model="insuranceClass"
+              label="Kelas"
+              placeHolder="Pilih Kelas"
+              class=""
+              optionLabel="name"
+              optionValue="uuid"
+              :showFilter="false"
+              :options="[
+                {
+                  uuid: 'kelas1',
+                  name: 'Kelas 1',
+                },
+                {
+                  uuid: 'kelas2',
+                  name: 'Kelas 2',
+                },
+                {
+                  uuid: 'kelas3',
+                  name: 'Kelas 3',
+                },
+                {
+                  uuid: 'kelasVip',
+                  name: 'Kelas VIP',
+                },
+                {
+                  uuid: 'kelasVvip',
+                  name: 'Kelas VVIP',
+                },
+                {
+                  uuid: 'kelasReguler',
+                  name: 'Kelas Reguler',
+                },
+                {
+                  uuid: 'kelasEksekutif',
+                  name: 'Kelas Eksekutif',
+                },
+              ]"
+              :disabled="isDetail"
+              :invalid="!!errors['insurance.classEntitle']"
+              :invalidMessage="errors['insurance.classEntitle']"
             />
           </div>
         </div>

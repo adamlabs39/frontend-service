@@ -1,6 +1,8 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import htmlToPdfmake from "html-to-pdfmake";
 import { customVfs } from "./customVfs";
+import { getDateNow } from "./Helpers";
+import type { TDocumentDefinitions } from "pdfmake/interfaces";
 
 type PageSize =
   | "A4"
@@ -47,14 +49,33 @@ export function downloadPdf({
 
 export function createGeneralConsentPdf({
   data,
+  patientData,
+  familyData,
   page = "A4",
   orientation = "portrait",
 }: {
   data: any;
+  patientData: any;
+  familyData?: any;
   page?: PageSize;
   orientation?: PageOrientation;
 }) {
-  data = `<h2 style="text-align:center;">CONTOH<br>PERSETUJUAN UMUM/ GENERAL CONSENT</h2><p><br><strong>IDENTITAS PASIEN</strong><br>Nama Pasien<br>Nomor Rekam Medis<br>Tanggal Lahir<br>Alamat<br>No Telp</p><h3 style="text-align:center;"><br><strong>PASIEN DAN/ATAU WALI HUKUM HARUS MEMBACA, MEMAHAMI DAN MENGISI INFORMASI BERIKUT</strong><br>&nbsp;</h3><p><strong>Yang bertanda tangan dibawah ini :</strong><br><strong>Nama : Alamat:</strong><br><strong>No Telp:</strong><br><br>Selaku Pasien/Wali hukum RS XXYY dengan menyatakan persetujuan :</p><h3><br><strong>I. PERSETUJUAN UNTUK PERAWATAN DAN PENGOBATAN</strong></h3><p><br>Saya menyetujui untuk perawatan di Rumah Sakit XXYY sebagai pasien rawat jalan atau rawat inap tergantung kepada kebutuhan medis. Pengobatan dapat meliputi pemeriksaan x-ray/radiology, tes darah, perawatan rutin dan prosedur seperti cairan infus atau suntikan dan evaluasi (contohnya wawancara dan pemeriksaan fisik).<br>Persetujuan yang saya berikan tidak termasuk persetujuan untuk prosedur/tindakan invasif (misalnya, operasi) atau tindakan yang mempunyai resiko tinggi.<br>Jika saya memutuskan untuk menghentikan perawatan medis untuk diri saya sendiri.Saya memahami dan menyadari bahwa Rumah Sakit XXYY atau dokter tidak bertanggung jawab atas hasil yang merugikan Saya.</p>`;
+  let values: any = {
+    nama: patientData.name,
+    alamat: patientData.address.fullAddress,
+    umur: `${patientData.birthDetail.ageYear} Tahun, ${patientData.birthDetail.ageMonth} Bulan, ${patientData.birthDetail.ageDay} Hari`,
+    // FIXME Dapet dari mana?
+    tindakan: "",
+    nama_wali: familyData ? familyData.name : "",
+    jenis_kelamin_wali: familyData ? familyData.gender : "",
+    alamat_wali: familyData ? familyData.address : "",
+    hubungan_dengan_pasien: familyData ? familyData.relationship : "",
+  };
+
+  data = data.replace(/{{\s*(\w+)\s*}}/g, (match: any, key: any) => {
+    return key in values ? values[key] : match;
+  });
+
   pdfMake.vfs = customVfs.pdfMake.vfs;
 
   pdfMake.fonts = {
@@ -66,13 +87,70 @@ export function createGeneralConsentPdf({
     },
   };
 
-  const docDefinition = {
+  const localFaskes = JSON.parse(localStorage.getItem('faskes') ?? '')
+  const clinicName = localFaskes ? localFaskes.faskesName : 'Klinik ADAMEDS'
+
+  const docDefinition: any = {
     pageSize: page,
     pageOrientation: orientation,
     defaultStyle: {
       font: "Arial", // Set font default ke Arial
     },
-    content: htmlToPdfmake(data),
+    content: [
+      htmlToPdfmake(data),
+      {
+        margin: [0, 10, 0, 10],
+        columns: [
+          [
+            {
+              text: "Petugas",
+              bold: "true",
+              fontSize: 14,
+              alignment: "center",
+            },
+            {
+              qr: `Dikeluarkan di ${clinicName}, Ditandatangani secara elektronik oleh Petugas, Pada tanggal ${getDateNow()}`,
+              fit: 85,
+              alignment: "center",
+              margin: [0, 5, 0, 5],
+              border: [true, false, true, false],
+            },
+            {
+              text: "Petugas",
+              fontSize: 14,
+              alignment: "center",
+            },
+          ],
+          {
+            width: 50,
+            text: "",
+          },
+          [
+            {
+              text: familyData ? "Keluarga Pasien" : "Pasien",
+              bold: "true",
+              fontSize: 14,
+              alignment: "center",
+            },
+            {
+              qr: `Dikeluarkan di ${clinicName}, Ditandatangani secara elektronik oleh ${
+                familyData ? familyData.name : patientData.name
+              }, Pada tanggal ${getDateNow()}`,
+              fit: 85,
+              alignment: "center",
+              margin: [0, 5, 0, 5],
+              border: [true, false, true, false],
+            },
+            {
+              text: `${familyData ? familyData.name : patientData.name}`,
+              fontSize: 14,
+              alignment: "center",
+              id: "lastTTD",
+            },
+          ],
+        ],
+      },
+    ],
   };
 
   return pdfMake.createPdf(docDefinition);

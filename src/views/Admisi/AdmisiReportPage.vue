@@ -11,12 +11,16 @@ import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const admisiLaporanStore = useAdmisiIGDStore();
+const praktisiStore = usePraktisiStore();
+const ruanganStore = useRuanganStore();
 
 const pageType = ref("");
 const route = useRoute();
@@ -69,6 +73,26 @@ const fetchReportData = async (filter: Filter = {}) => {
 
 const updatePageType = async (path: string) => {
   resetFilter();
+  try {
+    // FIXME Masih menggunakan api biasa dan filter by FE
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor
+      );
+    }
+    const responseRuangan = await ruanganStore.getAktifApi();
+    if (responseRuangan && responseRuangan.payload) {
+      listRuangan.value = responseRuangan.payload;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[3] ?? "";
   dataBreadCrumb.value = [
@@ -82,6 +106,9 @@ const updatePageType = async (path: string) => {
   reportType.value = pageType.value;
   let filter = {} as Filter;
   filter = setFilter();
+  filter.practitionerUuid =
+    filter.practitionerUuid == "Semua" ? "" : filter.practitionerUuid;
+  filter.ruangan = filter.ruangan == "Semua" ? "" : filter.ruangan;
   reportData.value = await fetchReportData(filter);
 };
 onBeforeRouteLeave((to, from) => {
@@ -92,19 +119,22 @@ onMounted(() => {
 });
 
 const search = ref("");
-const dpjpFilter = ref("");
+const dpjpFilter = ref("Semua");
 const visitTypeFilter = ref("Semua");
 const penjaminFilter = ref("0");
-const ruanganFilter = ref("");
+const ruanganFilter = ref("Semua");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 
+const listDpjp = ref<any[]>([]);
+const listRuangan = ref<any[]>([]);
+
 const resetFilter = () => {
   search.value = "";
-  dpjpFilter.value = "";
+  dpjpFilter.value = "Semua";
   visitTypeFilter.value = "Semua";
   penjaminFilter.value = "0";
-  ruanganFilter.value = "";
+  ruanganFilter.value = "Semua";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
 };
@@ -134,13 +164,15 @@ const setFilter = () => {
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   if (pageType.value == "kunjungan") {
-    filter.practitionerUuid = dpjpFilter.value ?? "";
+    filter.practitionerUuid =
+      dpjpFilter.value == "Semua" || !dpjpFilter.value ? "" : dpjpFilter.value;
     filter.jenisKunjungan =
       visitTypeFilter.value == "Semua" || !visitTypeFilter.value
         ? ""
         : visitTypeFilter.value;
   } else if (pageType.value == "penjamin") {
-    filter.practitionerUuid = dpjpFilter.value ?? "";
+    filter.practitionerUuid =
+      dpjpFilter.value == "Semua" || !dpjpFilter.value ? "" : dpjpFilter.value;
     filter.jenisKunjungan =
       visitTypeFilter.value == "Semua" || !visitTypeFilter.value
         ? ""
@@ -162,7 +194,10 @@ const setFilter = () => {
     pageType.value == "status-kamar" ||
     pageType.value == "keperawatan-inap-pasien"
   ) {
-    filter.ruangan = ruanganFilter.value ?? "";
+    filter.ruangan =
+      ruanganFilter.value == "Semua" || !ruanganFilter.value
+        ? ""
+        : ruanganFilter.value;
   }
   return filter;
 };
@@ -170,6 +205,8 @@ const setFilter = () => {
 const searchData = async () => {
   let filter = {} as Filter;
   filter = setFilter();
+  filter.practitionerUuid =
+    filter.practitionerUuid == "Semua" ? "" : filter.practitionerUuid;
 
   reportData.value = await fetchReportData(filter);
 };
@@ -227,15 +264,23 @@ defineExpose({
               v-model="dpjpFilter"
               label="DPJP"
               class="grow"
-              optionLabel="name"
+              optionLabel="detailPegawai.name"
               optionValue="uuid"
               :options="[
                 {
-                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-                  name: 'Rudi tabuti',
+                  uuid: 'Semua',
+                  detailPegawai: {
+                    name: 'Semua',
+                  },
                 },
-                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
+                // FIXME Dummy
+                {
+                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+                  detailPegawai: {
+                    name: 'Rudi tabuti',
+                  },
+                },
+                ...listDpjp,
               ]"
               prependIcon="PhMagnifyingGlass"
             />
@@ -271,9 +316,14 @@ defineExpose({
                 v-model="ruanganFilter"
                 label="Ruangan"
                 class="mr-5 grow"
-                optionLabel=""
-                optionValue=""
-                :options="['101', '102']"
+                optionLabel="name"
+                optionValue="name"
+                :options="[
+                  { name: 'Semua' },
+                  // FIXME Dummy
+                  { name: '101' },
+                  ...listRuangan,
+                ]"
               />
               <CustomSelect
                 v-else-if="pageType != 'bayi-baru-lahir'"
@@ -337,6 +387,7 @@ defineExpose({
               v-model:expandedRows="expandedRows"
               :value="reportData"
               tableStyle="min-width: 50rem"
+              stripedRows
               scrollable
               scrollHeight="flex"
               :pt="{ headerRow: 'text-SM' }"

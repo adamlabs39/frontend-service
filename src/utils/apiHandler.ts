@@ -13,13 +13,17 @@ const errorApiHandler = (error: any) => {
   let tempDetail = ``;
   if (error.response) {
     if (
-      error.response.data.message == "Authentikasi gagal" &&
-      (error.response.data.errors[0].type == "Invalid token" || error.response.data.errors[0].type == "Invalid signature")
+      (error.response.data.message == "Authentikasi gagal" ||
+        error.response.data.message == "Authorization gagal") &&
+      (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
+        error.response.data.errors[0].type == "Invalid signature" ||
+        (error.response.data.errors[0].type == "auth" &&
+          error.response.data.errors[0].message == "jwt expired"))
     ) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
-      window.location.reload()
+      window.location.reload();
     }
     tempSummary = error.response.data.message;
     error.response.data.errors.forEach((errorMsg: any, index: number) => {
@@ -136,7 +140,6 @@ const apiAuthPut = async (url: string, data: object) => {
   }
 };
 
-
 // Setting
 const apiSettingPost = async (url: string, data: object) => {
   try {
@@ -188,7 +191,7 @@ const apiDatamasterPost = async (url: string, data: object) => {
       summary: response.data.message,
       life: 3000,
     });
-    console.log('response',response)
+    console.log("response", response);
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -271,7 +274,7 @@ const apiAdmisiPatch = async (url: string, data: object) => {
 };
 const apiAdmisiDelete = async (url: string, data: object) => {
   try {
-    let response = await baseInstanceAdmisi.delete(url, data);
+    let response = await baseInstanceAdmisi.delete(url, { data: data });
     app.config.globalProperties.$toast.add({
       severity: "success",
       summary: response.data.message,

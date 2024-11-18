@@ -24,5 +24,12 @@ export const useAdmisiMasterPasienStore = defineStore({
     async updateMasterPasien(uuid = "", payload = {}) {
       return apiAdmisiPut(`/patient/${uuid}`, payload);
     },
+
+    async getPatientHistory(uuid = "", { page = 1, limit = 10 }) {
+      return apiAdmisiGet(
+        `/patient/history/${uuid}?page=${page}&limit=${limit}`,
+        {}
+      );
+    },
   },
 });
