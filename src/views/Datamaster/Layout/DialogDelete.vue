@@ -40,11 +40,12 @@ const deleteData = () => {
     @update:visible="updateVisibility"
     headerBg="bg-danger-300"
   >
-    <template #header> Hapus {{ title }} </template>
+    <template #header> Hapus Data </template>
     <template #body>
       <div class="pt-5 font-normal text-normal">
-        Apakah Anda yakin ingin
-        <span class="font-bold">menghapus {{ title }} ini?</span>
+        Apakah Anda yakin ingin menghapus data
+        <span class="font-bold"> {{ title }}</span>
+        ini?
       </div>
     </template>
     <template #footer>

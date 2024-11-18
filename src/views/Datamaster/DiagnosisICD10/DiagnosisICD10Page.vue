@@ -137,7 +137,7 @@ const downloadExportExcel = async () => {
     data.push({
       No: "No",
       Kode: "Kode Diagnosis",
-      Nama: "Nama Diagnosis",
+      Nama: "Nama Diagnosis (ICD-10)",
       Status: "Status",
     });
 
@@ -166,7 +166,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -212,6 +220,50 @@ const downloadExportExcel = async () => {
       "Datamaster Diagnosis (ICD 10)"
     );
     XLSX.writeFile(workbook, `Datamaster Diagnosis (ICD 10).xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode Diagnosis*",
+      Name: "Nama Diagnosis (ICD-10)*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "DIAG-001", Name: "Diagnosis 1" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Diagnosis");
+    XLSX.writeFile(workbook, `Format Datamaster Diagnosis (ICD-10).xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -273,7 +325,7 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{ (diagnosisProperties.page - 1) * diagnosisProperties.page_size + slotProps.index + 1 }}
             </div>
           </template>
         </Column>
@@ -293,7 +345,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -334,7 +386,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Diagnosis (ICD 10) ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -366,6 +418,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

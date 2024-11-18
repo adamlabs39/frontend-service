@@ -1,65 +1,220 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
+import { ref, onMounted, computed, watch } from "vue";
+import { useRulesOfUseStore } from "@/stores/datamasterFarmasi/RulesOfUse";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import NoData from "@/components/section/NoData.vue";
+import AddRulesOfUse from "./DialogRulesOfUse/AddRulesOfUse.vue";
+import DeleteRulesOfUse from "./DialogRulesOfUse/DeleteRulesOfUse.vue";
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
-const rulesDialog = ref(false);
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
+// State Management
+const RulesOfUseStore = useRulesOfUseStore();
+const UseUtilsStore = utilsStore();
+const RulesOfUsePayload = ref<any[]>([]);
+const RulesOfUseProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
 
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
-};
-
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
-};
-
-const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama Role harus diisi"),
-    permission: yup
-      .array()
-      .of(yup.string().required("Permission harus dipilih")),  // Validate that each permission is a string and required
-    status: yup.bool(),
-  })
+// Check if Data Exists
+const hasData = computed(
+  () => RulesOfUsePayload.value && RulesOfUsePayload.value.length > 0
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
-  validationSchema: schema,
+// Fetch RulesOfUse
+const fetchRulesOfUse = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await RulesOfUseStore.getApi(
+      RulesOfUseProperties.value.page,
+      RulesOfUseProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      RulesOfUseProperties.value.total = response.properties.total;
+      RulesOfUsePayload.value = response.payload;
+    } else {
+      RulesOfUsePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    RulesOfUsePayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchRulesOfUse();
+  }, 500); 
 });
 
-const [name] = defineField("name");
-const [code] = defineField("code");
-const [status] = defineField("status");
+// Handle Pagination
+const handlePage = (event: any) => {
+  RulesOfUseProperties.value.page = event.page + 1;
+  RulesOfUseProperties.value.page_size = event.rows;
+  fetchRulesOfUse();
+};
 
-const dataAturanPakai = ref([
-  { kodeAturan: "123", namaAturan: "Tiap 8 jam", status:"AKTIF" },
-  { kodeAturan: "321", namaAturan: "Tiap 7 hari", status:"AKTIF" },
-  { kodeAturan: "123", namaAturan: "3 x Sehari", status:"AKTIF" },
-  { kodeAturan: "321", namaAturan: "3 - 4 x Sehari", status:"AKTIF" },
-  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
-  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
-  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
-  { kodeAturan: "123", namaAturan: "Tiap sejam 1x", status:"NON-AKTIF" },
-]);
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await RulesOfUseStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER ATURAN PAKAI"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      code: "code",
+      name: "name",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        code: rows[i].code,
+        name: rows[i].name,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const RulesOfUseDialog = ref(false);
+const DeleteRulesOfUseDialog = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  RulesOfUseDialog.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  DeleteRulesOfUseDialog.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await RulesOfUseStore.deleteApi(item.uuid);
+      fetchRulesOfUse();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      DeleteRulesOfUseDialog.value = false;
+    }
+  }
+};
+
+onMounted(() => {
+  fetchRulesOfUse();
+});
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div>
     <Card
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
@@ -83,9 +238,9 @@ const dataAturanPakai = ref([
                 </div>
               </div>
               <CustomButton
-                @click="rulesDialog = true"
+                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
-                label="Beli"
+                label="Data"
                 class="mr-[10px]"
               />
             </div>
@@ -93,6 +248,7 @@ const dataAturanPakai = ref([
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Aturan Pakai"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Aturan Pakai"
@@ -117,13 +273,25 @@ const dataAturanPakai = ref([
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          :value="dataAturanPakai"
+          v-else
+          :value="RulesOfUsePayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
           scrollable
           scrollHeight="flex"
+          :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+          }"
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -135,34 +303,27 @@ const dataAturanPakai = ref([
               </div>
             </template>
           </Column>
-          <Column field="kodeAturan" header="Kode Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="namaAturan" header="Nama Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="status" headerClass="bg-adameds-50 font-semibold text-SM">
-            <template #header>
-              <div class="w-full text-center">Status</div>
+          <Column field="code" header="Kode Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="name" header="Nama Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="periodeUnit" header="Periode Unit" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="frekuensi" header="Frekuensi" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="periode" header="Periode" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="status" headerClass="bg-adameds-50">
+            <template #header="slotProps">
+              <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex justify-center items-center min-w-[120px]">
+              <div class="flex items-center justify-center">
                 <CustomChip
-                  :label="slotProps.data.status"
+                  :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'text-white'
-                      : 'text-[#80868d]'
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                   "
-                  :bgColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'bg-adameds-300'
-                      : 'bg-white'
-                  "
+                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'border-none'
-                      : 'border-[#80868d]'
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                   "
-                  :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                  "
+                  :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
               </div>
@@ -182,6 +343,7 @@ const dataAturanPakai = ref([
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -189,6 +351,7 @@ const dataAturanPakai = ref([
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -196,135 +359,41 @@ const dataAturanPakai = ref([
             </template>
           </Column>
         </DataTable>
+        <AddRulesOfUse
+          v-model:isDialogVisible="RulesOfUseDialog"
+          :title="dialogConfig.title"
+          :method="dialogConfig.method"
+          :payload="dialogConfig.data"
+          @data-updated="fetchRulesOfUse"
+        />
+        <DeleteRulesOfUse
+          v-model:isDialogVisible="DeleteRulesOfUseDialog"
+          :title="dialogConfig.title"
+          :itemToDelete="dialogConfig.data"
+          @delete="confirmDelete"
+        />
       </template>
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
+            <CustomButton label="Import" @click="">
               <img src="@/assets/icons/File Import.svg" alt="" />Import
             </CustomButton>
-            <CustomButton label="Eksport">
+            <CustomButton label="Eksport" @click="ExportExcel">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+            </CustomButton>
+            <CustomButton label="Eksport" @click="">
+              <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataAturanPakai.length"
+            :rows="RulesOfUseProperties.page_size"
+            :totalRecords="RulesOfUseProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
-    </Card>
-
-    <!-- rulesDialog -->
-    <CustomDialog v-model:visible="rulesDialog" width="600px">
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Data Aturan Pakai</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="grid grid-cols-[30%,70%]">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model = "code"
-              :invalid="!!errors.code"
-              :invalidMessage="errors.code"
-              label="Kode Aturan Pakai"
-              placeholder="Kode Aturan Pakai"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model = "name"
-              :invalid="!!errors.name"
-              :invalidMessage="errors.name"
-              label="Nama Aturan Pakai"
-              placeholder="Nama Aturan Pakai"
-              class="ml-2"
-            />
-          </div>
-        </div>
-        <div class="grid grid-cols-[30%,30%,10%,30%] mt-[20px]">
-          <div class="">
-            <CustomSelect
-              label="Periode Unit"
-              class="mr-2"
-              optionLabel=""
-              optionValue=""
-              :options="['Pagi', 'Siang', 'Sore', 'Malem']"
-            />
-          </div>
-          <div class="ml-[10px]">
-            <CustomTextfield
-              label="Frekuensi"
-              placeholder="3"
-            />
-          </div>
-          <div class="text-center ml-[10px]">
-            <p class="font-bold mt-[30px]">X</p>
-          </div>
-          <div class="ml-[10px]">
-            <CustomTextfield
-              label="Periode"
-              placeholder="1"
-              class=""
-            />
-          </div>
-        </div>
-        <div class="grid grid-cols-1 p-3 rounded-lg bg-adameds-50 mt-[20px]">
-          <div>
-            <p>Contoh Pengisian Aturan Pakai :</p>
-          </div>
-          <hr class="mt-[10px] border border-slate-300"/>
-          <div class="grid grid-cols-[30%,30%,10%,30%] mt-[10px]">
-            <div>
-              <p class="text-xs font-bold underline underline-offset-2">Periode Unit</p>
-              <p class="">Hari</p>
-            </div>
-            <div class="ml-[10px]">
-              <p class="text-xs font-bold underline underline-offset-2">Frekuensi</p>
-              <p>3</p>
-            </div>
-            <div class="text-center ml-[10px]">
-              <p class="font-bold mt-[10px]">X</p>
-            </div>
-            <div class="ml-[10px]">
-              <p class="text-xs font-bold underline underline-offset-2">Periode</p>
-              <p>1</p>
-            </div>
-          </div>
-        </div>
-        <hr class="mt-[20px] border border-slate-300"/>
-        <div class="grid grid-cols-1 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-            />
-            <CustomButton label="Simpan"/>
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
+    </Card>    
   </div>
 </template>

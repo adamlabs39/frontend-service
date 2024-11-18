@@ -31,7 +31,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode ICD 9 CM harus diisi"),
     name: yup.string().required("Nama ICD 9 CM harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

@@ -151,6 +151,20 @@ const confirmDelete = async (item: any) => {
           rowStripedBackground: '#F8F8F8',
         }"
       >
+      <Column headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">No.</div>
+          </template>
+          <template #body="slotProps">
+            <div class="flex items-center justify-center">
+              {{
+                (generalConsentProperties.page - 1) * generalConsentProperties.page_size +
+                slotProps.index +
+                1
+              }}
+            </div>
+          </template>
+        </Column>
         <Column
           field="code"
           header="Kode General Consent"
@@ -204,7 +218,7 @@ const confirmDelete = async (item: any) => {
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
                 @click="
-                  deleteDialog('delete', `General Consent ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)
+                  deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)
                 "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
@@ -235,6 +249,7 @@ const confirmDelete = async (item: any) => {
         @page="handlePage"
         :showExport="false"
         :showImport="false"
+        :showDownload="false"
       />
     </template>
   </Card>

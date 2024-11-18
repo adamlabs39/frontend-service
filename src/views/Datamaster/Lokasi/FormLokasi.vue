@@ -65,18 +65,18 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode Lokasi harus diisi"),
     name: yup.string().required("Nama lokasi harus diisi"),
     description: yup.string().required("Deskripsi harus diisi"),
-    phone: yup
-      .string()
-      .required("No. Telepon harus diisi")
-      .matches(phoneRegExp, "Format tidak sesuai"),
+    phone: yup.string().required("No. Telepon harus diisi").matches(phoneRegExp, "Format tidak sesuai"),
     email: yup
       .string()
       .required("Email harus diisi")
       .email("Format email tidak sesuai"),
-    url: yup.string(),
+    url: yup.string().required("URL Website harus diisi").matches(/^https:\/\//, "URL harus dimulai dengan https://"),
+    orgId:yup.string().notRequired(),
     locationType: yup.string().required("Tipe harus diisi"),
-    className: yup.string(),
-    partOf: yup.string(),
+    classCode:yup.string().notRequired(),
+    className: yup.string().notRequired(),
+    partOfName: yup.string().notRequired(),
+    partOf: yup.string().notRequired(),
     codeAntrianPoli: yup.string().when("isPoli", {
       is: (value: boolean) => value === true,
       then: (schema) => schema.required("Kode Antrian harus diisi"),
@@ -84,7 +84,7 @@ const schema = toTypedSchema(
     }),
     statusOperasional: yup.bool().default(false),
     isPoli: yup.bool().default(false),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -98,8 +98,11 @@ const [description] = defineField("description");
 const [phone] = defineField("phone");
 const [email] = defineField("email");
 const [url] = defineField("url");
+const [orgId] = defineField("orgId");
 const [locationType] = defineField("locationType");
+const [classCode] = defineField("classCode");
 const [className] = defineField("className");
+const [partOfName] = defineField("partOfName");
 const [partOf] = defineField("partOf");
 const [statusOperasional] = defineField("statusOperasional");
 const [codeAntrianPoli]=defineField("codeAntrianPoli")
@@ -109,17 +112,21 @@ const [status] = defineField("status");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    values.statusOperasional = statusOperasional.value ? "occupied" : "non-occupied";
+
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("Data updated successfully:", values);
+
       const response = await lokasiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      const response = await lokasiStore.postApi(values);
+      // const response = await lokasiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -159,6 +166,19 @@ watch(isPoli, (newValue) => {
   }
 });
 
+const selectedPartOf = () => {
+  const selectedItem = lokasiPayload.value.find(
+    (item) => item.uuid === partOf.value
+  );
+  partOfName.value = selectedItem ? selectedItem.name : "";
+};
+const selectedClass = () => {
+  const selectedItem = optionsKelas.value.find(
+    (item) => item.value === classCode.value
+  );
+  className.value = selectedItem ? selectedItem.label : "";
+};
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -167,6 +187,7 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          statusOperasional: props.payload.statusOperasional === 'occupied' ? true : false,
         });
       }
     } else {
@@ -239,7 +260,7 @@ watch(
           class="col-span-6"
           :invalid="!!errors.phone"
           :invalidMessage="errors.phone"
-          :required="errors.phone ? true : false"
+          :required="errors.phone === 'No. Telepon harus diisi' ? true : false"
         />
         <CustomTextfield
           v-model="email"
@@ -248,13 +269,16 @@ watch(
           class="col-span-6"
           :invalid="!!errors.email"
           :invalidMessage="errors.email"
-          :required="errors.email ? true : false"
+          :required="errors.email === 'Email harus diisi' ? true : false"
         />
         <CustomTextfield
           label="URL Website"
           v-model="url"
           placeholder="URL Website"
           class="col-span-6"
+          :invalid="!!errors.url"
+          :invalidMessage="errors.url"
+          :required="errors.url === 'URL Website harus diisi' ? true : false"
         />
         <CustomSelect
           label="Tipe"
@@ -264,15 +288,19 @@ watch(
           :options="optionsTipe"
           optionValue=""
           optionLabel=""
+          :invalid="!!errors.locationType"
+          :invalidMessage="errors.locationType"
+          :required="errors.locationType ? true : false"
         />
         <CustomSelect
           label="Kelas"
-          v-model="className"
+          v-model="classCode"
           place-holder="Pilih Kelas"
           class="col-span-6"
           :options="optionsKelas"
-          optionValue="label"
-          optionLabel="value"
+          optionValue="value"
+          optionLabel="label"
+          @update:modelValue="selectedClass"
         />
         <CustomSelect
           label="Part Of"
@@ -280,8 +308,9 @@ watch(
           place-holder="Pilih Part Of"
           class="col-span-6"
           :options="lokasiPayload"
-          optionValue="code"
+          optionValue="uuid"
           optionLabel="name"
+          @update:modelValue="selectedPartOf"
         />
         <hr class="col-span-12 border-grey-200" />
           <CustomSwitch
@@ -306,9 +335,9 @@ watch(
         <CustomInfoRow label="Kode Lokasi" :value="code" />
         <CustomInfoRow label="Nama Lokasi" :value="name" />
         <CustomInfoRow label="Deskripsi" :value="description" />
-        <CustomInfoRow label="No. Telephone" :value="phone" />
+        <CustomInfoRow label="No. Telephone" :value="payload.phone" />
         <CustomInfoRow label="Url" :value="url" />
-        <CustomInfoRow label="Tipe" :value="payload.type" />
+        <CustomInfoRow label="Tipe" :value="payload.locationType" />
         <CustomInfoRow label="Kelas" :value="payload.className ?? '-'" />
         <CustomInfoRow label="Part of Id" :value="partOf ?? '-'" />
         <CustomInfoRow label="Part of Name" :value="payload.partOfName ?? '-'" />

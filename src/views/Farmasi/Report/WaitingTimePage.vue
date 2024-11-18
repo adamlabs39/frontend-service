@@ -14,19 +14,13 @@ const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const reportType = ref("");
 // masukkan data di reportData
-const reportData = ref([1]);
+const reportData = ref([]);
 const expandedRows = ref();
 const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];

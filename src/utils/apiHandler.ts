@@ -3,7 +3,9 @@ import {
   settingInstance,
   baseInstanceDatamaster,
   baseInstanceAdmisi,
+  baseInstanceIgd,
   authInstance,
+  baseInstanceRawatJalan,
 } from "./Api";
 import { app } from "@/main";
 
@@ -12,13 +14,17 @@ const errorApiHandler = (error: any) => {
   let tempDetail = ``;
   if (error.response) {
     if (
-      error.response.data.message == "Authentikasi gagal" &&
-      (error.response.data.errors[0].type == "Invalid token" || error.response.data.errors[0].type == "Invalid signature")
+      (error.response.data.message == "Authentikasi gagal" ||
+        error.response.data.message == "Authorization gagal") &&
+      (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
+        error.response.data.errors[0].type == "Invalid signature" ||
+        (error.response.data.errors[0].type == "auth" &&
+          error.response.data.errors[0].message == "jwt expired"))
     ) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
-      window.location.reload()
+      window.location.reload();
     }
     tempSummary = error.response.data.message;
     error.response.data.errors.forEach((errorMsg: any, index: number) => {
@@ -135,7 +141,6 @@ const apiAuthPut = async (url: string, data: object) => {
   }
 };
 
-
 // Setting
 const apiSettingPost = async (url: string, data: object) => {
   try {
@@ -187,6 +192,7 @@ const apiDatamasterPost = async (url: string, data: object) => {
       summary: response.data.message,
       life: 3000,
     });
+    console.log("response", response);
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -231,7 +237,12 @@ const apiAdmisiGet = async (url: string, data: object) => {
 const apiAdmisiPost = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.post(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -239,7 +250,12 @@ const apiAdmisiPost = async (url: string, data: object) => {
 const apiAdmisiPut = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.put(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -247,20 +263,96 @@ const apiAdmisiPut = async (url: string, data: object) => {
 const apiAdmisiPatch = async (url: string, data: object) => {
   try {
     let response = await baseInstanceAdmisi.patch(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
 };
 const apiAdmisiDelete = async (url: string, data: object) => {
   try {
-    let response = await baseInstanceAdmisi.delete(url, data);
-    return response;
+    let response = await baseInstanceAdmisi.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
 };
 
+//Igd
+const apiIgdGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiIgdPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiIgdPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+const apiIgdDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceIgd.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+
+// Rawat Jalan
+
+const apiRawatJalanGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRawatJalan.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -283,4 +375,9 @@ export {
   apiAdmisiPut,
   apiAdmisiPatch,
   apiAdmisiDelete,
+  apiIgdGet,
+  apiIgdPost,
+  apiIgdPut,
+  apiIgdDelete,
+  apiRawatJalanGet
 };

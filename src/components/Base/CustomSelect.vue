@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import type { SelectFilterEvent } from "primevue/select";
+import { ref, computed, type PropType } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -19,7 +20,9 @@ const props = defineProps({
     default: "",
   },
   modelValue: {
-    type: [String, Number, Boolean],
+    type: [String, Number, Boolean, Object] as PropType<
+      string | number | boolean | null
+    >,
     default: "",
   },
   options: {
@@ -66,11 +69,21 @@ const value = computed({
   set: (value: string) => emit("update:modelValue", value),
 });
 
-const emit = defineEmits(["update:modelValue", "change", "clickPrepend"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "change",
+  "clickPrepend",
+  "filter",
+  "blur",
+]);
 
 const showClear = computed(() => {
   return value.value !== "";
 });
+
+const filterData = (event: SelectFilterEvent) => {
+  emit("filter", event.value);
+};
 
 // const onChange = (event: any) => {
 //   console.log(event);
@@ -93,7 +106,7 @@ const showClear = computed(() => {
     <InputGroup>
       <InputGroupAddon
         v-if="prependIcon"
-        class="rounded-l-lg"
+        class="px-3 py-2 rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
           'border-grey-200': !disabled && !invalid,
@@ -142,7 +155,23 @@ const showClear = computed(() => {
           focusBorderColor: '#D0D5DD',
           hoverBorderColor: '#D0D5DD',
         }"
+        @filter="filterData"
+        @blur="emit('blur')"
       >
+        <template v-if="$slots.customValue" #value="{ value, placeholder }">
+          <slot name="customValue" :value="value" :placeholder="placeholder" />
+        </template>
+        <template
+          v-if="$slots.customOptions"
+          #option="{ index, option, selected }"
+        >
+          <slot
+            name="customOptions"
+            :index="index"
+            :option="option"
+            :selected="selected"
+          />
+        </template>
         <template #dropdownicon>
           <PhCaretDown
             weight="fill"

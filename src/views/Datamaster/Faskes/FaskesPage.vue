@@ -165,7 +165,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -207,6 +215,50 @@ const downloadExportExcel = async () => {
     // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Faskes");
     XLSX.writeFile(workbook, `Datamaster Faskes.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode Faskes*",
+      Name: "Nama Faskes*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "IHC.JKT", Name: "Klinik IHC Jakarta" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Faskes");
+    XLSX.writeFile(workbook, `Format Datamaster Faskes.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -269,7 +321,7 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{ (faskesProperties.page - 1) * faskesProperties.page_size + slotProps.index + 1 }}
             </div>
           </template>
         </Column>
@@ -289,7 +341,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -323,7 +375,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Faskes ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -354,6 +406,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

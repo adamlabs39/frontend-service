@@ -26,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch Penjamin Data from API
 const fetchPenjaminData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await penjaminStore.getApi(
       penjaminProperties.value.page,
@@ -44,7 +44,7 @@ const fetchPenjaminData = async () => {
     console.error("Failed to fetch data", error);
     penjaminPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchPenjaminData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -103,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await penjaminStore.deleteApi(item.uuid);
       fetchPenjaminData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -131,14 +131,14 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Penjamin",
       Nama: "Nama Penjamin",
-      Phone:"No. Telepon",
-      Address:"Alamat",
+      Phone: "No. Telepon",
+      Address: "Alamat",
       Status: "Status",
     });
 
@@ -148,8 +148,8 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Phone: rows[i].phone,
-        Address: rows[i].address,
+        Phone: rows[i].phone ?? '-',
+        Address: rows[i].address ?? '-',
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -169,7 +169,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 },{ wch: 20 },{ wch: 20 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -216,16 +224,70 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Code: "Kode Penjamin*",
+      Name: "Nama Penjamin*",
+      Tlp: "No. Telepon",
+      Alamat: "Alamat",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      Code: "BP-001",
+      Name: "BPJS",
+      Tlp: "(032) 888 987",
+      Alamat: "Surabaya",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Penjamin"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Penjamin.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await penjaminStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchPenjaminData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchPenjaminData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -268,7 +330,11 @@ const handleFileUpload = async (file: File) => {
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (penjaminProperties.page - 1) * penjaminProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -284,24 +350,22 @@ const handleFileUpload = async (file: File) => {
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
-          field="phone"
-          header="No. Telepon"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="address"
-          header="Alamat"
-          class="w-3/12"
-          headerClass="bg-adameds-50"
-        ></Column>
+        <Column header="No. Telepon" class="w-3/12" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            {{ slotProps.data.phone || "-" }}
+          </template></Column
+        >
+        <Column header="Alamat" class="w-3/12" headerClass="bg-adameds-50"
+          ><template #body="slotProps">
+            {{ slotProps.data.address || "-" }}
+          </template></Column
+        >
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -335,7 +399,13 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Penjamin ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -364,6 +434,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

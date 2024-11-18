@@ -10,10 +10,13 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
 const schema = toTypedSchema(
   yup.object({
+    noSurat: yup.string().default("No. 12345").notRequired(),
     tipeRujukan: yup.string().required("Tipe Rujukan harus dipilih"),
     tujuanPelayanan: yup.string().required("Tujuan Pelayanan harus dipilih"),
     tanggalRencana: yup.date().required("Tanggal Rencana harus dipilih"),
@@ -25,13 +28,14 @@ const schema = toTypedSchema(
       .string()
       .required("Alasan Non Klinikal Lainnya harus diisi"),
     catatan: yup.string().required("Catatan Rujukan harus diisi"),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
 
+const [noSurat] = defineField("noSurat");
 const [tipeRujukan] = defineField("tipeRujukan");
 const [tujuanPelayanan] = defineField("tujuanPelayanan");
 const [tanggalRencana] = defineField("tanggalRencana");
@@ -64,6 +68,8 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const selectedTab = ref("non-bpjs");
+
 
 defineExpose({
   submitForm,
@@ -82,6 +88,32 @@ defineExpose({
     </template>
     <template #content>
       <div class="grid grid-cols-12 pt-5 gap-x-[30px] gap-y-5">
+        <div class="col-span-12 flex gap-2.5">
+          <CustomButton
+          label="NON-BPJS"
+          class="grow"
+          :text-color="selectedTab === 'non-bpjs' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === 'non-bpjs' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === 'non-bpjs' ? 'bg-adameds-300' : 'bg-white'"
+          @click="selectedTab = 'non-bpjs'"
+          :outlined="selectedTab !== 'non-bpjs'"
+        />
+        <CustomButton
+          label="BPJS"
+          class="grow"
+          :text-color="selectedTab === 'bpjs' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === 'bpjs' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === 'bpjs' ? 'bg-adameds-300' : 'bg-white'"
+          @click="selectedTab = 'bpjs'"
+          :outlined="selectedTab !== 'bpjs'"
+          :disabled="true"
+        />
+        </div>
+        <hr class="col-span-12 border-grey-200">
         <div class="flex gap-[30px] col-span-12">
           <div
             class="grid grid-cols-2 gap-x-5 pr-[30px] border-r border-adameds-300"
@@ -98,11 +130,12 @@ defineExpose({
               :invalidMessage="errors.tipeRujukan"
             />
           </div>
-          <CustomInputNumber
-            label="No. Surat"
-            placeholder="No. 123456"
-            class="basis-2/12"
-          />
+          <CustomTextfield
+          label="No. Surat"
+          v-model="noSurat"
+          class="basis-2/12"
+          :disabled="true"
+        />
           <CustomSelect
             label="Tujuan Pelayanan"
             v-model="tujuanPelayanan"

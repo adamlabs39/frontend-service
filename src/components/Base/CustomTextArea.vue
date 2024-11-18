@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import Textarea from "primevue/textarea";
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: String as PropType<string | null>,
     default: "",
   },
   autoResize: {
@@ -49,7 +49,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const value = computed({
   get: () => props.modelValue,
-  set: (value: string) => emit("update:modelValue", value),
+  set: (value: string | null) => emit("update:modelValue", value),
 });
 </script>
 
@@ -80,7 +80,7 @@ const value = computed({
         placeholderColor: invalid ? '#e9594c' : '#90969E',
       }"
     />
-    <small v-if="props.invalid" class="text-danger-300 text-XS">{{
+    <small v-if="props.invalid" class="mt-1 text-danger-300 text-XS">{{
       props.invalidMessage
     }}</small>
   </div>

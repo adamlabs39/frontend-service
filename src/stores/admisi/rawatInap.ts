@@ -17,16 +17,22 @@ export const useAdmisiRIStore = defineStore({
         paymentMethod = "",
         page = 1,
         limit = 10,
-        room = "",
+        room = [] as string[],
         startDate = "",
         endDate = "",
         dpjp = "",
       },
       payload = {}
     ) {
-      // FIXME Payment method belum jalan
+      let tempFilterRoom = "";
+      room.forEach((roomData, index) => {
+        tempFilterRoom += `${roomData}`;
+        if (index + 1 < room.length) {
+          tempFilterRoom += ",";
+        }
+      });
       return apiAdmisiGet(
-        `/rawat-inap?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&room=${room}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}`,
+        `/rawat-inap?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&room=${tempFilterRoom}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}`,
         payload
       );
     },

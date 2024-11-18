@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { utilsStore } from "@/stores/utils";
-import { useRouter } from "vue-router";
-import type { selectedBedType } from "@/utils/Interface";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -17,17 +15,13 @@ import EmptyMonitoringBedCard from "./Section/EmptyMonitoringBedCard.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const monitoringKamarStore = useMonitoringKamarStore();
-
-const filterRoomCategoryList = ref([
-  { name: "RAWATAN UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bb" },
-  { name: "RAWATAN ANAK", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
-  { name: "RAWATAN BAYI", uuid: "0191a18a-22e4-773b-8229-a023f420d0bd" },
-  { name: "ICU", uuid: "0191a18a-22e4-773b-8229-a023f420d0be" },
-]);
+const kategoriRuanganStore = useKategoriRuanganStore();
+const filterRoomCategoryList = ref<any[]>([]);
 const selectedFilterRoomCategory = ref<string[]>([]);
 const onRoomCategorySelect = (uuid: string) => {
   if (selectedFilterRoomCategory.value.includes(uuid)) {
@@ -51,15 +45,13 @@ const search = ref("");
 
 interface Filter {
   q?: string;
-  filterKategori?: string;
+  filterKategori?: string[];
 }
 const fetchData = async () => {
   storeUtils.setLoading(true);
   let filter = {} as Filter;
   filter.q = search.value;
-  // FIXME masih single filter
-  filter.filterKategori = selectedFilterRoomCategory.value[0] ?? "";
-  console.log("filter.filterKategori", filter.filterKategori);
+  filter.filterKategori = selectedFilterRoomCategory.value;
 
   try {
     const response = await monitoringKamarStore.getMonitoringKamar(filter);
@@ -67,6 +59,19 @@ const fetchData = async () => {
       properties.value.total = response.properties.totalData;
       itemsRoom.value = response.payload;
     } else itemsRoom.value = [];
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+const fetchUtils = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await kategoriRuanganStore.getAktifApi();
+    if (response && response.payload) {
+      filterRoomCategoryList.value = response.payload;
+    } else filterRoomCategoryList.value = [];
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -166,20 +171,8 @@ const onSubmit = handleSubmit(async (values) => {
 
 const { remove, push, fields } = useFieldArray("bedData");
 
-const confirmRegisterDialog = ref(false);
-const tempSelectedRoom = ref<selectedBedType | null>(null);
-const setSelectedRoomData = (selectedData: selectedBedType | null) => {
-  tempSelectedRoom.value = selectedData;
-  confirmRegisterDialog.value = true;
-};
-
-const router = useRouter();
-const admisiRegistration = () => {
-  storeUtils.setSelectedRoom(tempSelectedRoom.value);
-  router.push("/admisi/rawat-inap");
-};
-
 onMounted(() => {
+  fetchUtils();
   fetchData();
 });
 </script>
@@ -220,7 +213,7 @@ onMounted(() => {
               <div>
                 <div class="flex mb-[10px] mt-5">
                   <div class="w-[15%]">Filter Kategori Ruangan</div>
-                  <div class="flex">
+                  <div class="flex flex-wrap grow">
                     <div class="h-5 my-auto border border-grey-300"></div>
                     <CustomChip
                       v-for="(kategoriRuangan, index) in filterRoomCategoryList"
@@ -231,7 +224,7 @@ onMounted(() => {
                       iconColor="text-adameds-300"
                       textColor="text-adameds-300"
                       :iconSize="16"
-                      class="ml-[10px]"
+                      class="ml-[10px] mb-1"
                       selectedColor="bg-adameds-300 border-adameds-300"
                       :isSelected="
                         selectedFilterRoomCategory.includes(
@@ -285,6 +278,7 @@ onMounted(() => {
           <div class="overflow-auto">
             <DataTable
               :value="itemsRoom"
+              stripedRows
               scrollable
               scrollHeight="flex"
               :pt="{ headerRow: 'text-SM' }"
@@ -399,9 +393,9 @@ onMounted(() => {
               />
             </div>
             <div
-              class="absolute inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px]"
+              class="absolute inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px] h-fit"
             >
-              <div v-for="(bed, index) in itemsBed">
+              <div v-for="(bed, index) in itemsBed" class="h-fit">
                 <EmptyMonitoringBedCard
                   v-if="bed.isAvailable"
                   :bedData="bed"
@@ -428,31 +422,6 @@ onMounted(() => {
         </div>
       </template>
     </Card>
-    <CustomDialog v-model:visible="confirmRegisterDialog" width="600px">
-      <template #header> Admisi Pasien </template>
-      <template #body>
-        <div class="mt-5 text-normal">
-          Mendaftarkan pasien ke
-          <span class="font-bold text-adameds-300">Bed 6</span>?
-        </div>
-      </template>
-      <template #footer>
-        <CustomButton
-          @click="confirmRegisterDialog = false"
-          label="Batal"
-          outlined
-          class="mr-[10px]"
-          borderColor="border-grey-200"
-          textColor="text-grey-300"
-        />
-        <CustomButton
-          @click="admisiRegistration()"
-          label="Daftar Admisi"
-          class=""
-          backgroundColor="bg-adameds-300"
-        />
-      </template>
-    </CustomDialog>
     <CustomDialog v-model:visible="roomSettingDialog" width="600px">
       <template #header> Setting Kamar </template>
       <template #body>
@@ -460,6 +429,7 @@ onMounted(() => {
           <DataTable
             :value="fields"
             class="overflow-hidden rounded-[10px]"
+            stripedRows
             scrollable
             scrollHeight="flex"
             :pt="{ headerRow: 'text-SM' }"
@@ -554,7 +524,9 @@ onMounted(() => {
             />
           </div>
           <hr class="border-grey-200 mb-[30px]" />
-          <div class="font-semibold text-normal">Total Bed : 0</div>
+          <div class="font-semibold text-normal">
+            Total Bed : {{ fields.length }}
+          </div>
         </div>
       </template>
       <template #footer>

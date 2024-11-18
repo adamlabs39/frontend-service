@@ -30,7 +30,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Snomed CT harus diisi"),
     name: yup.string().required("Nama Snomed CT harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

@@ -39,10 +39,33 @@ const schema = toTypedSchema(
     .object({
       code: yup.string().required("Kode Role harus diisi"),
       name: yup.string().required("Nama Role harus diisi"),
-      status: yup.boolean().default(false),
+      status: yup.boolean().default(true),
     })
     .noUnknown()
 );
+interface Allow {
+  name: string;
+  checked: boolean;
+}
+
+interface Feature {
+  name: string;
+  checked: boolean;
+  allows: Allow[];
+}
+
+interface SubModule {
+  name: string;
+  checked: boolean;
+  features: Feature[];
+  allows: Allow[];
+}
+
+interface Module {
+  module: string;
+  checked: boolean;
+  sub_modules: SubModule[];
+}
 
 const initialPermissionsState = ref(
   permissionsStore.permissionsItem.map((item) => ({
@@ -70,6 +93,93 @@ const initialPermissionsState = ref(
     })),
   }))
 );
+
+const setRolePermissions = (rolePermissions: Module[]) => {
+  resetPermissionsState();
+  initialPermissionsState.value.forEach((module) => {
+    const matchingModule = rolePermissions.find(
+      (roleMod) => roleMod.module === module.module
+    );
+    if (!matchingModule) return;
+
+    // Set module checked status
+    module.checked = true;
+
+    module.sub_modules.forEach((subModule) => {
+      const matchingSubModule = matchingModule.sub_modules.find(
+        (roleSub) => roleSub.name === subModule.name
+      );
+
+      if (!matchingSubModule) return;
+      subModule.checked = true;
+
+      subModule.features.forEach((feature) => {
+        const matchingFeature = matchingSubModule.features.find(
+          (roleFeat) => roleFeat.name === feature.name
+        );
+
+        if (!matchingFeature) return;
+
+        // Set feature checked status
+        feature.checked = true;
+
+        feature.allows.forEach((allow) => {
+          const isAllowChecked = matchingFeature.allows.some((roleAllow) =>
+            typeof roleAllow === "string"
+              ? roleAllow === allow.name
+              : roleAllow.name === allow.name
+          );
+
+          if (isAllowChecked) {
+            allow.checked = true;
+          }
+        });
+      });
+
+      subModule.allows.forEach((allow) => {
+        const isAllowChecked = matchingSubModule.allows.some((roleAllow) =>
+          typeof roleAllow === "string"
+            ? roleAllow === allow.name
+            : roleAllow.name === allow.name
+        );
+
+        if (isAllowChecked) {
+          allow.checked = true;
+        }
+      });
+    });
+  });
+};
+
+const onCheckModule = (module: Module) => {
+  // Explicitly type 'module'
+  console.log("module", module);
+
+  console.log(module.checked);
+  const isChecked = module.checked;
+  console.log(isChecked);
+
+  // module.checked = isChecked;
+
+  module.sub_modules.forEach((subModule) => {
+    subModule.checked = isChecked;
+
+    // Check all features
+    subModule.features.forEach((feature) => {
+      feature.checked = isChecked;
+
+      // Check all allows within the feature
+      feature.allows.forEach((allow) => {
+        allow.checked = isChecked;
+      });
+    });
+
+    // Check all allows for the subModule directly
+    subModule.allows.forEach((allow) => {
+      allow.checked = isChecked;
+    });
+  });
+};
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -128,154 +238,13 @@ const onSubmit = handleSubmit(async (values) => {
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", allData);
-      const response = await roleStore.postApi(allData);
-      console.log("Adding response:", response);
-
+      // const response = await roleStore.postApi(allData);
       emit("data-updated");
     }
     closeDialog();
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
-});
-
-// Update checked status
-const updateCheckedStatus = (
-  moduleIndex: any,
-  subModuleIndex: any,
-  featureIndex: any,
-  allowIndex: any,
-  checked: any
-) => {
-  if (
-    typeof moduleIndex !== "undefined" &&
-    typeof subModuleIndex === "undefined"
-  ) {
-    // Update entire module
-    const module = initialPermissionsState.value[moduleIndex];
-    module.checked = checked;
-    module.sub_modules.forEach((subModule) => {
-      subModule.checked = checked;
-      subModule.features.forEach((feature) => {
-        feature.checked = checked;
-        feature.allows.forEach((allow) => {
-          allow.checked = checked;
-        });
-      });
-      subModule.allows.forEach((allow) => {
-        allow.checked = checked;
-      });
-    });
-  } else if (
-    typeof subModuleIndex !== "undefined" &&
-    typeof featureIndex === "undefined"
-  ) {
-    // Update specific sub-module
-    const subModule =
-      initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex];
-    subModule.checked = checked;
-    subModule.features.forEach((feature) => {
-      feature.checked = checked;
-      feature.allows.forEach((allow) => {
-        allow.checked = checked;
-      });
-    });
-    subModule.allows.forEach((allow) => {
-      allow.checked = checked;
-    });
-  } else if (
-    typeof featureIndex !== "undefined" &&
-    typeof allowIndex === "undefined"
-  ) {
-    const feature =
-      initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex]
-        .features[featureIndex];
-    feature.checked = checked;
-    feature.allows.forEach((allow) => {
-      allow.checked = checked;
-    });
-  } else if (typeof allowIndex !== "undefined") {
-    const allow =
-      initialPermissionsState.value[moduleIndex].sub_modules[subModuleIndex]
-        .features[featureIndex].allows[allowIndex];
-    allow.checked = checked;
-  }
-};
-
-// Watch for changes
-initialPermissionsState.value.forEach((module, moduleIndex) => {
-  watch(
-    () => module.checked,
-    (newChecked) => {
-      updateCheckedStatus(
-        moduleIndex,
-        undefined,
-        undefined,
-        undefined,
-        newChecked
-      );
-    }
-  );
-
-  module.sub_modules.forEach((subModule, subModuleIndex) => {
-    watch(
-      () => subModule.checked,
-      (newChecked) => {
-        updateCheckedStatus(
-          moduleIndex,
-          subModuleIndex,
-          undefined,
-          undefined,
-          newChecked
-        );
-      }
-    );
-
-    subModule.features.forEach((feature, featureIndex) => {
-      watch(
-        () => feature.checked,
-        (newChecked) => {
-          updateCheckedStatus(
-            moduleIndex,
-            subModuleIndex,
-            featureIndex,
-            undefined,
-            newChecked
-          );
-        }
-      );
-
-      feature.allows.forEach((allow, allowIndex) => {
-        watch(
-          () => allow.checked,
-          (newChecked) => {
-            updateCheckedStatus(
-              moduleIndex,
-              subModuleIndex,
-              featureIndex,
-              allowIndex,
-              newChecked
-            );
-          }
-        );
-      });
-    });
-
-    subModule.allows.forEach((allow, allowIndex) => {
-      watch(
-        () => allow.checked,
-        (newChecked) => {
-          updateCheckedStatus(
-            moduleIndex,
-            subModuleIndex,
-            undefined,
-            allowIndex,
-            newChecked
-          );
-        }
-      );
-    });
-  });
 });
 
 const method = ref(props.method);
@@ -295,7 +264,7 @@ const handleEdit = () => {
   title.value = "Edit Data";
 };
 
-const resetCheckBox = () => {
+const resetPermissionsState = () => {
   initialPermissionsState.value.forEach((module) => {
     module.checked = false;
     module.sub_modules.forEach((subModule) => {
@@ -318,7 +287,7 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetDialogMode();
   resetForm();
-  resetCheckBox();
+  resetPermissionsState();
 };
 
 // Watch for dialog visibility changes
@@ -331,15 +300,17 @@ watch(
         setValues({
           ...props.payload,
         });
+        if (props.payload.permissions) {
+          setRolePermissions(props.payload.permissions);
+        }
       }
     } else {
       resetForm();
       resetDialogMode();
-      resetCheckBox();
+      resetPermissionsState();
     }
   }
 );
-
 </script>
 
 <template>
@@ -386,7 +357,8 @@ watch(
                   v-model="menuItem.checked"
                   :title="menuItem.module"
                   subTitle=""
-                  :value="menuItem.module"
+                  binary
+                  @update:model-value="onCheckModule(menuItem)"
                 />
               </div>
             </div>

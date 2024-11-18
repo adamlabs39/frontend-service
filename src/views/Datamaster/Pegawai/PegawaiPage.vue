@@ -154,17 +154,27 @@ const downloadExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      Kode: "Kode",
-      Nama: "Nama Pegawai",
-      Status: "Status",
+      Tipe: "Tipe Pegawai",
+      Gelar: "Gelar Awal",
+      Name: "Nama Pegawai",
+      GelarAkhir: "Gelar Akhir",
+      NIK: "NIK",
+      TglLahir: "Tanggal Lahir",
+      Gender: "Jenis Kelamin",
+      Status:"Status"
     });
 
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        Kode: rows[i].code,
-        Nama: rows[i].name,
+        Tipe: rows[i].tipe === 1 ? "Nakes" : "Non-Nakes",
+        Gelar: rows[i].firstTitle ?? '-',
+        Name: rows[i].name,
+        GelarAkhir: rows[i].lastTitle ?? '-',
+        NIK: rows[i].nik,
+        TglLahir: rows[i].tanggalLahir,
+        Gender : rows[i].gender === "perempuan" ? "Perempuan" : "Laki-laki",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -175,7 +185,7 @@ const downloadExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -184,7 +194,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -235,15 +253,75 @@ const filterTipePegawai = ref([
   { label: "NON-NAKES", value: 2 },
 ]);
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Tipe: "Tipe Pegawai*",
+      Gelar: "Gelar Awal",
+      Name: "Nama Pegawai*",
+      GelarAkhir: "Gelar Akhir",
+      NIK: "NIK*",
+      TglLahir: "Tanggal Lahir*",
+      Gender: "Jenis Kelamin*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      Tipe: "Nakes",
+      Gelar: "Dr",
+      Name: "Zahrotul Hidayah",
+      GelarAkhir: "Sp.Ort",
+      NIK: "32256789065434",
+      TglLahir: "26-12-2004",
+      Gender: "Perempuan",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Pegawai"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Pegawai.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
   try {
     const response = await pegawaiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
     fetchPegawaiData();
-    console.log('File uploaded successfully:', response);
+    console.log("File uploaded successfully:", response);
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error("Error uploading file:", error);
   }
 };
 </script>
@@ -294,14 +372,18 @@ const handleFileUpload = async (file: File) => {
 
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (pegawaiProperties.page - 1) * pegawaiProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
         <Column field="nik" header="NIK" headerClass="bg-adameds-50"></Column>
         <Column header="Nama Pegawai" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div>
+            <div class="text-pretty">
               {{
                 slotProps.data.firstTitle
                   ? slotProps.data.firstTitle + ". "
@@ -321,6 +403,7 @@ const handleFileUpload = async (file: File) => {
               border-color="border-none"
               bg-color="bg-adameds-300"
               customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
+              class="text-nowrap"
             />
           </template>
         </Column>
@@ -331,7 +414,7 @@ const handleFileUpload = async (file: File) => {
             </div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.gender"
                 :show-checked-icon="false"
@@ -360,7 +443,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -397,7 +480,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `Pegawai ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -430,6 +513,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

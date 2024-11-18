@@ -4,6 +4,7 @@ export interface SidebarBody {
   name: string;
   icon?: string;
   type: linkType;
+  datas?: any;
   url?: string;
   child?: SidebarBody[];
 }
@@ -38,10 +39,10 @@ export interface FilterAdmisi {
   page?: number;
   limit?: number;
   platform?: string;
-  poly?: string;
+  poly?: string[];
   startDate?: string;
   endDate?: string;
   dpjp?: string;
-  room?: string;
+  room?: string[];
   withoutIdentity?: string;
 }

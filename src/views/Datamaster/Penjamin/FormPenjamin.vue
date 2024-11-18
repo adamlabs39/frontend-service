@@ -30,9 +30,9 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Penjamin harus diisi"),
     name: yup.string().required("Nama Penjamin harus diisi"),
-    phone: yup.string(),
-    address: yup.string(),
-    status: yup.bool().default(false),
+    phone: yup.string().notRequired(),
+    address: yup.string().notRequired(),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -167,8 +167,8 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Penjamin" :value="code" />
         <CustomInfoRow label="Nama Penjamin" :value="name" />
-        <CustomInfoRow label="No. Telepon" :value="phone" />
-        <CustomInfoRow label="Alamat" :value="address" />
+        <CustomInfoRow label="No. Telepon" :value="props.payload.phone??'-'" />
+        <CustomInfoRow label="Alamat" :value="props.payload.address??'-'" />
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

@@ -83,11 +83,11 @@ const itemsPasien = ref([
     tanggalJadwal: "10-10-2024 10:00",
     no_SEP: "",
     insuranceAccountName: "TUNAI",
-    polyclinic: "POLI ANAK",
+    polyclinic: "APS",
     gender: "L",
     phone: "082112341234",
     ageYear: 20,
-    ageMonth: 3,
+    ageMonth: 4,
     ageDay: 5,
     noMT: "MT-01-01",
     noREG: "REG2407010049",
@@ -292,12 +292,43 @@ const popupDialog = ref(false);
 
 const editIdentitas = () => {
   popupDialog.value = false;
-  changeSection("Edit Profil Pasien");
+  changeSection("Edit Order");
 };
 const handleBack = () => {
   popupDialog.value = true; // Menampilkan popup dialog
   dataBreadCrumb.value = [];
 };
+
+const selectedRow = (data: any) => {
+  popupDialog.value = true;
+  dialogData.value = data.data;
+  console.log(`Data`, dialogData);
+};
+
+interface DialogData {
+  noPendaftaran: string;
+  name: string;
+  address: string;
+  doctor: string;
+  practicHour: string;
+  tanggalDaftar: string;
+  tanggalJadwal: string;
+  no_SEP: string;
+  insuranceAccountName: string;
+  polyclinic: string;
+  gender: string;
+  phone: string;
+  ageYear: number;
+  ageMonth: number;
+  ageDay: number;
+  noMT: string;
+  noREG: string;
+  newPatient: boolean;
+  statusPelayanan: string;
+  statusPembayaran: string;
+}
+const dialogData = ref<DialogData>();
+
 </script>
 
 <template>
@@ -435,7 +466,7 @@ const handleBack = () => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="popupDialog = true"
+          @rowClick="selectedRow"
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
@@ -642,7 +673,7 @@ const handleBack = () => {
               v-if="!showCancelVisit"
               @click="showCancelVisit = true"
               class="my-auto bg-danger-300"
-              label="Batal Kunjungan"
+              label="Batal Order"
             />
 
             <CustomButton
@@ -668,7 +699,7 @@ const handleBack = () => {
               v-model="cancelReason"
               :showLabel="false"
               class="my-auto w-[400px]"
-              placeholder="Alasan Batal Kunjungan"
+              placeholder="Alasan Batal Order"
             />
           </div>
           <CustomPaginator
@@ -691,7 +722,7 @@ const handleBack = () => {
     />
 
     <HeaderEditDataPasienPage
-      v-else-if="dataBreadCrumb[0].label == 'Edit Profil Pasien'"
+      v-else-if="dataBreadCrumb[0].label == 'Edit Order'"
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
       :patientData="patientData"
@@ -705,6 +736,16 @@ const handleBack = () => {
           <div class="flex">
             <p>
               Detail Order Fisioterapi
+              <!-- <CustomChip
+                
+               
+                :showCheckedIcon="false"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-50"
+                textColor="text-adameds-300"
+                customClass="h-6"
+                class="ml-[5px]"
+              /> -->
               <CustomChip
                 label="TUNAI"
                 :showCheckedIcon="false"
@@ -751,7 +792,11 @@ const handleBack = () => {
                 <p class="text-xs font-bold underline underline-offset-2">
                   Umur
                 </p>
-                <p class="">24Thn 2Bln 1Hari</p>
+                <p class="">
+                    {{ dialogData?.ageYear }}Th
+                  {{ dialogData?.ageMonth }}Bln
+                  {{ dialogData?.ageDay }}Hr
+                </p>
               </div>
               <div class="mt-[20px] mr-[40px]">
                 <p class="text-xs font-bold underline underline-offset-2">
@@ -759,88 +804,6 @@ const handleBack = () => {
                 </p>
                 <p class="">Tidak Ada</p>
               </div>
-            </div>
-
-            <!-- Asesmen Medis -->
-            <div class="grid grid-cols-1 mt-2">
-              <CustomAccordion
-                no-border
-                :openWithHeader="false"
-                initial-state="0"
-              >
-                <template #header>
-                  <div class="flex justify-between w-full mt-5">
-                    <div class="mt-4 basis-1/4">
-                      <p class="font-bold text-MD">Asesmen Medis</p>
-                    </div>
-                    <div>
-                      <CustomButton
-                        @click="openDialogRM"
-                        label="Rekam Medis"
-                        class="mr-4"
-                      />
-                    </div>
-                  </div>
-                </template>
-                <template #content>
-                  <div class="flex flex-row mt-8">
-                    <div class="basis-1/4">
-                      <p class="text-xs font-bold underline underline-offset-2">
-                        Keluhan Utama
-                      </p>
-                      <p>Sakit Mata</p>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
-                        Dokter Pengirim
-                        <span> </span>
-                      </p>
-                      <p>dr. Anji Sp. M</p>
-                    </div>
-                    <div
-                      class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"
-                    ></div>
-                    <div class="mr-[180px]">
-                      <p class="text-xs font-bold underline underline-offset-2">
-                        Diagnosa Primer
-                      </p>
-                      <p class="">H10.9 Conjuctivitis</p>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
-                        Diagnosa Sekunder
-                      </p>
-                      <p class="">-</p>
-                    </div>
-                    <div class="mr-[80px]">
-                      <p class="text-xs font-bold underline underline-offset-2">
-                        Diagnosa Sekunder
-                      </p>
-                      <p class="">-</p>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
-                        Diagnosa Sekunder
-                      </p>
-                      <p class="">-</p>
-                    </div>
-                  </div>
-                </template>
-                <template #collapseIcon>
-                  <CustomButton
-                    icon="PhCaretUp"
-                    backgroundColor="bg-transparent"
-                    textColor="text-adameds-300"
-                  />
-                </template>
-                <template #expandIcon>
-                  <CustomButton
-                    icon="PhCaretDown"
-                    backgroundColor="bg-transparent"
-                    textColor="text-adameds-300"
-                  />
-                </template>
-              </CustomAccordion>
             </div>
 
             <!-- Profil Pasien  -->
@@ -857,11 +820,11 @@ const handleBack = () => {
                       <p class="font-bold text-MD">Profil Pasien</p>
                     </div>
                     <div>
-                      <CustomButton
+                      <!-- <CustomButton
                         @click="editIdentitas"
                         label="Edit Data"
                         class="mr-4"
-                      />
+                      /> -->
                     </div>
                   </div>
                 </template>
@@ -961,6 +924,88 @@ const handleBack = () => {
               </CustomAccordion>
             </div>
 
+            <!-- Asesmen Medis -->
+            <div class="grid grid-cols-1 mt-2">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full mt-5">
+                    <div class="mt-4 basis-1/4">
+                      <p class="font-bold text-MD">Asesmen Medis</p>
+                    </div>
+                    <div>
+                      <CustomButton
+                        @click="openDialogRM"
+                        label="Rekam Medis"
+                        class="mr-4"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template #content>
+                  <div class="flex flex-row mt-8">
+                    <div class="basis-1/4">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Keluhan Utama
+                      </p>
+                      <p>Sakit Mata</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Dokter Pengirim
+                        <span> </span>
+                      </p>
+                      <p>dr. Anji Sp. M</p>
+                    </div>
+                    <div
+                      class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"
+                    ></div>
+                    <div class="mr-[180px]">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Diagnosa Primer
+                      </p>
+                      <p class="">H10.9 Conjuctivitis</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                    </div>
+                    <div class="mr-[80px]">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Diagnosa Sekunder
+                      </p>
+                      <p class="">-</p>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
+
             <!-- List Order Terapi -->
             <div class="grid grid-cols-1 mt-[20px]">
               <CustomAccordion
@@ -980,11 +1025,21 @@ const handleBack = () => {
                         Tgl. Order : 3-10-2024
                       </p>
                     </div>
-                    <CustomButton
-                      @click="editOrderDialog = true"
-                      label="Edit Order"
-                      class="mr-4"
-                    />
+                    <div >
+                     
+                      <CustomButton
+                      v-if="dialogData?.polyclinic === 'APS'"
+                        label="Edit Data"
+                        @click="editIdentitas"
+                        class="mr-4"
+                      />
+                      <CustomButton
+                      v-if="dialogData?.polyclinic !== 'APS'"
+                        label="Edit Order"
+                        @click="editOrderDialog = true"
+                        class="mr-4"
+                      />
+                    </div>
                   </div>
                 </template>
                 <template #content>

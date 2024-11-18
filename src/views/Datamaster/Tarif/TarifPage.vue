@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
 import { useTarifStore } from "@/stores/datamaster/tarif";
-import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
-import CustomButton from "@/components/Base/CustomButton.vue";
 import { utilsStore } from "@/stores/utils";
 import FooterPaginator from "../Layout/FooterPaginator.vue";
 import TablesRuangan from "./TarifRuangan/TablesRuangan.vue";
 import TablesTindakan from "./TarifTindakan/TablesTindakan.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import FormTarifTindakan from "./TarifTindakan/FormTarifTindakan.vue";
 import FormTarifRuangan from "./TarifRuangan/FormTarifRuangan.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";

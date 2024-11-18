@@ -18,7 +18,6 @@ import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
   isDialogVisible: {
-    type: Boolean,
     default: false,
   },
   title: {
@@ -62,8 +61,8 @@ const schema = toTypedSchema(
     display: yup.string().required("Display SATUSEHAT harus diisi"),
     name: yup.string().required("Nama Gigi harus diisi"),
     image: yup.string(),
-    catatan: yup.string(),
-    status: yup.bool().default(false),
+    catatan: yup.string().notRequired(),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -76,28 +75,25 @@ const [system] = defineField("system");
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [image] = defineField("image");
-const [catatan] = defineField("catatan");
 const [kategoriGigiUuid] = defineField("kategoriGigiUuid");
+const [catatan] = defineField("catatan");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
-  console.log("test ediit ad")
   try {
-    console.log(values)
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("Data updated successfully:", values);
-
-      // const response = await itemGigiStore.putApi(uuid, values);
+      const response = await itemGigiStore.putApi(uuid, values);
+      console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      // const response = await itemGigiStore.postApi(values);
+      const response = await itemGigiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -109,9 +105,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility = (value: any) => {
+const updateVisibility= (value: any) => {
   emit("update:isDialogVisible", value);
-};
+}
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -123,18 +119,11 @@ const handleEdit = () => {
   title.value = "Edit Data";
 };
 
+
 const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetDialogMode();
   resetForm();
-};
-
-const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
-const clearItemGigiPreview = () => {
-  image.value = ""; 
-  if (itemGigiUpload.value) {
-    itemGigiUpload.value.clearFile(); 
-  }
 };
 
 watch(
@@ -153,6 +142,16 @@ watch(
     }
   }
 );
+
+const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
+const clearItemGigiPreview = () => {
+  image.value = ""; 
+  if (itemGigiUpload.value) {
+    itemGigiUpload.value.clearFile(); 
+  }
+};
+
+
 </script>
 
 <template>
@@ -301,7 +300,7 @@ watch(
         <CustomInfoRow label="Code SATUSEHAT" :value="payload.code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
-        <CustomInfoRow label="Catatan" :value="payload.catatan ?? '-'" />
+        <CustomInfoRow label="Catatan" :value="payload.catatan ==='' ? '-': '-'" />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Status" :value="payload.status">
           <template #value>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -9,8 +9,18 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import type { FilterAdmisi } from "@/utils/Interface";
+import { utilsStore } from "@/stores/utils";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useRuanganStore } from "@/stores/datamaster/ruangan";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const praktisiStore = usePraktisiStore();
+const lokasiStore = useLokasiStore();
+const ruanganStore = useRuanganStore();
 
 const props = defineProps({
   pageType: {
@@ -25,6 +35,10 @@ const props = defineProps({
     type: Array as PropType<MenuItem[]>,
     default: () => [],
   },
+  filterData: {
+    type: Object as PropType<FilterAdmisi>,
+    default: {},
+  },
 });
 
 const emit = defineEmits(["daftar", "daftarBayi", "search"]);
@@ -32,15 +46,12 @@ const emit = defineEmits(["daftar", "daftarBayi", "search"]);
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
-const searchDPJPFilter = ref<string>("");
+const searchDPJPFilter = ref<string | undefined>("Semua");
+
+const listDpjp = ref<any[]>([]);
 
 // SECTION Rawat Jalan
-const filterPoliList = ref([
-  { name: "POLI UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
-  { name: "POLI ANAK", uuid: "0191a18a-22e4-773b-8229-a023f420d0bd" },
-  { name: "POLI GIGI POLI MATA", uuid: "0191a18a-22e4-773b-8229-a023f420d0be" },
-  { name: "Faskes Example", uuid: "0191a18a-22e4-773b-8229-a023f420d0bb" },
-]);
+const filterPoliList = ref([]);
 const selectedFilterPoli = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterPoli.value.includes(label)) {
@@ -50,6 +61,7 @@ const onPoliSelect = (label: string) => {
   } else {
     selectedFilterPoli.value.push(label);
   }
+  emit("search");
 };
 
 const filterRegisterMethod = ref(["ADMISI", "APM", "MOBILE APP"]);
@@ -65,7 +77,7 @@ const onRegisterMethodSelect = (label: string) => {
 // !SECTION
 
 // SECTION Rawat Inap
-const filterRoomList = ref(["101", "MAWAR", "MELATI", "ANGGREK"]);
+const filterRoomList = ref<any[]>([]);
 const selectedFilterRoom = ref<string[]>([]);
 const onFilterRoomSelect = (label: string) => {
   if (selectedFilterRoom.value.includes(label)) {
@@ -75,6 +87,7 @@ const onFilterRoomSelect = (label: string) => {
   } else {
     selectedFilterRoom.value.push(label);
   }
+  emit("search");
 };
 
 const filterBedRoomList = ref(["MAWAR I", "MAWAR II"]);
@@ -104,6 +117,7 @@ const onFilterPatientSelect = (label: string) => {
   } else {
     selectedFilterPatient.value.push(label);
   }
+  emit("search");
 };
 // !SECTION
 
@@ -116,6 +130,7 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+  emit("search");
 };
 
 // NOTE SEP Filter
@@ -140,7 +155,64 @@ const resetFilter = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   searchPatientFilter.value = "";
-  searchDPJPFilter.value = "";
+  searchDPJPFilter.value = "Semua";
+};
+
+const setFilter = (dataFilter: FilterAdmisi) => {
+  selectedFilterPoli.value = dataFilter.poly ?? [];
+  selectedFilterRegisterMethod.value = dataFilter.platform
+    ? [dataFilter.platform]
+    : [];
+  selectedFilterRoom.value = dataFilter.room ?? [];
+  selectedFilterPatient.value = dataFilter.withoutIdentity
+    ? [dataFilter.withoutIdentity]
+    : [];
+  selectedPaymentMethod.value = dataFilter.paymentMethod
+    ? [dataFilter.paymentMethod]
+    : [];
+  startDateFilter.value = dataFilter.startDate
+    ? (epochToDate(parseInt(dataFilter.startDate)) as Date)
+    : new Date();
+  endDateFilter.value = dataFilter.endDate
+    ? (epochToDate(parseInt(dataFilter.endDate)) as Date)
+    : new Date();
+  searchPatientFilter.value = dataFilter.q ?? "";
+  searchDPJPFilter.value = dataFilter.dpjp == "" ? "Semua" : dataFilter.dpjp;
+};
+
+const fetchUtils = async () => {
+  storeUtils.setLoading(true);
+  try {
+    // FIXME Masih menggunakan api biasa dan filter by FE
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+    } else listDpjp.value = [];
+    if (props.pageType == "rawat-jalan") {
+      // FIXME Masih menggunakan api biasa dan filter by FE
+      const responsePoli = await lokasiStore.getApi(0, 9999);
+      if (responsePoli && responsePoli.payload) {
+        filterPoliList.value = responsePoli.payload.filter(
+          (lokasi: any) => lokasi.isPoli && lokasi.status
+        );
+      } else filterPoliList.value = [];
+    }
+    if (props.pageType == "rawat-inap") {
+      const responseRoom = await ruanganStore.getAktifApi();
+      if (responseRoom && responseRoom.payload) {
+        filterRoomList.value = responseRoom.payload;
+      } else filterRoomList.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const searchData = () => {
@@ -158,14 +230,13 @@ const searchData = () => {
     !selectedPaymentMethod.value.length
       ? ""
       : selectedPaymentMethod.value[0];
-  // FIXME Belum bisa multiple
   if (props.pageType == "rawat-jalan") {
     filter.platform = selectedFilterRegisterMethod.value[0];
-    filter.poly = selectedFilterPoli.value[0];
+    filter.poly = selectedFilterPoli.value;
   }
   // FIXME Belum bisa multiple
   if (props.pageType == "rawat-inap") {
-    filter.room = selectedFilterRoom.value[0];
+    filter.room = selectedFilterRoom.value;
   }
   if (props.pageType == "igd") {
     filter.withoutIdentity =
@@ -175,10 +246,19 @@ const searchData = () => {
         : selectedFilterPatient.value[0];
   }
   // FIXME Belum bisa berjalan di RJ
-  filter.dpjp = searchDPJPFilter.value ?? "";
+  filter.dpjp =
+    searchDPJPFilter.value == "Semua" || !searchDPJPFilter.value
+      ? ""
+      : searchDPJPFilter.value;
 
   return filter;
 };
+
+onMounted(() => {
+  fetchUtils();
+  setFilter(props.filterData);
+});
+
 defineExpose({
   resetFilter,
   searchData,
@@ -186,6 +266,7 @@ defineExpose({
 </script>
 
 <template>
+  {{ filterData }}
   <CustomAccordion :openWithHeader="false" noBorder initialState="0">
     <template #header>
       <div class="flex justify-between w-full align-middle">
@@ -237,26 +318,36 @@ defineExpose({
           v-model="searchDPJPFilter"
           label="DPJP"
           class="mr-5 grow"
-          optionLabel="name"
+          optionLabel="detailPegawai.name"
           optionValue="uuid"
           :options="[
             {
-              uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-              name: 'Rudi tabuti',
+              uuid: 'Semua',
+              detailPegawai: {
+                name: 'Semua',
+              },
             },
-            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f8', name: 'dr. Ali' },
-            { uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f7', name: 'dr. Doom' },
+            // FIXME Dummy
+            {
+              uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
+              detailPegawai: {
+                name: 'Rudi tabuti',
+              },
+            },
+            ...listDpjp,
           ]"
           prependIcon="PhMagnifyingGlass"
         />
         <CustomDatePicker
           v-model="startDateFilter"
+          :maxDate="endDateFilter"
           label="Tanggal"
           class="w-[150px]"
         />
         <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
         <CustomDatePicker
           v-model="endDateFilter"
+          :minDate="startDateFilter"
           :showLabel="false"
           class="mt-auto w-[150px]"
         />
@@ -309,23 +400,29 @@ defineExpose({
         <div v-if="pageType == 'rawat-jalan'">
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Poli</div>
-            <div class="flex">
-              |
+            <div class="flex flex-wrap grow">
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
-                v-for="(poli, index) in filterPoliList"
-                :key="poli.uuid + index"
+                v-for="(poli, index) in [
+                  {
+                    name: 'Faskes Example',
+                    faskesUuid: '0191a18a-22e4-773b-8229-a023f420d0bb',
+                  },
+                  ...filterPoliList,
+                ]"
+                :key="poli.faskesUuid + index"
                 :label="poli.name"
-                :value="poli.uuid"
+                :value="poli.faskesUuid"
                 class="ml-[10px]"
-                :isSelected="selectedFilterPoli.includes(poli.uuid)"
+                :isSelected="selectedFilterPoli.includes(poli.faskesUuid)"
                 @selected="onPoliSelect"
               />
             </div>
           </div>
           <div v-if="!isSEP" class="flex my-[10px]">
             <div class="w-[15%]">Filter Cara Daftar</div>
-            <div class="flex">
-              |
+            <div class="flex flex-wrap grow">
+              <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
                 v-for="(method, index) in filterRegisterMethod"
                 :key="method + index"
@@ -348,11 +445,14 @@ defineExpose({
             <div class="flex">
               <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
-                v-for="(room, index) in filterRoomList"
-                :key="room + index"
-                :label="room"
+                v-for="(room, index) in [
+                  { uuid: '123', name: '102' },
+                  ...filterRoomList,
+                ]"
+                :key="room.uuid + index"
+                :label="room.name"
                 class="ml-[10px]"
-                :isSelected="selectedFilterRoom.includes(room)"
+                :isSelected="selectedFilterRoom.includes(room.name)"
                 @selected="onFilterRoomSelect"
               />
             </div>

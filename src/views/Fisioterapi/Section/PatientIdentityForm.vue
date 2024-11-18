@@ -9,10 +9,6 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 
 const props = defineProps({
-  pageType: {
-    type: String,
-    required: true,
-  },
   formType: {
     type: String,
     default: "",
@@ -28,13 +24,12 @@ const props = defineProps({
 });
 
 onMounted(() => {
-  if (props.formType == "Daftar Bayi Baru Lahir" || (props.patientData && props.patientData.is_newborn)) {
-    newBorn.value = true;
+  if (
+    props.formType == "Daftar Bayi Baru Lahir" ||
+    (props.patientData && props.patientData.is_newborn)
+  ) {
   }
 });
-
-const newBorn = ref(false);
-const noIdentity = ref(false);
 
 const submitForm = () => {
   console.log("Submited Patient Identity Form");
@@ -50,39 +45,35 @@ defineExpose({
     <template #header>
       <div class="flex justify-between w-full align-middle">
         <div class="flex">
-          <span class="leading-10 text-adameds-300 text-heading"> Identitas Pasien </span>
+          <span class="leading-10 text-adameds-300 text-heading">
+            Identitas Pasien
+          </span>
         </div>
       </div>
     </template>
     <template #content>
       <div class="pt-5">
-        <div class="flex">
+         <div class="flex">
           <CustomSelect
-            v-if="pageType != 'rawat-inap'"
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
-            class="grow"
-            :class="{ 'mr-[30px]': pageType != 'datamaster' }"
+            class="mr-10 grow"
             optionLabel=""
             optionValue=""
             :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
             prependIcon="PhMagnifyingGlass"
-            :disabled="noIdentity || newBorn || isDetail || pageType == 'datamaster'"
           />
-          <CustomSwitch v-if="pageType == 'igd'" v-model="newBorn" label="Bayi Baru Lahir" class="mr-[50px]" @update:model-value="noIdentity = false" :disabled="isDetail" />
-          <CustomSwitch v-if="pageType == 'igd'" v-model="noIdentity" label="Tanpa Identitas" class="mr-[35px]" @update:model-value="newBorn = false" :disabled="isDetail" />
-          <div v-if="pageType != 'rawat-inap'" class="border-[1px] border-grey-200 mr-[35px]"></div>
-          <CustomTextfield label="No. RM" class="w-[23.5%]" placeholder="No. RM" disabled />
+          <div class="bg-gray-400 w-[1px] h-[60px] mr-10 text-center mt-2"></div>
+          <CustomTextfield
+            label="No. RM"
+            class="w-[23.5%]"
+            placeholder="No. RM"
+            
+          />
         </div>
         <hr class="mt-5 mb-[30px]" />
-        <div v-if="newBorn || noIdentity" class="grid grid-cols-2 mb-5 gap-x-[30px]">
-          <CustomTextfield label="Nama Lengkap" class="w-full mr-[30px]" placeholder="Nama Lengkap" :disabled="isDetail" />
-          <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
-            <CustomSelect label="Identitas" placeHolder="Pilih Identitas" class="mr-[10px]" optionLabel="" optionValue="" :showFilter="false" :options="['KTP', 'Passport', 'SIM', 'Lainya']" :disabled="isDetail" />
-            <CustomTextfield :label="newBorn ? 'No. KTP Ibu' : ''" class="col-span-3" :class="{ 'mt-auto': noIdentity }" placeholder="KTP" :disabled="isDetail" />
-          </div>
-        </div>
-        <div v-else class="flex mb-5">
+
+        <div class="flex mb-5">
           <CustomSelect
             label="Awalan / Gelar"
             placeHolder="Pilih Awalan / Gelar"
@@ -90,38 +81,108 @@ defineExpose({
             optionLabel=""
             optionValue=""
             :showFilter="false"
-            :options="['Tn. (Tuan)', 'Ny. (Nyonya)', 'Sdr. (Saudara)', 'Nn. (Nona)', 'An. (Anak)', 'By. (Bayi)']"
+            :options="[
+              'Tn. (Tuan)',
+              'Ny. (Nyonya)',
+              'Sdr. (Saudara)',
+              'Nn. (Nona)',
+              'An. (Anak)',
+              'By. (Bayi)',
+            ]"
             :disabled="isDetail"
           />
           <div class="flex ml-[10px] grow">
-            <CustomTextfield label="Nama Lengkap" class="w-full mr-[30px]" placeholder="Nama Lengkap" :disabled="isDetail" />
-            <CustomSelect label="Identitas" placeHolder="Pilih Identitas" class="mr-[10px]" optionLabel="" optionValue="" :showFilter="false" :options="['KTP', 'Passport', 'SIM', 'Lainya']" :disabled="isDetail" />
+            <CustomTextfield
+              label="Nama Lengkap"
+              class="w-full mr-[30px]"
+              placeholder="Nama Lengkap"
+              :disabled="isDetail"
+            />
+            <CustomSelect
+              label="Identitas"
+              placeHolder="Pilih Identitas"
+              class="mr-[10px]"
+              optionLabel=""
+              optionValue=""
+              :showFilter="false"
+              :options="['KTP', 'Passport', 'SIM', 'Lainya']"
+              :disabled="isDetail"
+            />
           </div>
-          <CustomTextfield label=" " class="w-[23.5%] mt-auto" placeholder="KTP" :disabled="isDetail" />
+          <CustomTextfield
+            label=" "
+            class="w-[23.5%] mt-auto"
+            placeholder="KTP"
+            :disabled="isDetail"
+          />
         </div>
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
           <!-- Row 1 -->
-          <CustomTextfield v-if="!noIdentity" label="Tempat Lahir" class="" placeholder="Tempat Lahir" :disabled="isDetail" />
-          <CustomDatePicker label="Tanggal Lahir" placeHolder="01-01-2024" class="" :disabled="isDetail" />
-          <CustomDatePicker v-if="newBorn" label="Jam Lahir" placeHolder="00:00" class="" timeOnly :disabled="isDetail" />
-          <CustomTextfield v-else label="Umur" class="" placeholder="Umur" :disabled="isDetail" />
-          <CustomSelect label="Jenis Kelamin" placeHolder="Pilih Jenis Kelamin" class="" optionLabel="" optionValue="" :showFilter="false" :options="['Laki-laki', 'Perempuan']" :disabled="isDetail" />
-          <!-- Row 2 -->
-          <CustomTextfield v-if="!newBorn" label="No. Handphone" class="" placeholder="08XX-XXXX-XXXX" :disabled="isDetail" />
+          <CustomTextfield
+            label="Tempat Lahir"
+            class=""
+            placeholder="Tempat Lahir"
+            :disabled="isDetail"
+          />
+          <CustomDatePicker
+            label="Tanggal Lahir"
+            placeHolder="01-01-2024"
+            class=""
+            :disabled="isDetail"
+          />
+
+          <CustomTextfield
+            label="Umur"
+            class=""
+            placeholder="Umur"
+            :disabled="isDetail"
+          />
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            label="Jenis Kelamin"
+            placeHolder="Pilih Jenis Kelamin"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['Laki-laki', 'Perempuan']"
+            :disabled="isDetail"
+          />
+          <!-- Row 2 -->
+          <CustomTextfield
+            label="No. Handphone"
+            class=""
+            placeholder="08XX-XXXX-XXXX"
+            :disabled="isDetail"
+          />
+          <CustomSelect
             label="Agama"
             placeHolder="Pilih Agama"
             class=""
             optionLabel=""
             optionValue=""
             :showFilter="false"
-            :options="['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lain-lain']"
+            :options="[
+              'Islam',
+              'Kristen',
+              'Katolik',
+              'Hindu',
+              'Buddha',
+              'Konghucu',
+              'Lain-lain',
+            ]"
             :disabled="isDetail"
           />
-          <CustomSelect v-if="!newBorn && !noIdentity" label="Negara" placeHolder="Pilih Negara" class="" optionLabel="" optionValue="" :showFilter="false" :options="['Indonesia', 'Jepang', 'Amerika Serikat']" :disabled="isDetail" />
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
+            label="Negara"
+            placeHolder="Pilih Negara"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['Indonesia', 'Jepang', 'Amerika Serikat']"
+            :disabled="isDetail"
+          />
+          <CustomSelect
             label="Bahasa yang Dikuasai"
             placeHolder="Pilih Bahasa yang Dikuasai"
             class=""
@@ -133,7 +194,6 @@ defineExpose({
           />
           <!-- Row 3 -->
           <CustomSelect
-            v-if="!newBorn && !noIdentity"
             label="Status Pernikahan"
             placeHolder="Pilih Status Pernikahan"
             class=""
@@ -143,14 +203,49 @@ defineExpose({
             :options="['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']"
             :disabled="isDetail"
           />
-          <CustomTextfield v-if="!noIdentity" label="Nama Ibu Kandung" :class="[newBorn ? 'col-span-2' : 'col-span-3']" placeholder="Nama Ibu Kandung" :disabled="isDetail" />
-          <CustomSwitch v-if="newBorn" label="Bayi Kembar" class="" :disabled="isDetail" />
+          <CustomTextfield
+            label="Nama Ibu Kandung"
+            class="col-span-3"
+            placeholder="Nama Ibu Kandung"
+            :disabled="isDetail"
+          />
         </div>
-        <hr v-if="!noIdentity" class="my-[30px]" />
-        <div v-if="!noIdentity" class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
-          <CustomSelect label="Provinsi" placeHolder="Pilih Provinsi" class="" optionLabel="" optionValue="" :showFilter="false" :options="['DKI Jakarta', 'Jawa Barat', 'Jawa Timur']" :disabled="isDetail" />
-          <CustomSelect label="Kabupaten / Kota" placeHolder="Pilih Kabupaten / Kota" class="" optionLabel="" optionValue="" :showFilter="false" :options="['Kota Jakarta Pusat', 'Kota Bandung', 'Kota Surabaya']" :disabled="isDetail" />
-          <CustomSelect label="Kecamatan" placeHolder="Pilih Kecamatan" class="" optionLabel="" optionValue="" :showFilter="false" :options="['Kecamatan Gambir', 'Kecamatan Cidadap', 'Kecamatan Wonokromo']" :disabled="isDetail" />
+        <hr class="my-[30px]" />
+        <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
+          <CustomSelect
+            label="Provinsi"
+            placeHolder="Pilih Provinsi"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['DKI Jakarta', 'Jawa Barat', 'Jawa Timur']"
+            :disabled="isDetail"
+          />
+          <CustomSelect
+            label="Kabupaten / Kota"
+            placeHolder="Pilih Kabupaten / Kota"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['Kota Jakarta Pusat', 'Kota Bandung', 'Kota Surabaya']"
+            :disabled="isDetail"
+          />
+          <CustomSelect
+            label="Kecamatan"
+            placeHolder="Pilih Kecamatan"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="[
+              'Kecamatan Gambir',
+              'Kecamatan Cidadap',
+              'Kecamatan Wonokromo',
+            ]"
+            :disabled="isDetail"
+          />
           <CustomSelect
             label="Kelurahan / Desa"
             placeHolder="Pilih Kelurahan / Desa"
@@ -158,23 +253,60 @@ defineExpose({
             optionLabel=""
             optionValue=""
             :showFilter="false"
-            :options="['Kelurahan Menteng', 'Desa Ciburial', 'Kelurahan Dukuh Menanggal']"
+            :options="[
+              'Kelurahan Menteng',
+              'Desa Ciburial',
+              'Kelurahan Dukuh Menanggal',
+            ]"
             :disabled="isDetail"
           />
           <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
-            <CustomTextfield label="RT" class="" placeholder="0" :disabled="isDetail" />
-            <CustomTextfield label="RW" class="" placeholder="0" :disabled="isDetail" />
+            <CustomTextfield
+              label="RT"
+              class=""
+              placeholder="0"
+              :disabled="isDetail"
+            />
+            <CustomTextfield
+              label="RW"
+              class=""
+              placeholder="0"
+              :disabled="isDetail"
+            />
           </div>
-          <CustomSelect label="Kode Pos" placeHolder="Pilih Kode Pos" class="" optionLabel="" optionValue="" :showFilter="false" :options="['10110', '40115', '60241']" :disabled="isDetail" />
-          <CustomTextArea label="Alamat" class="col-span-2" placeholder="Alamat" height="h-10" :disabled="isDetail" />
+          <CustomSelect
+            label="Kode Pos"
+            placeHolder="Pilih Kode Pos"
+            class=""
+            optionLabel=""
+            optionValue=""
+            :showFilter="false"
+            :options="['10110', '40115', '60241']"
+            :disabled="isDetail"
+          />
+          <CustomTextArea
+            label="Alamat"
+            class="col-span-2"
+            placeholder="Alamat"
+            height="h-10"
+            :disabled="isDetail"
+          />
         </div>
       </div>
     </template>
     <template #collapseIcon>
-      <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+      <CustomButton
+        icon="PhCaretUp"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
     </template>
     <template #expandIcon>
-      <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+      <CustomButton
+        icon="PhCaretDown"
+        backgroundColor="bg-adameds-75"
+        textColor="text-adameds-300"
+      />
     </template>
   </CustomAccordion>
 </template>

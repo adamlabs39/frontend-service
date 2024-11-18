@@ -428,7 +428,7 @@ const resetFormFields = () => {
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
+        <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"

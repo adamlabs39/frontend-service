@@ -5,7 +5,7 @@ import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Footer from "../Layout/FooterPaginator.vue";
+import FooterPaginator from "../Layout/FooterPaginator.vue";
 import FormLoinc from "./FormLoinc.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import NoData from "@/components/section/NoData.vue";
@@ -164,7 +164,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 30 }, { wch: 10 }];
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -211,15 +219,60 @@ const downloadExportExcel = async () => {
   }
 };
 
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Code: "Kode LOINC*",
+      Name: "Nama LOINC*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({ No: "1", Code: "LOINC-001", Name: "Kalium" });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster LOINC"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster LOINC.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
 const handleFileUpload = async (file: File) => {
   const dataUpload = new FormData();
   dataUpload.append("file", file);
   try {
     const response = await loincStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
     fetchLoincData();
-    console.log('File uploaded successfully:', response);
+    console.log("File uploaded successfully:", response);
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error("Error uploading file:", error);
   }
 };
 </script>
@@ -267,7 +320,11 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (loincProperties.page - 1) * loincProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -287,7 +344,7 @@ const handleFileUpload = async (file: File) => {
             <div class="w-full font-semibold text-center text-SM">Status</div>
           </template>
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -324,7 +381,7 @@ const handleFileUpload = async (file: File) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `LOINC ${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.code}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -351,18 +408,13 @@ const handleFileUpload = async (file: File) => {
     </template>
 
     <template #footer>
-      <Footer
-        :rows="loincProperties.page_size"
-        :totalRecords="loincProperties.total"
-        @page="handlePage"
-        @export="downloadExportExcel"
-      />
       <FooterPaginator
         :rows="loincProperties.page_size"
         :totalRecords="loincProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

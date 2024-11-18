@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { PropType } from "vue";
 import { computed, ref } from "vue";
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: String as PropType<string | null>,
     default: "",
   },
   required: {
@@ -59,7 +60,7 @@ const props = defineProps({
 // const value = ref(props.modelValue);
 const value = computed({
   get: () => props.modelValue,
-  set: (value: string) => emit("update:modelValue", value),
+  set: (value: string | null) => emit("update:modelValue", value),
 });
 
 const emit = defineEmits(["update:modelValue", "clickPrepend", "clickAppend"]);

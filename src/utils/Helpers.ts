@@ -70,3 +70,44 @@ export function setTimeForDate(
   newDate.setHours(hours, minutes, seconds, 0);
   return newDate;
 }
+
+export function setTimeToDate(time: string) {
+  let date = new Date();
+  const [hours, minutes, seconds] = time.split(":").map(Number);
+
+  date.setHours(hours);
+  date.setMinutes(minutes);
+  date.setSeconds(seconds);
+  return date;
+}
+
+export function setDateToTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+export function countAge(date: Date) {
+  const now = new Date();
+  let tahun = now.getFullYear() - date.getFullYear();
+  let bulan = now.getMonth() - date.getMonth();
+  let hari = now.getDate() - date.getDate();
+
+  // Jika bulan kurang dari 0, kurangi satu tahun
+  if (bulan < 0) {
+    tahun--;
+    bulan += 12;
+  }
+
+  // Jika hari kurang dari 0, kurangi satu bulan
+  if (hari < 0) {
+    bulan--;
+    // Ambil jumlah hari dari bulan sebelumnya
+    const bulanSebelumnya = new Date(now.getFullYear(), now.getMonth(), 0);
+    hari += bulanSebelumnya.getDate();
+  }
+
+  return { tahun, bulan, hari };
+}

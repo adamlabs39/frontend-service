@@ -148,8 +148,8 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Snomed: rows[i].snomedDetail.name ?? '-',
-        icd: rows[i].icd9Detail.name ?? '-',
+        Snomed: rows[i].snomed?.name ?? '-',
+        icd: rows[i].icd_9?.name ?? '-',
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -169,7 +169,15 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -211,6 +219,52 @@ const downloadExportExcel = async () => {
     // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Tindakan");
     XLSX.writeFile(workbook, `Datamaster Tindakan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+  data.push({
+      No: "No",
+      Code: "Kode Tindakan*",
+      Name: "Nama Tindakan*",
+      Snomed:"snomed-CT",
+      ICD:"ICD-9"
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    
+      data.push({ No: "1", Code: "PDU-001", Name: "Pemeriksaan Dokter Umum", Snomed:"SNOMED-CT Amoxilin", ICD:"ICD-9 Aspirin" });
+
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+  
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Tindakan");
+    XLSX.writeFile(workbook, `Format Datamaster Tindakan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -269,7 +323,11 @@ const handleFileUpload = async (file: File) => {
         <Column header="No." headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
+              {{
+                (tindakanProperties.page - 1) * tindakanProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -312,7 +370,7 @@ const handleFileUpload = async (file: File) => {
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
+            <div class="flex items-center justify-center text-nowrap">
               <CustomChip
                 :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
@@ -350,7 +408,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `Tindakan ${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -379,6 +437,7 @@ const handleFileUpload = async (file: File) => {
         @page="handlePage"
         @export="downloadExportExcel"
         @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch, onMounted, computed } from "vue";
-import { useForm } from "vee-validate";
+import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
@@ -74,40 +74,49 @@ onMounted(() => {
   fetchLokasi();
 });
 
-const selectedPegawai = ref<any>(null); // State untuk menyimpan pegawai yang dipilih
-
+const selectedPegawai = ref<any>(null);
 const searchPegawai = () => {
-  // Cari pegawai berdasarkan pegawaiUuid yang telah dipilih
   selectedPegawai.value = pegawaiPayload.value.find(
     (pegawai) => pegawai.uuid === pegawaiUuid.value
   );
 };
 
 const resetSearch = () => {
-  pegawaiUuid.value = ""; // Reset pegawaiUuid
-  selectedPegawai.value = null; // Reset selectedPegawai
+  pegawaiUuid.value = "";
+  selectedPegawai.value = null;
 };
 
 const schema = toTypedSchema(
-  yup.object({
-    pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-    codeBpjs: yup.string(),
-    sip: yup.string(),
-    str: yup.string(),
-    isDoctor: yup.boolean(),
-    codeAntrianDokter: yup.string().when("isDoctor", {
-      is: (value: boolean) => value === true,
-      then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    practitionerPoli: yup.array().of(
-      yup.object().shape({
-        lokasiUuid: yup.string().required("Unit Pelayanan harus dipilih"),
-      })
-    ),
-
-    status: yup.bool().default(false),
-  }).noUnknown()
+  yup
+    .object({
+      pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
+      codeBpjs: yup.string().nullable().notRequired(),
+      sip: yup.string().default("").nullable().notRequired(),
+      str: yup.string().default("").nullable().notRequired(),
+      isDoctor: yup.boolean().required("Tipe Praktisi harus diisi"),
+      codeAntrianDokter: yup.string().when("isDoctor", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      practitionerPoli: yup.array().of(
+        yup.object().shape({
+          lokasiUuid: yup.string().notRequired(),
+        })
+      ),
+      status: yup.bool().default(true),
+      practitionerPoliSelected: yup
+        .array()
+        .when("isDoctor", {
+          is: (value: boolean) => value === true,
+          then: (schema) => schema.required("Poli harus dipilih"),
+          otherwise: (schema) => schema.notRequired(),
+        })
+        .of(yup.string().required("Poli harus dipilih"))
+        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+        .required("Unit Pelayanan harus dipilih"),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -122,21 +131,59 @@ const [isDoctor] = defineField("isDoctor");
 const [codeAntrianDokter] = defineField("codeAntrianDokter");
 const [practitionerPoli] = defineField("practitionerPoli");
 const [status] = defineField("status");
-const poliSelected = ref([]);
+const [practitionerPoliSelected] = defineField("practitionerPoliSelected");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-watch(poliSelected, (newVal) => {
-  const formattedPelayanan = newVal.map((value) => ({ lokasiUuid: value }));
-  practitionerPoli.value = formattedPelayanan;
-});
+const { push: pushPractitionerPoli } = useFieldArray("practitionerPoli");
+
+const handlePenjaminUpdate = (selectedValues: string[]) => {
+  practitionerPoli.value = tempPoli.value.map(
+    (item: { lokasiUuid: string; uuid: string }) => {
+      if (!selectedValues.includes(item.lokasiUuid)) {
+        return {
+          lokasiUuid: item.lokasiUuid,
+          uuid: item.uuid,
+          isDeleted: true,
+        };
+      } else {
+        return {
+          lokasiUuid: item.lokasiUuid,
+          uuid: item.uuid,
+        };
+      }
+    }
+  );
+
+  selectedValues.forEach((value) => {
+    const existsInTemp = tempPoli.value.some(
+      (item: { lokasiUuid: string }) => item.lokasiUuid === value
+    );
+
+    if (!existsInTemp) {
+      pushPractitionerPoli({
+        lokasiUuid: value,
+      });
+    }
+  });
+};
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    delete values.practitionerPoliSelected;
+    if(values.codeBpjs===""){
+      values.codeBpjs=null;
+    }else if(values.sip===""){
+      values.sip=null;
+    }else if(values.str===""){
+      values.str=null;
+    }
+    
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("data delete", values);
       const response = await praktisiStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
@@ -180,18 +227,32 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
+        const poliPayload =
+          props.payload.practitionerPoli?.map(
+            (item: { lokasiUuid: string }) => item.lokasiUuid
+          ) || [];
+        const tempPoliObject =
+          props.payload.practitionerPoli?.map(
+            (item: { lokasiUuid: string; uuid: string }) => ({
+              lokasiUuid: item.lokasiUuid,
+              uuid: item.uuid,
+            })
+          ) || [];
         setValues({
           ...props.payload,
+          practitionerPoliSelected: poliPayload,
         });
+        tempPoli.value = tempPoliObject;
       }
     } else {
       resetForm();
       resetDialogMode();
       resetSearch();
+      tempPoli.value = [];
     }
   }
 );
-
+const tempPoli = ref([]);
 </script>
 
 <template>
@@ -224,27 +285,14 @@ watch(
           :options="pegawaiPayload"
           optionValue="uuid"
           optionLabel="name"
+          @update:modelValue="searchPegawai"
           place-holder="Cari & Pilih Pegawai"
-          class="col-span-8"
+          class="col-span-12"
           :invalid="!!errors.pegawaiUuid"
           :invalidMessage="errors.pegawaiUuid"
           :required="errors.pegawaiUuid ? true : false"
         />
 
-        <div class="flex items-end justify-between col-span-4">
-          <CustomButton
-            label="Cari"
-            icon="PhMagnifyingGlass"
-            @click="searchPegawai"
-          />
-          <CustomButton
-            label="Reset"
-            background-color="bg-transparent"
-            border-color="border-adameds-300"
-            text-color="text-adameds-300"
-            @click="resetSearch"
-          />
-        </div>
         <div v-if="selectedPegawai" class="col-span-12">
           <div
             class="grid grid-flow-col grid-cols-2 grid-rows-2 gap-5 border rounded-[10px] border-adameds-300 p-5"
@@ -284,6 +332,9 @@ watch(
           v-model="codeBpjs"
           placeholder="000"
           class="col-span-4"
+          :invalid="!!errors.codeBpjs"
+          :invalidMessage="errors.codeBpjs"
+          :required="errors.codeBpjs ? true : false"
         />
         <CustomTextfield
           v-if="isDoctor"
@@ -311,12 +362,16 @@ watch(
         <CustomMultiSelect
           v-if="isDoctor"
           label="Poli"
-          v-model="poliSelected"
+          v-model="practitionerPoliSelected"
           :options="lokasiPayload"
+          @update:modelValue="handlePenjaminUpdate"
           placeholder="Pilih Poli"
           class="col-span-8"
           optionValue="uuid"
           optionLabel="name"
+          :invalid="!!errors.practitionerPoliSelected"
+          :invalidMessage="errors.practitionerPoliSelected"
+          :required="errors.practitionerPoliSelected ? true : false"
         />
 
         <hr class="col-span-12 border-grey-200" />
@@ -333,9 +388,7 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <div class="font-bold text-heading">
           Data Pegawai -
-          {{
-            payload.isDoctor ? 'DOKTOR' : 'NON-DOKTOR'
-          }}
+          {{ payload.isDoctor ? "DOKTOR" : "NON-DOKTOR" }}
         </div>
         <hr class="border-grey-200" />
         <CustomInfoRow
@@ -362,19 +415,31 @@ watch(
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="Kode HFIS (BPJS)"
-          :value="payload.codeBpjs ?? '-'"
+          :value="
+            payload.codeBpjs && payload.codeBpjs.trim() !== ''
+              ? payload.codeBpjs
+              : '-'
+          "
         />
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="SIP"
-          :value="payload.sip ?? '-'"
+          :value="payload.sip && payload.sip.trim() !== '' ? payload.sip : '-'"
         />
-        <CustomInfoRow label="STR" :value="payload.str ?? '-'" />
+        <CustomInfoRow
+          label="STR"
+          :value="payload.str && payload.str.trim() !== '' ? payload.str : '-'"
+        />
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="Kode Antrian Dokter"
-          :value="codeAntrianDokter ?? '-'"
+          :value="
+            codeAntrianDokter && codeAntrianDokter.trim() !== ''
+              ? codeAntrianDokter
+              : '-'
+          "
         />
+
         <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
             <div

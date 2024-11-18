@@ -10,11 +10,12 @@ import HeaderFilter from "./Layout/HeaderFilter.vue";
 import RegisterForm from "./Layout/RegisterForm.vue";
 import NoData from "@/components/section/NoData.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
-import { epochToDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
 import type { FilterAdmisi } from "@/utils/Interface";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -28,7 +29,11 @@ const route = useRoute();
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
-  filterData.value = headerFilterRef.value?.searchData();
+  filterData.value = headerFilterRef.value?.searchData() ?? {
+    startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
+    endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
+    dpjp: ''
+  };
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -50,7 +55,7 @@ const patientDataRI = ref<any>([]);
 const patientDataIGD = ref<any>([]);
 const properties = ref({
   page: 1,
-  page_size: 10,
+  pageSize: 10,
   total: 0,
 });
 
@@ -66,6 +71,15 @@ const search = async () => {
   }
 };
 
+const getPatientList = async () => {
+  if (pageType.value == "rawat-jalan") {
+    patientData.value = await fetchRJPatient();
+  } else if (pageType.value == "rawat-inap") {
+    patientDataRI.value = await fetchRIPatient();
+  } else if (pageType.value == "igd") {
+    patientDataIGD.value = await fetchIGDPatient();
+  }
+};
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
@@ -124,13 +138,7 @@ const updatePageType = async (path: string) => {
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[2] ?? "";
 
-  if (pageType.value == "rawat-jalan") {
-    patientData.value = await fetchRJPatient();
-  } else if (pageType.value == "rawat-inap") {
-    patientDataRI.value = await fetchRIPatient();
-  } else if (pageType.value == "igd") {
-    patientDataIGD.value = await fetchIGDPatient();
-  }
+  await getPatientList();
 };
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -142,30 +150,30 @@ onMounted(() => {
     changeSection("Daftar");
   }
 });
-const selectedPatient = ref([]);
-
-const showCancelVisit = ref(false);
-const cancelReason = ref<string>();
 
 const openedPatientData = ref<any>({});
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
+
   if (pageType.value == "rawat-jalan") {
-    if (openedPatientData.value.status_rj == "1") {
+    if (openedPatientData.value.statusRj == "1") {
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
+      formType.value = "detail";
       changeSection("Detail");
     }
   } else if (pageType.value == "rawat-inap") {
     if (
-      openedPatientData.value.status_ri == "1" ||
-      openedPatientData.value.status_ri == "2"
+      openedPatientData.value.statusRi == "1" ||
+      openedPatientData.value.statusRi == "2"
     ) {
       changeSection("Daftar");
     } else {
+      formType.value = "detail";
       changeSection("Detail");
     }
   } else {
+    formType.value = "detail";
     changeSection("Detail");
   }
 };
@@ -173,14 +181,68 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
 const getDataTable = (type: "data" | "length" = "data") => {
   let tempPatient = [];
   if (pageType.value == "rawat-jalan") {
-    tempPatient = patientData.value;
+    tempPatient = showCancelVisit.value
+      ? patientData.value.filter(
+          (patient: any) => patient.statusRj != 4 && patient.statusRj != 5
+        )
+      : patientData.value;
   } else if (pageType.value == "rawat-inap") {
-    tempPatient = patientDataRI.value;
+    tempPatient = showCancelVisit.value
+      ? patientDataRI.value.filter(
+          (patient: any) => patient.statusRi != 3 && patient.statusRi != 4
+        )
+      : patientDataRI.value;
   } else if (pageType.value == "igd") {
-    tempPatient = patientDataIGD.value;
+    tempPatient = showCancelVisit.value
+      ? patientDataIGD.value.filter((patient: any) => patient.statusRi != 2)
+      : patientDataIGD.value;
   }
 
   return tempPatient;
+};
+
+const formType = ref<"add" | "edit" | "detail">("add");
+const closeRegistrationForm = () => {
+  dataBreadCrumb.value.pop();
+  openedPatientData.value = {};
+  getPatientList();
+};
+
+const selectedPatient = ref<any[]>([]);
+
+const showCancelVisit = ref(false);
+const cancelReason = ref<string>();
+const cancelVisit = async () => {
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      cancelReason: cancelReason.value,
+    };
+    selectedPatient.value.forEach((patientData: any) => {
+      payload.listUuid.push(patientData.uuid);
+    });
+    if (pageType.value == "rawat-jalan") {
+      await admisiRJStore.cancelVisitRJ(payload);
+    } else if (pageType.value == "rawat-inap") {
+      await admisiRIStore.cancelVisitRI(payload);
+    } else if (pageType.value == "igd") {
+      await admisiIGDStore.cancelVisitIGD(payload);
+    }
+    showCancelVisit.value = false;
+    cancelReason.value = undefined;
+    await getPatientList();
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.pageSize = event.rows;
+  getPatientList();
 };
 </script>
 
@@ -196,8 +258,11 @@ const getDataTable = (type: "data" | "length" = "data") => {
       <HeaderFilter
         ref="headerFilterRef"
         :pageType="pageType"
-        @daftar="changeSection('Daftar')"
-        @daftarBayi="changeSection('Daftar Bayi Baru Lahir')"
+        :filterData="filterData"
+        @daftar="changeSection('Daftar'), (formType = 'add')"
+        @daftarBayi="
+          changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')
+        "
         @search="search"
       />
     </template>
@@ -208,6 +273,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
         v-model:selection="selectedPatient"
         :value="getDataTable()"
         tableStyle="min-width: 50rem"
+        stripedRows
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
@@ -257,7 +323,8 @@ const getDataTable = (type: "data" | "length" = "data") => {
               <CustomChip
                 v-if="
                   pageType == 'rawat-jalan' &&
-                  slotProps.data.platform != 'ADMISI'
+                  slotProps.data.platform != 'ADMISI' &&
+                  slotProps.data.platform
                 "
                 :showCheckedIcon="false"
                 :label="slotProps.data.platform"
@@ -286,7 +353,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.patient.phone"
+                :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -338,7 +405,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
-                :label="slotProps.data.monitoringRoom.bedName"
+                :label="`${slotProps.data.monitoringRoom.bedName} ${slotProps.data.monitoringRoom.noBed}`"
                 customClass="h-5 pr-[5px] mr-[5px]"
               />
               <CustomChip
@@ -400,7 +467,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
-                Jadwal
+                Diperiksa
                 <ArrowRightBrokenIcon
                   :size="18"
                   class="my-auto mr-5 text-male-300"
@@ -409,7 +476,9 @@ const getDataTable = (type: "data" | "length" = "data") => {
                 {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'rawat-jalan'"
+                v-if="
+                  pageType == 'rawat-jalan' && slotProps.data.tanggalCheckin
+                "
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Checkin
@@ -418,11 +487,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
                   class="my-auto mr-5 text-mint-300"
                   weight="bold"
                 />
-                {{
-                  slotProps.data.tanggalCheckin
-                    ? epochToDate(slotProps.data.tanggalCheckin, "dateTime")
-                    : "-"
-                }}
+                {{ epochToDate(slotProps.data.tanggalCheckin, "dateTime") }}
               </div>
               <div
                 v-if="pageType == 'rawat-inap'"
@@ -437,7 +502,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'rawat-inap'"
+                v-if="pageType == 'rawat-inap' && slotProps.data.tanggalDirawat"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Dirawat
@@ -461,7 +526,7 @@ const getDataTable = (type: "data" | "length" = "data") => {
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
               <div
-                v-if="pageType == 'igd'"
+                v-if="pageType == 'igd' && slotProps.data.tanggalDirawat"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
                 Dirawat
@@ -492,7 +557,13 @@ const getDataTable = (type: "data" | "length" = "data") => {
             v-if="!showCancelVisit"
             @click="showCancelVisit = true"
             class="my-auto bg-danger-300"
-            label="Batal Kunjungan"
+            :label="`Batal ${
+              pageType == 'igd'
+                ? 'IGD'
+                : pageType == 'rawat-inap'
+                ? 'Rawat Inap'
+                : 'Rawat Jalan'
+            }`"
           />
           <CustomButton
             v-if="showCancelVisit"
@@ -505,10 +576,10 @@ const getDataTable = (type: "data" | "length" = "data") => {
           />
           <CustomButton
             v-if="showCancelVisit"
-            @click="showCancelVisit = true"
+            @click="cancelVisit"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
-            :disabled="!cancelReason"
+            :disabled="!cancelReason || selectedPatient.length == 0"
           />
           <CustomTextfield
             v-if="showCancelVisit"
@@ -518,15 +589,11 @@ const getDataTable = (type: "data" | "length" = "data") => {
             placeholder="Alasan Batal Kunjungan"
           />
         </div>
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="properties.pageSize"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>
@@ -541,9 +608,10 @@ const getDataTable = (type: "data" | "length" = "data") => {
     :dataBreadCrumb="dataBreadCrumb"
     :pageType="pageType"
     :patientData="openedPatientData"
-    @back="dataBreadCrumb.pop()"
+    :formType="formType"
+    @back="closeRegistrationForm"
     @goToDetail="dataBreadCrumb[0].label = 'Detail'"
-    @goToEdit="dataBreadCrumb[0].label = 'Detail Edit'"
+    @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>
 

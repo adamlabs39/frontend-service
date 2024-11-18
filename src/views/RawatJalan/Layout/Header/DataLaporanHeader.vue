@@ -16,21 +16,45 @@ const props = defineProps({
   currentRouteName: {
     type: String,
   },
+  praktisiPayload: {
+    type: Array as PropType<any[]>, // Sesuaikan tipe datanya
+    default: () => [],
+  },
 });
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
-const searchRMFilter = ref<string>("");
-const searchDokterDPJPFilter = ref<string>("");
-const searchBulanFilter = ref<string>("");
+
+
+
+const emits = defineEmits([
+  'update:valueRMFilter', 'update:selectedDokterDPJP','update:startedDateFilter','update:endedDateFilter','update:valueBulanFilter','search', 'reset','refreshPage'
+])
+
+const valueStartDateFilter = ref<Date>(new Date());
+const valueEndDateFilter = ref<Date>(new Date());
+const valueRMFilter = ref<string>("");
+const valueDokterDPJPFilter = ref<string>("");
+const valueBulanFilter = ref<string>("");
+
+const resetForm = () => {
+  valueStartDateFilter.value = new Date();
+  valueEndDateFilter.value = new Date(); // Make sure to assign null to both
+  valueRMFilter.value = "";
+  valueDokterDPJPFilter.value = "";
+  valueBulanFilter.value = "";
+}
+
+defineExpose({
+  resetForm,
+});
 </script>
 
 <template>
+  
   <CustomAccordion :open-with-header="false" initial-state="0" noBorder>
     <template #header>
       <!-- {{ currentRouteName }} -->
       <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton icon="PhArrowClockwise" />
+        <CustomButton icon="PhArrowClockwise"  @click ="$emit('refreshPage')"/>
         <CustomBreadCrumb
           :home="{
             label: 'Laporan',
@@ -42,10 +66,11 @@ const searchBulanFilter = ref<string>("");
       </div>
     </template>
     <template #content>
-        <slot name="before-content"></slot>
+      <slot name="before-content"></slot>
       <div class="flex mt-[12px] mb-2.5">
         <CustomTextfield
-          v-model="searchRMFilter"
+          v-model="valueRMFilter"
+          @update:model-value="$emit('update:valueRMFilter', valueRMFilter)"
           prependIcon="PhMagnifyingGlass"
           label="Pencarian"
           placeholder="Cari Nama / Alamat / No. RM"
@@ -53,13 +78,16 @@ const searchBulanFilter = ref<string>("");
         />
         <CustomSelect
           v-if="currentRouteName === 'kunjungan-rawat-jalan'"
-          v-model="searchDokterDPJPFilter"
+          v-model="valueDokterDPJPFilter"
           label="Dokter DPJP"
+             optionLabel="detailPegawai.name"
+          optionValue="uuid"
+          :options="praktisiPayload"
           class="mr-5"
-          optionLabel=""
-          optionValue=""
           place-holder="Cari Dokter"
-          :options="['Semua', 'Beberapa', 'Banyak']"
+          @update:model-value="
+            $emit('update:selectedDokterDPJP', valueDokterDPJPFilter)
+          "
         />
         <div
           class="flex"
@@ -69,32 +97,42 @@ const searchBulanFilter = ref<string>("");
           "
         >
           <CustomDatePicker
-            v-model="startDateFilter"
+            v-model="valueStartDateFilter"
             label="Tanggal"
             class="w-[130px]"
+            @update:model-value="
+              $emit('update:startedDateFilter', valueStartDateFilter)
+            "
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
-            v-model="endDateFilter"
+            v-model="valueEndDateFilter"
             :showLabel="false"
             class="mt-auto w-[130px]"
+            @update:model-value="
+              $emit('update:endedDateFilter', valueEndDateFilter)
+            "
           />
         </div>
 
         <CustomSelect
           v-if="currentRouteName === 'rekap-tindakan-pasien'"
-          v-model="searchBulanFilter"
+          v-model="valueBulanFilter"
           label="Bulan"
           class="w-1/4"
           optionLabel=""
           optionValue=""
           place-holder="Pilih Bulan"
           :options="['Januari', 'Februari', 'Maret']"
+          @update:model-value="
+            $emit('update:valueBulanFilter', valueBulanFilter)
+          "
         />
         <CustomButton
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
+          @click="$emit('search')"
         />
         <CustomButton
           label="Reset"
@@ -102,6 +140,7 @@ const searchBulanFilter = ref<string>("");
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           class="mt-auto w-[70px]"
+          @click="$emit('reset')"
         />
       </div>
       <hr class="border-grey-200" />

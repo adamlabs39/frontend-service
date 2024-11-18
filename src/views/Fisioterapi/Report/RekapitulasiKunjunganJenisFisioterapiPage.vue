@@ -209,7 +209,11 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initial-state="1">
           <template #header>
@@ -222,33 +226,80 @@ onMounted(() => {
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Rekapitulasi Kunjungan Jenis Fisioterapi</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Rekapitulasi Kunjungan Jenis Fisioterapi
+                  </p>
                 </div>
               </div>
             </div>
           </template>
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomSelect label="Jenis Fisio" class="mr-5 grow" optionLabel="" optionValue="" :options="['Semua', 'Orto', 'Saraf']" place-holder="Semua" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[150px]" />
+              <CustomSelect
+                label="Jenis Fisio"
+                class="mr-5 grow"
+                optionLabel=""
+                optionValue=""
+                :options="['Semua', 'Orto', 'Saraf']"
+                place-holder="Semua"
+              />
+              <CustomDatePicker
+                v-model="startDateFilter"
+                label="Tanggal"
+                class="w-[150px]"
+              />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[150px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" class="ml-5 mr-[10px] mt-auto" />
-              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
+              <CustomDatePicker
+                v-model="endDateFilter"
+                :showLabel="false"
+                class="mt-auto w-[150px]"
+              />
+              <CustomButton
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
+              />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
+            />
           </template>
           <template #expandIcon>
-            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
+            />
           </template>
         </CustomAccordion>
       </template>
       <template #content>
-        <DataTable v-if="itemsPasien.length" :value="itemsPasien" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }">
+        <DataTable
+          v-if="itemsPasien.length"
+          :value="itemsPasien"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
+        >
           <Column field="no" headerClass="bg-adameds-50 mr-5 w-5">
             <template #header>
               <div class="w-full font-semibold text-center">No.</div>
@@ -259,14 +310,25 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column field="tanggal" header="Tanggal" header-class="text-black bg-adameds-50" class="w-1/6">
+          <Column
+            field="tanggal"
+            header="Tanggal"
+            header-class="text-black bg-adameds-50"
+            class="w-1/6"
+          >
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-left text-SM">{{ slotProps.data.tanggal_jadwal.split(" ")[0] }}</div>
+                <div class="text-left text-SM">
+                  {{ slotProps.data.tanggal_jadwal.split(" ")[0] }}
+                </div>
               </div>
             </template>
           </Column>
-          <Column field="terapiName" header="Jenis Terapi" headerClass="bg-adameds-50">
+          <Column
+            field="terapiName"
+            header="Jenis Fisio"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
               <div class="text-SM"></div>
             </template>
@@ -281,8 +343,20 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
-          <CustomPaginator :rows="10" :totalRecords="100" :rowsPerPageOptions="[10, 20, 30]" @update:rows="handleRowsUpdate" @update:current-page="handlePageUpdate" />
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+          <CustomPaginator
+            :rows="10"
+            :totalRecords="100"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @update:rows="handleRowsUpdate"
+            @update:current-page="handlePageUpdate"
+          />
         </div>
       </template>
     </Card>

@@ -7,11 +7,24 @@ export const useMonitoringKamarStore = defineStore({
   getters: {},
   actions: {
     async getMonitoringKamar(
-      { page = 1, limit = 10, q = "", filterKelas = "", filterKategori = "" },
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        filterKelas = "",
+        filterKategori = [] as string[],
+      },
       payload = {}
     ) {
+      let tempFilterKategori = "";
+      filterKategori.forEach((kategori, index) => {
+        tempFilterKategori += `${kategori}`;
+        if (index + 1 < filterKategori.length) {
+          tempFilterKategori += ",";
+        }
+      });
       return apiAdmisiGet(
-        `/monitoring-rooms?page=${page}&limit=${limit}&q=${q}&filter_kelas=${filterKelas}&filter_kategori=${filterKategori}`,
+        `/monitoring-rooms?page=${page}&limit=${limit}&q=${q}&filter_kelas=${filterKelas}&filter_kategori=${tempFilterKategori}`,
         payload
       );
     },

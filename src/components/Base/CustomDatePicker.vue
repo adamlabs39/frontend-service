@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -19,7 +19,7 @@ const props = defineProps({
     default: false,
   },
   modelValue: {
-    type: Date,
+    type: Date as PropType<Date | null>,
   },
   disabled: {
     type: Boolean,
@@ -50,7 +50,7 @@ const emit = defineEmits(["update:modelValue", "input", "date-select"]);
 // const value = ref(props.modelValue);
 const value = computed({
   get: () => props.modelValue,
-  set: (value: Date | undefined) => emit("update:modelValue", value),
+  set: (value: Date | undefined | null) => emit("update:modelValue", value),
 });
 
 // const formatDate = (date: Date): string => {
@@ -101,7 +101,7 @@ const value = computed({
         </InputIcon>
         <DatePicker
           :timeOnly="timeOnly"
-          v-model="value"
+          v-model="value as Date"
           :minDate="minDate"
           :maxDate="maxDate"
           :placeholder="placeHolder"
@@ -110,7 +110,7 @@ const value = computed({
           dateFormat="dd-mm-yy"
           :manualInput="false"
           fluid
-          :pt:pcInput:root:class="{
+          :pt:pcInputText:root:class="{
             'border-danger-300 text-danger-300': invalid,
             'border-grey-200': !disabled && !invalid,
             'border-grey-200 bg-grey-100 text-grey-300': disabled,
@@ -122,6 +122,8 @@ const value = computed({
         />
       </IconField>
     </div>
-    <small v-if="invalid" class="text-red-500 text-XS">{{ invalidMessage }}</small>
+    <small v-if="invalid" class="text-red-500 text-XS">{{
+      invalidMessage
+    }}</small>
   </div>
 </template>

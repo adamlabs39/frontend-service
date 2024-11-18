@@ -10,14 +10,15 @@ export const useUserStore = defineStore({
       params: {
         page?: number;
         limit?: number;
+        name?:string;
         role?: string;
         payload?: object;
       } = {}
     ) {
-      const { page = 1, limit = 10, role, payload = {} } = params;
+      const { page = 1, limit = 10, name, role, payload = {} } = params;
     
       // Bangun URL secara dinamis
-      let url = `/user?page=${page}&total=${limit}`;
+      let url = `/user?page=${page}&total=${limit}&name=${name}`;
       if (role) {
         url += `&role=${role}`;
       }

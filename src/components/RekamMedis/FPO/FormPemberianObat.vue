@@ -3,19 +3,9 @@ import { onMounted, ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
-import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import FPOEditDialog from "./FPOEditDialog.vue";
 
 const pemberianObat = ref<any[]>([]);
-const rentangWaktu = [
-  { label: "Pagi", start: "07:00", end: "12:00" },
-  { label: "Siang", start: "12:00", end: "16:00" },
-  { label: "Sore", start: "16:00", end: "18:00" },
-  { label: "Malam", start: "18:00", end: "00:00" },
-  { label: "Khusus", start: "00:00", end: "07:00" },
-];
 
 onMounted(() => {
   pemberianObat.value = [
@@ -23,6 +13,7 @@ onMounted(() => {
       tanggal: "01-01-2024",
       obat: [
         {
+          prescriptionItemUuid: "",
           namaObat: "Paracetamol",
           sisaStok: "2",
           qtyOrder: "10",
@@ -35,12 +26,47 @@ onMounted(() => {
           pemberian: [
             {
               waktuPemberian: "08:00",
+              jamPemberian: "",
               qtyPemberian: "1",
               petugasPemberian: "Nama Petugas",
               catatan: "Lorem ipsum dolor sit amet.",
             },
             {
               waktuPemberian: "13:00",
+              jamPemberian: "",
+              qtyPemberian: "1",
+              petugasPemberian: "Nama Petugas",
+              catatan: "Lorem ipsum dolor sit amet.",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      tanggal: "13-11-2024",
+      obat: [
+        {
+          prescriptionItemUuid: "",
+          namaObat: "Paracetamol",
+          sisaStok: "2",
+          qtyOrder: "10",
+          satuanPenggunaan: "2",
+          caraPakai: "Setelah Makan",
+          periodeUnit: "",
+          periode: "",
+          frekuensi: "2 x Sehari",
+          dokterPemberiResep: "dr. Nama Dokter Sp. D",
+          pemberian: [
+            {
+              waktuPemberian: "06:00",
+              jamPemberian: "",
+              qtyPemberian: "1",
+              petugasPemberian: "Nama Petugas",
+              catatan: "Lorem ipsum dolor sit amet.",
+            },
+            {
+              waktuPemberian: "8:00",
+              jamPemberian: "",
               qtyPemberian: "1",
               petugasPemberian: "Nama Petugas",
               catatan: "Lorem ipsum dolor sit amet.",
@@ -52,14 +78,6 @@ onMounted(() => {
   ];
 });
 
-const jamPemberian = ref<Date>(new Date());
-const catatan = ref();
-const testDialog = ref(false);
-const selectedObat = ref(null);
-// const openDialog = (obat: any) => {
-//   selectedObat.value = obat;
-//   testDialog.value = true;
-// };
 const isEditDataDialogVisible = ref(false);
 
 const dialogConfig = ref<any>({
@@ -68,14 +86,13 @@ const dialogConfig = ref<any>({
   data: null,
 });
 
-const openDialog = ( data: any = null) => {
+const openDialog = (data: any = null) => {
   dialogConfig.value = { data };
   isEditDataDialogVisible.value = true;
 };
 const closeDialog = () => {
   isEditDataDialogVisible.value = false;
 };
-
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -88,7 +105,6 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
-
 
 defineExpose({
   open,
@@ -178,9 +194,9 @@ defineExpose({
           </div>
         </div>
         <FPOEditDialog
-        v-model:isDialogVisible="isEditDataDialogVisible"
-        :payload="dialogConfig.data"
-        @close="closeDialog"
+          v-model:isDialogVisible="isEditDataDialogVisible"
+          :payload="dialogConfig.data"
+          @close="closeDialog"
         />
       </div>
     </template>

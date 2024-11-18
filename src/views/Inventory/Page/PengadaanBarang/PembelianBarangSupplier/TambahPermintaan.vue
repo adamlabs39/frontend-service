@@ -19,6 +19,7 @@ function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
   return `PO${randomNumber}`; // Gabungkan dengan "PO"
 }
+
 const props = defineProps({
   pageType: {
     type: String,
@@ -58,7 +59,8 @@ const tambahPermintaanSchema = toTypedSchema(
     ppn: yup.bool().default(false),
     isCito: yup.bool().default(false),
     status: yup.string(),
-    petugasPembuatPO:yup.string()
+    petugasPembuatPO:yup.string(),
+   
   })
 );
 
@@ -77,7 +79,7 @@ const { handleSubmit, resetForm, defineField } = useForm({
     diskon: 0,
     materai: 0,
     status: "PENGAJUAN",
-  petugasPembuatPO: "Nama Petugas"
+  petugasPembuatPO: "Nama Petugas",
   },
 });
 
@@ -94,8 +96,7 @@ const [diskon] = defineField("diskon");
 const [materai] = defineField("materai");
 const [ppn] = defineField("ppn");
 const [isCito] = defineField("isCito");
-const [status] = defineField("status");
-const [petugasPembuatPO] = defineField("petugasPembuatPO");
+
 
 const listLokasiPenerimas = ref([
   { id: 1, value: "Gudang Farmasi" },
@@ -515,7 +516,7 @@ const resetFormFields = () => {
           </div>
           <div>
             <div class="font-semibold underline text-SM">Petugas Pembelian</div>
-            <div class="font-normal text-normal">{{ petugasPembuatPO }}</div>
+            <div class="font-normal text-normal">kefoejo</div>
           </div>
         </div>
         <div class="flex gap-3">
