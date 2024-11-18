@@ -6,6 +6,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import BookHeaderPage from "../../Layout/BookHeaderPage.vue";
 
 const props = defineProps({
   pageType: {
@@ -30,7 +31,6 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 const startDateFilter = ref<Date>(new Date());
 const dataBedruangan = ref([
   { bed: "Bed 1", patientName: "Nama Lengkap Pasien ", status: "Book" },
@@ -51,11 +51,30 @@ const itemRuangan = ref([
   { name: "Ruangan 2", code: "R2" },
   { name: "Ruangan 3", code: "R3" },
 ]);
+
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string, data: any = null) => {
+  let tempData = { label: label };
+  if (data) {
+    tempData = { ...tempData, ...data };
+  }
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = tempData;
+  } else {
+    dataBreadCrumb.value.push(tempData);
+  }
+};
+const bookTerapi = () => {
+  changeSection("Cari Jadwal & Bed");
+};
+const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 </script>
 
 <template>
   <div class="relative w-full h-full overflow-hidden">
     <Card
+      v-if="dataBreadCrumb.length == 0"
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
@@ -63,14 +82,18 @@ const itemRuangan = ref([
       <template #header>
         <div class="p-5">
           <div class="flex justify-between">
-            <CustomBreadCrumb
-              :home="{
-                label: 'Booking Terapi',
-                home: true,
-              }"
-              :model="dataBreadCrumb"
-              class=""
-            />
+            <div class="flex">
+                <CustomBreadCrumb
+                  :home="{
+                    label: 'Booking Terapi',
+                    home: true,
+                  }"
+                />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Cari Jadwal & Bed</p>
+                </div>
+              </div>
             <div class="flex">
               <CustomButton
                 @click="emit('back')"
@@ -173,18 +196,22 @@ const itemRuangan = ref([
                   :textColor="
                     slotProps.data.status === 'Book'
                       ? 'text-white'
-                      : 'text-[#80868d]'
+                      : 'text-[#000000]'
                   "
                   :bgColor="
                     slotProps.data.status === 'Book' ? 'bg-adameds-300' : ''
                   "
                   :borderColor="
-                    slotProps.data.status === 'Book' ? 'border-none' : ''
+                    slotProps.data.status === 'Book'
+                      ? 'border-none'
+                      : 'border-none'
                   "
                   :icon-color="
                     slotProps.data.status === 'Book' ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
+                  :disabled="slotProps.data.status === 'Book' ? false : true"
+                  @click="bookTerapi"
                 />
               </div>
             </template>
@@ -192,5 +219,12 @@ const itemRuangan = ref([
         </DataTable>
       </template>
     </Card>
+    <BookHeaderPage
+      v-else-if="dataBreadCrumb[0].label == 'Cari Jadwal & Bed'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :patientData="patientData"
+      @back="dataBreadCrumb.pop()"
+    />
   </div>
 </template>
