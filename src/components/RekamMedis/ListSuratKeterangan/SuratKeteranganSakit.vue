@@ -13,17 +13,19 @@ const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
 const schema = toTypedSchema(
   yup.object({
+    noSurat: yup.string().default("No. 12345").notRequired(),
     lamaIstirahat: yup.number().required("Lama Istirahat harus diisi"),
     tanggalMulai: yup.date().required("Tanggal Mulai harus dipilih"),
     larangan: yup.string().required("Larangan harus diisi"),
     keterangan: yup.string().required("Keterangan Sakit harus diisi"),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
 
+const [noSurat] = defineField("noSurat");
 const [lamaIstirahat] = defineField("lamaIstirahat");
 const [tanggalMulai] = defineField("tanggalMulai");
 const [larangan] = defineField("larangan");
@@ -62,7 +64,12 @@ defineExpose({
     </template>
     <template #content>
       <div class="grid grid-cols-12 gap-5 pt-5">
-        <CustomTextfield label="No. Surat" class="col-span-6" />
+        <CustomTextfield
+          label="No. Surat"
+          v-model="noSurat"
+          class="col-span-6"
+          :disabled="true"
+        />
         <CustomInputNumber
           v-model="lamaIstirahat"
           label="Istirahat Selama"

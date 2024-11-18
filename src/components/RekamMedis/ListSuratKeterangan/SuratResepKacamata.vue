@@ -17,6 +17,7 @@ const tabs = ref([
 ]);
 const schema = toTypedSchema(
   yup.object({
+    noSurat: yup.string().default("No. 12345").notRequired(),
     pemeriksaan: yup.string().required("Pemeriksaan harus dipilih"),
     odData: yup.object({
       proLoginQuitat: yup.object({
@@ -61,13 +62,14 @@ const schema = toTypedSchema(
     distantVitror: yup.number(),
     formaVitror: yup.number(),
     colrVitror: yup.number(),
-  })
+  }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm } = useForm({
   validationSchema: schema,
 });
 
+const [noSurat] = defineField("noSurat");
 const [pemeriksaan] = defineField("pemeriksaan");
 const [distantVitror] = defineField("distantVitror");
 const [formaVitror] = defineField("formaVitror");
@@ -150,7 +152,12 @@ const optionsPemeriksaan = ref(["monofokus", "bifokus", "progressive"]);
     </template>
     <template #content>
       <div class="grid grid-cols-12 gap-y-5 pt-5">
-        <CustomTextfield label="No. Surat" class="col-span-4" />
+        <CustomTextfield
+          label="No. Surat"
+          v-model="noSurat"
+          class="col-span-4"
+          :disabled="true"
+        />
         <div
           class="w-full border border-adameds-300 col-span-12 flex items-center justify-center"
         >

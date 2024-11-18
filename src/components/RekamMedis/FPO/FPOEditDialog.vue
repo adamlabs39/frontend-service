@@ -7,6 +7,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { format } from "date-fns";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 // Define props to accept the payload and visibility status
 const props = defineProps({
@@ -101,6 +102,8 @@ const getPemberianByTimeRange = (start: string, end: string): Pemberian[] => {
 
   return result;
 };
+
+const editObat=ref(false)
 </script>
 
 <template>
@@ -109,7 +112,6 @@ const getPemberianByTimeRange = (start: string, end: string): Pemberian[] => {
     :visible="isDialogVisible"
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
-
   >
     <!-- Dialog Header -->
     <template #header>
@@ -163,11 +165,36 @@ const getPemberianByTimeRange = (start: string, end: string): Pemberian[] => {
                   <span><img src="@/assets/icons/Vector-arows.svg" /></span>
                   {{ selectedObat.qtyOrder }} Tablet
                 </div>
-                <div class="text-SM">
-                  Sisa Obat
-                  <span class="font-bold"
-                    >({{ selectedObat.sisaStok }}) Tab</span
+                <div class="flex items-center gap-2.5" v-if="!editObat">
+                  <div class="text-SM">
+                    Sisa Obat
+                    <span class="font-bold"
+                      >({{ selectedObat.sisaStok }} Tab)</span
+                    >
+                  </div>
+                  <CustomButton
+                    label=""
+                    background-color="bg-[#3D84E5] rounded-lg"
+                    class="h-6 w-[26px] p-0"
+                    @click="editObat=true"
+                    
                   >
+                    <img src="@/assets/icons/edit.svg" alt="" />
+                  </CustomButton>
+                </div>
+                <div class="flex gap-2.5 items-center" v-if="editObat">
+                  <div class="text-SM">Sisa Obat</div>
+                  <div class="w-[130px]">
+                    <CustomInputNumber showButtons label=""  />
+                  </div>
+                  <CustomButton
+                    label=""
+                    background-color="bg-adameds-300 rounded-lg"
+                    class="h-6 w-[26px] p-0"
+                     @click="editObat=false"
+                  >
+                    <PhCheck />
+                  </CustomButton>
                 </div>
               </div>
             </div>
@@ -209,105 +236,107 @@ const getPemberianByTimeRange = (start: string, end: string): Pemberian[] => {
         <hr class="border-grey-200" />
 
         <div class="flex flex-col gap-5 overflow-y-auto h-[30vh]">
-            <!-- Accordion Section -->
-        <div v-for="(session, index) in timeSessions" :key="index">
-          <CustomAccordion header-class="bg-adameds-50">
-            <template #header>
-              <div class="flex justify-between w-full pr-2.5 items-center">
-                <div class="font-normal text-normal">
-                  {{ session.label }}
-                  <span class="text-grey-500">({{ session.timeRange }})</span>
-                </div>
-                <div class="flex items-center gap-2.5 font-normal text-normal">
-                  Jumlah Pemberian
-                  <CustomButton
-                    :label="
-                      getPemberianByTimeRange(
-                        session.start,
-                        session.end
-                      ).length.toString()
-                    "
-                    background-color="bg-transparent"
-                    border-color="border-2 border-adameds-300"
-                    text-color="text-adameds-300"
-                    class="h-[21px] px-[10.5px] rounded-[5px]"
-                  />
-                </div>
-              </div>
-            </template>
-            <template #content>
-              <div class="items-center pt-5 gap-2.5">
-                <div
-                  v-for="pemberian in getPemberianByTimeRange(
-                    session.start,
-                    session.end
-                  )"
-                  :key="pemberian.waktuPemberian"
-                >
-                  <Card
-                    pt:root:class="rounded-lg shadow bg-adameds-100 shadow-inherit"
-                    pt:body:class="h-full p-2.5"
-                    class="grow"
+          <!-- Accordion Section -->
+          <div v-for="(session, index) in timeSessions" :key="index">
+            <CustomAccordion header-class="bg-adameds-50">
+              <template #header>
+                <div class="flex justify-between w-full pr-2.5 items-center">
+                  <div class="font-normal text-normal">
+                    {{ session.label }}
+                    <span class="text-grey-500">({{ session.timeRange }})</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-2.5 font-normal text-normal"
                   >
-                    <template #content>
-                      <div class="flex w-full gap-5">
-                        <div class="flex flex-col gap-2.5">
-                          <div
-                            class="font-semibold text-white truncate text-SM"
-                          >
-                            Jam Pemberian
-                          </div>
-                          <div
-                            class="font-semibold text-heading text-adameds-300 px-[14.5px] rounded-lg py-1.5 bg-white text-center"
-                          >
-                            {{ pemberian.waktuPemberian }}
-                          </div>
-                          <CustomButton
-                            v-if="!isEditing"
-                            label="Edit"
-                            @click="toggleEdit"
-                          >
-                            <PhPencilSimple :size="20" weight="fill" />
-                            Edit
-                          </CustomButton>
-
-                          <CustomButton
-                            v-if="isEditing"
-                            label="Batal"
-                            background-color="bg-danger-300"
-                            @click="toggleEdit"
-                          />
-                        </div>
-                        <div class="flex flex-col gap-2.5 grow">
-                          <div class="font-semibold text-white text-SM">
-                            Catatan
-                          </div>
-                          <div
-                            class="rounded-lg p-2.5 bg-white grow text-XS flex flex-col gap-1"
-                          >
-                            <div>
-                              {{ pemberian.catatan }}
-                            </div>
-                            <hr class="border-grey-200" />
-                            <div class="flex items-center gap-2.5">
-                              Petugas
-                              <span>
-                                <ArrowRightBrokenIcon
-                                  class="text-adameds-300"
-                                />
-                              </span>
-                              {{ pemberian.petugasPemberian }}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </template>
-                  </Card>
+                    Jumlah Pemberian
+                    <CustomButton
+                      :label="
+                        getPemberianByTimeRange(
+                          session.start,
+                          session.end
+                        ).length.toString()
+                      "
+                      background-color="bg-transparent"
+                      border-color="border-2 border-adameds-300"
+                      text-color="text-adameds-300"
+                      class="h-[21px] px-[10.5px] rounded-[5px]"
+                    />
+                  </div>
                 </div>
-              </div>
-            </template>
-          </CustomAccordion>
-        </div>
+              </template>
+              <template #content>
+                <div class="items-center pt-5 gap-2.5">
+                  <div
+                    v-for="pemberian in getPemberianByTimeRange(
+                      session.start,
+                      session.end
+                    )"
+                    :key="pemberian.waktuPemberian"
+                  >
+                    <Card
+                      pt:root:class="rounded-lg shadow bg-adameds-100 shadow-inherit"
+                      pt:body:class="h-full p-2.5"
+                      class="grow"
+                    >
+                      <template #content>
+                        <div class="flex w-full gap-5">
+                          <div class="flex flex-col gap-2.5">
+                            <div
+                              class="font-semibold text-white truncate text-SM"
+                            >
+                              Jam Pemberian
+                            </div>
+                            <div
+                              class="font-semibold text-heading text-adameds-300 px-[14.5px] rounded-lg py-1.5 bg-white text-center"
+                            >
+                              {{ pemberian.waktuPemberian }}
+                            </div>
+                            <CustomButton
+                              v-if="!isEditing"
+                              label="Edit"
+                              @click="toggleEdit"
+                            >
+                              <PhPencilSimple :size="20" weight="fill" />
+                              Edit
+                            </CustomButton>
+
+                            <CustomButton
+                              v-if="isEditing"
+                              label="Batal"
+                              background-color="bg-danger-300"
+                              @click="toggleEdit"
+                            />
+                          </div>
+                          <div class="flex flex-col gap-2.5 grow">
+                            <div class="font-semibold text-white text-SM">
+                              Catatan
+                            </div>
+                            <div
+                              class="rounded-lg p-2.5 bg-white grow text-XS flex flex-col gap-1"
+                            >
+                              <div>
+                                {{ pemberian.catatan }}
+                              </div>
+                              <hr class="border-grey-200" />
+                              <div class="flex items-center gap-2.5">
+                                Petugas
+                                <span>
+                                  <ArrowRightBrokenIcon
+                                    class="text-adameds-300"
+                                  />
+                                </span>
+                                {{ pemberian.petugasPemberian }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </Card>
+                  </div>
+                </div>
+              </template>
+            </CustomAccordion>
+          </div>
         </div>
       </div>
     </template>
