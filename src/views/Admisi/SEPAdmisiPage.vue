@@ -144,6 +144,7 @@ const showSEPDetail = (event: DataTableRowClickEvent) => {
 </script>
 
 <template>
+  
   <Card
     v-if="dataBreadCrumb.length == 1"
     pt:body:class="h-full pt-0 overflow-auto"

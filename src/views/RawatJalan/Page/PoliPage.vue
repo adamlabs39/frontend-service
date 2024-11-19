@@ -44,7 +44,7 @@ const headerPoliBPJSRef = ref<typeof DataPoliBPJSHeader>();
 
 const resetFilter = () => {
   headerPoliBPJSRef.value?.resetFilter();
- 
+
   filterData.value = headerPoliBPJSRef.value?.searchData() ?? {
     startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
     endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
@@ -202,7 +202,7 @@ const filterStatus = async (status: string) => {
     ...filterData.value,
     status: statusPelayanan.value,
   };
-  console.log(status)
+  console.log(status);
   // console.log(`filter paling baru`, filterData.value);
   // search();
   patientData.value = await fetchRJPatient();
@@ -219,7 +219,7 @@ const filterStatus = async (status: string) => {
   <!-- {{ currentRouteName }} -->
   <!-- {{ filterData }} -->
 
-  {{ statusPelayanan }}
+  <!-- {{ statusPelayanan }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
@@ -282,9 +282,12 @@ const filterStatus = async (status: string) => {
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="statusPelayanan">
-        <TabPanels>
-          <TabPanel value="1">
+      <Tabs v-model:value="statusPelayanan" class="h-full">
+        <TabPanels
+          class="flex flex-col w-full h-full p-0"
+         
+        >
+          <TabPanel value="1" class="flex-1">
             <Pelayanan
               :data-patient="patientData"
               :isResetPatient="isResetPatient"
@@ -296,11 +299,11 @@ const filterStatus = async (status: string) => {
               @is-reset-patient="handleResetPatient"
             />
           </TabPanel>
-          <TabPanel value="0">
-            <Discharge/>
+          <TabPanel value="0" class="flex-1">
+            <Discharge />
           </TabPanel>
-          <TabPanel value="">
-            <NoData/>
+          <TabPanel value="" class="flex-1">
+            <NoData class="w-full h-full" />
           </TabPanel>
         </TabPanels>
       </Tabs>

@@ -67,6 +67,7 @@ const resetSelection = () => {
 </script>
 
 <template>
+
   <DataTable
     v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"
@@ -307,7 +308,7 @@ const resetSelection = () => {
     ></Column>
   </DataTable>
   <!-- Else -->
-  <NoData v-else />
+  <NoData v-else  />
   <MedicalRecord ref="medicalRecord" />
 </template>
 
