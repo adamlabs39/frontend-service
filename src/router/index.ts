@@ -108,6 +108,7 @@ import CheckinBerhasilPage from "@/views/Antrian/APM/ApmCheckin/CheckinBerhasilP
 import PrintAntrianPage from "@/views/Antrian/APM/ApmPrint/PrintAntrianPage.vue";
 import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
 import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
+import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
 
 // NOTE Page Laboratorium
@@ -704,6 +705,12 @@ const router = createRouter({
       name: "antrian-apm-aktif-pasien-non-jkn-data-pasien",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PasienNonDataPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/non-jkn/poli-umum",
+      name: "antrian-apm-aktif-pasien-non-jkn-poli-umum",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienNonPoliPage,
     },
     {
       path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
