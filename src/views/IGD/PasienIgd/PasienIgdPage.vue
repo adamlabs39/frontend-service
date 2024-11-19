@@ -80,6 +80,7 @@ const setFilter = () => {
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   filter.dpjp = selectedFilterValue.value ?? "";
+  filter.status=selectedTab.value;
   return filter;
 };
 const handleStartDate = (value: any) => {
@@ -142,7 +143,7 @@ const selectedPatient = ref<any[]>([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 const openedPatientData = ref<any>({});
-const selectedTab = ref("2");
+const selectedTab = ref("1");
 const selectedFilterPatient = ref<string[]>([]);
 const selectedFilterPayment = ref<string[]>([]);
 const selectedFilterValue = ref("");
@@ -171,6 +172,7 @@ const selectedFilterValue = ref("");
 
 const handleSelectedTab = (newTab: string) => {
   selectedTab.value = newTab;
+  reloadData();
 };
 const handleSelectedPraktisi = (value: any) => {
   selectedFilterValue.value = value;

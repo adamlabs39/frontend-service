@@ -21,11 +21,12 @@ export const useAdmisiIGDStore = defineStore({
         endDate = "",
         dpjp = "",
         withoutIdentity = "",
+        status= ""
       },
       payload = {}
     ) {
       return apiAdmisiGet(
-        `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}&without_identity=${withoutIdentity}`,
+        `/igd?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}&without_identity=${withoutIdentity}&status=${status}`,
         payload
       );
       return {
