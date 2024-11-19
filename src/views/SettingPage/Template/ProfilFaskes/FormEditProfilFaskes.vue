@@ -226,9 +226,12 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
       district: kecamatanPayload.value.find(
         (obj) => obj.code === values.selectedDistrictId
       )?.name,
-      village: kelurahanPayload.value.find(
-        (obj) => obj.code === values.selectedVillageId
-      )?.name,
+      // FIXME : village is not in the payload
+      
+      village: values.selectedVillageId,
+
+      codeKabupaten: values.selectedRegencyId,
+      codeProvinsi: values.selectedProvinceId,
       postal_code: values.postalCodeId,
       phone: values.phone,
       email: values.email,
@@ -398,7 +401,7 @@ onMounted(() => {
           <CustomSelect
             label="Kelurahan"
             v-model="selectedVillageId"
-            :options="kelurahanPayload"
+            :options="[{ code: '3578081002', name: 'Mojo' },...kelurahanPayload]"
             optionValue="code"
             optionLabel="name"
             :isLoading="false"
