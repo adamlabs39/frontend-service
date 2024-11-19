@@ -133,7 +133,7 @@ const noData = ref(NoData);
               alt="Logo Preview"
               class="h-auto"
             />
-            <div class="font-normal text-center text-SM text-grey-300">Upload file untuk menampilkan preview</div>
+            <!-- <div class="font-normal text-center text-SM text-grey-300">Upload file untuk menampilkan preview</div> -->
           </div>
 
           <!-- <div class="font-semibold text-MD">

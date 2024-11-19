@@ -11,6 +11,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import { utilsStore } from "@/stores/utils";
+import Loading from "@/components/section/Loading.vue";
 
 const useUtilsStore = utilsStore();
 
@@ -71,7 +72,12 @@ const onSubmitLogoWarna = handleSubmitLogoWarna(async (values) => {
 			district: props.profilFaskesResponse.address.district,
 			village: props.profilFaskesResponse.address.village,
 			postal_code: props.profilFaskesResponse.address.postalCode,
-			full_address: props.profilFaskesResponse.address.fullAddress
+			full_address: props.profilFaskesResponse.address.fullAddress,
+			codeKabupaten: props.profilFaskesResponse.codeKabupaten,
+			codeProvinsi: props.profilFaskesResponse.codeProvinsi,
+			lat:props.profilFaskesResponse.lat,
+			long:props.profilFaskesResponse.long,
+			cover: props.profilFaskesResponse.cover
 			
 		};
 		 console.log('Payload to be sent:', payload);
