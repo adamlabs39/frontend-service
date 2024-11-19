@@ -596,7 +596,6 @@ const getHargaLab = (labUuid: string) => {
   >
     <template #header>{{ title }} Tarif</template>
     <template #body>
-      {{ isMcu }}
       <!-- Form Input -->
       <div
         v-if="method !== 'detail'"

@@ -94,7 +94,7 @@ const confirmDelete = () => {
     ></Column>
     <Column field="pelayanan" header="Pelayanan" headerClass="bg-adameds-50">
       <template #body="slotProps">
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 text-nowrap">
           <div v-for="items in slotProps.data.pelayanan" :key="items">
             <CustomChip
               :label="items.unitPelayananName"
@@ -113,7 +113,7 @@ const confirmDelete = () => {
       headerClass="bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 text-nowrap">
           <div v-for="items in slotProps.data.penjamin" :key="items">
             <CustomChip
               :label="items.penjaminName"

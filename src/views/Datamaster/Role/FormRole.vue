@@ -64,14 +64,14 @@ interface SubModule {
 interface Module {
   module: string;
   checked: boolean;
-  sub_modules: SubModule[];
+  subModules: SubModule[];
 }
 
 const initialPermissionsState = ref(
   permissionsStore.permissionsItem.map((item) => ({
     module: item.module,
     checked: false,
-    sub_modules: item.sub_modules.map((subItem) => ({
+    subModules: item.subModules.map((subItem) => ({
       name: subItem.name,
       checked: false,
       features: subItem.features
@@ -94,6 +94,7 @@ const initialPermissionsState = ref(
   }))
 );
 
+
 const setRolePermissions = (rolePermissions: Module[]) => {
   resetPermissionsState();
   initialPermissionsState.value.forEach((module) => {
@@ -105,8 +106,8 @@ const setRolePermissions = (rolePermissions: Module[]) => {
     // Set module checked status
     module.checked = true;
 
-    module.sub_modules.forEach((subModule) => {
-      const matchingSubModule = matchingModule.sub_modules.find(
+    module.subModules.forEach((subModule) => {
+      const matchingSubModule = matchingModule.subModules.find(
         (roleSub) => roleSub.name === subModule.name
       );
 
@@ -159,9 +160,9 @@ const onCheckModule = (module: Module) => {
   const isChecked = module.checked;
   console.log(isChecked);
 
-  // module.checked = isChecked;
+  module.checked = isChecked;
 
-  module.sub_modules.forEach((subModule) => {
+  module.subModules.forEach((subModule) => {
     subModule.checked = isChecked;
 
     // Check all features
@@ -199,7 +200,7 @@ const onSubmit = handleSubmit(async (values) => {
     .filter((module) => module.checked)
     .map((module) => ({
       module: module.module,
-      sub_modules: module.sub_modules
+      subModules: module.subModules
         .filter((subModule) => subModule.checked)
         .map((subModule) => ({
           name: subModule.name,
@@ -238,7 +239,7 @@ const onSubmit = handleSubmit(async (values) => {
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", allData);
-      // const response = await roleStore.postApi(allData);
+      const response = await roleStore.postApi(allData);
       emit("data-updated");
     }
     closeDialog();
@@ -267,7 +268,7 @@ const handleEdit = () => {
 const resetPermissionsState = () => {
   initialPermissionsState.value.forEach((module) => {
     module.checked = false;
-    module.sub_modules.forEach((subModule) => {
+    module.subModules.forEach((subModule) => {
       subModule.checked = false;
       subModule.features.forEach((feature) => {
         feature.checked = false;
@@ -300,7 +301,7 @@ watch(
         setValues({
           ...props.payload,
         });
-        if (props.payload.permissions) {
+        if (props.payload.permissions !== null || !permissionsStore.permissionsItem || !permissionsStore.permissionsItem.length ) {
           setRolePermissions(props.payload.permissions);
         }
       }
@@ -309,7 +310,9 @@ watch(
       resetDialogMode();
       resetPermissionsState();
     }
-  }
+  },
+  { immediate: true }
+
 );
 </script>
 
@@ -397,7 +400,7 @@ watch(
         <CustomInfoRow label="Modul">
           <template #value>
             <div
-              v-if="payload.permissions && payload.permissions.length"
+              v-if="payload.permissions!==null && payload.permissions.length"
               class="flex flex-wrap w-full h-full gap-1"
             >
               <CustomChip

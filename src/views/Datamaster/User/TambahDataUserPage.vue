@@ -62,9 +62,9 @@ interface SubModule {
 interface Module {
   module: string;
   checked: boolean;
-  sub_modules: SubModule[];
+  subModules: SubModule[];
 }
-const emit = defineEmits(["back","data-updated"]);
+const emit = defineEmits(["back", "data-updated"]);
 
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -73,8 +73,14 @@ const schema = computed(() =>
     yup
       .object({
         practitionerUuid: yup.string().required("Praktisi harus dipilih"),
-        phone: yup.string().required("No. Handhpone harus diisi"),
-        email: yup.string().required("Email harus diisi"),
+        phone: yup
+          .string()
+          .required("No. Handphone harus diisi")
+          .matches(phoneRegExp, "Format tidak sesuai"),
+        email: yup
+          .string()
+          .required("Email harus diisi")
+          .email("Format email tidak sesuai"),
         username: yup.string().required("Username harus diisi"),
         password: yup.string().notRequired(),
         confirmPassword: yup
@@ -123,7 +129,7 @@ const fetchPraktisi = async () => {
 
 const fetchRole = async () => {
   try {
-    const response = await roleStore.dummy();
+    const response = await roleStore.getAktifApi();
     if (response && response.payload) {
       rolePayload.value = response.payload;
     } else {
@@ -138,13 +144,14 @@ const fetchRole = async () => {
 onMounted(() => {
   fetchPraktisi();
   fetchRole();
+  handleChangeRole();
 });
 
 const initialPermissionsState = ref(
   permissionsStore.permissionsItem.map((item) => ({
     module: item.module,
     checked: false,
-    sub_modules: item.sub_modules.map((subItem) => ({
+    subModules: item.subModules.map((subItem) => ({
       name: subItem.name,
       checked: false,
       features: subItem.features
@@ -178,8 +185,8 @@ const setRolePermissions = (rolePermissions: Module[]) => {
     // Set module checked status
     module.checked = true;
 
-    module.sub_modules.forEach((subModule) => {
-      const matchingSubModule = matchingModule.sub_modules.find(
+    module.subModules.forEach((subModule) => {
+      const matchingSubModule = matchingModule.subModules.find(
         (roleSub) => roleSub.name === subModule.name
       );
 
@@ -231,15 +238,15 @@ const searchPraktisi = () => {
   );
 };
 
-watch(roleUuid, (newUuid) => {
-  const selectedRoleData = rolePayload.value.find(
-    (role) => role.uuid === newUuid
+const handleChangeRole = () => {
+  selectedRole.value = rolePayload.value.find(
+    (role) => role.uuid === roleUuid.value
   );
-  selectedRole.value = selectedRoleData;
-  if (selectedRoleData && selectedRoleData.permission) {
-    setRolePermissions(selectedRoleData.permission);
+
+  if (selectedRole.value && selectedRole.value.permissions) {
+    setRolePermissions(selectedRole.value.permissions);
   }
-});
+};
 
 const resetSearch = () => {
   practitionerUuid.value = "";
@@ -256,7 +263,7 @@ const onCheckModule = (module: Module) => {
 
   // module.checked = isChecked;
 
-  module.sub_modules.forEach((subModule) => {
+  module.subModules.forEach((subModule) => {
     subModule.checked = isChecked;
 
     // Check all features
@@ -297,7 +304,7 @@ const onCheckSubModule = (module: Module, subModule: SubModule) => {
   });
 
   // Ensure module checked state aligns if any submodule is checked
-  module.checked = module.sub_modules.some((sub) => sub.checked);
+  module.checked = module.subModules.some((sub) => sub.checked);
 };
 
 const onCheckFeature = (
@@ -320,7 +327,7 @@ const onCheckFeature = (
     subModule.allows.some((allow) => allow.checked);
 
   // Ensure module checked state aligns if any subModule is checked
-  module.checked = module.sub_modules.some((sub) => sub.checked);
+  module.checked = module.subModules.some((sub) => sub.checked);
 };
 
 const onCheckAllow = (
@@ -340,13 +347,13 @@ const onCheckAllow = (
     subModule.features.some((feat) => feat.checked) ||
     subModule.allows.some((alw) => alw.checked);
 
-  module.checked = module.sub_modules.some((sub) => sub.checked);
+  module.checked = module.subModules.some((sub) => sub.checked);
 };
 
 const resetPermissionsState = () => {
   initialPermissionsState.value.forEach((module) => {
     module.checked = false;
-    module.sub_modules.forEach((subModule) => {
+    module.subModules.forEach((subModule) => {
       subModule.checked = false;
       subModule.features.forEach((feature) => {
         feature.checked = false;
@@ -366,7 +373,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     .filter((module) => module.checked)
     .map((module) => ({
       module: module.module,
-      sub_modules: module.sub_modules
+      subModules: module.subModules
         .filter((subModule) => subModule.checked)
         .map((subModule) => ({
           name: subModule.name,
@@ -406,7 +413,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       const response = await userStore.postApi(allData);
       emit("data-updated");
     }
-    emit('back')
+    emit("back");
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
@@ -417,9 +424,10 @@ onBeforeMount(async () => {
     setValues({
       ...props.payload,
       practitionerUuid: props.payload.practitioner.uuid,
-      roleUuid:props.payload.role.uuid,
+      roleUuid: props.payload.role.uuid,
     });
-    setRolePermissions(props.payload.permissions);
+    handleChangeRole();
+    // setRolePermissions(props.payload.permissions);
   }
 });
 </script>
@@ -603,8 +611,8 @@ onBeforeMount(async () => {
               option-value="uuid"
               :invalid="errors.roleUuid ? true : false"
               :invalidMessage="errors.roleUuid"
+              @update:modelValue="handleChangeRole"
             />
-
             <!-- Loop through all modules -->
             <div
               v-if="selectedRole"
@@ -638,7 +646,7 @@ onBeforeMount(async () => {
                 <template #content>
                   <!-- Loop through all sub-modules -->
                   <div
-                    v-for="(subMenuItem, subMenuIndex) in menuItem.sub_modules"
+                    v-for="(subMenuItem, subMenuIndex) in menuItem.subModules"
                     :key="subMenuItem.name"
                   >
                     <!-- Submodule level -->

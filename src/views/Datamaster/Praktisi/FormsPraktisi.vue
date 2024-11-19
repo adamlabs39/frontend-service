@@ -91,8 +91,8 @@ const schema = toTypedSchema(
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
       codeBpjs: yup.string().nullable().notRequired(),
-      sip: yup.string().default("").nullable().notRequired(),
-      str: yup.string().default("").nullable().notRequired(),
+      sip: yup.string().default("").nullable(),
+      str: yup.string().default("").nullable(),
       isDoctor: yup.boolean().required("Tipe Praktisi harus diisi"),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
