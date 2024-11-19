@@ -24,6 +24,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import Qrcode from "qrcode.vue";
 import { useGeneralConsentStore } from "@/stores/datamaster/generalConsent";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
+import { createPatientCard } from "@/utils/PdfMake";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -945,7 +946,7 @@ onMounted(() => {
         <div class="flex justify-between w-full">
           <div class="flex">
             <CustomButton
-              @click="() => {}"
+              @click="createPatientCard({ data: '' })"
               icon="PhPrinter"
               label="Cetak Kartu Pasien"
               class=""

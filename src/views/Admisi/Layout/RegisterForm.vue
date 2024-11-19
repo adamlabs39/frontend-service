@@ -24,7 +24,7 @@ import { formatDate } from "@/utils/Helpers";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
-import { createGeneralConsentPdf } from "@/utils/PdfMake";
+import { createGeneralConsentPdf, createPatientLabel, createPatientVisit, createPatientBracelet } from "@/utils/PdfMake";
 import { useGeneralConsentStore } from "@/stores/datamaster/generalConsent";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 
@@ -583,14 +583,23 @@ const deleteGeneralConsent = async () => {
       <template #content>
         <div v-if="isDetail()" class="flex">
           <CustomButton
-            @click="() => {}"
+            v-if="pageType == 'rawat-jalan'"
+            @click="createPatientVisit({ data: '' })"
             icon="PhPrinter"
             label="Cetak Kunjungan"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="() => {}"
+            v-else
+            @click="createPatientBracelet({ data: '' })"
+            icon="PhPrinter"
+            label="Cetak Gelang"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+          <CustomButton
+            @click="createPatientLabel({ data: '' })"
             icon="PhPrinter"
             label="Cetak Label"
             class=""
