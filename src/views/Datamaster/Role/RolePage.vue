@@ -283,10 +283,7 @@ const downloadExportExcel = async () => {
           <template #body="slotProps">
             <div class="flex flex-wrap gap-2">
               <div
-                v-if="
-                  slotProps.data.permissions &&
-                  slotProps.data.permissions.length > 0
-                "
+                v-if="slotProps.data && slotProps.data.permissions && slotProps.data.permissions.length"
                 class="flex flex-wrap w-full h-full gap-1"
               >
                 <div v-for="items in slotProps.data.permissions" :key="items">

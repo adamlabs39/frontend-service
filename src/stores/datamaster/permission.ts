@@ -6,7 +6,7 @@ export const usePermissionStore = defineStore('permission', () => {
   const permissionsItem = ref([
     {
       module: "Antrian",
-      sub_modules: [
+      subModules: [
         {
           name: "Konfigurasi",
           allows: ["READ", "CREATE", "UPDATE", "DELETE"],
@@ -32,7 +32,7 @@ export const usePermissionStore = defineStore('permission', () => {
     },
     {
       module: "Admisi",
-      sub_modules: [
+      subModules: [
         {
           name: "Antrian",
           allows: ["PANGGIL", "LEWATI", "PROSES", "SELESAI", "CHECKIN"],
@@ -145,7 +145,7 @@ export const usePermissionStore = defineStore('permission', () => {
     },
     {
       module: "Rawat Jalan",
-      sub_modules: [
+      subModules: [
         {
           name: "Antrian",
           allows: ["PANGGIL", "LEWATI", "PROSSES", "SELESAI"],
@@ -327,7 +327,7 @@ export const usePermissionStore = defineStore('permission', () => {
     },
     {
       module: "Rawat Inap",
-      sub_modules: [
+      subModules: [
         {
           name: "Rawat Inap",
           allows: ["READ", "BATAL DIRAWAT"],
@@ -532,7 +532,7 @@ export const usePermissionStore = defineStore('permission', () => {
     },
     {
       module: "IGD",
-      sub_modules: [
+      subModules: [
         {
           name: "IGD",
           allows: ["READ", "BATAL DIRAWAT"],
@@ -722,7 +722,7 @@ export const usePermissionStore = defineStore('permission', () => {
     },
     {
       module: "Farmasi",
-      sub_modules: [
+      subModules: [
         {
           name: "Panggil Antrian",
           allows: ["PANGGIL", "LEWATI", "VERIFIKASI", "PENYERAHAN OBAT"],

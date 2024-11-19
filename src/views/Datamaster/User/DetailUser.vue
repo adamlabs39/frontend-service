@@ -128,7 +128,7 @@ const emit = defineEmits(["back"]);
           <template #content>
             <div class="flex flex-col gap-5 mt-5">
               <div class="flex flex-col">
-                <div class="underline font-normal text-normal">Role</div>
+                <div class="font-normal underline text-normal">Role</div>
                 <div class="font-semibold text-MD">{{ props.payload.role.name }}</div>
               </div>
               <div
@@ -144,7 +144,7 @@ const emit = defineEmits(["back"]);
                     <div
                       v-for="(
                         subMenuItem, subMenuIndex
-                      ) in menuItem.subModule"
+                      ) in menuItem.subModules"
                       :key="subMenuItem.name"
                     >
                       <CustomAccordion

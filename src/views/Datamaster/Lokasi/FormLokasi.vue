@@ -126,7 +126,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       emit("data-updated");
     } else if (method.value === "add") {
       console.log("Adding new data with values:", values);
-      // const response = await lokasiStore.postApi(values);
+      const response = await lokasiStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();

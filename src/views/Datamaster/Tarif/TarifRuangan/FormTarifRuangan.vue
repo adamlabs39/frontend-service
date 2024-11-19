@@ -156,6 +156,7 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
+      console.log("edit",values)
       const response = await tarifStore.putApi(uuid, values);
       emit("data-updated");
     } else if (method.value === "add") {
