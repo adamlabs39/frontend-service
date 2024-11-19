@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { apiAdmisiGet, apiAdmisiPost, apiAdmisiPut } from "@/utils/apiHandler";
+import { apiAdmisiGet, apiAdmisiPost, apiAdmisiPut, apiAdmisiDelete } from "@/utils/apiHandler";
 
 export const useAdmisiMasterPasienStore = defineStore({
   id: "admisiMasterPasien",
@@ -25,11 +25,19 @@ export const useAdmisiMasterPasienStore = defineStore({
       return apiAdmisiPut(`/patient/${uuid}`, payload);
     },
 
+    async deleteMasterPasien(payload = {}) {
+      return apiAdmisiDelete(`/patient`, payload);
+    },
+
     async getPatientHistory(uuid = "", { page = 1, limit = 10 }) {
       return apiAdmisiGet(
         `/patient/history/${uuid}?page=${page}&limit=${limit}`,
         {}
       );
+    },
+
+    async importMasterPasien(payload = {}) {
+      return apiAdmisiPost(`/patient/import`, payload);
     },
   },
 });

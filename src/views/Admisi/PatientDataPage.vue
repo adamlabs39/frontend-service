@@ -208,6 +208,45 @@ const handlePageHistory = (event: any) => {
   fetchData();
 };
 
+const onUpload = async (event: any) => {
+  const uploadedFiles = event.files[0];
+  const dataUpload = new FormData();
+  dataUpload.append("file", uploadedFiles);
+  try {
+    storeUtils.setLoading(true);
+    const response = await masterPasienStore.importMasterPasien(dataUpload);
+    await fetchData();
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDeletePasien = ref(false);
+const deleteReason = ref<string>();
+const selectedPatient = ref<any[]>([]);
+// FIXME Ada perubahan dari sisi BE
+const deletePatient = async () => {
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      deleteReason: deleteReason.value,
+    };
+    selectedPatient.value.forEach((patientData: any) => {
+      payload.listUuid.push(patientData.uuid);
+    });
+    await masterPasienStore.deleteMasterPasien(payload)
+    showDeletePasien.value = false;
+    deleteReason.value = undefined;
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 // NOTE General Consent
 const selectedGeneralConsent = ref<"Pasien" | "Keluarga">("Pasien");
 const onGeneralConsentTypeSelect = (label: "Pasien" | "Keluarga") => {
@@ -476,6 +515,7 @@ onMounted(() => {
         <DataTable
           v-if="itemsPasien.length"
           :value="itemsPasien"
+          v-model:selection="selectedPatient"
           tableStyle="min-width: 50rem"
           stripedRows
           scrollable
@@ -539,24 +579,69 @@ onMounted(() => {
               </div>
             </template>
           </Column>
+          <Column
+            v-if="showDeletePasien"
+            selectionMode="multiple"
+            headerStyle="width: 3rem"
+            headerClass="bg-adameds-50"
+            class="custom-checkbox"
+          ></Column>
         </DataTable>
         <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-between">
           <div class="flex">
-            <CustomButton
-              @click="() => {}"
-              icon="FileImportIcon"
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
               label="Import"
-              class=""
-              backgroundColor="bg-adameds-300"
-            />
+              chooseLabel="Import"
+              auto
+              :pt="{
+                pcButton: {
+                  class: 'font-back', // OR { class: 'w-64' }
+                },
+              }"
+              class="bg-adameds-300 rounded-[10px] font-black text-normal h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <FileImportIcon />
+              </template>
+            </FileUpload>
             <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
             <CustomButton
-              @click="() => {}"
+              v-if="!showDeletePasien"
+              @click="showDeletePasien = true"
               class="my-auto bg-danger-300"
-              label="Hapus Pasien"
+              label="Hapus Data Pasien"
+            />
+            <CustomButton
+              v-if="showDeletePasien"
+              @click="showDeletePasien = false"
+              class="my-auto mr-[10px]"
+              label="Batal"
+              outlined
+              borderColor="border-grey-200"
+              textColor="text-grey-300"
+            />
+            <CustomButton
+              v-if="showDeletePasien"
+              @click="deletePatient"
+              class="my-auto mr-5 bg-danger-300"
+              label="Iya, Hapus"
+              :disabled="!deleteReason || selectedPatient.length == 0"
+            />
+            <CustomTextfield
+              v-if="showDeletePasien"
+              v-model="deleteReason"
+              :showLabel="false"
+              class="my-auto w-[400px]"
+              placeholder="Alasan Hapus Data Pasien"
             />
           </div>
           <CustomPaginator
@@ -1021,7 +1106,10 @@ onMounted(() => {
       <template #body>
         <div class="mt-5">
           <div
-            v-if="selectedGeneralConsent == 'Keluarga' && generalConsentDialogInputType == 'add'"
+            v-if="
+              selectedGeneralConsent == 'Keluarga' &&
+              generalConsentDialogInputType == 'add'
+            "
             class="grid grid-cols-2 gap-x-[30px] gap-y-5 mb-5"
           >
             <CustomTextfield
