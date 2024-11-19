@@ -27,6 +27,7 @@ import type { FilterAdmisi } from "@/utils/Interface";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import NoData from "@/components/section/NoData.vue";
 
 // const filterPoliList = ref([
 //   { name: "POLI UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
@@ -43,6 +44,7 @@ const headerPoliBPJSRef = ref<typeof DataPoliBPJSHeader>();
 
 const resetFilter = () => {
   headerPoliBPJSRef.value?.resetFilter();
+
   filterData.value = headerPoliBPJSRef.value?.searchData() ?? {
     startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
     endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
@@ -59,9 +61,8 @@ const properties = ref({
 const filterData = ref<FilterAdmisi>({});
 
 const search = async () => {
-
   filterData.value = headerPoliBPJSRef.value?.searchData();
-  console.log(`HABIS DI SEARCH`,filterData.value)
+  console.log(`HABIS DI SEARCH`, filterData.value);
   if (currentRouteName.value == "rawat-jalan-poli") {
     patientData.value = await fetchRJPatient();
   }
@@ -70,7 +71,6 @@ const search = async () => {
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
-   
     const response = await admisiRJStore.getRJ(filterData.value);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
@@ -100,19 +100,19 @@ watch(
   async (newFilter) => {
     // console.log(`Filter anyar`, newFilter);
     resetFilter();
-
+    statusPelayanan.value = ""; // Reset statusPelayanan
     filterData.value = {
       ...filterData.value,
-      poly: newFilter.uuid,
+      poly: [newFilter.uuid],
     };
     // console.log(`filter paling baru`, filterData.value);
     // search();
-    patientData.value = await fetchRJPatient()
-  }, { deep: true }
+    patientData.value = await fetchRJPatient();
+  },
+  { deep: true }
 );
 
-
-const value = ref("0");
+const statusPelayanan = ref("");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
@@ -151,14 +151,14 @@ const updateUnselectAll = () => {
 const isResetPatient = ref(false);
 
 const resetCancelVisit = () => {
-  cancelReason.value = ''; // Kosongkan cancelReason
+  cancelReason.value = ""; // Kosongkan cancelReason
   selectedPatient.value = []; // Kosongkan selectedPatient
   showCancelVisit.value = false; // Menutup tampilan cancel visit
   isResetPatient.value = !isResetPatient.value;
 };
 
 const handleResetPatient = () => {
-  isResetPatient.value = false
+  isResetPatient.value = false;
 };
 
 const confirmCancel = async () => {
@@ -175,21 +175,17 @@ const confirmCancel = async () => {
     console.log("Payload:", payload);
     const response = await admisiRJStore.cancelVisitRJ(payload);
     console.log("Response:", response);
-    showCancelVisit.value = false
+    showCancelVisit.value = false;
     if (response) {
       resetCancelVisit();
       search();
     }
-   
   } catch (error) {
-  ;
     console.error("Failed to cancel visit", error);
   } finally {
     storeUtils.setLoading(false);
-    
   }
-}
-
+};
 
 // Pagination
 const handlePage = (event: any) => {
@@ -198,17 +194,32 @@ const handlePage = (event: any) => {
   search();
 };
 
+// FIlter Status
+const filterStatus = async (status: string) => {
+  resetFilter();
+  statusPelayanan.value = status;
+  filterData.value = {
+    ...filterData.value,
+    status: statusPelayanan.value,
+  };
+  console.log(status);
+  // console.log(`filter paling baru`, filterData.value);
+  // search();
+  patientData.value = await fetchRJPatient();
+};
 </script>
 
 <template>
   <!-- {{ filter }} -->
- 
+
   <!-- {{ showCancelVisit }} -->
-    <!-- {{ patientData }} -->
- <!-- {{ selectedPatient }} -->
-  
+  <!-- {{ patientData }} -->
+  <!-- {{ selectedPatient }} -->
+
   <!-- {{ currentRouteName }} -->
   <!-- {{ filterData }} -->
+
+  <!-- {{ statusPelayanan }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
@@ -229,60 +240,57 @@ const handlePage = (event: any) => {
               label=""
               icon="PhListBullets"
               class="w-[60px]"
-              :text-color="value === '0' ? 'text-white' : 'text-adameds-300'"
-              :border-color="
-                value === '0' ? 'border-none' : 'border-adameds-300'
+              :text-color="
+                statusPelayanan === '' ? 'text-white' : 'text-adameds-300'
               "
-              :class="value === '0' ? 'bg-adameds-300' : 'bg-white'"
-              @click="value = '0'"
-              :outlined="value !== '0'"
+              :border-color="
+                statusPelayanan === '' ? 'border-none' : 'border-adameds-300'
+              "
+              :class="statusPelayanan === '' ? 'bg-adameds-300' : 'bg-white'"
+              @click="filterStatus('')"
+              :outlined="statusPelayanan !== ''"
             />
             <!-- Filter = {{ props.filter }} -->
             <CustomButton
               label="PELAYANAN"
               class="grow"
-              :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
-              :border-color="
-                value === '1' ? 'border-none' : 'border-adameds-300'
+              :text-color="
+                statusPelayanan === '1' ? 'text-white' : 'text-adameds-300'
               "
-              :class="value === '1' ? 'bg-adameds-300' : 'bg-white'"
-              @click="value = '1'"
-              :outlined="value !== '1'"
+              :border-color="
+                statusPelayanan === '1' ? 'border-none' : 'border-adameds-300'
+              "
+              :class="statusPelayanan === '1' ? 'bg-adameds-300' : 'bg-white'"
+              @click="filterStatus('1')"
+              :outlined="statusPelayanan !== '1'"
             />
             <CustomButton
               label="DISCHARGE"
               class="grow"
-              :text-color="value === '2' ? 'text-white' : 'text-adameds-300'"
-              :border-color="
-                value === '2' ? 'border-none' : 'border-adameds-300'
+              :text-color="
+                statusPelayanan === '0' ? 'text-white' : 'text-adameds-300'
               "
-              :class="value === '2' ? 'bg-adameds-300' : 'bg-white'"
-              @click="value = '2'"
-              :outlined="value !== '2'"
+              :border-color="
+                statusPelayanan === '0' ? 'border-none' : 'border-adameds-300'
+              "
+              :class="statusPelayanan === '0' ? 'bg-adameds-300' : 'bg-white'"
+              @click="filterStatus('0')"
+              :outlined="statusPelayanan !== '0'"
             />
           </div>
         </template>
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="value">
-        <TabPanels>
-          <TabPanel value="0">
-           <Pelayanan
-            :data-patient="patientData"
-            :isResetPatient ="isResetPatient"
-              :show-cancel-visit="showCancelVisit"
-              @handle-selected-patient="updateSelectedPatient"
-              @handle-unselected-patient="updateUnselectedPatient"
-              @selectedAll="updateSelectedPatient"
-              @handle-unselect-all="updateUnselectAll"
-              @is-reset-patient="handleResetPatient"
-            />
-          </TabPanel>
-          <TabPanel value="1">
+      <Tabs v-model:value="statusPelayanan" class="h-full">
+        <TabPanels
+          class="flex flex-col w-full h-full p-0"
+         
+        >
+          <TabPanel value="1" class="flex-1">
             <Pelayanan
-            :data-patient="patientData"
-            :isResetPatient ="isResetPatient"
+              :data-patient="patientData"
+              :isResetPatient="isResetPatient"
               :show-cancel-visit="showCancelVisit"
               @handle-selected-patient="updateSelectedPatient"
               @handle-unselected-patient="updateUnselectedPatient"
@@ -291,8 +299,11 @@ const handlePage = (event: any) => {
               @is-reset-patient="handleResetPatient"
             />
           </TabPanel>
-          <TabPanel value="2">
+          <TabPanel value="0" class="flex-1">
             <Discharge />
+          </TabPanel>
+          <TabPanel value="" class="flex-1">
+            <NoData class="w-full h-full" />
           </TabPanel>
         </TabPanels>
       </Tabs>

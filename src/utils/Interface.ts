@@ -43,6 +43,7 @@ export interface FilterAdmisi {
   startDate?: string;
   endDate?: string;
   dpjp?: string;
+  status?: string;
   room?: string[];
   withoutIdentity?: string;
 }

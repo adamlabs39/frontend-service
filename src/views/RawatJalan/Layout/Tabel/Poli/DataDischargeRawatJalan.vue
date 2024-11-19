@@ -109,10 +109,10 @@ const itemsPasien = ref([
   <DataTable
     v-if="itemsPasien.length"
     :value="itemsPasien"
-    tableStyle="min-width: 50rem"
+   
     scrollable
-    class="-m-4"
-    scrollHeight="flex"
+    class=""
+     scrollHeight="240px"
     :pt="{ headerRow: 'text-SM' }"
     @row-click="openDialogRM"
   >

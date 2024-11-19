@@ -24,9 +24,11 @@ export const useAdmisiRJStore = defineStore({
         startDate = "",
         endDate = "",
         dpjp = "",
+        status= ""
       },
       payload = {}
     ) {
+
       let tempFilterPoli = "";
       poly.forEach((poli, index) => {
         tempFilterPoli += `${poli}`;
@@ -34,8 +36,9 @@ export const useAdmisiRJStore = defineStore({
           tempFilterPoli += ",";
         }
       });
+      console.log(poly);
       return apiAdmisiGet(
-        `/rawat-jalan?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&platform=${platform}&poly=${poly}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}`,
+        `/rawat-jalan?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&platform=${platform}&poly=${poly}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}&status=${status}`,
         payload
       );
     },
