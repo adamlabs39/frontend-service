@@ -35,6 +35,21 @@ const valueRMFilter = ref<string>("");
 const valueDokterDPJPFilter = ref<string>("");
 const valueBulanFilter = ref<string>("");
 
+const optionBulan = ref([
+  { label: "Januari", value: 1 },
+  { label: "Februari", value: 2 },
+  { label: "Maret", value: 3 },
+  { label: "April", value: 4 },
+  { label: "Mei", value: 5 },
+  { label: "Juni", value: 6 },
+  { label: "Juli", value: 7 },
+  { label: "Agustus", value: 8 },
+  { label: "September", value: 9 },
+  { label: "Oktober", value: 10 },
+  { label: "November", value: 11 },
+  { label: "Desember", value: 12 },
+]);
+
 const resetForm = () => {
   valueStartDateFilter.value = new Date();
   valueEndDateFilter.value = new Date(); // Make sure to assign null to both
@@ -120,10 +135,10 @@ defineExpose({
           v-model="valueBulanFilter"
           label="Bulan"
           class="w-1/4"
-          optionLabel=""
-          optionValue=""
+          optionLabel="label"
+          optionValue="value"
           place-holder="Pilih Bulan"
-          :options="['Januari', 'Februari', 'Maret']"
+          :options="optionBulan"
           @update:model-value="
             $emit('update:valueBulanFilter', valueBulanFilter)
           "
