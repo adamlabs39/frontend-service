@@ -11,16 +11,18 @@ export const useRekapTindakanStore = defineStore({
                 page = 1,
                 limit = 10,
                 name = "",
-                practitioner_uuid = "",
-                month = "", // Ganti `month?: any = null` dengan ini
-                lokasi_uuid = "",
+                practitionerUuid = "",
+                month = 0, // Ganti `month?: any = null` dengan ini
+                lokasiUuid = "",
                 pelayanan = "",
             },
-            payload = {}
-        ) {
-            // Menyusun URL query dengan kondisi untuk mont
+            payload = {},
 
-            return apiRawatJalanGet(`/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitioner_uuid}&month=${month}&lokasi_uuid=${lokasi_uuid}&pelayanan=${pelayanan}`,payload);
+        ) {
+            let url = `/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitionerUuid}&lokasi_uuid=${lokasiUuid}&pelayanan=${pelayanan}`
+            // Menyusun URL query dengan kondisi untuk mont
+            if (month !== 0) url += `&month=${month}`;
+            return apiRawatJalanGet(url, payload);
         },
     },
 });

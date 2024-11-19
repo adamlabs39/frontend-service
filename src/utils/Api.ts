@@ -288,7 +288,7 @@ baseInstanceRawatJalan.interceptors.request.use(
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);

@@ -60,7 +60,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
       response = await kunjunganRawatJalanStore.getKunjunganReport(filter);
     } else if (pageType.value == "pembatalan-poli") {
       response = await kunjunganRawatJalanStore.getBatalKunjunganReport(filter);
-    } else {
+    } else if (pageType.value == "rekap-tindakan-pasien") {
       response = await rekapTindakanPasienStore.getTindakanPasien(filter);
     }
 
@@ -81,33 +81,18 @@ const searchQuery = ref<string>("");
 // Fetch data Praktisi dari API
 const fetchPraktisiData = async () => {
   useUtilsStore.setLoading(true);
-  try {
-    let isDoctor = true;
-    let isNonDoctor = false;
-    
-    const response = await praktisiStore.getApi({
-      page: praktisiProperties.value.page,
-      limit: praktisiProperties.value.page_size,
-      name: searchQuery.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
-    });
-
+    try {
+    const response = await praktisiStore.getAktifApi();
     if (response && response.payload) {
-      praktisiProperties.value.total = response.properties.total;
-      praktisiPayload.value = [...response.payload];
-      // console.log(`COba`,praktisiPayload.value);
-       if (response.payload.length === praktisiProperties.value.page_size) {
-        praktisiProperties.value.page += 1;
-        await fetchPraktisiData(); 
-      }
+      praktisiPayload.value = response.payload;
+      console.log(praktisiPayload.value)
     } else {
       praktisiPayload.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch data", error);
+    console.error("Failed to fetch kategori ruangan", error);
     praktisiPayload.value = [];
-  } finally {
+  }finally {
     useUtilsStore.setLoading(false);
   }
 };
@@ -184,11 +169,14 @@ interface Filter {
   limit?: number;
   q?: string;
   practitionerUuid?: string;
-  jenisKunjungan?: string;
+  pelayanan?: string;
   penjamin?: string;
   ruangan?: string;
   startDate?: string;
   endDate?: string;
+  name?: string;
+  lokasiUuid?: string;
+  month?: number;
 }
 
 // Function to search data
@@ -210,16 +198,24 @@ const handlePage = (event: any) => {
 const setFilter = () => {
   let filter = {} as Filter;
 
+  
   // Set common filter properties
   filter.page = properties.value.page;
   filter.limit = properties.value.page_size;
   filter.q = valueSearchRM.value;
-  filter.jenisKunjungan = "RJ";
+  filter.name = valueSearchRM.value;
+ 
+
 
   if (pageType.value == "kunjungan-rawat-jalan") {
     filter.practitionerUuid = valueSearchDPJP.value ?? "";
+    filter.pelayanan = "RJ"
   } else if (pageType.value == "pembatalan-poli") {
     filter.practitionerUuid = searchDokterDPJPFilter.value ?? "";
+    filter.pelayanan = "RJ"
+  } else if (pageType.value == "rekap-tindakan-pasien") {
+    filter.practitionerUuid = searchPraktisiFilter.value ?? "";
+    filter.pelayanan = "rj"
   }
 
   filter.startDate = `${dateToEpoch(
@@ -228,6 +224,8 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
+  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  filter.lokasiUuid = searchPoliklinikFilter.value ?? ""
 
   return filter;
 };
@@ -260,6 +258,9 @@ const resetFormRef = ref();
 
 const resetForm = () => {
   valueSearchRM.value = "";
+  searchPoliklinikFilter.value = ""
+  searchPraktisiFilter.value = ""
+  valueBulan.value = 0;
   valueSearchDPJP.value = "";
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
@@ -269,7 +270,7 @@ const resetForm = () => {
 // Reset filter fields
 const handleReset = () => {
   resetForm();
-  fetchLaporanData();
+  searchData();
 };
 
 const handleRefreshPage = () => {
@@ -278,6 +279,7 @@ const handleRefreshPage = () => {
 </script>
 
 <template>
+  <!-- {{ searchPraktisiFilter }} -->
   <!-- {{ pageType}} -->
     <!-- {{ reportData }} -->
       <!-- {{ lokasiPayload }} -->
@@ -317,7 +319,7 @@ const handleRefreshPage = () => {
                 pageType === 'rekap-tindakan-pasien'
               "
               v-model="searchPoliklinikFilter"
-              label="Poliklinikll"
+              label="Poliklinik"
               class=""
               optionLabel="name"
               optionValue="uuid"
@@ -339,10 +341,10 @@ const handleRefreshPage = () => {
               v-model="searchPraktisiFilter"
               label="Praktisi"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="pegawai.name"
+              optionValue="uuid"
               place-holder="Pilih Dokter"
-              :options="['Semua', 'Beberapa', 'Banyak']"
+              :options="praktisiPayload"
             />
           </div>
         </template>
