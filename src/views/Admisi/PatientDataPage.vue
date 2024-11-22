@@ -1199,7 +1199,7 @@ onMounted(() => {
           />
           <div
             v-if="generalConsentDialogInputType == 'add'"
-            class="h-[400px] border-[1px] border-grey-200 border-dashed rounded-[10px] mt-5 flex"
+            class="h-[400px] border-[1px] border-grey-200 border-dashed rounded-[10px] mt-5 flex overflow-auto"
           >
             <div
               v-if="selectedDataGeneralConsent"
@@ -1285,7 +1285,7 @@ onMounted(() => {
             backgroundColor="bg-adameds-300"
           />
         </div>
-        <div v-else>
+        <div v-else class="flex justify-end w-full">
           <CustomButton
             @click="inputGeneralConsentDialog = false"
             label="Batal"

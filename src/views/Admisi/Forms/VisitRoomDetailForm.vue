@@ -2,6 +2,10 @@
 import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -16,6 +20,10 @@ import { useForm } from "vee-validate";
 // NOTE Store
 const storeUtils = utilsStore();
 const monitoringKamarStore = useMonitoringKamarStore();
+const lokasiStore = useLokasiStore();
+const praktisiStore = usePraktisiStore();
+const penjaminStore = usePenjaminStore();
+const kategoriRuanganStore = useKategoriRuanganStore();
 
 const props = defineProps({
   pageType: {
@@ -40,8 +48,55 @@ const props = defineProps({
   },
 });
 
+const filterPoliList = ref([]);
+const listDpjp = ref<any[]>([]);
+const listPenjamin = ref<any[]>([]);
+const listKategoriRuangan = ref<any[]>([]);
+
+const fetchUtils = async () => {
+  try {
+    // FIXME Masih menggunakan api biasa dan filter by FE
+    const responsePoli = await lokasiStore.getApi(0, 9999);
+    if (responsePoli && responsePoli.payload) {
+      filterPoliList.value = responsePoli.payload.filter(
+        (lokasi: any) => lokasi.isPoli && lokasi.status
+      );
+    } else filterPoliList.value = [];
+
+    // FIXME Masih menggunakan api biasa dan filter by FE
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+    }
+
+    const responsePenjamin = await penjaminStore.getAktifApi();
+
+    if (responsePenjamin && responsePenjamin.payload) {
+      listPenjamin.value = responsePenjamin.payload;
+    } else {
+      listPenjamin.value = [];
+    }
+
+    const responseKategoriRuangan = await kategoriRuanganStore.getAktifApi();
+
+    if (responseKategoriRuangan && responseKategoriRuangan.payload) {
+      listKategoriRuangan.value = responseKategoriRuangan.payload;
+    } else {
+      listKategoriRuangan.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 const setFormData = () => {
-  fetchListRoomData();
   if (Object.keys(props.doctorVisitData).length) {
     let tempDoctorVisitData = props.doctorVisitData;
 
@@ -50,6 +105,9 @@ const setFormData = () => {
     selectedRoomClass.value = tempDoctorVisitData.roomClass ?? "";
     selectedRoom.value = tempDoctorVisitData.roomUuid ?? "";
     selectedBed.value = [tempDoctorVisitData.monitoringRoomUuid ?? ""];
+
+    fetchListRoomData();
+
     if (selectedRoom.value) {
       fetchListBedData(selectedRoom.value);
     }
@@ -73,7 +131,10 @@ const setFormData = () => {
 const fetchListRoomData = async () => {
   try {
     storeUtils.setLoading(true);
-    const response = await monitoringKamarStore.getMonitoringKamar({});
+    const response = await monitoringKamarStore.getMonitoringKamar({
+      filterKelas: selectedRoomClass.value,
+      filterKategori: selectedRoomCategory.value,
+    });
     if (response && response.payload) {
       listRuangan.value = response.payload;
     }
@@ -122,10 +183,12 @@ onMounted(() => {
   if (props.formType == "Daftar Bayi Baru Lahir") {
     boxBaby.value = true;
   }
+  fetchUtils();
   setFormData();
 });
 
 onUpdated(() => {
+  fetchUtils();
   setFormData();
 });
 
@@ -140,23 +203,6 @@ const listRuangan = ref<any[]>([]);
 const listBed = ref<any[]>([]);
 const listBedCadangan = ref<any[]>([]);
 const listBoxBayi = ref<any[]>([]);
-const listPenjamin = ref([
-  {
-    uuid: "019304bc-39d4-7e9f-86ab-0c55c786af1f",
-    name: "BPJS Kesehatan",
-    code: "BPJS",
-  },
-  {
-    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e2",
-    name: "Asuransi Prudential",
-    code: "Prudential",
-  },
-  {
-    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e3",
-    name: "Asuransi Allianz",
-    code: "Allianz",
-  },
-]);
 
 const noSpri = ref("");
 const selectedRoomCategory = ref();
@@ -308,23 +354,14 @@ defineExpose({
                 : 'col-span-2',
             ]"
           >
-            <!-- FIXME Dummy Data -->
-            <!-- v-model="selectedJadwalDpjp" -->
             <CustomSelect
               v-model="practitionerUuid"
               label="DPJP"
               placeHolder="Pilih DPJP"
               class="col-span-2"
-              optionLabel="name"
+              optionLabel="detailPegawai.name"
               optionValue="uuid"
-              :options="[
-                {
-                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-                  name: 'Rudi tabuti',
-                },
-                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
-              ]"
+              :options="listDpjp"
               :showFilter="false"
               :disabled="isDetail"
               :invalid="!!errors.practitionerUuid"
@@ -379,7 +416,6 @@ defineExpose({
         <div v-if="selectedPaymentMethod.includes('ASURANSI')">
           <hr class="my-[30px]" />
           <div class="grid grid-cols-3 gap-y-5 gap-x-[30px]">
-            <!-- FIXME Dummy data -->
             <CustomSelect
               v-model="insuranceUuid"
               label="Nama Penjamin"
@@ -393,7 +429,6 @@ defineExpose({
               :invalid="!!errors['insurance.penjaminUuid']"
               :invalidMessage="errors['insurance.penjaminUuid']"
             />
-            <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield
               v-model="insuranceAccount"
               label="No. Penjamin"
@@ -459,6 +494,7 @@ defineExpose({
             <!-- FIXME Dummy Data -->
             <CustomSelect
               v-model="selectedRoomCategory"
+              @update:model-value="fetchListRoomData"
               label="Kategori Ruangan"
               placeHolder="Pilih Kategori Ruangan"
               class="col-span-2"
@@ -466,12 +502,14 @@ defineExpose({
               optionValue="uuid"
               :showFilter="false"
               :options="[
+                ...listKategoriRuangan,
                 { name: 'VIP', uuid: '0191690f-1cb3-7884-afeb-6ad62f0e0a1a' },
               ]"
               :disabled="isDetail"
             />
             <CustomSelect
               v-model="selectedRoomClass"
+              @update:model-value="fetchListRoomData"
               label="Kelas"
               placeHolder="Pilih Kelas"
               class=""
@@ -481,7 +519,6 @@ defineExpose({
               :options="listKelasRuangan"
               :disabled="isDetail"
             />
-            <!-- FIXME Dummy Data -->
             <CustomSelect
               v-model="selectedRoom"
               @update:model-value="fetchListBedData"
@@ -542,7 +579,6 @@ defineExpose({
                   Pilih Bed
                 </div>
                 <div class="grid grid-cols-2 gap-[10px] mr-[15px]">
-                  <!-- FIXME Uncomment on prod -->
                   <CustomCheckbox
                     v-for="(data, index) in listBedCadangan"
                     v-model="selectedBed"
@@ -575,7 +611,6 @@ defineExpose({
                   Pilih Bed - Box Bayi
                 </div>
                 <div class="grid grid-cols-2 col-span-2 gap-[10px] mr-[15px]">
-                  <!-- FIXME Uncomment on prod -->
                   <CustomCheckbox
                     v-for="(data, index) in listBoxBayi"
                     v-model="selectedBed"
