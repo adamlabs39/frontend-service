@@ -1029,7 +1029,7 @@ const dialogData = ref<DialogData>();
                      
                       <CustomButton
                       v-if="dialogData?.polyclinic === 'APS'"
-                        label="Edit Data"
+                        label="Edit Order"
                         @click="editIdentitas"
                         class="mr-4"
                       />

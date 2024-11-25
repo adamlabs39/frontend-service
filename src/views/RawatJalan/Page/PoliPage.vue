@@ -103,7 +103,7 @@ watch(
 
     filterData.value = {
       ...filterData.value,
-      poly: newFilter.uuid,
+      poly:[newFilter.uuid],
     };
     // console.log(`filter paling baru`, filterData.value);
     // search();
