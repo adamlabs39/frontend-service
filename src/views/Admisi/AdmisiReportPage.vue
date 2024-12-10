@@ -81,7 +81,7 @@ const updatePageType = async (path: string) => {
     });
     if (responseDpjp && responseDpjp.payload) {
       listDpjp.value = responseDpjp.payload.filter(
-        (praktisi: any) => praktisi.isDoctor
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
       );
     }
     const responseRuangan = await ruanganStore.getAktifApi();
@@ -273,13 +273,6 @@ defineExpose({
                     name: 'Semua',
                   },
                 },
-                // FIXME Dummy
-                {
-                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-                  detailPegawai: {
-                    name: 'Rudi tabuti',
-                  },
-                },
                 ...listDpjp,
               ]"
               prependIcon="PhMagnifyingGlass"
@@ -320,8 +313,6 @@ defineExpose({
                 optionValue="name"
                 :options="[
                   { name: 'Semua' },
-                  // FIXME Dummy
-                  { name: '101' },
                   ...listRuangan,
                 ]"
               />

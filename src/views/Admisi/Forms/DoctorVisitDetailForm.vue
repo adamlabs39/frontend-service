@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
-import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -11,6 +10,14 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
+import { utilsStore } from "@/stores/utils";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const praktisiStore = usePraktisiStore();
+const penjaminStore = usePenjaminStore();
 
 const props = defineProps({
   pageType: {
@@ -35,6 +42,37 @@ const props = defineProps({
   },
 });
 
+const filterPoliList = ref([]);
+const listDpjp = ref<any[]>([]);
+const listPenjamin = ref<any[]>([]);
+
+const fetchUtils = async () => {
+  try {
+    // FIXME Masih menggunakan api biasa dan filter by FE
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+    }
+
+    const responsePenjamin = await penjaminStore.getAktifApi();
+
+    if (responsePenjamin && responsePenjamin.payload) {
+      listPenjamin.value = responsePenjamin.payload
+    } else {
+      listPenjamin.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 const setFormData = () => {
   if (Object.keys(props.doctorVisitData).length) {
     let tempDoctorVisitData = props.doctorVisitData;
@@ -58,10 +96,12 @@ const setFormData = () => {
 };
 
 onMounted(() => {
+  fetchUtils();
   setFormData();
 });
 
 onUpdated(() => {
+  fetchUtils();
   setFormData();
 });
 
@@ -89,23 +129,6 @@ const listDataJadwalDokter = ref([
     day: "Senin",
     startTime: "22:00:00",
     endTime: "24:00:00",
-  },
-]);
-const listPenjamin = ref([
-  {
-    uuid: "019304bc-39d4-7e9f-86ab-0c55c786af1f",
-    name: "BPJS Kesehatan",
-    code: "BPJS",
-  },
-  {
-    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e2",
-    name: "Asuransi Prudential",
-    code: "Prudential",
-  },
-  {
-    uuid: "2ed6a3cb-94aa-47f6-bca1-a99ae568e1e3",
-    name: "Asuransi Allianz",
-    code: "Allianz",
   },
 ]);
 const selectedJadwalPoli = ref("");
@@ -261,14 +284,12 @@ defineExpose({
               label="Poli"
               placeHolder="Pilih Poli"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               :showFilter="false"
-              :options="['POLI UMUM', 'POLI ANAK', 'POLI GIGI POLI MATA']"
+              :options="filterPoliList"
               :disabled="isDetail"
             />
-            <!-- FIXME Dummy Data -->
-            <!-- v-model="selectedJadwalDpjp" -->
             <CustomSelect
               v-model="practitionerUuid"
               label="DPJP"
@@ -276,16 +297,9 @@ defineExpose({
               :class="{
                 'col-span-2': pageType == 'igd',
               }"
-              optionLabel="name"
+              optionLabel="detailPegawai.name"
               optionValue="uuid"
-              :options="[
-                {
-                  uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-                  name: 'Rudi tabuti',
-                },
-                { uuid: '7379hdishdjsfggy73984', name: 'dr. Ali' },
-                { uuid: '7379hdishdjsfggy73985', name: 'dr. Doom' },
-              ]"
+              :options="listDpjp"
               :showFilter="false"
               :disabled="isDetail"
               :invalid="!!errors.practitionerUuid"
@@ -351,7 +365,6 @@ defineExpose({
         <div v-if="selectedPaymentMethod.includes('ASURANSI')">
           <hr class="my-[30px]" />
           <div class="grid grid-cols-3 gap-y-5 gap-x-[30px]">
-            <!-- FIXME Dummy data -->
             <CustomSelect
               v-model="insuranceUuid"
               label="Nama Penjamin"
@@ -365,7 +378,6 @@ defineExpose({
               :invalid="!!errors['insurance.penjaminUuid']"
               :invalidMessage="errors['insurance.penjaminUuid']"
             />
-            <!-- FIXME Belum ada key untuk menyimpan no penjamin -->
             <CustomTextfield
               v-model="insuranceAccount"
               label="No. Penjamin"
