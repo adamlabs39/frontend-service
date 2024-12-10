@@ -124,7 +124,7 @@ const schema = toTypedSchema(
     phone: yup.string().required("No. Telepon harus diisi").matches(phoneRegExp, "Format tidak sesuai"),
     email: yup.string().required("Email harus diisi").email("Format email tidak sesuai"),
     url: yup.string().required("URL harus diisi").matches(/^https:\/\//, "URL harus dimulai dengan https://"),
-    addressCode: yup.string().default('Gunung ANyar').required("Kelurahan harus dipilih"),
+    addressCode: yup.string().required("Kelurahan harus dipilih"),
     kodePos: yup.string().required("Kode Pos harus diisi"),
     alamat: yup.string().required("Alamat harus diisi"),
     partOfName:yup.string().notRequired(),
