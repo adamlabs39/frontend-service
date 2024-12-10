@@ -203,6 +203,7 @@ const filterStatus = async (status: string) => {
     status: statusPelayanan.value,
   };
   console.log(status);
+  console.log(filterData.value);
   // console.log(`filter paling baru`, filterData.value);
   // search();
   patientData.value = await fetchRJPatient();

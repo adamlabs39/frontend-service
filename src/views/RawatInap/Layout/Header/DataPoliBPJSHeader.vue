@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -9,11 +9,15 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { utilsStore } from "@/stores/utils";
+import type { FilterAdmisi } from "@/utils/Interface";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 
 const props = defineProps({
   filterMenu: {
-    type: String,
-    default: "Semua Poli",
+    type: Object as PropType<{ uuid: string; name: string }>,
+    default: () => ({ uuid: "", name: "" }),
   },
   dataBreadCrumb: {
     type: Array as PropType<MenuItem[]>,
@@ -22,7 +26,71 @@ const props = defineProps({
   currentRouteName: {
     type: String,
   },
+  filterData: {
+    type: Object as PropType<FilterAdmisi>,
+    default: {},
+  },
 });
+
+// Emit for Search and Payment
+const emit = defineEmits(["search", "payment", "resetStatusPelayanan"]);
+
+// STORE
+const praktisiStore = usePraktisiStore();
+const UseUtilsStore = utilsStore();
+const praktisiPayload = ref<any[]>([]);
+
+// Properties for dynamic praktisi
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+
+
+// Fetch data Praktisi dari API
+const fetchPraktisiData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    // let isDoctor = true;
+    // let isNonDoctor = false;
+    
+    // const response = await praktisiStore.getApi({
+    //   page: praktisiProperties.value.page,
+    //   limit: praktisiProperties.value.page_size,
+    //   name: searchQuery.value,
+    //   doctor: isDoctor,
+    //   non_doctor: isNonDoctor,
+    // });
+
+    const response = await praktisiStore.getAktifApi()
+
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload
+    } else {
+      praktisiPayload.value = [];
+    }
+
+    // if (response && response.payload) {
+    //   praktisiProperties.value.total = response.properties.total;
+    //   praktisiPayload.value = [...response.payload];
+    //   // console.log(`COba`,praktisiPayload.value);
+    //    if (response.payload.length === praktisiProperties.value.page_size) {
+    //     praktisiProperties.value.page += 1;
+    //     await fetchPraktisiData(); 
+    //   }
+    // } else {
+    //   praktisiPayload.value = [];
+    // }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    praktisiPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -34,6 +102,8 @@ const searchPelayananFilter = ref<string>("");
 
 // CHIP UNTUK FILTER PEMBAYARAN.
 const selectedPaymentMethod = ref<string[]>([]);
+
+// Ketika chip di klik, maka akan memilih filter pembayaran
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
     selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
@@ -42,7 +112,9 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+   emit("payment");
 };
+
 
 // const filters = [selectedFilterPoli, selectedPaymentMethod];
 
@@ -54,6 +126,7 @@ const resetFilter = () => {
     case "rawat-inap-ruangan":
       searchPatientFilter.value = "";
       searchDokterFilter.value = "";
+      
       break;
     case "monitoring-kunjungan":
     case "monitoring-riwayat-kunjungan":
@@ -69,18 +142,63 @@ const resetFilter = () => {
   }
   // Resetting payment method for all routes
   selectedPaymentMethod.value = [];
+  emit("resetStatusPelayanan");
 };
+
+const setFilter = (dataFilter: FilterAdmisi) => {
+  selectedPaymentMethod.value = dataFilter.paymentMethod
+    ? [dataFilter.paymentMethod]
+    : [];
+  startDateFilter.value = dataFilter.startDate
+    ? (epochToDate(parseInt(dataFilter.startDate)) as Date)
+    : new Date();
+  endDateFilter.value = dataFilter.endDate
+    ? (epochToDate(parseInt(dataFilter.endDate)) as Date)
+    : new Date();
+  searchPatientFilter.value = dataFilter.q ?? "";
+  searchDokterFilter.value = dataFilter.dpjp ?? "";
+}
+
+
+const searchData = (dataString: any) => {
+  let filter = {} as FilterAdmisi;
+
+  
+  filter.startDate = `${dateToEpoch(
+    setTimeForDate(startDateFilter.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(endDateFilter.value, 23, 59, 59)
+  )}`;
+  filter.q = searchPatientFilter.value || "";
+  filter.paymentMethod =
+    selectedPaymentMethod.value.length > 1 ||
+    !selectedPaymentMethod.value.length
+      ? ""
+      : selectedPaymentMethod.value[0];
+
+  // FIXME Belum bisa multiple
+
+  
+  // console.log('test',props.filterMenu); 
+  filter.poly = [props.filterMenu.uuid ?? ""];
+  filter.dpjp = searchDokterFilter.value ?? "";
+  filter.status = props.filterData.status ?? "";
+
+  return filter;
+};
+
 defineExpose({
   resetFilter,
+  searchData
 });
 
-const emit = defineEmits(["searchExecuted"]);
 
-// Ketika tombol "Cari" diklik, emit event searchExecuted
-const executeSearch = () => {
-  // Emit event dengan nilai true
-  emit("searchExecuted", true);
-};
+onMounted(() => {
+  setFilter(props.filterData)
+  console.log('test',props.filterData);
+  fetchPraktisiData();
+});
 </script>
 
 <template>
@@ -147,10 +265,10 @@ const executeSearch = () => {
           v-model="searchDokterFilter"
           label="Dokter"
           class="mr-5 grow"
-          optionLabel=""
-          optionValue=""
+          optionLabel="pegawai.name"
+          optionValue="uuid"
           place-holder="Cari Dokter"
-          :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
+          :options="praktisiPayload"
           prependIcon="PhMagnifyingGlass"
         />
         <CustomSelect
@@ -180,7 +298,7 @@ const executeSearch = () => {
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
-          @click="executeSearch"
+          @click="$emit('search')"
         />
         <CustomButton
           @click="resetFilter"
@@ -201,11 +319,10 @@ const executeSearch = () => {
         "
       >
         <div
-          :class="[
-            'flex mb-[10px]',
-            { 'mt-[10px]': props.filterMenu !== 'Semua Poli' },
-          ]"
-        >
+        class="font-semibold text-SM text-grey-300"
+        v-if="currentRouteName === 'rawat-inap-ruangan'"
+      >
+        <div class="flex my-2.5">
           <div class="w-[15%] flex items-center">Filter Pembayaran</div>
           <div class="flex">
             <hr class="h-auto w-[1px] bg-grey-300" />
@@ -215,8 +332,9 @@ const executeSearch = () => {
               bgColor="bg-adameds-50"
               iconColor="text-adameds-300"
               textColor="text-adameds-300"
+              value="1"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('TUNAI')"
+              :isSelected="selectedPaymentMethod.includes('1')"
               @selected="onPaymentMethodSelect"
               selectedColor="bg-adameds-300 border-adameds-300"
             />
@@ -226,13 +344,15 @@ const executeSearch = () => {
               bgColor="bg-warning-50"
               iconColor="text-warning-300"
               textColor="text-warning-300"
+              value="2"
               class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('ASURANSI')"
+              :isSelected="selectedPaymentMethod.includes('2')"
               @selected="onPaymentMethodSelect"
               selectedColor="bg-warning-300 border-warning-300"
             />
           </div>
         </div>
+      </div>
       </div>
       <hr class="border-grey-200" />
     </template>
