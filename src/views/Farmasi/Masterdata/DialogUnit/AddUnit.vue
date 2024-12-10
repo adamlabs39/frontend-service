@@ -31,6 +31,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode Satuan harus diisi"),
     name: yup.string().required("Nama Satuan harus diisi"),
     satuanDosis: yup.bool().default(false),
+    editable: yup.bool().default(false),
     status: yup.bool().default(false),
   }).noUnknown()
 );
@@ -44,6 +45,7 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [satuanDosis] = defineField("satuanDosis");
+const [editable] = defineField("editable");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -139,12 +141,21 @@ watch(
           </div>
         </div>
         <hr class="mt-[20px] border border-slate-300"/>
-        <div class="grid grid-cols-2 mt-[15px]">
+        <div class="grid grid-cols-3 mt-[15px]">
           <div>
             <CustomSwitch
               v-model="satuanDosis"
               :show-label="true"
               label="Satuan Dosis"
+              sideLabel="NON-AKTIF"
+              sideLabelTrue="AKTIF"
+            />
+          </div>
+          <div>
+            <CustomSwitch
+              v-model="editable"
+              :show-label="true"
+              label="Editable"
               sideLabel="NON-AKTIF"
               sideLabelTrue="AKTIF"
             />

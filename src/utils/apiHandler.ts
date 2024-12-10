@@ -4,6 +4,7 @@ import {
   baseInstanceDatamaster,
   baseInstanceAdmisi,
   baseInstanceIgd,
+  baseInstanceFarmasi,
   authInstance,
   baseInstanceRawatJalan,
 } from "./Api";
@@ -337,22 +338,40 @@ const apiIgdDelete = async (url: string, data: object) => {
   }
 };
 
-
-// Rawat Jalan
-
-const apiRawatJalanGet = async (url: string, data: object) => {
+//Farmasi
+const apiFarmasiGet = async (url: string, data: object) => {
   try {
-    let response = await baseInstanceRawatJalan.get(url, data);
-    app.config.globalProperties.$toast.add({
-      severity: "success",
-      summary: response.data.message,
-      life: 3000,
-    });
+    let response = await baseInstanceFarmasi.get(url, data);
     return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
 };
+const apiFarmasiPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceFarmasi.post(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiFarmasiPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceFarmasi.put(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiFarmasiDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceFarmasi.delete(url, data);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -380,4 +399,8 @@ export {
   apiIgdPut,
   apiIgdDelete,
   apiRawatJalanGet
+  apiFarmasiGet,
+  apiFarmasiPost,
+  apiFarmasiPut,
+  apiFarmasiDelete,
 };

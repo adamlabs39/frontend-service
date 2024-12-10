@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
+import { useDrugSalesStore } from "@/stores/farmasi/DrugSales";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomPaginator from '@/components/Base/CustomPaginator.vue';
-import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
-import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
-import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
+import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
+import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -47,97 +48,6 @@ const onPoliSelect = (label: string) => {
   }
 };
 
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    layanan: "Rawat Inap",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    layanan: "Rawat Jalan",
-    harga: '10000',
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    no_antrian: null,
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: null,
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-]);
-
-const handleRowsUpdate = (rows: number) => {
-};
-const handlePageUpdate = (page: number) => {
-};
-
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
 const changeSection = (label: string) => {
@@ -148,9 +58,64 @@ const changeSection = (label: string) => {
   }
 };
 
-const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Beli Obat");
+// State Management
+const DrugSalesStore = useDrugSalesStore();
+const UseUtilsStore = utilsStore();
+const DrugSalesPayload = ref<any[]>([]);
+const DrugSalesProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+
+// Check if Data Exists
+const hasData = computed(
+  () => DrugSalesPayload.value && DrugSalesPayload.value.length > 0
+);
+
+// Fetch Drug Sales
+const fetchDrugSales = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await DrugSalesStore.getApi(
+      DrugSalesProperties.value.page,
+      DrugSalesProperties.value.page_size,
+      searchQuery.value
+    );
+
+    if (response && response.payload) {
+      DrugSalesProperties.value.total = response.properties.total;
+      DrugSalesPayload.value = response.payload;
+    } else {
+      DrugSalesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    DrugSalesPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchDrugSales();
+  }, 500); 
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  DrugSalesProperties.value.page = event.page + 1;
+  DrugSalesProperties.value.page_size = event.rows;
+  fetchDrugSales();
+};
+
+onMounted(() => {
+  fetchDrugSales();
+});
 </script>
 
 <template>
@@ -185,6 +150,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / address / No. RM"
@@ -297,9 +263,10 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          v-if="itemsPasien.length"
-          :value="itemsPasien"
+          v-else
+          :value="DrugSalesPayload"
           tableStyle="min-width: 50rem"
           class="mt-2"
           scrollable
@@ -348,13 +315,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            :rows="10"
-            :totalRecords="100"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
-          />
         </div>
       </template>
     </Card>

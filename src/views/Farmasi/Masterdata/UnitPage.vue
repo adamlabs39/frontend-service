@@ -295,7 +295,7 @@ onMounted(() => {
           <Column field="code" header="Kode Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <Column field="name" header="Nama Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <Column field="satuanDosis" headerClass="bg-adameds-50">
-            <template #header="slotProps">
+            <template #header>
               <div class="w-full font-semibold text-center text-SM">Satuan Dosis</div>
             </template>
             <template #body="slotProps">
@@ -315,8 +315,29 @@ onMounted(() => {
               </div>
             </template>
           </Column>
+          <Column field="editable" headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center text-SM">Editable</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                <CustomChip
+                  :label="slotProps.data.editable ? 'AKTIF' : 'NON-AKTIF'"
+                  :textColor="
+                    slotProps.data.editable ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="slotProps.data.editable ? 'bg-adameds-300' : 'bg-white'"
+                  :borderColor="
+                    slotProps.data.editable ? 'border-none' : 'border-[#80868d]'
+                  "
+                  :icon-color="slotProps.data.editable ? 'white' : '#80868d'"
+                  customClass="text-xs font-semibold h-5 flex"
+                />
+              </div>
+            </template>
+          </Column>
           <Column field="status" headerClass="bg-adameds-50">
-            <template #header="slotProps">
+            <template #header>
               <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
