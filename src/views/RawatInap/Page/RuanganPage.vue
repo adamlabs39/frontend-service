@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
 import { useRoute } from "vue-router";
@@ -14,7 +14,7 @@ import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPe
 import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps<{
-  filterRuang:Filter
+  filter: Filter;
 }>();
 
 interface Filter {
@@ -25,7 +25,6 @@ interface Filter {
 const isResetPatient = ref(false);
 const selectedPatient = ref<any[]>([]);
 const updateSelectedPatient = (patient: any) => {
-  console.log("Selected Patient:", patient);
   patient.length > 0
     ? (selectedPatient.value = patient)
     : (selectedPatient.value = []);
@@ -52,7 +51,6 @@ const handlePage = (event: any) => {
   properties.value.page_size = event.rows;
   search();
 };
-
 
 const resetCancelVisit = () => {
   cancelReason.value = ""; // Kosongkan cancelReason
@@ -107,8 +105,6 @@ const headerRawatInapRef = ref<typeof DataPoliBPJSHeader>();
 // Data Patient From API
 const patientData = ref<any>([]);
 
-
-
 // DIRAWAT / DISCHARGE
 const statusPelayanan = ref("");
 
@@ -162,7 +158,6 @@ const fetchRIPatient = async () => {
   }
 };
 
-
 // Cantumkan Status Pelayanan
 const filterStatus = async (status: string) => {
   // resetFilter();
@@ -174,12 +169,24 @@ const filterStatus = async (status: string) => {
   patientData.value = await fetchRIPatient();
 };
 
+// watcher props filter
+watch(
+  () => props.filter,
+  async (newFilter) => {
+    resetFilter();
+    statusPelayanan.value = "";
+    filterData.value = {
+      ...filterData.value,
+      room: [newFilter.uuid],
+    };
+    patientData.value = await fetchRIPatient();
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
   currentRouteName.value = route.name ? String(route.name) : "";
-  console.log(currentRouteName.value)
-  search();
 });
-
 </script>
 <template>
   <Card
@@ -189,10 +196,10 @@ onMounted(() => {
   >
     <template #header>
       <DataPoliBPJSHeader
-       ref="headerRawatInapRef"
+        ref="headerRawatInapRef"
         @search="search"
         @payment="search"
-        :filter-menu="props.filterRuang"
+        :filter-menu="filter"
         :filter-data="filterData"
         :current-route-name="currentRouteName"
         @resetStatusPelayanan="handleResetStatusPelayanan"
@@ -246,10 +253,7 @@ onMounted(() => {
     </template>
     <template #content>
       <Tabs v-model:value="statusPelayanan" class="h-full">
-        <TabPanels
-          class="flex flex-col w-full h-full p-0"
-         
-        >
+        <TabPanels class="flex flex-col w-full h-full p-0">
           <TabPanel value="1" class="flex-1">
             <DataPelayananRawatJalan
               :data-patient="patientData"
@@ -264,7 +268,7 @@ onMounted(() => {
           </TabPanel>
           <TabPanel value="0" class="flex-1">
             <!-- <Discharge /> -->
-              <NoData class="w-full h-full" />
+            <NoData class="w-full h-full" />
           </TabPanel>
           <TabPanel value="" class="flex-1">
             <NoData class="w-full h-full" />
@@ -272,7 +276,7 @@ onMounted(() => {
         </TabPanels>
       </Tabs>
     </template>
-     <template #footer>
+    <template #footer>
       <div class="flex justify-between">
         <div class="flex">
           <CustomButton

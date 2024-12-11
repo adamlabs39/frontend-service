@@ -177,7 +177,12 @@ const updateFilterMenu = (newFilter: { uuid: string; name: string }) => {
   });
 };
 
+// Search Poli
+let searchTimeout: ReturnType<typeof setTimeout>;
+
+
 const handleSearchPoli = (searchTerm: string) => {
+  clearTimeout(searchTimeout);
   const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
 
   if (searchTerm === "") {
@@ -194,7 +199,7 @@ const handleSearchPoli = (searchTerm: string) => {
     updateSidebarBodyList();
   } else {
     // Filter poliSection berdasarkan searchTerm
-    setTimeout(() => {
+    searchTimeout = setTimeout(() => {
       // Filter poliSection berdasarkan searchTerm
       const filteredPoli = poliSection.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())

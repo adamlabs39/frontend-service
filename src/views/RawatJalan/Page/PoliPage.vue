@@ -123,7 +123,7 @@ const currentRouteName = ref("");
 
 onMounted(() => {
   currentRouteName.value = route.name ? String(route.name) : "";
-  search();
+  // search();
 });
 
 const updateSelectedPatient = (patient: any) => {

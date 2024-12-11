@@ -40,12 +40,6 @@ const praktisiStore = usePraktisiStore();
 const UseUtilsStore = utilsStore();
 const praktisiPayload = ref<any[]>([]);
 
-// Properties for dynamic praktisi
-const praktisiProperties = ref({
-  page: 1,
-  page_size: 10,
-  total: 0,
-});
 
 
 
@@ -181,7 +175,7 @@ const searchData = (dataString: any) => {
 
   
   // console.log('test',props.filterMenu); 
-  filter.poly = [props.filterMenu.uuid ?? ""];
+  filter.room = [props.filterMenu.uuid ?? ""];
   filter.dpjp = searchDokterFilter.value ?? "";
   filter.status = props.filterData.status ?? "";
 
@@ -195,9 +189,9 @@ defineExpose({
 
 
 onMounted(() => {
-  setFilter(props.filterData)
-  console.log('test',props.filterData);
   fetchPraktisiData();
+  setFilter(props.filterData)
+  // console.log('test',props.filterData);
 });
 </script>
 
@@ -210,7 +204,7 @@ onMounted(() => {
           class="leading-10 text-adameds-300 text-heading"
           v-if="currentRouteName == 'rawat-inap-ruangan'"
         >
-          {{ filterMenu }}
+          {{ filterMenu.name }}
         </div>
         <CustomBreadCrumb
           v-else-if="
