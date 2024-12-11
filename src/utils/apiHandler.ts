@@ -6,6 +6,7 @@ import {
   baseInstanceIgd,
   authInstance,
   baseInstanceRawatJalan,
+  baseInstanceRekamMedis,
 } from "./Api";
 import { app } from "@/main";
 
@@ -339,10 +340,50 @@ const apiIgdDelete = async (url: string, data: object) => {
 
 
 // Rawat Jalan
-
 const apiRawatJalanGet = async (url: string, data: object) => {
   try {
     let response = await baseInstanceRawatJalan.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+// Rekam Medis
+const apiRekamMedisGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiRekamMedisPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiRekamMedisPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.put(url, data);
     app.config.globalProperties.$toast.add({
       severity: "success",
       summary: response.data.message,
@@ -379,5 +420,8 @@ export {
   apiIgdPost,
   apiIgdPut,
   apiIgdDelete,
-  apiRawatJalanGet
+  apiRawatJalanGet,
+  apiRekamMedisGet,
+  apiRekamMedisPost,
+  apiRekamMedisPut
 };
