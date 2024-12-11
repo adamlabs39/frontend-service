@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
+import AnamnesisIGD from "@/components/RekamMedis/AnamnesisIGD/AnamnesisIGD.vue";
 import Triase from "@/components/RekamMedis/Triase/Triase.vue";
 import FormTandaVital from "@/components/RekamMedis/TandaVital/FormTandaVital.vue";
 import Antropometri from "@/components/RekamMedis/Antropometri/Antropometri.vue";
@@ -27,9 +28,17 @@ import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vue";
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";
 
+const props = defineProps({
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+});
+
 const refs = {
   alergi: ref<any>(null),
   anamnesis: ref<any>(null),
+  anamnesisIGD: ref<any>(null),
   triase: ref<any>(null),
   tandaVital: ref<any>(null),
   antropometri: ref<any>(null),
@@ -82,7 +91,12 @@ const toggleShowAllDetailMR = (method = "show") => {
     <div class="grid grid-cols-2 grow gap-2.5 overflow-x-hidden">
       <FormAlergi :ref="refs.alergi" method="detail" />
       <Anamnesis :ref="refs.anamnesis" method="detail" />
-      <Triase :ref="refs.triase" method="detail" />
+      <AnamnesisIGD
+        v-if="rmType == 'igd'"
+        :ref="refs.anamnesisIGD"
+        method="detail"
+      />
+      <Triase v-if="rmType == 'igd'" :ref="refs.triase" method="detail" />
       <FormTandaVital :ref="refs.tandaVital" method="detail" />
       <Antropometri :ref="refs.antropometri" method="detail" />
       <FormAsesmenNyeri :ref="refs.asesmenNyeri" method="detail" />
@@ -101,9 +115,21 @@ const toggleShowAllDetailMR = (method = "show") => {
       <InstruksiMedis :ref="refs.instruksiMedis" method="detail" />
       <FormOrderObat :ref="refs.orderObat" method="detail" />
       <PemeriksaanTindakan :ref="refs.pemeriksaanTindakan" method="detail" />
-      <FormImplementation :ref="refs.implementation" method="detail" />
-      <FormEvaluation :ref="refs.evaluation" method="detail" />
-      <FormReassesment :ref="refs.reassessment" method="detail" />
+      <FormImplementation
+        v-if="rmType == 'fisio'"
+        :ref="refs.implementation"
+        method="detail"
+      />
+      <FormEvaluation
+        v-if="rmType == 'fisio'"
+        :ref="refs.evaluation"
+        method="detail"
+      />
+      <FormReassesment
+        v-if="rmType == 'fisio'"
+        :ref="refs.reassessment"
+        method="detail"
+      />
       <FormOrderAlkes :ref="refs.orderAlkes" method="detail" />
       <OrderLab :ref="refs.orderLab" method="detail" />
       <FormOrderFisio :ref="refs.orderFisio" method="detail" />

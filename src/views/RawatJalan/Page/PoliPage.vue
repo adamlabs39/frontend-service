@@ -1,20 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, watch, watchEffect } from "vue";
-import { useIndexStore } from "@/stores";
-import CustomAutoComplete from "@/components/Base/CustomAutoComplete.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
-import { downloadPdf } from "@/utils/PdfMake";
-import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
-import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
-import CustomRadio from "@/components/Base/CustomRadio.vue";
-import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
-import OdontogramInput from "@/components/RekamMedis/PemeriksaanGigi/OdontogramInput.vue";
-import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
+import { onMounted, ref, watch } from "vue";
 import Pelayanan from "../Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import { useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -28,13 +13,6 @@ import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-
-// const filterPoliList = ref([
-//   { name: "POLI UMUM", uuid: "0191a18a-22e4-773b-8229-a023f420d0bc" },
-//   { name: "POLI ANAK", uuid: "0191a18a-22e4-773b-8229-a023f420d0bd" },
-//   { name: "POLI GIGI POLI MATA", uuid: "0191a18a-22e4-773b-8229-a023f420d0be" },
-//   { name: "Faskes Example", uuid: "0191a18a-22e4-773b-8229-a023f420d0bb" },
-// ]);
 
 // NOTE Store
 const storeUtils = utilsStore();
