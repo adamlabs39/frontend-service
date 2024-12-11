@@ -68,7 +68,7 @@ const templistMenu = ref<ListMenu[]>([
     url: "/farmasi",
   },
   {
-    title: "Lab",
+    title: "Laboratorium",
     icon: "PhMicroscope",
     iconWeight: "bold",
     url: "/laboratorium",

@@ -903,7 +903,7 @@ export const usePermissionStore = defineStore('permission', () => {
       ],
     },
     {
-      module: "Order Fisioterapi",
+      module: "Fisioterapi",
       subModules: [
         {
           name: "Order Fisioterapi",
@@ -1102,24 +1102,6 @@ export const usePermissionStore = defineStore('permission', () => {
         {
           name: "Laporan",
           allows: ["READ"],
-        },
-      ],
-    },
-    {
-      module: "Pembayaran",
-      subModules: [
-        {
-          name: "Kasir",
-          allows: [
-            "READ",
-            "OPEN KASIR",
-            "BAYAR",
-            "CETAK INVOICE",
-            "CETAK RINCIAN BIAYA",
-            "CLOSE HARIAN",
-            "CLOSE BILL",
-            "CLOSE KASIR",
-          ],
         },
       ],
     },
