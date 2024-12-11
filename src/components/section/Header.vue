@@ -101,7 +101,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Laporan",
     icon: "FileReportIcon",
-    url: "tbc",
+    url: "/laporan",
   },
 ]);
 

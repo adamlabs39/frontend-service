@@ -199,7 +199,7 @@ const getSVG = (svg: string) => {
                      v-if="row1.icon"
                      :is="row1.icon"
                      :size="16"
-                     class="text-white mr-[10px]"
+                     class="text-white mr-[10px] flex-shrink-0"
                    />
                    <div>
                      {{ row1.name }}
