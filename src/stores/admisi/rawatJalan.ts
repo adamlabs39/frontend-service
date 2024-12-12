@@ -54,5 +54,8 @@ export const useAdmisiRJStore = defineStore({
     async cancelVisitRJ(payload = {}) {
       return apiAdmisiDelete("/rawat-jalan/cancel", payload);
     },
+    async getListJadwalDokter(payload = {}) {
+      return apiAdmisiGet(`/rawat-jalan/jadwal-dokter`, payload);
+    },
   },
 });

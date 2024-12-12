@@ -504,6 +504,7 @@ defineExpose({
         </div>
         <hr class="my-[30px]" />
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
             @update:model-value="fetchKabupaten"
@@ -512,11 +513,12 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="provinsiPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...provinsiPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
             @update:model-value="fetchKecamatan"
@@ -525,7 +527,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="kabupatenPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...kabupatenPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
