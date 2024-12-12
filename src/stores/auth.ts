@@ -3,9 +3,18 @@ import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore({
   id: "auth",
-  state: () => ({}),
-  getters: {},
+  state: () => ({
+    faskesUuid: "",
+  }),
+  getters: {
+    getFaskesUuid(state) {
+      return state.faskesUuid;
+    }
+  },
   actions: {
+    setFaskesUuid(payload: string) {
+      this.faskesUuid = payload
+    },
     async loginApi(payload = {}) {
       const response = await apiAuthPost("/login", payload);
 

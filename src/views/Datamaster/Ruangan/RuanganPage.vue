@@ -194,7 +194,9 @@ const downloadExportExcel = async () => {
 
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
-      const kelasLabel = optionsKelas.value.find(kelas => kelas.value === rows[i].kelasRuangan)?.label || "-";
+      const kelasLabel =
+        optionsKelas.value.find((kelas) => kelas.value === rows[i].kelasRuangan)
+          ?.label || "-";
 
       data.push({
         No: i + 1,
@@ -203,7 +205,7 @@ const downloadExportExcel = async () => {
         Kategori: rows[i].kategoriRuangan?.name ?? "-",
         nomorKamar: rows[i].noRoom,
         kelasRuangan: kelasLabel,
-        Status: rows[i].status? "AKTIF" : "NON-AKTIF",
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -222,7 +224,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -230,7 +232,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -292,19 +294,21 @@ const downloadFormatExcel = async () => {
       KelasRuangan: "Kelas Ruangan*",
     });
 
-    data.push({ No: "1",
+    data.push({
+      No: "1",
       Code: "MWR-01",
       Name: "Mawar",
       Kategori: "Rawatan Umum",
       Nomor: "1",
-      KelasRuangan: "Kelas 3", });
+      KelasRuangan: "Kelas 3",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -312,7 +316,7 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
@@ -368,6 +372,7 @@ const handleFileUpload = async (file: File) => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
+        v-else
         :value="ruanganPayload"
         v-model:selection="selectedData"
         :metaKeySelection="metaKey"

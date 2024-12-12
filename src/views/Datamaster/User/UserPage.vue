@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch, onBeforeMount } from "vue";
 import { useRoute, onBeforeRouteLeave } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import { useUserStore } from "@/stores/user";
 import { utilsStore } from "@/stores/utils";
 import { useRoleStore } from "@/stores/datamaster/role";
+import { useAuthStore } from "@/stores/auth";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
@@ -18,7 +19,7 @@ const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
 };
-
+const authStore = useAuthStore();
 const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -28,7 +29,7 @@ const changeSection = (
   mode: string = "add",
   data: any = null
 ) => {
-  let tempData = { label: label, mode: mode, data: data }; 
+  let tempData = { label: label, mode: mode, data: data };
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = tempData;
   } else {
@@ -90,7 +91,7 @@ const fetchUserData = async () => {
     const response = await userStore.getApi({
       page: userProperties.value.page,
       limit: userProperties.value.page_size,
-      name: searchQuery .value,
+      name: searchQuery.value,
       role: selectedRole.value || undefined,
     });
     console.log("API Response:", response);
@@ -130,6 +131,17 @@ const fetchRole = async () => {
     rolePayload.value = [];
   }
 };
+
+const faskesUuid = computed(() => {
+  return authStore.getFaskesUuid;
+});
+
+watch(faskesUuid, (newValue,oldValue) => {
+  fetchUserData();
+  console.log("fasekes uuid", faskesUuid.value);
+  console.log("new uuid", newValue);
+  console.log("old uuid", oldValue);
+},{immediate:true});
 
 onMounted(() => {
   fetchUserData();
@@ -237,13 +249,15 @@ const confirmDelete = async (item: any) => {
           header="Nama User"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"
-        ></Column>
+        >
+        </Column>
         <Column
           field="role.name"
           header="Role"
           headerClass="bg-adameds-50 font-semibold text-SM"
           class="w-4/12"
-        ></Column>
+        >
+        </Column>
         <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
@@ -327,5 +341,4 @@ const confirmDelete = async (item: any) => {
     @back="dataBreadCrumb.pop()"
     :payload="selectedData"
   />
- 
 </template>

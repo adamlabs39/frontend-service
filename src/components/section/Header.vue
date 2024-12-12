@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch } from "vue";
 import type { ListMenu, Module } from "@/utils/Interface";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeMount } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
 import CustomDialog from "../Base/CustomDialog.vue";
@@ -11,14 +11,13 @@ import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import CustomSelect from "../Base/CustomSelect.vue";
 
-
 interface userData {
   name: string;
   role: string;
 }
 
 const authStore = useAuthStore();
-
+const emit = defineEmits(["selectedFaskes"]);
 const UseUtilsStore = utilsStore();
 const faskesStore = useFaskesStore();
 const faskesPayload = ref<any[]>([]);
@@ -101,7 +100,7 @@ const templistMenu = ref<ListMenu[]>([
   {
     title: "Laporan",
     icon: "FileReportIcon",
-    url: "tbc",
+    url: "/laporan",
   },
 ]);
 
@@ -133,6 +132,13 @@ const logout = async () => {
   }
 };
 
+onBeforeMount(async () => {
+  await fetchFaskes();
+  console.log(faskesUuid.value);
+  authStore.setFaskesUuid(faskesUuid.value ?? "");
+  emit("selectedFaskes");
+});
+
 onMounted(() => {
   fetchFaskes();
   loadFaskesFromLocalStorage();
@@ -155,7 +161,6 @@ onMounted(() => {
 const checkActiveTab = (url: string) => {
   let split = route.path.split("/");
   return `/${split[1]}` == url;
- 
 };
 const fetchFaskes = async () => {
   try {
@@ -171,15 +176,16 @@ const fetchFaskes = async () => {
   }
 };
 
-const faskesName=ref<string>("");
+const faskesName = ref<string>("");
 const faskesSelected = ref<string>("");
+const faskesUuid = ref<string>("");
 
-const putDataFaskes = async () => {
+const updateDataFaskes = async (value: string) => {
   const response = await authStore.tokenApi(faskesSelected.value);
   localStorage.setItem("access_token", `Bearer ${response.payload.newToken}`);
   localStorage.setItem("faskes", JSON.stringify(response.payload));
+  authStore.setFaskesUuid(value);
   loadFaskesFromLocalStorage();
-  
 };
 
 const loadFaskesFromLocalStorage = () => {
@@ -189,6 +195,7 @@ const loadFaskesFromLocalStorage = () => {
       const parsedFaskesData = JSON.parse(faskesData);
       faskesSelected.value = parsedFaskesData.faskesUuid || "";
       faskesName.value = parsedFaskesData.faskesName || "";
+      faskesUuid.value = parsedFaskesData.faskesUuid || "";
     } catch (error) {
       console.error("Error parsing faskes data from localStorage:", error);
     }
@@ -255,7 +262,7 @@ const isSuperAdmin = getUserRole() === "super admin";
         </div>
       </div>
     </div>
-    <div class="flex gap-5 my-auto">
+    <div class="flex flex-shrink-0 gap-5 my-auto">
       <div
         v-if="isSuperAdmin && faskesName"
         class="flex gap-2.5 bg-white px-3 rounded-[75px] text-adameds-300 items-center justify-center min-w-[156px] h-8"
@@ -296,7 +303,7 @@ const isSuperAdmin = getUserRole() === "super admin";
           position="topright"
           pt:root:class="rounded-2xl"
           :dismissableMask="true"
-           :modal="true"
+          :modal="true"
         >
           <template #container>
             <div class="p-2.5 rounded-2xl w-[180px]">
@@ -322,7 +329,7 @@ const isSuperAdmin = getUserRole() === "super admin";
                 optionLabel="name"
                 optionValue="uuid"
                 :showCal="false"
-                @update:modelValue="putDataFaskes()"
+                @update:modelValue="updateDataFaskes"
               />
               <hr class="border-[#D9DCE1] border-1 mt-2.5" />
               <div class="flex flex-col items-start py-2">

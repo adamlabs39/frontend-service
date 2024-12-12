@@ -51,11 +51,14 @@ const tempTindakan = ref<Tindakan[]>([]);
 interface ListKomponenTarif {
   tarifKomponenUuid: string;
   tarifPerKomponen: number;
+  persentase: number;
 }
 
 interface Tindakan {
   tindakanUuid: string;
   listKomponenTarif: Array<ListKomponenTarif>;
+  isPersentase: boolean;
+  total: number;
 }
 
 interface LabEntry {
@@ -131,7 +134,12 @@ const schema = toTypedSchema(
       jenisTarif: yup.string().default("Tindakan"),
       code: yup.string().required("Kode Tarif harus diisi"),
       name: yup.string().required("Nama Tarif harus diisi"),
-      grandTotal: yup.number(),
+      // grandTotal: yup.number(),
+      grandTotal: yup.number().when("isPersentasi", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Grand TOtal harus diisi"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
       mode: yup.string(),
       status: yup.bool().default(true),
       isMcu: yup.bool().default(false),
@@ -154,8 +162,11 @@ const schema = toTypedSchema(
                 .string()
                 .required("Komponen Tarif harus dipilih"),
               tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
+              persentase: yup.number().required("Persentasi harus diisi"),
             })
           ),
+          isPersentase: yup.bool().default(false),
+          total: yup.number().required("Persentasi harus diisi"),
         })
       ),
       tarifLab: yup.array().of(
@@ -197,6 +208,7 @@ const schema = toTypedSchema(
         .of(yup.string().required("Penjamin harus dipilih"))
         .min(1, "Minimal satu Penjamin harus dipilih")
         .required("Penjamin harus dipilih"),
+      // isPersentase: yup.bool().default(false),
     })
     .noUnknown()
 );
@@ -207,7 +219,11 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
     tindakanPoli: [
       {
         tindakanUuid: "",
-        listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
+        listKomponenTarif: [
+          { tarifKomponenUuid: "", persentase: 0, tarifPerKomponen: 0 },
+        ],
+        isPersentase: false,
+        total: 0,
       },
     ],
 
@@ -217,6 +233,7 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 
 const [code] = defineField("code");
 const [name] = defineField("name");
+const [grandTotal] = defineField("grandTotal");
 const [mode] = defineField("mode");
 const [isMcu] = defineField("isMcu");
 const [unitPelayanan] = defineField("unitPelayanan");
@@ -224,7 +241,7 @@ const [penjamin] = defineField("penjamin");
 const [status] = defineField("status");
 const [unitPelayananSelected] = defineField("unitPelayananSelected");
 const [penjaminSelected] = defineField("penjaminSelected");
-
+// const [isPersentase] = defineField("isPersentase");
 const {
   remove: removeTindakan,
   push: pushTindakan,
@@ -244,6 +261,7 @@ const addListKomponenTarif = (index: number) => {
   fieldsTindakan.value[index].value.listKomponenTarif.push({
     tarifKomponenUuid: "",
     tarifPerKomponen: 0,
+    persentase: 0,
   });
 };
 
@@ -352,7 +370,11 @@ const handleRemoveLab = (index: number) => {
 const handlePushTindakan = () => {
   pushTindakan({
     tindakanUuid: "",
-    listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
+    listKomponenTarif: [
+      { tarifKomponenUuid: "", tarifPerKomponen: 0, persentase: 0 },
+    ],
+    isPersentase: false,
+    total: 0,
   });
 };
 
@@ -425,7 +447,9 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    values.grandTotal = grandTotal.value;
+    if (!values.isPersentase) {
+      values.grandTotal = grandTotalValues.value;
+    }
     delete values.unitPelayananSelected;
     delete values.penjaminSelected;
 
@@ -550,20 +574,6 @@ watch(
 );
 const tempTarifLab = ref<TempTarifLab[]>([]);
 
-// Fungsi untuk menghitung grandTotal
-const grandTotal = computed(() => {
-  // Hitung total dari listKomponenTarif
-  const totalKomponen = fieldsTindakan.value.reduce((total, tindakan) => {
-    const komponenTotal = tindakan.value.listKomponenTarif.reduce(
-      (subTotal, komponen) => subTotal + (komponen.tarifPerKomponen || 0),
-      0
-    );
-    return total + komponenTotal;
-  }, 0);
-
-  return totalKomponen;
-});
-
 const totalLabPrices = computed(() => {
   return fieldsTarifLab.value.reduce((total, entry) => {
     const lab = optionsLab.value.find(
@@ -573,17 +583,72 @@ const totalLabPrices = computed(() => {
   }, 0);
 });
 
-const grandTotalFormatted = computed(() => {
-  const total = grandTotal.value + totalLabPrices.value;
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-  }).format(total);
+const grandTotalValues = computed(() => {
+  const totalDataTindakan = fieldsTindakan.value.reduce(
+    (grandTotal, tindakanWrapper) => {
+      return grandTotal + (tindakanWrapper.value.total || 0); // Pastikan total bernilai angka, jika tidak maka gunakan 0
+    },
+    0
+  );
+  const totalLabPricesValue = totalLabPrices?.value || 0; // Pastikan nilai default jika undefined atau null
+  const total = totalDataTindakan + totalLabPricesValue;
+  return formatCurrency(total);
 });
 
 const getHargaLab = (labUuid: string) => {
   const lab = optionsLab.value.find((option) => option.uuid === labUuid);
   return lab ? lab.harga : 0;
+};
+
+const handlePersentase = (
+  inputPersentase: any,
+  tindakanIndex: number,
+  komponenIndex: number
+) => {
+  console.log(komponenIndex);
+  const tindakan = fieldsTindakan.value[tindakanIndex].value;
+  const tarifPerKomponen = (inputPersentase / 100) * tindakan.total;
+  tindakan.listKomponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
+    tarifPerKomponen.toFixed(2) // Round to 2 decimal places
+  );
+  // tindakan.listKomponenTarif[komponenIndex].persentase = inputPersentase;
+};
+
+const handleTotalKomponen = (tindakanIndex: any) => {
+  const tindakan = fieldsTindakan.value[tindakanIndex].value;
+  tindakan.total = tindakan.listKomponenTarif.reduce((sum, komponen) => {
+    return sum + (komponen.tarifPerKomponen || 0);
+  }, 0);
+};
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 2,
+  }).format(value);
+};
+
+const totalTindakan = (tindakanIndex: number): string => {
+  const tindakan = fieldsTindakan.value[tindakanIndex];
+
+  if (!tindakan || !Array.isArray(tindakan.value.listKomponenTarif)) {
+    console.warn(
+      `listKomponenTarif pada tindakanPoli[${tindakanIndex}] tidak valid.`
+    );
+    return formatCurrency(0);
+  }
+
+  // Hitung total hanya jika isPersentase adalah false
+  if (!tindakan.value.isPersentase) {
+    const total = tindakan.value.listKomponenTarif.reduce((sum, komponen) => {
+      return sum + (komponen.tarifPerKomponen || 0);
+    }, 0); // Mulai dengan nilai total 0
+
+    return formatCurrency(total); // Format sebagai uang
+  }
+
+  return formatCurrency(0); // Jika isPersentase true, kembalikan 0 dalam format uang
 };
 </script>
 
@@ -596,6 +661,7 @@ const getHargaLab = (labUuid: string) => {
   >
     <template #header>{{ title }} Tarif</template>
     <template #body>
+      {{ fieldsTindakan }}
       <!-- Form Input -->
       <div
         v-if="method !== 'detail'"
@@ -696,7 +762,7 @@ const getHargaLab = (labUuid: string) => {
                   class="mt-5"
                 >
                   <div
-                    class="flex flex-col gap-5 p-5 pt-5 mb-5 -mx-4 border border-adameds-300 rounded-xl"
+                    class="flex flex-col gap-5 p-5 pt-5 -mx-4 border border-adameds-300 rounded-xl"
                   >
                     <div class="flex gap-2.5 items-start">
                       <CustomButton
@@ -730,7 +796,7 @@ const getHargaLab = (labUuid: string) => {
                       >
                         <Column
                           headerClass="bg-adameds-300 text-white"
-                          class="w-8/12"
+                          class="w-7/12"
                           bodyClass="align-top"
                         >
                           <template #header>
@@ -752,6 +818,40 @@ const getHargaLab = (labUuid: string) => {
                         <Column
                           headerClass="bg-adameds-300 text-white"
                           bodyClass="align-top"
+                          class="w-2/12"
+                        >
+                          <template #header>
+                            <div class="w-full font-semibold text-end">
+                              Persen (%)
+                            </div>
+                          </template>
+                          <template #body="slotProps">
+                            <CustomInputNumber
+                              v-model="slotProps.data.persentase"
+                              label=""
+                              :disabled="!fieldTindakan.value.isPersentase"
+                              @update:model-value="
+                                handlePersentase(
+                                  slotProps.data.persentase,
+                                  idx,
+                                  slotProps.index
+                                )
+                              "
+                            >
+                              <template #appendText>
+                                <div
+                                  class="flex items-center justify-center mr-2.5"
+                                >
+                                  %
+                                </div>
+                              </template>
+                            </CustomInputNumber>
+                          </template>
+                        </Column>
+                        <Column
+                          headerClass="bg-adameds-300 text-white"
+                          bodyClass="align-top"
+                          class="w-4/12"
                         >
                           <template #header>
                             <div class="w-full font-semibold text-end">
@@ -763,8 +863,10 @@ const getHargaLab = (labUuid: string) => {
                               v-model="slotProps.data.tarifPerKomponen"
                               label=""
                               align-number="text-end"
+                              :disabled="fieldTindakan.value.isPersentase"
                               :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`] ? true : false"
                               :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`]"
+                              @update:model-value="handleTotalKomponen(idx)"
                             >
                               <template #prependText>
                                 <div
@@ -810,6 +912,47 @@ const getHargaLab = (labUuid: string) => {
                         </div>
                       </div>
                       <!-- <CustomButton label="Submit" @click="onSubmit" /> -->
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                      <CustomSwitch
+                        v-model="fieldTindakan.value.isPersentase"
+                        :show-label="false"
+                        label=""
+                        sideLabel="Persentase"
+                        sideLabelTrue="Persentase"
+                        class="col-span-6"
+                      />
+                      <div class="flex items-center">
+                        <div
+                          class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD"
+                        >
+                          Total
+                        </div>
+                        <div
+                          class="min-w-[300px] flex justify-end font-bold text-MD"
+                        >
+                          <CustomInputNumber
+                            v-if="fieldTindakan.value.isPersentase"
+                            v-model="fieldTindakan.value.total"
+                            label=""
+                            align-number="text-end"
+                            class="w-[200px]"
+                            :invalid="!!errors.grandTotal"
+                            :invalidMessage="errors.grandTotal"
+                          >
+                            <template #prependText>
+                              <div
+                                class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                              >
+                                Rp.
+                              </div>
+                            </template>
+                          </CustomInputNumber>
+                          <div v-else>
+                            {{ totalTindakan(idx) }}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -930,12 +1073,16 @@ const getHargaLab = (labUuid: string) => {
               </template>
             </CustomAccordion>
           </div>
+          <hr class="border-200" />
+
           <div class="flex items-center justify-end gap-4">
             <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">
               Grand Total
             </div>
-            <div class="min-w-[300px] text-end font-bold text-MD">
-              {{ grandTotalFormatted }}
+            <div class="min-w-[300px] flex justify-end font-bold text-MD">
+              <div>
+                {{ grandTotalValues }}
+              </div>
             </div>
           </div>
           <hr class="border-200" />
@@ -1122,7 +1269,7 @@ const getHargaLab = (labUuid: string) => {
             Grand Total
           </div>
           <div class="min-w-[300px] text-end font-bold text-MD">
-            {{ grandTotalFormatted }}
+            {{ grandTotalValues }}
           </div>
         </div>
         <hr class="col-span-12 border-grey-200" />
