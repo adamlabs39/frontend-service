@@ -260,11 +260,8 @@ const filterStatus = async (status: string) => {
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="statusPelayanan" class="h-full">
-        <TabPanels
-          class="flex flex-col w-full h-full p-0"
-         
-        >
+      <Tabs v-model:value="statusPelayanan" class="h-full overflow-hidden">
+        <TabPanels class="flex flex-col w-full h-full p-0">
           <TabPanel value="1" class="flex-1">
             <Pelayanan
               :data-patient="patientData"
