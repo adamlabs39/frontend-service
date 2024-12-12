@@ -350,7 +350,12 @@ const apiFarmasiGet = async (url: string, data: object) => {
 const apiFarmasiPost = async (url: string, data: object) => {
   try {
     let response = await baseInstanceFarmasi.post(url, data);
-    return response;
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -358,6 +363,11 @@ const apiFarmasiPost = async (url: string, data: object) => {
 const apiFarmasiPut = async (url: string, data: object) => {
   try {
     let response = await baseInstanceFarmasi.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -366,7 +376,28 @@ const apiFarmasiPut = async (url: string, data: object) => {
 const apiFarmasiDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstanceFarmasi.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
     return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+// Rawat Jalan
+
+const apiRawatJalanGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRawatJalan.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
   } catch (error) {
     errorApiHandler(error);
   }
@@ -398,7 +429,7 @@ export {
   apiIgdPost,
   apiIgdPut,
   apiIgdDelete,
-  apiRawatJalanGet
+  apiRawatJalanGet,
   apiFarmasiGet,
   apiFarmasiPost,
   apiFarmasiPut,

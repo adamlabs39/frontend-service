@@ -23,6 +23,7 @@ const onPoliSelect = (label: string) => {
   } else {
     selectedFilterJenisStok.value.push(label);
   }
+  fetchMedicalItem()  
 };
 
 // State Management
@@ -43,14 +44,15 @@ const hasData = computed(
 
 // Fetch MedicalItem
 const fetchMedicalItem = async () => {
-  UseUtilsStore.setLoading(true);
+  UseUtilsStore.setLoading(true);  
   try {
     const response = await MedicalItemStore.getApi(
       MedicalItemProperties.value.page,
       MedicalItemProperties.value.page_size,
-      searchQuery.value
+      searchQuery.value,
+      {jenis_stok_uuides: selectedFilterJenisStok.value}
     );
-
+    
     if (response && response.payload) {
       MedicalItemProperties.value.total = response.properties.total;
       MedicalItemPayload.value = response.payload;
@@ -240,32 +242,6 @@ const fetchStockType = async () => {
     StockTypePayload.value = [];
   }
 };
-
-// const fetchStockType = async (filter: Filter): Promise<void> => {
-//   try {
-//     const requestBody = {
-//       filter: filter,
-//     };
-
-//     // Mengirimkan request dengan POST method
-//     const response = await StockTypeStore.getApi({
-//       method: 'POST',
-//       body: JSON.stringify(requestBody),
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//     });
-
-//     if (response && response.payload) {
-//       StockTypePayload.value = response.payload;
-//     } else {
-//       StockTypePayload.value = [];
-//     }
-//   } catch (error) {
-//     console.error("Failed to fetch stock types:", error);
-//     StockTypePayload.value = [];
-//   }
-// };
 
 onMounted(() => {
   fetchMedicalItem();

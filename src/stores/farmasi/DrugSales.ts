@@ -11,17 +11,35 @@ export const useDrugSalesStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10, payload = {}) {
-      return apiFarmasiGet(`/farmasi/datamaster/penjualan-obat?page=${page}&limit=${limit}`, payload);
+    async getApi(
+      status: string = "",
+      startDate: number = 0,
+      endDate: number = 0,
+      lokasi: string = "",
+      search: string = "",
+      page: number = 1,
+      limit: number = 10,
+      payload = {}
+    ) {
+      return apiFarmasiGet(
+        `/farmasi/penjualan-obat?status=${status}&start_date=${startDate}&end_date=${endDate}&lokasi=${lokasi}&search=${search}&page=${page}&limit=${limit}`,
+        payload
+      );
     },
     async postApi(payload = {}) {
       return apiFarmasiPost("/farmasi/datamaster/penjualan-obat", payload);
     },
     async putApi(uuid: string, payload = {}) {
-      return apiFarmasiPut(`/farmasi/datamaster/penjualan-obat/${uuid}`, payload);
+      return apiFarmasiPut(
+        `/farmasi/datamaster/penjualan-obat/${uuid}`,
+        payload
+      );
     },
     async deleteApi(uuid: string, payload = {}) {
-      return apiFarmasiDelete(`/farmasi/datamaster/ingpenjualan-obatredient/${uuid}`, payload);
-    },    
+      return apiFarmasiDelete(
+        `/farmasi/datamaster/ingpenjualan-obatredient/${uuid}`,
+        payload
+      );
+    },
   },
 });

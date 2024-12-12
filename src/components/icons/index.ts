@@ -40,6 +40,8 @@ import DownloadIcon from "./DownloadIcon.vue";
 import HospitalFillIcon from "./HospitalFillIcon.vue";
 import BellNotificationIcon from "./BellNotificationIcon.vue";
 import UserAccountIcon from "./UserAccountIcon.vue";
+import SideMenuTitle from "./SideMenuTitle.vue";
+import ExpandIcon from "./ExpandIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -80,6 +82,8 @@ export default {
     app.component("HospitalFillIcon", HospitalFillIcon);
     app.component("BellNotificationIcon",BellNotificationIcon)
     app.component("UserAccountIcon",UserAccountIcon)
+    app.component("SideMenuTitle",SideMenuTitle)
+    app.component("ExpandIcon",ExpandIcon)
 
     // NOTE Inventory
     app.component("OpenBoxIcon", OpenBoxIcon);

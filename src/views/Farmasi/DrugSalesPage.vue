@@ -19,26 +19,32 @@ const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
 
 const filterFarmasi = ref([
-  "Semua",
-  "Rawat Jalan",
-  "Rawat Inap",
-  "IGD",
+  { label: "Semua", value: "4" },
+  { label: "IGD", value: "2" },
+  { label: "Rawat Rajan", value: "1" },
+  { label: "Rawat Inap", value: "0" },
 ]);
 
+function dateToEpoch(date: any) {
+  if (!(date instanceof Date)) {
+    throw new Error("Input harus berupa objek Date");
+  }
+  return date.getTime();
+}
+
 // Filter Menunggu Pembayaran
-const selectedPayType = ref<string>("BelumBayar");
+const selectedPayType = ref<string>("belum_lunas");
 
 const onSelectPayType = (label: string) => {
   selectedPayType.value = label;
-  // console.log(selectedPayType, 'selectedPayType');
-  
+  console.log(selectedPayType.value, 'selectedPayType');
+  fetchDrugSales()
 };
 
 // Filter Farmasi
 const selectedFilterFarmasi = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterFarmasi.value.includes(label)) {
-    // console.log(selectedFilterFarmasi, 'selectedFilterFarmasi');
     
     selectedFilterFarmasi.value = selectedFilterFarmasi.value.filter(
       (item) => item != label
@@ -46,6 +52,8 @@ const onPoliSelect = (label: string) => {
   } else {
     selectedFilterFarmasi.value.push(label);
   }
+  fetchDrugSales()
+  console.log(selectedFilterFarmasi.value, 'selectedFilterFarmasi');  
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -77,11 +85,17 @@ const hasData = computed(
 // Fetch Drug Sales
 const fetchDrugSales = async () => {
   UseUtilsStore.setLoading(true);
+
+  const selectedTest = [...selectedFilterFarmasi.value];
   try {
     const response = await DrugSalesStore.getApi(
+      selectedPayType.value,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      selectedTest.join(''),
+      searchQuery.value,
       DrugSalesProperties.value.page,
       DrugSalesProperties.value.page_size,
-      searchQuery.value
     );
 
     if (response && response.payload) {
@@ -184,16 +198,12 @@ onMounted(() => {
             <!-- Filter Bayar -->
             <div class="grid grid-cols-3 mt-[15px]">
               <CustomButton
-                @click="onSelectPayType('BelumBayar')"
+                @click="onSelectPayType('belum_lunas')"
                 label="BELUM BAYAR"
-                :outlined="selectedPayType != 'BelumBayar'"
+                :outlined="selectedPayType != 'belum_lunas'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'BelumBayar' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'BelumBayar' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'belum_lunas' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'belum_lunas' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="font-semibold"
               />
               <CustomButton
@@ -201,12 +211,8 @@ onMounted(() => {
                 label="LUNAS"
                 :outlined="selectedPayType != 'Lunas'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold "
               />
               <CustomButton
@@ -214,12 +220,8 @@ onMounted(() => {
                 label="DIBATALKAN"
                 :outlined="selectedPayType != 'Dibatalkan'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'Dibatalkan' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'Dibatalkan' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'Dibatalkan' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'Dibatalkan' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold"
               />
             </div>
@@ -230,15 +232,16 @@ onMounted(() => {
                 <div class="flex">
                   <span class="font-semibold text-grey-300">|</span>
                   <CustomChip
-                    v-for="(Pelayanan, index) in filterFarmasi" :key="Pelayanan + index"
-                    :label="Pelayanan"
+                    v-for="(Pelayanan, index) in filterFarmasi" :key="index"
+                    :label="Pelayanan.label"
+                    :value="Pelayanan.value"
                     borderColor="border-adameds-300"
                     bgColor="bg-adameds-50"
                     iconColor="text-adameds-300"
                     textColor="text-adameds-300"
                     customClass="h-7"
                     class="ml-[10px]"
-                    :isSelected="selectedFilterFarmasi.includes(Pelayanan)"
+                    :isSelected="selectedFilterFarmasi.includes(Pelayanan.value)"
                     @selected="onPoliSelect"
                     selectedColor="bg-adameds-300 border-adameds-300"
                   />

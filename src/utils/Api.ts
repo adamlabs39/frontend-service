@@ -253,7 +253,7 @@ const baseInstanceFarmasi = axios.create({
 baseInstanceFarmasi.interceptors.request.use(
   (config) => {
     const token =
-      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VybmFtZSI6ImtoYWJpYkBnbWFpbC5jb20iLCJmYXNrZXNVdWlkIjoiMDE5MzRkMGUtMzJjMi03N2Q5LTkzMjUtZjI0NjVmYzRmYzE3IiwiaWF0IjoxNzMyNjAzMjY0LCJleHAiOjE3MzI2MTQwNjQsImlzcyI6ImF1dGhlbnRpY2F0aW9uLXNlcml2aWNlIn0.WMlHCeBv2Vt9Ux46Jc-RKcpOm5SLNOaU49kH-8B67YcRC9_Y7tV6LCvjEasJskKogMquVNv2KSrngAP3SgZfzULLCIa80XDYrfYckThH4WyxiHROEuGtU0bfu6Tcig1Ih9s73T2xobGeheZH7lzgWNRSq14I7mdgmmTg_CurTo6HNvqi_-NGvIUpTB2BtvpPjbYlIA5_4dgMTGIOjbJbbIv-KQY9azNBrmq16wIpACAHYsklhWpoftTLenQyaoe93SxPrFRWC8vLKeamPG4Wzr9xAKvFaGWRs_p2DegRks2ggOQkJ6QBzyQvwwMRorbOPkNE-ghRWdHwJy6K_1JfLw";
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4gMSIsInVzZXJuYW1lIjoiZmF1enlAZ21haWwuY29tIiwiZmFza2VzVXVpZCI6IjAxOTJiMzFmLTM2NWQtNzMxYy04YjE2LTNhNDU2NWM5NDc1ZSIsImlhdCI6MTczMzk3NTAwOCwiZXhwIjoxNzMzOTc4NjA4LCJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSJ9.e40ePCnBZ42zVtXGFHVz1dNdVNk5HLugaN7nridI2qiBwCvmtxBSlU3Y-2vEu6I7IA47I8ojiVBK3w1lH7RlnWiDvlm1MJYH6AzxfL9sl31s4X3w0kmoVEvpNOIxs3b1m_g0E6LX9b2yZbnNQDi-gB_C-OaUdeUAkBKsChwypIexva5kTRzkFH6Cc6MS21fimh2080XGzKcyo7HMj4hBMVD3oi11I05NKscRth5OAitMR66-qnkmhxXygrRQ5pWrAVMpc7n6c5stsClnOWGM953OFZuWKDzOrl2vGPE_1JVZZZ5GNw2N5yTfaNMNZhkuPBEKZWCxuaBevk-iPTj9UA";
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
@@ -361,6 +361,6 @@ export {
   baseInstanceDatamaster,
   baseInstanceAdmisi,
   baseInstanceIgd,
-  baseInstanceRawatJalan
+  baseInstanceRawatJalan,
   baseInstanceFarmasi
 };

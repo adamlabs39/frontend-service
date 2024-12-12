@@ -81,18 +81,15 @@ const [satuanPembelianUuid] = defineField("satuanPembelianUuid");
 const [konversi] = defineField("konversi");
 const [status] = defineField("status");
 
-const dataKonversi = [
-  { no: 1, satuanPembelianUuid: "", satuanPenggunaanUuid: "", konversi: 0},
-];
-
 const addRow = () => {
   // conversion.value.push({
   //   no: conversion.value.length + 1,
   //   satuanPembelianUuid: "",
   //   satuanPenggunaanUuid: "",
-  //   konversi: 0,
   // });
-  // console.log(conversion.value, 'data');
+  // conversion.value.push(konversi.value)
+  console.log(konversi.value, 'data');
+  console.log(UnitPayload.value, 'UnitPayload');
   
 };
 
@@ -606,7 +603,7 @@ onMounted(() => {
               <p class="mt-[20px] text-sm font-bold">Satuan Penggunaan</p>
             </div>
             <div>
-              <p class="mt-[20px] text-sm">: {{  }}</p>
+              <p class="mt-[20px] text-sm">: {{ payload.satuanPenggunaan.name }}</p>
             </div>
             <!-- Jenis Stok -->
             <div>
@@ -637,7 +634,7 @@ onMounted(() => {
               <p class="mt-[20px] text-sm font-bold">Bentuk Sediaan</p>
             </div>
             <div>
-              <p class="mt-[20px] text-sm">: {{ payload.bentukSediaanUuid }}</p>
+              <p class="mt-[20px] text-sm">: {{ payload.bentukSediaan.name }}</p>
             </div>
           </div>
           <div class="grid grid-cols-[30%,20%,30%,20%]">
@@ -653,7 +650,7 @@ onMounted(() => {
               <p class="mt-[20px] text-sm font-bold">Satuan</p>
             </div>
             <div>
-              <p class="mt-[20px] text-sm">: {{ payload.satuanDosisUuid }}</p>
+              <p class="mt-[20px] text-sm">: {{ payload.satuanDosis.name }}</p>
             </div>
             <!-- Isi Kemasan -->
             <div>
@@ -667,7 +664,7 @@ onMounted(() => {
               <p class="mt-[20px] text-sm font-bold">Satuan</p>
             </div>
             <div>
-              <p class="mt-[20px] text-sm">: {{  }}</p>
+              <p class="mt-[20px] text-sm">: {{ payload.satuanKemasan.name }}</p>
             </div>            
           </div>
           <div class="grid grid-cols-[30%,70%]">
@@ -676,7 +673,7 @@ onMounted(() => {
               <p class="mt-[20px] text-sm font-bold">Kategori Item</p>
             </div>
             <div>
-              <p class="mt-[20px] text-sm">: {{ payload.kategoriObatUuid }}</p>
+              <p class="mt-[20px] text-sm">: {{ payload.kategoriObat.name }}</p>
             </div>
             <!-- Komposisi -->
             <div>

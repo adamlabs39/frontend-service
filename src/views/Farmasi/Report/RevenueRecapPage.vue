@@ -38,7 +38,11 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
           <template #header>
@@ -51,9 +55,17 @@ onMounted(() => {
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div>
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Rekap Pendapatan Resep Per Apotik</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Rekap Pendapatan Resep Per Apotik
+                  </p>
                 </div>
               </div>
             </div>
@@ -61,52 +73,88 @@ onMounted(() => {
           <template #content>
             <div class="grid grid-cols-2 gap-4 mt-[10px]">
               <div>
-                <CustomSelect 
-                  label="Metode Pembayaran" 
-                  class="" 
-                  optionLabel="" 
-                  optionValue="" 
-                  :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" 
-                  place-holder="Tunai" 
+                <CustomSelect
+                  label="Metode Pembayaran"
+                  class=""
+                  optionLabel=""
+                  optionValue=""
+                  :options="['Tunai', 'BPJS', 'ASURANSI LAIN']"
+                  place-holder="Tunai"
                 />
               </div>
               <div>
-                <CustomSelect 
-                  label="Lokasi Stok" 
-                  class="" 
-                  optionLabel="" 
-                  optionValue="" 
-                  :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" 
-                  place-holder="Semua" 
+                <CustomSelect
+                  label="Lokasi Stok"
+                  class=""
+                  optionLabel=""
+                  optionValue=""
+                  :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']"
+                  place-holder="Semua"
                 />
               </div>
-            </div>
-            <div class="flex mt-[10px]">
-              <CustomSelect label="Metode Pembayaran" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Tunai', 'BPJS', 'ASURANSI LAIN']" place-holder="Tunai" />
-              <CustomSelect label="Lokasi Stok" class="w-1/2 mr-5" optionLabel="" optionValue="" :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']" place-holder="Semua" />
-            </div>
-
-            <!-- baris kedua -->
-            <div class="flex mt-[10px]">
-              <CustomTextfield label="Cari Pasien" prependIcon="PhMagnifyingGlass" placeholder="Cari Asal Resep / No. RM" class="w-1/2 mr-9" />
-              <CustomDatePicker v-model="startDateFilter" label="Tanggal" class="w-[130px]" />
-              <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-              <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="mt-auto w-[130px]" />
-              <CustomButton icon="PhMagnifyingGlass" label="Cari" borderColor="border-adameds-300" class="ml-5 mr-[10px] mt-auto" />
-              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300" class="mt-auto" />
+              <div>
+                <CustomTextfield
+                  label="Cari Pasien"
+                  prependIcon="PhMagnifyingGlass"
+                  placeholder="Cari Asal Resep / No. RM"
+                />
+              </div>
+              <div class="flex justify-between">
+                <CustomDatePicker
+                  v-model="startDateFilter"
+                  label="Tanggal"
+                  class="w-[150px]"
+                />
+                <PhMinus class="mt-auto mb-3 text-black" />
+                <div class="flex">
+                  <CustomDatePicker
+                    v-model="endDateFilter"
+                    :showLabel="false"
+                    class="mt-auto w-[150px]"
+                  />
+                  <CustomButton
+                    icon="PhMagnifyingGlass"
+                    label="Cari"
+                    borderColor="border-adameds-300"
+                    class="mt-auto ml-[20px]"
+                  />
+                  <CustomButton
+                    label="Reset"
+                    outlined
+                    borderColor="border-adameds-300"
+                    textColor="text-adameds-300"
+                    class="mt-auto"
+                  />
+                </div>
+              </div>
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
+            />
           </template>
           <template #expandIcon>
-            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
+            />
           </template>
         </CustomAccordion>
       </template>
 
       <template #content>
-        <DataTable v-if="reportData.length" :value="reportData" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }" class="text-SM">
+        <DataTable
+          v-if="reportData.length"
+          :value="reportData"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
+          class="text-SM"
+        >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
               <div class="w-full font-semibold text-center">No.</div>
@@ -117,17 +165,41 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50"> </Column>
-          <Column field="stock_location" header="Lokasi Stok" headerClass="bg-adameds-50"> </Column>
-          <Column field="pembayaran" header="Metode Pembayaran" headerClass="bg-adameds-50"> </Column>
-          <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50"> </Column>
+          <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="stock_location"
+            header="Lokasi Stok"
+            headerClass="bg-adameds-50"
+          >
+          </Column>
+          <Column
+            field="pembayaran"
+            header="Metode Pembayaran"
+            headerClass="bg-adameds-50"
+          >
+          </Column>
+          <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50">
+          </Column>
         </DataTable>
         <NoData />
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <CustomButton @click="() => {}" icon="PhPrinter" label="Cetak" class="mr-[10px]" backgroundColor="bg-adameds-300" />
-          <Paginator :rows="10" :totalRecords="120" :rowsPerPageOptions="[10, 20, 30]" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown" currentPageReportTemplate="{currentPage}">
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+          <Paginator
+            :rows="10"
+            :totalRecords="120"
+            :rowsPerPageOptions="[10, 20, 30]"
+            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+            currentPageReportTemplate="{currentPage}"
+          >
             <template #start="slotProps">Total Data: 0</template>
           </Paginator>
         </div>

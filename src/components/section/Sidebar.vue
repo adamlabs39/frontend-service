@@ -5,6 +5,7 @@ import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
 import { ref, watch } from "vue";
+import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -39,11 +40,12 @@ const route = useRoute();
 const filterRuang = defineModel("filterRuang");
 
 const showSidebar = ref(true);
-const emit = defineEmits(["filterChanged", 'update:searchPoli']);
-const searchPoli = ref('');
+const DialogPermintaanBarang = ref(false);
+const emit = defineEmits(["filterChanged", "update:searchPoli"]);
+const searchPoli = ref("");
 
 watch(searchPoli, (newValue) => {
-  emit('update:searchPoli', newValue);
+  emit("update:searchPoli", newValue);
 });
 
 const goToPage = (url: string) => {
@@ -55,11 +57,9 @@ const goToFilteredPage = (poliUuid: string, poliName: string) => {
     path: "/rawat-jalan/poli",
     query: { filter: poliUuid },
   });
-  emit("filterChanged",  { uuid: poliUuid, name: poliName });
+  emit("filterChanged", { uuid: poliUuid, name: poliName });
 };
 
-
-  
 const goToRuanganPage = () => {
   router.push({
     path: "/rawat-inap/ruangan",
@@ -86,7 +86,7 @@ const getSVG = (svg: string) => {
         <!-- Title -->
         <div v-if="showSidebar" class="flex justify-between mb-[25px]">
           <div
-            class="font-semibold cursor-pointer text-heading "
+            class="font-semibold cursor-pointer text-heading"
             @click="goToPage(sidebarTitleUrl)"
           >
             {{ sidebarTitle }}
@@ -182,112 +182,120 @@ const getSVG = (svg: string) => {
         </div>
 
         <!-- body -->
-         <div class="overflow-auto">
-           <div v-for="(section, index) in props.sidebarBodyList" class="text-SM ">
-             <hr :class="[index == 0 ? 'mb-[20px]': 'my-[20px]']" />
-             <div v-for="row1 in section.child">
-               <div v-if="showSidebar">
-                 <div
-                   v-if="row1.type == linkType.LINK"
-                   @click="goToPage(row1.url ?? '')"
-                   class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
-                   :class="{
-                     'bg-adameds-100 rounded-lg': route.path == row1.url,
-                   }"
-                 >
-                   <component
-                     v-if="row1.icon"
-                     :is="row1.icon"
-                     :size="16"
-                     class="text-white mr-[10px]"
-                   />
-                   <div>
-                     {{ row1.name }}
-                   </div>
-                 </div>
-                 <Accordion
-                   v-else-if="row1.type == linkType.DROPDOWN"
-                   :title="row1.name"
-                   :icon="row1.icon ? row1.icon : ''"
-                   class="cursor-pointer"
-                 >
-                   <div
-                     class="flex m-[10px]"
-                     v-if="showFilterPoli && row1.name === 'Poli'"
-                   >
-                     <PhMagnifyingGlass class="my-auto mr-2" size="20" />
-                     <input
-                       type="text"
-                       class="w-full text-white bg-transparent"
-                       placeholder="Cari Poli ..."
+        <div class="overflow-auto">
+          <div
+            v-for="(section, index) in props.sidebarBodyList"
+            class="text-SM"
+          >
+            <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
+            <div v-for="row1 in section.child">
+              <div v-if="showSidebar">
+                <div
+                  v-if="row1.type == linkType.LINK"
+                  @click="goToPage(row1.url ?? '')"
+                  class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
+                  :class="{
+                    'bg-adameds-100 rounded-lg': route.path == row1.url,
+                  }"
+                >
+                  <component
+                    v-if="row1.icon"
+                    :is="row1.icon"
+                    :size="16"
+                    class="text-white mr-[10px]"
+                  />
+                  <div>
+                    {{ row1.name }}
+                  </div>
+                </div>
+                <Accordion
+                  v-else-if="row1.type == linkType.DROPDOWN"
+                  :title="row1.name"
+                  :icon="row1.icon ? row1.icon : ''"
+                  class="cursor-pointer"
+                >
+                  <div
+                    class="flex m-[10px]"
+                    v-if="showFilterPoli && row1.name === 'Poli'"
+                  >
+                    <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+                    <input
+                      type="text"
+                      class="w-full text-white bg-transparent"
+                      placeholder="Cari Poli ..."
                       v-model="searchPoli"
-                     />
-                   </div>
-   
-                   <div v-for="row2 in row1.child" class="ml-[10px]">
-                     <div
-                       v-if="row2.type == linkType.LINK"
-                       @click="
-                         row1.name === 'Poli'
-                           ? goToFilteredPage( row2.datas, row2.name)
-                           : goToPage(row2.url ?? '')
-                       "
-                       class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
-                       :class="{
-                         'bg-adameds-100 rounded-lg':
-                           (row1.name === 'Poli' &&
-                             (route.query.filter === row2.name ||
-                               (!route.query.filter &&
-                                 row2.name === row2.datas && route.path == '/rawat-jalan/poli'))) ||
-                           (row1.name !== 'Poli' && route.path === row2.url),
-                       }"
-                     >
-                       {{ row2.name }}
-                     </div>
-                     <Accordion
-                       v-else-if="row2.type == linkType.DROPDOWN"
-                       :title="row2.name"
-                       class="cursor-pointer"
-                     >
-                       <div v-for="row3 in row2.child">
-                         <div v-if="row3.type == linkType.LINK">
-                           {{ row3.name }}
-                         </div>
-                         <Accordion
-                           v-else-if="row3.type == linkType.DROPDOWN"
-                           :title="row3.name"
-                         >
-                           <div></div>
-                         </Accordion>
-                       </div>
-                     </Accordion>
-                   </div>
-                 </Accordion>
-               </div>
-               <div v-else>
-                 <component
-                   v-if="row1.icon"
-                   :is="row1.icon"
-                   :size="16"
-                   class="mx-auto my-5 text-white"
-                   @click="
-                     row1.type == linkType.DROPDOWN
-                       ? goToPage(row1.child ? row1.child[0].url ?? '' : '')
-                       : goToPage(row1.url ?? '')
-                   "
-                 />
-               </div>
-             </div>
-           </div>
-         </div>
+                    />
+                  </div>
+
+                  <div v-for="row2 in row1.child" class="ml-[10px]">
+                    <div
+                      v-if="row2.type == linkType.LINK"
+                      @click="
+                        row1.name === 'Poli'
+                          ? goToFilteredPage(row2.datas, row2.name)
+                          : goToPage(row2.url ?? '')
+                      "
+                      class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
+                      :class="{
+                        'bg-adameds-100 rounded-lg':
+                          (row1.name === 'Poli' &&
+                            (route.query.filter === row2.name ||
+                              (!route.query.filter &&
+                                row2.name === row2.datas &&
+                                route.path == '/rawat-jalan/poli'))) ||
+                          (row1.name !== 'Poli' && route.path === row2.url),
+                      }"
+                    >
+                      {{ row2.name }}
+                    </div>
+                    <Accordion
+                      v-else-if="row2.type == linkType.DROPDOWN"
+                      :title="row2.name"
+                      class="cursor-pointer"
+                    >
+                      <div v-for="row3 in row2.child">
+                        <div v-if="row3.type == linkType.LINK">
+                          {{ row3.name }}
+                        </div>
+                        <Accordion
+                          v-else-if="row3.type == linkType.DROPDOWN"
+                          :title="row3.name"
+                        >
+                          <div></div>
+                        </Accordion>
+                      </div>
+                    </Accordion>
+                  </div>
+                </Accordion>
+              </div>
+              <div v-else>
+                <component
+                  v-if="row1.icon"
+                  :is="row1.icon"
+                  :size="16"
+                  class="mx-auto my-5 text-white"
+                  @click="
+                    row1.type == linkType.DROPDOWN
+                      ? goToPage(row1.child ? row1.child[0].url ?? '' : '')
+                      : goToPage(row1.url ?? '')
+                  "
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div
-        v-if="showStockBtn && showSidebar"
+      <div v-if="showStockBtn && showSidebar"
         class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
+        @click="DialogPermintaanBarang = true"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />
-        <div class="my-auto font-semibold">Stok</div>
+        <div class="my-auto font-semibold">Stok </div>
       </div>
+      <dialogPermintaanBarang 
+        v-model:isDialogVisible="DialogPermintaanBarang" 
+        :full-screen="true"  
+      />
     </div>
   </div>
 </template>

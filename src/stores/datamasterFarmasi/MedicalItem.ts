@@ -12,7 +12,9 @@ export const useMedicalItemStore = defineStore({
   getters: {},
   actions: {
     async getApi(page: number = 1, limit: number = 10, name:String="", payload = {}) {
-      return apiFarmasiGet(`/farmasi/datamaster/item-medis?page=${page}&limit=${limit}&name=${name}`, payload);
+      console.log(payload, 'payload');
+      
+      return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}`, payload);
     },
     async postApi(payload = {}) {
       return apiFarmasiPost("/farmasi/datamaster/item-medis", payload);
