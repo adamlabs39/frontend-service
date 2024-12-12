@@ -109,9 +109,9 @@ const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
 
-    await fetchKabupaten(tempPatientData.address.prov)
-    await fetchKecamatan(tempPatientData.address.city)
-    await fetchKelurahan(tempPatientData.address.district)
+    await fetchKabupaten(tempPatientData.address.prov);
+    await fetchKecamatan(tempPatientData.address.city);
+    await fetchKelurahan(tempPatientData.address.district);
 
     tempPatientData.birthDetail.birthDate = new Date(
       tempPatientData.birthDetail.birthDate
@@ -530,6 +530,7 @@ defineExpose({
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
             @update:model-value="fetchKelurahan"
@@ -538,7 +539,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="kecamatanPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...kecamatanPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"

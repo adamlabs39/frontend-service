@@ -47,6 +47,13 @@ import MedicalRecordNavigation from "./SectionNavigator/MedicalRecordNavigation.
 import MedicalRecordDetail from "./SectionContent/MedicalRecordDetail.vue";
 import MedicalRecordAssesment from "./SectionContent/MedicalRecordAssesment.vue";
 
+const props = defineProps({
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+});
+
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
 const selectedSessionTab = ref("non-sesi");
@@ -84,7 +91,7 @@ const soapSoapierScrollController = (id: string) => {
   }
 };
 
-const selectedAlkes = ref("Order Alkes");
+const selectedPenunjang = ref("Order Lab");
 
 // Ref container untuk elemen yang dapat discroll
 const resumeDischargeScrollContainer = ref<HTMLElement | null>(null);
@@ -191,10 +198,13 @@ defineExpose({ showDialogRM });
       </template>
       <template #body>
         <div class="pt-[10px] h-full overflow-hidden flex flex-col">
-          <DataPatient />
+          <DataPatient :rmType="rmType" />
           <div class="flex flex-col overflow-hidden grow">
             <div class="flex justify-between mb-4">
-              <div class="flex mr-5">
+              <div
+                v-if="rmType == 'rawat-inap' || rmType == 'igd'"
+                class="flex mr-5"
+              >
                 <RMCustomSelect
                   v-model="rmDate"
                   :options="rmDateList"
@@ -225,20 +235,29 @@ defineExpose({ showDialogRM });
             <MedicalRecordTab
               v-model:selected-tab="selectedTab"
               v-model:selected-session-tab="selectedSessionTab"
+              :rmType="rmType"
             />
             <MedicalRecordNavigation
               :selectedTab="selectedTab"
               v-model:selected-assesment="selectedAssesment"
               v-model:selected-soap="selectedSoap"
               v-model:selected-soapier="selectedSoapier"
-              v-model:selected-alkes="selectedAlkes"
+              v-model:selected-penunjang="selectedPenunjang"
+              v-model:selected-surat-list="selectedSuratList"
               @soap-soapier-jump="soapSoapierScrollController"
               @resume-discharge-jump="resumeDischargeScrollController"
+              :rmType="rmType"
             />
 
-            <MedicalRecordDetail v-if="selectedTab == 'rekam-medis'" />
+            <MedicalRecordDetail
+              v-if="selectedTab == 'rekam-medis'"
+              :rmType="rmType"
+            />
 
-            <MedicalRecordAssesment v-if="selectedTab == 'asesmen'" :selectedAssesment="selectedAssesment" />
+            <MedicalRecordAssesment
+              v-if="selectedTab == 'asesmen'"
+              :selectedAssesment="selectedAssesment"
+            />
 
             <div
               v-if="selectedTab == 'soap' || selectedTab == 'soapier'"
@@ -391,19 +410,14 @@ defineExpose({ showDialogRM });
               </div>
             </div>
 
-            <div v-if="selectedTab == 'alkes-penunjang'" class="overflow-auto">
-              <FormOrderAlkes
-                v-if="selectedAlkes == 'Order Alkes'"
-                method="form"
-                initialState="0"
-              />
+            <div v-if="selectedTab == 'penunjang'" class="overflow-auto">
               <OrderLab
-                v-if="selectedAlkes == 'Order Lab'"
+                v-if="selectedPenunjang == 'Order Lab'"
                 method="form"
                 initialState="0"
               />
               <FormOrderFisio
-                v-if="selectedAlkes == 'Order Fisio'"
+                v-if="selectedPenunjang == 'Order Fisio'"
                 method="form"
                 initialState="0"
               />
