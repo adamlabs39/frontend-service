@@ -93,6 +93,9 @@ const onPaymentMethodSelect = (label: string) => {
 const resetForm = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  searchPatientFilter.value = "";
+  searchDokterFilter.value = "";
+  selectedPaymentMethod.value = [];
 }
 
 
@@ -107,6 +110,7 @@ onMounted(() => {
 </script>
 
 <template>
+  {{ currentRouteName }}
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
@@ -115,7 +119,7 @@ onMounted(() => {
           class="leading-10 text-adameds-300 text-heading"
           v-if="currentRouteName == 'ruangan'"
         >
-          {{ filterMenu}}
+          {{ filterMenu.name}}
         </div>
         <CustomBreadCrumb
           v-else-if="
@@ -139,7 +143,7 @@ onMounted(() => {
     <template #content>
       <div class="flex mt-[16px] mb-2.5">
         <CustomTextfield
-          v-if="currentRouteName === 'rawat-inap-ruangan'"
+          v-if="currentRouteName === 'ruangan'"
           v-model="searchPatientFilter"
           prependIcon="PhMagnifyingGlass"
           label="Cari Pasien"
@@ -169,7 +173,7 @@ onMounted(() => {
           @update:model-value="$emit('update:valueNamaObat',searchNamaObatFilter)"
         />
         <CustomSelect
-          v-if="currentRouteName === 'rawat-inap-ruangan'"
+          v-if="currentRouteName === 'ruangan'"
           v-model="searchDokterFilter"
           label="Dokter"
           class="mr-5 grow"

@@ -45,6 +45,7 @@ interface Filter {
 const patientData = ref<any>([]);
 // DIRAWAT / DISCHARGE
 const statusPelayanan = ref("");
+
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
@@ -82,6 +83,7 @@ const handleChipPayment = (filters: string[]) => {
 // Filter Data
 const filterData = ref<FilterAdmisi>({});
 
+// Ambil dari RI
 const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   storeUtils.setLoading(true);
   try {
@@ -100,13 +102,12 @@ const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   }
 };
 
-
+// Reload dan Terapkan Filter
 const reloadData = async () => {
   let filter = {} as FilterAdmisi;
   filter = setFilter();
   patientData.value = await fetchRIPatient(filter);
 };
-
 
 
 const setFilter = () => {
@@ -127,6 +128,7 @@ const setFilter = () => {
   )}`;
   filter.status = statusPelayanan.value;
   filter.room = [props.filterRuangan.uuid];
+  filter.dpjp = dokter.value;
   return filter
 }
 
@@ -139,6 +141,9 @@ const resetFilter = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   resetFormRef.value.resetForm(); 
+  dokter.value = "";
+  selectedFilterPayment.value = [];
+  statusPelayanan.value = "";
 }
 
 // PAGINATION
@@ -156,10 +161,11 @@ watch(
   () => props.filterRuangan,
   async () => {
     if (isDataFetched.value) {
+      resetFilter();
       await reloadData();
     }
   },
-  { immediate: false } 
+  { immediate: false} 
 );
 
 // DISCHARGE / DIRAWAT
