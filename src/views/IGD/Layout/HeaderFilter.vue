@@ -184,7 +184,9 @@ defineExpose({
           "
           class="mr-5 grow"
           :optionLabel="
-            pageType === 'rekap-tindakan-pasien' ? 'pegawai.name' : 'name'
+            pageType === 'rekap-tindakan-pasien'
+              ? 'pegawai.name'
+              : 'detailPegawai.name'
           "
           optionValue="uuid"
           :place-holder="
