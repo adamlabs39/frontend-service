@@ -24,8 +24,8 @@ export const useTagihanStore = defineStore({
     async getDetailBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}`, payload);
     },
-    async getAktifApi(payload = {}) {
-      return apiPembayaranGet(`/datamaster/role/aktif`, payload);
+    async getItemBill(uuid: string,payload = {}) {
+      return apiPembayaranGet(`/payment/${uuid}/items`, payload);
     },
     async postApi(payload = {}) {
       return apiPembayaranPost("/datamaster/role", payload);

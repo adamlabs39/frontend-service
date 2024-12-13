@@ -6,8 +6,10 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
+import type { DataTableRowClickEvent } from "primevue/datatable";
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const storeUtils = utilsStore();
@@ -17,9 +19,13 @@ const isKasirOpen = ref(false);
 const saldoAwalDisabled = ref(false);
 const shiftDisabled = ref(false);
 const kasirData = ref<any>(null);
+const itemTagihan = ref<any>(null);
+const openedData = ref<any>({});
+
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
 const listTagihanRIDialog = ref(false);
+const itemsPasien = ref<any[]>([]);
 
 const hasData = computed(() => kasirData.value && kasirData.value.length > 0);
 
@@ -74,6 +80,37 @@ const searchPatientData = async (filter: string) => {
   }, 800);
 };
 
+const processBillData = (data: any) => {
+  console.log("data", data);
+  if (data) {
+    itemsPasien.value = data.map((service: any, index: number) => ({
+      no: index + 1,
+      uuid: service.uuid,
+      layanan: service.serviceName,
+      doctor: service.practitionerName,
+      tanggal_jadwal: new Date(service.date * 1000).toLocaleDateString("id-ID"),
+      no_time: new Date(service.date * 1000).toLocaleTimeString("id-ID"),
+    }));
+  } else {
+    itemsPasien.value = [];
+  }
+};
+
+// const setSelectedPatientData = async (uuid: string) => {
+//   if (uuid) {
+//     storeUtils.setLoading(true);
+//     try {
+//       const response = await tagihanStore.getDetailBill(uuid);
+//       if (response && response.payload) {
+//         kasirData.value = response.payload;
+//       }
+//     } catch (error) {
+//       console.error("Failed to process the data:", error);
+//     } finally {
+//       storeUtils.setLoading(false);
+//     }
+//   }
+// };
 const setSelectedPatientData = async (uuid: string) => {
   if (uuid) {
     storeUtils.setLoading(true);
@@ -81,6 +118,8 @@ const setSelectedPatientData = async (uuid: string) => {
       const response = await tagihanStore.getDetailBill(uuid);
       if (response && response.payload) {
         kasirData.value = response.payload;
+
+        processBillData(response.payload.serviceBill);
       }
     } catch (error) {
       console.error("Failed to process the data:", error);
@@ -115,125 +154,30 @@ watch(searchQuery, (newValue) => {
     fetchSearchTransactions();
   }, 500);
 });
+
+const detailTagihan = async (event: DataTableRowClickEvent) => {
+  openedData.value = event.data;
+  storeUtils.setLoading(true);
+  try {
+    const response = await tagihanStore.getItemBill(openedData.value.uuid);
+    if (response && response.payload) {
+      itemTagihan.value = response.payload;
+      console.log("response", itemTagihan.value);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+  listTagihanRIDialog.value = true;
+};
+
 onMounted(() => {
   fetchSearchTransactions();
 });
 
-const itemsPasien = ref([
-  {
-    layanan: "IGD",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "10-10-2010",
-    insurance_account_name: "TUNAI",
-    no_time: "10:00",
-    status: "Lunas",
-    jumlah: "1",
-    tarif: "1000",
-    total: "1500",
-    tindakan: "Spesialis Poli Pagi",
-    penunjangLab: "Kimia Klinik",
-    penunjangFisio: "Fisio 1",
-    obat: "Paramex",
-    golonganObat: "Obat Keras",
-    jasa: "1000",
-    alkes: "Kasa",
-    kamar: "Mawar",
-    jenisRuangan: "Rawatan Umum",
-    kelasRuangan: "Kelas I",
-    waktu: "2 hari",
-  },
-  {
-    layanan: "Rawat Inap",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "10-10-2010",
-    insurance_account_name: "TUNAI",
-    no_time: "10:00",
-    status: "Lunas",
-    jumlah: "4",
-    tarif: "1000",
-    total: "4000",
-    tindakan: "Bersih-Bersih Toilet",
-    penunjangLab: "Darah lengkap",
-    penunjangFisio: "Fisio 2",
-    obat: "Paramex",
-    golonganObat: "Obat Keras",
-    jasa: "1000",
-    alkes: "Alcohol",
-    kamar: "Mawar",
-    jenisRuangan: "Rawatan Umum",
-    kelasRuangan: "Kelas I",
-    waktu: "2 hari",
-  },
-  {
-    layanan: "IGD",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "10-10-2010",
-    insurance_account_name: "TUNAI",
-    no_time: "10:00",
-    new_patient: true,
-    status: "Lunas",
-    jumlah: "1",
-    tarif: "2000",
-    total: "2000",
-    tindakan: "Potong Roti",
-    penunjangLab: "Hematologi",
-    penunjangFisio: "Fisio 3",
-    obat: "Paramex",
-    golonganObat: "Obat Keras",
-    jasa: "1000",
-    alkes: "Salonpas",
-    kamar: "Mawar",
-    jenisRuangan: "Rawatan Umum",
-    kelasRuangan: "Kelas I",
-    waktu: "2 hari",
-  },
-  {
-    layanan: "Rawat Inap Bayi",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "10-10-2010",
-    insurance_account_name: "TUNAI",
-    insurance_account_name2: "Gabung Tagihan Keluarga",
-    no_time: "10:00",
-    status: "Lunas",
-    jumlah: "3",
-    tarif: "500",
-    total: "1500",
-    tindakan: "Asuhan Keperawatan",
-    penunjangLab: "Darah Lengkap",
-    penunjangFisio: "Fisio 4",
-    obat: "Paramex",
-    golonganObat: "Obat Keras",
-    jasa: "1000",
-    alkes: "Jarum Suntik",
-    kamar: "Mawar",
-    jenisRuangan: "Rawatan Umum",
-    kelasRuangan: "Kelas I",
-    waktu: "2 hari",
-  },
-  {
-    layanan: "Rawat Inap Bayi",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "10-10-2010",
-    insurance_account_name: "TUNAI",
-    insurance_account_name2: "Gabung Tagihan Keluarga",
-    no_time: "10:00",
-    status: "Lunas",
-    jumlah: "2",
-    tarif: "3000",
-    total: "6000",
-    tindakan: "Asuhan Kebidanan",
-    penunjangLab: "Testing",
-    penunjangFisio: "Fisio 5",
-    obat: "Paramex",
-    golonganObat: "Obat Keras",
-    jasa: "1000",
-    alkes: "Testing",
-    kamar: "Mawar",
-    jenisRuangan: "Rawatan Umum",
-    kelasRuangan: "Kelas I",
-    waktu: "2 hari",
-  },
-]);
+console.log("Items Pasien:", itemsPasien.value);
+
 console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
 </script>
 
@@ -469,22 +413,30 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <div class="text-sm text-black font-poppins">
                 Biaya Administrasi
               </div>
-              <div class="text-sm font-poppins">Rp, {{kasirData.adminFee}}</div>
+              <div class="text-sm font-poppins">
+                Rp, {{ kasirData.adminFee }}
+              </div>
             </div>
             <!-- Biaya Tindakan -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Tindakan</div>
-              <div class="text-sm font-poppins">Rp, {{kasirData.totalTindakan}}</div>
+              <div class="text-sm font-poppins">
+                Rp, {{ kasirData.totalTindakan }}
+              </div>
             </div>
             <!-- Biaya Obat -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat</div>
-              <div class="text-sm font-poppins">Rp, {{kasirData.totalObat}}</div>
+              <div class="text-sm font-poppins">
+                Rp, {{ kasirData.totalObat }}
+              </div>
             </div>
             <!-- Biaya Kamar -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
-              <div class="text-sm font-poppins">Rp, {{kasirData.totalRuangan}}</div>
+              <div class="text-sm font-poppins">
+                Rp, {{ kasirData.totalRuangan }}
+              </div>
             </div>
             <!-- PPN -->
             <div class="flex justify-between mt-4">
@@ -501,8 +453,35 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
             <!-- Grand Total -->
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Grand Total</div>
-              <div class="text-sm font-bold font-poppins">Rp, {{kasirData.grandTotal}}</div>
+              <div class="text-sm font-bold font-poppins">
+                Rp, {{ kasirData.grandTotal }}
+              </div>
             </div>
+
+            <div class="flex mt-[30px]">
+              <CustomInputNumber
+                placeholder="5"
+                :show-label="false"
+                class="w-[80px] bg-white rounded-xl"
+              >
+                <template #appendText>
+                  <div
+                    class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
+                  >
+                    %
+                  </div>
+                </template>
+              </CustomInputNumber>
+              <CustomButton label="Pakai Diskon" class="ml-[10px]" />
+
+              <CustomTextfield
+                :showLabel="false"
+                placeholder="Masukkan Kode Voucher"
+                class="w-[30%] ml-[50px] mr-[10px]"
+              />
+              <CustomButton label="Pakai Voucher" class="" />
+            </div>
+
             <!-- Button Bayar -->
             <div class="mt-[60px]">
               <div class="flex">
@@ -528,14 +507,14 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           </div>
 
           <!-- List Tagihan Pelayanan -->
-          <div class="mt-[-390px] mr-[20px]">
+          <div class="mt-[-440px] mr-[20px]">
             <DataTable
               :value="itemsPasien"
               scrollable
               scrollHeight="380px"
               class="overflow-hidden rounded-[10px]"
               :pt="{ headerRow: 'text-SM' }"
-              @rowClick="listTagihanRIDialog = true"
+              @rowClick="detailTagihan"
             >
               <Column
                 field="no"
@@ -741,7 +720,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
             <p class="font-bold mt-[20px]">Grand Total</p>
           </div>
           <div>
-            <p class="font-bold mt-[20px]">Rp. {{kasirData.grandTotal}}</p>
+            <p class="font-bold mt-[20px]">Rp. {{ kasirData.grandTotal }}</p>
           </div>
         </div>
         <hr class="mt-6 border-1 border-grey-200" />
@@ -805,7 +784,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
         <div>
           <div class="pt-5">
             <div class="flex">
-              <p class="font-bold">Rawat Inap</p>
+              <p class="font-bold">{{ openedData.layanan }}</p>
               <CustomChip
                 class="ml-2"
                 :showCheckedIcon="false"
@@ -1100,8 +1079,8 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <!-- Table Obat -->
           <div class="pt-5">
             <DataTable
-              v-if="itemsPasien.length"
-              :value="itemsPasien"
+            v-if="itemTagihan.item.obat"
+              :value="itemTagihan.item.obat"
               class="overflow-hidden rounded-[10px]"
               scrollable
               scrollHeight="flex"
@@ -1116,7 +1095,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.tanggal_jadwal }}
+                      {{ slotProps.data.dateUsed }}
                     </p>
                   </div>
                 </template>
@@ -1130,7 +1109,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               >
                 <template #body="slotProps">
                   <div class="flex flex-wrap">
-                    <p class="text-sm">{{ slotProps.data.obat }}</p>
+                    <p class="text-sm">{{ slotProps.data.itemName }}</p>
                   </div>
                 </template>
               </Column>
@@ -1142,7 +1121,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.golonganObat }}</div>
+                  <div class="text-SM">{{ slotProps.data.addtionalField }}</div>
                 </template>
               </Column>
 
@@ -1153,28 +1132,35 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jumlah }}</div>
+                  <div class="text-SM">{{ slotProps.data.qty }}</div>
                 </template>
               </Column>
 
               <!-- Tarif -->
               <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.tarif }}</div>
+                  <div class="text-SM">{{ slotProps.data.price }}</div>
                 </template>
               </Column>
 
               <!-- Jasa -->
               <Column field="tarif" header="Jasa" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jasa }}</div>
+                  <div class="text-SM">
+                    {{ slotProps.data.serviceFee ?? 0 }}
+                  </div>
                 </template>
               </Column>
 
               <!-- Total -->
               <Column field="total" header="Total" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.total }}</div>
+                  <div class="text-SM">
+                    {{
+                      slotProps.data.qty * slotProps.data.price +
+                      slotProps.data.serviceFee
+                    }}
+                  </div>
                 </template>
               </Column>
             </DataTable>
