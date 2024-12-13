@@ -221,7 +221,7 @@ onMounted(() => {
     <component
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
-      :filter="filter"
+      :filterRuangan="filter"
     ></component>
   </div>
 </template>

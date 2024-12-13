@@ -33,7 +33,7 @@ const props = defineProps({
 });
 
 // Emit for Search and Payment
-const emit = defineEmits(["search", "payment", "resetStatusPelayanan"]);
+const emit = defineEmits(["search", "payment", "update:valueSearch", "update:valueNoAnggota", "update:valueNamaObat", "update:valueDokter", "update:valuePelayanan", "update:valueStartDate", "update:valueEndDate", "reset", "reloadData"]);
 
 // STORE
 const praktisiStore = usePraktisiStore();
@@ -47,16 +47,6 @@ const praktisiPayload = ref<any[]>([]);
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    // let isDoctor = true;
-    // let isNonDoctor = false;
-    
-    // const response = await praktisiStore.getApi({
-    //   page: praktisiProperties.value.page,
-    //   limit: praktisiProperties.value.page_size,
-    //   name: searchQuery.value,
-    //   doctor: isDoctor,
-    //   non_doctor: isNonDoctor,
-    // });
 
     const response = await praktisiStore.getAktifApi()
 
@@ -65,18 +55,6 @@ const fetchPraktisiData = async () => {
     } else {
       praktisiPayload.value = [];
     }
-
-    // if (response && response.payload) {
-    //   praktisiProperties.value.total = response.properties.total;
-    //   praktisiPayload.value = [...response.payload];
-    //   // console.log(`COba`,praktisiPayload.value);
-    //    if (response.payload.length === praktisiProperties.value.page_size) {
-    //     praktisiProperties.value.page += 1;
-    //     await fetchPraktisiData(); 
-    //   }
-    // } else {
-    //   praktisiPayload.value = [];
-    // }
   } catch (error) {
     console.error("Failed to fetch data", error);
     praktisiPayload.value = [];
@@ -85,6 +63,7 @@ const fetchPraktisiData = async () => {
   }
 };
 
+// Removed duplicate emit declaration
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -106,92 +85,24 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
-   emit("payment");
+   emit("payment", selectedPaymentMethod.value);
 };
 
 
 // const filters = [selectedFilterPoli, selectedPaymentMethod];
-
-const resetFilter = () => {
+const resetForm = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
-
-  switch (props.currentRouteName) {
-    case "rawat-inap-ruangan":
-      searchPatientFilter.value = "";
-      searchDokterFilter.value = "";
-      
-      break;
-    case "monitoring-kunjungan":
-    case "monitoring-riwayat-kunjungan":
-      searchNoAnggotaFilter.value = "";
-      searchPelayananFilter.value = "";
-      break;
-    case "monitoring-obat-kunjungan":
-      searchNamaObatFilter.value = "";
-      searchPelayananFilter.value = "";
-      break;
-    default:
-      break;
-  }
-  // Resetting payment method for all routes
-  selectedPaymentMethod.value = [];
-  emit("resetStatusPelayanan");
-};
-
-const setFilter = (dataFilter: FilterAdmisi) => {
-  selectedPaymentMethod.value = dataFilter.paymentMethod
-    ? [dataFilter.paymentMethod]
-    : [];
-  startDateFilter.value = dataFilter.startDate
-    ? (epochToDate(parseInt(dataFilter.startDate)) as Date)
-    : new Date();
-  endDateFilter.value = dataFilter.endDate
-    ? (epochToDate(parseInt(dataFilter.endDate)) as Date)
-    : new Date();
-  searchPatientFilter.value = dataFilter.q ?? "";
-  searchDokterFilter.value = dataFilter.dpjp ?? "";
 }
 
 
-const searchData = (dataString: any) => {
-  let filter = {} as FilterAdmisi;
-
-  
-  filter.startDate = `${dateToEpoch(
-    setTimeForDate(startDateFilter.value, 0, 0, 0)
-  )}`;
-  filter.endDate = `${dateToEpoch(
-    setTimeForDate(endDateFilter.value, 23, 59, 59)
-  )}`;
-  filter.q = searchPatientFilter.value || "";
-  filter.paymentMethod =
-    selectedPaymentMethod.value.length > 1 ||
-    !selectedPaymentMethod.value.length
-      ? ""
-      : selectedPaymentMethod.value[0];
-
-  // FIXME Belum bisa multiple
-
-  
-  // console.log('test',props.filterMenu); 
-  filter.room = [props.filterMenu.uuid ?? ""];
-  filter.dpjp = searchDokterFilter.value ?? "";
-  filter.status = props.filterData.status ?? "";
-
-  return filter;
-};
-
 defineExpose({
-  resetFilter,
-  searchData
+  resetForm,
 });
 
 
 onMounted(() => {
   fetchPraktisiData();
-  setFilter(props.filterData)
-  // console.log('test',props.filterData);
 });
 </script>
 
@@ -199,10 +110,10 @@ onMounted(() => {
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton icon="PhArrowClockwise" />
+        <CustomButton icon="PhArrowClockwise" @click ="emit('reloadData')"/>
         <div
           class="leading-10 text-adameds-300 text-heading"
-          v-if="currentRouteName == 'rawat-inap-ruangan'"
+          v-if="currentRouteName == 'ruangan'"
         >
           {{ filterMenu.name }}
         </div>
@@ -234,6 +145,7 @@ onMounted(() => {
           label="Cari Pasien"
           placeholder="Cari Nama Pasien"
           class="mr-5 grow"
+          @update:modelValue="$emit('update:valueSearch',searchPatientFilter)"
         />
         <CustomTextfield
           v-if="
@@ -245,6 +157,7 @@ onMounted(() => {
           label="Cari No. Anggota"
           placeholder="Cari No. Anggota"
           class="mr-5 grow"
+          @update:model-value="$emit('update:valueNoAnggota',searchNoAnggotaFilter)"
         />
         <CustomTextfield
           v-if="currentRouteName === 'monitoring-obat-kunjungan'"
@@ -253,6 +166,7 @@ onMounted(() => {
           label="Cari Nama Obat"
           placeholder="Cari Nama Obat"
           class="mr-5 grow"
+          @update:model-value="$emit('update:valueNamaObat',searchNamaObatFilter)"
         />
         <CustomSelect
           v-if="currentRouteName === 'rawat-inap-ruangan'"
@@ -264,6 +178,7 @@ onMounted(() => {
           place-holder="Cari Dokter"
           :options="praktisiPayload"
           prependIcon="PhMagnifyingGlass"
+          @update:modelValue="$emit('update:valueDokter',searchDokterFilter)"
         />
         <CustomSelect
           v-else
@@ -275,18 +190,21 @@ onMounted(() => {
           place-holder="Pilih Jenis Pelayanan"
           :options="['Semua', 'Beberapa', 'Banyak']"
           prependIcon="PhMagnifyingGlass"
+          @update:modelValue="$emit('update:valuePelayanan',searchPelayananFilter)"
         />
         <!-- disini -->
         <CustomDatePicker
           v-model="startDateFilter"
           label="Tanggal"
           class="w-[200px]"
+          @update:modelValue="$emit('update:valueStartDate',startDateFilter)"
         />
         <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
         <CustomDatePicker
           v-model="endDateFilter"
           :showLabel="false"
           class="mt-auto w-[200px]"
+          @update:modelValue="$emit('update:valueEndDate',endDateFilter)"
         />
         <CustomButton
           icon="PhMagnifyingGlass"
@@ -295,7 +213,7 @@ onMounted(() => {
           @click="$emit('search')"
         />
         <CustomButton
-          @click="resetFilter"
+          @click="$emit('reset')"
           label="Reset"
           outlined
           borderColor="border-adameds-300"
@@ -308,13 +226,13 @@ onMounted(() => {
       <div
         class="font-semibold text-SM text-grey-300"
         v-if="
-          currentRouteName === 'rawat-inap-ruangan' ||
-          currentRouteName === 'rawat-inap-perpindahan-bangsal'
+          currentRouteName === 'ruangan' ||
+          currentRouteName === 'perpindahan-bangsal'
         "
       >
         <div
         class="font-semibold text-SM text-grey-300"
-        v-if="currentRouteName === 'rawat-inap-ruangan'"
+        v-if="currentRouteName === 'ruangan'"
       >
         <div class="flex my-2.5">
           <div class="w-[15%] flex items-center">Filter Pembayaran</div>

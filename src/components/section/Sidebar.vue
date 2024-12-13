@@ -175,7 +175,7 @@ const getSVG = (svg: string) => {
                             (route.query.filter === row2.name ||
                               (!route.query.filter &&
                                 row2.name === row2.datas &&
-                                route.path == '/rawat-jalan/poli'))) ||
+                                route.path == '/rawat-jalan/poli' || route.path =='/rawat-inap/ruangan'))) ||
                           (row1.name !== 'Poli' && route.path === row2.url),
                       }"
                     >

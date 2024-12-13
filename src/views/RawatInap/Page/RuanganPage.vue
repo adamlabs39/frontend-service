@@ -2,7 +2,7 @@
 import { onMounted, ref, watch } from "vue";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
-import { useRoute } from "vue-router";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
@@ -13,81 +13,15 @@ import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import NoData from "@/components/section/NoData.vue";
 
-const props = defineProps<{
-  filter: Filter;
-}>();
 
-interface Filter {
-  name: string;
-  uuid: string;
-}
+// STORE
+const storeUtils = utilsStore();
+const admisiRIStore = useAdmisiRIStore();
+// ROUTE
+const route = useRoute();
+const currentRouteName = ref("");
 
-const isResetPatient = ref(false);
-const selectedPatient = ref<any[]>([]);
-const updateSelectedPatient = (patient: any) => {
-  patient.length > 0
-    ? (selectedPatient.value = patient)
-    : (selectedPatient.value = []);
-};
 
-const updateUnselectedPatient = (patient: any) => {
-  if (selectedPatient.value && selectedPatient.value.length > 0) {
-    const index = selectedPatient.value.findIndex(
-      (p: { id: string }) => p.id === patient.phone
-    );
-    if (index !== -1) {
-      selectedPatient.value.splice(index, 1);
-    }
-  }
-};
-
-const updateUnselectAll = () => {
-  selectedPatient.value = [];
-};
-
-// Pagination
-const handlePage = (event: any) => {
-  properties.value.page = event.page + 1;
-  properties.value.page_size = event.rows;
-  search();
-};
-
-const resetCancelVisit = () => {
-  cancelReason.value = ""; // Kosongkan cancelReason
-  selectedPatient.value = []; // Kosongkan selectedPatient
-  showCancelVisit.value = false; // Menutup tampilan cancel visit
-  isResetPatient.value = !isResetPatient.value;
-};
-
-const handleResetPatient = () => {
-  isResetPatient.value = false;
-};
-
-const confirmCancel = async () => {
-  console.log(selectedPatient.value);
-  try {
-    storeUtils.setLoading(true);
-    let payload = {
-      listUuid: [] as any[],
-      cancelReason: cancelReason.value,
-    };
-    selectedPatient.value.forEach((patient) => {
-      payload.listUuid.push(patient.uuid);
-    });
-    console.log("Payload:", payload);
-    const response = await admisiRIStore.cancelVisitRI(payload);
-    console.log("Response:", response);
-    showCancelVisit.value = false;
-    if (response) {
-      resetCancelVisit();
-      search();
-    }
-  } catch (error) {
-    console.error("Failed to cancel visit", error);
-  } finally {
-    storeUtils.setLoading(false);
-  }
-};
 // PROPERTIES FOR PAGINATION
 const properties = ref({
   page: 1,
@@ -95,55 +29,63 @@ const properties = ref({
   total: 0,
 });
 
-// STORE
-const storeUtils = utilsStore();
-const admisiRIStore = useAdmisiRIStore();
+// FIlter for Sidebar Ruangan
+const props = defineProps<{
+  filterRuangan: Filter;
+}>();
 
-// FILTER HEADER
-const headerRawatInapRef = ref<typeof DataPoliBPJSHeader>();
+interface Filter {
+  name: string;
+  uuid: string;
+}
+
+
 
 // Data Patient From API
 const patientData = ref<any>([]);
-
 // DIRAWAT / DISCHARGE
 const statusPelayanan = ref("");
-
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
-const route = useRoute();
-const currentRouteName = ref("");
+
+
+// Menyimpan emit ke variabel
+const searchQuery = ref("");
+const dokter = ref("");
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
+const selectedFilterPayment = ref<string[]>([]);
+
+
+// Event emit FROM HEADER
+const handleSearchQuery = (value: string) => {
+  searchQuery.value = value;
+};
+const handleDokter = (value: string) => {
+  dokter.value = value;
+};
+const handleStartDate = (value: any) => {
+  startDateFilter.value = value;
+};
+const handleEndDate = (value : any) => {
+  endDateFilter.value = value;
+};
+const handleReset = () => {
+  resetFilter();
+  reloadData();
+}
+const handleChipPayment = (filters: string[]) => {
+  selectedFilterPayment.value = filters;
+  reloadData();
+};
 
 // Filter Data
 const filterData = ref<FilterAdmisi>({});
 
-// BUTTON CARI
-const search = async () => {
-  filterData.value = headerRawatInapRef.value?.searchData();
-  console.log(`HABIS DI SEARCH`, filterData.value);
-  if (currentRouteName.value == "rawat-inap-ruangan") {
-    patientData.value = await fetchRIPatient();
-  }
-};
-
-// BUTTON RESET
-const resetFilter = () => {
-  headerRawatInapRef.value?.resetFilter();
-
-  filterData.value = headerRawatInapRef.value?.searchData() ?? {
-    startDate: dateToEpoch(setTimeForDate(new Date(), 0, 0, 0)),
-    endDate: dateToEpoch(setTimeForDate(new Date(), 23, 59, 59)),
-  };
-};
-
-// Tangani event reset dari DataPoliBPJSHeader
-const handleResetStatusPelayanan = () => {
-  statusPelayanan.value = "";
-};
-
-const fetchRIPatient = async () => {
+const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRIStore.getRI(filterData.value);
+    const response = await admisiRIStore.getRI(filter);
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -158,34 +100,92 @@ const fetchRIPatient = async () => {
   }
 };
 
-// Cantumkan Status Pelayanan
-const filterStatus = async (status: string) => {
-  // resetFilter();
-  statusPelayanan.value = status;
-  filterData.value = {
-    ...filterData.value,
-    status: statusPelayanan.value,
-  };
-  patientData.value = await fetchRIPatient();
+
+const reloadData = async () => {
+  let filter = {} as FilterAdmisi;
+  filter = setFilter();
+  patientData.value = await fetchRIPatient(filter);
 };
 
-// watcher props filter
+
+const setFilter = () => {
+  let filter = {} as FilterAdmisi
+  filter.page = properties.value.page;
+  filter.limit = properties.value.page_size;
+  filter.q = searchQuery.value;
+  filter.paymentMethod =
+    selectedFilterPayment.value.length > 1 ||
+    !selectedFilterPayment.value.length
+      ? ""
+      : selectedFilterPayment.value[0];
+   filter.startDate = `${dateToEpoch(
+    setTimeForDate(startDateFilter.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(endDateFilter.value, 23, 59, 59)
+  )}`;
+  filter.status = statusPelayanan.value;
+  filter.room = [props.filterRuangan.uuid];
+  return filter
+}
+
+// ACCESSING FROM OUTSIDE COMPONENT
+const resetFormRef = ref();
+
+const resetFilter = () => {
+  searchQuery.value = "";
+  selectedFilterPayment.value = [];
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  resetFormRef.value.resetForm(); 
+}
+
+// PAGINATION
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  reloadData();
+};
+
+
+
+
+
 watch(
-  () => props.filter,
+  () => props.filterRuangan,
   async (newFilter) => {
-    resetFilter();
-    statusPelayanan.value = "";
-    filterData.value = {
-      ...filterData.value,
-      room: [newFilter.uuid],
-    };
-    patientData.value = await fetchRIPatient();
+   
+      resetFilter();
+      filterData.value = {
+        ...filterData.value,
+        room: [newFilter.uuid],
+      };
+      reloadData();
   },
-  { immediate: true }
+  { immediate: true } // Jika Anda ingin watch langsung berjalan saat komponen di-mount
 );
 
+
+// DISCHARGE / DIRAWAT
+const filterStatus = (status: string) => {
+  statusPelayanan.value = status;
+  reloadData();
+};
+
+// WHEN PAGE CHANGE
+const updatePageType = (path: string) => {
+  resetFilter();
+  const tempArrPath = path.split("/");
+  currentRouteName.value = tempArrPath[2] ?? "";
+  reloadData();
+  
+};
+onBeforeRouteLeave((to) => {
+  updatePageType(to.path)
+})
 onMounted(() => {
-  currentRouteName.value = route.name ? String(route.name) : "";
+  updatePageType(route.path);
+
 });
 </script>
 <template>
@@ -196,13 +196,18 @@ onMounted(() => {
   >
     <template #header>
       <DataPoliBPJSHeader
-        ref="headerRawatInapRef"
-        @search="search"
-        @payment="search"
-        :filter-menu="filter"
+        ref="resetFormRef"
+        @update:value-search="handleSearchQuery"
+        @update:value-dokter ="handleDokter"
+        @update:valueStartDate="handleStartDate"
+        @update:value-end-date="handleEndDate"
+        @search="reloadData()"
+        @reset="handleReset()"
+        @payment = "handleChipPayment"
+        @reloadData="reloadData()"  
+        :filter-menu="filterRuangan"
         :filter-data="filterData"
         :current-route-name="currentRouteName"
-        @resetStatusPelayanan="handleResetStatusPelayanan"
       >
         <template #content>
           <div class="flex items-center gap-2">
@@ -257,13 +262,6 @@ onMounted(() => {
           <TabPanel value="1" class="flex-1">
             <DataPelayananRawatJalan
               :data-patient="patientData"
-              :isResetPatient="isResetPatient"
-              :show-cancel-visit="showCancelVisit"
-              @handle-selected-patient="updateSelectedPatient"
-              @handle-unselected-patient="updateUnselectedPatient"
-              @selectedAll="updateSelectedPatient"
-              @handle-unselect-all="updateUnselectAll"
-              @is-reset-patient="handleResetPatient"
             />
           </TabPanel>
           <TabPanel value="0" class="flex-1">
@@ -287,7 +285,6 @@ onMounted(() => {
           />
           <CustomButton
             v-if="showCancelVisit"
-            @click="resetCancelVisit"
             class="my-auto mr-[10px]"
             label="Batal"
             outlined
@@ -296,10 +293,8 @@ onMounted(() => {
           />
           <CustomButton
             v-if="showCancelVisit"
-            @click="confirmCancel"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
-            :disabled="!cancelReason || selectedPatient.length === 0"
           />
 
           <CustomTextfield
