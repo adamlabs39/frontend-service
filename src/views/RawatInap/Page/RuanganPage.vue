@@ -108,6 +108,7 @@ const reloadData = async () => {
 };
 
 
+
 const setFilter = () => {
   let filter = {} as FilterAdmisi
   filter.page = properties.value.page;
@@ -147,24 +148,19 @@ const handlePage = (event: any) => {
   reloadData();
 };
 
+// New flag to track the first fetch
+const isDataFetched = ref(false);
 
-
-
-
+// Watcher Ruangan 
 watch(
   () => props.filterRuangan,
-  async (newFilter) => {
-   
-      resetFilter();
-      filterData.value = {
-        ...filterData.value,
-        room: [newFilter.uuid],
-      };
-      reloadData();
+  async () => {
+    if (isDataFetched.value) {
+      await reloadData();
+    }
   },
-  { immediate: true } // Jika Anda ingin watch langsung berjalan saat komponen di-mount
+  { immediate: false } 
 );
-
 
 // DISCHARGE / DIRAWAT
 const filterStatus = (status: string) => {
@@ -185,7 +181,7 @@ onBeforeRouteLeave((to) => {
 })
 onMounted(() => {
   updatePageType(route.path);
-
+  isDataFetched.value = true;
 });
 </script>
 <template>
@@ -194,6 +190,7 @@ onMounted(() => {
     pt:content:class="h-full overflow-auto"
     class=""
   >
+ 
     <template #header>
       <DataPoliBPJSHeader
         ref="resetFormRef"
@@ -263,6 +260,7 @@ onMounted(() => {
             <DataPelayananRawatJalan
               :data-patient="patientData"
             />
+           
           </TabPanel>
           <TabPanel value="0" class="flex-1">
             <!-- <Discharge /> -->

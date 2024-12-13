@@ -115,7 +115,7 @@ onMounted(() => {
           class="leading-10 text-adameds-300 text-heading"
           v-if="currentRouteName == 'ruangan'"
         >
-          {{ filterMenu.name }}
+          {{ filterMenu}}
         </div>
         <CustomBreadCrumb
           v-else-if="

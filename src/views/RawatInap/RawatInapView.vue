@@ -4,6 +4,7 @@ import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { utilsStore } from "@/stores/utils";
 import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
+import { onBeforeMount } from "vue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -16,6 +17,9 @@ const filter = ref<{ uuid: string; name: string }>({ uuid: "", name: "" });
 const ruanganStore = useRuanganStore();
 const UseUtilsStore = utilsStore();
 const ruanganPayload = ref<any[]>([]);
+
+// Flag to control rendering
+const isSidebarReady = ref(false);
 
 // FETCH RUANGAN
 const fetchRuangan = async () => {
@@ -35,6 +39,7 @@ const fetchRuangan = async () => {
     ruanganPayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
+    isSidebarReady.value = true;
   }
 };
 
@@ -198,7 +203,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
   },
 ]);
 
-onMounted(() => {
+onBeforeMount(() => {
   fetchRuangan();
   if (route.query.filter) {
     filter.value = { uuid: "", name: route.query.filter as string };
@@ -219,6 +224,7 @@ onMounted(() => {
       @filterChanged="updateFilterMenu"
     />
     <component
+     v-if="isSidebarReady"
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
       :filterRuangan="filter"
