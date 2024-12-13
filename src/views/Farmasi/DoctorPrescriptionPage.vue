@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from "vue";
 import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
 import { utilsStore } from "@/stores/utils";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -51,61 +52,91 @@ const onRecipeSelect = (label: string) => {
     selectedRecipe.value.push(label);
   }
   // console.log(selectedRecipe.value, 'selectedRecipe.value');
+  fetchDoctorPrescription();
 };
+interface Prescription {
+  uuid: string;
+  noRm: string;
+  noReg: string;
+  noResep: string;
+  dokterOrder: string;
+  jenisPelayanan: string;
+  orderDate: number;
+  isTakeaway?: boolean;
+  isChronic?: boolean;
+  isCompound?: boolean;
+  patient: string;
+  lokasiStok: { name: string };
+}
+interface ApiResponse {
+  resepMasuk: Prescription[];
+  obatDisiapkan: Prescription[];
+  penyerahanObat: Prescription[];
+}
 
+const DoctorPrescriptionPayload = ref<ApiResponse>({
+  resepMasuk: [],
+  obatDisiapkan: [],
+  penyerahanObat: []
+});
 // State Management
 const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
 const DoctorPrescriptionStore = useDoctorPrescriptionStore();
 const UseUtilsStore = utilsStore();
-const DoctorPrescriptionPayload = ref<any[]>([]);
 const searchQuery = ref<string>("");
 
 // Check if Data Exists
-const hasData = computed(
-  () => DoctorPrescriptionPayload.value && DoctorPrescriptionPayload.value.length > 0
-);
+// const hasData = computed(
+//   () =>
+//     DoctorPrescriptionPayload.value &&
+//     DoctorPrescriptionPayload.value.length > 0
+// );
 
 // Fetch Doctor Prescription
 const fetchDoctorPrescription = async () => {
   UseUtilsStore.setLoading(true);
-  let returnMedicine = "";
-  let chronicDrugs = "";
-  let concoction = "";
-  if (selectedRecipe.value.includes('OBAT PULANG')) {
-    returnMedicine = "Obat Pulang"
-  } else if (selectedRecipe.value.includes('OBAT KRONIS')) {
-    chronicDrugs = "Obat Kronis"
-  } else if (selectedRecipe.value.includes('MENGANDUNG RACIKAN')) {
-    concoction = "Racikan"
+  let returnMedicine: string | boolean = "";
+  let chronicDrugs: string | boolean = "";
+  let concoction: string | boolean = "";
+  if (selectedRecipe.value.includes("OBAT PULANG")) {
+    returnMedicine = true;
+  } else if (selectedRecipe.value.includes("OBAT KRONIS")) {
+    chronicDrugs = true;
+  } else if (selectedRecipe.value.includes("MENGANDUNG RACIKAN")) {
+    concoction = true;
   } else if (selectedRecipe.value.length === 3) {
-    returnMedicine = ""
-    chronicDrugs = ""
-    concoction = ""
+    returnMedicine = "";
+    chronicDrugs = "";
+    concoction = "";
   }
-  console.log(returnMedicine, 'returnMedicine');
-  console.log(chronicDrugs, 'chronicDrugs');
-  console.log(concoction, 'chronicDrugs');
-  
+  console.log(returnMedicine, "returnMedicine");
+  console.log(chronicDrugs, "chronicDrugs");
+  console.log(concoction, "chronicDrugs");
+
   try {
     const response = await DoctorPrescriptionStore.getApi({
-      start_date: dateToEpoch(startDateFilter.value),
-      end_date: dateToEpoch(endDateFilter.value),
+      startDate: dateToEpoch(startDateFilter.value),
+      endDate: dateToEpoch(endDateFilter.value),
+      // startDate: 0,
+      // endDate: 9828966473567,
       status: [1, 5],
       search: searchQuery.value,
       takeaway: returnMedicine,
-      is_chronic: chronicDrugs,
+      isChronic: chronicDrugs,
       racikan: concoction,
+      jenisPelayanan: layanan.value,
+      lokasiStokUuid: lokasiStok.value,
     });
 
     if (response && response.payload) {
       DoctorPrescriptionPayload.value = response.payload;
     } else {
-      DoctorPrescriptionPayload.value = [];
+      DoctorPrescriptionPayload.value = { resepMasuk: [], obatDisiapkan: [], penyerahanObat: [] };
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    DoctorPrescriptionPayload.value = [];
+    DoctorPrescriptionPayload.value = { resepMasuk: [], obatDisiapkan: [], penyerahanObat: [] };
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -281,17 +312,32 @@ onMounted(() => {
   fetchDoctorPrescription();
   fetchStockLocation();
 });
+
+const handleReset = () => {
+  searchQuery.value = "";
+  lokasiStok.value = "";
+  layanan.value = "";
+  fetchDoctorPrescription();
+};
 </script>
 
 <template>
   <div>
-    <Card pt:body:class="h-full pt-0" pt:content:class="h-full" class="h-full overflow-hidden overflow-y-auto">
+    <Card
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchDoctorPrescription"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Resep Dokter',
@@ -347,6 +393,7 @@ onMounted(() => {
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
+                @click="fetchDoctorPrescription"
               />
               <CustomButton
                 label="Reset"
@@ -354,6 +401,7 @@ onMounted(() => {
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="mt-auto"
+                @click="handleReset"
               />
             </div>
             <!-- Filter Jenis Resep -->
@@ -423,34 +471,45 @@ onMounted(() => {
         <div class="grid grid-cols-3 gap-3">
           <!-- Resep Masuk -->
           <div v-show="incomingRecipes">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md">
+            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between ">
               <div class="text-lg font-bold text-white font-poppins">
                 Resep Masuk
+              </div>
+              <div class="w-[40px] bg-white rounded-lg">
+                <div class="text-adameds-300 text-MD font-bold font-poppins flex justify-center items-center">{{ DoctorPrescriptionPayload.resepMasuk.length }}</div>
               </div>
             </div>
             <div
               class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
             >
-              <div v-on:click="incomingRecipesOpen" class="">
+              <div
+              v-if="DoctorPrescriptionPayload.resepMasuk.length"
+                v-for="(
+                  prescription, prescriptionIndex
+                ) in DoctorPrescriptionPayload.resepMasuk"
+                :key="prescription.uuid"
+                v-on:click="incomingRecipesOpen"
+                class=""
+              >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
+                    <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Penulis Resep
                     </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
+                    <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
+                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
                     <div>
                       <CustomChip
-                        label="IGD"
+                        :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
                         borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
@@ -459,6 +518,7 @@ onMounted(() => {
                         class="mr-[5px]"
                       />
                       <CustomChip
+                      v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -467,17 +527,37 @@ onMounted(() => {
                         customClass="h-5"
                         class="mr-[5px]"
                       />
+                      <CustomChip
+                      v-if="prescription.isChronic"
+                        label="OBAT KRONIS"
+                        borderColor="border-sunFlower-300"
+                        bgColor="bg-sunFlower-50"
+                        :showCheckedIcon="false"
+                        textColor="text-sunFlower-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                      v-if="prescription.isCompound"
+                        label="MENGANDUNG RACIKAN"
+                        borderColor="border-grass-300"
+                        bgColor="bg-grass-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grass-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
+                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]">11-10-2024</div>
+                    <div class="mt-[5px]"> {{ epochToDate(prescription.orderDate, "date") }}</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -495,168 +575,50 @@ onMounted(() => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
+              <NoData v-else/>
+              <!-- hapus Sebagian array -->
             </div>
           </div>
 
           <!-- Obat Disiapkan -->
           <div v-show="readyMedicine">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md">
+            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
               <div class="text-lg font-bold text-white font-poppins">
                 Obat Disiapkan
+              </div>
+              <div class="w-[40px] bg-white rounded-lg">
+                <div class="text-adameds-300 text-MD font-bold font-poppins flex justify-center items-center">{{ DoctorPrescriptionPayload.obatDisiapkan.length }}</div>
               </div>
             </div>
             <div
               class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
             >
-              <div v-on:click="readyMedicineOpen" class="">
+              <div  
+              v-if="DoctorPrescriptionPayload.obatDisiapkan.length"
+              v-for="(
+                  prescription, prescriptionIndex
+                ) in DoctorPrescriptionPayload.obatDisiapkan"
+                :key="prescription.uuid" v-on:click="readyMedicineOpen" class="">
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
+                    <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Penulis Resep
                     </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
+                    <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
+                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
                     <div>
                       <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
+                      :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
+                      borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
                         textColor="text-grey-300"
@@ -664,6 +626,7 @@ onMounted(() => {
                         class="mr-[5px]"
                       />
                       <CustomChip
+                      v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -672,17 +635,37 @@ onMounted(() => {
                         customClass="h-5"
                         class="mr-[5px]"
                       />
+                      <CustomChip
+                      v-if="prescription.isChronic"
+                        label="OBAT KRONIS"
+                        borderColor="border-sunFlower-300"
+                        bgColor="bg-sunFlower-50"
+                        :showCheckedIcon="false"
+                        textColor="text-sunFlower-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                      v-if="prescription.isCompound"
+                        label="MENGANDUNG RACIKAN"
+                        borderColor="border-grass-300"
+                        bgColor="bg-grass-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grass-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
+                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]">11-10-2024</div>
+                    <div class="mt-[5px]"> {{ epochToDate(prescription.orderDate, "date") }}</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -700,167 +683,50 @@ onMounted(() => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
+              <NoData v-else/>
+              <!-- hapus sebagian array -->
             </div>
           </div>
 
           <!-- Penyerahan Obat -->
           <div v-show="drugHandover">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md">
+            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
               <div class="text-lg font-bold text-white font-poppins">
                 Penyerahan Obat
+              </div>
+              <div class="w-[40px] bg-white rounded-lg">
+                <div class="text-adameds-300 text-MD font-bold font-poppins flex justify-center items-center">{{ DoctorPrescriptionPayload.penyerahanObat.length }}</div>
               </div>
             </div>
             <div
               class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
             >
-              <div v-on:click="drugHandoverOpen" class="">
+              <div 
+              v-if="DoctorPrescriptionPayload.penyerahanObat.length"
+              v-for="(
+                  prescription, prescriptionIndex
+                ) in DoctorPrescriptionPayload.penyerahanObat"
+                :key="prescription.uuid" v-on:click="drugHandoverOpen" class="">
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
+                    <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Penulis Resep
                     </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
+                    <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
+                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
                     <div>
                       <CustomChip
-                        label="IGD"
+                      :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
+
                         borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
@@ -869,6 +735,7 @@ onMounted(() => {
                         class="mr-[5px]"
                       />
                       <CustomChip
+                      v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -877,17 +744,37 @@ onMounted(() => {
                         customClass="h-5"
                         class="mr-[5px]"
                       />
+                      <CustomChip
+                      v-if="prescription.isChronic"
+                        label="OBAT KRONIS"
+                        borderColor="border-sunFlower-300"
+                        bgColor="bg-sunFlower-50"
+                        :showCheckedIcon="false"
+                        textColor="text-sunFlower-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
+                      <CustomChip
+                      v-if="prescription.isCompound"
+                        label="MENGANDUNG RACIKAN"
+                        borderColor="border-grass-300"
+                        bgColor="bg-grass-50"
+                        :showCheckedIcon="false"
+                        textColor="text-grass-300"
+                        customClass="h-5"
+                        class="mr-[5px]"
+                      />
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
+                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
+                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
                     <div
                       class="text-xs font-bold underline underline-offset-2 mt-[5px]"
                     >
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]">11-10-2024</div>
+                    <div class="mt-[5px]">{{ epochToDate(prescription.orderDate, "date") }}</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -905,134 +792,8 @@ onMounted(() => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
-              <div class="">
-                <div class="grid grid-cols-2">
-                  <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">00-00-00</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Penulis Resep
-                    </div>
-                    <div class="mt-[5px]">dr. Nama Dokter</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Lokasi Tujuan Order
-                    </div>
-                    <div class="mt-[5px]">Farmasi IGD</div>
-                    <div>
-                      <CustomChip
-                        label="IGD"
-                        borderColor="border-grey-300"
-                        bgColor="bg-grey-50"
-                        :showCheckedIcon="false"
-                        textColor="text-grey-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                      <CustomChip
-                        label="OBAT PULANG"
-                        borderColor="border-male-300"
-                        bgColor="bg-male-50"
-                        :showCheckedIcon="false"
-                        textColor="text-male-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">RSP123</div>
-                    <div class="text-sm font-bold mt-[5px]">REGISTER123</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
-                      Tgl. Order
-                    </div>
-                    <div class="mt-[5px]">11-10-2024</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div class="mt-[5px] invisible">test</div>
-                    <div>
-                      <CustomChip
-                        label="TUNAI"
-                        borderColor="border-adameds-300"
-                        bgColor="bg-adameds-50"
-                        :showCheckedIcon="false"
-                        textColor="text-adameds-300"
-                        customClass="h-5"
-                        class="mr-[5px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
-              </div>
+              <NoData v-else/>
+              <!-- hapus data -->
             </div>
           </div>
 
@@ -1783,7 +1544,9 @@ onMounted(() => {
                               <p>Tidak Ada</p>
                             </div>
                             <div>
-                              <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+                              <p
+                                class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                              >
                                 Dokter Pengirim
                                 <span>
                                   <CustomButton
@@ -3448,7 +3211,9 @@ onMounted(() => {
             </div>
             <!-- Part 1 -->
             <div class="grid grid-cols-1">
-              <div class="mt-[20px] rounded-lg bg-adameds-50 h-[250px] grid grid-cols-2">
+              <div
+                class="mt-[20px] rounded-lg bg-adameds-50 h-[250px] grid grid-cols-2"
+              >
                 <!-- T.Darah -->
                 <div class="flex mt-[10px] ml-[10px]">
                   <p class="text-sm font-bold">T.Darah</p>
@@ -3516,7 +3281,9 @@ onMounted(() => {
             </div>
             <!-- Part 2 -->
             <div class="grid grid-cols-1">
-              <div class="mt-[20px] rounded-lg bg-adameds-50 h-[160px] grid grid-cols-1">
+              <div
+                class="mt-[20px] rounded-lg bg-adameds-50 h-[160px] grid grid-cols-1"
+              >
                 <!-- Keluhan & Diagnosa Primer -->
                 <div class="mt-[10px] ml-[10px]">
                   <p class="text-sm font-bold">Keluhan</p>
@@ -3534,7 +3301,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="bg-mediumGrey-300 w-[2px] h-[500px] mt-[20px] ml-[13px]"></div>
+          <div
+            class="bg-mediumGrey-300 w-[2px] h-[500px] mt-[20px] ml-[13px]"
+          ></div>
 
           <!-- Form Obat -->
           <div>
