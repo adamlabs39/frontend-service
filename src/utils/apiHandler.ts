@@ -6,6 +6,7 @@ import {
   baseInstanceIgd,
   authInstance,
   baseInstanceRawatJalan,
+  baseInstanceRawatInap
 } from "./Api";
 import { app } from "@/main";
 
@@ -353,6 +354,23 @@ const apiRawatJalanGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+
+
+// Rawat Inap Perpindahan Bangsal
+
+const apiRawatInapGet = async (url: string, data: object) => { 
+  try {
+    let response = await baseInstanceRawatInap.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+}
 export {
   apiBasePost,
   apiBaseGet,
@@ -379,5 +397,6 @@ export {
   apiIgdPost,
   apiIgdPut,
   apiIgdDelete,
-  apiRawatJalanGet
+  apiRawatJalanGet,
+  apiRawatInapGet
 };

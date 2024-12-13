@@ -33,25 +33,33 @@ const props = defineProps({
 });
 
 // Emit for Search and Payment
-const emit = defineEmits(["search", "payment", "update:valueSearch", "update:valueNoAnggota", "update:valueNamaObat", "update:valueDokter", "update:valuePelayanan", "update:valueStartDate", "update:valueEndDate", "reset", "reloadData"]);
+const emit = defineEmits([
+  "search",
+  "payment",
+  "update:valueSearch",
+  "update:valueNoAnggota",
+  "update:valueNamaObat",
+  "update:valueDokter",
+  "update:valuePelayanan",
+  "update:valueStartDate",
+  "update:valueEndDate",
+  "reset",
+  "reloadData",
+]);
 
 // STORE
 const praktisiStore = usePraktisiStore();
 const UseUtilsStore = utilsStore();
 const praktisiPayload = ref<any[]>([]);
 
-
-
-
 // Fetch data Praktisi dari API
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-
-    const response = await praktisiStore.getAktifApi()
+    const response = await praktisiStore.getAktifApi();
 
     if (response && response.payload) {
-      praktisiPayload.value = response.payload
+      praktisiPayload.value = response.payload;
     } else {
       praktisiPayload.value = [];
     }
@@ -85,9 +93,8 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
-   emit("payment", selectedPaymentMethod.value);
+  emit("payment", selectedPaymentMethod.value);
 };
-
 
 // const filters = [selectedFilterPoli, selectedPaymentMethod];
 const resetForm = () => {
@@ -96,13 +103,11 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
-}
-
+};
 
 defineExpose({
   resetForm,
 });
-
 
 onMounted(() => {
   fetchPraktisiData();
@@ -110,16 +115,16 @@ onMounted(() => {
 </script>
 
 <template>
-  {{ currentRouteName }}
+  <!-- {{ currentRouteName }} -->
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton icon="PhArrowClockwise" @click ="emit('reloadData')"/>
+        <CustomButton icon="PhArrowClockwise" @click="emit('reloadData')" />
         <div
           class="leading-10 text-adameds-300 text-heading"
           v-if="currentRouteName == 'ruangan'"
         >
-          {{ filterMenu.name}}
+          {{ filterMenu.name }}
         </div>
         <CustomBreadCrumb
           v-else-if="
@@ -143,13 +148,13 @@ onMounted(() => {
     <template #content>
       <div class="flex mt-[16px] mb-2.5">
         <CustomTextfield
-          v-if="currentRouteName === 'ruangan'"
+          v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
           v-model="searchPatientFilter"
           prependIcon="PhMagnifyingGlass"
           label="Cari Pasien"
           placeholder="Cari Nama Pasien"
           class="mr-5 grow"
-          @update:modelValue="$emit('update:valueSearch',searchPatientFilter)"
+          @update:modelValue="$emit('update:valueSearch', searchPatientFilter)"
         />
         <CustomTextfield
           v-if="
@@ -161,7 +166,9 @@ onMounted(() => {
           label="Cari No. Anggota"
           placeholder="Cari No. Anggota"
           class="mr-5 grow"
-          @update:model-value="$emit('update:valueNoAnggota',searchNoAnggotaFilter)"
+          @update:model-value="
+            $emit('update:valueNoAnggota', searchNoAnggotaFilter)
+          "
         />
         <CustomTextfield
           v-if="currentRouteName === 'monitoring-obat-kunjungan'"
@@ -170,19 +177,21 @@ onMounted(() => {
           label="Cari Nama Obat"
           placeholder="Cari Nama Obat"
           class="mr-5 grow"
-          @update:model-value="$emit('update:valueNamaObat',searchNamaObatFilter)"
+          @update:model-value="
+            $emit('update:valueNamaObat', searchNamaObatFilter)
+          "
         />
         <CustomSelect
-          v-if="currentRouteName === 'ruangan'"
+          v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
           v-model="searchDokterFilter"
           label="Dokter"
-          class="mr-5 grow"
+          class="grow"
           optionLabel="pegawai.name"
           optionValue="uuid"
           place-holder="Cari Dokter"
           :options="praktisiPayload"
           prependIcon="PhMagnifyingGlass"
-          @update:modelValue="$emit('update:valueDokter',searchDokterFilter)"
+          @update:modelValue="$emit('update:valueDokter', searchDokterFilter)"
         />
         <CustomSelect
           v-else
@@ -194,22 +203,26 @@ onMounted(() => {
           place-holder="Pilih Jenis Pelayanan"
           :options="['Semua', 'Beberapa', 'Banyak']"
           prependIcon="PhMagnifyingGlass"
-          @update:modelValue="$emit('update:valuePelayanan',searchPelayananFilter)"
+          @update:modelValue="
+            $emit('update:valuePelayanan', searchPelayananFilter)
+          "
         />
         <!-- disini -->
-        <CustomDatePicker
-          v-model="startDateFilter"
-          label="Tanggal"
-          class="w-[200px]"
-          @update:modelValue="$emit('update:valueStartDate',startDateFilter)"
-        />
-        <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-        <CustomDatePicker
-          v-model="endDateFilter"
-          :showLabel="false"
-          class="mt-auto w-[200px]"
-          @update:modelValue="$emit('update:valueEndDate',endDateFilter)"
-        />
+        <div class="flex"  v-if="currentRouteName === 'ruangan'">
+          <CustomDatePicker
+            v-model="startDateFilter"
+            label="Tanggal"
+            class="w-[200px]"
+            @update:modelValue="$emit('update:valueStartDate', startDateFilter)"
+          />
+          <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+          <CustomDatePicker
+            v-model="endDateFilter"
+            :showLabel="false"
+            class="mt-auto w-[200px]"
+            @update:modelValue="$emit('update:valueEndDate', endDateFilter)"
+          />
+        </div>
         <CustomButton
           icon="PhMagnifyingGlass"
           label="Cari"
@@ -230,45 +243,44 @@ onMounted(() => {
       <div
         class="font-semibold text-SM text-grey-300"
         v-if="
-          currentRouteName === 'ruangan' ||
-          currentRouteName === 'perpindahan-bangsal'
+          currentRouteName === 'ruangan' || 'perpindahan-bangsal'
         "
       >
         <div
-        class="font-semibold text-SM text-grey-300"
-        v-if="currentRouteName === 'ruangan'"
-      >
-        <div class="flex my-2.5">
-          <div class="w-[15%] flex items-center">Filter Pembayaran</div>
-          <div class="flex">
-            <hr class="h-auto w-[1px] bg-grey-300" />
-            <CustomChip
-              label="TUNAI"
-              borderColor="border-adameds-300"
-              bgColor="bg-adameds-50"
-              iconColor="text-adameds-300"
-              textColor="text-adameds-300"
-              value="1"
-              class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('1')"
-              @selected="onPaymentMethodSelect"
-              selectedColor="bg-adameds-300 border-adameds-300"
-            />
-            <CustomChip
-              label="ASURANSI"
-              borderColor="border-warning-300"
-              bgColor="bg-warning-50"
-              iconColor="text-warning-300"
-              textColor="text-warning-300"
-              value="2"
-              class="ml-[10px]"
-              :isSelected="selectedPaymentMethod.includes('2')"
-              @selected="onPaymentMethodSelect"
-              selectedColor="bg-warning-300 border-warning-300"
-            />
+          class="font-semibold text-SM text-grey-300"
+          v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
+        >
+          <div class="flex my-2.5">
+            <div class="w-[15%] flex items-center">Filter Pembayaran</div>
+            <div class="flex">
+              <hr class="h-auto w-[1px] bg-grey-300" />
+              <CustomChip
+                label="TUNAI"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-50"
+                iconColor="text-adameds-300"
+                textColor="text-adameds-300"
+                value="1"
+                class="ml-[10px]"
+                :isSelected="selectedPaymentMethod.includes('1')"
+                @selected="onPaymentMethodSelect"
+                selectedColor="bg-adameds-300 border-adameds-300"
+              />
+              <CustomChip
+                label="ASURANSI"
+                borderColor="border-warning-300"
+                bgColor="bg-warning-50"
+                iconColor="text-warning-300"
+                textColor="text-warning-300"
+                value="2"
+                class="ml-[10px]"
+                :isSelected="selectedPaymentMethod.includes('2')"
+                @selected="onPaymentMethodSelect"
+                selectedColor="bg-warning-300 border-warning-300"
+              />
+            </div>
           </div>
         </div>
-      </div>
       </div>
       <hr class="border-grey-200" />
     </template>

@@ -129,6 +129,7 @@ const setFilter = () => {
   filter.status = statusPelayanan.value;
   filter.room = [props.filterRuangan.uuid];
   filter.dpjp = dokter.value;
+  
   return filter
 }
 
