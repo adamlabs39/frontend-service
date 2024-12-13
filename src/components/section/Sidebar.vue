@@ -24,7 +24,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
- 
+
   showStockBtn: {
     type: Boolean,
     default: false,
@@ -50,7 +50,6 @@ const goToFilteredPage = (filterUuid: string, filterName: string) => {
   // console.log("poliUuid", filterUuid);
   // console.log("poliName", filterName);
   // console.log("route", route.name);
-  
 
   if (route.name === "rawat-inap-ruangan") {
     router.push({
@@ -147,7 +146,7 @@ const getSVG = (svg: string) => {
                 >
                   <div
                     class="flex m-[10px]"
-                    v-if="row1.name ==='Ruang Rawatan' || row1.name === 'Poli'"
+                    v-if="row1.name === 'Ruang Rawatan' || row1.name === 'Poli'"
                   >
                     <PhMagnifyingGlass class="my-auto mr-2" size="20" />
                     <input
@@ -175,11 +174,18 @@ const getSVG = (svg: string) => {
                             (route.query.filter === row2.name ||
                               (!route.query.filter &&
                                 row2.name === row2.datas &&
-                                route.path == '/rawat-jalan/poli' || route.path =='/rawat-inap/ruangan'))) ||
-                          (row1.name !== 'Poli' && route.path === row2.url),
+                                route.path === '/rawat-jalan/poli'))) ||
+                          (row1.name === 'Ruang Rawatan' &&
+                            (route.query.filter === row2.name ||
+                              (!route.query.filter &&
+                                row2.name === row2.datas &&
+                                route.path === '/rawat-inap/ruangan'))) ||
+                          (row1.name !== 'Poli' &&
+                            row1.name !== 'Ruang Rawatan' &&
+                            route.path === row2.url),
                       }"
                     >
-                      {{ row2.name }}
+                      {{ row2.name }} 
                     </div>
                     <Accordion
                       v-else-if="row2.type == linkType.DROPDOWN"
