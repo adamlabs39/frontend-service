@@ -13,11 +13,14 @@ import { useAdmisiIGDStore } from "@/stores/admisi/igd";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { formatDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const admisiIGDStore = useAdmisiIGDStore();
 const praktisiStore = usePraktisiStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const pageType = ref("");
 const route = useRoute();
@@ -148,7 +151,6 @@ const fetchIGDPatient = async (filter: FilterAdmisi = {}) => {
 const selectedPatient = ref<any[]>([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
-const openedPatientData = ref<any>({});
 const selectedTab = ref("1");
 const selectedFilterPatient = ref<string[]>([]);
 const selectedFilterPayment = ref<string[]>([]);
@@ -190,8 +192,36 @@ const confirmCancel = async () => {
 };
 const medicalRecord = ref<any>();
 
-const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM();
+const openedRekamMedis = ref<any>({});
+const openDialogRM = async (event: DataTableRowClickEvent) => {
+  const openedPatientData = event.data;
+  try {
+    storeUtils.setLoading(true);
+    let response: any;
+    if (openedPatientData.rekamMedisUuid) {
+      response = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: openedPatientData.rekamMedisUuid,
+      });
+    } else {
+      response = await rekamMedisStore.createRekamMedis({
+        noRm: openedPatientData.noRm,
+        noReg: openedPatientData.noReg,
+        date: formatDate(new Date(), true),
+        pelayanan: "igd",
+        lokasiUuid: "",
+        noPelayanan: openedPatientData.noPelayanan,
+        paymentMethod: openedPatientData.paymentMethod,
+      });
+    }
+    if (response && response.payload) {
+      openedRekamMedis.value = response.payload;
+    }
+    medicalRecord.value?.showDialogRM();
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const handleCancleReason = (value: string) => {
@@ -484,7 +514,7 @@ const fetchPraktisiData = async () => {
         ></Column>
       </DataTable>
       <NoData v-else />
-      <MedicalRecord ref="medicalRecord" />
+      <MedicalRecord ref="medicalRecord" rmType="igd" />
     </template>
     <template #footer>
       <FooterPagination
