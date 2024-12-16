@@ -39,6 +39,11 @@ const sidebarBodyList = ref<SidebarBody[]>([
         type: linkType.DROPDOWN,
         child: [
           {
+            name: "Pendapatan",
+            type: linkType.LINK,
+            url: "/pembayaran/laporan/pendapatan",
+          },
+          {
             name: "Pembayaran Kunjungan",
             type: linkType.LINK,
             url: "/pembayaran/laporan/pembayaran",

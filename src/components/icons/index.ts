@@ -40,6 +40,9 @@ import DownloadIcon from "./DownloadIcon.vue";
 import HospitalFillIcon from "./HospitalFillIcon.vue";
 import BellNotificationIcon from "./BellNotificationIcon.vue";
 import UserAccountIcon from "./UserAccountIcon.vue";
+import UangIcon from "./UangIcon.vue";
+import WalletIcon from "./WalletIcon.vue";
+import CreditCardIcon from "./CreditCardIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -86,5 +89,10 @@ export default {
     app.component("BoxPlusIcon", BoxPlusIcon);
     app.component("BoxUpIcon", BoxUpIcon);
     app.component("BoxDownIcon", BoxDownIcon);
+
+    // NOTE Pembayaran
+    app.component("UangIcon", UangIcon)
+    app.component("WalletIcon", WalletIcon)
+    app.component("CreditCardIcon", CreditCardIcon)
   },
 };
