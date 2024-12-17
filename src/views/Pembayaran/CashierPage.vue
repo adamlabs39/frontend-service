@@ -785,6 +785,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <div class="pt-5">
             <div class="flex">
               <p class="font-bold">{{ openedData.layanan }}</p>
+              
               <CustomChip
                 class="ml-2"
                 :showCheckedIcon="false"
@@ -805,7 +806,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
             <div class="flex">
               <UserDoctorIcon class="mt-2" />
               <p class="mt-2 text-sm text-grey-400">
-                dr. Osama bin Laden SP.KK
+                {{openedData.doctor}}
               </p>
             </div>
             <div class="flex">
@@ -815,8 +816,8 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 class="my-auto ml-2 text-success-300"
                 weight="bold"
               />
-              <p class="ml-2 text-sm">10 Januari 2090</p>
-              <p class="ml-2 text-sm">10.10</p>
+              <p class="ml-2 text-sm">{{openedData.tanggal_jadwal}}</p>
+              <p class="ml-2 text-sm">{{openedData.no_time}}</p>
             </div>
           </div>
 
@@ -896,8 +897,8 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <!-- Table Tindakan -->
           <div class="pt-5">
             <DataTable
-              v-if="itemsPasien.length"
-              :value="itemsPasien"
+              v-if="itemTagihan.item.tindakan"
+              :value="itemTagihan.item.tindakan"
               class="overflow-hidden rounded-[10px]"
               scrollable
               scrollHeight="flex"
@@ -912,7 +913,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.tanggal_jadwal }}
+                      {{ slotProps.data.dateUsed }}
                     </p>
                   </div>
                 </template>
@@ -925,7 +926,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               >
                 <template #body="slotProps">
                   <div class="flex flex-wrap">
-                    <p class="text-sm">{{ slotProps.data.tindakan }}</p>
+                    <p class="text-sm">{{ slotProps.data.itemName }}</p>
                   </div>
                 </template>
               </Column>
@@ -936,19 +937,21 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jumlah }}</div>
+                  <div class="text-SM">{{ slotProps.data.qty }}</div>
                 </template>
               </Column>
               <!-- Tarif -->
               <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.tarif }}</div>
+                  <div class="text-SM">{{ slotProps.data.price }}</div>
                 </template>
               </Column>
               <!-- Total -->
               <Column field="total" header="Total" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.total }}</div>
+                  <div class="text-SM">
+                    {{ slotProps.data.qty * slotProps.data.price }}
+                  </div>
                 </template>
               </Column>
             </DataTable>
@@ -1079,7 +1082,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <!-- Table Obat -->
           <div class="pt-5">
             <DataTable
-            v-if="itemTagihan.item.obat"
+              v-if="itemTagihan.item.obat"
               :value="itemTagihan.item.obat"
               class="overflow-hidden rounded-[10px]"
               scrollable
@@ -1169,8 +1172,8 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <!-- Table Alkes -->
           <div class="pt-5">
             <DataTable
-              v-if="itemsPasien.length"
-              :value="itemsPasien"
+              v-if="itemTagihan.item.alkes"
+              :value="itemTagihan.item.alkes"
               class="overflow-hidden rounded-[10px]"
               scrollable
               scrollHeight="flex"
@@ -1185,7 +1188,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.tanggal_jadwal }}
+                      {{ slotProps.data.dateUsed }}
                     </p>
                   </div>
                 </template>
@@ -1195,7 +1198,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <Column field="alkes" header="Alkes" headerClass="bg-adameds-50">
                 <template #body="slotProps">
                   <div class="flex flex-wrap">
-                    <p class="text-sm">{{ slotProps.data.alkes }}</p>
+                    <p class="text-sm">{{ slotProps.data.itemName }}</p>
                   </div>
                 </template>
               </Column>
@@ -1207,21 +1210,23 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jumlah }}</div>
+                  <div class="text-SM">{{ slotProps.data.qty }}</div>
                 </template>
               </Column>
 
               <!-- Tarif -->
               <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.tarif }}</div>
+                  <div class="text-SM">{{ slotProps.data.price }}</div>
                 </template>
               </Column>
 
               <!-- Total -->
               <Column field="total" header="Total" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.total }}</div>
+                  <div class="text-SM">
+                    {{ slotProps.data.qty * slotProps.data.price }}
+                  </div>
                 </template>
               </Column>
             </DataTable>
@@ -1231,7 +1236,9 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <template #content>
                 <div class="flex justify-between">
                   <p class="text-base font-bold">Total</p>
-                  <p class="text-base font-bold">RP. 57.000, 00</p>
+                  <p class="text-base font-bold">
+                    RP. {{ itemTagihan.total }},00
+                  </p>
                 </div>
               </template>
             </card>
