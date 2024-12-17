@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import type { PropType } from "vue";
 
 const props = defineProps({
   rmType: {
     type: String,
     default: "rawat-jalan",
+  },
+  patientData: {
+    type: Object,
+  },
+  summaryData: {
+    type: Object as PropType<any>,
   },
 });
 
@@ -104,13 +111,13 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">T.Darah</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    110/70 mmHg
+                    {{ summaryData.tekananDarah }} mmHg
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="font-semibold leading-5">Frek. Nadi</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    80 x/mnt
+                    {{ summaryData.frekuensiNadi }} x/mnt
                   </span>
                 </div>
               </div>
@@ -119,13 +126,13 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">Frek. Nafas</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    20 x/mnt
+                    {{ summaryData.frekuensiNafas }} x/mnt
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="font-semibold leading-5">Suhu</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    37 °C
+                    {{ summaryData.suhu }} °C
                   </span>
                 </div>
               </div>
@@ -134,13 +141,13 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">Berat</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    60 Kg
+                    {{ summaryData.beratBadan }} Kg
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="font-semibold leading-5">Tinggi</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    160 Cm
+                    {{ summaryData.tinggiBadan }} Cm
                   </span>
                 </div>
               </div>
@@ -149,13 +156,13 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">Skor GCS</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    0
+                    {{ summaryData.gcsScore }}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="font-semibold leading-5">Skala Nyeri</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    -
+                    {{ summaryData.skalaNyeri }}
                   </span>
                 </div>
               </div>
@@ -164,9 +171,10 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">Alergi</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    Tidak ada
+                    {{ summaryData.namaAlergi }}
                   </span>
                 </div>
+                <!-- FIXME Kurang Data -->
                 <div
                   v-if="rmType == 'igd'"
                   :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[#14AC5B] text-white shadow-lg`"
@@ -190,13 +198,13 @@ const showPatientData = ref(true);
                 <div
                   class="mb-[10px] h-5 bg-white rounded-[4px] px-[5px] leading-5 w-full"
                 >
-                  Sakit
+                  {{ summaryData.keluhanUtama }}
                 </div>
                 <div class="flex">
                   <div
                     class="h-5 bg-white rounded-[4px] px-[5px] leading-5 w-full mr-[10px]"
                   >
-                    G12.1 - OTHER INHERITED SPINAL MUSCULAR ATROPHY
+                    {{ summaryData.diagnosisPrimer }}
                   </div>
                   <div
                     class="h-5 text-white bg-adameds-300 rounded-[4px] px-[5px] leading-5 min-w-max"

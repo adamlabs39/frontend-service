@@ -14,11 +14,19 @@ export const useRekamMedisStore = defineStore({
       return apiRekamMedisPost("/rekam-medis", payload);
     },
     async getRekamMedis(
-      { dateOrder = 1, sessionOrder = 1, rekamMedisUuid = "" },
+      params: {
+        dateOrder?: number;
+        sessionOrder?: number;
+        rekamMedisUuid: string;
+      },
       payload = {}
     ) {
       return apiRekamMedisGet(
-        `/rekam-medis?date_order=${dateOrder}&session_order=${sessionOrder}&rekam_medis_uuid=${rekamMedisUuid}`,
+        `/rekam-medis?${
+          params.dateOrder ? "date_order=" + params.dateOrder : ""
+        }${
+          params.sessionOrder ? "&session_order=" + params.sessionOrder : ""
+        }&rekam_medis_uuid=${params.rekamMedisUuid}`,
         payload
       );
     },

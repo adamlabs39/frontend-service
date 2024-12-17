@@ -1,14 +1,33 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onUpdated, ref, type PropType } from "vue";
 import SessionTab from "./SessionTab.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits(["createNewSession"]);
 
 const props = defineProps({
   rmType: {
     type: String,
     default: "rawat-jalan",
+  },
+  selectedRecord: {
+    type: Object as PropType<any>,
+  },
+  sessions: {
+    type: Array as PropType<any>,
+    required: true,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -18,6 +37,23 @@ const selectedTab = defineModel<string>("selectedTab", {
 const selectedSessionTab = defineModel<string>("selectedSessionTab", {
   default: "non-sesi",
 });
+
+const createNewSession = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.createNewSession({
+      rekamMedisUuid: props.rmUuid,
+      dateOrder: props.selectedRecord.dateOrder,
+    });
+    if (response && response.payload) {
+      emit("createNewSession", response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const deleteSessionDialog = ref(false);
 </script>
@@ -239,8 +275,9 @@ const deleteSessionDialog = ref(false);
         :key="selectedTab"
         v-model="selectedSessionTab"
         :selectedTab="selectedTab"
-        :dataSession="['Sesi 1', 'Sesi 2']"
+        :dataSession="sessions"
         class="mt-[10px] grow"
+        @addSession="createNewSession"
       />
       <div class="flex border-b border-grey-100">
         <CustomButton

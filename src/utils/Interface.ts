@@ -16,16 +16,6 @@ export interface selectedBedType {
   bed: number;
 }
 
-export interface Module {
-  module: string;
-  subModule: SubModule[];
-}
-
-export interface SubModule {
-  name: string;
-  allows: [];
-}
-
 export interface ListMenu {
   title: string;
   icon: string;
@@ -46,4 +36,28 @@ export interface FilterAdmisi {
   status?: string;
   room?: string[];
   withoutIdentity?: string;
+}
+
+export interface Allow {
+  name: string;
+  checked: boolean;
+}
+
+export interface Feature {
+  name: string;
+  checked: boolean;
+  allows: Allow[];
+}
+
+export interface SubModule {
+  name: string;
+  checked: boolean;
+  features: Feature[];
+  allows: Allow[];
+}
+
+export interface Module {
+  module: string;
+  checked: boolean;
+  subModules: SubModule[];
 }

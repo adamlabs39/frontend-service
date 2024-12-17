@@ -323,8 +323,7 @@ const baseInstanceRekamMedis = axios.create({
 
 baseInstanceRekamMedis.interceptors.request.use(
   (config) => {
-    // const token = localStorage.getItem("access_token");;
-    const token = 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhdXp5QGdtYWlsLmNvbSIsImZhc2tlc1V1aWQiOiIwMTkyYjMxZi0zNjVkLTczMWMtOGIxNi0zYTQ1NjVjOTQ3NWUiLCJpYXQiOjE3MzQzMjAyMjYsImV4cCI6MTc0Mjk2MDIyNiwiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.CHga0nFQdJyH11_xtPKZ6y_o6OFJ2P2Hgzw_j9vPfPOsEhtIByUVaKs2pCg69zGTMuvVT6iClBxQfgO3_LAeg0wBOL4gh46jTNWjBygUjoceJYptDp-tKGKomn3Ool-LttxwcMp8sYeDmBVJmpUzRLAzx4xmgwIUiJFuMfcIW41TEJgI6zXwDLcvH8d2ElW-j29IhMPwXdZ2YYyt1iIs5f0XJOyz0DBGq1XNTcNkrtdb3LdMWuSvUzlLiv9KiTZhSl2Ge50kGKuWLlQ7OE7NHE1H74HpeoQi5KWrvrqhmwgZZPHZKYx_Z4umb0Mii4iz4shN6EKF6RYv4KchXwQJUg';
+    const token = localStorage.getItem("access_token");;
 
     if (!token) {
       config.headers["Authorization"] = "";

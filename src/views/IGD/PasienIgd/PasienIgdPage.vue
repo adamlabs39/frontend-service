@@ -193,35 +193,41 @@ const confirmCancel = async () => {
 const medicalRecord = ref<any>();
 
 const openedRekamMedis = ref<any>({});
+const openedPatientData = ref<any>({});
 const openDialogRM = async (event: DataTableRowClickEvent) => {
-  const openedPatientData = event.data;
+  openedPatientData.value = event.data;
   try {
     storeUtils.setLoading(true);
     let response: any;
-    if (openedPatientData.rekamMedisUuid) {
+    if (openedPatientData.value.rekamMedisUuid) {
       response = await rekamMedisStore.getRekamMedis({
-        rekamMedisUuid: openedPatientData.rekamMedisUuid,
+        rekamMedisUuid: openedPatientData.value.rekamMedisUuid,
+        dateOrder: 2,
       });
     } else {
       response = await rekamMedisStore.createRekamMedis({
-        noRm: openedPatientData.noRm,
-        noReg: openedPatientData.noReg,
+        noRm: openedPatientData.value.noRm,
+        noReg: openedPatientData.value.noReg,
         date: formatDate(new Date(), true),
         pelayanan: "igd",
         lokasiUuid: "",
-        noPelayanan: openedPatientData.noPelayanan,
-        paymentMethod: openedPatientData.paymentMethod,
+        noPelayanan: openedPatientData.value.noPelayanan,
+        paymentMethod: openedPatientData.value.paymentMethod,
       });
     }
     if (response && response.payload) {
       openedRekamMedis.value = response.payload;
+      medicalRecord.value?.showDialogRM();
     }
-    medicalRecord.value?.showDialogRM();
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+const reSetRmData = (newRm: any) => {
+  openedRekamMedis.value = newRm;
 };
 
 const handleCancleReason = (value: string) => {
@@ -514,7 +520,13 @@ const fetchPraktisiData = async () => {
         ></Column>
       </DataTable>
       <NoData v-else />
-      <MedicalRecord ref="medicalRecord" rmType="igd" />
+      <MedicalRecord
+        ref="medicalRecord"
+        rmType="igd"
+        :patientData="openedPatientData"
+        :rmData="openedRekamMedis"
+        @updateRmData="reSetRmData"
+      />
     </template>
     <template #footer>
       <FooterPagination

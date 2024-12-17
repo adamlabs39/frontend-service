@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, onMounted, onUpdated, ref, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DataPatient from "@/components/RekamMedis/DataPatient.vue";
@@ -46,33 +46,48 @@ import MedicalRecordTab from "./SectionNavigator/MedicalRecordTab.vue";
 import MedicalRecordNavigation from "./SectionNavigator/MedicalRecordNavigation.vue";
 import MedicalRecordDetail from "./SectionContent/MedicalRecordDetail.vue";
 import MedicalRecordAssesment from "./SectionContent/MedicalRecordAssesment.vue";
+import type { PropType } from "vue";
+import { utilsStore } from "@/stores/utils";
+import { useToast } from "primevue/usetoast";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { formatDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const toast = useToast();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits(["updateRmData"]);
 
 const props = defineProps({
   rmType: {
     type: String,
     default: "rawat-jalan",
   },
+  patientData: {
+    type: Object,
+    required: true,
+  },
+  rmData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
 });
 
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
-const selectedSessionTab = ref("non-sesi");
+const selectedSessionTab = ref<string | undefined>();
 const historyVisitDialog = ref(false);
 
+const listRecordDate = ref<any>([]);
 const rmDate = ref("");
-const rmDateList = ref([
-  "Jum’at, 19 Agustus 2024",
-  "Sabtu, 20 Agustus 2024",
-  "Minggu, 21 Agustus 2024",
-  "Senin, 22 Agustus 2024",
-]);
+const rmDateData = ref<any>(null);
 
 const selectedAssesment = ref("Alergi");
-
 const selectedSoap = ref("Subjective");
-
 const selectedSoapier = ref("Subjective");
 
+// NOTE Utils Function
 // Ref container untuk elemen yang dapat discroll
 const soapSoapierScrollContainer = ref<HTMLElement | null>(null);
 
@@ -162,6 +177,113 @@ const toggleShowAllDetailMR = (method = "show") => {
   });
 };
 
+// NOTE Logic Function
+onUpdated(() => {
+  if (
+    props.rmData &&
+    props.rmData.dates?.length &&
+    props.rmData.sessions?.length
+  ) {
+    listRecordDate.value = props.rmData.dates;
+    listRecordDate.value.forEach((dateList: any, index: number) => {
+      dateList.dateOrder = index + 1;
+    });
+    const tempSelectedRecord = listRecordDate.value.find(
+      (dateList: any) => dateList.isSelected
+    );
+
+    if (tempSelectedRecord) {
+      const selectedDate = tempSelectedRecord;
+      rmDate.value = selectedDate.date;
+      rmDateData.value = selectedDate;
+    }
+    const tempSelectedSession = props.rmData.sessions.find(
+      (sessionList: any) => sessionList.isSelected
+    );
+
+    if (tempSelectedSession)
+      selectedSessionTab.value = `${tempSelectedSession.order}`;
+  }
+});
+
+const isAllowCreateRecord = () => {
+  if (Object.keys(props.rmData).length) {
+    const tempDateNow = formatDate(new Date(), true);
+    return props.rmData.dates.some(
+      (dateList: any) => dateList.date == tempDateNow
+    );
+  } else return false;
+};
+const createRecord = async () => {
+  if (!isAllowCreateRecord()) {
+    try {
+      storeUtils.setLoading(true);
+      const response = await rekamMedisStore.createNewRecord({
+        rekamMedisUuid: props.patientData.rekamMedisUuid,
+        date: formatDate(new Date(), true),
+      });
+      if (response && response.payload) {
+        emit("updateRmData", response.payload);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  } else {
+    toast.add({
+      severity: "info",
+      summary: "Info",
+      detail: "Tanggal Sudah Ada",
+      life: 3000,
+    });
+  }
+};
+
+const changeRecordData = async (selectedRecordDate: string) => {
+  try {
+    storeUtils.setLoading(true);
+    const selectedRecordDateData = listRecordDate.value.find(
+      (dateList: any) => dateList.date == selectedRecordDate
+    );
+    let response = await rekamMedisStore.getRekamMedis({
+      rekamMedisUuid: props.patientData.rekamMedisUuid,
+      dateOrder: selectedRecordDateData.dateOrder,
+    });
+    if (response && response.payload) {
+      emit("updateRmData", response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+watch(
+  () => selectedSessionTab.value,
+  async (newSession, oldSession) => {
+    if (rmDateData.value && oldSession != null && props.patientData.rekamMedisUuid) {
+      try {
+        storeUtils.setLoading(true);
+        let response = await rekamMedisStore.getRekamMedis({
+          rekamMedisUuid: props.patientData.rekamMedisUuid,
+          dateOrder: rmDateData.value.dateOrder,
+          sessionOrder: parseInt(newSession ?? ""),
+        });
+        if (response && response.payload) {
+          emit("updateRmData", response.payload);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      } finally {
+        storeUtils.setLoading(false);
+      }
+    }
+  }
+);
+
+// NOTE Exposed Function
 const showDialogRM = () => {
   dialogRM.value = true;
 };
@@ -177,7 +299,17 @@ defineExpose({ showDialogRM });
           <div class="flex my-auto">
             <span> Detail Pasien </span>
             <span class="mx-[10px]"> | </span>
-            <span> Rawat Jalan </span>
+            <span>
+              {{
+                rmType == "rawat-jalan"
+                  ? "Rawat Jalan"
+                  : rmType == "rawat-inap"
+                  ? "Rawat Inap"
+                  : rmType == "igd"
+                  ? "IGD"
+                  : "Fisioterapi"
+              }}
+            </span>
             <PhArrowRight :size="18" class="my-auto mx-[10px]" weight="bold" />
             <div
               class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]"
@@ -198,7 +330,11 @@ defineExpose({ showDialogRM });
       </template>
       <template #body>
         <div class="pt-[10px] h-full overflow-hidden flex flex-col">
-          <DataPatient :rmType="rmType" />
+          <DataPatient
+            :rmType="rmType"
+            :patientData="patientData"
+            :summaryData="rmData.summary"
+          />
           <div class="flex flex-col overflow-hidden grow">
             <div class="flex justify-between mb-4">
               <div
@@ -207,12 +343,18 @@ defineExpose({ showDialogRM });
               >
                 <RMCustomSelect
                   v-model="rmDate"
-                  :options="rmDateList"
+                  @update:model-value="changeRecordData"
+                  :options="listRecordDate"
                   class="mr-[10px]"
-                  optionLabel=""
-                  optionValue=""
+                  optionLabel="date"
+                  optionValue="date"
                 />
-                <CustomButton icon="PhPlus" size="small" class="!rounded-md" />
+                <CustomButton
+                  icon="PhPlus"
+                  size="small"
+                  class="!rounded-md"
+                  @click="createRecord"
+                />
               </div>
               <div class="flex">
                 <PhStethoscope
@@ -236,6 +378,10 @@ defineExpose({ showDialogRM });
               v-model:selected-tab="selectedTab"
               v-model:selected-session-tab="selectedSessionTab"
               :rmType="rmType"
+              :selectedRecord="rmDateData"
+              :sessions="rmData.sessions"
+              :rmUuid="patientData.rekamMedisUuid"
+              @createNewSession="emit('updateRmData', $event)"
             />
             <MedicalRecordNavigation
               :selectedTab="selectedTab"
