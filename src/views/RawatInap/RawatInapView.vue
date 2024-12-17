@@ -224,7 +224,7 @@ onBeforeMount(() => {
       @filterChanged="updateFilterMenu"
     />
     <component
-     v-if="isSidebarReady"
+    v-if="isSidebarReady"
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
       :filterRuangan="filter"

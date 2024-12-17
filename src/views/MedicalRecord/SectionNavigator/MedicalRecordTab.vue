@@ -5,6 +5,13 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 
+const props = defineProps({
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+});
+
 const selectedTab = defineModel<string>("selectedTab", {
   default: "rekam-medis",
 });
@@ -56,7 +63,12 @@ const deleteSessionDialog = ref(false);
             Asesmen
           </div>
         </Tab>
-        <Tab class="py-0 px-[10px]" value="soap" :pt="{ root: 'rounded-t-lg' }">
+        <Tab
+          v-if="rmType != 'fisioterapi'"
+          class="py-0 px-[10px]"
+          value="soap"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
           <div class="flex">
             <PhStethoscope
               v-if="selectedTab == 'soap'"
@@ -68,6 +80,7 @@ const deleteSessionDialog = ref(false);
           </div>
         </Tab>
         <Tab
+          v-else
           class="py-0 px-[10px]"
           value="soapier"
           :pt="{ root: 'rounded-t-lg' }"
@@ -84,17 +97,17 @@ const deleteSessionDialog = ref(false);
         </Tab>
         <Tab
           class="py-0 px-[10px]"
-          value="alkes-penunjang"
+          value="penunjang"
           :pt="{ root: 'rounded-t-lg' }"
         >
           <div class="flex">
             <PhFirstAidKit
-              v-if="selectedTab == 'alkes-penunjang'"
+              v-if="selectedTab == 'penunjang'"
               :size="18"
               weight="fill"
               class="mr-[10px]"
             />
-            Alkes & Penunjang
+            Penunjang
           </div>
         </Tab>
         <Tab
@@ -135,7 +148,12 @@ const deleteSessionDialog = ref(false);
         >
           <PhLineVertical :size="26" weight="bold" class="text-adameds-300" />
         </Tab>
-        <Tab class="py-0 px-[10px]" value="fpo" :pt="{ root: 'rounded-t-lg' }">
+        <Tab
+          v-if="rmType == 'rawat-inap' || rmType == 'igd'"
+          class="py-0 px-[10px]"
+          value="fpo"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
           <div class="flex">
             <PhPill
               v-if="selectedTab == 'fpo'"
@@ -147,6 +165,7 @@ const deleteSessionDialog = ref(false);
           </div>
         </Tab>
         <Tab
+          v-if="rmType == 'rawat-inap'"
           class="py-0 px-[10px]"
           value="perpindahan"
           :pt="{ root: 'rounded-t-lg' }"
@@ -209,9 +228,10 @@ const deleteSessionDialog = ref(false);
     </Tabs>
     <div
       v-if="
-        selectedTab == 'rekam-medis' ||
-        selectedTab == 'asesmen' ||
-        selectedTab == 'soap'
+        (selectedTab == 'rekam-medis' ||
+          selectedTab == 'asesmen' ||
+          selectedTab == 'soap') &&
+        (rmType == 'rawat-inap' || rmType == 'igd')
       "
       class="flex"
     >

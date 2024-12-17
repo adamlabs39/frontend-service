@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
   selectedTab: {
     type: String,
     default: "asesmen",
@@ -15,7 +19,6 @@ const emit = defineEmits(["soapSoapierJump", "resumeDischargeJump"]);
 const assesmentList = ref([
   "Alergi",
   "Anamnesis",
-  "Triase",
   "Tanda Vital",
   "Antropometri",
   "Asesmen Nyeri",
@@ -92,13 +95,13 @@ const jumpToFormList = (selectedPage: string) => {
   } else return [];
 };
 
-const alkesList = ref(["Order Alkes", "Order Lab", "Order Fisio"]);
-const selectedAlkes = defineModel<string>("selectedAlkes", {
-  default: "Order Alkes",
+const alkesList = ref(["Order Lab", "Order Fisio"]);
+const selectedPenunjang = defineModel<string>("selectedPenunjang", {
+  default: "Order Lab",
 });
 const onAlkesSelect = (label: string) => {
-  if (selectedAlkes.value != label) {
-    selectedAlkes.value = label;
+  if (selectedPenunjang.value != label) {
+    selectedPenunjang.value = label;
   }
 };
 
@@ -123,6 +126,12 @@ const onSuratListSelect = (label: string) => {
     selectedSuratList.value = label;
   }
 };
+
+onMounted(() => {
+  if (props.rmType == "igd") {
+    assesmentList.value.splice(1, 0, "Anamnesis IGD", "Triase");
+  }
+});
 </script>
 
 <template>
@@ -214,7 +223,7 @@ const onSuratListSelect = (label: string) => {
         </div>
       </div>
     </div>
-    <div v-if="selectedTab == 'alkes-penunjang'" class="mt-[10px] mb-[10px]">
+    <div v-if="selectedTab == 'penunjang'" class="mt-[10px] mb-[10px]">
       <CustomChip
         v-for="(penunjang, index) in alkesList"
         :key="penunjang + index"
@@ -228,7 +237,7 @@ const onSuratListSelect = (label: string) => {
         selectedTextColor="text-white"
         bgColor="bg-grey-75"
         selectedColor="bg-adameds-300"
-        :isSelected="selectedAlkes.includes(penunjang)"
+        :isSelected="selectedPenunjang.includes(penunjang)"
         @selected="onAlkesSelect"
       />
     </div>

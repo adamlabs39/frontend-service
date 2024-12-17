@@ -112,49 +112,44 @@ const getSVG = (svg: string) => {
         />
 
         <!-- body -->
-        <div class="overflow-auto">
-          <div
-            v-for="(section, index) in props.sidebarBodyList"
-            class="text-SM"
-          >
-            <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
-            <div v-for="row1 in section.child">
-              <div v-if="showSidebar">
-                <div
-                  v-if="row1.type == linkType.LINK"
-                  @click="goToPage(row1.url ?? '')"
-                  class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
-                  :class="{
-                    'bg-adameds-100 rounded-lg': route.path == row1.url,
-                  }"
-                >
-                  <component
-                    v-if="row1.icon"
-                    :is="row1.icon"
-                    :size="16"
-                    class="text-white mr-[10px]"
-                  />
-                  <div>
-                    {{ row1.name }}
-                  </div>
-                </div>
-                <Accordion
-                  v-else-if="row1.type == linkType.DROPDOWN"
-                  :title="row1.name"
-                  :icon="row1.icon ? row1.icon : ''"
-                  class="cursor-pointer"
-                >
-                  <div
-                    class="flex m-[10px]"
-                    v-if="row1.name === 'Ruang Rawatan' || row1.name === 'Poli'"
-                  >
-                    <PhMagnifyingGlass class="my-auto mr-2" size="20" />
-                    <input
-                      type="text"
-                      class="w-full text-white bg-transparent"
-                      :placeholder="
-                        row1.name === 'Poli' ? 'Cari Poli' : 'Cari Ruangan'
-                      "
+         <div class="overflow-auto">
+           <div v-for="(section, index) in props.sidebarBodyList" class="text-SM ">
+             <hr :class="[index == 0 ? 'mb-[20px]': 'my-[20px]']" />
+             <div v-for="row1 in section.child">
+               <div v-if="showSidebar">
+                 <div
+                   v-if="row1.type == linkType.LINK"
+                   @click="goToPage(row1.url ?? '')"
+                   class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
+                   :class="{
+                     'bg-adameds-100 rounded-lg': route.path == row1.url,
+                   }"
+                 >
+                   <component
+                     v-if="row1.icon"
+                     :is="row1.icon"
+                     :size="16"
+                     class="text-white mr-[10px]"
+                   />
+                   <div>
+                     {{ row1.name }}
+                   </div>
+                 </div>
+                 <Accordion
+                   v-else-if="row1.type == linkType.DROPDOWN"
+                   :title="row1.name"
+                   :icon="row1.icon ? row1.icon : ''"
+                   class="cursor-pointer"
+                 >
+                   <div
+                     class="flex m-[10px]"
+                     v-if="showFilterPoli && row1.name === 'Poli'"
+                   >
+                     <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+                     <input
+                       type="text"
+                       class="w-full text-white bg-transparent"
+                       placeholder="Cari Poli ..."
                       v-model="searchPoli"
                     />
                   </div>

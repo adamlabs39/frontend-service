@@ -110,12 +110,12 @@ defineExpose({
 });
 
 onMounted(() => {
-  fetchPraktisiData();
+  // fetchPraktisiData();
 });
 </script>
 
 <template>
-  <!-- {{ currentRouteName }} -->
+  {{ currentRouteName }}
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
@@ -136,6 +136,15 @@ onMounted(() => {
           }"
           :model="dataBreadCrumb"
           class=""
+        />
+        <CustomBreadCrumb
+          v-else-if="
+            currentRouteName && currentRouteName.includes('perpindahan-bangsal')
+          "
+          :home="{
+            label: 'Perpindahan Bangsal',
+            home: true,
+          }"
         />
         <div
           class="leading-10 text-adameds-300 text-heading"

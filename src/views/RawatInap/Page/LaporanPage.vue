@@ -62,7 +62,6 @@ const fetchLaporanData = async (filter: Filter = {}) => {
   if (pageType.value === "kunjungan-rawat-inap") {
     response = await kunjunganRawatInap.getKunjunganReport(filter)
   } else if (pageType.value === "perpindahan-pasien") {
-    console.log("TES")
   } else if (pageType.value === "pembatalan-dirawat") {
     response = await kunjunganRawatInap.getBatalKunjunganReport(filter)
   } else {
@@ -237,9 +236,9 @@ const updatePageType = async (path: string) => {
   filter = setFilter();
   reportData.value = await fetchLaporanData(filter);
 };
-// onBeforeRouteLeave((to, from) => {
-//   updatePageType(to.path);
-// });
+onBeforeRouteLeave((to, from) => {
+  updatePageType(to.path);
+});
 onMounted(() => {
   updatePageType(route.path);
   fetchDokterData()

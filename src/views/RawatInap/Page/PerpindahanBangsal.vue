@@ -8,6 +8,13 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import type { MenuItem } from "primevue/menuitem";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { FilterAdmisi } from "@/utils/Interface";
+import { utilsStore } from "@/stores/utils";
+import { usePerpindahanBangsalStore} from "@/stores/rawatInap/perpindahanBangsal";
+
+
+// STORE
+const storeUtils = utilsStore();
+const perpindahanBangsalStore = usePerpindahanBangsalStore();
 
 const props = defineProps({
   filterRuang: {
@@ -57,7 +64,21 @@ const filterData = ref<FilterAdmisi>({});
 
 // Ambil dari API
 const fetchRIPerpindahanBangsal = async (filter: FilterAdmisi) => {
-  console.log("Filter", filter);
+  storeUtils.setLoading(true);
+  try {
+    const response = await perpindahanBangsalStore.getAll(filter);
+    if (response && response.payload) {
+      properties.value.total = response.payload.total;
+      return response.payload;
+    } else {
+      return [];
+    }
+  }catch(error){
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 
