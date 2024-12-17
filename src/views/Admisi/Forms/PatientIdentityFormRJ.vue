@@ -109,9 +109,9 @@ const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
 
-    await fetchKabupaten(tempPatientData.address.prov)
-    await fetchKecamatan(tempPatientData.address.city)
-    await fetchKelurahan(tempPatientData.address.district)
+    await fetchKabupaten(tempPatientData.address.prov);
+    await fetchKecamatan(tempPatientData.address.city);
+    await fetchKelurahan(tempPatientData.address.district);
 
     tempPatientData.birthDetail.birthDate = new Date(
       tempPatientData.birthDetail.birthDate
@@ -504,6 +504,7 @@ defineExpose({
         </div>
         <hr class="my-[30px]" />
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
             @update:model-value="fetchKabupaten"
@@ -512,11 +513,12 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="provinsiPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...provinsiPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
             @update:model-value="fetchKecamatan"
@@ -525,11 +527,12 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="kabupatenPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...kabupatenPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
+          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
             @update:model-value="fetchKelurahan"
@@ -538,7 +541,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="kecamatanPayload"
+            :options="[{ name: 'dummy', code: 'dummy' }, ...kecamatanPayload]"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"

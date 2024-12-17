@@ -7,6 +7,7 @@ import {
   baseInstanceFarmasi,
   authInstance,
   baseInstanceRawatJalan,
+  baseInstanceRekamMedis,
 } from "./Api";
 import { app } from "@/main";
 
@@ -25,6 +26,7 @@ const errorApiHandler = (error: any) => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
+      localStorage.removeItem("faskes");
       window.location.reload();
     }
     tempSummary = error.response.data.message;
@@ -388,7 +390,6 @@ const apiFarmasiDelete = async (url: string, data: object) => {
 };
 
 // Rawat Jalan
-
 const apiRawatJalanGet = async (url: string, data: object) => {
   try {
     let response = await baseInstanceRawatJalan.get(url, data);
@@ -403,6 +404,46 @@ const apiRawatJalanGet = async (url: string, data: object) => {
   }
 };
 
+// Rekam Medis
+const apiRekamMedisGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.get(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiRekamMedisPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiRekamMedisPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -433,5 +474,8 @@ export {
   apiFarmasiGet,
   apiFarmasiPost,
   apiFarmasiPut,
-  apiFarmasiDelete,
+  apiFarmasiDelete,,
+  apiRekamMedisGet,
+  apiRekamMedisPost,
+  apiRekamMedisPut
 };

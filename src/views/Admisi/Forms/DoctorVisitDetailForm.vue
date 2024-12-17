@@ -13,11 +13,13 @@ import { useForm } from "vee-validate";
 import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const praktisiStore = usePraktisiStore();
 const penjaminStore = usePenjaminStore();
+const admisiRJStore = useAdmisiRJStore();
 
 const props = defineProps({
   pageType: {
@@ -45,6 +47,7 @@ const props = defineProps({
 const filterPoliList = ref([]);
 const listDpjp = ref<any[]>([]);
 const listPenjamin = ref<any[]>([]);
+const listJadwalDokter = ref<any[]>([]);
 
 const fetchUtils = async () => {
   try {
@@ -65,6 +68,14 @@ const fetchUtils = async () => {
       listPenjamin.value = responsePenjamin.payload
     } else {
       listPenjamin.value = [];
+    }
+
+    const responseJadwalDokter = await admisiRJStore.getListJadwalDokter();
+
+    if (responseJadwalDokter && responseJadwalDokter.payload) {
+      listJadwalDokter.value = responseJadwalDokter.payload
+    } else {
+      listJadwalDokter.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -105,37 +116,11 @@ onUpdated(() => {
   setFormData();
 });
 
-const listDataJadwalDokter = ref([
-  {
-    uuid: "0191c056-f9f7-7beb-a116-ca60bf4a5422",
-    name: "Rudi tabuti",
-    poli: "Faskes Example",
-    day: "Senin",
-    startTime: "08:00:00",
-    endTime: "16:00:00",
-  },
-  {
-    uuid: "0191c056-f9f7-7beb-a116-ca60bf4a5423",
-    name: "Dr. Ali",
-    poli: "Faskes Example",
-    day: "Senin",
-    startTime: "16:00:00",
-    endTime: "22:00:00",
-  },
-  {
-    uuid: "0191c056-f9f7-7beb-a116-ca60bf4a5423",
-    name: "Dr. Doom",
-    poli: "Faskes Example",
-    day: "Senin",
-    startTime: "22:00:00",
-    endTime: "24:00:00",
-  },
-]);
 const selectedJadwalPoli = ref("");
 const selectedJadwalDpjp = ref("");
 const setPoliDpjpJadwal = (uuid: any) => {
   if (uuid) {
-    let tempDataJadwal = listDataJadwalDokter.value.find(
+    let tempDataJadwal = listJadwalDokter.value.find(
       (data) => data.uuid == uuid
     );
     if (tempDataJadwal) {
@@ -314,16 +299,16 @@ defineExpose({
               label="Jadwal"
               placeHolder="Pilih Jadwal"
               class=""
-              optionLabel="name"
+              optionLabel="practitioner.pegawai.nama"
               optionValue="uuid"
               :showFilter="false"
-              :options="listDataJadwalDokter"
+              :options="listJadwalDokter"
               :disabled="isDetail"
               :invalid="!!errors.jadwalDokterUuid"
               :invalidMessage="errors.jadwalDokterUuid"
             >
               <template #customOptions="{ option }">
-                {{ option.poli }} ({{ option.name }}) | {{ option.day }} -
+                {{ option.lokasi.name }} ({{ option.practitioner.pegawai.nama }}) | {{ option.day }} -
                 {{ option.startTime }}
               </template>
             </CustomSelect>

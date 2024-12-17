@@ -3,7 +3,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import { epochToDate } from "@/utils/Helpers";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 const props = defineProps({
   showCancelVisit: {
@@ -67,15 +67,14 @@ const resetSelection = () => {
 </script>
 
 <template>
-
   <DataTable
     v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"
     :value="dataPatient"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="240px"
-    class="-m-4"
+    scrollHeight="flex"
+    class=""
     @row-click="openDialogRM"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"
@@ -127,7 +126,9 @@ const resetSelection = () => {
           <CustomChip
             :showCheckedIcon="false"
             :label="
-              slotProps.data.patient.gender == 'Female' ? 'Perempuan' : 'Laki-Laki'
+              slotProps.data.patient.gender == 'Female'
+                ? 'Perempuan'
+                : 'Laki-Laki'
             "
             :bgColor="
               slotProps.data.patient.gender == 'Female'
@@ -308,8 +309,8 @@ const resetSelection = () => {
     ></Column>
   </DataTable>
   <!-- Else -->
-  <NoData v-else  />
-  <MedicalRecord ref="medicalRecord" />
+  <NoData v-else />
+  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" />
 </template>
 
 <style>

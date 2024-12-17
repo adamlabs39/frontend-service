@@ -2,6 +2,13 @@
 import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
+const props = defineProps({
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+});
+
 const showPatientData = ref(true);
 </script>
 
@@ -161,6 +168,7 @@ const showPatientData = ref(true);
                   </span>
                 </div>
                 <div
+                  v-if="rmType == 'igd'"
                   :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[#14AC5B] text-white shadow-lg`"
                 >
                   TRIASE
