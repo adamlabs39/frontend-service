@@ -7,6 +7,7 @@ import {
   authInstance,
   baseInstanceRawatJalan,
   baseInstanceRekamMedis,
+  baseInstanceRawatInap,
 } from "./Api";
 import { app } from "@/main";
 
@@ -395,6 +396,33 @@ const apiRekamMedisPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+
+// Rawat inap Perpindahan Bangsal
+const apiRawatInapGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRawatInap.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+}
+
+const apiRawatInapPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRawatInap.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+}
+const apiRawatInapPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRawatInap.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+}
 export {
   apiBasePost,
   apiBaseGet,
@@ -424,5 +452,8 @@ export {
   apiRawatJalanGet,
   apiRekamMedisGet,
   apiRekamMedisPost,
-  apiRekamMedisPut
+  apiRekamMedisPut,
+  apiRawatInapGet,
+  apiRawatInapPost,
+  apiRawatInapPut
 };

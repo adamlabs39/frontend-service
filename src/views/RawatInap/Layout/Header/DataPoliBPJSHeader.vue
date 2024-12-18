@@ -110,7 +110,7 @@ defineExpose({
 });
 
 onMounted(() => {
-  // fetchPraktisiData();
+  fetchPraktisiData();
 });
 </script>
 
