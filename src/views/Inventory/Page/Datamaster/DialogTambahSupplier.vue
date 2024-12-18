@@ -41,6 +41,7 @@ const schema = computed(() =>
       selectedProvinceId: yup.string().notRequired(),
       selectedRegencyId: yup.string().notRequired(),
       selectedDistrictId: yup.string().notRequired(),
+      selectedVillageId:yup.string().notRequired(),
       alamat: yup.string().required("Alamat Harus Diisi"),
       noTelpon: yup.string().required("Phone Harus Diisi"),
       kategoriItemSelected: yup
@@ -60,6 +61,7 @@ const { errors, handleSubmit, defineField, resetForm } = useForm({
     selectedProvinceId: "",
     selectedRegencyId: "",
     selectedDistrictId: "",
+    selectedVillageId:"",
     alamat: "",
     noTelpon: "",
     status: false,
@@ -70,6 +72,7 @@ const [name] = defineField("name");
 const [selectedProvinceId] = defineField("selectedProvinceId");
 const [selectedRegencyId] = defineField("selectedRegencyId");
 const [selectedDistrictId] = defineField("selectedDistrictId");
+const [selectedVillageId] = defineField("selectedVillageId");
 const [alamat] = defineField("alamat");
 const [noTelpon] = defineField("noTelpon");
 const [kategoriItemSelected] = defineField("kategoriItemSelected");
@@ -167,7 +170,7 @@ onMounted(() => {
 });
 
 const onSubmit = handleSubmit((values: any) => {
-  console.log(values);
+  // console.log(values);
   emit("submitSupplierData", values);
   closeDialog();
 });
@@ -194,15 +197,19 @@ const closeDialog = () => {
             placeholder="Kode Supplier"
             class="w-[150px]"
             v-model="code"
+            :invalid="!!errors.code"
+            :invalidMessage="errors.code"
           />
           <CustomTextfield
             label="Nama Supplier"
             placeholder="Kode Supplier"
             class="grow"
             v-model="name"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
           />
         </div>
-        <div class="grid grid-cols-3 gap-7">
+        <div class="grid grid-cols-4 gap-7">
           <CustomSelect
             label="Provinsi"
             placeHolder="Pilih Provinsi"
@@ -238,6 +245,14 @@ const closeDialog = () => {
             :invalidMessage="errors.selectedDistrictId"
             :disabled="false"
           />
+          <CustomTextfield
+            label="Kelurahan"
+            placeholder="Kelurahan"
+            class="grow"
+            v-model="selectedVillageId"
+            :invalid="!!errors.selectedVillageId"
+            :invalidMessage="errors.selectedVillageId"
+          />
         </div>
         <div>
           <CustomTextfield
@@ -245,6 +260,8 @@ const closeDialog = () => {
             placeholder="Alamat"
             class="grow"
             v-model="alamat"
+            :invalid="!!errors.alamat"
+            :invalidMessage="errors.alamat"
           />
         </div>
         <div class="flex gap-7">
@@ -253,15 +270,19 @@ const closeDialog = () => {
             placeholder="0123456789"
             class="w-[200px]"
             v-model="noTelpon"
+            :invalid="!!errors.noTelpon"
+            :invalidMessage="errors.noTelpon"
           />
           <CustomMultiSelect
             class="grow"
-            label="Kategori Item"
+            label="Kategori Item TOD"
             :options="kategoriItem"
             placeholder="Pilih Kategori Item"
             v-model:modelValue="kategoriItemSelected"
             optionValue="id"
             optionLabel="name"
+            :invalid="!!errors.kategoriItemSelected"
+            :invalidMessage="errors.kategoriItemSelected"
           />
         </div>
         <hr class="my-2.5 border-grey-200" />

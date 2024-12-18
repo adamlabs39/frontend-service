@@ -3,6 +3,7 @@ import {
   settingInstance,
   baseInstanceDatamaster,
   baseInstanceAdmisi,
+  baseInstanceInventory,
   authInstance,
 } from "./Api";
 import { app } from "@/main";
@@ -281,6 +282,26 @@ const apiAdmisiDelete = async (url: string, data: object) => {
   }
 };
 
+
+// Inventory
+const apiInventoryGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+const apiInventoryPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.post(url, data);
+    return response.data
+  } catch (error) {
+    errorApiHandler(error)
+  }
+}
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -303,4 +324,6 @@ export {
   apiAdmisiPut,
   apiAdmisiPatch,
   apiAdmisiDelete,
+  apiInventoryGet,
+  apiInventoryPost
 };

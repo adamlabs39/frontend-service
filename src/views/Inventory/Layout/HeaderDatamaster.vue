@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 
-const emit = defineEmits(["tambahSupplier"]);
+const emit = defineEmits(["tambahSupplier", "update:valueNoSupplier"]);
 
 const noSupplier = ref<string>("");
 
@@ -60,6 +60,7 @@ const noSupplier = ref<string>("");
           label="Cari Supplier"
           placeholder="Cari Nama Supplier"
           class="grow"
+          @update:model-value ="$emit('update:valueNoSupplier',noSupplier)" 
         />
       </div>
       <slot name="tabs"></slot>
