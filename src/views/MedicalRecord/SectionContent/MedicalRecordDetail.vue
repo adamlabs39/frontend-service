@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
@@ -32,6 +32,9 @@ const props = defineProps({
   rmType: {
     type: String,
     default: "rawat-jalan",
+  },
+  rmAssesmentData: {
+    type: Object as PropType<any>,
   },
 });
 
@@ -89,47 +92,110 @@ const toggleShowAllDetailMR = (method = "show") => {
   <div class="flex mt-5 overflow-auto">
     <!-- <NoData class="grow" title="Belum Ada Pemeriksaan" /> -->
     <div class="grid grid-cols-2 grow gap-2.5 overflow-x-hidden">
-      <FormAlergi :ref="refs.alergi" method="detail" />
+      <FormAlergi
+        v-if="rmAssesmentData.alergi"
+        :ref="refs.alergi"
+        method="detail"
+      />
       <Anamnesis :ref="refs.anamnesis" method="detail" />
       <AnamnesisIGD
-        v-if="rmType == 'igd'"
+        v-if="rmType == 'igd' && rmAssesmentData.anamnesisIgd"
         :ref="refs.anamnesisIGD"
         method="detail"
       />
-      <Triase v-if="rmType == 'igd'" :ref="refs.triase" method="detail" />
-      <FormTandaVital :ref="refs.tandaVital" method="detail" />
-      <Antropometri :ref="refs.antropometri" method="detail" />
-      <FormAsesmenNyeri :ref="refs.asesmenNyeri" method="detail" />
-      <Kesadaran :ref="refs.kesadaran" method="detail" />
-      <PemeriksaanFisik :ref="refs.pemeriksaanFisik" method="detail" />
-      <PemeriksaanGigi :ref="refs.pemeriksaanGigi" method="detail" />
-      <PemeriksaanMata :ref="refs.pemeriksaanMata" method="detail" />
-      <BurnInput :ref="refs.lukaBakar" method="detail" />
+      <Triase
+        v-if="rmType == 'igd' && rmAssesmentData.triase"
+        :ref="refs.triase"
+        method="detail"
+      />
+      <FormTandaVital
+        v-if="rmAssesmentData.tandaVital"
+        :ref="refs.tandaVital"
+        method="detail"
+      />
+      <Antropometri
+        v-if="rmAssesmentData.antropometri"
+        :ref="refs.antropometri"
+        method="detail"
+      />
+      <FormAsesmenNyeri
+        v-if="rmAssesmentData.asesmenNyeri"
+        :ref="refs.asesmenNyeri"
+        method="detail"
+      />
+      <Kesadaran
+        v-if="rmAssesmentData.kesadaran"
+        :ref="refs.kesadaran"
+        method="detail"
+      />
+      <PemeriksaanFisik
+        v-if="rmAssesmentData.pemeriksaanFisik"
+        :ref="refs.pemeriksaanFisik"
+        method="detail"
+      />
+      <PemeriksaanGigi
+        v-if="rmAssesmentData.pemeriksaanGigi"
+        :ref="refs.pemeriksaanGigi"
+        method="detail"
+      />
+      <PemeriksaanMata
+        v-if="rmAssesmentData.pemeriksaanMata"
+        :ref="refs.pemeriksaanMata"
+        method="detail"
+      />
+      <BurnInput
+        v-if="rmAssesmentData.lukaBakar"
+        :ref="refs.lukaBakar"
+        method="detail"
+      />
       <CatatanHasilPenunjang
+        v-if="rmAssesmentData.catatanPenunjang"
         :ref="refs.catatanHasilPenunjang"
         method="detail"
       />
-      <FormDiagnosaDokterICD10 :ref="refs.diagnosisDokter" method="detail" />
-      <AsuhanKeperawatan :ref="refs.asuhanKeperawatan" method="detail" />
-      <FormCatatanPerawat :ref="refs.catatanPerawat" method="detail" />
-      <InstruksiMedis :ref="refs.instruksiMedis" method="detail" />
+      <FormDiagnosaDokterICD10
+        v-if="rmAssesmentData.diagnosisDokter"
+        :ref="refs.diagnosisDokter"
+        method="detail"
+      />
+      <AsuhanKeperawatan
+        v-if="rmAssesmentData.diagnosaPerawat"
+        :ref="refs.asuhanKeperawatan"
+        method="detail"
+      />
+      <FormCatatanPerawat
+        v-if="rmAssesmentData.catatanPerawat.length"
+        :ref="refs.catatanPerawat"
+        method="detail"
+      />
+      <InstruksiMedis
+        v-if="rmAssesmentData.instruksiMedis.length"
+        :ref="refs.instruksiMedis"
+        method="detail"
+      />
+      <!-- FIXME Belum ada -->
       <FormOrderObat :ref="refs.orderObat" method="detail" />
-      <PemeriksaanTindakan :ref="refs.pemeriksaanTindakan" method="detail" />
+      <PemeriksaanTindakan
+        v-if="rmAssesmentData.pemeriksaanTindakan.length"
+        :ref="refs.pemeriksaanTindakan"
+        method="detail"
+      />
       <FormImplementation
-        v-if="rmType == 'fisio'"
+        v-if="rmType == 'fisio' && rmAssesmentData.implementation"
         :ref="refs.implementation"
         method="detail"
       />
       <FormEvaluation
-        v-if="rmType == 'fisio'"
+        v-if="rmType == 'fisio' && rmAssesmentData.evaluation"
         :ref="refs.evaluation"
         method="detail"
       />
       <FormReassesment
-        v-if="rmType == 'fisio'"
+        v-if="rmType == 'fisio' && rmAssesmentData.reassessment"
         :ref="refs.reassessment"
         method="detail"
       />
+      <!-- FIXME Belum Ada -->
       <FormOrderAlkes :ref="refs.orderAlkes" method="detail" />
       <OrderLab :ref="refs.orderLab" method="detail" />
       <FormOrderFisio :ref="refs.orderFisio" method="detail" />

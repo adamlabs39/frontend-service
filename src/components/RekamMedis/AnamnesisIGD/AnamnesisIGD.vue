@@ -5,47 +5,97 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { ref } from "vue";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const caraDatang = ref([
+const listCaraDatang = ref([
   { id: "1", caraDatang: "Cara Datang 1" },
   { id: "2", caraDatang: "Cara Datang 2" },
   { id: "3", caraDatang: "Cara Datang 3" },
   { id: "4", caraDatang: "Cara Datang 4" },
 ]);
-const keadaanUmum = ref([
+const listKeadaanUmum = ref([
   { id: "1", keadaanUmum: "Keadaan Umum 1" },
   { id: "2", keadaanUmum: "Keadaan Umum 2" },
   { id: "3", keadaanUmum: "Keadaan Umum 3" },
   { id: "4", keadaanUmum: "Keadaan Umum 4" },
 ]);
-const jenisKasus = ref([
+const listJenisKasus = ref([
   { id: "1", jenisKasus: "Jenis Kasus 1" },
   { id: "2", jenisKasus: "Jenis Kasus 2" },
   { id: "3", jenisKasus: "Jenis Kasus 3" },
   { id: "4", jenisKasus: "Jenis Kasus 4" },
 ]);
-const kendaraan = ref([
+const listKendaraan = ref([
   { id: "1", kendaraan: "Kendaraan 1" },
   { id: "2", kendaraan: "Kendaraan 2" },
   { id: "3", kendaraan: "Kendaraan 3" },
   { id: "4", kendaraan: "Kendaraan 4" },
 ]);
 
-const keluhanUtama = ref<string>("");
-const selectedCaraDatang = ref("");
-const selectedKeadaanUmum = ref("");
-const selectedJenisKasus = ref("");
-const selectedKendaraan = ref("");
-const asalRujukan = ref<string>("");
-
 const emit = defineEmits(["edit"]);
+
+const schema = toTypedSchema(
+  yup.object({
+    keluhanUtama: yup.string(),
+    jenisKasus: yup.string(),
+    caraDatang: yup.string(),
+    kendaraan: yup.string(),
+    keadaanUmum: yup.string(),
+    asalRujukan: yup.string(),
+  })
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+const [keluhanUtama] = defineField("keluhanUtama");
+const [jenisKasus] = defineField("jenisKasus");
+const [caraDatang] = defineField("caraDatang");
+const [kendaraan] = defineField("kendaraan");
+const [keadaanUmum] = defineField("keadaanUmum");
+const [asalRujukan] = defineField("asalRujukan");
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "anamnesis_igd",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -80,8 +130,8 @@ defineExpose({
         />
         <CustomSelect
           label="Jenis Kasus"
-          v-model="selectedJenisKasus"
-          :options="jenisKasus"
+          v-model="jenisKasus"
+          :options="listJenisKasus"
           optionValue="id"
           optionLabel="jenisKasus"
           :isLoading="false"
@@ -93,8 +143,8 @@ defineExpose({
         />
         <CustomSelect
           label="Cara Datang"
-          v-model="selectedCaraDatang"
-          :options="caraDatang"
+          v-model="caraDatang"
+          :options="listCaraDatang"
           optionValue="id"
           optionLabel="caraDatang"
           :isLoading="false"
@@ -106,8 +156,8 @@ defineExpose({
         />
         <CustomSelect
           label="Kendaraan"
-          v-model="selectedKendaraan"
-          :options="kendaraan"
+          v-model="kendaraan"
+          :options="listKendaraan"
           optionValue="id"
           optionLabel="kendaraan"
           :isLoading="false"
@@ -119,8 +169,8 @@ defineExpose({
         />
         <CustomSelect
           label="Keadaan Umum"
-          v-model="selectedKeadaanUmum"
-          :options="keadaanUmum"
+          v-model="keadaanUmum"
+          :options="listKeadaanUmum"
           optionValue="id"
           optionLabel="keadaanUmum"
           :isLoading="false"
@@ -160,7 +210,7 @@ defineExpose({
           backgroundColor="bg-transparent"
           borderColor="border-2 border-adameds-300"
         />
-        <CustomButton v-if="props.method == 'form'" label="Simpan" />
+        <CustomButton v-if="props.method == 'form'" @click="onSubmit" label="Simpan" />
         <CustomButton
           v-if="props.method == 'detail'"
           @click="emit('edit')"

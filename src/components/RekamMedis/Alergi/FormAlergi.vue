@@ -11,6 +11,12 @@ import * as yup from "yup";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAlergi from "./HistoriAlergi.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const emit = defineEmits(["edit"]);
 
@@ -18,6 +24,14 @@ const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -64,10 +78,24 @@ const [efekSampingAlergi] = defineFieldAlergi("efekSampingAlergi");
 const [tanggalKejadianAlergi] = defineFieldAlergi("tanggalKejadianAlergi");
 const [petugas] = defineFieldAlergi("petugas");
 
-const onSubmitFormAlergi = handleSubmitAlergi((values: any) => {
-  console.log("Adding new data", values);
-  currentMethod.value = "detail";
-  emit("edit");
+const onSubmitFormAlergi = handleSubmitAlergi(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "alergi",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 onBeforeMount(() => {

@@ -6,6 +6,8 @@ import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
 // Import gambar mata
 import spontanMeresponOn from "@/assets/images/RekamMedis/Kesadaran/spontanMeresponOn.svg";
@@ -46,12 +48,25 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriKesadaran from "@/components/RekamMedis/Kesadaran/HistoriKesadaran.vue";
 
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
+
 const isEditing = ref(props.method === "form");
 const emit = defineEmits(["edit", "submit"]);
 
@@ -60,8 +75,8 @@ const schema = toTypedSchema(
     eye: yup.number(),
     motorik: yup.number(),
     verbal: yup.number(),
-    GCS_score: yup.number(),
-    GCS_kesimpulan: yup.string(),
+    gcsScore: yup.number(),
+    gcsKesimpulan: yup.string(),
     petugas: yup.string().required(),
   })
 );
@@ -71,8 +86,8 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 const [eye] = defineField("eye");
 const [motorik] = defineField("motorik");
 const [verbal] = defineField("verbal");
-const [GCS_score] = defineField("GCS_score");
-const [GCS_kesimpulan] = defineField("GCS_kesimpulan");
+const [gcsScore] = defineField("gcsScore");
+const [gcsKesimpulan] = defineField("gcsKesimpulan");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
@@ -80,16 +95,31 @@ onBeforeMount(async () => {
     eye: 1,
     motorik: 1,
     verbal: 1,
-    GCS_score: 50,
-    GCS_kesimpulan: "",
+    gcsScore: 50,
+    gcsKesimpulan: "",
     petugas: "Adam",
   });
   countKesimpulan();
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  emit("submit", values);
-  isEditing.value = false;
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "kesadaran",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const toggleEdit = () => {
@@ -221,26 +251,26 @@ const getLabelFromValue = (value: any, responses: Array<{ label: string }>) => {
 
 const countKesimpulan = () => {
   if (eye.value && motorik.value && verbal.value) {
-    GCS_kesimpulan.value = "";
+    gcsKesimpulan.value = "";
 
     let totalSkor = eye.value + motorik.value + verbal.value;
 
-    GCS_score.value = totalSkor;
+    gcsScore.value = totalSkor;
 
     if (totalSkor == 3) {
-      GCS_kesimpulan.value = "Coma";
+      gcsKesimpulan.value = "Coma";
     } else if (totalSkor == 4) {
-      GCS_kesimpulan.value = "Semi-coma";
+      gcsKesimpulan.value = "Semi-coma";
     } else if (totalSkor == 5 || totalSkor == 6) {
-      GCS_kesimpulan.value = "Sopor";
+      gcsKesimpulan.value = "Sopor";
     } else if (totalSkor > 6 && totalSkor <= 9) {
-      GCS_kesimpulan.value = "Somnolence";
+      gcsKesimpulan.value = "Somnolence";
     } else if (totalSkor == 10 || totalSkor == 11) {
-      GCS_kesimpulan.value = "Delirium";
+      gcsKesimpulan.value = "Delirium";
     } else if (totalSkor == 12 || totalSkor == 13) {
-      GCS_kesimpulan.value = "Apatis";
+      gcsKesimpulan.value = "Apatis";
     } else if (totalSkor == 14 || totalSkor == 15) {
-      GCS_kesimpulan.value = "Compos Mentis";
+      gcsKesimpulan.value = "Compos Mentis";
     }
   }
 };
@@ -315,7 +345,7 @@ defineExpose({
           </div>
         </div>
         <CustomTextfield
-          v-model="GCS_kesimpulan"
+          v-model="gcsKesimpulan"
           label="Kesimpulan GCS"
           placeholder="Pilih Kesimpulan GCS"
           class=""
@@ -335,7 +365,7 @@ defineExpose({
           label="Verbal"
           :value="getLabelFromValue(verbal, opsiKesadaran[2].response)"
         />
-        <CustomInfoRow label="Kesimpulan GCS" :value="GCS_kesimpulan" />
+        <CustomInfoRow label="Kesimpulan GCS" :value="gcsKesimpulan" />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
@@ -414,7 +444,7 @@ defineExpose({
                   </div>
                 </div>
                 <CustomTextfield
-                  v-model="GCS_kesimpulan"
+                  v-model="gcsKesimpulan"
                   label="Kesimpulan GCS"
                   placeholder="Pilih Kesimpulan GCS"
                   class=""

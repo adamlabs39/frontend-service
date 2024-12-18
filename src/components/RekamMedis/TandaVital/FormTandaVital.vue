@@ -13,11 +13,25 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriTandaVital from "@/components/RekamMedis/TandaVital/HistoriTandaVital.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -72,7 +86,7 @@ const schemaTandaVital = computed(() =>
       suhu: yup.number().positive("Suhu must be positive"),
       bloodOxygen: yup.number().positive("Blood Oxygen must be positive"),
       gulaDarah: yup.number().positive("Gula Darah must be positive"),
-      CRT: yup.boolean().default(false),
+      crt: yup.boolean().default(false),
       oksigenTambahan: yup.boolean().default(false),
       numerator: yup
         .number()
@@ -109,7 +123,7 @@ const [frekuensiNadi] = defineFieldTandaVital("frekuensiNadi");
 const [suhu] = defineFieldTandaVital("suhu");
 const [bloodOxygen] = defineFieldTandaVital("bloodOxygen");
 const [gulaDarah] = defineFieldTandaVital("gulaDarah");
-const [CRT] = defineFieldTandaVital("CRT");
+const [crt] = defineFieldTandaVital("crt");
 const [oksigenTambahan] = defineFieldTandaVital("oksigenTambahan");
 const [numerator] = defineFieldTandaVital("numerator");
 const [denominator] = defineFieldTandaVital("denominator");
@@ -117,13 +131,27 @@ const [petugas] = defineFieldTandaVital("petugas");
 
 // Do the same for other numeric fields as needed
 
-const onSubmitTandaVital = handleSubmitTandaVital((values: any) => {
-  console.log("Adding new data", values);
+const onSubmitTandaVital = handleSubmitTandaVital(async (values: any) => {
   values.kardiovaskulerAnak = Number(values.kardiovaskulerAnak);
   values.keadaanUmum = Number(values.keadaanUmum);
   values.respirasiAnak = Number(values.respirasiAnak);
-  currentMethod.value = "detail";
-  emit("edit");
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "tanda_vital",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 onBeforeMount(async () => {
@@ -221,7 +249,7 @@ defineExpose({
             </template>
           </CustomInputNumber>
           <CustomSwitch
-            v-model="CRT"
+            v-model="crt"
             label=" Capillary Refill Time (CRT > 2 Detik)"
           />
           <CustomInputNumber
@@ -352,7 +380,7 @@ defineExpose({
         />
         <CustomInfoRow
           label="Capillary Refill Time (CRT > 2 Detik)"
-          :value="`${CRT}`"
+          :value="`${crt}`"
           :type="
             currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
           "
@@ -531,7 +559,7 @@ defineExpose({
                     </template>
                   </CustomInputNumber>
                   <CustomSwitch
-                    v-model="CRT"
+                    v-model="crt"
                     label=" Capillary Refill Time (CRT > 2 Detik)"
                   />
                 </div>

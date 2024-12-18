@@ -77,6 +77,7 @@ const props = defineProps({
 const dialogRM = ref(false);
 const selectedTab = ref("rekam-medis");
 const selectedSessionTab = ref<string | undefined>();
+const selectedSessionData = ref<any>();
 const historyVisitDialog = ref(false);
 
 const listRecordDate = ref<any>([]);
@@ -201,8 +202,10 @@ onUpdated(() => {
       (sessionList: any) => sessionList.isSelected
     );
 
-    if (tempSelectedSession)
+    if (tempSelectedSession) {
+      selectedSessionData.value = tempSelectedSession;
       selectedSessionTab.value = `${tempSelectedSession.order}`;
+    }
   }
 });
 
@@ -263,7 +266,11 @@ const changeRecordData = async (selectedRecordDate: string) => {
 watch(
   () => selectedSessionTab.value,
   async (newSession, oldSession) => {
-    if (rmDateData.value && oldSession != null && props.patientData.rekamMedisUuid) {
+    if (
+      rmDateData.value &&
+      oldSession != null &&
+      props.patientData.rekamMedisUuid
+    ) {
       try {
         storeUtils.setLoading(true);
         let response = await rekamMedisStore.getRekamMedis({
@@ -398,6 +405,7 @@ defineExpose({ showDialogRM });
             <MedicalRecordDetail
               v-if="selectedTab == 'rekam-medis'"
               :rmType="rmType"
+              :rmAssesmentData="rmData.data"
             />
 
             <MedicalRecordAssesment
@@ -423,12 +431,16 @@ defineExpose({ showDialogRM });
                     :ref="refs.alergi"
                     method="form"
                     class="mb-[10px]"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                   <Anamnesis
                     id="Anamnesis"
                     :ref="refs.anamnesis"
                     method="form"
                     class=""
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                 </div>
 
@@ -449,18 +461,24 @@ defineExpose({ showDialogRM });
                     :ref="refs.antropometri"
                     method="form"
                     class="mb-[10px]"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                   <FormAsesmenNyeri
                     id="Asesmen Nyeri"
                     :ref="refs.asesmenNyeri"
                     method="form"
                     class="mb-[10px]"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                   <Kesadaran
                     id="Kesadaran"
                     :ref="refs.kesadaran"
                     method="form"
                     class="mb-[10px]"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                   <PemeriksaanFisik
                     id="Pemeriksaan Fisik"
@@ -472,6 +490,8 @@ defineExpose({ showDialogRM });
                     :ref="refs.catatanHasilPenunjang"
                     method="form"
                     class=""
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                 </div>
 
@@ -492,6 +512,8 @@ defineExpose({ showDialogRM });
                     :ref="refs.asuhanKeperawatan"
                     method="form"
                     class=""
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                 </div>
 
@@ -531,15 +553,27 @@ defineExpose({ showDialogRM });
                   <FormImplementation
                     :ref="refs.implementation"
                     method="form"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                   />
                 </div>
 
                 <div v-if="selectedTab == 'soapier' && selectedSoapier == 'E'">
-                  <FormEvaluation :ref="refs.evaluation" method="form" />
+                  <FormEvaluation
+                    :ref="refs.evaluation"
+                    method="form"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
+                  />
                 </div>
 
                 <div v-if="selectedTab == 'soapier' && selectedSoapier == 'R'">
-                  <FormReassesment :ref="refs.reassessment" method="form" />
+                  <FormReassesment
+                    :ref="refs.reassessment"
+                    method="form"
+                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
+                  />
                 </div>
               </div>
               <div class="flex flex-col mx-[10px]">

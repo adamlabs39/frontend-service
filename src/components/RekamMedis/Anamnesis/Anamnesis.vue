@@ -12,11 +12,25 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAnamnesis from "./HistoriAnamnesis.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -76,10 +90,24 @@ onBeforeMount(async () => {
   });
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  console.log("Adding new data:", values);
-  emit("submit", values);
-  isEditing.value = false;
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "anamnesis",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const toggleEdit = () => {
@@ -245,7 +273,9 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto">
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+              >
                 <HistoriAnamnesis />
                 <div class="border border-adameds-300 mx-[15px]"></div>
                 <HistoriAnamnesis />

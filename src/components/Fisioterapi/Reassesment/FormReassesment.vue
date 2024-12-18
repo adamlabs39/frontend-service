@@ -6,15 +6,61 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import { ref } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriReassesment from "@/components/Fisioterapi/Reassesment/HistoriReassesment.vue";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const reassesment = ref();
+const schema = toTypedSchema(
+  yup.object({
+    value: yup.string(),
+    petugas: yup.string().required(),
+  })
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+const [value] = defineField("value");
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "reassessment",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
 
 const emit = defineEmits(["edit"]);
 
@@ -57,7 +103,7 @@ defineExpose({
       </div>
       <div v-if="props.method == 'form'" class="gap-[30px] py-3">
         <CustomTextArea
-          v-model="reassesment"
+          v-model="value"
           label="Asesmen Ulang"
           placeholder="Ketik Asesmen Ulang ..."
         />
@@ -114,7 +160,7 @@ defineExpose({
             <div class="flex flex-col overflow-hidden">
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <CustomTextArea
-                  v-model="reassesment"
+                  v-model="value"
                   label="Asesmen Ulang"
                   placeholder="Ketik Asesmen Ulang ..."
                 />
@@ -134,7 +180,7 @@ defineExpose({
             <CustomButton
               v-if="method == 'form'"
               label="Simpan"
-              @click="() => {}"
+              @click="onSubmit"
             />
             <CustomButton
               v-if="method == 'detail'"

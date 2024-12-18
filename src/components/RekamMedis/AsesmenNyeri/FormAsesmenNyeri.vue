@@ -21,11 +21,25 @@ import { onBeforeMount } from "vue";
 import Scaler from "@/components/RekamMedis/AsesmenNyeri/Scaler.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/HistoriAsesmenNyeri.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -58,9 +72,24 @@ const [skalaNyeri] = defineFieldAsesmenNyeri("skalaNyeri");
 const [catatan] = defineFieldAsesmenNyeri("catatan");
 const [petugas] = defineFieldAsesmenNyeri("petugas");
 
-const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri((values: any) => {
-  currentMethod.value = "detail";
-  emit("edit");
+const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "asesmen_nyeri",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const onEditClick = () => {
@@ -249,7 +278,8 @@ defineExpose({
                       :class="[
                         'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
                         {
-                          'border-4 border-adameds-300': image.id === skalaNyeri,
+                          'border-4 border-adameds-300':
+                            image.id === skalaNyeri,
                         },
                       ]"
                       @click="handleImageClick(image.id)"
