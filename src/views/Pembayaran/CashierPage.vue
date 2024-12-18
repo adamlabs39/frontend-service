@@ -10,6 +10,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
 import type { DataTableRowClickEvent } from "primevue/datatable";
+import { epochToDate } from "@/utils/Helpers";
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const storeUtils = utilsStore();
@@ -21,6 +22,7 @@ const shiftDisabled = ref(false);
 const kasirData = ref<any>(null);
 const itemTagihan = ref<any>(null);
 const openedData = ref<any>({});
+const codeVoucher = ref("");
 
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
@@ -88,8 +90,8 @@ const processBillData = (data: any) => {
       uuid: service.uuid,
       layanan: service.serviceName,
       doctor: service.practitionerName,
-      tanggal_jadwal: new Date(service.date * 1000).toLocaleDateString("id-ID"),
-      no_time: new Date(service.date * 1000).toLocaleTimeString("id-ID"),
+      tanggal_jadwal: epochToDate(service.date, "date"),
+      no_time: epochToDate(service.date, "time"),
     }));
   } else {
     itemsPasien.value = [];
@@ -176,6 +178,21 @@ onMounted(() => {
   fetchSearchTransactions();
 });
 
+const submitVoucher = async () => {
+  // console.log("voucher babi", codeVoucher.value);
+  storeUtils.setLoading(true);
+    try {
+      const payload = {
+      code: codeVoucher.value, 
+    };
+      const response = await tagihanStore.postVoucher(kasirData.value.uuid, payload);
+      setSelectedPatientData(kasirData.value.uuid)
+    } catch (error) {
+      console.error("Failed to process the data:", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+};
 console.log("Items Pasien:", itemsPasien.value);
 
 console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
@@ -475,11 +492,16 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <CustomButton label="Pakai Diskon" class="ml-[10px]" />
 
               <CustomTextfield
+                v-model="codeVoucher"
                 :showLabel="false"
                 placeholder="Masukkan Kode Voucher"
                 class="w-[30%] ml-[50px] mr-[10px]"
               />
-              <CustomButton label="Pakai Voucher" class="" />
+              <CustomButton
+                label="Pakai Voucher"
+                class=""
+                @click="submitVoucher"
+              />
             </div>
 
             <!-- Button Bayar -->
@@ -785,7 +807,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
           <div class="pt-5">
             <div class="flex">
               <p class="font-bold">{{ openedData.layanan }}</p>
-              
+
               <CustomChip
                 class="ml-2"
                 :showCheckedIcon="false"
@@ -806,7 +828,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
             <div class="flex">
               <UserDoctorIcon class="mt-2" />
               <p class="mt-2 text-sm text-grey-400">
-                {{openedData.doctor}}
+                {{ openedData.doctor }}
               </p>
             </div>
             <div class="flex">
@@ -816,15 +838,15 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 class="my-auto ml-2 text-success-300"
                 weight="bold"
               />
-              <p class="ml-2 text-sm">{{openedData.tanggal_jadwal}}</p>
-              <p class="ml-2 text-sm">{{openedData.no_time}}</p>
+              <p class="ml-2 text-sm">{{ openedData.tanggal_jadwal }}</p>
+              <p class="ml-2 text-sm">{{ openedData.no_time }}</p>
             </div>
           </div>
 
           <!-- Table Kamar -->
           <div class="pt-5">
             <DataTable
-              v-if="itemsPasien.length"
+              v-if="openedData.layanan === 'rawat inap'"
               :value="itemsPasien"
               class="overflow-hidden rounded-[10px]"
               scrollable
@@ -913,7 +935,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.dateUsed }}
+                      {{ epochToDate(slotProps.data.dateUsed, "date") }}
                     </p>
                   </div>
                 </template>
@@ -957,11 +979,11 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
             </DataTable>
           </div>
 
-          <!-- Table Penunjang Lab -->
+          <!-- Table Penunjang -->
           <div class="pt-5">
             <DataTable
-              v-if="itemsPasien.length"
-              :value="itemsPasien"
+              v-if="itemTagihan.item.penunjang"
+              :value="itemTagihan.item.penunjang"
               class="overflow-hidden rounded-[10px]"
               scrollable
               scrollHeight="flex"
@@ -976,7 +998,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.tanggal_jadwal }}
+                      {{ epochToDate(slotProps.data.dateUsed, "date") }}
                     </p>
                   </div>
                 </template>
@@ -984,12 +1006,12 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <!-- Penunjang - Laboratorium -->
               <Column
                 field="penunjang"
-                header="Penunjang - Laboratorium"
+                header="Penunjang"
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
                   <div class="flex flex-wrap">
-                    <p class="text-sm">{{ slotProps.data.penunjangLab }}</p>
+                    <p class="text-sm">{{ slotProps.data.itemName }}</p>
                   </div>
                 </template>
               </Column>
@@ -1000,84 +1022,25 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 headerClass="bg-adameds-50"
               >
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jumlah }}</div>
+                  <div class="text-SM">{{ slotProps.data.qty }}</div>
                 </template>
               </Column>
               <!-- Tarif -->
               <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.tarif }}</div>
+                  <div class="text-SM">{{ slotProps.data.price }}</div>
                 </template>
               </Column>
               <!-- Total -->
               <Column field="total" header="Total" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.total }}</div>
+                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
                 </template>
               </Column>
             </DataTable>
           </div>
 
-          <!-- Table Penunjang Fisio -->
-          <div class="pt-5">
-            <DataTable
-              v-if="itemsPasien.length"
-              :value="itemsPasien"
-              class="overflow-hidden rounded-[10px]"
-              scrollable
-              scrollHeight="flex"
-              :pt="{ headerRow: 'text-SM' }"
-            >
-              <!-- Tanggal -->
-              <Column
-                field="tanggal"
-                header="Tanggal"
-                headerClass="bg-adameds-50"
-              >
-                <template #body="slotProps">
-                  <div>
-                    <p class="text-SM">
-                      {{ slotProps.data.tanggal_jadwal }}
-                    </p>
-                  </div>
-                </template>
-              </Column>
-              <!-- Penunjang - Fisio -->
-              <Column
-                field="penunjang"
-                header="Penunjang - Fisio"
-                headerClass="bg-adameds-50"
-              >
-                <template #body="slotProps">
-                  <div class="flex flex-wrap">
-                    <p class="text-sm">{{ slotProps.data.penunjangFisio }}</p>
-                  </div>
-                </template>
-              </Column>
-              <!-- Jumlah -->
-              <Column
-                field="jumlah"
-                header="Jumlah"
-                headerClass="bg-adameds-50"
-              >
-                <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.jumlah }}</div>
-                </template>
-              </Column>
-              <!-- Tarif -->
-              <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
-                <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.tarif }}</div>
-                </template>
-              </Column>
-              <!-- Total -->
-              <Column field="total" header="Total" headerClass="bg-adameds-50">
-                <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.total }}</div>
-                </template>
-              </Column>
-            </DataTable>
-          </div>
+         
 
           <!-- Table Obat -->
           <div class="pt-5">
@@ -1098,7 +1061,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.dateUsed }}
+                      {{ epochToDate(slotProps.data.dateUsed, "date") }}
                     </p>
                   </div>
                 </template>
@@ -1188,7 +1151,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                 <template #body="slotProps">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.dateUsed }}
+                      {{ epochToDate(slotProps.data.dateUsed, "date") }}
                     </p>
                   </div>
                 </template>

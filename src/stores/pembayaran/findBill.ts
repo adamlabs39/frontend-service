@@ -13,22 +13,22 @@ export const useTagihanStore = defineStore({
   actions: {
     async getApi(
       search: string = "",
-      
+
       payload = {}
     ) {
       return apiPembayaranGet(
-        `/payment?search=${search == ''? '00-00': search}`,
+        `/payment?search=${search == "" ? "00-00" : search}`,
         payload
       );
     },
     async getDetailBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}`, payload);
     },
-    async getItemBill(uuid: string,payload = {}) {
+    async getItemBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}/items`, payload);
     },
-    async postApi(payload = {}) {
-      return apiPembayaranPost("/datamaster/role", payload);
+    async postVoucher(uuid: string, payload = {}) {
+      return apiPembayaranPost(`/payment/${uuid}/voucher`, payload);
     },
     async putApi(uuid: string, payload = {}) {
       return apiPembayaranPut(`/datamaster/role/${uuid}`, payload);
