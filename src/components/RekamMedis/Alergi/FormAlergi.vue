@@ -4,7 +4,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, ref, onBeforeMount } from "vue";
+import { computed, ref, onBeforeMount, type PropType } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -13,17 +13,32 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAlergi from "./HistoriAlergi.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { dateToEpoch, epochToDate } from "@/utils/Helpers";
+
+interface AlergiForm {
+  isAlergi: boolean;
+  pemicuAlergi: string;
+  namaAlergi: string;
+  reaksiAlergi: string;
+  tingkatKeparahanAlergi: string;
+  efekSampingAlergi: string;
+  tanggalKejadianAlergi: number | Date;
+}
 
 // NOTE Store
 const storeUtils = utilsStore();
 const rekamMedisStore = useRekamMedisStore();
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "submitAsesmen", "editAsesmen"]);
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  alergiData: {
+    type: Object as PropType<AlergiForm>,
+    default: undefined,
   },
   rmUuid: {
     type: String,
@@ -48,7 +63,7 @@ const schemaAlergi = computed(() =>
       tingkatKeparahanAlergi: yup.string(),
       efekSampingAlergi: yup.string(),
       tanggalKejadianAlergi: yup.date(),
-      petugas: yup.string().required("Petugas alergi is required"),
+      petugas: yup.string().default("Super Admin"),
     })
   )
 );
@@ -56,6 +71,7 @@ const schemaAlergi = computed(() =>
 const {
   handleSubmit: handleSubmitAlergi,
   defineField: defineFieldAlergi,
+  resetForm,
   setValues,
 } = useForm({
   validationSchema: schemaAlergi,
@@ -78,34 +94,63 @@ const [efekSampingAlergi] = defineFieldAlergi("efekSampingAlergi");
 const [tanggalKejadianAlergi] = defineFieldAlergi("tanggalKejadianAlergi");
 const [petugas] = defineFieldAlergi("petugas");
 
-const onSubmitFormAlergi = handleSubmitAlergi(async (values: any) => {
+const onSubmitFormAlergi = handleSubmitAlergi((values: any) => {
+  postFormAlergi(values);
+});
+
+const postFormAlergi = async (values: AlergiForm | null) => {
   try {
     storeUtils.setLoading(true);
+    let tempData;
+    if (values) {
+      tempData = values;
+      tempData.tanggalKejadianAlergi = dateToEpoch(
+        tempData.tanggalKejadianAlergi as Date
+      );
+    } else {
+      tempData = {
+        isAlergi: false,
+        pemicuAlergi: "",
+        namaAlergi: "",
+        reaksiAlergi: "",
+        tingkatKeparahanAlergi: "",
+        efekSampingAlergi: "",
+        tanggalKejadianAlergi: "",
+      };
+    }
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
       key: "alergi",
-      data: values,
+      data: tempData,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
   } finally {
     storeUtils.setLoading(false);
   }
-});
+};
 
 onBeforeMount(() => {
-  setValues({ petugas: "Nama Petugas" });
+  if (props.alergiData) {
+    setValues({
+      isAlergi: props.alergiData.isAlergi,
+      pemicuAlergi: props.alergiData.pemicuAlergi,
+      namaAlergi: props.alergiData.namaAlergi,
+      reaksiAlergi: props.alergiData.reaksiAlergi,
+      tingkatKeparahanAlergi: props.alergiData.tingkatKeparahanAlergi,
+      efekSampingAlergi: props.alergiData.efekSampingAlergi,
+      tanggalKejadianAlergi: epochToDate(
+        props.alergiData.tanggalKejadianAlergi as number
+      ) as Date,
+      petugas: "Nama Petugas",
+    });
+  }
 });
-
-// Method to handle edit button click
-const onEditClick = () => {
-  currentMethod.value = "form";
-};
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -313,7 +358,7 @@ defineExpose({
             <CustomButton
               v-if="currentMethod === 'detail'"
               label="Edit"
-              @click="onEditClick"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -323,6 +368,7 @@ defineExpose({
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="props.method == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-grey-300"
           backgroundColor="bg-transparent"
@@ -330,6 +376,7 @@ defineExpose({
         />
         <CustomButton
           v-if="currentMethod === 'form'"
+          @click="postFormAlergi(null)"
           label="Tidak Ada Alergi"
           textColor="text-adameds-300"
           backgroundColor="bg-transparent"
@@ -337,13 +384,13 @@ defineExpose({
         />
         <CustomButton
           v-if="currentMethod === 'form'"
-          label="Simpan"
           @click="onSubmitFormAlergi"
+          label="Simpan"
         />
         <CustomButton
           v-if="currentMethod === 'detail'"
+          @click="emit('editAsesmen')"
           label="Edit"
-          @click="onEditClick"
         />
       </div>
     </template>

@@ -28,6 +28,8 @@ import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vue";
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";
 
+const emit = defineEmits(["editAsesmen"]);
+
 const props = defineProps({
   rmType: {
     type: String,
@@ -96,8 +98,14 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.alergi"
         :ref="refs.alergi"
         method="detail"
+        :alergiData="rmAssesmentData.alergi"
+        @editAsesmen="emit('editAsesmen', 'Alergi')"
       />
-      <Anamnesis :ref="refs.anamnesis" method="detail" />
+      <Anamnesis
+        v-if="rmAssesmentData.anamnesis"
+        :ref="refs.anamnesis"
+        method="detail"
+      />
       <AnamnesisIGD
         v-if="rmType == 'igd' && rmAssesmentData.anamnesisIgd"
         :ref="refs.anamnesisIGD"
@@ -154,7 +162,7 @@ const toggleShowAllDetailMR = (method = "show") => {
         method="detail"
       />
       <FormDiagnosaDokterICD10
-        v-if="rmAssesmentData.diagnosisDokter"
+        v-if="rmAssesmentData.diagnosisDokter.length"
         :ref="refs.diagnosisDokter"
         method="detail"
       />
@@ -173,8 +181,12 @@ const toggleShowAllDetailMR = (method = "show") => {
         :ref="refs.instruksiMedis"
         method="detail"
       />
+      <FormOrderObat
+        v-if="rmAssesmentData.obatUuides.length"
+        :ref="refs.orderObat"
+        method="detail"
+      />
       <!-- FIXME Belum ada -->
-      <FormOrderObat :ref="refs.orderObat" method="detail" />
       <PemeriksaanTindakan
         v-if="rmAssesmentData.pemeriksaanTindakan.length"
         :ref="refs.pemeriksaanTindakan"

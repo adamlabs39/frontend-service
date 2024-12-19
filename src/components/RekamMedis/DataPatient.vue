@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import type { PropType } from "vue";
+import { epochToDate, formatDate } from "@/utils/Helpers";
 
 const props = defineProps({
   rmType: {
@@ -23,14 +24,14 @@ const showPatientData = ref(true);
   <div class="text-XS">
     <Transition name="slide-fade">
       <div v-if="showPatientData">
-        <div class="grid grid-cols-3 mb-[10px]">
-          <div class="flex">
+        <div class="grid grid-cols-5 mb-[10px]">
+          <div class="flex col-span-2">
             <div class="grid grid-cols-3 grow">
               <div class="mr-5">
                 <div class="font-semibold underline mb-[5px] leading-5">
                   No. Registrasi
                 </div>
-                <div class="text-normal">REG2407010049</div>
+                <div class="text-normal">{{ patientData?.noReg }}</div>
               </div>
               <div class="mr-5">
                 <div class="font-semibold underline mb-[5px] leading-5">
@@ -38,9 +39,21 @@ const showPatientData = ref(true);
                 </div>
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="true ? 'Perempuan' : 'Laki-laki'"
-                  :bgColor="true ? 'bg-female-75' : 'bg-male-75'"
-                  :textColor="true ? 'text-female-300' : 'text-male-300'"
+                  :label="
+                    patientData?.patient.gender == 'Male'
+                      ? 'Laki-laki'
+                      : 'Perempuan'
+                  "
+                  :bgColor="
+                    patientData?.patient.gender == 'Male'
+                      ? 'bg-male-75'
+                      : 'bg-female-75'
+                  "
+                  :textColor="
+                    patientData?.patient.gender == 'Male'
+                      ? 'text-male-300'
+                      : 'text-female-300'
+                  "
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
               </div>
@@ -49,24 +62,35 @@ const showPatientData = ref(true);
                   Tanggal Lahir
                 </div>
                 <div class="text-normal">
-                  01-01-2000 |
-                  <span class="font-semibold text-adameds-300"
-                    >24Th 0Bl 1Hr</span
-                  >
+                  {{
+                    formatDate(
+                      new Date(patientData?.patient.birthDetail.birthDate)
+                    )
+                  }}
+                  |
+                  <span class="font-semibold text-adameds-300">
+                    {{ patientData?.patient.birthDetail.ageYear }}Th
+                    {{ patientData?.patient.birthDetail.ageMonth }}Bl
+                    {{ patientData?.patient.birthDetail.ageDay }}Hr
+                  </span>
                 </div>
               </div>
             </div>
             <div class="mx-[45px] border-[1px] border-adameds-300"></div>
           </div>
-          <div class="grid grid-cols-4 col-span-2">
+          <div class="grid grid-cols-4 col-span-3">
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
                 Tanggal Pelayanan
               </div>
               <div class="text-normal">
-                25 Okt 2023 <span class="text-grey-400">09:00</span>
+                {{ epochToDate(patientData?.tanggalDirawat, "date") }}
+                <span class="text-grey-400">{{
+                  epochToDate(patientData?.tanggalDirawat, "time")
+                }}</span>
               </div>
             </div>
+            <!-- FIXME Belum Ada -->
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
                 Dokter
@@ -76,8 +100,9 @@ const showPatientData = ref(true);
                   customClass="h-5 ml-[5px]"
                 />
               </div>
-              <div class="text-normal">REG2407010049</div>
+              <div class="text-normal">dr. Nama Dokter</div>
             </div>
+            <!-- FIXME Belum Ada -->
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
                 Asesmen Terakhir
@@ -91,15 +116,28 @@ const showPatientData = ref(true);
                 Tagihan
                 <CustomChip
                   :showCheckedIcon="false"
-                  label="TUNAI"
-                  :bgColor="true ? 'bg-adameds-50' : 'bg-warning-50'"
-                  :textColor="true ? 'text-adameds-300' : 'text-warning-300'"
-                  :borderColor="
-                    true ? 'border-adameds-300' : 'border-warning-300'
+                  :label="
+                    patientData?.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
                   "
-                  customClass="h-5 ml-[5px]"
+                  :bgColor="
+                    patientData?.paymentMethod == 1
+                      ? 'bg-adameds-50'
+                      : 'bg-warning-50'
+                  "
+                  :textColor="
+                    patientData?.paymentMethod == 1
+                      ? 'text-adameds-300'
+                      : 'text-warning-300'
+                  "
+                  :borderColor="
+                    patientData?.paymentMethod == 1
+                      ? 'border-adameds-300'
+                      : 'border-warning-300'
+                  "
+                  customClass="h-5 pr-[6px] ml-[5px]"
                 />
               </div>
+              <!-- FIXME Belum Ada -->
               <div class="text-normal">Rp. 0</div>
             </div>
           </div>

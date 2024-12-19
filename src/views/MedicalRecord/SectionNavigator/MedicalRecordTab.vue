@@ -11,7 +11,7 @@ import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 const storeUtils = utilsStore();
 const rekamMedisStore = useRekamMedisStore();
 
-const emit = defineEmits(["createNewSession"]);
+const emit = defineEmits([]);
 
 const props = defineProps({
   rmType: {
@@ -31,6 +31,24 @@ const props = defineProps({
   },
 });
 
+const listMedicalRecordTab = [
+  {
+    value: "rekam-medis",
+    icon: "PhListPlus",
+    text: "Rekam Medis",
+  },
+  {
+    value: "asesmen",
+    icon: "PhListChecks",
+    text: "Asesmen",
+  },
+  {
+    value: "soapier",
+    icon: "PhStethoscope",
+    text: "S.O.A.P.I.E.R",
+  },
+];
+
 const selectedTab = defineModel<string>("selectedTab", {
   default: "rekam-medis",
 });
@@ -46,7 +64,7 @@ const createNewSession = async () => {
       dateOrder: props.selectedRecord.dateOrder,
     });
     if (response && response.payload) {
-      emit("createNewSession", response.payload);
+      rekamMedisStore.setOpenedRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to fetch data", error);

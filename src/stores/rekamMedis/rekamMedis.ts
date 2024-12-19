@@ -7,9 +7,19 @@ import {
 
 export const useRekamMedisStore = defineStore({
   id: "rekamMedis",
-  state: () => ({}),
+  state: () => ({
+    openedRekamMedis: Object as any,
+  }),
   getters: {},
   actions: {
+    setOpenedRekamMedisData(rmData: any) {
+      this.openedRekamMedis = rmData
+    },
+    setAsesmentSummaryRekamMedisData(asesmenSummary: any) {
+      this.openedRekamMedis.data = asesmenSummary.data
+      this.openedRekamMedis.summary = asesmenSummary.summary
+    },
+
     async createRekamMedis(payload = {}) {
       return apiRekamMedisPost("/rekam-medis", payload);
     },

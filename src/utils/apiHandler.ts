@@ -16,7 +16,8 @@ const errorApiHandler = (error: any) => {
   if (error.response) {
     if (
       (error.response.data.message == "Authentikasi gagal" ||
-        error.response.data.message == "Authorization gagal") &&
+        error.response.data.message == "Authorization gagal" ||
+        error.response.data.message == "jwt expired") &&
       (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
         error.response.data.errors[0].type == "Invalid signature" ||
         (error.response.data.errors[0].type == "auth" &&
@@ -339,7 +340,6 @@ const apiIgdDelete = async (url: string, data: object) => {
   }
 };
 
-
 // Rawat Jalan
 const apiRawatJalanGet = async (url: string, data: object) => {
   try {
@@ -424,5 +424,5 @@ export {
   apiRawatJalanGet,
   apiRekamMedisGet,
   apiRekamMedisPost,
-  apiRekamMedisPut
+  apiRekamMedisPut,
 };

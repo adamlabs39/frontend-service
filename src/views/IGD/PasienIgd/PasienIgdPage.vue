@@ -192,17 +192,21 @@ const confirmCancel = async () => {
 };
 const medicalRecord = ref<any>();
 
-const openedRekamMedis = ref<any>({});
 const openedPatientData = ref<any>({});
 const openDialogRM = async (event: DataTableRowClickEvent) => {
-  openedPatientData.value = event.data;
   try {
     storeUtils.setLoading(true);
+    const responseDetailPelayanan = await admisiIGDStore.getDetailIGD(
+      event.data.uuid
+    );
+    if (responseDetailPelayanan && responseDetailPelayanan.payload) {
+      openedPatientData.value = responseDetailPelayanan.payload;
+      openedPatientData.value.rekamMedisUuid = event.data.rekamMedisUuid;
+    }
     let response: any;
     if (openedPatientData.value.rekamMedisUuid) {
       response = await rekamMedisStore.getRekamMedis({
         rekamMedisUuid: openedPatientData.value.rekamMedisUuid,
-        dateOrder: 2,
       });
     } else {
       response = await rekamMedisStore.createRekamMedis({
@@ -216,7 +220,7 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
       });
     }
     if (response && response.payload) {
-      openedRekamMedis.value = response.payload;
+      rekamMedisStore.setOpenedRekamMedisData(response.payload);
       medicalRecord.value?.showDialogRM();
     }
   } catch (error) {
@@ -224,10 +228,6 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
   } finally {
     storeUtils.setLoading(false);
   }
-};
-
-const reSetRmData = (newRm: any) => {
-  openedRekamMedis.value = newRm;
 };
 
 const handleCancleReason = (value: string) => {
@@ -524,8 +524,6 @@ const fetchPraktisiData = async () => {
         ref="medicalRecord"
         rmType="igd"
         :patientData="openedPatientData"
-        :rmData="openedRekamMedis"
-        @updateRmData="reSetRmData"
       />
     </template>
     <template #footer>

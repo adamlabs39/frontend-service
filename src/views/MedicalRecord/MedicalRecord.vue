@@ -57,7 +57,7 @@ const storeUtils = utilsStore();
 const toast = useToast();
 const rekamMedisStore = useRekamMedisStore();
 
-const emit = defineEmits(["updateRmData"]);
+const emit = defineEmits([]);
 
 const props = defineProps({
   rmType: {
@@ -66,10 +66,6 @@ const props = defineProps({
   },
   patientData: {
     type: Object,
-    required: true,
-  },
-  rmData: {
-    type: Object as PropType<any>,
     required: true,
   },
 });
@@ -181,11 +177,11 @@ const toggleShowAllDetailMR = (method = "show") => {
 // NOTE Logic Function
 onUpdated(() => {
   if (
-    props.rmData &&
-    props.rmData.dates?.length &&
-    props.rmData.sessions?.length
+    rekamMedisStore.openedRekamMedis &&
+    rekamMedisStore.openedRekamMedis.dates?.length &&
+    rekamMedisStore.openedRekamMedis.sessions?.length
   ) {
-    listRecordDate.value = props.rmData.dates;
+    listRecordDate.value = rekamMedisStore.openedRekamMedis.dates;
     listRecordDate.value.forEach((dateList: any, index: number) => {
       dateList.dateOrder = index + 1;
     });
@@ -198,7 +194,7 @@ onUpdated(() => {
       rmDate.value = selectedDate.date;
       rmDateData.value = selectedDate;
     }
-    const tempSelectedSession = props.rmData.sessions.find(
+    const tempSelectedSession = rekamMedisStore.openedRekamMedis.sessions.find(
       (sessionList: any) => sessionList.isSelected
     );
 
@@ -210,9 +206,9 @@ onUpdated(() => {
 });
 
 const isAllowCreateRecord = () => {
-  if (Object.keys(props.rmData).length) {
+  if (Object.keys(rekamMedisStore.openedRekamMedis).length) {
     const tempDateNow = formatDate(new Date(), true);
-    return props.rmData.dates.some(
+    return rekamMedisStore.openedRekamMedis.dates.some(
       (dateList: any) => dateList.date == tempDateNow
     );
   } else return false;
@@ -226,7 +222,7 @@ const createRecord = async () => {
         date: formatDate(new Date(), true),
       });
       if (response && response.payload) {
-        emit("updateRmData", response.payload);
+        rekamMedisStore.setOpenedRekamMedisData(response.payload);
       }
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -254,7 +250,7 @@ const changeRecordData = async (selectedRecordDate: string) => {
       dateOrder: selectedRecordDateData.dateOrder,
     });
     if (response && response.payload) {
-      emit("updateRmData", response.payload);
+      rekamMedisStore.setOpenedRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -273,13 +269,17 @@ watch(
     ) {
       try {
         storeUtils.setLoading(true);
+        selectedSessionData.value =
+          rekamMedisStore.openedRekamMedis.sessions.find(
+            (sessionList: any) => sessionList.order == newSession
+          );
         let response = await rekamMedisStore.getRekamMedis({
           rekamMedisUuid: props.patientData.rekamMedisUuid,
           dateOrder: rmDateData.value.dateOrder,
           sessionOrder: parseInt(newSession ?? ""),
         });
         if (response && response.payload) {
-          emit("updateRmData", response.payload);
+          rekamMedisStore.setOpenedRekamMedisData(response.payload);
         }
       } catch (error) {
         console.error("Failed to fetch data", error);
@@ -321,9 +321,9 @@ defineExpose({ showDialogRM });
             <div
               class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]"
             >
-              00-00-00
+              {{ patientData.noRm }}
             </div>
-            Nama Lengkap Pasien
+            {{ patientData.patient.name }}
           </div>
           <CustomButton
             @click="() => {}"
@@ -340,7 +340,7 @@ defineExpose({ showDialogRM });
           <DataPatient
             :rmType="rmType"
             :patientData="patientData"
-            :summaryData="rmData.summary"
+            :summaryData="rekamMedisStore.openedRekamMedis.summary"
           />
           <div class="flex flex-col overflow-hidden grow">
             <div class="flex justify-between mb-4">
@@ -386,9 +386,8 @@ defineExpose({ showDialogRM });
               v-model:selected-session-tab="selectedSessionTab"
               :rmType="rmType"
               :selectedRecord="rmDateData"
-              :sessions="rmData.sessions"
+              :sessions="rekamMedisStore.openedRekamMedis.sessions"
               :rmUuid="patientData.rekamMedisUuid"
-              @createNewSession="emit('updateRmData', $event)"
             />
             <MedicalRecordNavigation
               :selectedTab="selectedTab"
@@ -405,12 +404,22 @@ defineExpose({ showDialogRM });
             <MedicalRecordDetail
               v-if="selectedTab == 'rekam-medis'"
               :rmType="rmType"
-              :rmAssesmentData="rmData.data"
+              :rmAssesmentData="rekamMedisStore.openedRekamMedis.data"
+              @editAsesmen="
+                (data) => {
+                  selectedTab = 'asesmen';
+                  selectedAssesment = data;
+                }
+              "
             />
 
             <MedicalRecordAssesment
               v-if="selectedTab == 'asesmen'"
               :selectedAssesment="selectedAssesment"
+              :rmUuid="patientData.rekamMedisUuid"
+              :sessionUuid="selectedSessionData.id"
+              :asesmenData="rekamMedisStore.openedRekamMedis.data"
+              :isLatest="rekamMedisStore.openedRekamMedis.isLatest"
             />
 
             <div
@@ -431,7 +440,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.alergi"
                     method="form"
                     class="mb-[10px]"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                   <Anamnesis
@@ -439,7 +448,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.anamnesis"
                     method="form"
                     class=""
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
@@ -461,7 +470,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.antropometri"
                     method="form"
                     class="mb-[10px]"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                   <FormAsesmenNyeri
@@ -469,7 +478,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.asesmenNyeri"
                     method="form"
                     class="mb-[10px]"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                   <Kesadaran
@@ -477,7 +486,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.kesadaran"
                     method="form"
                     class="mb-[10px]"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                   <PemeriksaanFisik
@@ -490,7 +499,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.catatanHasilPenunjang"
                     method="form"
                     class=""
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
@@ -512,7 +521,7 @@ defineExpose({ showDialogRM });
                     :ref="refs.asuhanKeperawatan"
                     method="form"
                     class=""
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
@@ -553,7 +562,7 @@ defineExpose({ showDialogRM });
                   <FormImplementation
                     :ref="refs.implementation"
                     method="form"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
@@ -562,7 +571,7 @@ defineExpose({ showDialogRM });
                   <FormEvaluation
                     :ref="refs.evaluation"
                     method="form"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
@@ -571,7 +580,7 @@ defineExpose({ showDialogRM });
                   <FormReassesment
                     :ref="refs.reassessment"
                     method="form"
-                    :rmUuid="props.patientData.rekamMedisUuid"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                   />
                 </div>
