@@ -97,22 +97,6 @@ const processBillData = (data: any) => {
     itemsPasien.value = [];
   }
 };
-
-// const setSelectedPatientData = async (uuid: string) => {
-//   if (uuid) {
-//     storeUtils.setLoading(true);
-//     try {
-//       const response = await tagihanStore.getDetailBill(uuid);
-//       if (response && response.payload) {
-//         kasirData.value = response.payload;
-//       }
-//     } catch (error) {
-//       console.error("Failed to process the data:", error);
-//     } finally {
-//       storeUtils.setLoading(false);
-//     }
-//   }
-// };
 const setSelectedPatientData = async (uuid: string) => {
   if (uuid) {
     storeUtils.setLoading(true);
@@ -179,19 +163,28 @@ onMounted(() => {
 });
 
 const submitVoucher = async () => {
-  // console.log("voucher babi", codeVoucher.value);
   storeUtils.setLoading(true);
-    try {
-      const payload = {
-      code: codeVoucher.value, 
+  try {
+    const payload = {
+      code: codeVoucher.value,
     };
-      const response = await tagihanStore.postVoucher(kasirData.value.uuid, payload);
-      setSelectedPatientData(kasirData.value.uuid)
-    } catch (error) {
-      console.error("Failed to process the data:", error);
-    } finally {
-      storeUtils.setLoading(false);
+    const response = await tagihanStore.postVoucher(
+      kasirData.value.uuid,
+      payload
+    );
+    const responseDetailBill = await tagihanStore.getDetailBill(
+      kasirData.value.uuid
+    );
+    if (responseDetailBill && responseDetailBill.payload) {
+      kasirData.value = responseDetailBill.payload;
+
+      processBillData(responseDetailBill.payload.serviceBill);
     }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 console.log("Items Pasien:", itemsPasien.value);
 
@@ -1034,13 +1027,13 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
               <!-- Total -->
               <Column field="total" header="Total" headerClass="bg-adameds-50">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">
+                    {{ slotProps.data.qty * slotProps.data.price }}
+                  </div>
                 </template>
               </Column>
             </DataTable>
           </div>
-
-         
 
           <!-- Table Obat -->
           <div class="pt-5">
