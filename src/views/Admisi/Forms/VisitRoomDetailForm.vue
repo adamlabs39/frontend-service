@@ -133,10 +133,11 @@ const fetchListRoomData = async () => {
     storeUtils.setLoading(true);
     const response = await monitoringKamarStore.getMonitoringKamar({
       filterKelas: selectedRoomClass.value,
-      filterKategori: selectedRoomCategory.value,
+      filterKategori: [selectedRoomCategory.value],
     });
     if (response && response.payload) {
       listRuangan.value = response.payload;
+      console.log(listRuangan.value)
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -522,7 +523,7 @@ defineExpose({
             <CustomSelect
               v-model="selectedRoom"
               @update:model-value="fetchListBedData"
-              label="Ruangan"
+              label="RuanganTES"
               placeHolder="Pilih Ruangan"
               class="col-span-2"
               optionLabel="name"
