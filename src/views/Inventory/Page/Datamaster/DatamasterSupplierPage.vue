@@ -150,6 +150,12 @@ function handleEditSupplier(values: any) {
   dialogEditSupplier.value.data = values;
 }
 
+// DARI DIALOG DETAIL KE DIALOG EDIT
+function handleClickEdit() {
+  dialogDetailSupplier.value.isVisible = false;
+  handleEditSupplier(dialogDetailSupplier.value.data);
+}
+
 // Function untuk menambah data baru ke array datamasterSupplierData
 const handleSupplierDataSubmit = async (data: any) => {
   // console.log(data)
@@ -200,6 +206,8 @@ const handlePage = (event: any) => {
   properties.value.page_size = event.rows;
   reload();
 };
+
+
 
 
 onBeforeRouteLeave((to, from) => {
@@ -338,6 +346,7 @@ onMounted(() => {
         v-model:is-dialog-visible="dialogDetailSupplier.isVisible"
         :title="dialogDetailSupplier.title"
         :detail-data="dialogDetailSupplier.data"
+        @clickEditDialog = "handleClickEdit"
       />
     </template>
     <template #footer>

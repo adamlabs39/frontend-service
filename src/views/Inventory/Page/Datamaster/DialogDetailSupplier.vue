@@ -20,14 +20,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:isDialogVisible"]);
+const emit = defineEmits(["update:isDialogVisible", "clickEditDialog"]);
 
 function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
 }
 
-const tes = () => {
-  console.log("tes");
+const clickEditDialog = () => {
+  emit("clickEditDialog");
 };
 </script>
 
@@ -66,7 +66,7 @@ const tes = () => {
     <template #footer>
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
-          <CustomButton label="Edit" @click="tes"/>
+          <CustomButton label="Edit" @click="clickEditDialog"/>
         </div>
       </div>
     </template>
