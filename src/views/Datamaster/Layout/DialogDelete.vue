@@ -1,4 +1,4 @@
-<script setup lang="ts">
+di<script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 

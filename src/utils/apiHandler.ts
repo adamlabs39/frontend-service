@@ -302,6 +302,15 @@ const apiInventoryPost = async (url: string, data: object) => {
   }
 }
 
+const apiInventoryPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.put(url, data);
+    return response.data
+  } catch (error) {
+    errorApiHandler(error)
+  }
+}
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -325,5 +334,6 @@ export {
   apiAdmisiPatch,
   apiAdmisiDelete,
   apiInventoryGet,
-  apiInventoryPost
+  apiInventoryPost,
+  apiInventoryPut
 };

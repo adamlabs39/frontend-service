@@ -1,4 +1,4 @@
-import { apiInventoryGet, apiInventoryPost } from "@/utils/apiHandler";
+import { apiInventoryGet, apiInventoryPost, apiInventoryPut } from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 
@@ -12,6 +12,9 @@ export const useSupplierStore = defineStore({
         },
         async createSupplier(payload = {}) {
             return apiInventoryPost("/inventory/datamaster/supplier", payload)
+        },
+        async updateSupplier(uuid: string, payload = {}) {
+            return apiInventoryPut(`/inventory/datamaster/supplier/${uuid}`, payload)
         }
     }
 })
