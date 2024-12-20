@@ -53,7 +53,6 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
-      :alergiData="asesmenData.alergi"
     />
     <Anamnesis
       v-if="selectedAssesment == 'Anamnesis'"

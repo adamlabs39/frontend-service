@@ -36,10 +36,6 @@ const props = defineProps({
     type: String,
     default: "form",
   },
-  alergiData: {
-    type: Object as PropType<AlergiForm>,
-    default: undefined,
-  },
   rmUuid: {
     type: String,
     default: "",
@@ -136,16 +132,19 @@ const postFormAlergi = async (values: AlergiForm | null) => {
 };
 
 onBeforeMount(() => {
-  if (props.alergiData) {
+  if (rekamMedisStore.openedRekamMedis.data.alergi) {
     setValues({
-      isAlergi: props.alergiData.isAlergi,
-      pemicuAlergi: props.alergiData.pemicuAlergi,
-      namaAlergi: props.alergiData.namaAlergi,
-      reaksiAlergi: props.alergiData.reaksiAlergi,
-      tingkatKeparahanAlergi: props.alergiData.tingkatKeparahanAlergi,
-      efekSampingAlergi: props.alergiData.efekSampingAlergi,
+      isAlergi: rekamMedisStore.openedRekamMedis.data.alergi.isAlergi,
+      pemicuAlergi: rekamMedisStore.openedRekamMedis.data.alergi.pemicuAlergi,
+      namaAlergi: rekamMedisStore.openedRekamMedis.data.alergi.namaAlergi,
+      reaksiAlergi: rekamMedisStore.openedRekamMedis.data.alergi.reaksiAlergi,
+      tingkatKeparahanAlergi:
+        rekamMedisStore.openedRekamMedis.data.alergi.tingkatKeparahanAlergi,
+      efekSampingAlergi:
+        rekamMedisStore.openedRekamMedis.data.alergi.efekSampingAlergi,
       tanggalKejadianAlergi: epochToDate(
-        props.alergiData.tanggalKejadianAlergi as number
+        rekamMedisStore.openedRekamMedis.data.alergi
+          .tanggalKejadianAlergi as number
       ) as Date,
       petugas: "Nama Petugas",
     });

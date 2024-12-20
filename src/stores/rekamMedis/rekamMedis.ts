@@ -3,6 +3,7 @@ import {
   apiRekamMedisGet,
   apiRekamMedisPost,
   apiRekamMedisPut,
+  apiRekamMedisDelete,
 } from "@/utils/apiHandler";
 
 export const useRekamMedisStore = defineStore({
@@ -46,6 +47,9 @@ export const useRekamMedisStore = defineStore({
     },
     async createNewSession(payload = {}) {
       return apiRekamMedisPost("/rekam-medis/session", payload);
+    },
+    async deleteSession(payload = {}) {
+      return apiRekamMedisDelete("/rekam-medis/session", payload)
     },
 
     async insertAssesment(payload = {}) {

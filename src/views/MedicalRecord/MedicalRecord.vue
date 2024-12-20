@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DataPatient from "@/components/RekamMedis/DataPatient.vue";
@@ -175,7 +175,7 @@ const toggleShowAllDetailMR = (method = "show") => {
 };
 
 // NOTE Logic Function
-onUpdated(() => {
+const setUtilsRM = () => {
   if (
     rekamMedisStore.openedRekamMedis &&
     rekamMedisStore.openedRekamMedis.dates?.length &&
@@ -203,6 +203,11 @@ onUpdated(() => {
       selectedSessionTab.value = `${tempSelectedSession.order}`;
     }
   }
+};
+
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setUtilsRM();
 });
 
 const isAllowCreateRecord = () => {
@@ -265,7 +270,8 @@ watch(
     if (
       rmDateData.value &&
       oldSession != null &&
-      props.patientData.rekamMedisUuid
+      props.patientData.rekamMedisUuid &&
+      newSession != "plus"
     ) {
       try {
         storeUtils.setLoading(true);

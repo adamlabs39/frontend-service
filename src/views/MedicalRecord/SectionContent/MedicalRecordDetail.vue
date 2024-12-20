@@ -98,7 +98,6 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.alergi"
         :ref="refs.alergi"
         method="detail"
-        :alergiData="rmAssesmentData.alergi"
         @editAsesmen="emit('editAsesmen', 'Alergi')"
       />
       <Anamnesis
@@ -162,7 +161,7 @@ const toggleShowAllDetailMR = (method = "show") => {
         method="detail"
       />
       <FormDiagnosaDokterICD10
-        v-if="rmAssesmentData.diagnosisDokter.length"
+        v-if="rmAssesmentData.diagnosisDokter?.length"
         :ref="refs.diagnosisDokter"
         method="detail"
       />
@@ -172,23 +171,23 @@ const toggleShowAllDetailMR = (method = "show") => {
         method="detail"
       />
       <FormCatatanPerawat
-        v-if="rmAssesmentData.catatanPerawat.length"
+        v-if="rmAssesmentData.catatanPerawat?.length"
         :ref="refs.catatanPerawat"
         method="detail"
       />
       <InstruksiMedis
-        v-if="rmAssesmentData.instruksiMedis.length"
+        v-if="rmAssesmentData.instruksiMedis?.length"
         :ref="refs.instruksiMedis"
         method="detail"
       />
       <FormOrderObat
-        v-if="rmAssesmentData.obatUuides.length"
+        v-if="rmAssesmentData.obatUuides?.length"
         :ref="refs.orderObat"
         method="detail"
       />
       <!-- FIXME Belum ada -->
       <PemeriksaanTindakan
-        v-if="rmAssesmentData.pemeriksaanTindakan.length"
+        v-if="rmAssesmentData.pemeriksaanTindakan?.length"
         :ref="refs.pemeriksaanTindakan"
         method="detail"
       />

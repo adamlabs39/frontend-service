@@ -13,11 +13,12 @@ import { app } from "@/main";
 const errorApiHandler = (error: any) => {
   let tempSummary = ``;
   let tempDetail = ``;
-  if (error.response) {
+  if (error.response.data.message) {
     if (
       (error.response.data.message == "Authentikasi gagal" ||
         error.response.data.message == "Authorization gagal" ||
-        error.response.data.message == "jwt expired") &&
+        error.response.data.message == "jwt expired" ||
+        error.response.data.message == "token tidak valid!") &&
       (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
         error.response.data.errors[0].type == "Invalid signature" ||
         (error.response.data.errors[0].type == "auth" &&
@@ -30,7 +31,7 @@ const errorApiHandler = (error: any) => {
       window.location.reload();
     }
     tempSummary = error.response.data.message;
-    error.response.data.errors.forEach((errorMsg: any, index: number) => {
+    error.response.data.errors?.forEach((errorMsg: any, index: number) => {
       if (error.response.data.errors == index + 1) {
         tempDetail += "- " + errorMsg.message;
       } else {
@@ -395,6 +396,19 @@ const apiRekamMedisPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiRekamMedisDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceRekamMedis.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -425,4 +439,5 @@ export {
   apiRekamMedisGet,
   apiRekamMedisPost,
   apiRekamMedisPut,
+  apiRekamMedisDelete,
 };
