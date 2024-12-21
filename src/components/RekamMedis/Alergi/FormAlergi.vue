@@ -133,20 +133,18 @@ const postFormAlergi = async (values: AlergiForm | null) => {
 
 onBeforeMount(() => {
   if (rekamMedisStore.openedRekamMedis.data.alergi) {
+    const tempAlergi = rekamMedisStore.openedRekamMedis.data.alergi;
     setValues({
-      isAlergi: rekamMedisStore.openedRekamMedis.data.alergi.isAlergi,
-      pemicuAlergi: rekamMedisStore.openedRekamMedis.data.alergi.pemicuAlergi,
-      namaAlergi: rekamMedisStore.openedRekamMedis.data.alergi.namaAlergi,
-      reaksiAlergi: rekamMedisStore.openedRekamMedis.data.alergi.reaksiAlergi,
-      tingkatKeparahanAlergi:
-        rekamMedisStore.openedRekamMedis.data.alergi.tingkatKeparahanAlergi,
-      efekSampingAlergi:
-        rekamMedisStore.openedRekamMedis.data.alergi.efekSampingAlergi,
+      isAlergi: tempAlergi.isAlergi,
+      pemicuAlergi: tempAlergi.pemicuAlergi,
+      namaAlergi: tempAlergi.namaAlergi,
+      reaksiAlergi: tempAlergi.reaksiAlergi,
+      tingkatKeparahanAlergi: tempAlergi.tingkatKeparahanAlergi,
+      efekSampingAlergi: tempAlergi.efekSampingAlergi,
       tanggalKejadianAlergi: epochToDate(
-        rekamMedisStore.openedRekamMedis.data.alergi
-          .tanggalKejadianAlergi as number
+        tempAlergi.tanggalKejadianAlergi as number
       ) as Date,
-      petugas: "Nama Petugas",
+      petugas: tempAlergi.petugas,
     });
   }
 });

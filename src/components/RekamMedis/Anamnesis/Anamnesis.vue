@@ -61,8 +61,8 @@ const schema = toTypedSchema(
     riwayatPengobatan: yup.string(),
     catatan: yup.string(),
     riwayatKeluarga: yup.array().of(yup.string()),
-    pernahDirawat: yup.bool(),
-    petugas: yup.string().required(),
+    pernahDirawat: yup.bool().default(false),
+    petugas: yup.string().default("Super Admin"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -78,26 +78,41 @@ const [pernahDirawat] = defineField("pernahDirawat");
 const [petugas] = defineField("petugas");
 
 onBeforeMount(async () => {
-  setValues({
-    anamnesis: "Auto Anamnesa",
-    keluhanUtama: "Sakit Dada",
-    riwayatPenyakit: "Asma",
-    riwayatPengobatan: "tidak ada",
-    catatan: "tidak ada",
-    riwayatKeluarga: ["Hipertensi", "Stroke"],
-    pernahDirawat: true,
-    petugas: "Adam",
-  });
+  if (rekamMedisStore.openedRekamMedis.data.anamnesis) {
+    const tempAnamnesis = rekamMedisStore.openedRekamMedis.data.anamnesis;
+    const tempArrRiwayatKeluarga = tempAnamnesis.riwayatKeluarga
+      .trim()
+      .split(",");
+    setValues({
+      anamnesis: tempAnamnesis.anamnesis,
+      keluhanUtama: tempAnamnesis.keluhanUtama,
+      riwayatPenyakit: tempAnamnesis.riwayatPenyakit,
+      riwayatPengobatan: tempAnamnesis.riwayatPengobatan,
+      catatan: tempAnamnesis.catatan,
+      riwayatKeluarga: tempArrRiwayatKeluarga,
+      pernahDirawat: tempAnamnesis.pernahDirawat,
+      petugas: rekamMedisStore.openedRekamMedis.data.petugas,
+    });
+  }
 });
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     storeUtils.setLoading(true);
+    let tempRiwayatKeluarga = values.riwayatKeluarga;
+    let tempStringRiwayatKeluarga = "";
+    tempRiwayatKeluarga.forEach((riwayat: string, index: number) => {
+      if (index == 0) {
+        tempStringRiwayatKeluarga += riwayat;
+      } else {
+        tempStringRiwayatKeluarga += ", " + riwayat;
+      }
+    });
+    values.riwayatKeluarga = tempStringRiwayatKeluarga;
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
       key: "anamnesis",
       data: values,
     });

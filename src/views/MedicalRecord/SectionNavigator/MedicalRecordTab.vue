@@ -64,8 +64,16 @@ const createNewSession = async (dataSession: any) => {
       dateOrder: props.selectedRecord.dateOrder,
     });
     if (response && response.payload) {
-      rekamMedisStore.setOpenedRekamMedisData(response.payload);
-      selectedSessionTab.value = dataSession.order + 1;
+      if (response && response.payload) {
+        let responseGetRM = await rekamMedisStore.getRekamMedis({
+          rekamMedisUuid: props.rmUuid,
+          dateOrder: props.selectedRecord.dateOrder,
+          sessionOrder: props.sessions[props.sessions.length - 1].order + 1,
+        });
+        if (responseGetRM && responseGetRM.payload) {
+          rekamMedisStore.setOpenedRekamMedisData(responseGetRM.payload);
+        }
+      }
     }
   } catch (error) {
     console.error("Failed to fetch data", error);

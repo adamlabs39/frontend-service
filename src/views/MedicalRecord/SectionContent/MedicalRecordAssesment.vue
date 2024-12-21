@@ -72,6 +72,8 @@ const props = defineProps({
       v-if="selectedAssesment == 'Triase'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <FormTandaVital
       v-if="selectedAssesment == 'Tanda Vital'"

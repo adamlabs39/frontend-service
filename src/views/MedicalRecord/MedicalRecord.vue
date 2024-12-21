@@ -174,6 +174,14 @@ const toggleShowAllDetailMR = (method = "show") => {
   });
 };
 
+const resetInitialDialog = () => {
+  selectedSessionTab.value = undefined;
+  selectedTab.value = "rekam-medis";
+  selectedAssesment.value = "Alergi";
+  selectedSoap.value = "Subjective";
+  selectedSoapier.value = "Subjective";
+};
+
 // NOTE Logic Function
 const setUtilsRM = () => {
   if (
@@ -269,9 +277,11 @@ watch(
   async (newSession, oldSession) => {
     if (
       rmDateData.value &&
-      oldSession != null &&
-      props.patientData.rekamMedisUuid &&
-      newSession != "plus"
+      oldSession &&
+      newSession &&
+      oldSession != "plus" &&
+      newSession != "plus" &&
+      props.patientData.rekamMedisUuid
     ) {
       try {
         storeUtils.setLoading(true);
@@ -306,7 +316,12 @@ defineExpose({ showDialogRM });
 
 <template>
   <div>
-    <CustomDialog v-model:visible="dialogRM" class="" fullScreen>
+    <CustomDialog
+      v-model:visible="dialogRM"
+      class=""
+      fullScreen
+      @closeDialog="resetInitialDialog"
+    >
       <template #header>
         <div class="flex justify-between">
           <div class="flex my-auto">

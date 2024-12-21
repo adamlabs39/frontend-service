@@ -4,7 +4,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
@@ -55,7 +55,7 @@ const listKendaraan = ref([
   { id: "4", kendaraan: "Kendaraan 4" },
 ]);
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["editAsesmen"]);
 
 const schema = toTypedSchema(
   yup.object({
@@ -65,6 +65,7 @@ const schema = toTypedSchema(
     kendaraan: yup.string(),
     keadaanUmum: yup.string(),
     asalRujukan: yup.string(),
+    petugas: yup.string().default("Super Admin"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -76,6 +77,7 @@ const [caraDatang] = defineField("caraDatang");
 const [kendaraan] = defineField("kendaraan");
 const [keadaanUmum] = defineField("keadaanUmum");
 const [asalRujukan] = defineField("asalRujukan");
+const [petugas] = defineField("petugas");
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -83,17 +85,32 @@ const onSubmit = handleSubmit(async (values: any) => {
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
-      key: "anamnesis_igd",
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "anemsis_igd",
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
   } finally {
     storeUtils.setLoading(false);
+  }
+});
+
+onBeforeMount(() => {
+  if (rekamMedisStore.openedRekamMedis.data.anemsisIgd) {
+    const tempAnamnesisIgd = rekamMedisStore.openedRekamMedis.data.anemsisIgd;
+    setValues({
+      keluhanUtama: tempAnamnesisIgd.keluhanUtama,
+      petugas: tempAnamnesisIgd.petugas,
+      jenisKasus: tempAnamnesisIgd.jenisKasus,
+      caraDatang: tempAnamnesisIgd.caraDatang,
+      kendaraan: tempAnamnesisIgd.kendaraan,
+      keadaanUmum: tempAnamnesisIgd.keadaanUmum,
+      asalRujukan: tempAnamnesisIgd.asalRujukan,
+    });
   }
 });
 
@@ -191,29 +208,34 @@ defineExpose({
         v-if="props.method == 'detail'"
         class="py-5 flex flex-col gap-[19px]"
       >
-        <CustomInfoRow label="Keluhan Utama" value="" />
-        <CustomInfoRow label="Jenis Kasus" value="" />
-        <CustomInfoRow label="Cara Datang" value="" />
-        <CustomInfoRow label="Kendaraan" value="" />
-        <CustomInfoRow label="Keadaan Umum" value="" />
-        <CustomInfoRow label="Asal Rujukan" value="" />
+        <CustomInfoRow label="Keluhan Utama" :value="keluhanUtama" />
+        <CustomInfoRow label="Jenis Kasus" :value="jenisKasus" />
+        <CustomInfoRow label="Cara Datang" :value="caraDatang" />
+        <CustomInfoRow label="Kendaraan" :value="kendaraan" />
+        <CustomInfoRow label="Keadaan Umum" :value="keadaanUmum" />
+        <CustomInfoRow label="Asal Rujukan" :value="asalRujukan" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+        <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
     </template>
     <template #footer>
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="props.method == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-adameds-300"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-adameds-300"
         />
-        <CustomButton v-if="props.method == 'form'" @click="onSubmit" label="Simpan" />
+        <CustomButton
+          v-if="props.method == 'form'"
+          @click="onSubmit"
+          label="Simpan"
+        />
         <CustomButton
           v-if="props.method == 'detail'"
-          @click="emit('edit')"
+          @click="emit('editAsesmen')"
           label="Edit"
         />
       </div>

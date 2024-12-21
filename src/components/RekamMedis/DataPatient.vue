@@ -215,9 +215,7 @@ const showPatientData = ref(true);
                 <!-- FIXME Kurang Data -->
                 <div
                   v-if="rmType == 'igd' && summaryData.warnaTriase != '-'"
-                  :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[${
-                    summaryData.warnaTriase
-                  }] ${
+                  :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[${summaryData.warnaTriase}] ${
                     summaryData.warnaTriase == '#FFFFFF'
                       ? 'text-black'
                       : 'text-white'

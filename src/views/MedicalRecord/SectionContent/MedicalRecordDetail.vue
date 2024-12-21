@@ -106,14 +106,16 @@ const toggleShowAllDetailMR = (method = "show") => {
         method="detail"
       />
       <AnamnesisIGD
-        v-if="rmType == 'igd' && rmAssesmentData.anamnesisIgd"
+        v-if="rmType == 'igd' && rmAssesmentData.anemsisIgd"
         :ref="refs.anamnesisIGD"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Anamnesis IGD')"
       />
       <Triase
         v-if="rmType == 'igd' && rmAssesmentData.triase"
         :ref="refs.triase"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Triase')"
       />
       <FormTandaVital
         v-if="rmAssesmentData.tandaVital"

@@ -220,6 +220,8 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
       });
     }
     if (response && response.payload) {
+      openedPatientData.value.rekamMedisUuid =
+        response.payload.meta.rekamMedisUuid;
       rekamMedisStore.setOpenedRekamMedisData(response.payload);
       medicalRecord.value?.showDialogRM();
     }
@@ -366,14 +368,14 @@ const fetchPraktisiData = async () => {
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
             </div>
           </template>
@@ -398,7 +400,7 @@ const fetchPraktisiData = async () => {
                     ? 'DATA TIDAK TIDAK LENGKAP'
                     : 'DATA LENGKAP'
                 "
-                customClass="h-5 pr-[5px] mr-[5px]"
+                customClass="h-5 mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
@@ -420,7 +422,7 @@ const fetchPraktisiData = async () => {
                     ? 'border-adameds-300'
                     : 'border-warning-300'
                 "
-                customClass="h-5 pr-[6px] mr-[5px]"
+                customClass="h-5 mr-[5px]"
               />
             </div>
           </template>
