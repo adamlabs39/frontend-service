@@ -32,7 +32,7 @@ const errorApiHandler = (error: any) => {
     }
     tempSummary = error.response.data.message;
     error.response.data.errors?.forEach((errorMsg: any, index: number) => {
-      if (error.response.data.errors == index + 1) {
+      if (error.response.data.errors.length == index + 1) {
         tempDetail += "- " + errorMsg.message;
       } else {
         tempDetail += "- " + errorMsg.message + "\n";

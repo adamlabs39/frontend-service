@@ -82,11 +82,11 @@ const customizedClass = computed(() => props.customClass);
       textSize,
       isSelected ? selectedTextColor : textColor,
       isSelected ? selectedColor : borderColor + ' ' + bgColor,
-      showCheckedIcon ? 'pr-3' : 'pr-[6px]',
+      showCheckedIcon ? 'pr-3' : 'pr-[10px]',
       outlined ? 'border-2 font-semibold' : 'shadow-sm',
     ]"
     @click="onSelectedValue"
-    class="pl-[5px] rounded-full cursor-pointer"
+    class="pl-[10px] rounded-full cursor-pointer"
   >
     <template v-if="showCheckedIcon">
       <PhCheckCircle
