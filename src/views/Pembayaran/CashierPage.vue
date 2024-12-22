@@ -23,6 +23,7 @@ const kasirData = ref<any>(null);
 const itemTagihan = ref<any>(null);
 const openedData = ref<any>({});
 const codeVoucher = ref("");
+const codeDiscount = ref<number>();
 
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
@@ -186,9 +187,31 @@ const submitVoucher = async () => {
     storeUtils.setLoading(false);
   }
 };
-console.log("Items Pasien:", itemsPasien.value);
 
-console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
+const submitDiscount = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const payload = {
+      value: codeDiscount.value,
+    };
+    const response = await tagihanStore.postDiscount(
+      kasirData.value.uuid,
+      payload
+    );
+    const responseDetailBill = await tagihanStore.getDetailBill(
+      kasirData.value.uuid
+    );
+    if (responseDetailBill && responseDetailBill.payload) {
+      kasirData.value = responseDetailBill.payload;
+
+      processBillData(responseDetailBill.payload.serviceBill);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 </script>
 
 <template>
@@ -470,6 +493,7 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
 
             <div class="flex mt-[30px]">
               <CustomInputNumber
+                v-model="codeDiscount"
                 placeholder="5"
                 :show-label="false"
                 class="w-[80px] bg-white rounded-xl"
@@ -482,7 +506,11 @@ console.log("base URL:", import.meta.env.VITE_BASE_DATAMASTER);
                   </div>
                 </template>
               </CustomInputNumber>
-              <CustomButton label="Pakai Diskon" class="ml-[10px]" />
+              <CustomButton
+                label="Pakai Diskon"
+                class="ml-[10px]"
+                @click="submitDiscount"
+              />
 
               <CustomTextfield
                 v-model="codeVoucher"
