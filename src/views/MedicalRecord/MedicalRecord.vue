@@ -441,6 +441,7 @@ defineExpose({ showDialogRM });
               :sessionUuid="selectedSessionData.id"
               :asesmenData="rekamMedisStore.openedRekamMedis.data"
               :isLatest="rekamMedisStore.openedRekamMedis.isLatest"
+              :patientData="patientData"
             />
 
             <div

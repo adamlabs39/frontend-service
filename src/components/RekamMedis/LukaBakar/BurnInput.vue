@@ -40,17 +40,24 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+  },
 });
 
 const persentaseLukaBakar = ref<number>(0);
 const lpt = ref<number>(0);
 const petugas = ref<string>("Super Admin");
 const adultSvgRefs = ref<any>(null);
+const adultWomanSvgRefs = ref<any>(null);
 
 const submit = async () => {
   try {
     storeUtils.setLoading(true);
-    const bodiesData = adultSvgRefs.value?.submitObject();
+    const bodiesData =
+      props.patientData?.patient.gender == "Male"
+        ? adultSvgRefs.value?.submitObject()
+        : adultWomanSvgRefs.value?.submitObject();
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
@@ -147,8 +154,12 @@ defineExpose({
               </template>
             </CustomInputNumber>
           </div>
-          <Adult ref="adultSvgRefs" class="w-[800px]" />
-          <!-- <AdultWomen class="w-[800px]" /> -->
+          <Adult
+            v-if="patientData?.patient.gender == 'Male'"
+            ref="adultSvgRefs"
+            class="w-[800px]"
+          />
+          <AdultWomen v-else ref="adultWomanSvgRefs" class="w-[800px]" />
           <!-- <Child class="w-[800px]" /> -->
           <!-- <ChildWomen class="w-[800px]" /> -->
           <!-- <Baby class="w-[800px]" /> -->

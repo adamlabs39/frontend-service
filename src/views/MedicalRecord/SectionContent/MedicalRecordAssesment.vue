@@ -38,9 +38,8 @@ const props = defineProps({
     type: Object as PropType<any>,
     default: () => {},
   },
-  isLatest: {
-    type: Boolean,
-    default: false,
+  patientData: {
+    type: Object,
   },
 });
 </script>
@@ -154,6 +153,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
   </div>
 </template>
