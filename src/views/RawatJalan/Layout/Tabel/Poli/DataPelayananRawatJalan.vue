@@ -67,6 +67,7 @@ const resetSelection = () => {
 </script>
 
 <template>
+
   <DataTable
     v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"

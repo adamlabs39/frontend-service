@@ -39,7 +39,7 @@ interface Filter {
   uuid: string;
 }
 
-
+const isDataFetched = ref(false);
 
 // Data Patient From API
 const patientData = ref<any>([]);
@@ -99,14 +99,19 @@ const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
     return [];
   } finally {
     storeUtils.setLoading(false);
+    isDataFetched.value = true;
   }
 };
 
 // Reload dan Terapkan Filter
-const reloadData = async () => {
+const reloadData = () => {
   let filter = {} as FilterAdmisi;
   filter = setFilter();
-  patientData.value = await fetchRIPatient(filter);
+  if(currentRouteName.value === "ruangan") {
+    patientData.value = fetchRIPatient(filter);
+  }else{
+    return
+  }
 };
 
 
@@ -127,7 +132,11 @@ const setFilter = () => {
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   filter.status = statusPelayanan.value;
-  filter.room = [props.filterRuangan.uuid];
+  filter.room = [
+    props.filterRuangan.name === "Semua Ruangan"
+      ? props.filterRuangan.uuid
+      : props.filterRuangan.name,
+  ];
   filter.dpjp = dokter.value;
   
   return filter
@@ -155,16 +164,14 @@ const handlePage = (event: any) => {
 };
 
 // New flag to track the first fetch
-const isDataFetched = ref(false);
+// const isDataFetched = ref(false);
 
 // Watcher Ruangan 
 watch(
   () => props.filterRuangan,
-  async () => {
-    if (isDataFetched.value) {
+   () => {
       resetFilter();
-      await reloadData();
-    }
+      reloadData();
   },
   { immediate: false} 
 );
@@ -176,22 +183,27 @@ const filterStatus = (status: string) => {
 };
 
 // WHEN PAGE CHANGE
-const updatePageType = (path: string) => {
+const updatePageType =  (path: string) => {
   resetFilter();
   const tempArrPath = path.split("/");
   currentRouteName.value = tempArrPath[2] ?? "";
+  console.log(currentRouteName.value);
   reloadData();
   
 };
-onBeforeRouteLeave((to) => {
-  updatePageType(to.path)
-})
+onBeforeRouteLeave((to, from) => {
+  // console.log("Navigating to:", to.path);
+  // console.log("Navigating from:", from.path);
+  updatePageType(to.path);
+});
+
 onMounted(() => {
   updatePageType(route.path);
   isDataFetched.value = true;
 });
 </script>
 <template>
+  {{ patientData }}
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
