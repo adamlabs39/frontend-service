@@ -15,7 +15,13 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriTandaVital from "@/components/RekamMedis/TandaVital/HistoriTandaVital.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
-import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
+import {
+  dateToEpoch,
+  epochToDate,
+  formatDate,
+  formatTime,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -141,9 +147,6 @@ const onSubmitTandaVital = handleSubmitTandaVital(async (values: any) => {
     )
   );
   delete values.jamAsesmen;
-  values.kardiovaskulerAnak = Number(values.kardiovaskulerAnak);
-  values.keadaanUmum = Number(values.keadaanUmum);
-  values.respirasiAnak = Number(values.respirasiAnak);
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.insertAssesment({
@@ -154,6 +157,7 @@ const onSubmitTandaVital = handleSubmitTandaVital(async (values: any) => {
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -379,7 +383,7 @@ defineExpose({
         />
         <CustomInfoRow
           label="Waktu Asesmen"
-          :value="`${waktuAsesmen}`"
+          :value="`${formatDate(waktuAsesmen as Date)}`"
           :type="
             currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
           "
@@ -484,7 +488,7 @@ defineExpose({
         <CustomInfoRow
           v-if="currentMethod == 'detail'"
           label="Jam Input"
-          :value="'Jam Input'"
+          :value="formatTime(waktuAsesmen as Date)"
         />
       </div>
 
