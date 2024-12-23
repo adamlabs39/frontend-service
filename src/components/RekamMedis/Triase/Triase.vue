@@ -14,6 +14,7 @@ import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 import { useForm } from "vee-validate";
+import { epochToDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -38,10 +39,11 @@ const schema = computed(() =>
   toTypedSchema(
     yup.object({
       kasus: yup.string(),
-      eye: yup.string(),
-      verbal: yup.string(),
-      motorik: yup.string(),
-      gcsScore: yup.string(),
+      eye: yup.number(),
+      verbal: yup.number(),
+      motorik: yup.number(),
+      gcsScore: yup.number(),
+      gcsKesimpulan: yup.string(),
       tekananDarahSistole: yup.number(),
       tekananDarahDiastole: yup.number(),
       frekuensiNafas: yup.number(),
@@ -69,6 +71,7 @@ const [eye] = defineField("eye");
 const [verbal] = defineField("verbal");
 const [motorik] = defineField("motorik");
 const [gcsScore] = defineField("gcsScore");
+const [gcsKesimpulan] = defineField("gcsKesimpulan");
 const [tekananDarahSistole] = defineField("tekananDarahSistole");
 const [tekananDarahDiastole] = defineField("tekananDarahDiastole");
 const [frekuensiNafas] = defineField("frekuensiNafas");
@@ -123,25 +126,25 @@ const listKeadaanUmum = ref([
   { name: "Buruk" },
 ]);
 const listMata = ref([
-  { name: "Spontan Merespon" },
-  { name: "Ada Respon Dengan Rangsang Suara" },
-  { name: "Ada Respon Dengan Rangsang Nyeri" },
-  { name: "Tidak Ada Respon" },
+  { name: "Spontan Merespon", id: 1 },
+  { name: "Ada Respon Dengan Rangsang Suara", id: 2 },
+  { name: "Ada Respon Dengan Rangsang Nyeri", id: 3 },
+  { name: "Tidak Ada Respon", id: 4 },
 ]);
 const listMotorik = ref([
-  { name: "Mengikuti Perintah" },
-  { name: "Melokalisir Nyeri" },
-  { name: "Flexi Normal" },
-  { name: "Flexi Abnormal" },
-  { name: "Ekstensi Abnormal" },
-  { name: "Tadak Ada Respon" },
+  { name: "Mengikuti Perintah", id: 1 },
+  { name: "Melokalisir Nyeri", id: 2 },
+  { name: "Flexi Normal", id: 3 },
+  { name: "Flexi Abnormal", id: 4 },
+  { name: "Ekstensi Abnormal", id: 5 },
+  { name: "Tadak Ada Respon", id: 6 },
 ]);
 const listVerbal = ref([
-  { name: "Orientasi Balik" },
-  { name: "Binging Berbicara" },
-  { name: "Kata - Kata Tidak Jelas" },
-  { name: "Suara Tanpa Arti (Mengerang)" },
-  { name: "Tidak Ada Respon" },
+  { name: "Orientasi Balik", id: 1 },
+  { name: "Binging Berbicara", id: 2 },
+  { name: "Kata - Kata Tidak Jelas", id: 3 },
+  { name: "Suara Tanpa Arti (Mengerang)", id: 4 },
+  { name: "Tidak Ada Respon", id: 5 },
 ]);
 
 const listGlasglow = ref([
@@ -183,8 +186,35 @@ onBeforeMount(() => {
       asalRujukan: tempTriase.asalRujukan,
       petugas: tempTriase.petugas,
     });
+    countKesimpulan();
   }
 });
+
+const countKesimpulan = () => {
+  if (eye.value && motorik.value && verbal.value) {
+    gcsKesimpulan.value = "";
+
+    let totalSkor = eye.value + motorik.value + verbal.value;
+
+    gcsScore.value = totalSkor;
+
+    if (totalSkor == 3) {
+      gcsKesimpulan.value = "Coma";
+    } else if (totalSkor == 4) {
+      gcsKesimpulan.value = "Semi-coma";
+    } else if (totalSkor == 5 || totalSkor == 6) {
+      gcsKesimpulan.value = "Sopor";
+    } else if (totalSkor > 6 && totalSkor <= 9) {
+      gcsKesimpulan.value = "Somnolence";
+    } else if (totalSkor == 10 || totalSkor == 11) {
+      gcsKesimpulan.value = "Delirium";
+    } else if (totalSkor == 12 || totalSkor == 13) {
+      gcsKesimpulan.value = "Apatis";
+    } else if (totalSkor == 14 || totalSkor == 15) {
+      gcsKesimpulan.value = "Compos Mentis";
+    }
+  }
+};
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -283,9 +313,10 @@ defineExpose({
           <CustomSelect
             label="Mata (Respon Membuka Mata)"
             v-model="eye"
+            @update:model-value="countKesimpulan"
             :options="listMata"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -294,9 +325,10 @@ defineExpose({
           <CustomSelect
             label="Motorik (Respon Gerakan)"
             v-model="motorik"
+            @update:model-value="countKesimpulan"
             :options="listMotorik"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -305,24 +337,21 @@ defineExpose({
           <CustomSelect
             label="Verbal (Respon Verbal)"
             v-model="verbal"
+            @update:model-value="countKesimpulan"
             :options="listVerbal"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
             customSelectClass="border-[#C7CBD2]"
           />
-          <CustomSelect
+          <CustomTextfield
+            v-model="gcsKesimpulan"
             label="Glasglow Coma Scale (GCS) Score"
-            v-model="gcsScore"
-            :options="listGlasglow"
-            option-label="name"
-            option-value="name"
-            invalidMessage="Wajib diisi"
-            :disabled="false"
-            placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-            customSelectClass="border-[#C7CBD2]"
+            placeholder="Glasglow Coma Scale (GCS) Score"
+            class=""
+            readOnly
           />
           <div
             class="grid items-center grid-cols-[2fr_min-content_2fr] col-span-2"
@@ -479,12 +508,16 @@ defineExpose({
         <CustomInfoRow label="Keadaan Umum" :value="keadaanUmum" />
         <CustomInfoRow label="Asal Rujukan" :value="asalRujukan" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Mata" :value="eye" />
-        <CustomInfoRow label="Motorik" :value="motorik" />
-        <CustomInfoRow label="Verbal" :value="verbal" />
+        <CustomInfoRow label="Mata" :value="`${eye}`" />
+        <CustomInfoRow label="Motorik" :value="`${motorik}`" />
+        <CustomInfoRow label="Verbal" :value="`${verbal}`" />
         <CustomInfoRow
           label="Glasglow Coma Scale (GCS) Score"
-          :value="gcsScore"
+          :value="`${gcsScore}`"
+        />
+        <CustomInfoRow
+          label="Glasglow Coma Scale (GCS) Kesimpulan"
+          :value="`${gcsKesimpulan}`"
         />
         <CustomInfoRow
           label="Tekanan Darah"
@@ -507,16 +540,25 @@ defineExpose({
         <hr class="border-grey-200" />
         <CustomInfoRow label="Kesimpulan Triase" :value="kesimpulanTriase" />
         <div
-          class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
+          :class="`h-10 w-[60px] border border-grey-200 cursor-pointer bg-[${warnaTriase}] rounded-md mt-auto flex`"
         >
-          <PhCheckCircle :size="25" weight="fill" class="m-auto text-white" />
+          <PhCheckCircle
+            :size="25"
+            weight="fill"
+            :class="`m-auto ${
+              warnaTriase == '#FFFFFF' ? 'text-black' : 'text-white'
+            }`"
+          />
         </div>
         <hr class="border-grey-200" />
         <div class="flex justify-between">
           <CustomInfoRow label="Petugas Input" :value="petugas" />
           <CustomInfoRow
             label="Jam Input"
-            :value="`petugas`"
+            :value="`${epochToDate(
+              rekamMedisStore.openedRekamMedis.data.triase.createdAt,
+              'dateTime'
+            )}`"
             alignment="right"
           />
         </div>
@@ -621,9 +663,10 @@ defineExpose({
                 <CustomSelect
                   label="Mata (Respon Membuka Mata)"
                   v-model="eye"
+                  @update:model-value="countKesimpulan"
                   :options="listMata"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
@@ -632,9 +675,10 @@ defineExpose({
                 <CustomSelect
                   label="Motorik (Respon Gerakan)"
                   v-model="motorik"
+                  @update:model-value="countKesimpulan"
                   :options="listMotorik"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
@@ -643,24 +687,21 @@ defineExpose({
                 <CustomSelect
                   label="Verbal (Respon Verbal)"
                   v-model="verbal"
+                  @update:model-value="countKesimpulan"
                   :options="listVerbal"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
                   customSelectClass="border-[#C7CBD2]"
                 />
-                <CustomSelect
+                <CustomTextfield
+                  v-model="gcsKesimpulan"
                   label="Glasglow Coma Scale (GCS) Score"
-                  v-model="gcsScore"
-                  :options="listGlasglow"
-                  option-label="name"
-                  option-value="name"
-                  invalidMessage="Wajib diisi"
-                  :disabled="false"
-                  placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-                  customSelectClass="border-[#C7CBD2]"
+                  placeholder="Glasglow Coma Scale (GCS) Score"
+                  class=""
+                  readOnly
                 />
                 <div class="grid grid-cols-2 gap-x-[30px]">
                   <div

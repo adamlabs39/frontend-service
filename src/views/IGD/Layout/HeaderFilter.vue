@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, type PropType, onMounted } from "vue";
+import { ref, type PropType, onMounted } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -93,9 +93,22 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   valueSelectedFilter.value = "";
   searchBulanFilter.value = "";
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
 };
+
+onMounted(() => {
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
+});
 
 defineExpose({
   resetForm,

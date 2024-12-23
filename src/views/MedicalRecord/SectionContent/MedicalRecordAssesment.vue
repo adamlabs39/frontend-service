@@ -61,13 +61,13 @@ const props = defineProps({
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
     />
-    <AnamnesisIGD
+    <!-- <AnamnesisIGD
       v-if="selectedAssesment == 'Anamnesis IGD'"
       method="form"
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
-    />
+    /> -->
     <Triase
       v-if="selectedAssesment == 'Triase'"
       method="form"

@@ -149,7 +149,10 @@ const showPatientData = ref(true);
                 <div class="flex justify-between mb-[10px]">
                   <span class="font-semibold leading-5">T.Darah</span>
                   <span class="h-5 bg-white rounded-[4px] px-[5px] leading-5">
-                    {{ summaryData.tekananDarah }} mmHg
+                    {{ summaryData.tekananDarahSistole }}/{{
+                      summaryData.tekananDarahDiastole
+                    }}
+                    mmHg
                   </span>
                 </div>
                 <div class="flex justify-between">
@@ -215,11 +218,13 @@ const showPatientData = ref(true);
                 <!-- FIXME Kurang Data -->
                 <div
                   v-if="rmType == 'igd' && summaryData.warnaTriase != '-'"
-                  :class="`font-semibold text-center h-5 leading-5 rounded-[50px] bg-[${summaryData.warnaTriase}] ${
+                  class="`font-semibold text-center h-5 leading-5 rounded-[50px] shadow-lg`"
+                  :class="[
                     summaryData.warnaTriase == '#FFFFFF'
                       ? 'text-black'
-                      : 'text-white'
-                  } shadow-lg`"
+                      : 'text-white',
+                    `bg-[${summaryData.warnaTriase}]`,
+                  ]"
                 >
                   TRIASE
                 </div>

@@ -43,7 +43,7 @@ const props = defineProps({
 const refs = {
   alergi: ref<any>(null),
   anamnesis: ref<any>(null),
-  anamnesisIGD: ref<any>(null),
+  // anamnesisIGD: ref<any>(null),
   triase: ref<any>(null),
   tandaVital: ref<any>(null),
   antropometri: ref<any>(null),
@@ -105,12 +105,12 @@ const toggleShowAllDetailMR = (method = "show") => {
         :ref="refs.anamnesis"
         method="detail"
       />
-      <AnamnesisIGD
+      <!-- <AnamnesisIGD
         v-if="rmType == 'igd' && rmAssesmentData.anemsisIgd"
         :ref="refs.anamnesisIGD"
         method="detail"
         @editAsesmen="emit('editAsesmen', 'Anamnesis IGD')"
-      />
+      /> -->
       <Triase
         v-if="rmType == 'igd' && rmAssesmentData.triase"
         :ref="refs.triase"
@@ -121,6 +121,7 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.tandaVital"
         :ref="refs.tandaVital"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Tanda Vital')"
       />
       <Antropometri
         v-if="rmAssesmentData.antropometri"

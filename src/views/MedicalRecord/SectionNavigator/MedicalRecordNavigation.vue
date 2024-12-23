@@ -129,7 +129,7 @@ const onSuratListSelect = (label: string) => {
 
 onMounted(() => {
   if (props.rmType == "igd") {
-    assesmentList.value.splice(2, 0, "Anamnesis IGD", "Triase");
+    assesmentList.value.splice(2, 0, "Triase");
   }
 });
 </script>

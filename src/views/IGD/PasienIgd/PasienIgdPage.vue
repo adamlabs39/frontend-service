@@ -125,8 +125,12 @@ const resetFilter = () => {
   searchQuery.value = "";
   selectedFilterPayment.value = [];
   selectedFilterPatient.value = [];
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   resetFormRef.value.resetForm();
 };
 
@@ -244,7 +248,7 @@ const handlePage = (event: any) => {
 const praktisiPayload = ref<any[]>([]);
 const praktisiProperties = ref({
   page: 1,
-  page_size: 10,
+  page_size: 9999,
   total: 0,
 });
 // Search Dokter
@@ -266,12 +270,7 @@ const fetchPraktisiData = async () => {
     });
 
     if (response && response.payload) {
-      praktisiProperties.value.total = response.properties.total;
-      praktisiPayload.value = [...response.payload];
-      if (response.payload.length === praktisiProperties.value.page_size) {
-        praktisiProperties.value.page += 1;
-        await fetchPraktisiData();
-      }
+      praktisiPayload.value = response.payload;
     } else {
       praktisiPayload.value = [];
     }
