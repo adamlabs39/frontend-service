@@ -160,6 +160,7 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.lukaBakar"
         :ref="refs.lukaBakar"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Derajat Luka Bakar (RON)')"
       />
       <CatatanHasilPenunjang
         v-if="rmAssesmentData.catatanPenunjang"

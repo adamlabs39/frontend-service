@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import Adult from "./BurnSVG/Adult.vue";
 import AdultWomen from "./BurnSVG/AdultWomen.vue";
 import Child from "./BurnSVG/Child.vue";
@@ -10,6 +10,14 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits(["editAsesmen"]);
 
 const props = defineProps({
   header: {
@@ -24,6 +32,54 @@ const props = defineProps({
     type: String,
     default: "null",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
+});
+
+const persentaseLukaBakar = ref<number>(0);
+const lpt = ref<number>(0);
+const petugas = ref<string>("Super Admin");
+const adultSvgRefs = ref<any>(null);
+
+const submit = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const bodiesData = adultSvgRefs.value?.submitObject();
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "luka_bakar",
+      data: {
+        bodies: bodiesData,
+        persentaseLuka: persentaseLukaBakar.value,
+        lpt: lpt.value,
+        petugas: petugas.value,
+      },
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+onBeforeMount(() => {
+  if (rekamMedisStore.openedRekamMedis.data.lukaBakar) {
+    persentaseLukaBakar.value =
+      rekamMedisStore.openedRekamMedis.data.lukaBakar.persentaseLuka;
+    lpt.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.lpt;
+    petugas.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.petugas;
+  }
 });
 
 const historyDialog = ref(false);
@@ -72,17 +128,17 @@ defineExpose({
         <div v-if="method == 'form'" class="flex justify-between pt-5">
           <div class="grow mr-[30px]">
             <CustomInputNumber
+              v-model="persentaseLukaBakar"
               label="Presentase Luka Bakar"
-              placeholder="46"
               type="number"
             >
               <template #appendText>
-                <div class="flex items-center mr-2">x/mnt</div>
+                <div class="flex items-center mr-2">%</div>
               </template>
             </CustomInputNumber>
             <CustomInputNumber
+              v-model="lpt"
               label="LPT"
-              placeholder="46"
               type="number"
               class="mt-5"
             >
@@ -91,7 +147,7 @@ defineExpose({
               </template>
             </CustomInputNumber>
           </div>
-          <Adult class="w-[800px]" />
+          <Adult ref="adultSvgRefs" class="w-[800px]" />
           <!-- <AdultWomen class="w-[800px]" /> -->
           <!-- <Child class="w-[800px]" /> -->
           <!-- <ChildWomen class="w-[800px]" /> -->
@@ -116,10 +172,13 @@ defineExpose({
         </div>
         <div v-else class="pt-5">
           <div class="py-5 flex flex-col gap-[19px]">
-            <CustomInfoRow label="Presentase Luka Bakar" value="0 %" />
-            <CustomInfoRow label="LPT" value="0 M²" />
+            <CustomInfoRow
+              label="Presentase Luka Bakar"
+              :value="`${persentaseLukaBakar} %`"
+            />
+            <CustomInfoRow label="LPT" :value="`${lpt} M²`" />
             <hr class="border-grey-200" />
-            <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+            <CustomInfoRow label="Petugas Input" :value="petugas" />
           </div>
         </div>
       </template>
@@ -130,7 +189,7 @@ defineExpose({
             label="Detail"
             icon="DetailIcon"
           />
-          <CustomButton label="Edit" />
+          <CustomButton @click="emit('editAsesmen')" label="Edit" />
         </div>
         <div v-else class="flex items-end justify-end gap-3">
           <CustomButton
@@ -139,7 +198,7 @@ defineExpose({
             backgroundColor="bg-transparent"
             borderColor="border-2 border-grey-200"
           />
-          <CustomButton label="Simpan" />
+          <CustomButton @click="submit" label="Simpan" />
         </div>
       </template>
     </CustomAccordion>
@@ -177,7 +236,7 @@ defineExpose({
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomButton label="Edit" />
+          <CustomButton @click="emit('editAsesmen')" label="Edit" />
         </div>
       </template>
     </CustomDialog>

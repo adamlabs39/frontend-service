@@ -152,6 +152,8 @@ const props = defineProps({
     <BurnInput
       v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
   </div>
 </template>
