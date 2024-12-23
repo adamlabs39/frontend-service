@@ -203,16 +203,16 @@ const schema = toTypedSchema(
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
   validationSchema: schema,
-  initialValues: {
-    tindakanPoli: [
-      {
-        tindakanUuid: "",
-        listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
-      },
-    ],
+  // initialValues: {
+  //   tindakanPoli: [
+  //     {
+  //       tindakanUuid: "",
+  //       listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
+  //     },
+  //   ],
 
-    tarifLab: [{ tarifLabUuid: "" }],
-  },
+  //   tarifLab: [{ tarifLabUuid: "" }],
+  // },
 });
 
 const [code] = defineField("code");

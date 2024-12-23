@@ -34,7 +34,7 @@ import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjung
 import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
 
 // NOTE Farmasi
-import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescriptionPage.vue";
+import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescription/DoctorPrescriptionPage.vue";
 import DrugSalesPage from "@/views/Farmasi/DrugSalesPage.vue";
 import DrugReturnsPage from "@/views/Farmasi/DrugReturnsPage.vue";
 import RoomPharmacyPage from "@/views/Farmasi/RoomPharmacyPage.vue";

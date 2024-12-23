@@ -252,11 +252,11 @@ const baseInstanceFarmasi = axios.create({
 
 baseInstanceFarmasi.interceptors.request.use(
   (config) => {
-    const token =localStorage.getItem("access_token");
+    const token ="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhdXp5QGdtYWlsLmNvbSIsImZhc2tlc1V1aWQiOiIwMTkyYjMxZi0zNjVkLTczMWMtOGIxNi0zYTQ1NjVjOTQ3NWUiLCJpYXQiOjE3MzQ2ODE2NTMsImV4cCI6MTc0MzMyMTY1MywiaXNzIjoiYXV0aGVudGljYXRpb24tc2VyaXZpY2UifQ.DmTZfn6N-Ah0s7HzcLqaSxyzMuC0g2D0opSl-wOLGhX0IicdfIFNB3PXujFS2TWcxd5tVSUqeW43PY0gyuv8DwUIjoNVBYMJUBz6-N6I3XPxq23uNwqrPRtef3I83XcrB2cvLh3RTd5ZHjveujLYatNRAzdlyJBp4q-Z_NgA3xhLHZKryu_VH9y0Mrpk-aad1oowv7dgw_QcsQr3Esf3DgjSEtARpV2HQnTJFgelkwC3QSJVtCRuLUVdieUyG01gchLCJADPOv-FsbcI-cBFIPhX2HUHixIX4-qZ_DxCjKEM7x2vnpwhnjHylL5NA3sOxMICvlKyUhvCS-ErUqdqig";
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);
