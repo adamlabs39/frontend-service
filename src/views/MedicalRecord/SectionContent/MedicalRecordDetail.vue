@@ -127,16 +127,19 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.antropometri"
         :ref="refs.antropometri"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Antropometri')"
       />
       <FormAsesmenNyeri
         v-if="rmAssesmentData.asesmenNyeri"
         :ref="refs.asesmenNyeri"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Asesmen Nyeri')"
       />
       <Kesadaran
         v-if="rmAssesmentData.kesadaran"
         :ref="refs.kesadaran"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Kesadaran')"
       />
       <PemeriksaanFisik
         v-if="rmAssesmentData.pemeriksaanFisik"

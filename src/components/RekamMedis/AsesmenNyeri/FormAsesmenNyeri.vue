@@ -43,7 +43,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "editAsesmen"]);
 const currentMethod = ref(props.method);
 
 const handleImageClick = (id: number) => {
@@ -55,12 +55,13 @@ const schemaAsesmenNyeri = computed(() =>
     yup.object({
       skalaNyeri: yup.number(),
       catatan: yup.string(),
-      petugas: yup.string().required("Petugas is Required"),
+      petugas: yup.string().default("Super Admin"),
     })
   )
 );
 
 const {
+  resetForm,
   handleSubmit: handleSubmitAsesmenNyeri,
   defineField: defineFieldAsesmenNyeri,
   setValues,
@@ -78,12 +79,12 @@ const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri(async (values: any) => {
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
       key: "asesmen_nyeri",
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -109,11 +110,6 @@ const imagePengkajianNyeri = ref([
   { id: 10, value: beratttt },
 ]);
 
-// const selectedImage = computed(() => {
-//   return imagePengkajianNyeri.value.find(
-//     (image) => image.id === skalaNyeri.value
-//   )?.id;
-// });
 const getStringSkalaNyeri = () => {
   if (skalaNyeri.value! >= 1 && skalaNyeri.value! <= 3) {
     return `${skalaNyeri.value} (Ringan)`;
@@ -125,7 +121,14 @@ const getStringSkalaNyeri = () => {
 };
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  if (rekamMedisStore.openedRekamMedis.data.asesmenNyeri) {
+    const tempAsesmenNyeri = rekamMedisStore.openedRekamMedis.data.asesmenNyeri;
+    setValues({
+      skalaNyeri: tempAsesmenNyeri.skalaNyeri,
+      catatan: tempAsesmenNyeri.catatan,
+      petugas: tempAsesmenNyeri.petugas,
+    });
+  }
 });
 
 const compareDialog = ref(false);
@@ -319,6 +322,7 @@ defineExpose({
           <div class="flex items-end justify-end gap-3">
             <CustomButton
               v-if="currentMethod == 'form'"
+              @click="resetForm"
               label="Reset"
               textColor="text-grey-300"
               backgroundColor="bg-transparent"
@@ -332,7 +336,7 @@ defineExpose({
             <CustomButton
               v-if="currentMethod == 'detail'"
               label="Edit"
-              @click="onEditClick"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -342,6 +346,7 @@ defineExpose({
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="currentMethod == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
@@ -355,7 +360,7 @@ defineExpose({
         <CustomButton
           v-if="currentMethod == 'detail'"
           label="Edit"
-          @click="onEditClick"
+          @click="emit('editAsesmen')"
         />
       </div>
     </template>

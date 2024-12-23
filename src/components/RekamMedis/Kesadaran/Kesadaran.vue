@@ -68,7 +68,7 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
 const schema = toTypedSchema(
   yup.object({
@@ -77,7 +77,7 @@ const schema = toTypedSchema(
     verbal: yup.number(),
     gcsScore: yup.number(),
     gcsKesimpulan: yup.string(),
-    petugas: yup.string().required(),
+    petugas: yup.string().default("Super Admin"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -90,35 +90,38 @@ const [gcsScore] = defineField("gcsScore");
 const [gcsKesimpulan] = defineField("gcsKesimpulan");
 const [petugas] = defineField("petugas");
 
-onBeforeMount(async () => {
-  setValues({
-    eye: 1,
-    motorik: 1,
-    verbal: 1,
-    gcsScore: 50,
-    gcsKesimpulan: "",
-    petugas: "Adam",
-  });
-  countKesimpulan();
-});
-
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
       key: "kesadaran",
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
   } finally {
     storeUtils.setLoading(false);
+  }
+});
+
+onBeforeMount(async () => {
+  if (rekamMedisStore.openedRekamMedis.data.kesadaran) {
+    const tempKesadaran = rekamMedisStore.openedRekamMedis.data.kesadaran;
+    setValues({
+      eye: tempKesadaran.eye,
+      motorik: tempKesadaran.motorik,
+      verbal: tempKesadaran.verbal,
+      gcsScore: tempKesadaran.gcsScore,
+      gcsKesimpulan: tempKesadaran.kesimpulan,
+      petugas: tempKesadaran.petugas,
+    });
+    countKesimpulan();
   }
 });
 
@@ -464,7 +467,11 @@ defineExpose({
               borderColor="border-2 border-grey-200"
             />
             <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+            <CustomButton
+              v-if="!isEditing"
+              label="Edit"
+              @click="emit('editAsesmen')"
+            />
           </div>
         </template>
       </CustomDialog>
@@ -480,7 +487,7 @@ defineExpose({
           borderColor="border-2 border-[#9DA4B1]"
         />
         <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-        <CustomButton v-else label="Edit" @click="toggleEdit" />
+        <CustomButton v-else label="Edit" @click="emit('editAsesmen')" />
       </div>
     </template>
   </CustomAccordion>
