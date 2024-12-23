@@ -151,7 +151,7 @@ function handleEditSupplier(values: any) {
 }
 
 // DARI DIALOG DETAIL KE DIALOG EDIT
-function handleClickEdit() {
+function handleDetailToEdit() {
   dialogDetailSupplier.value.isVisible = false;
   handleEditSupplier(dialogDetailSupplier.value.data);
 }
@@ -159,7 +159,6 @@ function handleClickEdit() {
 // Function untuk menambah data baru ke array datamasterSupplierData
 const handleSupplierDataSubmit = async (data: any) => {
   // console.log(data)
-  
   storeUtils.setLoading(true)
   try {
     const payload = {
@@ -236,6 +235,7 @@ onMounted(() => {
     </template>
     <template #content>
       <DataTable
+      v-if="supplierData.length > 0"
         :value="supplierData"
         @row-click="handleDetailSupplier"
         tableStyle="min-width: 50rem"
@@ -329,6 +329,7 @@ onMounted(() => {
           </template>
         </Column>
       </DataTable>
+      <NoData v-else />
       <DialogTambahSupplier
         v-model:is-dialog-visible="dialogTambahSupplier.isVisible"
         :title="dialogTambahSupplier.title"
@@ -346,7 +347,7 @@ onMounted(() => {
         v-model:is-dialog-visible="dialogDetailSupplier.isVisible"
         :title="dialogDetailSupplier.title"
         :detail-data="dialogDetailSupplier.data"
-        @clickEditDialog = "handleClickEdit"
+        @clickEditDialog = "handleDetailToEdit"
       />
     </template>
     <template #footer>

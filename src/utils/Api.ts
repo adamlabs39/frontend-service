@@ -254,11 +254,11 @@ const baseInstanceInventory = axios.create({
 
 baseInstanceInventory.interceptors.request.use(
   (config) => {
-    const token = "";
+    const token = localStorage.getItem("access_token");
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `${token}`;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);
