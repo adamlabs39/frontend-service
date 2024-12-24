@@ -8,40 +8,92 @@ import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription"
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { usePegawaiStore } from "@/stores/datamaster/pegawai";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import FormObat from "./FormObat.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import { usePegawaiStore } from "@/stores/datamaster/pegawai";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 
-const pegawaiStore = usePegawaiStore();
-const pegawaiPayload = ref<any[]>([]);
-const StockLocationPayload = ref<any[]>([]);
-const StockLocationStore = useStockLocationStore();
-// verifikase, siap diserahkan, diserahkan
-const sectionType = ref("");
-const fetchPegawai = async () => {
-  try {
-    const response = await pegawaiStore.getAktifApi();
-    if (response && response.payload) {
-      pegawaiPayload.value = response.payload;
-    } else {
-      pegawaiPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data pegawai", error);
-    pegawaiPayload.value = [];
-  }
-};
+// define props 
 const props = defineProps({
-  payload: {
+  payloadDetail: {
     type: Object,
     default: () => ({}),
   },
 });
+
+const payload = ref({ ...props.payloadDetail });
+const emit = defineEmits(["close"]);
+
+// data user from local storage
+const userData = ref<userData | undefined>(undefined);
+userData.value = JSON.parse(localStorage.getItem("user") ?? "");
+
+// define ref variabel
+const DoctorPrescriptionStore = useDoctorPrescriptionStore();
+const MedicalItemStore = useMedicalItemStore();
+const UseUtilsStore = utilsStore();
+const pegawaiStore = usePegawaiStore();
+const pegawaiPayload = ref<any[]>([]);
+const StockLocationPayload = ref<any[]>([]);
+const StockLocationStore = useStockLocationStore();
+const stockObatPayload = ref();
+const penerima = ref("");
+const noHpPenerima = ref("");
+const alasanBatal = ref("");
+const awalLokasi = ref("");
+const lokasiTujuan = ref("");
+const totalTagihan = ref();
+// define ref dialog
+const batalDialog = ref(false);
+const pindahDialog = ref(false);
+const cetakDialog = ref(false);
+const isTambahDataDialogVisible = ref(false);
+// define ref selected
+const selectedTelaah = ref<any[]>([]);
+const selectedTelaah2 = ref<any[]>([]);
+const selectedTelaah3 = ref<any[]>([]);
+const selectedEdukasi = ref<any[]>([]);
+const selectedPegawai = ref();
+// dialog config
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah Data",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isTambahDataDialogVisible.value = true;
+};
+
+// define ref datatable items obat dan racikan
+const itemsObat = ref([
+  {
+    stokObat: "",
+    sisa: "",
+    aturanPakai: "",
+    biayaSatuan: "",
+    subTotal: "",
+  },
+]);
+
+const itemsRacikan = ref([
+  {
+    caraPakai: "",
+    embalase: "",
+    racik: "",
+    subTotal: "",
+  },
+]);
+//interface
+interface userData {
+  name: string;
+  role: string;
+}
 
 interface Racikan {
   hargaSatuan: string;
@@ -67,12 +119,65 @@ interface Obat {
   biayaRacik: number;
   hargaSatuan: number;
   sisaStok: number;
-  stockObat: string;
+  jenisStokUuid: string;
   caraPakai: any;
   isTakeaway: boolean;
   isChronic: boolean;
 }
 
+// Fetch data for option selection
+const fetchPegawai = async () => {
+  try {
+    const response = await pegawaiStore.getAktifApi();
+    if (response && response.payload) {
+      pegawaiPayload.value = response.payload;
+    } else {
+      pegawaiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data pegawai", error);
+    pegawaiPayload.value = [];
+  }
+};
+
+const fetchStockObat = async (uuid: string) => {
+  UseUtilsStore.setLoading(true);
+  console.log(uuid);
+  try {
+    const response = await MedicalItemStore.getAvailableStockApi(uuid);
+
+    if (response && response.payload) {
+      stockObatPayload.value = response.payload;
+    } else {
+      stockObatPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    stockObatPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const fetchStockLocation = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await StockLocationStore.getApi();
+
+    if (response && response.payload) {
+      StockLocationPayload.value = response.payload;
+    } else {
+      StockLocationPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    StockLocationPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// Item telaaah dan edukasi
 const itemTelaah = ref([
   {
     farmasetik: "Nama Obat, Bentuk, dan Kekuatan Sediaan",
@@ -139,18 +244,31 @@ const itemEdukasi = ref([
   },
 ]);
 
-const totalTagihan = ref();
+
 const schema = toTypedSchema(
   yup
     .object({
       obat: yup.array().of(
         yup.object({
-          stockObat: yup.string().required("Komponen Tarif harus dipilih"),
-          racikan: yup.array().of(
-            yup.object({
-              stockObat: yup.string().required("Komponen Tarif harus dipilih"),
-            })
-          ),
+          jenisStokUuid: yup.string().when("isCompound", {
+            is: (value: boolean) => value === false,
+            then: (schema) => schema.required("Komponen Tarif harus dipilih"),
+            otherwise: (schema) => schema.notRequired(),
+          }),
+          racikan: yup.array().when("isCompound", {
+            is: true,
+            then: (schema) =>
+              schema
+                .of(
+                  yup.object({
+                    jenisStokUuid: yup
+                      .string()
+                      .required("Komponen Tarif harus dipilih"),
+                  })
+                )
+                .strict(),
+            otherwise: (schema) => schema.notRequired(),
+          }),
         })
       ),
     })
@@ -162,69 +280,6 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 });
 
 const { remove, push, fields } = useFieldArray<Obat>("obat");
-
-const stockObatPayload = ref();
-const DoctorPrescriptionStore = useDoctorPrescriptionStore();
-const MedicalItemStore = useMedicalItemStore();
-const UseUtilsStore = utilsStore();
-const emit = defineEmits(["close"]);
-
-const itemsObat = ref([
-  {
-    stokObat: "",
-    sisa: "",
-    aturanPakai: "",
-    biayaSatuan: "",
-    subTotal: "",
-  },
-]);
-
-const itemsRacikan = ref([
-  {
-    caraPakai: "",
-    embalase: "",
-    racik: "",
-    subTotal: "",
-  },
-]);
-
-const fetchStockObat = async (uuid: string) => {
-  UseUtilsStore.setLoading(true);
-  console.log(uuid);
-  try {
-    const response = await MedicalItemStore.getAvailableStockApi(uuid);
-
-    if (response && response.payload) {
-      stockObatPayload.value = response.payload;
-    } else {
-      stockObatPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    stockObatPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
-
-// Fetch Stock Location
-const fetchStockLocation = async () => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const response = await StockLocationStore.getApi();
-
-    if (response && response.payload) {
-      StockLocationPayload.value = response.payload;
-    } else {
-      StockLocationPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    StockLocationPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
 
 const updateStokObat = async (
   racikan: any,
@@ -289,47 +344,62 @@ const updateStokObat = async (
 };
 
 onMounted(() => {
-  if (props.payload?.lokasiStokUuid) {
-    fetchStockObat(props.payload.lokasiStokUuid);
+  if (payload.value?.lokasiStokUuid) {
+    fetchStockObat(payload.value.lokasiStokUuid);
   }
   fetchPegawai();
   fetchStockLocation();
 });
 
+const fetchDetailPrescription = async () => {
+  try {
+    // Set loading state to true
+    UseUtilsStore.setLoading(true);
+    const response = await DoctorPrescriptionStore.detailApi(
+      payload.value.uuid
+    );
+
+    payload.value = response?.payload || {};
+  } catch (error) {
+    console.error("Failed to fetch data:", error);
+    payload.value = {};
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+  setValues({
+    obat:
+      payload.value.obat?.map((item: any) => ({
+        ...item,
+      })) || [],
+  });
+  totalTagihan.value = 0;
+  if (payload.value?.lokasiStokUuid) {
+    fetchStockObat(payload.value.lokasiStokUuid);
+    awalLokasi.value = payload.value.lokasiStokUuid;
+  }
+};
+
 watch(
-  () => props.payload,
+  () => props.payloadDetail,
   (newPayload: any) => {
-    if (newPayload?.lokasiStokUuid) {
-      fetchStockObat(newPayload.lokasiStokUuid);
+    payload.value = newPayload;
+    if (payload.value?.lokasiStokUuid) {
+      fetchStockObat(payload.value.lokasiStokUuid);
       awalLokasi.value = newPayload.lokasiStokUuid;
     }
     console.log("Payload:", newPayload);
 
     setValues({
       obat:
-        newPayload.obat?.map((item: any) => ({
+        payload.value.obat?.map((item: any) => ({
           ...item,
         })) || [],
     });
 
     console.log("Payload fields:", fields);
-  }
+  },
+  { immediate: true }
 );
-
-const isTambahDataDialogVisible = ref(false);
-const dialogConfig = ref<any>({
-  method: "add",
-  title: "Tambah Data",
-  data: null,
-});
-
-const openDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  isTambahDataDialogVisible.value = true;
-};
-
-const batalDialog = ref(false);
-const pindahDialog = ref(false);
 
 // Format rupiah
 const formatRupiah = (value: any) => {
@@ -346,10 +416,10 @@ const formatRupiah = (value: any) => {
   }).format(number);
 };
 
-const selectedTelaah = ref<any[]>([]);
-const selectedTelaah2 = ref<any[]>([]);
-const selectedTelaah3 = ref<any[]>([]);
-const selectedPegawai = ref();
+const checkEdukasi = computed(() => {
+  return selectedEdukasi.value.length === itemEdukasi.value.length;
+});
+
 const checkTelaah = computed(() => {
   return (
     selectedTelaah.value.length === itemTelaah.value.length &&
@@ -357,7 +427,6 @@ const checkTelaah = computed(() => {
     selectedTelaah3.value.length === itemTelaah3.value.length
   );
 });
-
 const simpanTelaah = async (uuid: string) => {
   try {
     const response = await DoctorPrescriptionStore.updateTelaah({
@@ -367,34 +436,58 @@ const simpanTelaah = async (uuid: string) => {
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
+  fetchDetailPrescription();
 };
 
 const verifikasiPetugas = async (uuid: string) => {
   try {
-    const response = await DoctorPrescriptionStore.statusVerifikasi({
-      uuid: uuid,
-    });
+    if (payload.value.orderStatus === 2) {
+      const response = await DoctorPrescriptionStore.statusVerifikasi({
+        uuid: uuid,
+      });
+    } else if (payload.value.orderStatus === 3) {
+      const response = await DoctorPrescriptionStore.statusSiapDiserahkan({
+        uuid: uuid,
+      });
+    } else if (payload.value.orderStatus === 4) {
+      const response = await DoctorPrescriptionStore.statusDiserahkan({
+        uuid: uuid,
+        penerima: penerima.value,
+        noHpPenerima: noHpPenerima.value,
+        petugasEdukasi: selectedPegawai.value,
+      });
+    }
+    fetchDetailPrescription();
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
 };
 
-const alasanBatal = ref("");
 const batalOrder = async (uuid: string) => {
   try {
     const response = await DoctorPrescriptionStore.batalOrder({
       uuid: uuid,
       alasanBatal: alasanBatal.value,
     });
+
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
+  fetchDetailPrescription();
   batalDialog.value = false;
   alasanBatal.value = "";
 };
 
-const awalLokasi = ref("");
-const lokasiTujuan = ref("");
+const batalPenyerahan = async (uuid: string) => {
+  try {
+    const response = await DoctorPrescriptionStore.batalSiapDiserahkan({
+      uuid: uuid,
+    });
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  }
+  fetchDetailPrescription();
+};
 
 const pindahLokasi = async (uuid: string) => {
   try {
@@ -407,7 +500,19 @@ const pindahLokasi = async (uuid: string) => {
   }
   pindahDialog.value = false;
   lokasiTujuan.value = "";
+  fetchDetailPrescription();
 };
+
+const closeBatalDialog = () => {
+  alasanBatal.value = "";
+};
+const closePindahLokasiDialog = () => {
+  lokasiTujuan.value = "";
+};
+
+if (userData.value) {
+  selectedPegawai.value = userData.value.name;
+}
 </script>
 <template>
   <div class="col-span-2">
@@ -629,7 +734,9 @@ const pindahLokasi = async (uuid: string) => {
                         label=""
                         background-color="bg-grass-300 rounded-lg"
                         class="h-6 w-[26px] p-0 ml-[10px] mr-[10px]"
-                        @click="openDialog('digerus', 'Tambah Data')"
+                        @click="
+                          openDialog('digerus', 'Tambah Data', obat.value)
+                        "
                       >
                         <img
                           src="@/assets/icons/Exclude.svg"
@@ -666,43 +773,70 @@ const pindahLokasi = async (uuid: string) => {
                       field="itemMedis.name"
                       header="Obat"
                     />
-                    <Column field="itemsObat" header="Stok Obat">
+                    <Column field="itemsObat">
+                      <template #header>
+                        <div class="flex justify-between items-center w-full">
+                          <div class="font-semibold">Stok Obat</div>
+                          <CustomButton
+                            v-if="
+                              payload.orderStatus !== 1 &&
+                              payload.orderStatus !== 2
+                            "
+                            icon="PhCheck"
+                            backgroundColor="bg-success-300"
+                            size="small"
+                            class="w-[20px] h-[20px] rounded-full"
+                          />
+                        </div>
+                      </template>
                       <template #body="slotProps">
                         <div class="">
                           <CustomSelect
                             v-if="obat.value.isCompound"
-                            v-model="slotProps.data.stockObat"
+                            v-model="slotProps.data.jenisStokUuid"
                             :show-label="false"
                             place-holder="Pilih Stok"
                             optionValue="uuid"
                             optionLabel="detailStok.name"
                             :options="stockObatPayload"
+                            :invalid="(errors as any)[`obat[${idx}].racikan[${slotProps.index}].jenisStokUuid`] ? true : false"
+                            :invalidMessage="(errors as any)[`obat[${idx}].racikan[${slotProps.index}].jenisStokUuid`]"
                             @update:model-value="
                               updateStokObat(
                                 obat.value.isCompound,
-                                obat.value.uuid,
-                                slotProps.data.stockObat,
+                                slotProps.data.uuid,
+                                slotProps.data.jenisStokUuid,
                                 idx,
                                 slotProps.index
                               )
                             "
+                            :disabled="
+                              payload.orderStatus !== 1 &&
+                              payload.orderStatus !== 2
+                            "
                           />
                           <CustomSelect
                             v-else
-                            v-model="obat.value.stockObat"
+                            v-model="obat.value.jenisStokUuid"
                             :show-label="false"
                             place-holder="Pilih Stok"
                             optionValue="uuid"
                             optionLabel="detailStok.name"
                             :options="stockObatPayload"
+                            :invalid="(errors as any)[`obat[${idx}].jenisStokUuid`] ? true : false"
+                            :invalidMessage="(errors as any)[`obat[${idx}].jenisStokUuid`]"
                             @update:model-value="
                               updateStokObat(
                                 obat.value.isCompound,
                                 obat.value.uuid,
-                                obat.value.stockObat,
+                                obat.value.jenisStokUuid,
                                 idx,
                                 slotProps.index
                               )
+                            "
+                            :disabled="
+                              payload.orderStatus !== 1 &&
+                              payload.orderStatus !== 2
                             "
                           />
                         </div>
@@ -920,7 +1054,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus !== 1"
+                      v-if="
+                        payload.orderStatus !== 1 && payload.orderStatus !== 2
+                      "
                       headerClass="bg-adameds-50"
                     >
                       <template #header>
@@ -936,7 +1072,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus === 1"
+                      v-if="
+                        payload.orderStatus === 1 || payload.orderStatus === 2
+                      "
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
@@ -969,7 +1107,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus !== 1"
+                      v-if="
+                        payload.orderStatus !== 1 && payload.orderStatus !== 2
+                      "
                       headerClass="bg-adameds-50"
                     >
                       <template #header>
@@ -985,7 +1125,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus === 1"
+                      v-if="
+                        payload.orderStatus === 1 || payload.orderStatus === 2
+                      "
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
@@ -1018,7 +1160,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus !== 1"
+                      v-if="
+                        payload.orderStatus !== 1 && payload.orderStatus !== 2
+                      "
                       headerClass="bg-adameds-50"
                     >
                       <template #header>
@@ -1034,7 +1178,9 @@ const pindahLokasi = async (uuid: string) => {
                       </template>
                     </Column>
                     <Column
-                      v-if="payload.orderStatus === 1"
+                      v-if="
+                        payload.orderStatus === 1 || payload.orderStatus === 2
+                      "
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
@@ -1063,11 +1209,113 @@ const pindahLokasi = async (uuid: string) => {
             </template>
           </CustomAccordion>
         </div>
+        <!-- Edukasi Pemberian Obat -->
+        <div v-if="payload.orderStatus === 4" class="grid grid-cols-1">
+          <CustomAccordion no-border initial-state="0">
+            <template #header>Edukasi Pemberian Obat</template>
+            <template #content>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="mt-[20px]">
+                  <DataTable
+                    :value="itemEdukasi"
+                    v-model:selection="selectedEdukasi"
+                    scrollable
+                    scrollHeight="380px"
+                    :pt="{ headerRow: 'text-SM' }"
+                  >
+                    <Column field="farmasetik" headerClass="bg-adameds-50">
+                      <template #header>
+                        <div class="w-full font-bold">Edukasi</div>
+                      </template>
+                      <template #body="slotProps">
+                        <div class="flex">
+                          <p class="text-xs">
+                            {{ slotProps.data.edukasi }}
+                          </p>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column
+                      field="hasil"
+                      header="Hasil"
+                      headerClass="bg-adameds-50"
+                    ></Column>
+                    <Column
+                      selectionMode="multiple"
+                      headerClass="bg-adameds-50"
+                      class="custom-checkbox"
+                    ></Column>
+                  </DataTable>
+                </div>
+                <div class="mt-[20px]">
+                  <div v-if="payload.isTakeway" class="mt-[20px] mb-[20px]">
+                    <p
+                      class="text-xs font-bold text-left underline underline-offset-2"
+                    >
+                      Diberikan Oleh
+                    </p>
+                    <p>{{ userData?.name }}</p>
+                  </div>
+                  <CustomTextfield
+                    v-if="payload.isTakeway"
+                    v-model="penerima"
+                    label="Diberikan Ke"
+                    placeholder="Diberikan Ke"
+                    class="mt-[20px]"
+                  />
+                  <CustomSelect
+                    v-if="!payload.isTakeway"
+                    v-model="penerima"
+                    label="Diberikan Ke"
+                    place-holder="Diberikan Ke"
+                    :options="pegawaiPayload"
+                    optionValue="name"
+                    optionLabel="name"
+                  />
+                  <CustomTextfield
+                    label="No. Handphone Penerima"
+                    placeholder="08XX-XXXX-XXXX"
+                    class="mt-[20px]"
+                  />
+                </div>
+              </div>
+            </template>
+            <template #collapseIcon>
+              <CustomButton
+                icon="PhCaretUp"
+                backgroundColor="bg-transparent"
+                textColor="text-adameds-300"
+              />
+            </template>
+            <template #expandIcon>
+              <CustomButton
+                icon="PhCaretDown"
+                backgroundColor="bg-transparent"
+                textColor="text-adameds-300"
+              />
+            </template>
+          </CustomAccordion>
+        </div>
+
         <hr class="my-5 border-[1px] border-grey-200" />
-        <div class="flex justify-between items-end">
+        <div
+          v-if="
+            payload.orderStatus === 1 ||
+            payload.orderStatus === 2 ||
+            payload.orderStatus === 4
+          "
+          class="flex justify-between items-end"
+        >
           <CustomSelect
+            v-if="
+              payload.orderStatus === 1 ||
+              payload.orderStatus === 2 ||
+              payload.orderStatus === 4
+            "
             v-model="selectedPegawai"
-            label="Petugas Telaah"
+            :label="
+              payload.orderStatus === 4 ? 'Petugas Edukasi' : 'Petugas Telaah'
+            "
             place-holder="Pilih Petugas"
             :options="pegawaiPayload"
             optionValue="name"
@@ -1075,8 +1323,11 @@ const pindahLokasi = async (uuid: string) => {
             class="w-1/3"
           />
           <CustomButton
+            v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
             @click="simpanTelaah(payload.uuid)"
-            :disabled="!checkTelaah && !selectedPegawai"
+            :disabled="
+              !checkTelaah || !selectedPegawai || Object.keys(errors).length > 0
+            "
           >
             <div class="flex items-center gap-2">
               <div class="text-sm">Simpan Telaah</div>
@@ -1089,6 +1340,7 @@ const pindahLokasi = async (uuid: string) => {
         <div class="grid grid-cols-2">
           <div class="flex gap-2.5 item-center mt-[20px]">
             <CustomButton
+              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
               background-color="bg-danger-300"
               @click="batalDialog = true"
             >
@@ -1096,12 +1348,25 @@ const pindahLokasi = async (uuid: string) => {
                 <div class="text-sm">Batal Order</div>
               </div>
             </CustomButton>
-            <CustomButton @click="pindahDialog = true">
+            <CustomButton
+              v-if="payload.orderStatus === 4"
+              background-color="bg-danger-300"
+              @click="batalPenyerahan(payload.uuid)"
+            >
+              <div class="flex items-center gap-2">
+                <div class="text-sm">Batal Penyerahan</div>
+              </div>
+            </CustomButton>
+
+            <CustomButton
+              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
+              @click="pindahDialog = true"
+            >
               <div class="flex items-center gap-2">
                 <div class="text-sm">Pindah Lokasi Order</div>
               </div>
             </CustomButton>
-            <CustomButton>
+            <CustomButton @click="cetakDialog = true">
               <div class="flex items-center gap-2">
                 <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
@@ -1115,7 +1380,7 @@ const pindahLokasi = async (uuid: string) => {
               >
                 Diverifikasi Oleh
               </p>
-              <p>Nama Petugas</p>
+              <p>{{ userData?.name }}</p>
             </div>
             <div class="mt-[20px]">
               <div
@@ -1124,7 +1389,20 @@ const pindahLokasi = async (uuid: string) => {
             </div>
             <div class="mt-[20px]">
               <CustomButton
-                label="Obat Siap Diserahkan"
+                :label="
+                  payload.orderStatus === 1
+                    ? 'Verifikasi'
+                    : payload.orderStatus === 2
+                    ? 'Verifikasi'
+                    : payload.orderStatus === 3
+                    ? 'Obat Siap Diserahkan'
+                    : payload.orderStatus === 4
+                    ? 'Serahkan Obat'
+                    : ''
+                "
+                :disabled="
+                  payload.orderStatus === 1
+                "
                 class="ml-[20px]"
                 @click="verifikasiPetugas(payload.uuid)"
               />
@@ -1139,6 +1417,7 @@ const pindahLokasi = async (uuid: string) => {
     :method="dialogConfig.method"
     :title="dialogConfig.title"
     :payload="dialogConfig.data"
+    @data-updated="fetchDetailPrescription"
   />
 
   <!-- Batal Notification -->
@@ -1146,6 +1425,7 @@ const pindahLokasi = async (uuid: string) => {
     v-model:visible="batalDialog"
     width="550px"
     headerBg="bg-danger-300"
+    @close-dialog="closeBatalDialog"
   >
     <template #header>Batal Order</template>
     <template #body>
@@ -1191,7 +1471,11 @@ const pindahLokasi = async (uuid: string) => {
   </CustomDialog>
 
   <!-- Pindah Lokasi Dialog -->
-  <CustomDialog v-model:visible="pindahDialog" width="550px">
+  <CustomDialog
+    v-model:visible="pindahDialog"
+    width="550px"
+    @close-dialog="closePindahLokasiDialog"
+  >
     <template #header>Pindah Lokasi Order</template>
     <template #body>
       <div class="grid grid-cols-[45%,10%,45%]">
@@ -1242,6 +1526,32 @@ const pindahLokasi = async (uuid: string) => {
           label="Pindahkan"
           class="ml-[10px]"
         />
+      </div>
+    </template>
+  </CustomDialog>
+  <!-- Cetak Dialog -->
+  <CustomDialog v-model:visible="cetakDialog" width="550px">
+    <template #header>Cetak</template>
+    <template #body>
+      <div class="flex justify-between mt-[20px]">
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Tiket</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Resep</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">Salinan E-Resep</div>
+          </div>
+        </CustomButton>
       </div>
     </template>
   </CustomDialog>

@@ -85,6 +85,18 @@ export const useDoctorPrescriptionStore = defineStore({
         payload
       );
     },
+    async statusSiapDiserahkan(payload = {}) {
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/status-siap-diserahkan",
+        payload
+      );
+    },
+    async statusDiserahkan(payload = {}) {
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/status-diserahkan",
+        payload
+      );
+    },
     async lokasiStok(payload = {}) {
       return apiFarmasiPost(
         "/farmasi/prescriptions/lokasi-stok",
@@ -100,6 +112,12 @@ export const useDoctorPrescriptionStore = defineStore({
     async batalOrder(payload = {}) {
       return apiFarmasiPost(
         "/farmasi/prescriptions/batal-order",
+        payload
+      );
+    },
+    async batalSiapDiserahkan(payload = {}) {
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/batal-siap-diserahkan",
         payload
       );
     },

@@ -121,10 +121,10 @@ const fetchDoctorPrescription = async () => {
 
   try {
     const response = await DoctorPrescriptionStore.getApi({
-      // startDate: dateToEpoch(startDateFilter.value),
-      // endDate: dateToEpoch(endDateFilter.value),
-      startDate: 0,
-      endDate: 9828966473567,
+      startDate: dateToEpoch(startDateFilter.value),
+      endDate: dateToEpoch(endDateFilter.value),
+      // startDate: 0,
+      // endDate: 9828966473567,
       status: [1, 5],
       search: searchQuery.value,
       takeaway: returnMedicine,
@@ -864,11 +864,11 @@ const handleReset = () => {
           </div>
 
           <!-- Detail Resep - Telaah -->
-          <DetailPrescription v-if="incomingRecipesDetails"  :payload="PrescriptionDetail" @close="incomingRecipesClose"/>
+          <DetailPrescription v-if="incomingRecipesDetails"  :payloadDetail="PrescriptionDetail" @close="incomingRecipesClose"/>
           <!-- Detail Resep - Obat Siap Diserahkan -->
-          <DetailPrescription v-if="readyMedicineDetails"  :payload="PrescriptionDetail" @close="readyMedicineClose"/>
+          <DetailPrescription v-if="readyMedicineDetails"  :payloadDetail="PrescriptionDetail" @close="readyMedicineClose"/>
           <!-- Detail Resep - Serahkan Obat -->
-          <DetailPrescription v-if="drugHandoverDetails"  :payload="PrescriptionDetail" @close="drugHandoverClose"/>
+          <DetailPrescription v-if="drugHandoverDetails"  :payloadDetail="PrescriptionDetail" @close="drugHandoverClose"/>
         </div>
       </template>
     </Card>

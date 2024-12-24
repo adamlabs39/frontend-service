@@ -36,6 +36,7 @@ const props = defineProps({
 interface Racikan {
   itemMedisUuid: string;
   medicationQty: number;
+  isUpdated: boolean;
 }
 const doctorPrescriptionStore = useDoctorPrescriptionStore();
 const medicalItemsStore = useMedicalItemStore();
@@ -51,8 +52,8 @@ const bentukRacikanPayload = ref<any[]>([]);
 const schema = toTypedSchema(
   yup
     .object({
-      type: yup.string(),
-      prescriptionUuid: yup.string(),
+      type: yup.string().notRequired(),
+      prescriptionUuid: yup.string().notRequired(),
       itemMedisUuid: yup.string().when("isCompound", {
         is: (value: boolean) => value === false,
         then: (schema) => schema.required("Nama Obat harus dipilih"),
@@ -70,29 +71,33 @@ const schema = toTypedSchema(
       isChronic: yup.boolean().default(false),
       route: yup.string().notRequired(),
       namaRacikan: yup.string().notRequired(),
-      jenisRacikan: yup.string().notRequired(),
+      jenisRacikan: yup.number().default(0).notRequired(),
       bentukRacikanUuid: yup.string().when("isCompound", {
         is: (value: boolean) => value === true,
         then: (schema) => schema.required("Bentuk Racikan harus dipilih"),
         otherwise: (schema) => schema.notRequired(),
       }),
       isCompound: yup.boolean().default(false),
-      sisaQtyOrder: yup.number().notRequired(),
-      stokMedisUuid: yup.string().notRequired(),
-      jenisStokUuid: yup.string().notRequired(),
-      hargaSatuan: yup.number().notRequired(),
-      biayaEmbalase: yup.number().notRequired(),
-      biayaRacik: yup.number().notRequired(),
-      isTakeaway: yup.boolean().default(false),
-      racikan: yup.array().of(
-        yup.object({
-          itemMedisUuid: yup.string().notRequired(),
-          medicationQty: yup.number().notRequired(),
-        })
-      ),
+      racikan: yup.array().when("isCompound", {
+        is: true, 
+        then: (schema) =>
+          schema
+            .of(
+              yup.object({
+                itemMedisUuid: yup.string().required("Nama Obat harus dipilih"),
+                medicationQty: yup.number().required("Jumlah Obat harus diisi"),
+                jenisStokUuid: yup.string().notRequired(),
+                isUpdated: yup.boolean().default(false),
+              })
+            )
+            .strict(),
+        otherwise: (schema) => schema.notRequired(), 
+      }),
     })
     .noUnknown()
 );
+
+
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -101,16 +106,18 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
       {
         itemMedisUuid: "",
         medicationQty: 0,
+        isUpdated: false,
       },
     ],
   },
 });
 
+const digerus = ref<boolean>();
 const { remove, push, fields } = useFieldArray<Racikan>("racikan");
 
-const [type] = defineField("type");
 const [itemMedisUuid] = defineField("itemMedisUuid");
 const [namaRacikan] = defineField("namaRacikan");
+const [jenisRacikan] = defineField("jenisRacikan");
 const [medicationQty] = defineField("medicationQty");
 const [medicationPeriod] = defineField("medicationPeriod");
 const [aturanPakaiUuid] = defineField("aturanPakaiUuid");
@@ -118,10 +125,10 @@ const [caraPakaiUuid] = defineField("caraPakaiUuid");
 const [route] = defineField("route");
 const [isChronic] = defineField("isChronic");
 const [prescriptionNotes] = defineField("prescriptionNotes");
-const [isTakeaway] = defineField("isTakeaway");
 const [medicationDoseQty] = defineField("medicationDoseQty");
 const [medicationDoseSatuanUuid] = defineField("medicationDoseSatuanUuid");
 const [bentukRacikanUuid] = defineField("bentukRacikanUuid");
+
 // Fetch obat
 const fetchObat = async () => {
   try {
@@ -212,18 +219,85 @@ const closeDialog = () => {
   resetForm();
 };
 
+const tempDeletedRacikan = ref<Racikan[]>([]);
+
 // isDelete Racikan
-const handleRemoveRacikan = () =>{
-  
-}
+const handleRemoveRacikan = (index: number) => {
+  const racikanToRemove = fields.value[index].value;
+  const parseItem = JSON.parse(JSON.stringify(racikanToRemove));
+  // Check if tarifLabUuid is an empty string
+  if (!parseItem.uuid) {
+    // Remove the last item from tempDeletedLab if the UUID is empty
+    tempDeletedRacikan.value.pop();
+  } else {
+    // Check if the item is in tempPenjamin
+    const tempKomponen = tempArrayRacikan.value.find(
+      (temp: any) => temp.uuid === parseItem.uuid
+    );
+
+    if (tempKomponen) {
+      const deletedItem = { ...tempKomponen, isDeleted: true };
+      tempDeletedRacikan.value.push(deletedItem);
+    }
+  }
+  remove(index);
+};
+
+// const tempEditRacikan = ref<Racikan[]>([]);
+
+// isUpdated Racikan
+const handleEditRacikan = ({
+  index,
+  valueItemMedis,
+  valueQty,
+}: {
+  index: number;
+  valueItemMedis?: string;
+  valueQty?: number;
+}) => {
+  const racikanToEdit = fields.value[index].value;
+  const parseItem = JSON.parse(JSON.stringify(racikanToEdit));
+  const tempKomponen = tempArrayRacikan.value.find(
+    (temp: any) =>
+      temp.uuid === parseItem.uuid &&
+      (temp.itemMedisUuid !== parseItem.valueItemMedis ||
+        temp.madicationQty !== parseItem.valueQty)
+  );
+
+  console.log("tempKomponen", tempKomponen);
+
+  if (tempKomponen) {
+    const parseItemRacikan = JSON.parse(
+      JSON.stringify({ ...fields.value[index].value, isUpdated: true })
+    );
+    fields.value[index].value = parseItemRacikan;
+    console.log("fields racikan", fields.value[index].value);
+  }
+};
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    const combinedArrayRacikan = [
+      ...(values.racikan || []),
+      ...tempDeletedRacikan.value,
+    ];
+    values.racikan = JSON.parse(JSON.stringify(combinedArrayRacikan));
+    if (props.payload.isCompound || digerus.value) {
+      values.isCompound = true;
+      values.type = "racikan";
+    } else {
+      values.isCompound = false;
+      values.type = "satuan";
+    }
+
     if (!props.payload || !props.payload.uuid) {
       throw new Error("UUID is missing for edit operation");
     }
+
+    console.log("data edit", values);
     const uuid = props.payload.uuid;
-    const response = await doctorPrescriptionStore.updateStokObat(uuid, values);
+    console.log("data edit", values);
+    const response = await doctorPrescriptionStore.updateObatApi(uuid, values);
     console.log("Data updated successfully:", response);
     emit("data-updated");
     closeDialog();
@@ -236,23 +310,32 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
+      digerus.value = props.method === "digerus";
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
+          jenisRacikan: props.payload.jenisRacikan ?? 0,
         });
+        tempArrayRacikan.value = props.payload.racikan;
       }
     } else {
       resetForm();
+      tempArrayRacikan.value = [];
+      tempDeletedRacikan.value = [];
     }
   }
 );
+
+const tempArrayRacikan = ref<Racikan[]>([]);
 
 const handlePushRacikan = () => {
   push({
     itemMedisUuid: "",
     medicationQty: 0,
+    isUpdated: false,
   });
 };
+const test = ref();
 </script>
 <template>
   <CustomDialog
@@ -387,7 +470,7 @@ const handlePushRacikan = () => {
         <div>
           <!-- Racikan tambah obat -->
           <div
-            v-if="payload.isCompound"
+            v-if="payload.isCompound || digerus"
             class="flex justify-between items-end mt-[15px]"
           >
             <CustomTextfield
@@ -396,10 +479,13 @@ const handlePushRacikan = () => {
               placeholder="Masukkan Nama Racikan"
             />
             <CustomSwitch
+              v-model="jenisRacikan"
               :show-label="true"
               label="Sirup"
               sideLabel="Tidak"
               sideLabelTrue="Ya"
+              :true-value="1"
+              :false-value="0"
             />
             <CustomButton
               label="Tambah Obat"
@@ -407,9 +493,14 @@ const handlePushRacikan = () => {
               @click="handlePushRacikan"
             />
           </div>
-          <p v-if="!payload.isCompound" class="mt-[15px] font-bold">Obat 1</p>
+          <p v-if="!payload.isCompound && !digerus" class="mt-[15px] font-bold">
+            Obat 1
+          </p>
           <hr class="border border-slate-200 mt-[10px]" />
-          <div v-if="!payload.isCompound" class="grid grid-cols-[80%,20%]">
+          <div
+            v-if="!payload.isCompound && !digerus"
+            class="grid grid-cols-[80%,20%]"
+          >
             <!-- Nama Obat -->
             <div class="mt-[20px]">
               <CustomSelect
@@ -438,7 +529,7 @@ const handlePushRacikan = () => {
             </div>
           </div>
           <div
-            v-if="payload.isCompound"
+            v-if="payload.isCompound || digerus"
             v-for="(fieldsRacikan, idx) in fields"
             class="flex justify-between w-full items-end mt-5 gap-2.5"
           >
@@ -451,6 +542,14 @@ const handlePushRacikan = () => {
               optionLabel="name"
               optionValue="uuid"
               :options="obatPayload"
+              :invalid="(errors as any)[`racikan[${idx}].itemMedisUuid`] ? true : false"
+              :invalidMessage="(errors as any)[`racikan[${idx}].itemMedisUuid`]"
+              @update:modelValue="
+                handleEditRacikan({
+                  index: idx,
+                  valueItemMedis: fieldsRacikan.value.itemMedisUuid,
+                })
+              "
             />
             <!-- Jumlah Total -->
             <CustomInputNumber
@@ -458,19 +557,27 @@ const handlePushRacikan = () => {
               label="Jumlah Total"
               :show-buttons="true"
               class="w-[150px]"
+              :invalid="(errors as any)[`racikan[${idx}].medicationQty`] ? true : false"
+              :invalidMessage="(errors as any)[`racikan[${idx}].medicationQty`]"
+              @update:modelValue="
+                handleEditRacikan({
+                  index: idx,
+                  valueQty: fieldsRacikan.value.medicationQty,
+                })
+              "
             />
             <CustomButton
               label=""
               background-color="bg-danger-300 rounded-lg"
               class="h-1/2 w-[40px] p-0 mt-3"
-              @click="remove(idx)"
+              @click="handleRemoveRacikan(idx)"
             >
               <img src="@/assets/icons/delete.svg" alt="" />
             </CustomButton>
           </div>
           <!-- Embalase -->
           <div
-            v-if="payload.isCompound"
+            v-if="payload.isCompound || digerus"
             class="flex bg-adameds-50 items-center gap-2.5 w-full my-5 p-5 rounded-[10px] juetify-center"
           >
             <div class="font-semibold text-MD grow">
@@ -587,7 +694,7 @@ const handlePushRacikan = () => {
               />
             </div>
             <!-- Obat Pulang -->
-            <div class="mt-[10px]">
+            <!-- <div class="mt-[10px]">
               <CustomSwitch
                 v-model="isTakeaway"
                 :show-label="true"
@@ -595,7 +702,7 @@ const handlePushRacikan = () => {
                 sideLabel="Tidak"
                 sideLabelTrue="Ya"
               />
-            </div>
+            </div> -->
             <!-- Obat Kronis -->
             <div class="mt-[10px]">
               <CustomSwitch
@@ -616,7 +723,7 @@ const handlePushRacikan = () => {
               />
             </div>
             <!-- Alasan Diganti -->
-            <div class="mt-[10px]">
+            <!-- <div class="mt-[10px]">
               <CustomTextArea
                 :label="
                   payload.isCompound ? 'Alasan Diganti' : 'Alasan Digerus'
@@ -627,7 +734,7 @@ const handlePushRacikan = () => {
                     : 'Masukan alasan digerus'
                 "
               />
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
