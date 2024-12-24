@@ -12,22 +12,11 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailPrescription from "./DetailPrescription.vue";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const selectedTelaah = ref([]);
-const selectedTelaah2 = ref([]);
-const selectedTelaah3 = ref([]);
-const selectedEdukasi = ref([]);
-const batalDialog = ref(false);
-const pindahDialog = ref(false);
-const editDialog = ref(false);
-const gerusDialog = ref(false);
+
 const lokasiStok = ref("");
 const layanan = ref("");
 
@@ -91,12 +80,7 @@ const UseUtilsStore = utilsStore();
 const searchQuery = ref<string>("");
 const PrescriptionDetail=ref<any>();
 const stockObatPayload=ref();
-// Check if Data Exists
-// const hasData = computed(
-//   () =>
-//     DoctorPrescriptionPayload.value &&
-//     DoctorPrescriptionPayload.value.length > 0
-// );
+
 
 // Fetch Doctor Prescription
 const fetchDoctorPrescription = async () => {
@@ -123,8 +107,6 @@ const fetchDoctorPrescription = async () => {
     const response = await DoctorPrescriptionStore.getApi({
       startDate: dateToEpoch(startDateFilter.value),
       endDate: dateToEpoch(endDateFilter.value),
-      // startDate: 0,
-      // endDate: 9828966473567,
       status: [1, 5],
       search: searchQuery.value,
       takeaway: returnMedicine,
@@ -208,23 +190,9 @@ const fetchStockObat = async () => {
   }
 };
 
-const updateStokObat = async (uuid:string) => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const response = await DoctorPrescriptionStore.updateStokObat(uuid);
-  } catch (error) {
-    console.error("Failed to update data", error);
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
-
-
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 
-const namaObat = ref("");
-const jumlahTotal = ref();
 
 const defaultData = [
   {
@@ -233,92 +201,7 @@ const defaultData = [
   },
 ];
 
-const addRow = () => {
-  data.value.push({
-    namaObat: "",
-    jumlahTotal: "",
-  });
-  console.log(data, "data");
-};
-
 const data = ref([...defaultData]);
-
-const itemTelaah = ref([
-  {
-    farmasetik: "Nama Obat, Bentuk, dan Kekuatan Sediaan",
-  },
-  {
-    farmasetik: "Dosis dan Jumlah Obat",
-  },
-  {
-    farmasetik: "Stabilitas",
-  },
-  {
-    farmasetik: "Aturan dan Cara Penggunaan",
-  },
-]);
-
-const itemTelaah2 = ref([
-  {
-    administratif: "Benar Identitas pasien",
-  },
-  {
-    administratif: "Identitas Dokter",
-  },
-  {
-    administratif: "Tanggal Resep",
-  },
-  {
-    administratif: "Unit Asal Resep",
-  },
-]);
-
-const itemTelaah3 = ref([
-  {
-    klinik: "Ketepatan Indikasi, Dosis, dan Waktu Penggunaan Obat",
-  },
-  {
-    klinik: "Duplikasi Pengobatan",
-  },
-  {
-    klinik: "Alergi dan Reaksi Obat yang Tidak Dikehendaki (ROTD)",
-  },
-  {
-    klinik: "Kontraindikasi",
-  },
-  {
-    klinik: "Interaksi Obat",
-  },
-]);
-
-const itemEdukasi = ref([
-  {
-    edukasi: "Cara Penggunaan",
-  },
-  {
-    edukasi: "Dosis",
-  },
-  {
-    edukasi: "Efek Samping",
-  },
-  {
-    edukasi: "Khasiat Obat",
-  },
-  {
-    edukasi: "Nama Obat",
-  },
-]);
-
-const stokObat = ref([{ label: "Umum", value: "umum" }]);
-
-const itemsObat = ref([
-  {
-    stokObat: "",
-    caraPakai: "3 x 1 (Sehari)",
-    biaya: "1500",
-    total: "25000",
-  },
-]);
 
 // Incoming Recipes
 const incomingRecipes = ref(true);
