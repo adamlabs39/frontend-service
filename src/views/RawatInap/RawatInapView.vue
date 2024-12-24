@@ -215,7 +215,7 @@ onBeforeMount(() => {
   <div class="flex h-full gap-3">
     <Sidebar
       sidebarTitle="Rawat Inap"
-      sidebarTitleUrl="/rawat-inap"
+      sidebarTitleUrl="/rawat-inap/ruangan"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       showStockBtn
@@ -224,7 +224,7 @@ onBeforeMount(() => {
       @filterChanged="updateFilterMenu"
     />
     <component
-    v-if="isSidebarReady"
+      v-if="isSidebarReady"
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
       :filterRuangan="filter"

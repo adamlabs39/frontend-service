@@ -76,7 +76,7 @@ const props = defineProps<{
 watch(
   () => props.filter,
   async (newFilter) => {
-    // console.log(`Filter anyar`, newFilter);
+    console.log(`Filter anyar`, newFilter);
     resetFilter();
     statusPelayanan.value = ""; // Reset statusPelayanan
     filterData.value = {
