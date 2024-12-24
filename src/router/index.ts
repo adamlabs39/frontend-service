@@ -155,6 +155,14 @@ import BookingKelasPage from "@/views/Training/BookingKelas/BookingKelasPage.vue
 import SectionKelas from "@/views/Training/Datamaster/SectionKelas.vue";
 import SectionRekapitulasi from "@/views/Training/Laporan/SectionRekapitulasi.vue";
 
+// NOTE Laporan
+import LaporanView from "@/views/Laporan/LaporanView.vue";
+import JumlahKunjunganPage from "@/views/Laporan/JumlahKunjunganPage.vue";
+import RekapTindakanPage from "@/views/Laporan/RekapTindakanPage.vue";
+import RekapPemeriksaanPage from "@/views/Laporan/RekapPemeriksaanPage.vue";
+import RekapPendapatan from "@/views/Laporan/RekapPendapatanPage.vue";
+import RekapDiagnosis from "@/views/Laporan/RekapDiagnosisPage.vue";
+
 // !SECTION
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
@@ -179,6 +187,7 @@ import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
 import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
+
 
 
 const router = createRouter({
@@ -1397,6 +1406,42 @@ const router = createRouter({
       component: TrainingView,
     },
 
+    // NOTE Laporan
+    {
+      path: "/laporan",
+      name: "laporan",
+      redirect: "/laporan/jumlah-kunjungan",
+    },
+    {
+      path: "/laporan/jumlah-kunjungan",
+      name: "laporan-jumlah-kunjungan",
+      meta: { layout: SidebarLayout, page: JumlahKunjunganPage, requiresAuth: true },
+      component: LaporanView,
+    },
+    {
+      path: "/laporan/rekapitulasi-tindakan",
+      name: "laporan-rekapitulasi-tindakan",
+      meta: { layout: SidebarLayout, page: RekapTindakanPage, requiresAuth: true },
+      component: LaporanView,
+    },
+    {
+      path: "/laporan/rekapitulasi-pemeriksaan-lab",
+      name: "laporan-rekapitulasi-pemeriksaan-lab",
+      meta: { layout: SidebarLayout, page: RekapPemeriksaanPage, requiresAuth: true },
+      component: LaporanView,
+    },
+    {
+      path: "/laporan/rekapitulasi-pendapatan",
+      name: "laporan-rekapitulasi-pendapatan",
+      meta: { layout: SidebarLayout, page: RekapPendapatan, requiresAuth: true },
+      component: LaporanView,
+    },
+    {
+      path: "/laporan/rekapitulasi-diagnosis",
+      name: "laporan-rekapitulasi-diagnosis",
+      meta: { layout: SidebarLayout, page: RekapDiagnosis, requiresAuth: true },
+      component: LaporanView,
+    },
 
     // NOTE Test Component
     {

@@ -64,10 +64,6 @@ watch(
 const resetSelection = () => {
   selectedPatient.value = [];
 };
-
-onMounted(() => {
-  openDialogRM();
-});
 </script>
 
 <template>
@@ -77,8 +73,8 @@ onMounted(() => {
     :value="dataPatient"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="240px"
-    class="-m-4"
+    scrollHeight="flex"
+    class=""
     @row-click="openDialogRM"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"

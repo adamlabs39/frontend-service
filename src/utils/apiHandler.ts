@@ -25,6 +25,7 @@ const errorApiHandler = (error: any) => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
+      localStorage.removeItem("faskes");
       window.location.reload();
     }
     tempSummary = error.response.data.message;
