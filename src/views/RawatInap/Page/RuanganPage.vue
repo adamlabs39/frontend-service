@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
-import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
-import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
+import { onBeforeMount, onMounted, ref, watch} from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
+import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
@@ -12,7 +11,7 @@ import { utilsStore } from "@/stores/utils";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import NoData from "@/components/section/NoData.vue";
-
+import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
 
 // STORE
 const storeUtils = utilsStore();
@@ -20,7 +19,6 @@ const admisiRIStore = useAdmisiRIStore();
 // ROUTE
 const route = useRoute();
 const currentRouteName = ref("");
-
 
 // PROPERTIES FOR PAGINATION
 const properties = ref({
@@ -49,14 +47,12 @@ const statusPelayanan = ref("");
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
-
 // Menyimpan emit ke variabel
 const searchQuery = ref("");
 const dokter = ref("");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const selectedFilterPayment = ref<string[]>([]);
-
 
 // Event emit FROM HEADER
 const handleSearchQuery = (value: string) => {
@@ -68,13 +64,13 @@ const handleDokter = (value: string) => {
 const handleStartDate = (value: any) => {
   startDateFilter.value = value;
 };
-const handleEndDate = (value : any) => {
+const handleEndDate = (value: any) => {
   endDateFilter.value = value;
 };
 const handleReset = () => {
   resetFilter();
   reloadData();
-}
+};
 const handleChipPayment = (filters: string[]) => {
   selectedFilterPayment.value = filters;
   reloadData();
@@ -86,14 +82,14 @@ const filterData = ref<FilterAdmisi>({});
 // Ambil dari RI
 const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   storeUtils.setLoading(true);
+  let response;
+  // console.log(currentRouteName.value)
   try {
-    const response = await admisiRIStore.getRI(filter);
-    if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
+    if (currentRouteName.value === 'ruangan') {
+      response = await admisiRIStore.getRI(filter);
       return response.payload;
-    } else {
-      return [];
     }
+   
   } catch (error) {
     console.error("Failed to fetch data", error);
     return [];
@@ -104,19 +100,16 @@ const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
 };
 
 // Reload dan Terapkan Filter
-const reloadData = () => {
+const reloadData = async () => {
   let filter = {} as FilterAdmisi;
   filter = setFilter();
-  if(currentRouteName.value === "ruangan") {
-    patientData.value = fetchRIPatient(filter);
-  }else{
-    return
-  }
+  patientData.value = await fetchRIPatient(filter);
 };
 
 
+
 const setFilter = () => {
-  let filter = {} as FilterAdmisi
+  let filter = {} as FilterAdmisi;
   filter.page = properties.value.page;
   filter.limit = properties.value.page_size;
   filter.q = searchQuery.value;
@@ -125,22 +118,23 @@ const setFilter = () => {
     !selectedFilterPayment.value.length
       ? ""
       : selectedFilterPayment.value[0];
-   filter.startDate = `${dateToEpoch(
+  filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
   )}`;
   filter.endDate = `${dateToEpoch(
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   filter.status = statusPelayanan.value;
-  filter.room = [
-    props.filterRuangan.name === "Semua Ruangan"
-      ? props.filterRuangan.uuid
-      : props.filterRuangan.name,
-  ];
+
+  // Simpan props.filterRuangan ke variabel baru
+
+  // Terapkan ke filter.room
+  filter.room = [props.filterRuangan.name];
   filter.dpjp = dokter.value;
-  
-  return filter
-}
+
+  return filter;
+};
+
 
 // ACCESSING FROM OUTSIDE COMPONENT
 const resetFormRef = ref();
@@ -150,11 +144,11 @@ const resetFilter = () => {
   selectedFilterPayment.value = [];
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
-  resetFormRef.value.resetForm(); 
+  resetFormRef.value.resetForm();
   dokter.value = "";
   selectedFilterPayment.value = [];
   statusPelayanan.value = "";
-}
+};
 
 // PAGINATION
 const handlePage = (event: any) => {
@@ -166,61 +160,80 @@ const handlePage = (event: any) => {
 // New flag to track the first fetch
 // const isDataFetched = ref(false);
 
-// Watcher Ruangan 
+// Watcher Ruangan
 watch(
   () => props.filterRuangan,
-   () => {
-      resetFilter();
-      reloadData();
+  async(newFilter) => {
+    //  console.log(`Filter anyar`, newFilter);
+    // resetFilter();
+    // reloadData();
+    filterData.value = {
+      ...filterData.value,
+      room: [newFilter.name],
+      startDate: `${dateToEpoch(
+        setTimeForDate(startDateFilter.value, 0, 0, 0)
+      )}`,
+      endDate: `${dateToEpoch(
+        setTimeForDate(endDateFilter.value, 23, 59, 59)
+      )}`,
+    }
+    console.log(`filter paling baru`, filterData.value);
+    patientData.value = await fetchRIPatient(filterData.value);
   },
-  { immediate: false} 
+  // { immediate: false }
 );
 
 // DISCHARGE / DIRAWAT
 const filterStatus = (status: string) => {
   statusPelayanan.value = status;
   reloadData();
+  // fetchRIPatient()
 };
 
 // WHEN PAGE CHANGE
-const updatePageType =  (path: string) => {
+const updatePageType = async (path: string) => {
   resetFilter();
   const tempArrPath = path.split("/");
   currentRouteName.value = tempArrPath[2] ?? "";
-  console.log(currentRouteName.value);
-  reloadData();
-  
+
+  let filter = {} as FilterAdmisi;
+  filter = setFilter();
+  // console.log(currentRouteName.value);
+  patientData.value = await fetchRIPatient(filter);
 };
+
+
 onBeforeRouteLeave((to, from) => {
-  // console.log("Navigating to:", to.path);
-  // console.log("Navigating from:", from.path);
+  console.log('Navigating from:', from.path, 'to:', to.path);
   updatePageType(to.path);
 });
 
+
+
 onMounted(() => {
   updatePageType(route.path);
-  isDataFetched.value = true;
+  // fetchRIPatient();
+  // isDataFetched.value = true;
 });
 </script>
 <template>
-  {{ patientData }}
+  <!-- {{ patientData }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
- 
     <template #header>
       <DataPoliBPJSHeader
         ref="resetFormRef"
         @update:value-search="handleSearchQuery"
-        @update:value-dokter ="handleDokter"
+        @update:value-dokter="handleDokter"
         @update:valueStartDate="handleStartDate"
         @update:value-end-date="handleEndDate"
         @search="reloadData()"
         @reset="handleReset()"
-        @payment = "handleChipPayment"
-        @reloadData="reloadData()"  
+        @payment="handleChipPayment"
+        @reloadData="reloadData()"
         :filter-menu="filterRuangan"
         :filter-data="filterData"
         :current-route-name="currentRouteName"
@@ -276,10 +289,7 @@ onMounted(() => {
       <Tabs v-model:value="statusPelayanan" class="h-full">
         <TabPanels class="flex flex-col w-full h-full p-0">
           <TabPanel value="1" class="flex-1">
-            <DataPelayananRawatJalan
-              :data-patient="patientData"
-            />
-           
+            <DataPasienRawatInap :data-patient="patientData" />
           </TabPanel>
           <TabPanel value="0" class="flex-1">
             <!-- <Discharge /> -->
