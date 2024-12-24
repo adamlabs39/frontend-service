@@ -381,7 +381,7 @@ watch(
         <CustomTextArea
           label="Alamat"
           v-model="alamat"
-          place-holder="Alamat"
+          placeholder="Alamat"
           class="col-span-8"
           :invalid="!!errors.alamat"
           :invalidMessage="errors.alamat"

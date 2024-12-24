@@ -169,35 +169,18 @@ const schema = toTypedSchema(
           total: yup.number().required("Persentasi harus diisi"),
         })
       ),
-      tarifLab: yup.array().of(
-        yup.object({
-          tarifLabUuid: yup.string().when("isMcu", {
-            is: (value: boolean) => value === true,
-            then: (schema) => schema.required("Tarif Lab harus diisi"),
-            otherwise: (schema) => schema.notRequired(),
-          }),
-        })
-      ),
-      // tarifLab: yup
-      //   .array()
-      //   .when("isMcu", {
-      //     is: true,
-      //     then: yup.array().of(
-      //       yup.object({
-      //         tarifLabUuid: yup.string().when("isMcu", {
-      //           is: (value: boolean) => value === true,
-      //           then: (schema) => schema.required("Tarif Lab harus diisi"),
-      //           otherwise: (schema) => schema.notRequired(),
-      //         }),
-      //       })
-      //     ),
-      //     otherwise: (schema) => schema.notRequired(),
-      //   })
-      //   .of(
-      //     yup.object({
-      //       tarifLabUuid: yup.string(),
-      //     })
-      //   ),
+      tarifLab: yup.array().when("isMcu", {
+        is: true, 
+        then: (schema) =>
+          schema
+            .of(
+              yup.object({
+                tarifLabUuid: yup.string().required("Tarif Lab harus diisi"),
+              })
+            )
+            .strict(),
+        otherwise: (schema) => schema.notRequired(), 
+      }),
       unitPelayananSelected: yup
         .array()
         .of(yup.number().required("Unit Pelayanan harus dipilih"))
@@ -661,7 +644,6 @@ const totalTindakan = (tindakanIndex: number): string => {
   >
     <template #header>{{ title }} Tarif</template>
     <template #body>
-      {{ fieldsTindakan }}
       <!-- Form Input -->
       <div
         v-if="method !== 'detail'"
