@@ -33,6 +33,10 @@ export const useTagihanStore = defineStore({
     async postDiscount(uuid: string, payload = {}) {
       return apiPembayaranPost(`/payment/${uuid}/discount`, payload);
     },
+    async postOpenKasir(payload = {}) {
+      return apiPembayaranPost(`/cashier/open`, payload);
+    },
+
     async putApi(uuid: string, payload = {}) {
       return apiPembayaranPut(`/datamaster/role/${uuid}`, payload);
     },

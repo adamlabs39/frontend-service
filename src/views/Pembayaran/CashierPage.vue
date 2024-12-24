@@ -24,7 +24,8 @@ const itemTagihan = ref<any>(null);
 const openedData = ref<any>({});
 const codeVoucher = ref("");
 const codeDiscount = ref<number>();
-
+const saldoAwal = ref<number>();
+const selectShift = ref("");
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
 const listTagihanRIDialog = ref(false);
@@ -41,6 +42,7 @@ const handleKasirClick = () => {
     closeKasirDialog.value = true;
   }
 };
+
 const isClosingHarianDisabled = computed(
   () => saldoAwalDisabled.value && shiftDisabled.value
 );
@@ -159,10 +161,6 @@ const detailTagihan = async (event: DataTableRowClickEvent) => {
   listTagihanRIDialog.value = true;
 };
 
-onMounted(() => {
-  fetchSearchTransactions();
-});
-
 const submitVoucher = async () => {
   storeUtils.setLoading(true);
   try {
@@ -190,6 +188,7 @@ const submitVoucher = async () => {
 
 const submitDiscount = async () => {
   storeUtils.setLoading(true);
+
   try {
     const payload = {
       value: codeDiscount.value,
@@ -212,6 +211,40 @@ const submitDiscount = async () => {
     storeUtils.setLoading(false);
   }
 };
+
+const optionShiftItem = ref([
+  { label: "Pagi", value: "1" },
+  { label: "Siang", value: "2" },
+  { label: "Malam", value: "3" },
+]);
+
+const submitOpenKasir = async () => {
+  storeUtils.setLoading(true);
+
+  try {
+    if (!isKasirOpen.value) {
+      const payload = {
+        beginning_balance: saldoAwal.value,
+        shift_type: selectShift.value,
+      };
+      console.log("payloadSaldo", payload);
+      const response = await tagihanStore.postOpenKasir(payload);
+      saldoAwalDisabled.value = true;
+      shiftDisabled.value = true;
+      isKasirOpen.value = true;
+    }
+    else {
+    closeKasirDialog.value = true;
+  } 
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+onMounted(() => {
+  fetchSearchTransactions();
+});
 </script>
 
 <template>
@@ -253,8 +286,8 @@ const submitDiscount = async () => {
               <div
                 class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[15px]"
               ></div>
-              <CustomTextfield
-                pr
+              <CustomInputNumber
+                v-model="saldoAwal"
                 label="Saldo Awal"
                 placeholder="0"
                 class="basis-[15%]"
@@ -267,17 +300,18 @@ const submitDiscount = async () => {
                     Rp.
                   </div>
                 </template>
-              </CustomTextfield>
+              </CustomInputNumber>
               <CustomSelect
+                v-model="selectShift"
                 :disabled="shiftDisabled"
                 label="Pilih Shift"
                 class="ml-3 basis-[10%]"
-                optionLabel=""
-                optionValue=""
-                :options="['Pagi', 'Siang', 'Sore', 'Malem']"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionShiftItem"
               />
               <CustomButton
-                @click="handleKasirClick"
+                @click="submitOpenKasir"
                 :label="isKasirOpen ? 'Close Kasir' : 'Open Kasir'"
                 class="ml-3 mt-[25px]"
               />
