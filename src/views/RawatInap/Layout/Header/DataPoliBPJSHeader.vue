@@ -32,8 +32,10 @@ const props = defineProps({
   },
 });
 
+const selectedTab = ref("");
 // Emit for Search and Payment
 const emit = defineEmits([
+  "selectedTab",
   "search",
   "payment",
   "update:valueSearch",
@@ -247,7 +249,46 @@ onMounted(() => {
           class="mt-auto w-[70px]"
         />
       </div>
-      <slot name="content"></slot>
+      <div
+        v-if="currentRouteName === 'ruangan'"
+        class="flex items-center gap-2"
+      >
+        <CustomButton
+          label=""
+          icon="PhListBullets"
+          class="w-[60px]"
+          :text-color="selectedTab === '' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = ''))"
+          :outlined="selectedTab !== ''"
+        />
+        <!-- Filter = {{ props.filter }} -->
+        <CustomButton
+          label="PELAYANAN"
+          class="grow"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
+        />
+        <CustomButton
+          label="DISCHARGE"
+          class="grow"
+          :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '1' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '1'))"
+          :outlined="selectedTab !== '1'"
+        />
+      </div>
 
       <div
         class="font-semibold text-SM text-grey-300"

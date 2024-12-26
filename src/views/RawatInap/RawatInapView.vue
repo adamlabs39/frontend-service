@@ -218,6 +218,7 @@ onBeforeMount(() => {
       sidebarTitleUrl="/rawat-inap/ruangan"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
+      :show-filter-poli="true"
       showStockBtn
       v-model:filter="filter"
       @update:search-poli="handleSearchRuangan"

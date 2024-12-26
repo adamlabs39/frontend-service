@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, watch} from "vue";
+import { onBeforeMount, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { FilterAdmisi } from "@/utils/Interface";
-import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
@@ -41,8 +41,9 @@ const isDataFetched = ref(false);
 
 // Data Patient From API
 const patientData = ref<any>([]);
+const selectedPatient = ref<any[]>([]);
 // DIRAWAT / DISCHARGE
-const statusPelayanan = ref("");
+const selectedTab = ref("");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
@@ -55,6 +56,10 @@ const endDateFilter = ref<Date>(new Date());
 const selectedFilterPayment = ref<string[]>([]);
 
 // Event emit FROM HEADER
+const handleSelectedTab = (newTab: string) => {
+  selectedTab.value = newTab;
+  reloadData();
+};
 const handleSearchQuery = (value: string) => {
   searchQuery.value = value;
 };
@@ -85,11 +90,10 @@ const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   let response;
   // console.log(currentRouteName.value)
   try {
-    if (currentRouteName.value === 'ruangan') {
+    if (currentRouteName.value === "ruangan") {
       response = await admisiRIStore.getRI(filter);
       return response.payload;
     }
-   
   } catch (error) {
     console.error("Failed to fetch data", error);
     return [];
@@ -105,8 +109,6 @@ const reloadData = async () => {
   filter = setFilter();
   patientData.value = await fetchRIPatient(filter);
 };
-
-
 
 const setFilter = () => {
   let filter = {} as FilterAdmisi;
@@ -124,7 +126,7 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
-  filter.status = statusPelayanan.value;
+  filter.status = selectedTab.value;
 
   // Simpan props.filterRuangan ke variabel baru
 
@@ -134,7 +136,6 @@ const setFilter = () => {
 
   return filter;
 };
-
 
 // ACCESSING FROM OUTSIDE COMPONENT
 const resetFormRef = ref();
@@ -147,7 +148,7 @@ const resetFilter = () => {
   resetFormRef.value.resetForm();
   dokter.value = "";
   selectedFilterPayment.value = [];
-  statusPelayanan.value = "";
+  selectedTab.value = "";
 };
 
 // PAGINATION
@@ -163,32 +164,26 @@ const handlePage = (event: any) => {
 // Watcher Ruangan
 watch(
   () => props.filterRuangan,
-  async(newFilter) => {
+  async (newFilter) => {
     //  console.log(`Filter anyar`, newFilter);
     // resetFilter();
-    // reloadData();
-    filterData.value = {
-      ...filterData.value,
-      room: [newFilter.name],
-      startDate: `${dateToEpoch(
-        setTimeForDate(startDateFilter.value, 0, 0, 0)
-      )}`,
-      endDate: `${dateToEpoch(
-        setTimeForDate(endDateFilter.value, 23, 59, 59)
-      )}`,
-    }
-    console.log(`filter paling baru`, filterData.value);
-    patientData.value = await fetchRIPatient(filterData.value);
+    reloadData();
+    // filterData.value = {
+    //   ...filterData.value,
+    //   startDate: `${dateToEpoch(
+    //     setTimeForDate(startDateFilter.value, 0, 0, 0)
+    //   )}`,
+    //   endDate: `${dateToEpoch(
+    //     setTimeForDate(endDateFilter.value, 23, 59, 59)
+    //   )}`,
+    //   room: [newFilter.name],
+    // }
+    // // console.log(`filter paling baru`, filterData.value);
+    // patientData.value = await fetchRIPatient(filterData.value);
   },
-  // { immediate: false }
+  { immediate: false }
 );
 
-// DISCHARGE / DIRAWAT
-const filterStatus = (status: string) => {
-  statusPelayanan.value = status;
-  reloadData();
-  // fetchRIPatient()
-};
 
 // WHEN PAGE CHANGE
 const updatePageType = async (path: string) => {
@@ -202,19 +197,20 @@ const updatePageType = async (path: string) => {
   patientData.value = await fetchRIPatient(filter);
 };
 
-
 onBeforeRouteLeave((to, from) => {
-  console.log('Navigating from:', from.path, 'to:', to.path);
+  console.log("Navigating from:", from.path, "to:", to.path);
   updatePageType(to.path);
 });
-
-
 
 onMounted(() => {
   updatePageType(route.path);
   // fetchRIPatient();
   // isDataFetched.value = true;
 });
+
+// onMounted(() => {
+//   fetchRIPatient()
+// });
 </script>
 <template>
   <!-- {{ patientData }} -->
@@ -226,6 +222,7 @@ onMounted(() => {
     <template #header>
       <DataPoliBPJSHeader
         ref="resetFormRef"
+        @selected-tab="handleSelectedTab"
         @update:value-search="handleSearchQuery"
         @update:value-dokter="handleDokter"
         @update:valueStartDate="handleStartDate"
@@ -238,68 +235,33 @@ onMounted(() => {
         :filter-data="filterData"
         :current-route-name="currentRouteName"
       >
-        <template #content>
-          <div class="flex items-center gap-2">
-            <CustomButton
-              label=""
-              icon="PhListBullets"
-              class="w-[60px]"
-              :text-color="
-                statusPelayanan === '' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('')"
-              :outlined="statusPelayanan !== ''"
-            />
-            <!-- Filter = {{ props.filter }} -->
-            <CustomButton
-              label="DIRAWAT"
-              class="grow"
-              :text-color="
-                statusPelayanan === '1' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '1' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '1' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('1')"
-              :outlined="statusPelayanan !== '1'"
-            />
-            <CustomButton
-              label="DISCHARGE"
-              class="grow"
-              :text-color="
-                statusPelayanan === '0' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '0' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '0' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('0')"
-              :outlined="statusPelayanan !== '0'"
-            />
-          </div>
-        </template>
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="statusPelayanan" class="h-full">
-        <TabPanels class="flex flex-col w-full h-full p-0">
-          <TabPanel value="1" class="flex-1">
-            <DataPasienRawatInap :data-patient="patientData" />
-          </TabPanel>
-          <TabPanel value="0" class="flex-1">
-            <!-- <Discharge /> -->
-            <NoData class="w-full h-full" />
-          </TabPanel>
-          <TabPanel value="" class="flex-1">
-            <NoData class="w-full h-full" />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      {{ patientData }}
+      <div>COK</div>
+      <DataTable
+        v-if="patientData.length"
+        v-model:selection="selectedPatient"
+        :value="patientData"
+      >
+        <Column field="nomor" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Nomor</div>
+          </template>
+          <template #body="slotProps">
+            <div class="text-center">
+              <div class="text-SM">{{ slotProps.data.noRm }}</div>
+              <div
+                class="max-w-[75px] mx-auto bg-adameds-50 text-adameds-300 rounded-[5px] text-SM font-semibold"
+              >
+                {{ slotProps.data.polyclinic.code }}
+              </div>
+              <div class="text-SM">{{ slotProps.data.noReg }}</div>
+            </div>
+          </template>
+        </Column>
+      </DataTable>
     </template>
     <template #footer>
       <div class="flex justify-between">
