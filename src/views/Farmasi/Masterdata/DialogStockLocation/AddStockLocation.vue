@@ -3,11 +3,13 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useDosageFormStore } from "@/stores/datamasterFarmasi/DosageForm";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomButton from "@/components/Base/CustomButton.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -25,10 +27,25 @@ const props = defineProps({
   },
 });
 
+const optionsJenisLokasi = ref([
+  { label: "Gudang", value: "gudang" },
+  { label: "Depo Pelayanan", value: "depo" }
+]);
+
+const optionsDefault = ref([
+  { label: "Rawat Inap", value: "0" },
+  { label: "Rawat Jalan", value: "1" },
+  { label: "IGD", value: "2" },
+  { label: "FISIO", value: "3" },
+]);
+
 const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Satuan harus diisi"),
     name: yup.string().required("Nama Satuan harus diisi"),
+    jenisLokasi: yup.string().required("Jenis Lokasi harus diisi"),
+    defaultTujuanOrderPermintaan: yup.array().when("jenisLokasi", 
+      ([jenisLokasi], schema) => jenisLokasi == "depo" ? schema.min(1, "at least 1").required("Tujuan Order harus dipilih"): schema.nullable()),
     status: yup.bool().default(false),
   }).noUnknown()
 );
@@ -36,10 +53,13 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-const bentukSediaanStore = useDosageFormStore();
+
+const StockLocationStore = useStockLocationStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
+const [jenisLokasi] = defineField("jenisLokasi");
+const [defaultTujuanOrderPermintaan] = defineField("defaultTujuanOrderPermintaan");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -51,11 +71,11 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await bentukSediaanStore.putApi(uuid, values);
+      const response = await StockLocationStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
-    } else if (method.value === "add") {
-      const response = await bentukSediaanStore.postApi(values);
+    } else if (method.value === "add") {     
+      const response = await StockLocationStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -101,13 +121,14 @@ watch(
 </script>
 
 <template>
-  <CustomDialog 
+    <CustomDialog 
     :visible="isDialogVisible"
-    @update:visible="updateVisibility"  
-    width="600px">
+    @update:visible="updateVisibility" 
+    width="500px"
+    >
       <template #header>
         <div class="grid grid-cols-1">
-          <p>Tambah Bentuk Sediaan</p>
+          <p>Tambah Lokasi Stok</p>
         </div>
       </template>
       <template #body>
@@ -115,8 +136,8 @@ watch(
           <div class="mt-[20px]">
             <CustomTextfield
               v-model="code"
-              label="Kode Bentuk Sediaan"
-              placeholder="Kode Bentuk Sediaan"
+              label="Kode Lokasi Stok"
+              placeholder="Kode Lokasi Stok"
               class="mr-2"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
@@ -125,11 +146,40 @@ watch(
           <div class="mt-[20px]">
             <CustomTextfield
               v-model="name"
-              label="Nama Bentuk Sediaan"
-              placeholder="Nama Bentuk Sediaan"
+              label="Nama Lokasi Stok"
+              placeholder="Nama Lokasi Stok"
               class="ml-2"
               :invalid="!!errors.name"
               :invalidMessage="errors.name"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1">
+          <div class="mt-[20px]">
+            <CustomSelect
+              place-holder="Pilih Jenis Lokasi"
+              label="Pilih Jenis Lokasi"
+              v-model="jenisLokasi"
+              optionValue="value"
+              optionLabel="label"
+              :options="optionsJenisLokasi"
+              :invalid="!!errors.jenisLokasi"
+              :invalidMessage="errors.jenisLokasi"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1" v-if="jenisLokasi === 'depo'">
+          <div class="mt-[20px]">
+            <CustomMultiSelect
+              placeholder="Pilih Tujuan Order & Permintaan"
+              label="Default Tujuan Order & Permintaan"
+              v-model="defaultTujuanOrderPermintaan"
+              optionLabel="label"
+              optionValue="value"
+              :maxSelectedLabels="4"
+              :options="optionsDefault"
+              :invalid="!!errors.defaultTujuanOrderPermintaan"
+              :invalidMessage="errors.defaultTujuanOrderPermintaan"
             />
           </div>
         </div>

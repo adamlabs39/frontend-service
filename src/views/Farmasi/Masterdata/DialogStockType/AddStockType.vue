@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useDosageFormStore } from "@/stores/datamasterFarmasi/DosageForm";
+import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -36,7 +36,8 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-const bentukSediaanStore = useDosageFormStore();
+
+const StockTypeStore = useStockTypeStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
@@ -51,11 +52,11 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await bentukSediaanStore.putApi(uuid, values);
+      const response = await StockTypeStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
-      const response = await bentukSediaanStore.postApi(values);
+      const response = await StockTypeStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -101,13 +102,13 @@ watch(
 </script>
 
 <template>
-  <CustomDialog 
+    <CustomDialog 
     :visible="isDialogVisible"
-    @update:visible="updateVisibility"  
-    width="600px">
+    @update:visible="updateVisibility" 
+    width="500px">
       <template #header>
         <div class="grid grid-cols-1">
-          <p>Tambah Bentuk Sediaan</p>
+          <p>Tambah Jenis Stok</p>
         </div>
       </template>
       <template #body>
@@ -115,8 +116,8 @@ watch(
           <div class="mt-[20px]">
             <CustomTextfield
               v-model="code"
-              label="Kode Bentuk Sediaan"
-              placeholder="Kode Bentuk Sediaan"
+              label="Kode Jenis Stok"
+              placeholder="Kode Jenis Stok"
               class="mr-2"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
@@ -125,8 +126,8 @@ watch(
           <div class="mt-[20px]">
             <CustomTextfield
               v-model="name"
-              label="Nama Bentuk Sediaan"
-              placeholder="Nama Bentuk Sediaan"
+              label="Nama Jenis Stok"
+              placeholder="Nama Jenis Stok"
               class="ml-2"
               :invalid="!!errors.name"
               :invalidMessage="errors.name"

@@ -1,80 +1,252 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
+import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
+import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import { log } from "console";
+import NoData from "@/components/section/NoData.vue";
+import AddMedicalItem from "./DialogMedicalItem/AddMedicalItem.vue";
+import DeleteMedicalItem from "./DialogMedicalItem/DeleteMedicalItem.vue";
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
-const itemMedisDialog = ref(false);
-const selectedJenisLokasi = ref();
-const selectedTujuanOrder = ref();
-const status = ref(false);
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
-
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
-};
-
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
-};
-
-const filterLokasi = ref([
-  "TUNAI",
-  "BPJS"
-]);
-
-const selectedFilterLokasi = ref<string[]>([]);
+const selectedFilterJenisStok = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
-  if (selectedFilterLokasi.value.includes(label)) {
-    // console.log(selectedFilterLokasi, 'selectedFilterLokasi');
-    
-    selectedFilterLokasi.value = selectedFilterLokasi.value.filter(
+  if (selectedFilterJenisStok.value.includes(label)) {    
+    selectedFilterJenisStok.value = selectedFilterJenisStok.value.filter(
       (item) => item != label
     );
   } else {
-    selectedFilterLokasi.value.push(label);
+    selectedFilterJenisStok.value.push(label);
+  }
+  fetchMedicalItem()  
+};
+
+// State Management
+const MedicalItemStore = useMedicalItemStore();
+const UseUtilsStore = utilsStore();
+const MedicalItemPayload = ref<any[]>([]);
+const MedicalItemProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+
+// Check if Data Exists
+const hasData = computed(
+  () => MedicalItemPayload.value && MedicalItemPayload.value.length > 0
+);
+
+// Fetch MedicalItem
+const fetchMedicalItem = async () => {
+  UseUtilsStore.setLoading(true);  
+  try {
+    const response = await MedicalItemStore.getApi(
+      MedicalItemProperties.value.page,
+      MedicalItemProperties.value.page_size,
+      searchQuery.value,
+      {jenis_stok_uuides: selectedFilterJenisStok.value}
+    );
+    
+    if (response && response.payload) {
+      MedicalItemProperties.value.total = response.properties.total;
+      MedicalItemPayload.value = response.payload;
+    } else {
+      MedicalItemPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    MedicalItemPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
 };
 
-const dataItemMedis = ref([
-  { kodeItem: "OBT.12345", namaItem: "Gudang Farmasi", jenisItem: "Obat", jenisStok: "TUNAI", pabrik: "PT. SANBE", status:"NON-AKTIF" },
-  { kodeItem: "ALK.12345", namaItem: "Gudang Logistik", jenisItem: "Alkes", jenisStok: "TUNAI", pabrik: "PT. SANBE", status:"NON-AKTIF" },
-  { kodeItem: "OBT.12345", namaItem: "Farmasi Rawat Jalan", jenisItem: "Obat", jenisStok: "BPJS", pabrik: "PT. KIMIA FARMA", status:"AKTIF" },
-  { kodeItem: "ALK.12345", namaItem: "Farmasi Rawat Inap", jenisItem: "Alkes", jenisStok: "BPJS", pabrik: "PT. SANBE", status:"AKTIF" },
-  { kodeItem: "OBT.12345", namaItem: "Farmasi IGD", jenisItem: "Obat", jenisStok: "TUNAI", pabrik: "PT. KIMIA FARMA", status:"AKTIF" },
-]);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchMedicalItem();
+  }, 500); 
+});
 
-const dataKonversi = [
-  { no: 1, pembelian: "Box", penggunaan: "Pcs", konversi: "1"},
-];
-const dataKonversi2 = ref([]);
-const newDataKonversi = ref([...dataKonversi]);
-const addRow = () => {
-  newDataKonversi.value.push({
-    no: newDataKonversi.value.length + 1,
-    pembelian: "",
-    penggunaan: "",
-    konversi: ""
-  });
+// Handle Pagination
+const handlePage = (event: any) => {
+  MedicalItemProperties.value.page = event.page + 1;
+  MedicalItemProperties.value.page_size = event.rows;
+  fetchMedicalItem();
 };
 
-const deleteRow = (index: any) => {
-  // console.log(index, 'index');
-  newDataKonversi.value.splice(index);
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await  MedicalItemStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER SATUAN"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      KodeSatuan: "Kode Satuan",
+      NamaSatuan: "Nama Satuan",
+      SatuanDosis: "Satuan Dosis",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        KodeSatuan: rows[i].code,
+        NamaSatuan: rows[i].name,
+        SatuanDosis: rows[i].satuan_dosis ? "AKTIF" : "NON-AKTIF",
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
+    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
 
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+// Dialog Management
+const MedicalItemDialog = ref(false);
+const DeleteMedicalItemDialog = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  MedicalItemDialog.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  DeleteMedicalItemDialog.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await MedicalItemStore.deleteApi(item.uuid);
+      fetchMedicalItem();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      DeleteMedicalItemDialog.value = false;
+    }
+  }
+};
+
+// State Management Stock Type
+const StockTypeStore = useStockTypeStore();
+const StockTypePayload = ref<any[]>([]);
+
+// Fetch Stock Type
+const fetchStockType = async () => {
+  try {
+    const response = await StockTypeStore.getApi();
+    if (response && response.payload) {
+      StockTypePayload.value = response.payload;
+    } else {
+      StockTypePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch", error);
+    StockTypePayload.value = [];
+  }
+};
+
+onMounted(() => {
+  fetchMedicalItem();
+  fetchStockType();
+});
 </script>
 
 <template>
@@ -102,7 +274,7 @@ const deleteRow = (index: any) => {
                 </div>
               </div>
               <CustomButton
-                @click="itemMedisDialog = true"
+                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
@@ -112,27 +284,30 @@ const deleteRow = (index: any) => {
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Item Medis"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Item Medis (Obat / Alkes / dll)"
                 class=""
               />
             </div>
-            <!-- Filter Jenis Lokasi -->
+            <!-- Filter Jenis Stok -->
             <div class="flex mb-[10px] mt-5">
-              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Jenis Lokasi</div>
+              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Jenis Stok</div>
                 <div class="flex">
                   <span class="font-semibold text-grey-300">|</span>
                   <CustomChip
-                    v-for="(lokasiStok, index) in filterLokasi" :key="lokasiStok + index"
-                    :label="lokasiStok"
+                    v-for="(items, index) in StockTypePayload"
+                    :key="items + index"
+                    :label="items.name"
+                    :value="items.uuid"
                     borderColor="border-adameds-300"
                     bgColor="bg-adameds-50"
                     iconColor="text-adameds-300"
                     textColor="text-adameds-300"
                     customClass="h-7"
                     class="ml-[10px]"
-                    :isSelected="selectedFilterLokasi.includes(lokasiStok)"
+                    :isSelected="selectedFilterJenisStok.includes(items.uuid)"
                     @selected="onPoliSelect"
                     selectedColor="bg-adameds-300 border-adameds-300"
                   />
@@ -157,13 +332,25 @@ const deleteRow = (index: any) => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          :value="dataItemMedis"
+          v-else
+          :value="MedicalItemPayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
           scrollable
           scrollHeight="flex"
+          :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+          }"
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -175,50 +362,49 @@ const deleteRow = (index: any) => {
               </div>
             </template>
           </Column>
-          <Column field="kodeItem" header="Kode Item" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="namaItem" header="Nama Item Medis (Obat, Alkes, dll)" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Kode Item -->
+          <Column field="code" header="Kode Item" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Nama Item Medis (Obat, Alkes, dll) -->
+          <Column field="name" header="Nama Item Medis (Obat, Alkes, dll)" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Jenis Item -->
           <Column field="jenisItem" header="Jenis Item" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="jenisStok" header="Jenis Stok" headerClass="bg-adameds-50 font-semibold text-SM">
+          <!-- Jenis Stok -->
+          <Column header="Jenis Stok" headerClass="bg-adameds-50 font-semibold text-SM">
             <template #body="slotProps">
-              <div>
-                <CustomChip
-                  :label="slotProps.data.jenisStok"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  customClass="h-6"
-                />
+              <div class="flex">
+                <div v-for="items in slotProps.data.jenisStok" :key="items">
+                  <CustomChip
+                    :label="items.detailStok.name"
+                    :showCheckedIcon="false"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-300" 
+                    textColor="text-white"
+                    customClass="h-6"
+                    class="mr-[5px]"
+                  />
+                </div>
               </div>
             </template>
           </Column>
-          <Column field="pabrik" header="Pabrik" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="status" headerClass="bg-adameds-50 font-semibold text-SM">
-            <template #header>
-              <div class="w-full text-center">Status</div>
+          <!-- Manufaktur -->
+          <Column field="manufacture.name" header="Manufaktur" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Status -->
+          <Column field="status" headerClass="bg-adameds-50">
+            <template #header="slotProps">
+              <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex justify-center items-center min-w-[120px]">
+              <div class="flex items-center justify-center">
                 <CustomChip
-                  :label="slotProps.data.status"
+                  :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'text-white'
-                      : 'text-[#80868d]'
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                   "
-                  :bgColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'bg-adameds-300'
-                      : 'bg-white'
-                  "
+                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
-                      ? 'border-none'
-                      : 'border-[#80868d]'
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                   "
-                  :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                  "
+                  :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
               </div>
@@ -236,6 +422,7 @@ const deleteRow = (index: any) => {
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -243,6 +430,7 @@ const deleteRow = (index: any) => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -250,6 +438,20 @@ const deleteRow = (index: any) => {
             </template>
           </Column>
         </DataTable>
+        <AddMedicalItem 
+          v-model:isDialogVisible="MedicalItemDialog"
+          :title="dialogConfig.title"
+          :method="dialogConfig.method"
+          :payload="dialogConfig.data"
+          :dataJenisStok="StockTypePayload"
+          @data-updated="fetchMedicalItem"
+        />
+        <DeleteMedicalItem 
+          v-model:isDialogVisible="DeleteMedicalItemDialog"
+          :title="dialogConfig.title"
+          :itemToDelete="dialogConfig.data"
+          @delete="confirmDelete"
+        />
       </template>
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
@@ -260,340 +462,18 @@ const deleteRow = (index: any) => {
             <CustomButton label="Eksport">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
+            <CustomButton label="Eksport" @click="">
+              <img src="@/assets/icons/download.svg" alt="" />Download
+            </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataItemMedis.length"
+            :rows="MedicalItemProperties.page_size"
+            :totalRecords="MedicalItemProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
     </Card>
-    
-    <CustomDialog v-model:visible="itemMedisDialog" width="600px">
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Item Medis</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="grid grid-cols-[30%,70%]">
-          <!-- Kode Item Medis -->
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Kode Item Medis"
-              placeholder="Kode Item Medis"
-              class="mr-2"
-            />
-          </div>
-          <!-- Nama Item Medis -->
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Nama Item Medis"
-              placeholder="Nama Item Medis"
-              class="ml-2"
-            />
-          </div>
-          <!-- Jenis Item  -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Jenis Item"
-              label="Jenis Item"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class="mr-2"
-            />
-          </div>
-          <!-- Satuan Penggunaan -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Satuan Penggunaan"
-              label="Satuan Penggunaan"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class="ml-2"
-            />
-          </div>
-        </div>
-        
-        <!-- Jenis Stok -->
-        <div class="grid grid-cols-1">
-          <div class="mt-[20px]">
-            <CustomMultiSelect
-              placeholder="Pilih Jenis Stok"
-              label="Jenis Stok"
-              v-model="selectedTujuanOrder"
-              optionLabel=""
-              optionValue=""
-              :maxSelectedLabels="3"
-              :options="['TUNAI', 'BPJS']"
-            />
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-2">
-          <!-- Pabrik -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Pabrik"
-              label="Pabrik"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class=""
-            />
-          </div>
-          <!-- Bentuk Sediaan -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Bentuk Sediaan"
-              label="Bentuk Sediaan"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class="ml-2"
-            />
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-[20%,30%,20%,30%]">
-          <!-- Dosis Kemasan -->
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Dosis Kemasan"
-              placeholder="0"
-              class=""
-            />
-          </div>
-          <!-- Satuan -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Satuan"
-              label="Satuan"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class="ml-2 mr-1"
-            />
-          </div>
-          <!-- Isi Kemasan -->
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Isi Kemasan"
-              placeholder="0"
-              class="ml-3"
-            />
-          </div>
-          <!-- Satuan -->
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Satuan"
-              label="Satuan"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class="ml-2"
-            />
-          </div>
-        </div>
-        
-         <!-- Kategori Item -->
-         <div class="grid grid-cols-1">
-          <div class="mt-[20px]">
-            <CustomSelect
-              place-holder="Pilih Kategori Item"
-              label="Kategori Item"
-              optionLabel=""
-              optionValue=""
-              :options="['Gudang', 'Depo Pelayanan']"
-              class=""
-            />
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-3 gap-3">
-          <!-- Harga Awal -->
-          <div class="mt-[20px]">
-            <CustomTextfield label="Harga Dasar" placeholder="0">
-              <template #prependText>
-                <div
-                  class="font-semibold text-sm text-white bg-adameds-300 rounded-l-lg w-[53.34px] flex items-center justify-center"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomTextfield>
-          </div>
-          <!-- HNA -->
-          <div class="mt-[20px]">
-            <CustomTextfield pr label="HNA" placeholder="0">
-              <template #prependText>
-                <div
-                  class="font-semibold text-sm text-white bg-adameds-300 rounded-l-lg w-[53.34px] flex items-center justify-center"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomTextfield>
-          </div>
-          <!-- HJA/Harga Jual -->
-          <div class="mt-[20px]">
-            <CustomTextfield pr label="HJA / Harga Jual" placeholder="0">
-              <template #prependText>
-                <div
-                  class="font-semibold text-sm text-white bg-adameds-300 rounded-l-lg w-[53.34px] flex items-center justify-center"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomTextfield>
-          </div>
-        </div>
-
-        <!-- Komposisi -->
-        <div class="grid grid-cols-1">
-          <div class="mt-[20px]">
-            <CustomMultiSelect
-              placeholder="Pilih Komposisi"
-              label="Komposisi"
-              v-model="selectedTujuanOrder"
-              optionLabel=""
-              optionValue=""
-              :maxSelectedLabels="3"
-              :options="['Komposisi', 'Komposisi']"
-            />
-          </div>
-        </div>
-        <hr class="mt-[20px] border border-slate-300"/>
-        
-        <!-- Konversi Satuan -->
-        <div class="grid grid-cols-1 mt-[40px]">
-          <p class="text-xl font-bold">Konversi Satuan</p>
-        </div>
-        <hr class="mt-[10px] border border-slate-200"/>
-        
-        <div class="grid grid-cols-[50%,25%,25%]">
-          <!-- Satuan Pembelian -->
-          <div class="mt-[10px]">
-            <CustomSelect
-              place-holder="Pilih Satuan Pembelian"
-              label="Satuan Pembelian"
-              optionLabel=""
-              optionValue=""
-              :options="['Box', 'Pcs']"
-              class=""
-            />
-          </div>
-          <!-- Konversi -->
-          <div class="mt-[10px]">
-            <CustomTextfield label="Konversi" placeholder="0" class="mr-[15px] ml-[15px]">
-              <template #appendText>
-                <div
-                  class="font-semibold text-sm text-adameds-300 mr-[15px] mt-[10px]"
-                >
-                  Pcs
-                </div>
-              </template>
-            </CustomTextfield>
-          </div>
-          <!-- Tambahkan -->
-          <div class="mt-[36px]">
-            <CustomButton
-              icon="PhPlus"
-              label="Tambahkan"
-              class=""
-              @click="addRow"
-            />
-          </div>
-        </div>
-        
-        <!-- Datatable -->
-        <div class="grid grid-cols-1 mt-[20px]">
-          <DataTable
-            v-model:selection="dataKonversi2"
-            :value="newDataKonversi"
-            stripedRows
-            class="text-xs"
-            scrollable
-            scrollHeight="flex"
-          >
-            <Column headerClass="bg-adameds-50 font-semibold text-SM">
-              <template #header>
-                <div class="">No.</div>
-              </template>
-              <template #body="slotProps">
-                <div class="">
-                  {{ slotProps.data.no }}
-                </div>
-              </template>
-            </Column>
-            <Column field="pembelian" header="Satuan Pembelian" headerClass="bg-adameds-50 font-semibold text-SM">
-              <template #body="slotProps">
-                <div class="text-sm">{{ slotProps.data.pembelian }}</div>
-              </template>
-            </Column>
-            <Column field="penggunaan" header="Satuan Penggunaan" headerClass="bg-adameds-50 font-semibold text-SM">
-              <template #body="slotProps">
-                <div class="text-sm">{{ slotProps.data.penggunaan }}</div>
-              </template>
-            </Column>
-            <Column field="konversi" header="Konversi" headerClass="bg-adameds-50 font-semibold text-SM">
-              <template #body="slotProps">
-                <div class="text-sm">{{ slotProps.data.konversi }}</div>
-              </template>
-            </Column>
-            <Column headerClass="bg-adameds-50">
-              <template #header="slotProps">
-                <div class="font-semibold text-SM">
-                  Action
-                </div>
-              </template>
-              <template #body="slotProps">
-                <div class="">
-                  <CustomButton
-                    label=""
-                    background-color="bg-danger-300 rounded-lg"
-                    class="h-6 w-[26px] p-0"
-                    @click="deleteRow(slotProps.index)"
-                  >
-                    <img src="@/assets/icons/delete.svg" alt="" />
-                  </CustomButton>
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-        
-        <!-- Status -->
-        <div class="grid grid-cols-2 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-            />
-            <CustomButton label="Simpan"/>
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
   </div>
 </template>

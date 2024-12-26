@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-// FIXME Uncoment on prod
-// import { usePendapatanStore } from "@/stores/laporanFarmasi/pendapatan";
+import { usePendapatanStore } from "@/stores/laporanFarmasi/pendapatan";
 import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
@@ -21,7 +20,7 @@ const expandedRows = ref();
 const pageType = ref("");
 
 // State Management
-// const PendapatanStore = usePendapatanStore();
+const PendapatanStore = usePendapatanStore();
 const UseUtilsStore = utilsStore();
 const PendapatanPayload = ref<any[]>([]);
 const PendapatanProperties = ref({
@@ -39,26 +38,25 @@ const hasData = computed(
 // Fetch Pendapatan
 const fetchPendapatan = async () => {
   UseUtilsStore.setLoading(true);
-  // FIXME Uncoment on prod
-  // try {
-  //   const response = await PendapatanStore.getApi(
-  //     PendapatanProperties.value.page,
-  //     PendapatanProperties.value.page_size,
-  //     searchQuery.value
-  //   );
+  try {
+    const response = await PendapatanStore.getApi(
+      PendapatanProperties.value.page,
+      PendapatanProperties.value.page_size,
+      searchQuery.value
+    );
 
-  //   if (response && response.payload) {
-  //     PendapatanProperties.value.total = response.properties.total;
-  //     PendapatanPayload.value = response.payload;
-  //   } else {
-  //     PendapatanPayload.value = [];
-  //   }
-  // } catch (error) {
-  //   console.error("Failed to fetch data", error);
-  //   PendapatanPayload.value = [];
-  // } finally {
-  //   UseUtilsStore.setLoading(false);
-  // }
+    if (response && response.payload) {
+      PendapatanProperties.value.total = response.properties.total;
+      PendapatanPayload.value = response.payload;
+    } else {
+      PendapatanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    PendapatanPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;

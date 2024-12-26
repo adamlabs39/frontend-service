@@ -191,7 +191,7 @@ const updateDataFaskes = async (value: string) => {
 const loadFaskesFromLocalStorage = () => {
   const faskesData = localStorage.getItem("faskes");
   if (faskesData) {
-    try {
+    try {x
       const parsedFaskesData = JSON.parse(faskesData);
       faskesSelected.value = parsedFaskesData.faskesUuid || "";
       faskesName.value = parsedFaskesData.faskesName || "";

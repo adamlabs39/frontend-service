@@ -5,6 +5,7 @@ import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
 import { ref, watch } from "vue";
+import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -35,6 +36,7 @@ const router = useRouter();
 const route = useRoute();
 
 const showSidebar = ref(true);
+const DialogPermintaanBarang = ref(false);
 const emit = defineEmits(["filterChanged", "update:searchPoli"]);
 const searchPoli = ref("");
 
@@ -112,44 +114,47 @@ const getSVG = (svg: string) => {
         />
 
         <!-- body -->
-         <div class="overflow-auto">
-           <div v-for="(section, index) in props.sidebarBodyList" class="text-SM ">
-             <hr :class="[index == 0 ? 'mb-[20px]': 'my-[20px]']" />
-             <div v-for="row1 in section.child">
-               <div v-if="showSidebar">
-                 <div
-                   v-if="row1.type == linkType.LINK"
-                   @click="goToPage(row1.url ?? '')"
-                   class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
-                   :class="{
-                     'bg-adameds-100 rounded-lg': route.path == row1.url,
-                   }"
-                 >
-                   <component
-                     v-if="row1.icon"
-                     :is="row1.icon"
-                     :size="16"
-                     class="text-white mr-[10px]"
-                   />
-                   <div>
-                     {{ row1.name }}
-                   </div>
-                 </div>
-                 <Accordion
-                   v-else-if="row1.type == linkType.DROPDOWN"
-                   :title="row1.name"
-                   :icon="row1.icon ? row1.icon : ''"
-                   class="cursor-pointer"
-                 >
-                   <div
-                     class="flex m-[10px]"
-                     v-if="showFilterPoli && row1.name === 'Poli'"
-                   >
-                     <PhMagnifyingGlass class="my-auto mr-2" size="20" />
-                     <input
-                       type="text"
-                       class="w-full text-white bg-transparent"
-                       placeholder="Cari Poli ..."
+        <div class="overflow-auto">
+          <div
+            v-for="(section, index) in props.sidebarBodyList"
+            class="text-SM"
+          >
+            <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
+            <div v-for="row1 in section.child">
+              <div v-if="showSidebar">
+                <div
+                  v-if="row1.type == linkType.LINK"
+                  @click="goToPage(row1.url ?? '')"
+                  class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
+                  :class="{
+                    'bg-adameds-100 rounded-lg': route.path == row1.url,
+                  }"
+                >
+                  <component
+                    v-if="row1.icon"
+                    :is="row1.icon"
+                    :size="16"
+                    class="text-white mr-[10px]"
+                  />
+                  <div>
+                    {{ row1.name }}
+                  </div>
+                </div>
+                <Accordion
+                  v-else-if="row1.type == linkType.DROPDOWN"
+                  :title="row1.name"
+                  :icon="row1.icon ? row1.icon : ''"
+                  class="cursor-pointer"
+                >
+                  <div
+                    class="flex m-[10px]"
+                    v-if="showFilterPoli && row1.name === 'Poli'"
+                  >
+                    <PhMagnifyingGlass class="my-auto mr-2" size="20" />
+                    <input
+                      type="text"
+                      class="w-full text-white bg-transparent"
+                      placeholder="Cari Poli ..."
                       v-model="searchPoli"
                     />
                   </div>
@@ -219,13 +224,17 @@ const getSVG = (svg: string) => {
           </div>
         </div>
       </div>
-      <div
-        v-if="showStockBtn && showSidebar"
+      <div v-if="showStockBtn && showSidebar"
         class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
+        @click="DialogPermintaanBarang = true"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />
-        <div class="my-auto font-semibold">Stok</div>
+        <div class="my-auto font-semibold">Stok </div>
       </div>
+      <dialogPermintaanBarang 
+        v-model:isDialogVisible="DialogPermintaanBarang" 
+        :full-screen="true"  
+      />
     </div>
   </div>
 </template>

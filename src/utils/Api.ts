@@ -239,6 +239,48 @@ baseInstanceAdmisi.interceptors.response.use(
   }
 );
 
+//Farmasi
+const baseInstanceFarmasi = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_FARMASI,
+});
+
+baseInstanceFarmasi.interceptors.request.use(
+  (config) => {
+    const token =
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4gMSIsInVzZXJuYW1lIjoiZmF1enlAZ21haWwuY29tIiwiZmFza2VzVXVpZCI6IjAxOTJiMzFmLTM2NWQtNzMxYy04YjE2LTNhNDU2NWM5NDc1ZSIsImlhdCI6MTczMzk3NTAwOCwiZXhwIjoxNzMzOTc4NjA4LCJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSJ9.e40ePCnBZ42zVtXGFHVz1dNdVNk5HLugaN7nridI2qiBwCvmtxBSlU3Y-2vEu6I7IA47I8ojiVBK3w1lH7RlnWiDvlm1MJYH6AzxfL9sl31s4X3w0kmoVEvpNOIxs3b1m_g0E6LX9b2yZbnNQDi-gB_C-OaUdeUAkBKsChwypIexva5kTRzkFH6Cc6MS21fimh2080XGzKcyo7HMj4hBMVD3oi11I05NKscRth5OAitMR66-qnkmhxXygrRQ5pWrAVMpc7n6c5stsClnOWGM953OFZuWKDzOrl2vGPE_1JVZZZ5GNw2N5yTfaNMNZhkuPBEKZWCxuaBevk-iPTj9UA";
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstanceFarmasi.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 //IGD
 const baseInstanceIgd = axios.create({
   headers: {
@@ -406,5 +448,6 @@ export {
   baseInstanceIgd,
   baseInstanceRawatJalan,
   baseInstanceRawatInap,
+  baseInstanceFarmasi,
   baseInstanceRekamMedis
 };

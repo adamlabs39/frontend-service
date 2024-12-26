@@ -1,43 +1,50 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
+import { useDrugSalesStore } from "@/stores/farmasi/DrugSales";
+import * as XLSX from "xlsx-js-style";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomPaginator from '@/components/Base/CustomPaginator.vue';
-import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
-import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
-import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
+import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
+import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
 
 const filterFarmasi = ref([
-  "Semua",
-  "Rawat Jalan",
-  "Rawat Inap",
-  "IGD",
+  { label: "Semua", value: "4" },
+  { label: "IGD", value: "2" },
+  { label: "Rawat Rajan", value: "1" },
+  { label: "Rawat Inap", value: "0" },
 ]);
 
+function dateToEpoch(date: any) {
+  if (!(date instanceof Date)) {
+    throw new Error("Input harus berupa objek Date");
+  }
+  return date.getTime();
+}
+
 // Filter Menunggu Pembayaran
-const selectedPayType = ref<string>("BelumBayar");
+const selectedPayType = ref<string>("belum_lunas");
 
 const onSelectPayType = (label: string) => {
   selectedPayType.value = label;
-  // console.log(selectedPayType, 'selectedPayType');
-  
+  console.log(selectedPayType.value, 'selectedPayType');
+  fetchDrugSales()
 };
 
 // Filter Farmasi
 const selectedFilterFarmasi = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterFarmasi.value.includes(label)) {
-    // console.log(selectedFilterFarmasi, 'selectedFilterFarmasi');
     
     selectedFilterFarmasi.value = selectedFilterFarmasi.value.filter(
       (item) => item != label
@@ -45,97 +52,8 @@ const onPoliSelect = (label: string) => {
   } else {
     selectedFilterFarmasi.value.push(label);
   }
-};
-
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    layanan: "Rawat Inap",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    layanan: "Rawat Jalan",
-    harga: '10000',
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    no_antrian: null,
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: null,
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    layanan: "IGD",
-    harga: '10000',
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-]);
-
-const handleRowsUpdate = (rows: number) => {
-};
-const handlePageUpdate = (page: number) => {
+  fetchDrugSales()
+  console.log(selectedFilterFarmasi.value, 'selectedFilterFarmasi');  
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -148,9 +66,70 @@ const changeSection = (label: string) => {
   }
 };
 
-const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Beli Obat");
+// State Management
+const DrugSalesStore = useDrugSalesStore();
+const UseUtilsStore = utilsStore();
+const DrugSalesPayload = ref<any[]>([]);
+const DrugSalesProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+
+// Check if Data Exists
+const hasData = computed(
+  () => DrugSalesPayload.value && DrugSalesPayload.value.length > 0
+);
+
+// Fetch Drug Sales
+const fetchDrugSales = async () => {
+  UseUtilsStore.setLoading(true);
+
+  const selectedTest = [...selectedFilterFarmasi.value];
+  try {
+    const response = await DrugSalesStore.getApi(
+      selectedPayType.value,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      selectedTest.join(''),
+      searchQuery.value,
+      DrugSalesProperties.value.page,
+      DrugSalesProperties.value.page_size,
+    );
+
+    if (response && response.payload) {
+      DrugSalesProperties.value.total = response.properties.total;
+      DrugSalesPayload.value = response.payload;
+    } else {
+      DrugSalesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    DrugSalesPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchDrugSales();
+  }, 500); 
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  DrugSalesProperties.value.page = event.page + 1;
+  DrugSalesProperties.value.page_size = event.rows;
+  fetchDrugSales();
+};
+
+onMounted(() => {
+  fetchDrugSales();
+});
 </script>
 
 <template>
@@ -185,6 +164,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / address / No. RM"
@@ -218,16 +198,12 @@ const showDetail = (event: DataTableRowClickEvent) => {
             <!-- Filter Bayar -->
             <div class="grid grid-cols-3 mt-[15px]">
               <CustomButton
-                @click="onSelectPayType('BelumBayar')"
+                @click="onSelectPayType('belum_lunas')"
                 label="BELUM BAYAR"
-                :outlined="selectedPayType != 'BelumBayar'"
+                :outlined="selectedPayType != 'belum_lunas'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'BelumBayar' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'BelumBayar' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'belum_lunas' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'belum_lunas' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="font-semibold"
               />
               <CustomButton
@@ -235,12 +211,8 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 label="LUNAS"
                 :outlined="selectedPayType != 'Lunas'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold "
               />
               <CustomButton
@@ -248,12 +220,8 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 label="DIBATALKAN"
                 :outlined="selectedPayType != 'Dibatalkan'"
                 borderColor="border-adameds-300"
-                :textColor="
-                  selectedPayType != 'Dibatalkan' ? 'text-adameds-300' : 'text-white'
-                "
-                :backgroundColor="
-                  selectedPayType != 'Dibatalkan' ? 'bg-transparent' : 'bg-adameds-300'
-                "
+                :textColor="selectedPayType != 'Dibatalkan' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'Dibatalkan' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold"
               />
             </div>
@@ -264,15 +232,16 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 <div class="flex">
                   <span class="font-semibold text-grey-300">|</span>
                   <CustomChip
-                    v-for="(Pelayanan, index) in filterFarmasi" :key="Pelayanan + index"
-                    :label="Pelayanan"
+                    v-for="(Pelayanan, index) in filterFarmasi" :key="index"
+                    :label="Pelayanan.label"
+                    :value="Pelayanan.value"
                     borderColor="border-adameds-300"
                     bgColor="bg-adameds-50"
                     iconColor="text-adameds-300"
                     textColor="text-adameds-300"
                     customClass="h-7"
                     class="ml-[10px]"
-                    :isSelected="selectedFilterFarmasi.includes(Pelayanan)"
+                    :isSelected="selectedFilterFarmasi.includes(Pelayanan.value)"
                     @selected="onPoliSelect"
                     selectedColor="bg-adameds-300 border-adameds-300"
                   />
@@ -297,9 +266,10 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          v-if="itemsPasien.length"
-          :value="itemsPasien"
+          v-else
+          :value="DrugSalesPayload"
           tableStyle="min-width: 50rem"
           class="mt-2"
           scrollable
@@ -348,13 +318,6 @@ const showDetail = (event: DataTableRowClickEvent) => {
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            :rows="10"
-            :totalRecords="100"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
-          />
         </div>
       </template>
     </Card>

@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useDosageFormStore } from "@/stores/datamasterFarmasi/DosageForm";
+import { useHowToUseStore } from "@/stores/datamasterFarmasi/HowToUse";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -27,8 +27,8 @@ const props = defineProps({
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode Satuan harus diisi"),
-    name: yup.string().required("Nama Satuan harus diisi"),
+    code: yup.string().required("Kode Cara Pakai harus diisi"),
+    caraPakai: yup.string().required("Nama Cara Pakai harus diisi"),
     status: yup.bool().default(false),
   }).noUnknown()
 );
@@ -36,10 +36,11 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
-const bentukSediaanStore = useDosageFormStore();
+
+const HowToUseStore = useHowToUseStore();
 
 const [code] = defineField("code");
-const [name] = defineField("name");
+const [caraPakai] = defineField("caraPakai");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -51,11 +52,11 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      const response = await bentukSediaanStore.putApi(uuid, values);
+      const response = await HowToUseStore.putApi(uuid, values);
       console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
-      const response = await bentukSediaanStore.postApi(values);
+      const response = await HowToUseStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
@@ -101,35 +102,35 @@ watch(
 </script>
 
 <template>
-  <CustomDialog 
+    <CustomDialog 
     :visible="isDialogVisible"
-    @update:visible="updateVisibility"  
+    @update:visible="updateVisibility" 
     width="600px">
       <template #header>
         <div class="grid grid-cols-1">
-          <p>Tambah Bentuk Sediaan</p>
+          <p>Tambah Data Cara Pakai</p>
         </div>
       </template>
       <template #body>
         <div class="grid grid-cols-[30%,70%]">
           <div class="mt-[20px]">
             <CustomTextfield
-              v-model="code"
-              label="Kode Bentuk Sediaan"
-              placeholder="Kode Bentuk Sediaan"
-              class="mr-2"
+              v-model = "code"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
+              label="Kode Cara Pakai"
+              placeholder="Kode Cara Pakai"
+              class="mr-2"
             />
           </div>
           <div class="mt-[20px]">
             <CustomTextfield
-              v-model="name"
-              label="Nama Bentuk Sediaan"
-              placeholder="Nama Bentuk Sediaan"
+              v-model = "caraPakai"
+              :invalid="!!errors.caraPakai"
+              :invalidMessage="errors.caraPakai"
+              label="Nama Cara Pakai"
+              placeholder="Nama Cara Pakai"
               class="ml-2"
-              :invalid="!!errors.name"
-              :invalidMessage="errors.name"
             />
           </div>
         </div>
