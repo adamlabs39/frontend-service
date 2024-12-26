@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeMount, onMounted, ref, type PropType } from "vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
 import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -7,6 +9,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCanvasDrawer from "./CustomCanvasDrawer.vue";
 import OhisInput from "./OhisInput.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits(["editAsesmen"]);
 
 const props = defineProps({
   header: {
@@ -17,9 +25,21 @@ const props = defineProps({
     type: String,
     default: "form",
   },
+  selectedPemeriksaanFisik: {
+    type: String as PropType<string | null>,
+    default: null,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const keadaanUmum = ref("baik");
+const keadaanUmum = ref("");
 
 const canvasKepala = ref<HTMLCanvasElement | null>(null);
 const canvasMata = ref<HTMLCanvasElement | null>(null);
@@ -43,33 +63,44 @@ const canvasEkstremBawah = ref<HTMLCanvasElement | null>(null);
 const canvasMuskuloskeletal = ref<HTMLCanvasElement | null>(null);
 const canvasPemeriksaanLainya = ref<HTMLCanvasElement | null>(null);
 
+const arrCanvas = ref<any[]>([
+  canvasKepala,
+  canvasMata,
+  canvasTelingaKanan,
+  canvasTelingaKiri,
+  canvasHidung,
+  canvasMulut,
+  canvasRonggaMulut,
+  // FIXME Belum Ada
+  // canvasOHIS,
+  canvasTenggorkan,
+  canvasLeher,
+  canvasLeherDepan,
+  canvasDada,
+  canvasJantung,
+  canvasParu,
+  canvasAbdomen,
+  canvasAnus,
+  canvasUrogenital,
+  canvasEkstremAtas,
+  canvasEkstremBawah,
+  canvasMuskuloskeletal,
+  canvasPemeriksaanLainya,
+]);
+const openFilledCanvas = () => {
+  arrCanvas.value.forEach((canvasRef) => {
+    if (
+      canvasRef.value &&
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
+        (canvasRef.value as any).props?.type.toLowerCase()
+      ]
+    ) {
+      (canvasRef.value as any).open();
+    }
+  });
+};
 const closeAllCanvas = () => {
-  // Daftar semua ref canvas
-  const canvases = [
-    canvasKepala,
-    canvasMata,
-    canvasTelingaKanan,
-    canvasTelingaKiri,
-    canvasHidung,
-    canvasMulut,
-    canvasRonggaMulut,
-    canvasOHIS,
-    canvasTenggorkan,
-    canvasLeher,
-    canvasLeherDepan,
-    canvasDada,
-    canvasJantung,
-    canvasParu,
-    canvasAbdomen,
-    canvasAnus,
-    canvasUrogenital,
-    canvasEkstremAtas,
-    canvasEkstremBawah,
-    canvasMuskuloskeletal,
-    canvasPemeriksaanLainya,
-  ];
-
-  canvases.forEach((canvasRef) => {
+  arrCanvas.value.forEach((canvasRef) => {
     if (canvasRef.value) {
       (canvasRef.value as any).close();
       if (typeof (canvasRef.value as any).close === "function") {
@@ -77,6 +108,47 @@ const closeAllCanvas = () => {
     }
   });
 };
+
+const submitAllCanvas = () => {
+  let tempObjectData: any = {};
+  arrCanvas.value.forEach((canvasRef) => {
+    if (canvasRef.value) {
+      let data = (canvasRef.value as any).saveCanvas();
+      tempObjectData = { ...tempObjectData, ...data };
+    }
+  });
+  return tempObjectData;
+};
+
+const onSubmit = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const tempCanvasData = submitAllCanvas();
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "pemeriksaan_fisik",
+      data: {
+        keadaanUmum: keadaanUmum.value,
+        ...tempCanvasData,
+      },
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  if (props.selectedPemeriksaanFisik) {
+    goToEdit(props.selectedPemeriksaanFisik);
+  }
+});
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -88,6 +160,13 @@ const close = () => {
   if (accordion.value) {
     (accordion.value as any).close();
   }
+};
+const goToEdit = (ref: string) => {
+  arrCanvas.value.forEach((canvasRef) => {
+    if (canvasRef.value && (canvasRef.value as any).props?.type == ref) {
+      (canvasRef.value as any).open();
+    }
+  });
 };
 
 defineExpose({
@@ -129,7 +208,7 @@ defineExpose({
             <div class="flex">
               <div class="border-l border-adameds-300"></div>
               <CustomButton
-                @click="() => {}"
+                @click="openFilledCanvas()"
                 class="my-auto !rounded-md ml-5 mx-[10px]"
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
@@ -150,7 +229,10 @@ defineExpose({
           </div>
         </div>
         <div v-else class="py-5 flex flex-col gap-[19px]">
-          <CustomInfoRow label="Keadaan Umum" value="Baik" />
+          <CustomInfoRow
+            label="Keadaan Umum"
+            :value="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum"
+          />
           <hr class="border-grey-200" />
         </div>
 
@@ -160,6 +242,8 @@ defineExpose({
           type="Kepala"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Kepala')"
         />
         <CustomCanvasDrawer
           ref="canvasMata"
@@ -167,6 +251,7 @@ defineExpose({
           type="Mata"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKanan"
@@ -174,6 +259,7 @@ defineExpose({
           type="Telinga Kanan"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKiri"
@@ -181,6 +267,7 @@ defineExpose({
           type="Telinga Kiri"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasHidung"
@@ -188,6 +275,7 @@ defineExpose({
           type="Hidung"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasMulut"
@@ -195,6 +283,7 @@ defineExpose({
           type="Mulut"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasRonggaMulut"
@@ -202,12 +291,14 @@ defineExpose({
           type="Rongga Mulut"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <OhisInput
           ref="canvasOHIS"
           header="Oral Hyhiene Index Simplified (OHI-S)"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasTenggorkan"
@@ -215,6 +306,7 @@ defineExpose({
           type="Tenggorokan"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasLeher"
@@ -222,6 +314,7 @@ defineExpose({
           type="Leher"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasLeherDepan"
@@ -229,6 +322,7 @@ defineExpose({
           type="Leher Depan"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasDada"
@@ -236,6 +330,7 @@ defineExpose({
           type="Dada"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasJantung"
@@ -243,6 +338,7 @@ defineExpose({
           type="Jantung"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasParu"
@@ -250,6 +346,7 @@ defineExpose({
           type="Paru"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasAbdomen"
@@ -257,6 +354,7 @@ defineExpose({
           type="Abdomen"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasAnus"
@@ -264,6 +362,7 @@ defineExpose({
           type="Anus"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasUrogenital"
@@ -271,6 +370,7 @@ defineExpose({
           type="Urogenital"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremAtas"
@@ -278,6 +378,7 @@ defineExpose({
           type="Ekstermitas Atas"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremBawah"
@@ -285,6 +386,7 @@ defineExpose({
           type="Ekstermitas Bawah"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasMuskuloskeletal"
@@ -292,6 +394,7 @@ defineExpose({
           type="Muskuloskeletal"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
         <CustomCanvasDrawer
           ref="canvasPemeriksaanLainya"
@@ -299,10 +402,11 @@ defineExpose({
           type="Pemeriksaan Lainya"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
         />
       </div>
     </template>
-    <template #footer>
+    <template #footer v-if="method == 'form'">
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           label="Reset"
@@ -310,7 +414,7 @@ defineExpose({
           borderColor="border-2 border-grey-200"
           outlined
         />
-        <CustomButton label="Simpan" />
+        <CustomButton @click="onSubmit" label="Simpan" />
         <!-- <CustomButton v-if="props.method=='detail'" label="Edit" /> -->
       </div>
     </template>

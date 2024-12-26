@@ -19,14 +19,14 @@ const errorApiHandler = (error: any) => {
   let tempDetail = ``;
   if (error.response.data.message) {
     if (
-      (error.response.data.message == "Authentikasi gagal" ||
+      error.response.data.message == "token tidak valid!" ||
+      ((error.response.data.message == "Authentikasi gagal" ||
         error.response.data.message == "Authorization gagal" ||
-        error.response.data.message == "jwt expired" ||
-        error.response.data.message == "token tidak valid!") &&
-      (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
-        error.response.data.errors[0].type == "Invalid signature" ||
-        (error.response.data.errors[0].type == "auth" &&
-          error.response.data.errors[0].message == "jwt expired"))
+        error.response.data.message == "jwt expired") &&
+        (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
+          error.response.data.errors[0].type == "Invalid signature" ||
+          (error.response.data.errors[0].type == "auth" &&
+            error.response.data.errors[0].message == "jwt expired")))
     ) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");

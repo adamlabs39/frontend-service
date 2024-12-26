@@ -17,7 +17,7 @@ import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/Pemeriksa
 import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/PemeriksaanGigi.vue";
 import PemeriksaanMata from "@/components/RekamMedis/PemeriksaanMata/PemeriksaanMata.vue";
 import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
-import type { PropType } from "vue";
+import { type PropType } from "vue";
 
 const emit = defineEmits([]);
 
@@ -25,6 +25,10 @@ const props = defineProps({
   selectedAssesment: {
     type: String,
     default: "Alergi",
+  },
+  selectedPemeriksaanFisik: {
+    type: String as PropType<string | null>,
+    default: null,
   },
   rmUuid: {
     type: String,
@@ -139,6 +143,9 @@ const props = defineProps({
     <PemeriksaanFisik
       v-if="selectedAssesment == 'Pemeriksaan Fisik'"
       initialState="0"
+      :selectedPemeriksaanFisik="selectedPemeriksaanFisik"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <PemeriksaanGigi
       v-if="selectedAssesment == 'Pemeriksaan Gigi'"

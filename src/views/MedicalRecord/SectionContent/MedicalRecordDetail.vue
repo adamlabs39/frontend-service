@@ -145,6 +145,7 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.pemeriksaanFisik"
         :ref="refs.pemeriksaanFisik"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Pemeriksaan Fisik', $event)"
       />
       <PemeriksaanGigi
         v-if="rmAssesmentData.pemeriksaanGigi"

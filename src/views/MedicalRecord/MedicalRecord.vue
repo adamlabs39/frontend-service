@@ -81,6 +81,7 @@ const rmDate = ref("");
 const rmDateData = ref<any>(null);
 
 const selectedAssesment = ref("Alergi");
+const selectedPemeriksaanFisik = ref<null | string>(null);
 const selectedSoap = ref("Subjective");
 const selectedSoapier = ref("Subjective");
 
@@ -178,6 +179,7 @@ const resetInitialDialog = () => {
   selectedSessionTab.value = undefined;
   selectedTab.value = "rekam-medis";
   selectedAssesment.value = "Alergi";
+  selectedPemeriksaanFisik.value = null;
   selectedSoap.value = "Subjective";
   selectedSoapier.value = "Subjective";
 };
@@ -427,9 +429,10 @@ defineExpose({ showDialogRM });
               :rmType="rmType"
               :rmAssesmentData="rekamMedisStore.openedRekamMedis.data"
               @editAsesmen="
-                (data) => {
+                (data, editedPemeriksaanFisik) => {
                   selectedTab = 'asesmen';
                   selectedAssesment = data;
+                  selectedPemeriksaanFisik = editedPemeriksaanFisik ?? null;
                 }
               "
             />
@@ -437,6 +440,7 @@ defineExpose({ showDialogRM });
             <MedicalRecordAssesment
               v-if="selectedTab == 'asesmen'"
               :selectedAssesment="selectedAssesment"
+              :selectedPemeriksaanFisik="selectedPemeriksaanFisik"
               :rmUuid="patientData.rekamMedisUuid"
               :sessionUuid="selectedSessionData.id"
               :asesmenData="rekamMedisStore.openedRekamMedis.data"

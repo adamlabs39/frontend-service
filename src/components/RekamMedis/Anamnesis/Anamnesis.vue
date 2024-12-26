@@ -117,6 +117,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { isCanvasEmpty } from "./pemeriksaanFisikUtils";
+
+const emit = defineEmits(["editAsesmen"]);
 
 const props = defineProps({
   header: {
@@ -18,6 +21,10 @@ const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  openedData: {
+    type: Object as PropType<any>,
+    default: null,
   },
 });
 
@@ -239,14 +246,24 @@ const drawing = (e: MouseEvent) => {
   }
 };
 
+const keterangan = ref("");
 const saveCanvas = () => {
-  const dataURL = canvas.value!.toDataURL("image/png");
-  console.log(dataURL);
+  let tempData: any = {};
+  let dataURL = canvas.value!.toDataURL("image/png");
+  if (keterangan.value || !isCanvasEmpty(dataURL)) {
+    tempData[props.type.toLowerCase()] = true;
+  } else {
+    dataURL = "";
+    tempData[props.type.toLowerCase()] = false;
+  }
+  tempData[`gambar_${props.type.toLowerCase()}`] = dataURL;
+  tempData[`ket_${props.type.toLowerCase()}`] = keterangan.value;
+  return tempData;
 };
 
 const loadImage = () => {
   const img = new Image();
-  img.src = "";
+  img.src = props.openedData ? props.openedData[`gambar${props.type}`] : "";
   img.onload = () => {
     ctx.value!.drawImage(img, 0, 0);
   };
@@ -260,6 +277,10 @@ onMounted(() => {
 
     // Set default stroke color
     ctx.value!.strokeStyle = `#${colors.value}`;
+    keterangan.value = props.openedData
+      ? props.openedData[`ket${props.type}`]
+      : "";
+    loadImage();
   }
 
   if (canvas2.value) {
@@ -268,6 +289,26 @@ onMounted(() => {
     ctx2.value = canvas2.value!.getContext("2d");
   }
 });
+
+watch(
+  () => canvas.value,
+  (newCanvas) => {
+    if (newCanvas) {
+      // const canvasElement = document.getElementById("canvas");
+      // canvas.value = canvasElement as HTMLCanvasElement;
+      ctx.value = canvas.value!.getContext("2d");
+
+      // Set default stroke color
+      ctx.value!.strokeStyle = `#${colors.value}`;
+      keterangan.value = props.openedData
+        ? props.openedData[`ket${props.type}`]
+        : "";
+      loadImage();
+
+      ctx2.value = canvas2.value!.getContext("2d");
+    }
+  }
+);
 
 const getSVG = (svg: string) => {
   const imgUrl = new URL(
@@ -336,6 +377,8 @@ const close = () => {
 defineExpose({
   open,
   close,
+  saveCanvas,
+  props,
 });
 </script>
 
@@ -545,6 +588,7 @@ defineExpose({
             </div>
             <CustomTextArea
               v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
+              v-model="keterangan"
               :label="'Keterangan ' + header"
               class="mt-[30px]"
               :placeholder="'Keterangan ' + header.toLowerCase()"
@@ -556,7 +600,14 @@ defineExpose({
           v-if="props.method == 'detail'"
           class="py-5 flex flex-col gap-[19px]"
         >
-          <CustomInfoRow label="Tanda Pada Gambar" value="Tidak Ada" />
+          <CustomInfoRow
+            label="Tanda Pada Gambar"
+            :value="
+              openedData && openedData[`gambar${props.type}`]
+                ? 'Ada'
+                : 'Tidak Ada'
+            "
+          />
           <div v-if="type == 'Anterior'">
             <CustomInfoRow
               label="Keterangan Oculus Dextra"
@@ -568,10 +619,13 @@ defineExpose({
           <CustomInfoRow
             v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
             :label="`Keterangan ${type}`"
-            value="Nama Asesmen Ulang"
+            :value="openedData ? openedData[`ket${props.type}`] : '-'"
           />
           <hr class="border-grey-200" />
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow
+            label="Petugas Input"
+            :value="openedData ? openedData.petugas : '-'"
+          />
         </div>
       </template>
       <template v-if="method != 'form'" #footer>
@@ -581,7 +635,7 @@ defineExpose({
             label="Detail"
             icon="DetailIcon"
           />
-          <CustomButton label="Edit" />
+          <CustomButton label="Edit" @click="emit('editAsesmen')" />
         </div>
       </template>
     </CustomAccordion>
@@ -615,7 +669,7 @@ defineExpose({
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomButton label="Edit" />
+          <CustomButton label="Edit" @click="emit('editAsesmen')" />
         </div>
       </template>
     </CustomDialog>
