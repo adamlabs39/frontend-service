@@ -10,6 +10,7 @@ import {
   baseInstanceRawatJalan,
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
+  baseInstanceInventory,
 } from "./Api";
 import { app } from "@/main";
 
@@ -505,7 +506,7 @@ const apiRawatInapGet = async (url: string, data: object) => {
   } catch (error) {
     errorApiHandler(error);
   }
-}
+};
 
 const apiRawatInapPost = async (url: string, data: object) => {
   try {
@@ -514,7 +515,7 @@ const apiRawatInapPost = async (url: string, data: object) => {
   } catch (error) {
     errorApiHandler(error);
   }
-}
+};
 const apiRawatInapPut = async (url: string, data: object) => {
   try {
     let response = await baseInstanceRawatInap.put(url, data);
@@ -522,7 +523,35 @@ const apiRawatInapPut = async (url: string, data: object) => {
   } catch (error) {
     errorApiHandler(error);
   }
-}
+};
+
+// Inventory
+const apiInventoryGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+const apiInventoryPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+const apiInventoryPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -563,5 +592,8 @@ export {
   apiRekamMedisPut,
   apiRawatInapGet,
   apiRawatInapPost,
-  apiRawatInapPut
+  apiRawatInapPut,
+  apiInventoryGet,
+  apiInventoryPost,
+  apiInventoryPut,
 };

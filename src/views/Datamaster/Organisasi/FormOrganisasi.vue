@@ -409,6 +409,7 @@ watch(
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
+        <!-- {{ payload }} -->
         <div class="font-bold leading-8 text-heading">Data Organisasi</div>
         <hr class="border-grey-200" />
         <CustomInfoRow label="Kode Organisasi" :value="payload.code" />

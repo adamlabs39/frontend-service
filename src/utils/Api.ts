@@ -398,7 +398,6 @@ baseInstanceRawatJalan.interceptors.response.use(
 );
 
 // Rawat Inap Perpindahan Bangsal
-
 const baseInstanceRawatInap = axios.create({
   headers: {
     common: {
@@ -439,8 +438,6 @@ baseInstanceRawatInap.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-
 
 // Rekam Medis
 const baseInstanceRekamMedis = axios.create({
@@ -483,6 +480,47 @@ baseInstanceRekamMedis.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// INVENTORY 
+const baseInstanceInventory = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_INVENTORY,
+});
+
+baseInstanceInventory.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstanceInventory.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 export {
   baseInstance,
   authInstance,
@@ -494,5 +532,6 @@ export {
   baseInstanceRawatJalan,
   baseInstanceRawatInap,
   baseInstanceFarmasi,
-  baseInstanceRekamMedis
+  baseInstanceRekamMedis,
+  baseInstanceInventory
 };

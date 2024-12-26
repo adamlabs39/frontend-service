@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import HeaderDatamaster from "../../Layout/HeaderDatamaster.vue";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import FileUpload from "primevue/fileupload";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -9,13 +9,32 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import DialogTambahSupplier from "@/views/Inventory/Page/Datamaster/DialogTambahSupplier.vue";
 import DialogDetailSupplier from "./DialogDetailSupplier.vue";
 
+import {useSupplierStore} from "@/stores/inventory/supplier"
+import { utilsStore } from "@/stores/utils";
+import type { FilterAdmisi } from "@/utils/Interface";
+import DialogEditSupplier from "@/views/Inventory/Page/Datamaster/DialogEditSupplier.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+
+// STORE
+const supplierStore = useSupplierStore()
+const storeUtils = utilsStore();
+
+// PROPERTIES FOR PAGINATION
+const properties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// Data Supplier From API
+const supplierData = ref<any>([]);
+
+
 const route = useRoute();
 
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([{}]);
-const datamasterSupplierData = ref<any | null>(null);
 
-const detailSupplierData = ref(null);
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
@@ -26,56 +45,177 @@ const updatePageType = (path: string) => {
       label: pageType.value == "supplier" ? "Supplier" : "",
     },
   ];
+  reload()
   //   console.log(pageType.value);
 };
+
+// FETCH
+const fetchDatamasterSupplier = async (filter: FilterSupplier = {}) => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await supplierStore.getAllSupplier(filter);
+    if (response && response.payload) {
+      properties.value.total = response.properties.total;
+      return response.payload;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  }finally {
+    storeUtils.setLoading(false);
+  }
+}
+
+// Reload
+const reload = async() => {
+  let filter = {} as FilterSupplier;
+  filter = setFilter();
+  supplierData.value = await fetchDatamasterSupplier(filter)
+}
+
+// Filter
+const setFilter = () => {
+  let filter = {} as FilterSupplier
+  filter.page = properties.value.page
+  filter.limit = properties.value.page_size;
+  filter.name = name.value;
+  return filter
+
+}
+
+interface FilterSupplier{
+  page?: number,
+  limit?: number,
+  name?: string
+}
+
+// Menyimpan emit ke variabel
+const name = ref("");
+
+
+// SEARCH QUERY
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(name, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    reload()
+  }, 500);
+});
+
+// Event emit FROM HEADER
+const handleValueSupplier = (value:string) => {
+  name.value = value
+}
+
+
+
+// DIALOG CONFIGURATION
+const dialogTambahSupplier = ref({
+  isVisible: false,
+  title: "",
+  data:null
+});
+const dialogDetailSupplier = ref({
+  isVisible: false,
+  title: "",
+  data:null
+});
+
+const dialogEditSupplier = ref<{
+  isVisible: boolean;
+  title: string;
+  data: Record<string, any> | undefined;
+}>({
+  isVisible: false,
+  title: "",
+  data: undefined
+});
+
+// Function ADD,DETAIL,EDIT
+function handleTambahSupplier() {
+  dialogTambahSupplier.value.isVisible = true;
+  dialogTambahSupplier.value.title = "Tambah Data Supplier";
+}
+function handleDetailSupplier(values: any) {
+  // console.log(values.data);
+  dialogDetailSupplier.value.isVisible = true;
+  dialogDetailSupplier.value.title = "Detail Data Supplier";
+  dialogDetailSupplier.value.data = values.data;
+}
+function handleEditSupplier(values: any) {
+  // console.log("wwww")
+  dialogEditSupplier.value.isVisible = true;
+  dialogEditSupplier.value.title = "Edit Data Supplier";
+  dialogEditSupplier.value.data = values;
+}
+
+// DARI DIALOG DETAIL KE DIALOG EDIT
+function handleDetailToEdit() {
+  dialogDetailSupplier.value.isVisible = false;
+  handleEditSupplier(dialogDetailSupplier.value.data);
+}
+
+// Function untuk menambah data baru ke array datamasterSupplierData
+const handleSupplierDataSubmit = async (data: any) => {
+  // console.log(data)
+  storeUtils.setLoading(true)
+  try {
+    const payload = {
+    code: data.code,
+    name: data.name,
+    alamat: data.alamat,
+    noTlp: data.noTelpon,
+    status: data.status,
+    provinsiCode: data.selectedProvinceId,
+    kabupatenCode: data.selectedRegencyId,
+    kecamatanCode: data.selectedDistrictId,
+    kelurahanCode: data.selectedVillageId,
+  };
+    const response = await supplierStore.createSupplier(payload)
+    console.log(response)
+  } catch (error) {
+     console.error("Failed to fetch data", error);
+  }finally {
+    storeUtils.setLoading(false)
+  }
+};
+// Function untuk mengedit data supplier
+const handleSubmitEditSupplier = async (data:any) => {
+  // console.log(data)
+  storeUtils.setLoading(true)
+  try {
+    const uuidToEdit = dialogEditSupplier.value.data?.uuid
+    // console.log(uuid)
+    const response = await supplierStore.updateSupplier(uuidToEdit, data)
+   
+    if(response.message == "data berhasil diupdate"){
+      reload()
+    }
+  } catch (error) {
+     console.error("Failed to fetch data", error);
+  }finally {
+    storeUtils.setLoading(false)
+  }
+}
+
+// Pagination
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  reload();
+};
+
+
+
 
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
   updatePageType(route.path);
-  datamasterSupplierData.value = [
-    {
-      id: 1,
-      code: "SPL1234",
-      name: "Supplier 1",
-      provinsi: "Jawa Timur",
-      kabupaten: "Surabaya",
-      kecamatan:"Keputih",
-      noTelpon: "022-12345",
-      status: true,
-      kategoriItem:"1",
-      alamat: "Jalan Jalan",
-    },
-  ];
+  
 });
-
-const dialogTambahSupplier = ref({
-  isVisible: false,
-  title: "",
-});
-const dialogDetailSupplier = ref({
-  isVisible: false,
-  title: "",
-});
-
-function handleTambahSupplier() {
-  dialogTambahSupplier.value.isVisible = true;
-  dialogTambahSupplier.value.title = "Tambah Data Supplier";
-}
-
-function handleDetailSupplier(values: any) {
-//   console.log(values.data);
-
-  dialogDetailSupplier.value.isVisible = true;
-  dialogDetailSupplier.value.title = "Detail Data Supplier";
-  detailSupplierData.value = values.data;
-}
-
-// Function untuk menambah data baru ke array datamasterSupplierData
-const handleSupplierDataSubmit = (data: any) => {
-  datamasterSupplierData.value.push(data); // Tambah data yang diterima ke array
-};
 </script>
 
 <template>
@@ -89,12 +229,14 @@ const handleSupplierDataSubmit = (data: any) => {
         :data-bread-crumb="dataBreadCrumb"
         :page-type="pageType"
         @tambah-supplier="handleTambahSupplier"
+        @update:valueNoSupplier = "handleValueSupplier"
       >
       </HeaderDatamaster>
     </template>
     <template #content>
       <DataTable
-        :value="datamasterSupplierData"
+      v-if="supplierData.length > 0"
+        :value="supplierData"
         @row-click="handleDetailSupplier"
         tableStyle="min-width: 50rem"
         scrollable
@@ -137,7 +279,7 @@ const handleSupplierDataSubmit = (data: any) => {
           </template>
           <template #body="slotProps">
             <div>
-              <div class="text-SM">{{ slotProps.data.noTelpon }}</div>
+              <div class="text-SM">{{ slotProps.data.noTlp }}</div>
             </div>
           </template>
         </Column>
@@ -172,8 +314,9 @@ const handleSupplierDataSubmit = (data: any) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
+                @click = "handleEditSupplier(slotProps.data)"
               >
-                <img src="@/assets/icons/edit.svg" alt="Edit" />
+                <img src="@/assets/icons/edit.svg" alt="Edit"/>
               </CustomButton>
               <CustomButton
                 label=""
@@ -186,16 +329,25 @@ const handleSupplierDataSubmit = (data: any) => {
           </template>
         </Column>
       </DataTable>
+      <NoData v-else />
       <DialogTambahSupplier
         v-model:is-dialog-visible="dialogTambahSupplier.isVisible"
         :title="dialogTambahSupplier.title"
         @submit-supplier-data="handleSupplierDataSubmit"
       />
 
+      <DialogEditSupplier
+        v-model:is-dialog-visible="dialogEditSupplier.isVisible"
+        :title="dialogEditSupplier.title"
+        :edit-supplier-data="dialogEditSupplier.data"
+        @submit-edit ="handleSubmitEditSupplier"
+      />
+
       <DialogDetailSupplier
         v-model:is-dialog-visible="dialogDetailSupplier.isVisible"
         :title="dialogDetailSupplier.title"
-        :detail-data="detailSupplierData"
+        :detail-data="dialogDetailSupplier.data"
+        @clickEditDialog = "handleDetailToEdit"
       />
     </template>
     <template #footer>
@@ -229,15 +381,11 @@ const handleSupplierDataSubmit = (data: any) => {
         </div>
 
         <!-- Pagination Component -->
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomPaginator
+          :rows="properties.page_size"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>
@@ -248,3 +396,4 @@ const handleSupplierDataSubmit = (data: any) => {
   @apply font-semibold;
 }
 </style>
+
