@@ -252,6 +252,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Mata')"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKanan"
@@ -260,6 +261,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Telinga Kanan')"
         />
         <CustomCanvasDrawer
           ref="canvasTelingaKiri"
@@ -268,6 +270,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Telinga Kiri')"
         />
         <CustomCanvasDrawer
           ref="canvasHidung"
@@ -276,6 +279,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Hidung')"
         />
         <CustomCanvasDrawer
           ref="canvasMulut"
@@ -284,6 +288,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Mulut')"
         />
         <CustomCanvasDrawer
           ref="canvasRonggaMulut"
@@ -292,6 +297,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Rongga Mulut')"
         />
         <OhisInput
           ref="canvasOHIS"
@@ -307,6 +313,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Tenggorokan')"
         />
         <CustomCanvasDrawer
           ref="canvasLeher"
@@ -315,6 +322,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Leher')"
         />
         <CustomCanvasDrawer
           ref="canvasLeherDepan"
@@ -323,6 +331,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Leher Depan')"
         />
         <CustomCanvasDrawer
           ref="canvasDada"
@@ -331,6 +340,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Dada')"
         />
         <CustomCanvasDrawer
           ref="canvasJantung"
@@ -339,6 +349,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Jantung')"
         />
         <CustomCanvasDrawer
           ref="canvasParu"
@@ -347,6 +358,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Paru')"
         />
         <CustomCanvasDrawer
           ref="canvasAbdomen"
@@ -355,6 +367,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Abdomen')"
         />
         <CustomCanvasDrawer
           ref="canvasAnus"
@@ -363,6 +376,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Anus')"
         />
         <CustomCanvasDrawer
           ref="canvasUrogenital"
@@ -371,6 +385,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Urogenital')"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremAtas"
@@ -379,6 +394,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Ekstermitas Atas')"
         />
         <CustomCanvasDrawer
           ref="canvasEkstremBawah"
@@ -387,6 +403,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Ekstermitas Bawah')"
         />
         <CustomCanvasDrawer
           ref="canvasMuskuloskeletal"
@@ -395,6 +412,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Muskuloskeletal')"
         />
         <CustomCanvasDrawer
           ref="canvasPemeriksaanLainya"
@@ -403,6 +421,7 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
+          @editAsesmen="emit('editAsesmen', 'Pemeriksaan Lainya')"
         />
       </div>
     </template>
