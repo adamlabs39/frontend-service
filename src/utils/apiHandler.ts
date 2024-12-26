@@ -6,6 +6,7 @@ import {
   baseInstanceIgd,
   baseInstanceFarmasi,
   authInstance,
+  baseInstancePembayaran,
   baseInstanceRawatJalan,
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
@@ -218,6 +219,56 @@ const apiDatamasterPut = async (url: string, data: object) => {
 const apiDatamasterDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstanceDatamaster.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: "Data berhasil dihapus",
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+//Pembayaran
+const apiPembayaranGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstancePembayaran.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiPembayaranPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstancePembayaran.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    console.log("response", response);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiPembayaranPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstancePembayaran.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiPembayaranDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstancePembayaran.delete(url, data);
     app.config.globalProperties.$toast.add({
       severity: "success",
       summary: "Data berhasil dihapus",
@@ -489,6 +540,10 @@ export {
   apiDatamasterPost,
   apiDatamasterPut,
   apiDatamasterDelete,
+  apiPembayaranGet,
+  apiPembayaranPost,
+  apiPembayaranPut,
+  apiPembayaranDelete,
   apiAdmisiGet,
   apiAdmisiPost,
   apiAdmisiPut,

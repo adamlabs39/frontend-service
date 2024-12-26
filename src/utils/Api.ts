@@ -198,6 +198,51 @@ baseInstanceDatamaster.interceptors.response.use(
   }
 );
 
+
+//Pembayaran
+const baseInstancePembayaran = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_PEMBAYARAN,
+});
+
+baseInstancePembayaran.interceptors.request.use(
+  (config) => {
+    const token =
+      "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1zZXJpdmljZSIsInN1YiI6ImF1dGhlbnRpY2F0aW9uLXNlcml2aWNlIiwidXNlcm5hbWUiOiJraGFiaWJAZ21haWwuY29tIiwiZmFza2VzVXVpZCI6IjAxOTMyOGMxLTE5MzEtNzkzZS04M2QwLTQ4OGJiZTk2MmRkNCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczMzI4NDEzMCwiZXhwIjoxODE5Njg0MTMwfQ.mSqD6cFHjJxJ5v-6Uto-gMaTrTccc0MtC8AGDpRedPmL78zpYDx8jUMzEkqEstk30edCvI97D68MfuDnrupv3-R7_xFO8Ql4RHnDQR_DQ3KlW3WQbaWeJ8qEzE37nXwL7A6IEYYVWe7Hujm4GYt-FpbF9G_8sv-lmWaFO19ujDsvSzhV65YLEYxEprqI_JL3H2Ded5p6e8P68efHYMsBmEdJcGCiSwBIW7zL3IuorO_f59WhMpoJfERCkF0Y-1n9ZUteqm3teWlAAhSfhCny8IEnuG1vVpd95gS5l4zVLaGDjqhJyapvLu5j_zVNTytl-4PeAfEhr2ZsIJyyHrviJQ";
+    // const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstancePembayaran.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 //Admisi
 const baseInstanceAdmisi = axios.create({
   headers: {
@@ -443,6 +488,7 @@ export {
   authInstance,
   settingInstance,
   baseInstanceDatamaster,
+  baseInstancePembayaran,
   baseInstanceAdmisi,
   baseInstanceIgd,
   baseInstanceRawatJalan,

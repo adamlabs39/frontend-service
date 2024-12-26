@@ -6,99 +6,103 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 
 const itemsPasien = ref([
   {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: true,
+    tanggal: "10 Jan 2024",
+    tindakan: "SIMRS Admission",
+    jumlah: 1,
+    tarif: 2500,
+    diskon: 0,
+    total: 2500,
   },
   {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
+    tanggal: "10 Jan 2024",
+    tindakan: "Pemeriksaan Dokter Spesialis",
+    jumlah: 1,
+    tarif: 50000,
+    diskon: 0,
+    total: 50000,
   },
   {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: true,
+    tanggal: "10 Jan 2024",
+    tindakan: "Asuhan Keperawatan",
+    jumlah: 1,
+    tarif: 25000,
+    diskon: 0,
+    total: 25000,
   },
   {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
+    tanggal: "10 Jan 2024",
+    tindakan: "Tindakan Mata",
+    jumlah: 2,
+    tarif: 100000,
+    diskon: 0,
+    total: 200000,
   },
   {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
+    tanggal: "10 Jan 2024",
+    tindakan: "Tindakan Mata 2",
+    jumlah: 2,
+    tarif: 150000,
+    diskon: 50000,
+    total: 200000,
   },
 ]);
 
+const itemsObat = ref([
+  {
+    tanggal: "10 Jan 2024",
+    obat: "Amoxicillyn",
+    golonganObat: "Obat Keras",
+    jumlah: 20,
+    tarif: 1000,
+    jasa: 1000,
+    diskon: 0,
+    total: 21000,
+  },
+  {
+    tanggal: "10 Jan 2024",
+    obat: "Paracetamol",
+    golonganObat: "Obat Keras",
+    jumlah: 10,
+    tarif: 500,
+    jasa: 1000,
+    diskon: 0,
+    total: 6000,
+  },
+]);
+
+// Data for Rawat inap
+
+const itemsRuangan = ref([
+  {
+    tanggal: "10 Jan 2024",
+    kamar: "Mawar I",
+    jenisRuangan: "Rawatan Umum",
+    kelasRuangan: "Kelas I",
+    waktu: 48,
+    tarif: 450000,
+    diskon: 0,
+    total: 900000,
+  }
+])
+
+const itemsTindakan = ref([
+  {
+   tanggal: "10 Jan 2024",
+    tindakan: "Pemeriksaan Dokter Spesialsi",
+    jumlah: 1,
+    tarif: 50000,
+    diskon: 0,
+    total: 50000, 
+  },
+  {
+    tanggal: "10 Jan 2024",
+    tindakan: "Asuhan Keperawatan",
+    jumlah: 1,
+    tarif: 25000,
+    diskon: 0,
+    total: 25000,
+  }
+])
 </script>
 
 <template>
@@ -118,15 +122,15 @@ const itemsPasien = ref([
         <div class="pt-5">
           <div class="flex">
             <p class="font-bold">IGD</p>
-              <CustomChip
-                class="ml-2"
-                :showCheckedIcon="false"
-                label="TUNAI"
-                bgColor="bg-adameds-50"
-                textColor="text-adameds-300"
-                borderColor="border-adameds-300"
-              />
-              <!-- <CustomChip
+            <CustomChip
+              class="ml-2"
+              :showCheckedIcon="false"
+              label="TUNAI"
+              bgColor="bg-adameds-50"
+              textColor="text-adameds-300"
+              borderColor="border-adameds-300"
+            />
+            <!-- <CustomChip
                 class="ml-2"
                 :showCheckedIcon="false"
                 label="ASURANSI"
@@ -136,8 +140,8 @@ const itemsPasien = ref([
               /> -->
           </div>
           <div class="flex">
-            <UserDoctorIcon class="mt-2"/>
-            <p class="mt-2 text-sm text-grey-400">dr. Osama bin Laden SP.KK</p>
+            <UserDoctorIcon class="mt-2" />
+            <p class="mt-2 text-sm text-grey-400">dr. Adameds bin Adameds</p>
           </div>
           <div class="flex">
             <p class="text-sm">Tanggal</p>
@@ -146,8 +150,8 @@ const itemsPasien = ref([
               class="my-auto ml-2 text-success-300"
               weight="bold"
             />
-            <p class="ml-2 text-sm">10 Januari 2090</p>
-            <p class="ml-2 text-sm">10.10</p>
+            <p class="ml-2 text-sm">01-01-2024</p>
+            <p class="ml-2 text-sm">09:00</p>
           </div>
         </div>
         <div class="pt-5">
@@ -160,230 +164,69 @@ const itemsPasien = ref([
             :pt="{ headerRow: 'text-SM' }"
           >
             <!-- Tanggal -->
-            <Column field="nomor" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
               <template #header>
                 <div class="w-full font-semibold text-center">Tanggal</div>
               </template>
               <template #body="slotProps">
                 <div class="text-center">
-                  <div v-if="slotProps.data.no_antrian"
-                    class="text-SM">
-                    {{ slotProps.data.no_antrian }}
-                  </div>
-                  <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-                  <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
+                  <div class="text-SM">{{ slotProps.data.tanggal }}</div>
                 </div>
               </template>
             </Column>
             <!-- Tindakan, Pemeriksaan, dan Administrasi -->
-            <Column field="pasien" header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50">
+            <Column
+              field="pasien"
+              header="Tindakan, Pemeriksaan, dan Administrasi"
+              headerClass="bg-adameds-50"
+            >
               <template #body="slotProps">
                 <div class="text-SM">
-                  <span class="font-semibold">{{ slotProps.data.name }}</span>
-                  <span class="text-grey-300">
-                    ({{ slotProps.data.age_year }}Th
-                    {{ slotProps.data.age_month }}Bln
-                    {{ slotProps.data.age_day }}Hr)
-                  </span>
-                </div>
-                <div class="text-XS">{{ slotProps.data.address }}</div>
-                <div class="flex flex-wrap">
-                  <PhUserCirclePlus
-                    v-if="slotProps.data.new_patient"
-                    :size="22"
-                    class="text-adameds-300 mt-auto mr-[5px]"
-                    weight="fill"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="
-                      slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                    "
-                    :bgColor="
-                      slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
-                    "
-                    :textColor="
-                      slotProps.data.gender == 'P'
-                        ? 'text-female-300'
-                        : 'text-male-300'
-                    "
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.phone"
-                    bgColor="bg-adameds-50"
-                    textColor="text-adameds-300"
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
+                  <span class="font-normal">{{ slotProps.data.tindakan }}</span>
                 </div>
               </template>
             </Column>
             <!-- Jumlah -->
-            <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50">
+            <Column field="jumlah" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Jumlah</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{ slotProps.data.jumlah }}</span>
                 </div>
               </template>
             </Column>
             <!-- Tarif -->
-            <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
+            <Column field="tarif" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Tarif</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.tarif }}
                 </div>
               </template>
             </Column>
             <!-- Diskon -->
-            <Column field="diskon" header="Diskon" headerClass="bg-adameds-50">
+            <Column field="diskon" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Diskon</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.diskon }}
                 </div>
               </template>
             </Column>
             <!-- Total -->
-            <Column field="total" header="Total" headerClass="bg-adameds-50">
+            <Column field="total" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Total</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.total }}
                 </div>
               </template>
             </Column>
@@ -391,357 +234,133 @@ const itemsPasien = ref([
         </div>
         <div class="pt-5 mt-4">
           <DataTable
-            v-if="itemsPasien.length"
-            :value="itemsPasien"
+            v-if="itemsObat.length"
+            :value="itemsObat"
             tableStyle="min-width: 50rem"
             scrollable
             scrollHeight="flex"
             :pt="{ headerRow: 'text-SM' }"
           >
             <!-- Tanggal -->
-            <Column field="nomor" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
               <template #header>
                 <div class="w-full font-semibold text-center">Tanggal</div>
               </template>
               <template #body="slotProps">
                 <div class="text-center">
-                  <div v-if="slotProps.data.no_antrian"
-                    class="text-SM">
-                    {{ slotProps.data.no_antrian }}
-                  </div>
-                  <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-                  <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
+                  <div class="text-SM">{{ slotProps.data.tanggal }}</div>
                 </div>
               </template>
             </Column>
             <!-- Obat -->
-            <Column field="pasien" header="Obat" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold">Obat</div>
+              </template>
               <template #body="slotProps">
                 <div class="text-SM">
-                  <span class="font-semibold">{{ slotProps.data.name }}</span>
-                  <span class="text-grey-300">
-                    ({{ slotProps.data.age_year }}Th
-                    {{ slotProps.data.age_month }}Bln
-                    {{ slotProps.data.age_day }}Hr)
-                  </span>
-                </div>
-                <div class="text-XS">{{ slotProps.data.address }}</div>
-                <div class="flex flex-wrap">
-                  <PhUserCirclePlus
-                    v-if="slotProps.data.new_patient"
-                    :size="22"
-                    class="text-adameds-300 mt-auto mr-[5px]"
-                    weight="fill"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="
-                      slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                    "
-                    :bgColor="
-                      slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
-                    "
-                    :textColor="
-                      slotProps.data.gender == 'P'
-                        ? 'text-female-300'
-                        : 'text-male-300'
-                    "
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.phone"
-                    bgColor="bg-adameds-50"
-                    textColor="text-adameds-300"
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
+                  <span class="font-normal">{{ slotProps.data.obat }}</span>
                 </div>
               </template>
             </Column>
             <!-- Golongan Obat -->
-            <Column field="jumlah" header="Golongan Obat" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">
+                  Golongan Obat
+                </div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{
+                    slotProps.data.golonganObat
+                  }}</span>
                 </div>
               </template>
             </Column>
             <!-- Jumlah -->
-            <Column field="tarif" header="Jumlah" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Jumlah</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{ slotProps.data.jumlah }}</span>
                 </div>
               </template>
             </Column>
             <!-- Tarif -->
-            <Column field="diskon" header="Tarif" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Tarif</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{ slotProps.data.tarif }}</span>
                 </div>
               </template>
             </Column>
             <!-- Jasa -->
-            <Column field="total" header="Jasa" headerClass="bg-adameds-50">
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Jasa</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{ slotProps.data.jasa }}</span>
                 </div>
               </template>
             </Column>
             <!-- Diskon -->
-            <Column field="diskon" header="Diskon" headerClass="bg-adameds-50">
+             <Column field="diskon" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Diskon</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.diskon }}
                 </div>
               </template>
             </Column>
             <!-- Total -->
-            <Column field="total" header="Total" headerClass="bg-adameds-50">
+             <Column field="total" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Total</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.total }}
                 </div>
               </template>
             </Column>
           </DataTable>
         </div>
-        <div class="mt-4 ">
+        <div class="mt-4">
           <card class="bg-adameds-50">
             <template #content>
               <div class="flex justify-between">
-                <p class="text-base font-bold">
-                  Total
-                </p>
-                <p class="text-base font-bold">
-                  RP. 57.000, 00
-                </p>
+                <p class="text-base font-bold">Total</p>
+                <p class="text-base font-bold">RP. 527.000, 00</p>
               </div>
             </template>
           </card>
         </div>
       </div>
-      <hr class="mt-10 mb-3 border-2 border-grey-200">
+      <hr class="mt-10 mb-3 border-2 border-grey-200" />
       <!-- Rawat Inap -->
       <div>
         <div class="pt-5">
           <div class="flex">
             <p class="font-bold">Rawat Inap</p>
-              <CustomChip
-                class="ml-2"
-                :showCheckedIcon="false"
-                label="TUNAI"
-                bgColor="bg-adameds-50"
-                textColor="text-adameds-300"
-                borderColor="border-adameds-300"
-              />
-              <!-- <CustomChip
+            <CustomChip
+              class="ml-2"
+              :showCheckedIcon="false"
+              label="TUNAI"
+              bgColor="bg-adameds-50"
+              textColor="text-adameds-300"
+              borderColor="border-adameds-300"
+            />
+            <!-- <CustomChip
                 class="ml-2"
                 :showCheckedIcon="false"
                 label="ASURANSI"
@@ -751,7 +370,7 @@ const itemsPasien = ref([
               /> -->
           </div>
           <div class="flex">
-            <UserDoctorIcon class="mt-2"/>
+            <UserDoctorIcon class="mt-2" />
             <p class="mt-2 text-sm text-grey-400">dr. Osama bin Laden SP.KK</p>
           </div>
           <div class="flex">
@@ -767,576 +386,179 @@ const itemsPasien = ref([
         </div>
         <div class="pt-5">
           <DataTable
-            v-if="itemsPasien.length"
-            :value="itemsPasien"
+            v-if="itemsRuangan.length"
+            :value="itemsRuangan"
             tableStyle="min-width: 50rem"
             scrollable
             scrollHeight="flex"
             :pt="{ headerRow: 'text-SM' }"
           >
             <!-- Tanggal -->
-            <Column field="nomor" headerClass="bg-adameds-50">
+           <Column headerClass="bg-adameds-50">
               <template #header>
                 <div class="w-full font-semibold text-center">Tanggal</div>
               </template>
               <template #body="slotProps">
                 <div class="text-center">
-                  <div v-if="slotProps.data.no_antrian"
-                    class="text-SM">
-                    {{ slotProps.data.no_antrian }}
-                  </div>
-                  <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-                  <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
+                  <div class="text-SM">{{ slotProps.data.tanggal }}</div>
+                </div>
+              </template>
+            </Column>
+            <!-- Kamar -->
+           <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-start">Kamar</div>
+              </template>
+              <template #body="slotProps">
+                <div class="text-start">
+                  <div class="text-SM">{{ slotProps.data.kamar }}</div>
+                </div>
+              </template>
+            </Column>
+            <!-- Jenis Ruangan -->
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Jenis Ruangan</div>
+              </template>
+              <template #body="slotProps">
+                <div class="text-center">
+                  <div class="text-SM">{{ slotProps.data.jenisRuangan }}</div>
+                </div>
+              </template>
+            </Column>
+            <!-- Kelas Ruangan -->
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold">Kelas Ruangan</div>
+              </template>
+              <template #body="slotProps">
+                  <div class="text-SM">{{ slotProps.data.kelasRuangan }}</div>
+              </template>
+            </Column>
+            <!-- Waktu -->
+           <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold">Waktu</div>
+              </template>
+              <template #body="slotProps">
+                  <div class="text-SM">{{ slotProps.data.waktu }} Jam</div>
+              </template>
+            </Column>
+            <!-- Tarif -->
+           <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Tarif</div>
+              </template>
+              <template #body="slotProps">
+                  <div class="text-SM text-end">{{ slotProps.data.tarif }}</div>
+              </template>
+            </Column>
+            <!-- Diskon -->
+           <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Diskon</div>
+              </template>
+              <template #body="slotProps">
+                  <div class="text-SM text-end">{{ slotProps.data.diskon }}</div>
+              </template>
+            </Column>
+            <!-- Total -->
+           <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Total</div>
+              </template>
+              <template #body="slotProps">
+                  <div class="text-SM text-end">{{ slotProps.data.total }}</div>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+        <!-- Tabel ke 4 -->
+        <div class="pt-5 mt-4">
+          <DataTable
+            v-if="itemsTindakan.length"
+            :value="itemsTindakan"
+            tableStyle="min-width: 50rem"
+            scrollable
+            scrollHeight="flex"
+            :pt="{ headerRow: 'text-SM' }"
+          >
+            <!-- Tanggal -->
+            <Column headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-center">Tanggal</div>
+              </template>
+              <template #body="slotProps">
+                <div class="text-center">
+                  <div class="text-SM">{{ slotProps.data.tanggal }}</div>
                 </div>
               </template>
             </Column>
             <!-- Tindakan, Pemeriksaan, dan Administrasi -->
-            <Column field="pasien" header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50">
+            <Column
+              field="pasien"
+              header="Tindakan, Pemeriksaan, dan Administrasi"
+              headerClass="bg-adameds-50"
+            >
               <template #body="slotProps">
                 <div class="text-SM">
-                  <span class="font-semibold">{{ slotProps.data.name }}</span>
-                  <span class="text-grey-300">
-                    ({{ slotProps.data.age_year }}Th
-                    {{ slotProps.data.age_month }}Bln
-                    {{ slotProps.data.age_day }}Hr)
-                  </span>
-                </div>
-                <div class="text-XS">{{ slotProps.data.address }}</div>
-                <div class="flex flex-wrap">
-                  <PhUserCirclePlus
-                    v-if="slotProps.data.new_patient"
-                    :size="22"
-                    class="text-adameds-300 mt-auto mr-[5px]"
-                    weight="fill"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="
-                      slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                    "
-                    :bgColor="
-                      slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
-                    "
-                    :textColor="
-                      slotProps.data.gender == 'P'
-                        ? 'text-female-300'
-                        : 'text-male-300'
-                    "
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.phone"
-                    bgColor="bg-adameds-50"
-                    textColor="text-adameds-300"
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
+                  <span class="font-normal">{{ slotProps.data.tindakan }}</span>
                 </div>
               </template>
             </Column>
             <!-- Jumlah -->
-            <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
-              </template>
-            </Column>
-            <!-- Tarif -->
-            <Column field="tarif" header="Tarif" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
-              </template>
-            </Column>
-            <!-- Diskon -->
-            <Column field="diskon" header="Diskon" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
-              </template>
-            </Column>
-            <!-- Total -->
-            <Column field="total" header="Total" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-        <div class="pt-5 mt-4">
-          <DataTable
-            v-if="itemsPasien.length"
-            :value="itemsPasien"
-            tableStyle="min-width: 50rem"
-            scrollable
-            scrollHeight="flex"
-            :pt="{ headerRow: 'text-SM' }"
-          >
-            <!-- Tanggal -->
-            <Column field="nomor" headerClass="bg-adameds-50">
+            <Column field="jumlah" headerClass="bg-adameds-50">
               <template #header>
-                <div class="w-full font-semibold text-center">Tanggal</div>
+                <div class="w-full font-semibold text-center">Jumlah</div>
               </template>
               <template #body="slotProps">
-                <div class="text-center">
-                  <div v-if="slotProps.data.no_antrian"
-                    class="text-SM">
-                    {{ slotProps.data.no_antrian }}
-                  </div>
-                  <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-                  <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
-                </div>
-              </template>
-            </Column>
-            <!-- Obat -->
-            <Column field="pasien" header="Obat" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">
-                  <span class="font-semibold">{{ slotProps.data.name }}</span>
-                  <span class="text-grey-300">
-                    ({{ slotProps.data.age_year }}Th
-                    {{ slotProps.data.age_month }}Bln
-                    {{ slotProps.data.age_day }}Hr)
-                  </span>
-                </div>
-                <div class="text-XS">{{ slotProps.data.address }}</div>
-                <div class="flex flex-wrap">
-                  <PhUserCirclePlus
-                    v-if="slotProps.data.new_patient"
-                    :size="22"
-                    class="text-adameds-300 mt-auto mr-[5px]"
-                    weight="fill"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="
-                      slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                    "
-                    :bgColor="
-                      slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
-                    "
-                    :textColor="
-                      slotProps.data.gender == 'P'
-                        ? 'text-female-300'
-                        : 'text-male-300'
-                    "
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.phone"
-                    bgColor="bg-adameds-50"
-                    textColor="text-adameds-300"
-                    customClass="h-5 pr-[6px] border-none mr-[5px]"
-                  />
-                </div>
-              </template>
-            </Column>
-            <!-- Golongan Obat -->
-            <Column field="jumlah" header="Golongan Obat" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
-              </template>
-            </Column>
-            <!-- Jumlah -->
-            <Column field="tarif" header="Jumlah" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-center text-SM">
+                  <span class="font-normal">{{ slotProps.data.jumlah }}</span>
                 </div>
               </template>
             </Column>
             <!-- Tarif -->
-            <Column field="diskon" header="Tarif" headerClass="bg-adameds-50">
-              <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
-                </div>
+            <Column field="tarif" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Tarif</div>
               </template>
-            </Column>
-            <!-- Jasa -->
-            <Column field="total" header="Jasa" headerClass="bg-adameds-50">
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.tarif }}
                 </div>
               </template>
             </Column>
             <!-- Diskon -->
-            <Column field="diskon" header="Diskon" headerClass="bg-adameds-50">
+            <Column field="diskon" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Diskon</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.diskon }}
                 </div>
               </template>
             </Column>
             <!-- Total -->
-            <Column field="total" header="Total" headerClass="bg-adameds-50">
+            <Column field="total" headerClass="bg-adameds-50">
+              <template #header>
+                <div class="w-full font-semibold text-end">Total</div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-                <div class="flex flex-wrap">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.polyclinic"
-                    customClass="h-5 pr-[5px] mr-[5px]"
-                  />
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :label="slotProps.data.insurance_account_name"
-                    :bgColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'bg-adameds-50'
-                        : 'bg-warning-50'
-                    "
-                    :textColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    "
-                    :borderColor="
-                      slotProps.data.insurance_account_name == 'TUNAI'
-                        ? 'border-adameds-300'
-                        : 'border-warning-300'
-                    "
-                    customClass="h-5 pr-[6px] mr-[5px]"
-                  />
-                  <CustomChip
-                    v-if="slotProps.data.no_SEP"
-                    :showCheckedIcon="false"
-                    :label="`SEP.${slotProps.data.no_SEP}`"
-                    bgColor="bg-warning-50"
-                    textColor="text-warning-300"
-                    borderColor="border-warning-300"
-                    customClass="h-5 pr-[6px]"
-                  />
+                <div class="text-SM text-end">
+                  {{ slotProps.data.total }}
                 </div>
               </template>
             </Column>
           </DataTable>
+        
         </div>
-        <div class="mt-4 ">
+        <div class="mt-4">
           <card class="bg-adameds-50">
             <template #content>
               <div class="flex justify-between">
-                <p class="text-base font-bold">
-                  Total
-                </p>
-                <p class="text-base font-bold">
-                  RP. 57.000, 00
-                </p>
+                <p class="text-base font-bold">Total</p>
+                <p class="text-base font-bold">RP. 527.000, 00</p>
               </div>
             </template>
           </card>

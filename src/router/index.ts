@@ -32,6 +32,7 @@ import TransactionPage from "@/views/Pembayaran/TransactionPage.vue";
 import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
 import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjunganPage.vue";
 import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
+import LaporanPendapatanPage from "@/views/Pembayaran/Report/LaporanPendapatanPage.vue";
 
 // NOTE Farmasi
 import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescription/DoctorPrescriptionPage.vue";
@@ -851,6 +852,16 @@ const router = createRouter({
       path: "/pembayaran/closed-bill",
       name: "pembayaran-closed-bill",
       meta: { layout: SidebarLayout, page: ClosedBillPage, requiresAuth: true },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/laporan/pendapatan",
+      name: "pembayaran-laporan-pendapatan",
+      meta: {
+        layout: SidebarLayout,
+        page: LaporanPendapatanPage,
+        requiresAuth: true,
+      },
       component: PaymentView,
     },
     {

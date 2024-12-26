@@ -115,7 +115,7 @@ const dateFilter = ref<Date>(new Date());
       <div class="mt-[20px]">
         <div class="relative overflow-y-auto" style="max-height: 220px">
           <DataTable
-            :pt="{ headerRow: 'text-SM', thead:'z-0' }"
+            :pt="{ headerRow: 'text-SM', thead: 'z-0' }"
             :value="dataTindakan"
             scrollable
             scrollHeight="160px"
