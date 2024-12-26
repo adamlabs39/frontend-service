@@ -502,7 +502,7 @@ export {
   apiFarmasiGet,
   apiFarmasiPost,
   apiFarmasiPut,
-  apiFarmasiDelete,,
+  apiFarmasiDelete,
   apiRekamMedisGet,
   apiRekamMedisPost,
   apiRekamMedisPut,
