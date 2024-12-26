@@ -22,6 +22,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import NoData from "@/components/section/NoData.vue";
+import type { Module, SubModule, Feature, Allow } from "@/utils/Interface";
 
 const props = defineProps({
   method: {
@@ -41,29 +42,7 @@ const praktisiPayload = ref<any[]>([]);
 const selectedPraktisi = ref<any>();
 const selectedRole = ref<any>();
 const rolePayload = ref<any[]>([]);
-interface Allow {
-  name: string;
-  checked: boolean;
-}
 
-interface Feature {
-  name: string;
-  checked: boolean;
-  allows: Allow[];
-}
-
-interface SubModule {
-  name: string;
-  checked: boolean;
-  features: Feature[];
-  allows: Allow[];
-}
-
-interface Module {
-  module: string;
-  checked: boolean;
-  subModules: SubModule[];
-}
 const emit = defineEmits(["back", "data-updated"]);
 
 const phoneRegExp =

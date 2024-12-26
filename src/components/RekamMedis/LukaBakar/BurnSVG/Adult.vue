@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const rekamMedisStore = useRekamMedisStore();
 
 const data = ref<any>({
   frt1: null,
@@ -81,6 +85,32 @@ const getFillBody = (id: string) => {
     return "#FFFFFF";
   }
 };
+
+onBeforeMount(() => {
+  if (rekamMedisStore.openedRekamMedis.data.lukaBakar) {
+    const deFormatedArray =
+      rekamMedisStore.openedRekamMedis.data.lukaBakar.bodies.reduce(
+        (acc: any, item: any) => {
+          acc[item.anggotaTubuh] = item.grade;
+          return acc;
+        },
+        {} as Record<string, number | null>
+      );
+    data.value = Object.assign({}, deFormatedArray);
+  }
+});
+
+const submitObject = () => {
+  const formatedData = Object.entries(data.value).map(([key, value]) => ({
+    grade: value,
+    anggotaTubuh: key,
+  }));
+  return formatedData;
+};
+
+defineExpose({
+  submitObject,
+});
 </script>
 
 <template>

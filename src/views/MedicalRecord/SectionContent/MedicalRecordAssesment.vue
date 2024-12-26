@@ -17,11 +17,29 @@ import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/Pemeriksa
 import PemeriksaanGigi from "@/components/RekamMedis/PemeriksaanGigi/PemeriksaanGigi.vue";
 import PemeriksaanMata from "@/components/RekamMedis/PemeriksaanMata/PemeriksaanMata.vue";
 import BurnInput from "@/components/RekamMedis/LukaBakar/BurnInput.vue";
+import type { PropType } from "vue";
+
+const emit = defineEmits([]);
 
 const props = defineProps({
   selectedAssesment: {
     type: String,
     default: "Alergi",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
+  asesmenData: {
+    type: Object as PropType<any>,
+    default: () => {},
+  },
+  patientData: {
+    type: Object,
   },
 });
 </script>
@@ -32,46 +50,64 @@ const props = defineProps({
       v-if="selectedAssesment == 'Alergi'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <Anamnesis
       v-if="selectedAssesment == 'Anamnesis'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
-    <AnamnesisIGD
+    <!-- <AnamnesisIGD
       v-if="selectedAssesment == 'Anamnesis IGD'"
       method="form"
       initialState="0"
-    />
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
+    /> -->
     <Triase
       v-if="selectedAssesment == 'Triase'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <FormTandaVital
       v-if="selectedAssesment == 'Tanda Vital'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <Antropometri
       v-if="selectedAssesment == 'Antropometri'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <FormAsesmenNyeri
       v-if="selectedAssesment == 'Asesmen Nyeri'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <Kesadaran
       v-if="selectedAssesment == 'Kesadaran'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <CatatanHasilPenunjang
       v-if="selectedAssesment == 'Catatan Hasil Penunjang'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <FormDiagnosaDokterICD10
       v-if="selectedAssesment == 'Diagnosis Dokter'"
@@ -82,6 +118,8 @@ const props = defineProps({
       v-if="selectedAssesment == 'Asuhan Keperawatan'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <FormCatatanPerawat
       v-if="selectedAssesment == 'Catatan Perawat'"
@@ -113,6 +151,9 @@ const props = defineProps({
     <BurnInput
       v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
   </div>
 </template>

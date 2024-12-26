@@ -12,9 +12,16 @@ import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { formatDate } from "@/utils/Helpers";
 
+// NOTE Store
 const storeUtils = utilsStore();
 const admisiIGDStore = useAdmisiIGDStore();
+const praktisiStore = usePraktisiStore();
+const rekamMedisStore = useRekamMedisStore();
+
 const pageType = ref("");
 const route = useRoute();
 const searchQuery = ref("");
@@ -57,7 +64,9 @@ onMounted(() => {
   if (storeUtils.selectedRoom) {
     changeSection("Daftar");
   }
+  fetchPraktisiData();
 });
+
 const setFilter = () => {
   let filter = {} as FilterAdmisi;
   filter.page = properties.value.page;
@@ -80,7 +89,7 @@ const setFilter = () => {
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
   filter.dpjp = selectedFilterValue.value ?? "";
-  filter.status=selectedTab.value;
+  filter.status = selectedTab.value;
   return filter;
 };
 const handleStartDate = (value: any) => {
@@ -116,8 +125,12 @@ const resetFilter = () => {
   searchQuery.value = "";
   selectedFilterPayment.value = [];
   selectedFilterPatient.value = [];
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   resetFormRef.value.resetForm();
 };
 
@@ -142,33 +155,10 @@ const fetchIGDPatient = async (filter: FilterAdmisi = {}) => {
 const selectedPatient = ref<any[]>([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
-const openedPatientData = ref<any>({});
 const selectedTab = ref("1");
 const selectedFilterPatient = ref<string[]>([]);
 const selectedFilterPayment = ref<string[]>([]);
 const selectedFilterValue = ref("");
-
-// const showPatientDetail = (event: DataTableRowClickEvent) => {
-//   openedPatientData.value = event.data;
-//   if (pageType.value === "rawat-jalan") {
-//     if (openedPatientData.value.status_rj === "1") {
-//       changeSection("Checkin", { platform: openedPatientData.value.platform });
-//     } else {
-//       changeSection("Detail");
-//     }
-//   } else if (pageType.value === "rawat-inap") {
-//     if (
-//       openedPatientData.value.status_ri === "1" ||
-//       openedPatientData.value.status_ri === "2"
-//     ) {
-//       changeSection("Daftar");
-//     } else {
-//       changeSection("Detail");
-//     }
-//   } else {
-//     changeSection("Detail");
-//   }
-// };
 
 const handleSelectedTab = (newTab: string) => {
   selectedTab.value = newTab;
@@ -179,7 +169,7 @@ const handleSelectedPraktisi = (value: any) => {
 };
 const toggleCancelVisit = () => {
   showCancelVisit.value = !showCancelVisit.value;
-  cancelReason.value="";
+  cancelReason.value = "";
 };
 
 const confirmCancel = async () => {
@@ -192,9 +182,9 @@ const confirmCancel = async () => {
     selectedPatient.value.forEach((patientData: any) => {
       payload.listUuid.push(patientData.uuid);
     });
-    console.log("payload cancle visit",payload)
+    console.log("payload cancle visit", payload);
     const response = await admisiIGDStore.cancelVisitIGD(payload);
-    console.log("response data",response)
+    console.log("response data", response);
     showCancelVisit.value = false;
     cancelReason.value = undefined;
     await reloadData();
@@ -206,8 +196,44 @@ const confirmCancel = async () => {
 };
 const medicalRecord = ref<any>();
 
-const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM();
+const openedPatientData = ref<any>({});
+const openDialogRM = async (event: DataTableRowClickEvent) => {
+  try {
+    storeUtils.setLoading(true);
+    const responseDetailPelayanan = await admisiIGDStore.getDetailIGD(
+      event.data.uuid
+    );
+    if (responseDetailPelayanan && responseDetailPelayanan.payload) {
+      openedPatientData.value = responseDetailPelayanan.payload;
+      openedPatientData.value.rekamMedisUuid = event.data.rekamMedisUuid;
+    }
+    let response: any;
+    if (openedPatientData.value.rekamMedisUuid) {
+      response = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: openedPatientData.value.rekamMedisUuid,
+      });
+    } else {
+      response = await rekamMedisStore.createRekamMedis({
+        noRm: openedPatientData.value.noRm,
+        noReg: openedPatientData.value.noReg,
+        date: formatDate(new Date(), true),
+        pelayanan: "igd",
+        lokasiUuid: "",
+        noPelayanan: openedPatientData.value.noPelayanan,
+        paymentMethod: openedPatientData.value.paymentMethod,
+      });
+    }
+    if (response && response.payload) {
+      openedPatientData.value.rekamMedisUuid =
+        response.payload.meta.rekamMedisUuid;
+      rekamMedisStore.setOpenedRekamMedisData(response.payload);
+      medicalRecord.value?.showDialogRM();
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const handleCancleReason = (value: string) => {
@@ -219,15 +245,42 @@ const handlePage = (event: any) => {
   reloadData();
 };
 
-const dokterDJP = ref([
-  {
-    uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
-    name: "Rudi tabuti",
-  },
-  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6089", name: "dr. Ali" },
-  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
-]);
+const praktisiPayload = ref<any[]>([]);
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 9999,
+  total: 0,
+});
+// Search Dokter
+const searchDoctor = ref<string>("");
 
+// Fetch data Praktisi dari API
+const fetchPraktisiData = async () => {
+  storeUtils.setLoading(true);
+  try {
+    let isDoctor = true;
+    let isNonDoctor = false;
+
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      doctor: isDoctor,
+      non_doctor: isNonDoctor,
+    });
+
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload;
+    } else {
+      praktisiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    praktisiPayload.value = [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 </script>
 
 <template>
@@ -249,7 +302,7 @@ const dokterDJP = ref([
         @filterChipPasien="onFilterCipPasien"
         @filterChipPayment="onFilterCipPayment"
         @reset="handleReset()"
-        :filterSelect="dokterDJP"
+        :filterSelect="praktisiPayload"
         ref="resetFormRef"
       />
     </template>
@@ -314,14 +367,14 @@ const dokterDJP = ref([
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
             </div>
           </template>
@@ -346,7 +399,7 @@ const dokterDJP = ref([
                     ? 'DATA TIDAK TIDAK LENGKAP'
                     : 'DATA LENGKAP'
                 "
-                customClass="h-5 pr-[5px] mr-[5px]"
+                customClass="h-5 mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
@@ -368,7 +421,7 @@ const dokterDJP = ref([
                     ? 'border-adameds-300'
                     : 'border-warning-300'
                 "
-                customClass="h-5 pr-[6px] mr-[5px]"
+                customClass="h-5 mr-[5px]"
               />
             </div>
           </template>
@@ -468,7 +521,11 @@ const dokterDJP = ref([
         ></Column>
       </DataTable>
       <NoData v-else />
-      <MedicalRecord ref="medicalRecord" />
+      <MedicalRecord
+        ref="medicalRecord"
+        rmType="igd"
+        :patientData="openedPatientData"
+      />
     </template>
     <template #footer>
       <FooterPagination

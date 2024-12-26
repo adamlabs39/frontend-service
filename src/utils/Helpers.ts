@@ -111,3 +111,46 @@ export function countAge(date: Date) {
 
   return { tahun, bulan, hari };
 }
+
+import type { Module, SubModule, Feature, Allow } from "@/utils/Interface";
+export function checkPermission(
+  module: string,
+  subModule: string,
+  feature: string | null = null,
+  allows: string | null = null
+): boolean {
+  const permissionData = localStorage.getItem("permission");
+  if (!permissionData) return false;
+  let listPermission: Module[];
+  try {
+    listPermission = JSON.parse(permissionData);
+  } catch {
+    return false;
+  }
+  if (!Array.isArray(listPermission)) return false;
+  // Get Module
+  const targetModule = listPermission.find((mod) => mod.module === module);
+  if (!targetModule) return false;
+  // Get SubModule
+  const targetSubModule = targetModule.subModules.find(
+    (subMod) => subMod.name === subModule
+  );
+  if (!targetSubModule) return false;
+  if (feature) {
+    // Get Feature
+    const targetFeature = targetSubModule.features.find(
+      (feat) => feat.name === feature
+    );
+    if (!targetFeature) return false;
+    // Get Allow pada Feature
+    if (allows) {
+      return targetFeature.allows.some((allow) => allow.name === allows);
+    }
+    return true;
+  }
+  if (allows) {
+    // Check for the specific "allow" in the sub-module
+    return targetSubModule.allows.some((allow) => allow.name === allows);
+  }
+  return true;
+}

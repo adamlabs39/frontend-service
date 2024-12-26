@@ -13,15 +13,36 @@ import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriTandaVital from "@/components/RekamMedis/TandaVital/HistoriTandaVital.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import {
+  dateToEpoch,
+  epochToDate,
+  formatDate,
+  formatTime,
+  setTimeForDate,
+} from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "editAsesmen"]);
 const currentMethod = ref(props.method);
 
 const criterias = ref([
@@ -69,20 +90,18 @@ const schemaTandaVital = computed(() =>
       jamAsesmen: yup.date(),
       frekuensiNafas: yup.number(),
       frekuensiNadi: yup.number(),
-      suhu: yup.number().positive("Suhu must be positive"),
-      bloodOxygen: yup.number().positive("Blood Oxygen must be positive"),
-      gulaDarah: yup.number().positive("Gula Darah must be positive"),
-      CRT: yup.boolean().default(false),
+      suhu: yup.number().positive("Suhu tidak boleh negatif"),
+      bloodOxygen: yup.number().positive("Blood Oxygen tidak boleh negatif"),
+      gulaDarah: yup.number().positive("Gula Darah tidak boleh negatif"),
+      crt: yup.boolean().default(false),
       oksigenTambahan: yup.boolean().default(false),
-      numerator: yup
+      tekananDarahSistole: yup
         .number()
-        .required("Tekanan Darah is required")
-        .positive("Tekanan Darah must be positive"),
-      denominator: yup
+        .positive("Tekanan Darah tidak boleh negatif"),
+      tekananDarahDiastole: yup
         .number()
-        .required("Tekanan Darah is required")
-        .positive("Tekanan Darah must be positive"),
-      petugas: yup.string().required("Petugas alergi is required"),
+        .positive("Tekanan Darah tidak boleh negatif"),
+      petugas: yup.string().default("Super Admin"),
     })
   )
 );
@@ -90,6 +109,7 @@ const schemaTandaVital = computed(() =>
 // respirasi,kardiovaskuler, keadaanumum
 
 const {
+  resetForm,
   handleSubmit: handleSubmitTandaVital,
   defineField: defineFieldTandaVital,
   setValues,
@@ -109,25 +129,65 @@ const [frekuensiNadi] = defineFieldTandaVital("frekuensiNadi");
 const [suhu] = defineFieldTandaVital("suhu");
 const [bloodOxygen] = defineFieldTandaVital("bloodOxygen");
 const [gulaDarah] = defineFieldTandaVital("gulaDarah");
-const [CRT] = defineFieldTandaVital("CRT");
+const [crt] = defineFieldTandaVital("crt");
 const [oksigenTambahan] = defineFieldTandaVital("oksigenTambahan");
-const [numerator] = defineFieldTandaVital("numerator");
-const [denominator] = defineFieldTandaVital("denominator");
+const [tekananDarahSistole] = defineFieldTandaVital("tekananDarahSistole");
+const [tekananDarahDiastole] = defineFieldTandaVital("tekananDarahDiastole");
 const [petugas] = defineFieldTandaVital("petugas");
 
 // Do the same for other numeric fields as needed
 
-const onSubmitTandaVital = handleSubmitTandaVital((values: any) => {
-  console.log("Adding new data", values);
-  values.kardiovaskulerAnak = Number(values.kardiovaskulerAnak);
-  values.keadaanUmum = Number(values.keadaanUmum);
-  values.respirasiAnak = Number(values.respirasiAnak);
-  currentMethod.value = "detail";
-  emit("edit");
+const onSubmitTandaVital = handleSubmitTandaVital(async (values: any) => {
+  values.waktuAsesmen = dateToEpoch(
+    setTimeForDate(
+      values.waktuAsesmen,
+      values.jamAsesmen.getHours(),
+      values.jamAsesmen.getMinutes(),
+      values.jamAsesmen.getSeconds()
+    )
+  );
+  delete values.jamAsesmen;
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "tanda_vital",
+      data: values,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 onBeforeMount(async () => {
-  setValues({ petugas: "NamaKu" });
+  if (rekamMedisStore.openedRekamMedis.data.tandaVital) {
+    const tempTandaVital = rekamMedisStore.openedRekamMedis.data.tandaVital;
+    setValues({
+      kriteriaPemantauan: tempTandaVital.kriteriaPemantauan,
+      respirasiAnak: tempTandaVital.respirasiAnak,
+      kardiovaskulerAnak: tempTandaVital.kardiovaskulerAnak,
+      keadaanUmum: tempTandaVital.keadaanUmum,
+      waktuAsesmen: epochToDate(tempTandaVital.waktuAsesmen as number) as Date,
+      jamAsesmen: epochToDate(tempTandaVital.waktuAsesmen as number) as Date,
+      frekuensiNafas: tempTandaVital.frekuensiNafas,
+      frekuensiNadi: tempTandaVital.frekuensiNadi,
+      suhu: tempTandaVital.suhu,
+      bloodOxygen: tempTandaVital.bloodOxygen,
+      gulaDarah: tempTandaVital.gulaDarah,
+      crt: tempTandaVital.crt,
+      oksigenTambahan: tempTandaVital.oksigenTambahan,
+      tekananDarahSistole: tempTandaVital.tekananDarahSistole,
+      tekananDarahDiastole: tempTandaVital.tekananDarahDiastole,
+      petugas: tempTandaVital.petugas,
+    });
+  }
 });
 
 const compareDialog = ref(false);
@@ -178,7 +238,6 @@ defineExpose({
             option-value="name"
             invalidMessage="Wajib diisi"
             :disabled="false"
-            placeHolder="PEWS"
             customSelectClass="border-[#C7CBD2]"
           />
           <div class="flex gap-[30px]">
@@ -221,7 +280,7 @@ defineExpose({
             </template>
           </CustomInputNumber>
           <CustomSwitch
-            v-model="CRT"
+            v-model="crt"
             label=" Capillary Refill Time (CRT > 2 Detik)"
           />
           <CustomInputNumber
@@ -250,14 +309,14 @@ defineExpose({
             <CustomInputNumber
               label="Tekanan Darah"
               placeholder="98"
-              v-model:modelValue="numerator"
+              v-model:modelValue="tekananDarahSistole"
               type="number"
             />
             <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
             <CustomInputNumber
               :showLabel="false"
               placeholder="98"
-              v-model:modelValue="denominator"
+              v-model:modelValue="tekananDarahDiastole"
               type="number"
               class="mt-auto"
             >
@@ -324,7 +383,7 @@ defineExpose({
         />
         <CustomInfoRow
           label="Waktu Asesmen"
-          :value="`${waktuAsesmen}`"
+          :value="`${formatDate(waktuAsesmen as Date)}`"
           :type="
             currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
           "
@@ -352,7 +411,7 @@ defineExpose({
         />
         <CustomInfoRow
           label="Capillary Refill Time (CRT > 2 Detik)"
-          :value="`${CRT}`"
+          :value="`${crt}`"
           :type="
             currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
           "
@@ -389,7 +448,7 @@ defineExpose({
           />
           <CustomInfoRow
             label="Tekanan Darah"
-            :value="`${numerator}`"
+            :value="`${tekananDarahSistole}`"
             :type="
               currentMethod == 'detailPerpindahan' ? 'vertical' : 'horizontal'
             "
@@ -429,7 +488,7 @@ defineExpose({
         <CustomInfoRow
           v-if="currentMethod == 'detail'"
           label="Jam Input"
-          :value="'Jam Input'"
+          :value="formatTime(waktuAsesmen as Date)"
         />
       </div>
 
@@ -531,7 +590,7 @@ defineExpose({
                     </template>
                   </CustomInputNumber>
                   <CustomSwitch
-                    v-model="CRT"
+                    v-model="crt"
                     label=" Capillary Refill Time (CRT > 2 Detik)"
                   />
                 </div>
@@ -567,7 +626,7 @@ defineExpose({
                     <CustomInputNumber
                       label="Tekanan Darah"
                       placeholder="98"
-                      v-model:modelValue="numerator"
+                      v-model:modelValue="tekananDarahSistole"
                       type="number"
                     />
                     <span class="text-adameds-300 mx-[30px] mt-auto mb-2"
@@ -576,7 +635,7 @@ defineExpose({
                     <CustomInputNumber
                       :showLabel="false"
                       placeholder="98"
-                      v-model:modelValue="denominator"
+                      v-model:modelValue="tekananDarahDiastole"
                       type="number"
                       class="mt-auto"
                     >
@@ -631,6 +690,7 @@ defineExpose({
           <div class="flex items-end justify-end gap-3">
             <CustomButton
               v-if="currentMethod == 'form'"
+              @click="resetForm"
               label="Reset"
               textColor="text-grey-300"
               backgroundColor="bg-transparent"
@@ -643,8 +703,8 @@ defineExpose({
             />
             <CustomButton
               v-if="currentMethod == 'detail'"
+              @click="emit('editAsesmen')"
               label="Edit"
-              @click="() => {}"
             />
           </div>
         </template>
@@ -654,6 +714,7 @@ defineExpose({
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="currentMethod == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
@@ -664,7 +725,11 @@ defineExpose({
           label="Simpan"
           @click="onSubmitTandaVital"
         />
-        <CustomButton v-if="currentMethod == 'detail'" label="Edit" />
+        <CustomButton
+          v-if="currentMethod == 'detail'"
+          @click="emit('editAsesmen')"
+          label="Edit"
+        />
       </div>
     </template>
   </CustomAccordion>

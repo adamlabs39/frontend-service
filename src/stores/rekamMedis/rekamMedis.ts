@@ -3,78 +3,100 @@ import {
   apiRekamMedisGet,
   apiRekamMedisPost,
   apiRekamMedisPut,
+  apiRekamMedisDelete,
 } from "@/utils/apiHandler";
 
 export const useRekamMedisStore = defineStore({
   id: "rekamMedis",
-  state: () => ({}),
+  state: () => ({
+    openedRekamMedis: Object as any,
+  }),
   getters: {},
   actions: {
+    setOpenedRekamMedisData(rmData: any) {
+      this.openedRekamMedis = rmData
+    },
+    setAsesmentSummaryRekamMedisData(asesmenSummary: any) {
+      this.openedRekamMedis.data = asesmenSummary.data
+      this.openedRekamMedis.summary = asesmenSummary.summary
+    },
+
     async createRekamMedis(payload = {}) {
-      return apiRekamMedisPost("rekam-medis", payload);
+      return apiRekamMedisPost("/rekam-medis", payload);
     },
     async getRekamMedis(
-      { dateOrder = 1, sessionOrder = 1, rekamMedisUuid = "" },
+      params: {
+        dateOrder?: number;
+        sessionOrder?: number;
+        rekamMedisUuid: string;
+      },
       payload = {}
     ) {
       return apiRekamMedisGet(
-        `rekam-medis?date_order=${dateOrder}&session_order=${sessionOrder}&rekam_medis_uuid=${rekamMedisUuid}`,
+        `/rekam-medis?${
+          params.dateOrder ? "date_order=" + params.dateOrder : ""
+        }${
+          params.sessionOrder ? "&session_order=" + params.sessionOrder : ""
+        }&rekam_medis_uuid=${params.rekamMedisUuid}`,
         payload
       );
     },
 
     async createNewRecord(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/record", payload);
+      return apiRekamMedisPost("/rekam-medis/record", payload);
     },
     async createNewSession(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/session", payload);
+      return apiRekamMedisPost("/rekam-medis/session", payload);
+    },
+    async deleteSession(payload = {}) {
+      return apiRekamMedisDelete("/rekam-medis/session", payload)
     },
 
     async insertAssesment(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/assessment", payload);
+      return apiRekamMedisPost("/rekam-medis/assessment", payload);
     },
     async insertTindakan(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/tindakan", payload);
+      return apiRekamMedisPost("/rekam-medis/tindakan", payload);
     },
 
     async insertInstruksi(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/chat/instruksi", payload);
+      return apiRekamMedisPost("/rekam-medis/chat/instruksi", payload);
     },
     async insertInstruksiMedis(payload = {}) {
-      return apiRekamMedisPut("rekam-medis/chat/instruksi", payload);
+      return apiRekamMedisPut("/rekam-medis/chat/instruksi", payload);
     },
 
     async insertCatatan(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/chat/catatan", payload);
+      return apiRekamMedisPost("/rekam-medis/chat/catatan", payload);
     },
     async insertCatatanPerawat(payload = {}) {
-      return apiRekamMedisPut("rekam-medis/chat/catatan", payload);
+      return apiRekamMedisPut("/rekam-medis/chat/catatan", payload);
     },
 
     async pushOrderObat(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/order-obat", payload);
+      return apiRekamMedisPost("/rekam-medis/order-obat", payload);
     },
     async addFPO(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/fpo", payload);
+      return apiRekamMedisPost("/rekam-medis/fpo", payload);
     },
     async getFPODetail({ prescriptionItemUuid = "", date = "" }, payload = {}) {
       return apiRekamMedisGet(
-        `rekam-medis/fpo?prescription_item_uuid=${prescriptionItemUuid}&date=${date}`,
+        `/rekam-medis/fpo?prescription_item_uuid=${prescriptionItemUuid}&date=${date}`,
         payload
       );
     },
     async editFPO(payload = {}) {
-      return apiRekamMedisPut("rekam-medis/fpo", payload);
+      return apiRekamMedisPut("/rekam-medis/fpo", payload);
     },
 
     async getAllInformConsent({ rekamMedisUuid = "" }, payload = {}) {
       return apiRekamMedisGet(
-        `rekam-medis/inform-consent?rekam_medis_uuid=${rekamMedisUuid}`,
+        `/rekam-medis/inform-consent?rekam_medis_uuid=${rekamMedisUuid}`,
         payload
       );
     },
     async postInformConsent(payload = {}) {
-      return apiRekamMedisPost("rekam-medis/inform-consent", payload);
+      return apiRekamMedisPost("/rekam-medis/inform-consent", payload);
     },
 
     async getHistoryAssesment(
@@ -82,7 +104,7 @@ export const useRekamMedisStore = defineStore({
       payload = {}
     ) {
       return apiRekamMedisGet(
-        `rekam-medis/inform-consent?no_pelayanan=${noPelayanan}&no_rm=${noRm}&key=${key}&page=${page}&limit=${limit}`,
+        `/rekam-medis/inform-consent?no_pelayanan=${noPelayanan}&no_rm=${noRm}&key=${key}&page=${page}&limit=${limit}`,
         payload
       );
     },

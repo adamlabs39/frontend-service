@@ -21,15 +21,29 @@ import { onBeforeMount } from "vue";
 import Scaler from "@/components/RekamMedis/AsesmenNyeri/Scaler.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/HistoriAsesmenNyeri.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "editAsesmen"]);
 const currentMethod = ref(props.method);
 
 const handleImageClick = (id: number) => {
@@ -41,12 +55,13 @@ const schemaAsesmenNyeri = computed(() =>
     yup.object({
       skalaNyeri: yup.number(),
       catatan: yup.string(),
-      petugas: yup.string().required("Petugas is Required"),
+      petugas: yup.string().default("Super Admin"),
     })
   )
 );
 
 const {
+  resetForm,
   handleSubmit: handleSubmitAsesmenNyeri,
   defineField: defineFieldAsesmenNyeri,
   setValues,
@@ -58,9 +73,24 @@ const [skalaNyeri] = defineFieldAsesmenNyeri("skalaNyeri");
 const [catatan] = defineFieldAsesmenNyeri("catatan");
 const [petugas] = defineFieldAsesmenNyeri("petugas");
 
-const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri((values: any) => {
-  currentMethod.value = "detail";
-  emit("edit");
+const onSubmitAsesmenNyeri = handleSubmitAsesmenNyeri(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "asesmen_nyeri",
+      data: values,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const onEditClick = () => {
@@ -80,11 +110,6 @@ const imagePengkajianNyeri = ref([
   { id: 10, value: beratttt },
 ]);
 
-// const selectedImage = computed(() => {
-//   return imagePengkajianNyeri.value.find(
-//     (image) => image.id === skalaNyeri.value
-//   )?.id;
-// });
 const getStringSkalaNyeri = () => {
   if (skalaNyeri.value! >= 1 && skalaNyeri.value! <= 3) {
     return `${skalaNyeri.value} (Ringan)`;
@@ -96,7 +121,14 @@ const getStringSkalaNyeri = () => {
 };
 
 onBeforeMount(async () => {
-  setValues({ petugas: "Adam" });
+  if (rekamMedisStore.openedRekamMedis.data.asesmenNyeri) {
+    const tempAsesmenNyeri = rekamMedisStore.openedRekamMedis.data.asesmenNyeri;
+    setValues({
+      skalaNyeri: tempAsesmenNyeri.skalaNyeri,
+      catatan: tempAsesmenNyeri.catatan,
+      petugas: tempAsesmenNyeri.petugas,
+    });
+  }
 });
 
 const compareDialog = ref(false);
@@ -249,7 +281,8 @@ defineExpose({
                       :class="[
                         'w-16 p-1 flex items-center justify-center cursor-pointer bg-[#E4E7EC] rounded-lg',
                         {
-                          'border-4 border-adameds-300': image.id === skalaNyeri,
+                          'border-4 border-adameds-300':
+                            image.id === skalaNyeri,
                         },
                       ]"
                       @click="handleImageClick(image.id)"
@@ -289,6 +322,7 @@ defineExpose({
           <div class="flex items-end justify-end gap-3">
             <CustomButton
               v-if="currentMethod == 'form'"
+              @click="resetForm"
               label="Reset"
               textColor="text-grey-300"
               backgroundColor="bg-transparent"
@@ -302,7 +336,7 @@ defineExpose({
             <CustomButton
               v-if="currentMethod == 'detail'"
               label="Edit"
-              @click="onEditClick"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -312,6 +346,7 @@ defineExpose({
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="currentMethod == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
@@ -325,7 +360,7 @@ defineExpose({
         <CustomButton
           v-if="currentMethod == 'detail'"
           label="Edit"
-          @click="onEditClick"
+          @click="emit('editAsesmen')"
         />
       </div>
     </template>

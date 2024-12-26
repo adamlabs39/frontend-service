@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -9,91 +9,212 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import HistoriTriase from "@/components/RekamMedis/Triase/HistoriTriase.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+import { epochToDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const kasus = ref([
+const schema = computed(() =>
+  toTypedSchema(
+    yup.object({
+      kasus: yup.string(),
+      eye: yup.number(),
+      verbal: yup.number(),
+      motorik: yup.number(),
+      gcsScore: yup.number(),
+      gcsKesimpulan: yup.string(),
+      tekananDarahSistole: yup.number(),
+      tekananDarahDiastole: yup.number(),
+      frekuensiNafas: yup.number(),
+      frekuensiNadi: yup.number(),
+      suhu: yup.number(),
+      crt: yup.bool().default(false),
+      bloodOxygen: yup.number(),
+      kesimpulanTriase: yup.string(),
+      warnaTriase: yup.string().default("#3D84E5"),
+      caraDatang: yup.string(),
+      kendaraan: yup.string(),
+      keadaanUmum: yup.string(),
+      asalRujukan: yup.string(),
+      petugas: yup.string().default("Super Admin"),
+    })
+  )
+);
+
+const { handleSubmit, defineField, resetForm, setValues, errors } = useForm({
+  validationSchema: schema,
+});
+
+const [kasus] = defineField("kasus");
+const [eye] = defineField("eye");
+const [verbal] = defineField("verbal");
+const [motorik] = defineField("motorik");
+const [gcsScore] = defineField("gcsScore");
+const [gcsKesimpulan] = defineField("gcsKesimpulan");
+const [tekananDarahSistole] = defineField("tekananDarahSistole");
+const [tekananDarahDiastole] = defineField("tekananDarahDiastole");
+const [frekuensiNafas] = defineField("frekuensiNafas");
+const [frekuensiNadi] = defineField("frekuensiNadi");
+const [suhu] = defineField("suhu");
+const [crt] = defineField("crt");
+const [bloodOxygen] = defineField("bloodOxygen");
+const [kesimpulanTriase] = defineField("kesimpulanTriase");
+const [warnaTriase] = defineField("warnaTriase");
+const [caraDatang] = defineField("caraDatang");
+const [kendaraan] = defineField("kendaraan");
+const [keadaanUmum] = defineField("keadaanUmum");
+const [asalRujukan] = defineField("asalRujukan");
+const [petugas] = defineField("petugas");
+
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "triase",
+      data: values,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
+
+const listKasus = ref([
   { name: "Trauma" },
   { name: "Non Trauma" },
   { name: "Obstetri" },
 ]);
-const caraDatang = ref([
+const listCaraDatang = ref([
   { name: "Sendiri" },
   { name: "Diantar Polisi" },
   { name: "Diantar Keluarga" },
   { name: "Lain - Lain" },
 ]);
-const kendaraan = ref([{ name: "Ambulans" }, { name: "Lain - Lain" }]);
-const keadaanUmum = ref([
+const listKendaraan = ref([{ name: "Ambulans" }, { name: "Lain - Lain" }]);
+const listKeadaanUmum = ref([
   { name: "Baik" },
   { name: "Ringan" },
   { name: "Sedang" },
   { name: "Buruk" },
 ]);
-const mata = ref([
-  { name: "Spontan Merespon" },
-  { name: "Ada Respon Dengan Rangsang Suara" },
-  { name: "Ada Respon Dengan Rangsang Nyeri" },
-  { name: "Tidak Ada Respon" },
+const listMata = ref([
+  { name: "Spontan Merespon", id: 1 },
+  { name: "Ada Respon Dengan Rangsang Suara", id: 2 },
+  { name: "Ada Respon Dengan Rangsang Nyeri", id: 3 },
+  { name: "Tidak Ada Respon", id: 4 },
 ]);
-const motorik = ref([
-  { name: "Mengikuti Perintah" },
-  { name: "Melokalisir Nyeri" },
-  { name: "Flexi Normal" },
-  { name: "Flexi Abnormal" },
-  { name: "Ekstensi Abnormal" },
-  { name: "Tadak Ada Respon" },
+const listMotorik = ref([
+  { name: "Mengikuti Perintah", id: 1 },
+  { name: "Melokalisir Nyeri", id: 2 },
+  { name: "Flexi Normal", id: 3 },
+  { name: "Flexi Abnormal", id: 4 },
+  { name: "Ekstensi Abnormal", id: 5 },
+  { name: "Tadak Ada Respon", id: 6 },
 ]);
-const verbal = ref([
-  { name: "Orientasi Balik" },
-  { name: "Binging Berbicara" },
-  { name: "Kata - Kata Tidak Jelas" },
-  { name: "Suara Tanpa Arti (Mengerang)" },
-  { name: "Tidak Ada Respon" },
+const listVerbal = ref([
+  { name: "Orientasi Balik", id: 1 },
+  { name: "Binging Berbicara", id: 2 },
+  { name: "Kata - Kata Tidak Jelas", id: 3 },
+  { name: "Suara Tanpa Arti (Mengerang)", id: 4 },
+  { name: "Tidak Ada Respon", id: 5 },
 ]);
 
-const glasglow = ref([
+const listGlasglow = ref([
   { name: "Glasglow 1" },
   { name: "Glasglow 2" },
   { name: "Glasglow 3" },
   { name: "Glasglow 4" },
 ]);
 
-const doa = ref([
+const listDoa = ref([
   { name: "Tidak Ada Tanda Kehidupan", key: "TK" },
   { name: "Tidak Ada Denyut Nadi", key: "DN" },
   { name: "EKG Flat", key: "EF" },
 ]);
 
-const selectedKasus = ref("");
-const selectedCaraDatang = ref("");
-const selectedKendaraan = ref("");
-const selectedKeadaanUmum = ref("");
-const asalRujukan = ref<string>("");
+const emit = defineEmits(["editAsesmen"]);
 
-const selectedMata = ref("");
-const selectedMotorik = ref("");
-const selectedVerbal = ref("");
-const selectedGlasglow = ref("");
+onBeforeMount(() => {
+  if (rekamMedisStore.openedRekamMedis.data.triase) {
+    const tempTriase = rekamMedisStore.openedRekamMedis.data.triase;
+    setValues({
+      kasus: tempTriase.kasus,
+      eye: tempTriase.eye,
+      verbal: tempTriase.verbal,
+      motorik: tempTriase.motorik,
+      gcsScore: tempTriase.gcsScore,
+      tekananDarahSistole: tempTriase.tekananDarahSistole,
+      tekananDarahDiastole: tempTriase.tekananDarahDiastole,
+      frekuensiNafas: tempTriase.frekuensiNafas,
+      frekuensiNadi: tempTriase.frekuensiNadi,
+      suhu: tempTriase.suhu,
+      crt: tempTriase.crt,
+      bloodOxygen: tempTriase.bloodOxygen,
+      kesimpulanTriase: tempTriase.kesimpulanTriase,
+      warnaTriase: tempTriase.warnaTriase,
+      caraDatang: tempTriase.caraDatang,
+      kendaraan: tempTriase.kendaraan,
+      keadaanUmum: tempTriase.keadaanUmum,
+      asalRujukan: tempTriase.asalRujukan,
+      petugas: tempTriase.petugas,
+    });
+    countKesimpulan();
+  }
+});
 
-const kesimpulanTriase = ref();
-const warnaTriase = ref("#3D84E5");
+const countKesimpulan = () => {
+  if (eye.value && motorik.value && verbal.value) {
+    gcsKesimpulan.value = "";
 
-const tekananDarahSistole = ref<number | undefined>(undefined);
-const tekananDarahDiastole = ref<number | undefined>(undefined);
-const frekuensiNafas = ref<number | undefined>(undefined);
-const frekuensiNadi = ref<number | undefined>(undefined);
+    let totalSkor = eye.value + motorik.value + verbal.value;
 
-const suhu = ref<number | undefined>(undefined);
-const bloodOxygen = ref<number | undefined>(undefined);
-const CRT = ref(false);
+    gcsScore.value = totalSkor;
 
-const emit = defineEmits(["edit"]);
+    if (totalSkor == 3) {
+      gcsKesimpulan.value = "Coma";
+    } else if (totalSkor == 4) {
+      gcsKesimpulan.value = "Semi-coma";
+    } else if (totalSkor == 5 || totalSkor == 6) {
+      gcsKesimpulan.value = "Sopor";
+    } else if (totalSkor > 6 && totalSkor <= 9) {
+      gcsKesimpulan.value = "Somnolence";
+    } else if (totalSkor == 10 || totalSkor == 11) {
+      gcsKesimpulan.value = "Delirium";
+    } else if (totalSkor == 12 || totalSkor == 13) {
+      gcsKesimpulan.value = "Apatis";
+    } else if (totalSkor == 14 || totalSkor == 15) {
+      gcsKesimpulan.value = "Compos Mentis";
+    }
+  }
+};
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -136,8 +257,8 @@ defineExpose({
         <div class="grid grid-cols-4 gap-[30px] py-3">
           <CustomSelect
             label="Kasus"
-            v-model="selectedKasus"
-            :options="kasus"
+            v-model="kasus"
+            :options="listKasus"
             option-label="name"
             option-value="name"
             invalidMessage="Wajib diisi"
@@ -148,8 +269,8 @@ defineExpose({
           />
           <CustomSelect
             label="Cara Datang"
-            v-model="selectedCaraDatang"
-            :options="caraDatang"
+            v-model="caraDatang"
+            :options="listCaraDatang"
             option-label="name"
             option-value="name"
             invalidMessage="Wajib diisi"
@@ -160,8 +281,8 @@ defineExpose({
           />
           <CustomSelect
             label="Kendaraan"
-            v-model="selectedKendaraan"
-            :options="kendaraan"
+            v-model="kendaraan"
+            :options="listKendaraan"
             option-label="name"
             option-value="name"
             invalidMessage="Wajib diisi"
@@ -172,8 +293,8 @@ defineExpose({
           />
           <CustomSelect
             label="Keadaan Umum"
-            v-model="selectedKeadaanUmum"
-            :options="keadaanUmum"
+            v-model="keadaanUmum"
+            :options="listKeadaanUmum"
             option-label="name"
             option-value="name"
             invalidMessage="Wajib diisi"
@@ -191,10 +312,11 @@ defineExpose({
           <hr class="col-span-4" />
           <CustomSelect
             label="Mata (Respon Membuka Mata)"
-            v-model="selectedMata"
-            :options="mata"
+            v-model="eye"
+            @update:model-value="countKesimpulan"
+            :options="listMata"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -202,10 +324,11 @@ defineExpose({
           />
           <CustomSelect
             label="Motorik (Respon Gerakan)"
-            v-model="selectedMotorik"
-            :options="motorik"
+            v-model="motorik"
+            @update:model-value="countKesimpulan"
+            :options="listMotorik"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
@@ -213,25 +336,22 @@ defineExpose({
           />
           <CustomSelect
             label="Verbal (Respon Verbal)"
-            v-model="selectedVerbal"
-            :options="verbal"
+            v-model="verbal"
+            @update:model-value="countKesimpulan"
+            :options="listVerbal"
             option-label="name"
-            option-value="name"
+            option-value="id"
             invalidMessage="Wajib diisi"
             :disabled="false"
             placeHolder="Pilih Respon"
             customSelectClass="border-[#C7CBD2]"
           />
-          <CustomSelect
+          <CustomTextfield
+            v-model="gcsKesimpulan"
             label="Glasglow Coma Scale (GCS) Score"
-            v-model="selectedGlasglow"
-            :options="glasglow"
-            option-label="name"
-            option-value="name"
-            invalidMessage="Wajib diisi"
-            :disabled="false"
-            placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-            customSelectClass="border-[#C7CBD2]"
+            placeholder="Glasglow Coma Scale (GCS) Score"
+            class=""
+            readOnly
           />
           <div
             class="grid items-center grid-cols-[2fr_min-content_2fr] col-span-2"
@@ -277,7 +397,7 @@ defineExpose({
         </div>
         <div class="grid grid-cols-3 gap-[30px] py-3">
           <CustomSwitch
-            v-model="CRT"
+            v-model="crt"
             label=" Capillary Refill Time (CRT > 2 Detik)"
           />
           <CustomInputNumber
@@ -382,38 +502,63 @@ defineExpose({
         v-if="props.method == 'detail'"
         class="py-5 flex flex-col gap-[19px]"
       >
-        <CustomInfoRow label="Kasus" value="Kasus" />
-        <CustomInfoRow label="Cara Datang" value="Cara Datang" />
-        <CustomInfoRow label="Kendaraan" value="Kendaraan" />
-        <CustomInfoRow label="Keadaan Umum" value="Keadaan Umum" />
-        <CustomInfoRow label="Asal Rujukan" value="-" />
+        <CustomInfoRow label="Kasus" :value="kasus" />
+        <CustomInfoRow label="Cara Datang" :value="caraDatang" />
+        <CustomInfoRow label="Kendaraan" :value="kendaraan" />
+        <CustomInfoRow label="Keadaan Umum" :value="keadaanUmum" />
+        <CustomInfoRow label="Asal Rujukan" :value="asalRujukan" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Mata" value="Respon" />
-        <CustomInfoRow label="Motorik" value="Respon" />
-        <CustomInfoRow label="Verbal" value="Respon" />
-        <CustomInfoRow label="Glasglow Coma Scale (GCS) Score" value="score" />
-        <CustomInfoRow label="Tekanan Darah" value="0/0 mmHg" />
-        <CustomInfoRow label="Frekuensi Nafas" value="0 x/mnt" />
-        <CustomInfoRow label="Frekuensi Nadi" value="0 x/mnt" />
+        <CustomInfoRow label="Mata" :value="`${eye}`" />
+        <CustomInfoRow label="Motorik" :value="`${motorik}`" />
+        <CustomInfoRow label="Verbal" :value="`${verbal}`" />
+        <CustomInfoRow
+          label="Glasglow Coma Scale (GCS) Score"
+          :value="`${gcsScore}`"
+        />
+        <CustomInfoRow
+          label="Glasglow Coma Scale (GCS) Kesimpulan"
+          :value="`${gcsKesimpulan}`"
+        />
+        <CustomInfoRow
+          label="Tekanan Darah"
+          :value="`${tekananDarahSistole}/${tekananDarahDiastole} mmHg`"
+        />
+        <CustomInfoRow
+          label="Frekuensi Nafas"
+          :value="`${frekuensiNafas} x/mnt`"
+        />
+        <CustomInfoRow
+          label="Frekuensi Nadi"
+          :value="`${frekuensiNadi} x/mnt`"
+        />
         <CustomInfoRow
           label="Capillary Refill Time (CRT > 2 detik)"
-          value="Tidak"
+          :value="crt ? 'Iya' : 'Tidak'"
         />
-        <CustomInfoRow label="Suhu" value="0 °C" />
-        <CustomInfoRow label="Blood Oxygen" value="0 %" />
+        <CustomInfoRow label="Suhu" :value="`${suhu} °C`" />
+        <CustomInfoRow label="Blood Oxygen" :value="`${bloodOxygen} %`" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Kesimpulan Triase" value="-" />
+        <CustomInfoRow label="Kesimpulan Triase" :value="kesimpulanTriase" />
         <div
-          class="h-10 w-[60px] border border-grey-200 cursor-pointer bg-info-300 rounded-md mt-auto flex"
+          :class="`h-10 w-[60px] border border-grey-200 cursor-pointer bg-[${warnaTriase}] rounded-md mt-auto flex`"
         >
-          <PhCheckCircle :size="25" weight="fill" class="m-auto text-white" />
+          <PhCheckCircle
+            :size="25"
+            weight="fill"
+            :class="`m-auto ${
+              warnaTriase == '#FFFFFF' ? 'text-black' : 'text-white'
+            }`"
+          />
         </div>
         <hr class="border-grey-200" />
         <div class="flex justify-between">
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow label="Petugas Input" :value="petugas" />
           <CustomInfoRow
             label="Jam Input"
-            :value="`petugas`"
+            :value="`${epochToDate(
+              rekamMedisStore.openedRekamMedis.data.triase.createdAt,
+              'dateTime'
+            )}`"
             alignment="right"
           />
         </div>
@@ -462,8 +607,8 @@ defineExpose({
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <CustomSelect
                   label="Kasus"
-                  v-model="selectedKasus"
-                  :options="kasus"
+                  v-model="kasus"
+                  :options="listKasus"
                   option-label="name"
                   option-value="name"
                   invalidMessage="Wajib diisi"
@@ -474,8 +619,8 @@ defineExpose({
                 />
                 <CustomSelect
                   label="Cara Datang"
-                  v-model="selectedCaraDatang"
-                  :options="caraDatang"
+                  v-model="caraDatang"
+                  :options="listCaraDatang"
                   option-label="name"
                   option-value="name"
                   invalidMessage="Wajib diisi"
@@ -486,8 +631,8 @@ defineExpose({
                 />
                 <CustomSelect
                   label="Kendaraan"
-                  v-model="selectedKendaraan"
-                  :options="kendaraan"
+                  v-model="kendaraan"
+                  :options="listKendaraan"
                   option-label="name"
                   option-value="name"
                   invalidMessage="Wajib diisi"
@@ -498,8 +643,8 @@ defineExpose({
                 />
                 <CustomSelect
                   label="Keadaan Umum"
-                  v-model="selectedKeadaanUmum"
-                  :options="keadaanUmum"
+                  v-model="keadaanUmum"
+                  :options="listKeadaanUmum"
                   option-label="name"
                   option-value="name"
                   invalidMessage="Wajib diisi"
@@ -517,10 +662,11 @@ defineExpose({
                 <hr class="col-span-4" />
                 <CustomSelect
                   label="Mata (Respon Membuka Mata)"
-                  v-model="selectedMata"
-                  :options="mata"
+                  v-model="eye"
+                  @update:model-value="countKesimpulan"
+                  :options="listMata"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
@@ -528,10 +674,11 @@ defineExpose({
                 />
                 <CustomSelect
                   label="Motorik (Respon Gerakan)"
-                  v-model="selectedMotorik"
-                  :options="motorik"
+                  v-model="motorik"
+                  @update:model-value="countKesimpulan"
+                  :options="listMotorik"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
@@ -539,28 +686,27 @@ defineExpose({
                 />
                 <CustomSelect
                   label="Verbal (Respon Verbal)"
-                  v-model="selectedVerbal"
-                  :options="verbal"
+                  v-model="verbal"
+                  @update:model-value="countKesimpulan"
+                  :options="listVerbal"
                   option-label="name"
-                  option-value="name"
+                  option-value="id"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
                   placeHolder="Pilih Respon"
                   customSelectClass="border-[#C7CBD2]"
                 />
-                <CustomSelect
+                <CustomTextfield
+                  v-model="gcsKesimpulan"
                   label="Glasglow Coma Scale (GCS) Score"
-                  v-model="selectedGlasglow"
-                  :options="glasglow"
-                  option-label="name"
-                  option-value="name"
-                  invalidMessage="Wajib diisi"
-                  :disabled="false"
-                  placeHolder="Pilih Glasglow Coma Scale (GCS) Score"
-                  customSelectClass="border-[#C7CBD2]"
+                  placeholder="Glasglow Coma Scale (GCS) Score"
+                  class=""
+                  readOnly
                 />
                 <div class="grid grid-cols-2 gap-x-[30px]">
-                  <div class="grid items-center grid-cols-[2fr_min-content_2fr]">
+                  <div
+                    class="grid items-center grid-cols-[2fr_min-content_2fr]"
+                  >
                     <label
                       class="block font-semibold mb-[5px] text-normal col-span-3"
                     >
@@ -572,7 +718,9 @@ defineExpose({
                       v-model:modelValue="tekananDarahSistole"
                       type="number"
                     />
-                    <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
+                    <span class="text-adameds-300 mx-[30px] mt-auto mb-2"
+                      >/</span
+                    >
                     <CustomInputNumber
                       :showLabel="false"
                       placeholder="0"
@@ -607,7 +755,7 @@ defineExpose({
                     </template>
                   </CustomInputNumber>
                   <CustomSwitch
-                    v-model="CRT"
+                    v-model="crt"
                     label=" Capillary Refill Time (CRT > 2 Detik)"
                   />
                   <CustomInputNumber
@@ -722,12 +870,12 @@ defineExpose({
             <CustomButton
               v-if="method === 'form'"
               label="Simpan"
-              @click="() => {}"
+              @click="onSubmit"
             />
             <CustomButton
               v-if="method === 'detail'"
               label="Edit"
-              @click="emit('edit')"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -737,15 +885,20 @@ defineExpose({
       <div class="flex items-end justify-end gap-3">
         <CustomButton
           v-if="props.method == 'form'"
+          @click="resetForm"
           label="Reset"
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
         />
-        <CustomButton v-if="props.method == 'form'" label="Simpan" />
+        <CustomButton
+          v-if="props.method == 'form'"
+          @click="onSubmit"
+          label="Simpan"
+        />
         <CustomButton
           v-if="props.method == 'detail'"
-          @click="emit('edit')"
+          @click="emit('editAsesmen')"
           label="Edit"
         />
       </div>

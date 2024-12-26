@@ -10,23 +10,37 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAntropometri from "@/components/RekamMedis/Antropometri/HistoriAntropometri.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
 const schema = toTypedSchema(
   yup.object({
     beratBadan: yup.number(),
     tinggiBadan: yup.number(),
-    IMT: yup.number(),
+    imt: yup.number(),
     catatan: yup.string(),
-    petugas: yup.string().required(),
+    petugas: yup.string().default("Super Admin"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -34,40 +48,53 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 });
 const [beratBadan] = defineField("beratBadan");
 const [tinggiBadan] = defineField("tinggiBadan");
-const [IMT] = defineField("IMT");
+const [imt] = defineField("imt");
 const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
-onBeforeMount(async () => {
-  setValues({
-    beratBadan: 43,
-    tinggiBadan: 155,
-    IMT: 0,
-    catatan: "Normal",
-    petugas: "Adam",
-  });
-  calculateIMT();
-});
-
 const calculateIMT = () => {
   if (beratBadan.value && tinggiBadan.value) {
-    IMT.value = Number(
+    imt.value = Number(
       (beratBadan.value / (tinggiBadan.value / 100) ** 2).toFixed(2)
     );
   } else {
-    IMT.value = 0;
+    imt.value = 0;
   }
 };
 
-const onSubmit = handleSubmit((values: any) => {
-  emit("submit", values);
-  isEditing.value = false;
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "antropometri",
+      data: values,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
-const toggleEdit = () => {
-  isEditing.value = true;
-  emit("edit");
-};
+onBeforeMount(() => {
+  if (rekamMedisStore.openedRekamMedis.data.antropometri) {
+    const tempAntropometri = rekamMedisStore.openedRekamMedis.data.antropometri;
+    setValues({
+      beratBadan: tempAntropometri.beratBadan,
+      tinggiBadan: tempAntropometri.tinggiBadan,
+      imt: tempAntropometri.imt,
+      catatan: tempAntropometri.catatan,
+      petugas: tempAntropometri.petugas,
+    });
+    calculateIMT();
+  }
+});
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -125,7 +152,7 @@ defineExpose({
           </template>
         </CustomInputNumber>
         <CustomInputNumber
-          v-model="IMT"
+          v-model="imt"
           label="IMT"
           placeholder="0"
           class=""
@@ -156,7 +183,7 @@ defineExpose({
         </CustomInfoRow>
         <CustomInfoRow label="IMT">
           <template #value>
-            <div>{{ IMT }} Kg/m²</div>
+            <div>{{ imt }} Kg/m²</div>
           </template>
         </CustomInfoRow>
         <CustomInfoRow label="Catatan" :value="catatan" />
@@ -228,7 +255,7 @@ defineExpose({
                     </template>
                   </CustomInputNumber>
                   <CustomInputNumber
-                    v-model="IMT"
+                    v-model="imt"
                     label="IMT"
                     placeholder="0"
                     class=""
@@ -262,7 +289,11 @@ defineExpose({
               borderColor="border-2 border-grey-200"
             />
             <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+            <CustomButton
+              v-if="!isEditing"
+              label="Edit"
+              @click="emit('editAsesmen')"
+            />
           </div>
         </template>
       </CustomDialog>
@@ -278,7 +309,7 @@ defineExpose({
           borderColor="border-2 border-[#9DA4B1]"
         />
         <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-        <CustomButton v-else label="Edit" @click="toggleEdit" />
+        <CustomButton v-else label="Edit" @click="emit('editAsesmen')" />
       </div>
     </template>
   </CustomAccordion>

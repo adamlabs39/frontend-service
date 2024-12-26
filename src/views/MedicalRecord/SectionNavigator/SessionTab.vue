@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onUpdated, type PropType } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -11,7 +11,7 @@ const props = defineProps({
     default: "0",
   },
   dataSession: {
-    type: Array,
+    type: Array as PropType<any>,
     default: () => [],
   },
 });
@@ -54,14 +54,14 @@ const value = computed({
         v-for="(session, index) in dataSession"
         :key="'session' + index"
         class="py-0 px-[10px]"
-        :value="`${index}`"
+        :value="`${session.order}`"
         :pt="{ root: 'rounded-t-lg' }"
       >
-        {{ session }}
+        Sesi {{ session.order }}
       </Tab>
       <Tab
         v-if="selectedTab != 'rekam-medis'"
-        @click="emit('addSession')"
+        @click="emit('addSession', dataSession.at(-1))"
         class="py-0 px-[10px]"
         value="plus"
         :pt="{ root: 'rounded-t-lg' }"

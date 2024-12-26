@@ -1,16 +1,53 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onUpdated, ref, type PropType } from "vue";
 import SessionTab from "./SessionTab.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits([]);
 
 const props = defineProps({
   rmType: {
     type: String,
     default: "rawat-jalan",
   },
+  selectedRecord: {
+    type: Object as PropType<any>,
+  },
+  sessions: {
+    type: Array as PropType<any>,
+    required: true,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
 });
+
+const listMedicalRecordTab = [
+  {
+    value: "rekam-medis",
+    icon: "PhListPlus",
+    text: "Rekam Medis",
+  },
+  {
+    value: "asesmen",
+    icon: "PhListChecks",
+    text: "Asesmen",
+  },
+  {
+    value: "soapier",
+    icon: "PhStethoscope",
+    text: "S.O.A.P.I.E.R",
+  },
+];
 
 const selectedTab = defineModel<string>("selectedTab", {
   default: "rekam-medis",
@@ -19,7 +56,61 @@ const selectedSessionTab = defineModel<string>("selectedSessionTab", {
   default: "non-sesi",
 });
 
+const createNewSession = async (dataSession: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.createNewSession({
+      rekamMedisUuid: props.rmUuid,
+      dateOrder: props.selectedRecord.dateOrder,
+    });
+    if (response && response.payload) {
+      if (response && response.payload) {
+        let responseGetRM = await rekamMedisStore.getRekamMedis({
+          rekamMedisUuid: props.rmUuid,
+          dateOrder: props.selectedRecord.dateOrder,
+          sessionOrder: props.sessions[props.sessions.length - 1].order + 1,
+        });
+        if (responseGetRM && responseGetRM.payload) {
+          rekamMedisStore.setOpenedRekamMedisData(responseGetRM.payload);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 const deleteSessionDialog = ref(false);
+const deleteSessionReason = ref<string>("");
+const deleteSession = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const deletedSessionData = props.sessions.find(
+      (session: any) => session.order == selectedSessionTab.value
+    );
+
+    const response = await rekamMedisStore.deleteSession({
+      sessionUuid: deletedSessionData.id,
+      alasan: deleteSessionReason.value,
+    });
+    if (response && response.payload) {
+      const responseGetNewRM = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: props.rmUuid,
+      });
+      if (responseGetNewRM && responseGetNewRM.payload) {
+        rekamMedisStore.setOpenedRekamMedisData(responseGetNewRM.payload);
+        deleteSessionReason.value = "";
+        deleteSessionDialog.value = false;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 </script>
 
 <template>
@@ -239,11 +330,13 @@ const deleteSessionDialog = ref(false);
         :key="selectedTab"
         v-model="selectedSessionTab"
         :selectedTab="selectedTab"
-        :dataSession="['Sesi 1', 'Sesi 2']"
+        :dataSession="sessions"
         class="mt-[10px] grow"
+        @addSession="createNewSession"
       />
       <div class="flex border-b border-grey-100">
         <CustomButton
+          v-if="sessions.length > 1"
           @click="deleteSessionDialog = true"
           class="my-auto bg-danger-300 !rounded-md"
           label="Hapus Sesi"
@@ -260,11 +353,13 @@ const deleteSessionDialog = ref(false);
       v-model:visible="deleteSessionDialog"
       headerBg="bg-danger-300"
       width="600px"
+      @closeDialog="deleteSessionReason = ''"
     >
       <template #header>Hapus Sesi</template>
       <template #body>
         <div class="pt-5">
           <CustomTextfield
+            v-model="deleteSessionReason"
             label="Alasan Menghapus Sesi"
             class="w-full mr-[30px]"
             placeholder="Alasan Menghapus Sesi"
@@ -272,7 +367,8 @@ const deleteSessionDialog = ref(false);
           <div class="mt-5 text-normal">
             <div>Seluruh data pemeriksaan pasien pada sesi akan terhapus.</div>
             <div class="mt-1">
-              Anda yakin akan menghapus <span class="font-bold">Sesi 1</span> ?
+              Anda yakin akan menghapus
+              <span class="font-bold">Sesi {{ selectedSessionTab }}</span> ?
             </div>
           </div>
         </div>
@@ -280,7 +376,7 @@ const deleteSessionDialog = ref(false);
       <template #footer>
         <div class="flex justify-end">
           <CustomButton
-            @click="() => {}"
+            @click="(deleteSessionDialog = false), (deleteSessionReason = '')"
             label="Tidak"
             outlined
             class="mr-[10px]"
@@ -288,7 +384,8 @@ const deleteSessionDialog = ref(false);
             textColor="text-grey-300"
           />
           <CustomButton
-            @click="() => {}"
+            @click="deleteSession"
+            :disabled="!deleteSessionReason"
             class="my-auto bg-danger-300"
             label="Iya, Hapus"
             iconType="fill"

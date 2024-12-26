@@ -9,10 +9,25 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriCatatanHasilPenunjang from "@/components/RekamMedis/CatatanHasilPenunjang/HistoriCatatanHasilPenunjang.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -39,10 +54,24 @@ onBeforeMount(async () => {
   });
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  console.log("Adding new data:", values);
-  emit("submit", values);
-  isEditing.value = false;
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      // NOTE Apa ini
+      isLatest: true,
+      key: "catatan_penunjang",
+      data: values,
+    });
+    if (response && response.payload) {
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const toggleEdit = () => {
