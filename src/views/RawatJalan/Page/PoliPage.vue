@@ -76,7 +76,7 @@ const props = defineProps<{
 watch(
   () => props.filter,
   async (newFilter) => {
-    // console.log(`Filter anyar`, newFilter);
+    console.log(`Filter anyar`, newFilter);
     resetFilter();
     statusPelayanan.value = ""; // Reset statusPelayanan
     filterData.value = {
@@ -101,7 +101,8 @@ const currentRouteName = ref("");
 
 onMounted(() => {
   currentRouteName.value = route.name ? String(route.name) : "";
-  search();
+  // search();
+  console.log("Current Route Name:", currentRouteName.value);
 });
 
 const updateSelectedPatient = (patient: any) => {
@@ -181,6 +182,7 @@ const filterStatus = async (status: string) => {
     status: statusPelayanan.value,
   };
   console.log(status);
+  console.log(filterData.value);
   // console.log(`filter paling baru`, filterData.value);
   // search();
   patientData.value = await fetchRJPatient();

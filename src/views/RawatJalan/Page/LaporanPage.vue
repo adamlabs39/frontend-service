@@ -331,7 +331,7 @@ const handleRefreshPage = () => {
               v-model="searchDokterDPJPFilter"
               label="Dokter DPJP"
               class=""
-              optionLabel="detailPegawai.name"
+              optionLabel="pegawai.name"
               optionValue="uuid"
               :options="praktisiPayload"
               place-holder="Pilih Dokter"

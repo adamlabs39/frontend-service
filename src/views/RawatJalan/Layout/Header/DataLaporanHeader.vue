@@ -95,7 +95,7 @@ defineExpose({
           v-if="currentRouteName === 'kunjungan-rawat-jalan'"
           v-model="valueDokterDPJPFilter"
           label="Dokter DPJP"
-             optionLabel="detailPegawai.name"
+             optionLabel="pegawai.name"
           optionValue="uuid"
           :options="praktisiPayload"
           class="mr-5"

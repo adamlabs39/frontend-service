@@ -11,6 +11,200 @@ import DataPerpindahanPasien from "../Layout/Tabel/Laporan/DataPerpindahanPasien
 import DataPembatalanDirawat from "../Layout/Tabel/Laporan/DataPembatalanDirawat.vue";
 import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPasien.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
+import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useRuanganStore } from "@/stores/datamaster/ruangan";
+import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+
+// Filter 
+interface Filter {
+  page?: number;
+  limit?: number;
+  q?: string;
+  practitionerUuid?: string;
+  pelayanan?: string;
+  penjamin?: string;
+  jenisKunjungan?: string;
+  ruangan?: string;
+  startDate?: string;
+  endDate?: string;
+  name?: string;
+  lokasiUuid?: string;
+  month?: number;
+}
+
+// Pagination Properties
+const properties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// STORE
+const useUtilsStore = utilsStore();
+const rekapTindakanPasienStore = useRekapTindakanStore()
+const kunjunganRawatInap = useAdmisiIGDStore()
+const dokterStore = usePraktisiStore()
+const ruanganStore = useRuanganStore();
+
+
+// Data From API
+const reportData = ref([])
+const dokterPayload = ref<any[]>([])
+const ruanganPayload = ref<any[]>([])
+
+const fetchLaporanData = async (filter: Filter = {}) => {
+  useUtilsStore.setLoading(true);
+  let response;
+  try {
+  if (pageType.value === "kunjungan-rawat-inap") {
+    response = await kunjunganRawatInap.getKunjunganReport(filter)
+  } else if (pageType.value === "perpindahan-pasien") {
+  } else if (pageType.value === "pembatalan-dirawat") {
+    response = await kunjunganRawatInap.getBatalKunjunganReport(filter)
+  } else {
+    response = await rekapTindakanPasienStore.getTindakanPasien(filter)
+  }
+   if(response && response.payload){
+     properties.value.total = response.payload.totalData;
+     return response.payload
+   } else {
+    return []
+   }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+}
+
+// FETCH Dokter DPJP
+const fetchDokterData = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await dokterStore.getAktifApi();
+    if (response && response.payload) {
+      dokterPayload.value = response.payload.filter((item: { isDoctor: boolean }) => item.isDoctor)
+      console.log("Dokter Payload:", dokterPayload.value);
+    } else {
+      dokterPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    dokterPayload.value = [];
+  }finally {
+    useUtilsStore.setLoading(false);
+  }
+}
+
+// FETCH RUANGAN
+const fetchRuangan = async () => {
+  // Fetch data ruangan dari API
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await ruanganStore.getAktifApi();
+    if (response && response.payload) {
+      ruanganPayload.value = response.payload;
+      console.log("Ruangan Payload:", ruanganPayload.value);
+    } else {
+      ruanganPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    ruanganPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+// Kelas
+const optionsKelas = ref([
+  { label: "kelas 1", value: 1 },
+  { label: "kelas 2", value: 2 },
+  { label: "kelas 3", value: 3 },
+  { label: "VIP", value: 4 },
+  { label: "VVIP", value: 5 },
+]);
+
+// Function to search data
+const searchData = async () => {
+  let filter = {} as Filter;
+  filter = setFilter();
+  reportData.value = await fetchLaporanData(filter);
+};
+
+const setFilter = () => {
+  let filter = {} as Filter
+
+  filter.page = properties.value.page
+  filter.limit = properties.value.page_size
+  filter.q = valueSearchRM.value;
+
+  if (pageType.value === "kunjungan-rawat-inap") {
+    filter.practitionerUuid = searchDokterDPJPFilter.value;
+    filter.jenisKunjungan = "RI";
+  } else if (pageType.value === "perpindahan-pasien") {
+     filter.pelayanan = "RI";
+  }
+  filter.startDate = `${dateToEpoch(
+    setTimeForDate(valueStartedDate.value, 0, 0, 0)
+  )}`;
+  filter.endDate = `${dateToEpoch(
+    setTimeForDate(valueEndedDate.value, 23, 59, 59)
+  )}`;
+  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+
+  return filter
+  
+}
+
+
+const valueSearchRM = ref();
+const valueSearchPraktisi = ref();
+const valueStartedDate = ref<Date>(new Date());
+const valueEndedDate = ref<Date>(new Date());
+const valueBulan = ref();
+
+const handleSearchRM = (searchRM: string) => {
+  valueSearchRM.value = searchRM;
+};
+const handleSearchPraktisi = (searchDPJP: string) => {
+  valueSearchPraktisi.value = searchDPJP;
+};
+
+const handleStartedDate = (startedDate: any) => {
+  valueStartedDate.value = startedDate;
+};
+const handleEndedDate = (endedDate: any) => {
+  valueEndedDate.value = endedDate;
+};
+
+const handleBulan = (bulan: any) => {
+  valueBulan.value = bulan;
+};
+
+const resetFormRef = ref();
+
+const resetForm = () => {
+  valueSearchRM.value = "";
+  valueSearchPraktisi.value = "";
+  valueStartedDate.value = new Date();
+  valueEndedDate.value = new Date();
+  valueBulan.value = 0;
+  resetFormRef.value.resetForm();
+}
+
+// Reset filter fields
+const handleReset = () => {
+  resetForm();
+  searchData();
+};
+
+const handleRefreshPage = () => {
+  searchData();
+};
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
@@ -22,7 +216,7 @@ const searchDokterDPJPFilter = ref<string>("");
 
 // Untuk mengetahui sekarang ada di rute mana
 
-const updatePageType = (path: string) => {
+const updatePageType = async (path: string) => {
   // resetFilter();
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[3] ?? "";
@@ -38,12 +232,17 @@ const updatePageType = (path: string) => {
           : "Rekap Tindakan Pasien",
     },
   ];
+  let filter = {} as Filter;
+  filter = setFilter();
+  reportData.value = await fetchLaporanData(filter);
 };
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
   updatePageType(route.path);
+  fetchDokterData()
+  fetchRuangan()
 });
 </script>
 
@@ -55,8 +254,18 @@ onMounted(() => {
   >
     <template #header>
       <DataLaporanHeader
+      @update:value-r-m-filter="handleSearchRM"
+      @update:value-praktisi-filter="handleSearchPraktisi"
+       @update:started-date-filter="handleStartedDate"
+        @update:ended-date-filter="handleEndedDate"
+        @update:value-bulan-filter="handleBulan"
+        @search="searchData"
+        @reset="handleReset"
+        @refresh-page="handleRefreshPage"
         :current-route-name="pageType"
         :data-bread-crumb="dataBreadCrumb"
+        :praktisi-payload="dokterPayload"
+        ref="resetFormRef"
       >
         <template
           #before-content
@@ -70,28 +279,28 @@ onMounted(() => {
               v-model="searchRuanganFilter"
               label="Ruangan"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               place-holder="Pilih Ruangan"
-              :options="['Semua', 'Beberapa', 'Banyak']"
+              :options="ruanganPayload"
             />
             <CustomSelect
               v-model="searchKelasFilter"
               label="Kelas"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="label"
+              optionValue="value"
               place-holder="Pilih Kelas"
-              :options="['Semua', 'Beberapa', 'Banyak']"
+              :options="optionsKelas"
             />
             <CustomSelect
               v-model="searchDokterDPJPFilter"
               label="Dokter DPJP"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="pegawai.name"
+              optionValue="uuid"
               place-holder="Pilih Dokter"
-              :options="['Semua', 'Beberapa', 'Banyak']"
+              :options="dokterPayload"
             />
           </div>
         </template>

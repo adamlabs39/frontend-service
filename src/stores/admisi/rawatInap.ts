@@ -21,6 +21,7 @@ export const useAdmisiRIStore = defineStore({
         startDate = "",
         endDate = "",
         dpjp = "",
+        status = ""
       },
       payload = {}
     ) {
@@ -32,7 +33,7 @@ export const useAdmisiRIStore = defineStore({
         }
       });
       return apiAdmisiGet(
-        `/rawat-inap?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&room=${tempFilterRoom}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}`,
+        `/rawat-inap?q=${q}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&room=${tempFilterRoom}&start_date=${startDate}&end_date=${endDate}&dpjp=${dpjp}&status=${status}`,
         payload
       );
     },

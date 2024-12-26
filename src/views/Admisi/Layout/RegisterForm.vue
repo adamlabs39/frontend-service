@@ -632,7 +632,7 @@ const deleteGeneralConsent = async () => {
           <CustomButton
             v-else
             @click="confirmSaveDialog = true"
-            label="Simpan"
+            label="SimpanTES"
             class=""
             backgroundColor="bg-adameds-300"
           />

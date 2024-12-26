@@ -15,7 +15,9 @@ const props = defineProps({
   },
   dataPatient: {
     type: Array,
+    required: true,
   },
+ 
 });
 
 const emit = defineEmits([
@@ -67,6 +69,7 @@ const resetSelection = () => {
 </script>
 
 <template>
+{{ dataPatient }}
   <DataTable
     v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"

@@ -52,28 +52,36 @@ const searchQuery = ref<string>("");
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    let isDoctor = true;
-    let isNonDoctor = false;
+    // let isDoctor = true;
+    // let isNonDoctor = false;
     
-    const response = await praktisiStore.getApi({
-      page: praktisiProperties.value.page,
-      limit: praktisiProperties.value.page_size,
-      name: searchQuery.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
-    });
+    // const response = await praktisiStore.getApi({
+    //   page: praktisiProperties.value.page,
+    //   limit: praktisiProperties.value.page_size,
+    //   name: searchQuery.value,
+    //   doctor: isDoctor,
+    //   non_doctor: isNonDoctor,
+    // });
+
+    const response = await praktisiStore.getAktifApi()
 
     if (response && response.payload) {
-      praktisiProperties.value.total = response.properties.total;
-      praktisiPayload.value = [...response.payload];
-      // console.log(`COba`,praktisiPayload.value);
-       if (response.payload.length === praktisiProperties.value.page_size) {
-        praktisiProperties.value.page += 1;
-        await fetchPraktisiData(); 
-      }
+      praktisiPayload.value = response.payload
     } else {
       praktisiPayload.value = [];
     }
+
+    // if (response && response.payload) {
+    //   praktisiProperties.value.total = response.properties.total;
+    //   praktisiPayload.value = [...response.payload];
+    //   // console.log(`COba`,praktisiPayload.value);
+    //    if (response.payload.length === praktisiProperties.value.page_size) {
+    //     praktisiProperties.value.page += 1;
+    //     await fetchPraktisiData(); 
+    //   }
+    // } else {
+    //   praktisiPayload.value = [];
+    // }
   } catch (error) {
     console.error("Failed to fetch data", error);
     praktisiPayload.value = [];
@@ -260,7 +268,7 @@ onMounted(() => {
           v-model="searchDokterFilter"
           label="Dokter"
           class="mr-5 grow"
-          optionLabel="detailPegawai.name"
+          optionLabel="pegawai.name"
           optionValue="uuid"
           place-holder="Cari Dokter"
           :options="praktisiPayload"
