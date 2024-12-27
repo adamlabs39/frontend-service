@@ -68,7 +68,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
     response = await rekapTindakanPasienStore.getTindakanPasien(filter)
   }
    if(response && response.payload){
-     properties.value.total = response.payload.totalData;
+     properties.value.total = response.properties.totalData;
      return response.payload
    } else {
     return []
@@ -236,6 +236,14 @@ const updatePageType = async (path: string) => {
   filter = setFilter();
   reportData.value = await fetchLaporanData(filter);
 };
+
+// PAGINATION
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  searchData();
+};
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
@@ -307,11 +315,14 @@ onMounted(() => {
       </DataLaporanHeader>
     </template>
     <template #content>
+      <div v-if="reportData.length">
+        <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" :payload="reportData"/>
+        <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
+        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
+        <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
+      </div>
+      <NoData v-else/>
       <!-- <NoData /> -->
-      <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" />
-      <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
-      <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
-      <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
     </template>
     <template #footer>
       <div class="flex justify-between">
@@ -322,7 +333,11 @@ onMounted(() => {
           class="my-auto bg-adameds-300"
           label="Cetak"
         />
-        <CustomPaginator :rows="10" :totalRecords="120" @page="() => {}" />
+       <CustomPaginator
+          :rows="properties.page_size"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>

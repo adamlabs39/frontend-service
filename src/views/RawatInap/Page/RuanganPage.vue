@@ -41,7 +41,7 @@ interface Filter {
 const isDataFetched = ref(false);
 
 // Data Patient From API
-const patientData = ref<any>([]);
+const patientData = ref<any[]>([]);
 const selectedPatient = ref<any[]>([]);
 // DIRAWAT / DISCHARGE
 const selectedTab = ref("");
@@ -265,10 +265,9 @@ onMounted(() => {
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      
       <DataTable
+      v-if="patientData.length > 0"
         v-model:selection="selectedPatient"
-        v-if="patientData.length"
         :value="patientData"
          tableStyle="min-width: 50rem"
         scrollable
