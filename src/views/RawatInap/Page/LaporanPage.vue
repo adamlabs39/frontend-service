@@ -27,7 +27,7 @@ interface Filter {
   pelayanan?: string;
   penjamin?: string;
   jenisKunjungan?: string;
-  ruangan?: string;
+  room?: string;
   startDate?: string;
   endDate?: string;
   name?: string;
@@ -141,6 +141,7 @@ const setFilter = () => {
   filter.page = properties.value.page
   filter.limit = properties.value.page_size
   filter.q = valueSearchRM.value;
+  filter.room = searchRuanganFilter.value;
 
   if (pageType.value === "kunjungan-rawat-inap") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
@@ -193,6 +194,10 @@ const resetForm = () => {
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
   valueBulan.value = 0;
+  searchRuanganFilter.value = "";
+  searchKelasFilter.value = "";
+  searchDokterDPJPFilter.value = "";
+  
   resetFormRef.value.resetForm();
 }
 
@@ -261,6 +266,7 @@ onMounted(() => {
     class=""
   >
     <template #header>
+      <!-- {{ searchRuanganFilter }} -->
       <DataLaporanHeader
       @update:value-r-m-filter="handleSearchRM"
       @update:value-praktisi-filter="handleSearchPraktisi"
@@ -288,7 +294,7 @@ onMounted(() => {
               label="Ruangan"
               class=""
               optionLabel="name"
-              optionValue="uuid"
+              optionValue="name"
               place-holder="Pilih Ruangan"
               :options="ruanganPayload"
             />

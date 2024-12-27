@@ -266,7 +266,7 @@ onMounted(() => {
     </template>
     <template #content>
       <DataTable
-      v-if="patientData.length > 0"
+       v-if="patientData && patientData.length > 0"
         v-model:selection="selectedPatient"
         :value="patientData"
          tableStyle="min-width: 50rem"
