@@ -20,7 +20,7 @@ const props = defineProps({
     type: Array<SidebarBody>,
     required: true,
   },
-  showFilterPoli: {
+  showFilter: {
     type: Boolean,
     default: false,
   },
@@ -35,11 +35,11 @@ const router = useRouter();
 const route = useRoute();
 
 const showSidebar = ref(true);
-const emit = defineEmits(["filterChanged", "update:searchPoli"]);
-const searchPoli = ref("");
+const emit = defineEmits(["filterChanged", "update:searchSidebar"]);
+const searchSidebar = ref("");
 
-watch(searchPoli, (newValue) => {
-  emit("update:searchPoli", newValue);
+watch(searchSidebar, (newValue) => {
+  emit("update:searchSidebar", newValue);
 });
 
 const goToPage = (url: string) => {
@@ -143,14 +143,14 @@ const getSVG = (svg: string) => {
                  >
                    <div
                      class="flex m-[10px]"
-                     v-if="showFilterPoli && row1.name === 'Poli'"
+                     v-if="showFilter && row1.name === 'Poli' || row1.name === 'Ruang Rawatan'"
                    >
                      <PhMagnifyingGlass class="my-auto mr-2" size="20" />
                      <input
                        type="text"
                        class="w-full text-white bg-transparent"
-                       placeholder="Cari Poli ..."
-                      v-model="searchPoli"
+                       :placeholder="row1.name === 'Poli' ? `Cari ${row1.name} ...`: 'Cari Ruangan ...'"
+                       v-model="searchSidebar"
                     />
                   </div>
 

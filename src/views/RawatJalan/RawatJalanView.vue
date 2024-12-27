@@ -230,7 +230,7 @@ onMounted(() => {
       sidebarTitleUrl="/rawat-jalan/poli"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
-      showFilterPoli
+      showFilter
       showStockBtn
       v-model:filter="filter"
       @filter-changed="updateFilterMenu"

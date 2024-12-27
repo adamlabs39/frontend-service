@@ -105,6 +105,7 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
+  selectedTab.value = "";
 };
 
 defineExpose({
@@ -117,7 +118,7 @@ onMounted(() => {
 </script>
 
 <template>
-  {{ currentRouteName }}
+  <!-- {{ currentRouteName }} -->
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
@@ -196,7 +197,7 @@ onMounted(() => {
           v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
           v-model="searchDokterFilter"
           label="Dokter"
-          class="grow"
+          class="mr-5 grow"
           optionLabel="pegawai.name"
           optionValue="uuid"
           place-holder="Cari Dokter"
@@ -267,26 +268,26 @@ onMounted(() => {
         />
         <!-- Filter = {{ props.filter }} -->
         <CustomButton
-          label="PELAYANAN"
+          label="DIRAWAT"
           class="grow"
-          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '3' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '3' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '0'))"
-          :outlined="selectedTab !== '0'"
+          :class="selectedTab === '3' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '3'))"
+          :outlined="selectedTab !== '3'"
         />
         <CustomButton
           label="DISCHARGE"
           class="grow"
-          :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '4' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '1' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '4' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '1'))"
-          :outlined="selectedTab !== '1'"
+          :class="selectedTab === '4' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '4'))"
+          :outlined="selectedTab !== '4'"
         />
       </div>
 

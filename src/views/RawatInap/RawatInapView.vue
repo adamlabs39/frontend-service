@@ -218,10 +218,10 @@ onBeforeMount(() => {
       sidebarTitleUrl="/rawat-inap/ruangan"
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
-      :show-filter-poli="true"
+      showFilter
       showStockBtn
       v-model:filter="filter"
-      @update:search-poli="handleSearchRuangan"
+      @update:search-sidebar="handleSearchRuangan"
       @filterChanged="updateFilterMenu"
     />
     <component
