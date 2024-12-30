@@ -26,6 +26,10 @@ const props = defineProps({
     type: Object as PropType<any>,
     default: null,
   },
+  jenisKelamin: {
+    type: String,
+    default: "Male",
+  },
 });
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -251,19 +255,19 @@ const saveCanvas = () => {
   let tempData: any = {};
   let dataURL = canvas.value!.toDataURL("image/png");
   if (keterangan.value || !isCanvasEmpty(dataURL)) {
-    tempData[props.type.toLowerCase()] = true;
+    tempData[props.type.toLowerCase().replace(/ /g, '_')] = true;
   } else {
     dataURL = "";
-    tempData[props.type.toLowerCase()] = false;
+    tempData[props.type.toLowerCase().replace(/ /g, '_')] = false;
   }
-  tempData[`gambar_${props.type.toLowerCase()}`] = dataURL;
-  tempData[`ket_${props.type.toLowerCase()}`] = keterangan.value;
+  tempData[`gambar_${props.type.toLowerCase().replace(/ /g, "_")}`] = dataURL;
+  tempData[`ket_${props.type.toLowerCase().replace(/ /g, '_')}`] = keterangan.value;
   return tempData;
 };
 
 const loadImage = () => {
   const img = new Image();
-  img.src = props.openedData ? props.openedData[`gambar${props.type}`] : "";
+  img.src = props.openedData ? props.openedData[`gambar${props.type.replace(/ /g, "")}`] : "";
   img.onload = () => {
     ctx.value!.drawImage(img, 0, 0);
   };
@@ -311,8 +315,15 @@ watch(
 );
 
 const getSVG = (svg: string) => {
+  const gender = props.jenisKelamin === "Male" ? "Laki-laki" : "Perempuan";
+  const svgMappings: { [key: string]: string } = {
+    Dada: `Dada - ${gender}`,
+    Abdomen: `Abdomen - ${gender}`,
+    Urogenital: `Urogenital - ${gender}`,
+    Muskuloskeletal: `Muskuloskeletal - ${gender}`,
+  };
   const imgUrl = new URL(
-    `../../../assets/images/PhisicalExam/${svg}.svg`,
+    `../../../assets/images/PhisicalExam/${svgMappings[svg] || svg}.svg`,
     import.meta.url
   ).href;
   return imgUrl;

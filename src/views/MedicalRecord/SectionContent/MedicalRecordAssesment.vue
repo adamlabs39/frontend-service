@@ -146,6 +146,7 @@ const props = defineProps({
       :selectedPemeriksaanFisik="selectedPemeriksaanFisik"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <PemeriksaanGigi
       v-if="selectedAssesment == 'Pemeriksaan Gigi'"

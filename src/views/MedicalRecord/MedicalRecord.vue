@@ -519,6 +519,7 @@ defineExpose({ showDialogRM });
                     id="Pemeriksaan Fisik"
                     :ref="refs.pemeriksaanFisik"
                     class="mb-[10px]"
+                    :patientData="patientData"
                   />
                   <CatatanHasilPenunjang
                     id="Catatan Hasil Penunjang"

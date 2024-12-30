@@ -37,6 +37,9 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+  },
 });
 
 const keadaanUmum = ref("");
@@ -89,10 +92,13 @@ const arrCanvas = ref<any[]>([
 ]);
 const openFilledCanvas = () => {
   arrCanvas.value.forEach((canvasRef) => {
+    const tempLowerCaseFirstChar =
+      (canvasRef.value as any).props?.type.charAt(0).toLowerCase() +
+      (canvasRef.value as any).props?.type.slice(1);
     if (
       canvasRef.value &&
       rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
-        (canvasRef.value as any).props?.type.toLowerCase()
+        tempLowerCaseFirstChar.replace(/ /g, "")
       ]
     ) {
       (canvasRef.value as any).open();
@@ -147,6 +153,10 @@ const onSubmit = async () => {
 onMounted(() => {
   if (props.selectedPemeriksaanFisik) {
     goToEdit(props.selectedPemeriksaanFisik);
+  }
+  if (rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum) {
+    keadaanUmum.value =
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum;
   }
 });
 
@@ -231,7 +241,9 @@ defineExpose({
         <div v-else class="py-5 flex flex-col gap-[19px]">
           <CustomInfoRow
             label="Keadaan Umum"
-            :value="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum"
+            :value="
+              rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum
+            "
           />
           <hr class="border-grey-200" />
         </div>
@@ -337,6 +349,7 @@ defineExpose({
           ref="canvasDada"
           header="Dada"
           type="Dada"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -364,6 +377,7 @@ defineExpose({
           ref="canvasAbdomen"
           header="Abdomen"
           type="Abdomen"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -382,6 +396,7 @@ defineExpose({
           ref="canvasUrogenital"
           header="Urogenital"
           type="Urogenital"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -409,6 +424,7 @@ defineExpose({
           ref="canvasMuskuloskeletal"
           header="Muskuloskeletal"
           type="Muskuloskeletal"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -416,12 +432,12 @@ defineExpose({
         />
         <CustomCanvasDrawer
           ref="canvasPemeriksaanLainya"
-          header="Pemeriksaan Lainya"
-          type="Pemeriksaan Lainya"
+          header="Pemeriksaan Lainnya"
+          type="Pemeriksaan Lainnya"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
-          @editAsesmen="emit('editAsesmen', 'Pemeriksaan Lainya')"
+          @editAsesmen="emit('editAsesmen', 'Pemeriksaan Lainnya')"
         />
       </div>
     </template>
