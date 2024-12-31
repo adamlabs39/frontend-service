@@ -26,6 +26,9 @@ const codeVoucher = ref("");
 const codeDiscount = ref<number>();
 const saldoAwal = ref<number>();
 const selectShift = ref("");
+const cash = ref<number>();
+const debit = ref<number>();
+const insurance = ref<number>();
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
 const listTagihanRIDialog = ref(false);
@@ -232,16 +235,56 @@ const submitOpenKasir = async () => {
       saldoAwalDisabled.value = true;
       shiftDisabled.value = true;
       isKasirOpen.value = true;
+    } else {
+      closeKasirDialog.value = true;
     }
-    else {
-    closeKasirDialog.value = true;
-  } 
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {
     storeUtils.setLoading(false);
   }
 };
+
+const submitCloseKasir = async () => {
+  storeUtils.setLoading(true);
+
+  try {
+    const payload = {
+      cash: cash.value,
+      debit: debit.value,
+      insurance: insurance.value,
+    };
+    console.log("payloadSaldo", payload);
+    const response = await tagihanStore.postCloseKasir(payload);
+    saldoAwalDisabled.value = false;
+    shiftDisabled.value = false;
+    isKasirOpen.value = false;
+    closeKasirDialog.value = false;
+    saldoAwal.value = 0;
+    selectShift.value = "";
+
+    //
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const submitClosingHarianKasir = async () => {
+  storeUtils.setLoading(true);
+  try {
+    
+      const response = await tagihanStore.postCloseHarianKasir();
+     closeHarianDialog.value = false;
+   
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 onMounted(() => {
   fetchSearchTransactions();
 });
@@ -694,7 +737,7 @@ onMounted(() => {
             textColor="text-grey-300"
           />
           <CustomButton
-            @click="() => {}"
+            @click="submitClosingHarianKasir"
             label="Closing Harian"
             class="ml-2"
             backgroundColor="bg-adameds-300"
@@ -745,7 +788,7 @@ onMounted(() => {
             <p class="mt-6 text-sm font-bold">Saldo Awal (Kas)</p>
           </div>
           <div>
-            <p class="mt-6 text-sm">Saldo Awal (Kas)</p>
+            <p class="mt-6 text-sm">{{ saldoAwal }}</p>
           </div>
         </div>
 
@@ -755,7 +798,12 @@ onMounted(() => {
             <p class="mt-6 text-sm font-bold">Tunai</p>
           </div>
           <div>
-            <CustomTextfield label="" class="mt-[15px]" placeholder="0">
+            <CustomInputNumber
+              v-model="cash"
+              :show-label="false"
+              class="mt-[15px]"
+              placeholder=""
+            >
               <template #prependText>
                 <div
                   class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
@@ -763,7 +811,53 @@ onMounted(() => {
                   Rp.
                 </div>
               </template>
-            </CustomTextfield>
+            </CustomInputNumber>
+          </div>
+        </div>
+
+        <!-- Debit -->
+        <div class="flex justify-between">
+          <div>
+            <p class="mt-6 text-sm font-bold">Debit</p>
+          </div>
+          <div>
+            <CustomInputNumber
+              v-model="debit"
+              :show-label="false"
+              class="mt-[15px]"
+              placeholder="0"
+            >
+              <template #prependText>
+                <div
+                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                >
+                  Rp.
+                </div>
+              </template>
+            </CustomInputNumber>
+          </div>
+        </div>
+
+        <!-- Kredit -->
+        <div class="flex justify-between">
+          <div>
+            <p class="mt-6 text-sm font-bold">Kredit (Asuransi)</p>
+          </div>
+          <div>
+            <CustomInputNumber
+              v-model="insurance"
+              :show-label="false"
+              class="mt-[15px]"
+              placeholder="0"
+            >
+              <template #prependText>
+                <div
+                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
+                >
+                  Rp.
+                </div>
+              </template>
+            </CustomInputNumber>
           </div>
         </div>
         <hr class="mt-6 border-1 border-grey-200" />
@@ -779,7 +873,7 @@ onMounted(() => {
             textColor="text-grey-300"
           />
           <CustomButton
-            @click="handleClosingKasir"
+            @click="submitCloseKasir"
             label="Closing Kasir"
             class="ml-2"
             backgroundColor="bg-adameds-300"

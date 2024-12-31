@@ -9,6 +9,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import { useReportKasirStore } from "@/stores/pembayaran/reportKasir";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -16,13 +17,14 @@ const reportType = ref("");
 const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
+const reportKasirStore = useReportKasirStore;
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
+const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', rows);
+  console.log("Rows updated:", rows);
 };
 const handlePageUpdate = (page: number) => {
-  console.log('Page updated:', page);
+  console.log("Page updated:", page);
 };
 
 const itemsPasien = ref([
@@ -134,8 +136,6 @@ onBeforeRouteLeave((to, from) => {
 onMounted(() => {
   updatePageType(route.path);
 });
-
-
 </script>
 
 <template>
@@ -157,9 +157,17 @@ onMounted(() => {
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Closing Kasir</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Closing Kasir
+                  </p>
                 </div>
               </div>
             </div>
@@ -177,7 +185,7 @@ onMounted(() => {
                 class="mr-5 w-[250px]"
                 optionLabel=""
                 optionValue=""
-                :options="['Semua','Lunas', 'Piutang']"
+                :options="['Semua', 'Lunas', 'Piutang']"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
@@ -222,75 +230,115 @@ onMounted(() => {
       </template>
       <template #content>
         <DataTable
-            v-if="itemsPasien.length"
-            :value="itemsPasien"
-            scrollable
-            scrollHeight="flex"
-            :pt="{ headerRow: 'text-SM' }"
+          v-if="itemsPasien.length"
+          :value="itemsPasien"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
         >
-            <Column field="nomor" headerClass="bg-adameds-50">
+          <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
-                <div class="w-full font-semibold text-center">No.</div>
+              <div class="w-full font-semibold text-center">No.</div>
             </template>
             <template #body="slotProps">
-                <div class="text-center">
+              <div class="text-center">
                 <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
-                </div>
+              </div>
             </template>
-            </Column>
-            <Column field="pasien" header="Jenis Kasir" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="pasien"
+            header="Jenis Kasir"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.address }}</div>
+              <div class="text-SM">{{ slotProps.data.address }}</div>
             </template>
-            </Column>
-            <Column field="keperawatan" header="Tgl. Buka Kasir" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="keperawatan"
+            header="Tgl. Buka Kasir"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.doctor }}
+                <span class="text-adameds-300">|</span>
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
             </template>
-            </Column>
-            <Column field="keperawatan" header="Tgl. Tutup Kasir" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="keperawatan"
+            header="Tgl. Tutup Kasir"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.doctor }}
+                <span class="text-adameds-300">|</span>
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
             </template>
-            </Column>
-            <Column field="keperawatan" header="Shift" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="keperawatan"
+            header="Shift"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.doctor }}
+                <span class="text-adameds-300">|</span>
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
             </template>
-            </Column>
-            <Column field="keperawatan" header="Tgl. Closing Harian" headerClass="bg-adameds-50">
+          </Column>
+          <Column
+            field="keperawatan"
+            header="Tgl. Closing Harian"
+            headerClass="bg-adameds-50"
+          >
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.doctor }}
+                <span class="text-adameds-300">|</span>
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
             </template>
-            </Column>
-            <Column field="Petugas" header="Petugas" headerClass="bg-adameds-50">
+          </Column>
+          <Column field="Petugas" header="Petugas" headerClass="bg-adameds-50">
             <template #body="slotProps">
-                <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.doctor }}
+                <span class="text-adameds-300">|</span>
+                {{ slotProps.data.tanggal_jadwal }}
+              </div>
             </template>
-            </Column>
+          </Column>
         </DataTable>
         <NoData />
       </template>
       <template #footer>
         <div class="flex justify-between">
-            <CustomButton
-                @click="() => {}"
-                icon="PhPrinter"
-                label="Cetak"
-                class="mr-[10px]"
-                backgroundColor="bg-adameds-300"
-            />
-            <Paginator
-                :rows="10"
-                :totalRecords="120"
-                :rowsPerPageOptions="[10, 20, 30]"
-                template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-                currentPageReportTemplate="{currentPage}"
-            >
+          <CustomButton
+            @click="() => {}"
+            icon="PhPrinter"
+            label="Cetak"
+            class="mr-[10px]"
+            backgroundColor="bg-adameds-300"
+          />
+          <Paginator
+            :rows="10"
+            :totalRecords="120"
+            :rowsPerPageOptions="[10, 20, 30]"
+            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+            currentPageReportTemplate="{currentPage}"
+          >
             <template #start="slotProps">Total Data: 0</template>
-            </Paginator>
+          </Paginator>
         </div>
-    </template>
+      </template>
     </Card>
   </div>
 </template>
