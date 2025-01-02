@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, type PropType } from "vue";
+import {
+  computed,
+  onBeforeMount,
+  onMounted,
+  ref,
+  watch,
+  type PropType,
+} from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
@@ -91,7 +98,10 @@ const arrCanvas = ref<any[]>([
 ]);
 const openFilledCanvas = () => {
   arrCanvas.value.forEach((canvasRef) => {
-    if (canvasRef.value && rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik) {
+    if (
+      canvasRef.value &&
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik
+    ) {
       if ((canvasRef.value as any).props?.type == "ohis") {
         if (
           rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.ohis.ohisItem
@@ -164,17 +174,26 @@ const onSubmit = async () => {
   }
 };
 
-onMounted(() => {
-  if (props.selectedPemeriksaanFisik) {
-    goToEdit(props.selectedPemeriksaanFisik);
-  }
+const setFormData = () => {
   if (
     rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik &&
     rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum
   ) {
     keadaanUmum.value =
       rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum;
+  } else keadaanUmum.value = "";
+};
+
+onMounted(() => {
+  if (props.selectedPemeriksaanFisik) {
+    goToEdit(props.selectedPemeriksaanFisik);
   }
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const accordion = ref<HTMLCanvasElement | null>(null);

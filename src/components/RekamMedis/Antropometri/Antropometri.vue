@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, computed, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -82,7 +82,7 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 });
 
-onBeforeMount(() => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.antropometri) {
     const tempAntropometri = rekamMedisStore.openedRekamMedis.data.antropometri;
     setValues({
@@ -93,7 +93,17 @@ onBeforeMount(() => {
       petugas: tempAntropometri.petugas,
     });
     calculateIMT();
-  }
+  } else resetForm();
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const compareDialog = ref(false);

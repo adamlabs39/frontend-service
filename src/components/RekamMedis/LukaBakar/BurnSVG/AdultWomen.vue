@@ -1,11 +1,75 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch, type PropType } from "vue";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
 // NOTE Store
 const rekamMedisStore = useRekamMedisStore();
 
+const props = defineProps({
+  openedData: {
+    type: Object as PropType<any>,
+    default: null,
+  },
+});
+
 const data = ref<any>({
+  frt1: null,
+  frt2: null,
+  frt3: null,
+  frt4: null,
+  frt5: null,
+  frt6: null,
+  frt7: null,
+  frt8: null,
+  frt9: null,
+  frt10: null,
+  frt11: null,
+  frt12: null,
+  frt13: null,
+  frt14: null,
+  frt15: null,
+  frt16: null,
+  frt17: null,
+  frt18: null,
+  frt19: null,
+  frt20: null,
+  frt21: null,
+  frt22: null,
+  frt23: null,
+  frt24: null,
+  frt25: null,
+  frt26: null,
+  frt27: null,
+  bck1: null,
+  bck2: null,
+  bck3: null,
+  bck4: null,
+  bck5: null,
+  bck6: null,
+  bck7: null,
+  bck8: null,
+  bck9: null,
+  bck10: null,
+  bck11: null,
+  bck12: null,
+  bck13: null,
+  bck14: null,
+  bck15: null,
+  bck16: null,
+  bck17: null,
+  bck18: null,
+  bck19: null,
+  bck20: null,
+  bck21: null,
+  bck22: null,
+  bck23: null,
+  bck24: null,
+  bck25: null,
+  bck26: null,
+  bck27: null,
+  bck28: null,
+});
+const defaultData = ref<any>({
   frt1: null,
   frt2: null,
   frt3: null,
@@ -86,18 +150,27 @@ const getFillBody = (id: string) => {
   }
 };
 
-onBeforeMount(() => {
-  if (rekamMedisStore.openedRekamMedis.data.lukaBakar) {
-    const deFormatedArray =
-      rekamMedisStore.openedRekamMedis.data.lukaBakar.bodies.reduce(
-        (acc: any, item: any) => {
-          acc[item.anggotaTubuh] = item.grade;
-          return acc;
-        },
-        {} as Record<string, number | null>
-      );
+const setFormData = () => {
+  if (props.openedData) {
+    const deFormatedArray = props.openedData.bodies.reduce(
+      (acc: any, item: any) => {
+        acc[item.anggotaTubuh] = item.grade;
+        return acc;
+      },
+      {} as Record<string, number | null>
+    );
     data.value = Object.assign({}, deFormatedArray);
-  }
+  } else data.value = Object.assign({}, defaultData.value);
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const submitObject = () => {

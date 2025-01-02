@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, type PropType } from "vue";
+import { computed, onMounted, ref, watch, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { isCanvasEmpty } from "./pemeriksaanFisikUtils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const rekamMedisStore = useRekamMedisStore();
 
 const emit = defineEmits(["editAsesmen"]);
 
@@ -255,22 +259,35 @@ const saveCanvas = () => {
   let tempData: any = {};
   let dataURL = canvas.value!.toDataURL("image/png");
   if (keterangan.value || !isCanvasEmpty(dataURL)) {
-    tempData[props.type.toLowerCase().replace(/ /g, '_')] = true;
+    tempData[props.type.toLowerCase().replace(/ /g, "_")] = true;
   } else {
     dataURL = "";
-    tempData[props.type.toLowerCase().replace(/ /g, '_')] = false;
+    tempData[props.type.toLowerCase().replace(/ /g, "_")] = false;
   }
   tempData[`gambar_${props.type.toLowerCase().replace(/ /g, "_")}`] = dataURL;
-  tempData[`ket_${props.type.toLowerCase().replace(/ /g, '_')}`] = keterangan.value;
+  tempData[`ket_${props.type.toLowerCase().replace(/ /g, "_")}`] =
+    keterangan.value;
   return tempData;
 };
 
 const loadImage = () => {
   const img = new Image();
-  img.src = props.openedData ? props.openedData[`gambar${props.type.replace(/ /g, "")}`] : "";
+  img.src = props.openedData
+    ? props.openedData[`gambar${props.type.replace(/ /g, "")}`]
+    : "";
   img.onload = () => {
     ctx.value!.drawImage(img, 0, 0);
   };
+};
+
+const setFormData = () => {
+  if (props.openedData) {
+    keterangan.value = props.openedData[`ket${props.type}`];
+    loadImage();
+  } else {
+    keterangan.value = "";
+    clearCanvas();
+  }
 };
 
 onMounted(() => {
@@ -281,10 +298,7 @@ onMounted(() => {
 
     // Set default stroke color
     ctx.value!.strokeStyle = `#${colors.value}`;
-    keterangan.value = props.openedData
-      ? props.openedData[`ket${props.type}`]
-      : "";
-    loadImage();
+    setFormData();
   }
 
   if (canvas2.value) {
@@ -292,6 +306,12 @@ onMounted(() => {
     // canvas2.value = canvasElement2 as HTMLCanvasElement;
     ctx2.value = canvas2.value!.getContext("2d");
   }
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 watch(

@@ -4,8 +4,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { nextTick, ref, type PropType } from "vue";
+import { computed, nextTick, ref, watch, type PropType } from "vue";
 import { onBeforeUnmount, onMounted } from "vue";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const rekamMedisStore = useRekamMedisStore();
 
 interface ToothCondition {
   debrisIndex?: any;
@@ -364,13 +368,7 @@ const listKalkulusIndex = ref([
   },
 ]);
 
-onMounted(() => {
-  nextTick(() => {
-    if (canvas.value) {
-      resizeCanvas();
-      window.addEventListener("resize", resizeCanvas);
-    }
-  });
+const setFormData = () => {
   let tempOhisItem: any[] = [];
   if (props.openedData && props.openedData.ohis) {
     props.openedData.ohis.ohisItem.forEach((ohis: any) => {
@@ -399,7 +397,29 @@ onMounted(() => {
     } else if (totalOhis.value >= 3.1 && totalOhis.value <= 6.0) {
       ohisIntepretation.value = { code: "OI000031", name: "buruk" };
     }
+  } else {
+    itemsOhis.value = tempOhisItem;
+    totalDebrisIndex.value = 0;
+    totalCalculusIndex.value = 0;
+    totalOhis.value = 0;
+    ohisIntepretation.value = {};
   }
+}
+
+onMounted(() => {
+  nextTick(() => {
+    if (canvas.value) {
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+    }
+  });
+  setFormData()
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const saveOhis = () => {
