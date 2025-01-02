@@ -74,8 +74,7 @@ const arrCanvas = ref<any[]>([
   canvasHidung,
   canvasMulut,
   canvasRonggaMulut,
-  // FIXME Belum Ada
-  // canvasOHIS,
+  canvasOHIS,
   canvasTenggorkan,
   canvasLeher,
   canvasLeherDepan,
@@ -92,16 +91,26 @@ const arrCanvas = ref<any[]>([
 ]);
 const openFilledCanvas = () => {
   arrCanvas.value.forEach((canvasRef) => {
-    const tempLowerCaseFirstChar =
-      (canvasRef.value as any).props?.type.charAt(0).toLowerCase() +
-      (canvasRef.value as any).props?.type.slice(1);
-    if (
-      canvasRef.value &&
-      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
-        tempLowerCaseFirstChar.replace(/ /g, "")
-      ]
-    ) {
-      (canvasRef.value as any).open();
+    if (canvasRef.value && rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik) {
+      if ((canvasRef.value as any).props?.type == "ohis") {
+        if (
+          rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.ohis.ohisItem
+            .length
+        ) {
+          (canvasRef.value as any).open();
+        }
+      } else {
+        const tempLowerCaseFirstChar =
+          (canvasRef.value as any).props?.type.charAt(0).toLowerCase() +
+          (canvasRef.value as any).props?.type.slice(1);
+        if (
+          rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
+            tempLowerCaseFirstChar.replace(/ /g, "")
+          ]
+        ) {
+          (canvasRef.value as any).open();
+        }
+      }
     }
   });
 };
@@ -119,8 +128,13 @@ const submitAllCanvas = () => {
   let tempObjectData: any = {};
   arrCanvas.value.forEach((canvasRef) => {
     if (canvasRef.value) {
-      let data = (canvasRef.value as any).saveCanvas();
-      tempObjectData = { ...tempObjectData, ...data };
+      if ((canvasRef.value as any).props?.type == "ohis") {
+        let data = (canvasRef.value as any).saveOhis();
+        tempObjectData = { ...tempObjectData, ohis: data };
+      } else {
+        let data = (canvasRef.value as any).saveCanvas();
+        tempObjectData = { ...tempObjectData, ...data };
+      }
     }
   });
   return tempObjectData;
@@ -154,7 +168,10 @@ onMounted(() => {
   if (props.selectedPemeriksaanFisik) {
     goToEdit(props.selectedPemeriksaanFisik);
   }
-  if (rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum) {
+  if (
+    rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik &&
+    rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum
+  ) {
     keadaanUmum.value =
       rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum;
   }
@@ -314,6 +331,7 @@ defineExpose({
         <OhisInput
           ref="canvasOHIS"
           header="Oral Hyhiene Index Simplified (OHI-S)"
+          type="ohis"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
