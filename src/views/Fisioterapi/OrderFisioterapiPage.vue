@@ -1349,5 +1349,5 @@ const dialogData = ref<DialogData>();
       </template>
     </CustomDialog>
   </div>
-  <MedicalRecord ref="medicalRecord" />
+  <MedicalRecord ref="medicalRecord" :patientData="{}" />
 </template>

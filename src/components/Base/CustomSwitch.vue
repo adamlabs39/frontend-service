@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -39,7 +39,7 @@ const props = defineProps({
     default: "#14B8A6",
   },
   modelValue: {
-    type: [Boolean, String, Number],
+    type: [Boolean, String, Number] as PropType<any>,
     default: false,
   },
   trueValue: {
@@ -66,7 +66,7 @@ const props = defineProps({
 
 const checked = computed({
   get: () => props.modelValue,
-  set: (value: Boolean | String | Number) => emit("update:modelValue", value),
+  set: (value: any) => emit("update:modelValue", value),
 });
 const emit = defineEmits(["update:modelValue", "change"]);
 </script>

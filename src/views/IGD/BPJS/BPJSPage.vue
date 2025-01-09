@@ -63,7 +63,8 @@ const handleSearchExecuted = (status: boolean) => {
       <!-- <NoData v-else/> -->
     </template>
     <template #footer>
-      <FooterPagination/>
+      <!-- FIXME -->
+      <!-- <FooterPagination/> -->
     </template>
   </Card>
 </template>

@@ -310,7 +310,7 @@ const itemsPasien = ref([
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-  <MedicalRecord ref="medicalRecord" />
+  <MedicalRecord ref="medicalRecord" :patientData="{}" />
 </template>
 
 <style>

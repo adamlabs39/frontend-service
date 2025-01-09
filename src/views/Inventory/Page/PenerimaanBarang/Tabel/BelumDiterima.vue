@@ -51,42 +51,42 @@ interface PengajuanPembelian {
 const selectedPengajuanPembelian = ref([]);
 const pengajuanPembelians = ref<PengajuanPembelian[]>([]);
 
-watch(
-  () => props.pembelianData,
-  (newPembelianData) => {
-    if (newPembelianData) {
-      // Mengambil data asli dan mengecualikan properti yang diambil
-      const {
-        tanggalPembelian,
-        noPembelian,
-        kategoriItem,
-        jenisItem,
-        jenisStok,
-        supplier,
-        petugasPembuatPO,
-        status,
-        ...originalData // Mengambil sisa properti sebagai originalData
-      } = newPembelianData;
+// watch(
+//   () => props.pembelianData,
+//   (newPembelianData) => {
+//     if (newPembelianData) {
+//       // Mengambil data asli dan mengecualikan properti yang diambil
+//       const {
+//         tanggalPembelian,
+//         noPembelian,
+//         kategoriItem,
+//         jenisItem,
+//         jenisStok,
+//         supplier,
+//         petugasPembuatPO,
+//         status,
+//         ...originalData // Mengambil sisa properti sebagai originalData
+//       } = newPembelianData;
 
-      // Format data sesuai kebutuhan
-      const formattedData: PengajuanPembelian = {
-        tanggalPembelian: new Date(tanggalPembelian).toLocaleDateString(),
-        noPembelian,
-        kategoriItem,
-        jenisItem,
-        jenisStok,
-        supplier,
-        petugasPembuatPO,
-        status,
-        originalData, // Menyimpan data asli tanpa properti yang sudah diambil
-      };
+//       // Format data sesuai kebutuhan
+//       const formattedData: PengajuanPembelian = {
+//         tanggalPembelian: new Date(tanggalPembelian).toLocaleDateString(),
+//         noPembelian,
+//         kategoriItem,
+//         jenisItem,
+//         jenisStok,
+//         supplier,
+//         petugasPembuatPO,
+//         status,
+//         originalData, // Menyimpan data asli tanpa properti yang sudah diambil
+//       };
 
-      // Tambahkan data ke dalam array pengajuanPembelians
-      pengajuanPembelians.value.push(formattedData);
-    }
-  },
-  { immediate: true } 
-);
+//       // Tambahkan data ke dalam array pengajuanPembelians
+//       pengajuanPembelians.value.push(formattedData);
+//     }
+//   },
+//   { immediate: true } 
+// );
 </script>
 
 <template>

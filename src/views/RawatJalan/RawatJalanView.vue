@@ -180,22 +180,22 @@ const updateFilterMenu = (newFilter: { uuid: string; name: string }) => {
 // Search Poli
 let searchTimeout: ReturnType<typeof setTimeout>;
 
-
 const handleSearchPoli = (searchTerm: string) => {
   clearTimeout(searchTimeout);
   const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
 
   if (searchTerm === "") {
     // Kembalikan sidebarBodyList ke keadaan semula tanpa menambahkan item baru
-    sidebarBodyList.value[0].child[0].child = [
-      {
-        name: "Semua Poli",
-        icon: "",
-        type: linkType.LINK,
-        url: "/rawat-jalan/poli",
-      },
-      // Tambahkan item asli lainnya jika ada
-    ];
+    if (!sidebarBodyList.value[0].child?.[0].child) {
+      sidebarBodyList.value[0].child![0].child = [];
+    }
+
+    sidebarBodyList.value[0].child![0].child!.push({
+      name: "Semua Poli",
+      icon: "",
+      type: linkType.LINK,
+      url: "/rawat-jalan/poli",
+    });
     updateSidebarBodyList();
   } else {
     // Filter poliSection berdasarkan searchTerm
@@ -204,7 +204,10 @@ const handleSearchPoli = (searchTerm: string) => {
       const filteredPoli = poliSection.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      sidebarBodyList.value[0].child[0].child = filteredPoli;
+      if (!sidebarBodyList.value[0].child?.[0].child) {
+        sidebarBodyList.value[0].child![0].child = [];
+      }
+      sidebarBodyList.value[0].child![0].child!.push(...filteredPoli);
     }, 300); // P
   }
 };

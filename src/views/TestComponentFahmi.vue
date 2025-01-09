@@ -222,7 +222,7 @@ const petugasOption = ref([
       />
     </div>
     <div @click="openDialogRM">Show Dialog RM</div>
-    <MedicalRecord ref="medicalRecord" />
+    <MedicalRecord ref="medicalRecord" :patientData="{}" />
     <RMCustomSelect
       v-model="testSelectRM"
       :options="['1', '2']"

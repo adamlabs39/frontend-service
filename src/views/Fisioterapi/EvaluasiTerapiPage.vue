@@ -588,5 +588,5 @@ const popupDialog = ref(false);
       </template>
     </CustomDialog>
   </div>
-  <MedicalRecord ref="medicalRecord" />
+  <MedicalRecord ref="medicalRecord" :patientData="{}" />
 </template>

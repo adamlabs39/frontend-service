@@ -314,7 +314,7 @@ const resetSelection = () => {
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" />
+  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="{}" />
 </template>
 
 <style>

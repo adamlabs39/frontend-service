@@ -30,7 +30,7 @@ const fetchRuangan = async () => {
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
       console.log("Ruangan Payload:", ruanganPayload.value);
-      updateSidebarBodyList()
+      updateSidebarBodyList();
     } else {
       ruanganPayload.value = [];
     }
@@ -43,7 +43,6 @@ const fetchRuangan = async () => {
   }
 };
 
-
 // Search Ruangan
 let searchTimeout: ReturnType<typeof setTimeout>;
 
@@ -53,15 +52,16 @@ const handleSearchRuangan = (search: string) => {
 
   if (search === "") {
     // Jika input kosong, reset daftar ruangan
-    sidebarBodyList.value[0].child[0].child = [
-      {
-        name: "Semua Ruangan",
-        datas: "",
-        icon: "",
-        type: linkType.LINK,
-        url: "/rawat-inap/ruangan",
-      },
-    ];
+    if (!sidebarBodyList.value[0].child?.[0].child) {
+      sidebarBodyList.value[0].child![0].child = [];
+    }
+    sidebarBodyList.value[0].child![0].child!.push({
+      name: "Semua Ruangan",
+      datas: "",
+      icon: "",
+      type: linkType.LINK,
+      url: "/rawat-inap/ruangan",
+    });
     updateSidebarBodyList();
   } else {
     searchTimeout = setTimeout(() => {
@@ -74,7 +74,6 @@ const handleSearchRuangan = (search: string) => {
     }, 500);
   }
 };
-
 
 // Sidebar Body List
 const updateSidebarBodyList = () => {
@@ -89,11 +88,10 @@ const updateSidebarBodyList = () => {
       url: "",
     });
   });
-   if (ruanganSection.length > 0) {
+  if (ruanganSection.length > 0) {
     const defaultFilter = ruanganSection[0].datas; // Ambil UUID dari poliSection pertama
     const defaultName = ruanganSection[0].name; // Ambil nama dari poliSection pertama
 
-    
     filter.value = { uuid: defaultFilter, name: defaultName };
 
     router.replace({
@@ -102,7 +100,6 @@ const updateSidebarBodyList = () => {
     });
   }
 };
-
 
 // Update filter value
 const updateFilterMenu = (newFilter: { uuid: string; name: string }) => {

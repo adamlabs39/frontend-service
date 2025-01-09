@@ -99,5 +99,5 @@ defineExpose({
       />
     </template>
   </CustomAccordion>
-  <MedicalRecord ref="medicalRecord" />
+  <MedicalRecord ref="medicalRecord" :patientData="{}" />
 </template>

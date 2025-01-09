@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Paginator from "primevue/paginator";
+import type { PropType } from "vue";
 
 const props = defineProps({
   rows: {
@@ -10,7 +11,7 @@ const props = defineProps({
     default: 0,
   },
   rowsPerPageOptions: {
-    type: Array,
+    type: Array as PropType<any[]>,
     default: () => [10, 20, 30],
   },
 });
