@@ -20,7 +20,7 @@ const storeUtils = utilsStore();
   >
     <Toast />
     <component :is="$route.meta.layout || 'div'">
-      <RouterView />
+      <RouterView  />
     </component>
     <!-- Conditionally show Footer based on the route path -->
     <Footer v-if="!route.path.startsWith('/antrian/apm/aktif')" />

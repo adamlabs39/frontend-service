@@ -27,7 +27,7 @@ interface Filter {
   pelayanan?: string;
   penjamin?: string;
   jenisKunjungan?: string;
-  ruangan?: string;
+  room?: string;
   startDate?: string;
   endDate?: string;
   name?: string;
@@ -68,7 +68,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
     response = await rekapTindakanPasienStore.getTindakanPasien(filter)
   }
    if(response && response.payload){
-     properties.value.total = response.payload.totalData;
+     properties.value.total = response.properties.totalData;
      return response.payload
    } else {
     return []
@@ -141,6 +141,7 @@ const setFilter = () => {
   filter.page = properties.value.page
   filter.limit = properties.value.page_size
   filter.q = valueSearchRM.value;
+  filter.room = searchRuanganFilter.value;
 
   if (pageType.value === "kunjungan-rawat-inap") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
@@ -193,6 +194,10 @@ const resetForm = () => {
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
   valueBulan.value = 0;
+  searchRuanganFilter.value = "";
+  searchKelasFilter.value = "";
+  searchDokterDPJPFilter.value = "";
+  
   resetFormRef.value.resetForm();
 }
 
@@ -236,6 +241,14 @@ const updatePageType = async (path: string) => {
   filter = setFilter();
   reportData.value = await fetchLaporanData(filter);
 };
+
+// PAGINATION
+const handlePage = (event: any) => {
+  properties.value.page = event.page + 1;
+  properties.value.page_size = event.rows;
+  searchData();
+};
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
@@ -253,6 +266,7 @@ onMounted(() => {
     class=""
   >
     <template #header>
+      <!-- {{ searchRuanganFilter }} -->
       <DataLaporanHeader
       @update:value-r-m-filter="handleSearchRM"
       @update:value-praktisi-filter="handleSearchPraktisi"
@@ -280,7 +294,7 @@ onMounted(() => {
               label="Ruangan"
               class=""
               optionLabel="name"
-              optionValue="uuid"
+              optionValue="name"
               place-holder="Pilih Ruangan"
               :options="ruanganPayload"
             />
@@ -307,11 +321,14 @@ onMounted(() => {
       </DataLaporanHeader>
     </template>
     <template #content>
+      <div v-if="reportData.length">
+        <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" :payload="reportData"/>
+        <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
+        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
+        <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
+      </div>
+      <NoData v-else/>
       <!-- <NoData /> -->
-      <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" />
-      <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
-      <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
-      <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
     </template>
     <template #footer>
       <div class="flex justify-between">
@@ -322,7 +339,11 @@ onMounted(() => {
           class="my-auto bg-adameds-300"
           label="Cetak"
         />
-        <CustomPaginator :rows="10" :totalRecords="120" @page="() => {}" />
+       <CustomPaginator
+          :rows="properties.page_size"
+          :totalRecords="properties.total"
+          @page="handlePage"
+        />
       </div>
     </template>
   </Card>

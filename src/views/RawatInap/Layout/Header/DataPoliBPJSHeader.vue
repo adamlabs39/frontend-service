@@ -32,8 +32,10 @@ const props = defineProps({
   },
 });
 
+const selectedTab = ref("");
 // Emit for Search and Payment
 const emit = defineEmits([
+  "selectedTab",
   "search",
   "payment",
   "update:valueSearch",
@@ -103,6 +105,7 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
+  selectedTab.value = "";
 };
 
 defineExpose({
@@ -115,7 +118,7 @@ onMounted(() => {
 </script>
 
 <template>
-  {{ currentRouteName }}
+  <!-- {{ currentRouteName }} -->
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center w-full gap-5 mr-2.5">
@@ -194,7 +197,7 @@ onMounted(() => {
           v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
           v-model="searchDokterFilter"
           label="Dokter"
-          class="grow"
+          class="mr-5 grow"
           optionLabel="pegawai.name"
           optionValue="uuid"
           place-holder="Cari Dokter"
@@ -247,7 +250,46 @@ onMounted(() => {
           class="mt-auto w-[70px]"
         />
       </div>
-      <slot name="content"></slot>
+      <div
+        v-if="currentRouteName === 'ruangan'"
+        class="flex items-center gap-2"
+      >
+        <CustomButton
+          label=""
+          icon="PhListBullets"
+          class="w-[60px]"
+          :text-color="selectedTab === '' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = ''))"
+          :outlined="selectedTab !== ''"
+        />
+        <!-- Filter = {{ props.filter }} -->
+        <CustomButton
+          label="DIRAWAT"
+          class="grow"
+          :text-color="selectedTab === '3' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '3' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '3' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '3'))"
+          :outlined="selectedTab !== '3'"
+        />
+        <CustomButton
+          label="DISCHARGE"
+          class="grow"
+          :text-color="selectedTab === '4' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '4' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '4' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '4'))"
+          :outlined="selectedTab !== '4'"
+        />
+      </div>
 
       <div
         class="font-semibold text-SM text-grey-300"

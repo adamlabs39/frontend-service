@@ -14,11 +14,13 @@ export const useAdmisiIGDStore = defineStore({
         jenisKunjungan = "",
         startDate = "",
         endDate = "",
+        room = ""
+
       },
       payload = {}
     ) {
       return apiAdmisiGet(
-        `/report/kunjungan?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+        `/report/kunjungan?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&room=${room}`,
         payload
       );
       // return {

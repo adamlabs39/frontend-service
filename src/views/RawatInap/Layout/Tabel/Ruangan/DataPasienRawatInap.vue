@@ -70,8 +70,9 @@ const resetSelection = () => {
 
 <template>
 {{ dataPatient }}
+<!-- <div>Hali ini coba</div> -->
   <DataTable
-    v-if="dataPatient && dataPatient.length"
+    v-if="dataPatient.length"
     v-model:selection="selectedPatient"
     :value="dataPatient"
     tableStyle="min-width: 50rem"

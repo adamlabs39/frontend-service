@@ -1,6 +1,13 @@
 <script lang="ts" setup>
+import { epochToDate } from "@/utils/Helpers";
 import { ref } from "vue";
 
+const props = defineProps({
+  payload: {
+    type: Array,
+    default: () => [],
+  },
+});
 const kunjunganRawatInap = ref([
   {
     id: 1,
@@ -49,8 +56,9 @@ const expandedRows = ref<any[]>([]);
 </script>
 
 <template>
+  <!-- {{ payload }} -->
   <DataTable
-    :value="kunjunganRawatInap"
+    :value="payload"
     responsiveLayout="scroll"
     dataKey="id"
     :expandedRows="expandedRows"
@@ -66,28 +74,42 @@ const expandedRows = ref<any[]>([]);
       header="No"
       header-class="text-black bg-adameds-50"
       class="w-10 p-5 text-center text-black text-SM"
-    />
+    >
+      <template #body="{ index }">{{ index + 1 }}</template>
+    </Column>
     <Column
       field="tglRegistrasi"
       header="Tgl. Registrasi"
       header-class="text-black bg-adameds-50 "
       class="text-black text-SM"
       style="min-width: 120px"
-    />
+    >
+      <template #body="{ data }">
+        {{ epochToDate(data.tglRegistrasi, "dateTime") }}
+      </template>
+    </Column>
     <Column
       field="noRegistrasi"
       header="No. Registrasi"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
-    />
+    >
+      <template #body="{ data }">
+        {{ data.noreg }}
+      </template>
+    </Column>
     <Column
       field="noRM"
       header="No. RM"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
-    />
+    >
+      <template #body="{ data }">
+        {{ data.patient.noRm }}
+      </template>
+    </Column>
     <Column
       field="namaPasien"
       header="Nama Pasien"
@@ -95,6 +117,9 @@ const expandedRows = ref<any[]>([]);
       class="text-SM"
       style="min-width: 100px"
     >
+      <template #body="{ data }">
+        {{ data.patient.name }}
+      </template>
     </Column>
     <Column
       field="ruangan"
@@ -103,6 +128,9 @@ const expandedRows = ref<any[]>([]);
       class="text-SM"
       style="min-width: 100px"
     >
+      <template #body="{ data }">
+        {{ data.patient.ruangan ?? "-" }}
+      </template>
     </Column>
     <Column
       field="dokter"
@@ -111,12 +139,15 @@ const expandedRows = ref<any[]>([]);
       class="text-SM"
       style="min-width: 100px"
     >
+      <template #body="{ data }">
+        {{ data.practitioner.nama }}
+      </template>
     </Column>
 
     <template #expansion="slotProps">
       <div class="p-3 -mx-2 -my-1.5 bg-adameds-75">
         <DataTable
-          :value="slotProps.data.subMenu"
+          :value="[slotProps.data]"
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
           <Column
@@ -125,33 +156,43 @@ const expandedRows = ref<any[]>([]);
             header-class="text-black bg-adameds-50"
             class="p-5 text-black text-SM"
             style="width: 100px"
-          ></Column>
+          >
+            <template #body="{ data }">
+              {{ data.patient.gender == "Male" ? "L" : "P" }}
+            </template>
+          </Column>
           <Column
-            field="tglLahir"
+            field="patient.birthDetail.birthDate"
             header="Tgl. Lahir"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           ></Column>
           <Column
-            field="umur"
+            field="patient.birthDetail.birthDate"
             header="Umur"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              {{
+                `${data.patient.birthDetail.ageYear} Tahun ${data.patient.birthDetail.ageMonth} Bulan ${data.patient.birthDetail.ageDay} Hari`
+              }}
+            </template>
+          </Column>
           <Column
-            field="alamat"
+            field="patient.address.fullAddress"
             header="Alamat"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           ></Column>
           <Column
-            field="statusKeluarPasien"
-            header="Status Keluar"
+            field="patient.address.fullAddress"
+            header="Status Keluar Pasien"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           ></Column>
           <Column
-            field="kondisiKeluar"
+            field="patient.address.fullAddress"
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
@@ -161,7 +202,11 @@ const expandedRows = ref<any[]>([]);
             header="No. Bed"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              {{ data.patient.ruangan ?? "-" }}
+            </template>
+          </Column>
         </DataTable>
       </div>
     </template>

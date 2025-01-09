@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, watch} from "vue";
+import { onBeforeMount, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { FilterAdmisi } from "@/utils/Interface";
-import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import NoData from "@/components/section/NoData.vue";
 import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 // STORE
 const storeUtils = utilsStore();
@@ -40,9 +41,10 @@ interface Filter {
 const isDataFetched = ref(false);
 
 // Data Patient From API
-const patientData = ref<any>([]);
+const patientData = ref<any[]>([]);
+const selectedPatient = ref<any[]>([]);
 // DIRAWAT / DISCHARGE
-const statusPelayanan = ref("");
+const selectedTab = ref("");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
@@ -55,6 +57,10 @@ const endDateFilter = ref<Date>(new Date());
 const selectedFilterPayment = ref<string[]>([]);
 
 // Event emit FROM HEADER
+const handleSelectedTab = (newTab: string) => {
+  selectedTab.value = newTab;
+  reloadData();
+};
 const handleSearchQuery = (value: string) => {
   searchQuery.value = value;
 };
@@ -85,11 +91,12 @@ const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
   let response;
   // console.log(currentRouteName.value)
   try {
-    if (currentRouteName.value === 'ruangan') {
+    if (currentRouteName.value === "ruangan") {
       response = await admisiRIStore.getRI(filter);
+      properties.value.total = response.properties.totalData;
+      
       return response.payload;
     }
-   
   } catch (error) {
     console.error("Failed to fetch data", error);
     return [];
@@ -105,8 +112,6 @@ const reloadData = async () => {
   filter = setFilter();
   patientData.value = await fetchRIPatient(filter);
 };
-
-
 
 const setFilter = () => {
   let filter = {} as FilterAdmisi;
@@ -124,17 +129,16 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(endDateFilter.value, 23, 59, 59)
   )}`;
-  filter.status = statusPelayanan.value;
+  filter.status = selectedTab.value;
 
   // Simpan props.filterRuangan ke variabel baru
 
   // Terapkan ke filter.room
-  filter.room = [props.filterRuangan.name];
+  filter.room = [props.filterRuangan.name === "Semua Ruangan" ? props.filterRuangan.uuid : props.filterRuangan.name];
   filter.dpjp = dokter.value;
 
   return filter;
 };
-
 
 // ACCESSING FROM OUTSIDE COMPONENT
 const resetFormRef = ref();
@@ -147,7 +151,7 @@ const resetFilter = () => {
   resetFormRef.value.resetForm();
   dokter.value = "";
   selectedFilterPayment.value = [];
-  statusPelayanan.value = "";
+  selectedTab.value = "";
 };
 
 // PAGINATION
@@ -163,32 +167,50 @@ const handlePage = (event: any) => {
 // Watcher Ruangan
 watch(
   () => props.filterRuangan,
-  async(newFilter) => {
+  async (newFilter) => {
     //  console.log(`Filter anyar`, newFilter);
     // resetFilter();
-    // reloadData();
-    filterData.value = {
-      ...filterData.value,
-      room: [newFilter.name],
-      startDate: `${dateToEpoch(
-        setTimeForDate(startDateFilter.value, 0, 0, 0)
-      )}`,
-      endDate: `${dateToEpoch(
-        setTimeForDate(endDateFilter.value, 23, 59, 59)
-      )}`,
-    }
-    console.log(`filter paling baru`, filterData.value);
-    patientData.value = await fetchRIPatient(filterData.value);
+    reloadData();
+    // filterData.value = {
+    //   ...filterData.value,
+    //   startDate: `${dateToEpoch(
+    //     setTimeForDate(startDateFilter.value, 0, 0, 0)
+    //   )}`,
+    //   endDate: `${dateToEpoch(
+    //     setTimeForDate(endDateFilter.value, 23, 59, 59)
+    //   )}`,
+    //   room: [newFilter.name],
+    // }
+    // // console.log(`filter paling baru`, filterData.value);
+    // patientData.value = await fetchRIPatient(filterData.value);
   },
-  // { immediate: false }
+  { immediate: false }
 );
 
-// DISCHARGE / DIRAWAT
-const filterStatus = (status: string) => {
-  statusPelayanan.value = status;
-  reloadData();
-  // fetchRIPatient()
+// Untuk Cancel Visit
+const confirmCancel = async () => {
+  try {
+    storeUtils.setLoading(true);
+    let payload = {
+      listUuid: [] as any[],
+      cancelReason: cancelReason.value,
+    };
+    selectedPatient.value.forEach((patientData: any) => {
+      payload.listUuid.push(patientData.uuid);
+    });
+    console.log("payload cancle visit",payload)
+    const response = await admisiRIStore.cancelVisitRI(payload);
+    console.log("response data",response)
+    showCancelVisit.value = false;
+    cancelReason.value = undefined;
+    await reloadData();
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
+
 
 // WHEN PAGE CHANGE
 const updatePageType = async (path: string) => {
@@ -202,19 +224,20 @@ const updatePageType = async (path: string) => {
   patientData.value = await fetchRIPatient(filter);
 };
 
-
 onBeforeRouteLeave((to, from) => {
-  console.log('Navigating from:', from.path, 'to:', to.path);
+  console.log("Navigating from:", from.path, "to:", to.path);
   updatePageType(to.path);
 });
-
-
 
 onMounted(() => {
   updatePageType(route.path);
   // fetchRIPatient();
   // isDataFetched.value = true;
 });
+
+// onMounted(() => {
+//   fetchRIPatient()
+// });
 </script>
 <template>
   <!-- {{ patientData }} -->
@@ -226,6 +249,7 @@ onMounted(() => {
     <template #header>
       <DataPoliBPJSHeader
         ref="resetFormRef"
+        @selected-tab="handleSelectedTab"
         @update:value-search="handleSearchQuery"
         @update:value-dokter="handleDokter"
         @update:valueStartDate="handleStartDate"
@@ -238,68 +262,226 @@ onMounted(() => {
         :filter-data="filterData"
         :current-route-name="currentRouteName"
       >
-        <template #content>
-          <div class="flex items-center gap-2">
-            <CustomButton
-              label=""
-              icon="PhListBullets"
-              class="w-[60px]"
-              :text-color="
-                statusPelayanan === '' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('')"
-              :outlined="statusPelayanan !== ''"
-            />
-            <!-- Filter = {{ props.filter }} -->
-            <CustomButton
-              label="DIRAWAT"
-              class="grow"
-              :text-color="
-                statusPelayanan === '1' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '1' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '1' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('1')"
-              :outlined="statusPelayanan !== '1'"
-            />
-            <CustomButton
-              label="DISCHARGE"
-              class="grow"
-              :text-color="
-                statusPelayanan === '0' ? 'text-white' : 'text-adameds-300'
-              "
-              :border-color="
-                statusPelayanan === '0' ? 'border-none' : 'border-adameds-300'
-              "
-              :class="statusPelayanan === '0' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('0')"
-              :outlined="statusPelayanan !== '0'"
-            />
-          </div>
-        </template>
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="statusPelayanan" class="h-full">
-        <TabPanels class="flex flex-col w-full h-full p-0">
-          <TabPanel value="1" class="flex-1">
-            <DataPasienRawatInap :data-patient="patientData" />
-          </TabPanel>
-          <TabPanel value="0" class="flex-1">
-            <!-- <Discharge /> -->
-            <NoData class="w-full h-full" />
-          </TabPanel>
-          <TabPanel value="" class="flex-1">
-            <NoData class="w-full h-full" />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <DataTable
+       v-if="patientData && patientData.length > 0"
+        v-model:selection="selectedPatient"
+        :value="patientData"
+         tableStyle="min-width: 50rem"
+        scrollable
+        scrollHeight="flex"
+        :pt="{ headerRow: 'text-SM' }"
+      >
+        <Column field="nomor" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Nomor</div>
+          </template>
+          <template #body="slotProps">
+            <div class="text-center">
+               <div class="text-SM">{{ slotProps.data.noRm }}</div>
+             <div class="text-SM">{{ slotProps.data.noReg }}</div>
+            </div>
+          </template>
+        </Column>
+        <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
+          <template #body="slotProps">
+            <div class="text-SM">
+              <span class="font-semibold">{{
+                slotProps.data.patient.name
+              }}</span>
+              <span class="text-grey-300">
+                ({{ slotProps.data.birthDetail.ageYear }}Th
+                {{ slotProps.data.birthDetail.ageMonth }}Bln
+                {{ slotProps.data.birthDetail.ageDay }}Hr)
+              </span>
+            </div>
+            <div class="text-XS">
+             Jl. {{ slotProps.data.patient.address.fullAddress }}
+            </div>
+            <div class="flex flex-wrap">
+              <!-- <PhUserCirclePlus
+                v-if="slotProps.data.new_patient"
+                :size="22"
+                class="text-adameds-300 mt-auto mr-[5px]"
+                weight="fill"
+              /> -->
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="
+                  slotProps.data.patient.gender == 'Female'
+                    ? 'Perempuan'
+                    : 'Laki-laki'
+                "
+                :bgColor="
+                  slotProps.data.patient.gender == 'Female'
+                    ? 'bg-female-75'
+                    : 'bg-male-75'
+                "
+                :textColor="
+                  slotProps.data.patient.gender == 'Female'
+                    ? 'text-female-300'
+                    : 'text-male-300'
+                "
+                customClass="h-5 pr-[6px] border-none mr-[5px]"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="slotProps.data.patient.noIdentity ?? '-'"
+                bgColor="bg-adameds-75"
+                textColor="text-adameds-300"
+                customClass="h-5 pr-[6px] border-none mr-[5px]"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column
+          field="keperawatan"
+          header="Keperawatan"
+          headerClass="bg-adameds-50"
+        >
+          <template #body="slotProps">
+            <div class="flex mb-[5px] text-SM">
+              <div>
+                {{ slotProps.data.practitioner.title }}
+                {{ slotProps.data.practitioner.nama }}
+              </div>
+            </div>
+            <div class="flex flex-wrap">
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="
+                  slotProps.data.monitoringRoom.room
+                    ? slotProps.data.monitoringRoom.room
+                    : 'RUANGAN'
+                "
+                customClass="h-5 pr-[5px] mr-[5px]"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="
+                  slotProps.data.monitoringRoom.bedName
+                    ? slotProps.data.monitoringRoom.bedName
+                    : '-'
+                "
+                customClass="h-5 pr-[5px] mr-[5px]"
+              />
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="
+                  slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                "
+                :bgColor="
+                  slotProps.data.paymentMethod == 1
+                    ? 'bg-adameds-50'
+                    : 'bg-warning-50'
+                "
+                :textColor="
+                  slotProps.data.paymentMethod == 1
+                    ? 'text-adameds-300'
+                    : 'text-warning-300'
+                "
+                :borderColor="
+                  slotProps.data.paymentMethod == 1
+                    ? 'border-adameds-300'
+                    : 'border-warning-300'
+                "
+                customClass="h-5 pr-[6px] mr-[5px]"
+              />
+            </div>
+          </template>
+        </Column>
+          <Column
+      field="data-kunjungan"
+      header="Data Kunjungan"
+      headerClass="bg-adameds-50"
+    >
+      <template #body="slotProps">
+        <div class="text-SM">
+          <div
+            class="flex content-center auto-cols-min"
+          >
+            SPRI
+            <ArrowRightBrokenIcon
+              :size="18"
+              class="mx-[5px] my-auto text-grey-300"
+            />
+            {{ epochToDate(slotProps.data.tanggalDirawat, "dateTime") }}
+          </div>
+          <div
+            class="flex content-center mt-[5px]"
+          >
+            Dirawat
+            <ArrowRightBrokenIcon
+              :size="18"
+              class="mx-[5px] my-auto text-blueJeans-300"
+            />
+           {{slotProps.data.tanggalDirawat ? slotProps.data.tanggalDirawat : '-'}}
+
+          </div>
+          <div
+            class="flex content-center mt-[5px]"
+          >
+            Lama Dirawat
+            <ArrowRightBrokenIcon
+              :size="18"
+              class="mx-[5px] my-auto text-blueJeans-300"
+            />
+            {{ slotProps.data.lamaHari || '-' }}
+          </div>
+        </div>
+      </template>
+    </Column>
+        
+        <Column
+          field="status"
+          header="Status"
+          headerClass="bg-adameds-50"
+          class="w-[114px]"
+        >
+          <template #body="slotProps">
+            <div>
+              <CustomChip
+                :showCheckedIcon="false"
+                :label="slotProps.data.statusRi == 0
+                    ? 'Cancel'
+                    : slotProps.data.statusRi == 1
+                      ? 'Waiting'
+                      : slotProps.data.statusRi == 2 ?
+                        'Transfer' : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
+                "
+                customClass="h-5 pr-[5px] mr-[5px] border-none"
+                :bgColor="
+                  slotProps.data.statusRi == 0
+                    ? 'bg-danger-75'
+                    : slotProps.data.statusRi == 1
+                      ? 'bg-grey-75'
+                      : slotProps.data.statusRi == 2 ?
+                        'bg-blue-300' : slotProps.data.statusRi == 3 ? 'bg-blueJeans-75' : 'bg-mint-75'
+                "
+                :textColor="
+                  slotProps.data.statusRi == 0
+                    ? 'text-danger-300'
+                    : slotProps.data.statusRi == 1
+                    ? 'text-grey-300'
+                    : slotProps.data.statusRi == 2 ?
+                        'text-blue-300' : slotProps.data.statusRi == 3 ? 'text-blueJeans-300' : 'text-mint-300'
+                "
+              />
+            </div>
+            
+          </template>
+        </Column>
+         <Column
+          v-if="showCancelVisit"
+          selectionMode="multiple"
+          headerStyle="width: 3rem"
+          headerClass="bg-adameds-50"
+          class="custom-checkbox"
+        ></Column>
+      </DataTable>
+      <NoData v-else />
     </template>
     <template #footer>
       <div class="flex justify-between">
@@ -314,6 +496,7 @@ onMounted(() => {
             v-if="showCancelVisit"
             class="my-auto mr-[10px]"
             label="Batal"
+            @click="showCancelVisit = false"
             outlined
             borderColor="border-grey-200"
             textColor="text-grey-300"
@@ -322,6 +505,8 @@ onMounted(() => {
             v-if="showCancelVisit"
             class="my-auto mr-5 bg-danger-300"
             label="Iya, Batalkan"
+             :disabled="!cancelReason || selectedPatient.length === 0"
+             @click="confirmCancel"
           />
 
           <CustomTextfield

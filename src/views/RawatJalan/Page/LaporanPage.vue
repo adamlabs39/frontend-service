@@ -170,6 +170,7 @@ interface Filter {
   q?: string;
   practitionerUuid?: string;
   pelayanan?: string;
+  jenisKunjungan?: string;
   penjamin?: string;
   ruangan?: string;
   startDate?: string;
@@ -209,7 +210,7 @@ const setFilter = () => {
 
   if (pageType.value == "kunjungan-rawat-jalan") {
     filter.practitionerUuid = valueSearchDPJP.value ?? "";
-    filter.pelayanan = "RJ"
+    filter.jenisKunjungan = "RJ"
   } else if (pageType.value == "pembatalan-poli") {
     filter.practitionerUuid = searchDokterDPJPFilter.value ?? "";
     filter.pelayanan = "RJ"
