@@ -2,7 +2,7 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import sangatRingan from "@/assets/images/RekamMedis/AsesmenNyeri/1sangatRingan.svg";
 import agakRingan from "@/assets/images/RekamMedis/AsesmenNyeri/2agakRingan.svg";
 import lumayanRingan from "@/assets/images/RekamMedis/AsesmenNyeri/3lumayanRingan.svg";
@@ -120,7 +120,7 @@ const getStringSkalaNyeri = () => {
   }
 };
 
-onBeforeMount(async () => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.asesmenNyeri) {
     const tempAsesmenNyeri = rekamMedisStore.openedRekamMedis.data.asesmenNyeri;
     setValues({
@@ -128,7 +128,17 @@ onBeforeMount(async () => {
       catatan: tempAsesmenNyeri.catatan,
       petugas: tempAsesmenNyeri.petugas,
     });
-  }
+  } else resetForm();
+};
+
+onBeforeMount(async () => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const compareDialog = ref(false);

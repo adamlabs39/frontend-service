@@ -4,7 +4,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, ref, onBeforeMount, type PropType } from "vue";
+import { computed, ref, onBeforeMount, type PropType, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -131,7 +131,7 @@ const postFormAlergi = async (values: AlergiForm | null) => {
   }
 };
 
-onBeforeMount(() => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.alergi) {
     const tempAlergi = rekamMedisStore.openedRekamMedis.data.alergi;
     setValues({
@@ -146,7 +146,17 @@ onBeforeMount(() => {
       ) as Date,
       petugas: tempAlergi.petugas,
     });
-  }
+  } else resetForm();
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const compareDialog = ref(false);

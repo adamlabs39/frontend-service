@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, type PropType } from "vue";
+import {
+  computed,
+  onBeforeMount,
+  onMounted,
+  ref,
+  watch,
+  type PropType,
+} from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
@@ -37,6 +44,9 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+  },
 });
 
 const keadaanUmum = ref("");
@@ -71,8 +81,7 @@ const arrCanvas = ref<any[]>([
   canvasHidung,
   canvasMulut,
   canvasRonggaMulut,
-  // FIXME Belum Ada
-  // canvasOHIS,
+  canvasOHIS,
   canvasTenggorkan,
   canvasLeher,
   canvasLeherDepan,
@@ -91,11 +100,27 @@ const openFilledCanvas = () => {
   arrCanvas.value.forEach((canvasRef) => {
     if (
       canvasRef.value &&
-      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
-        (canvasRef.value as any).props?.type.toLowerCase()
-      ]
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik
     ) {
-      (canvasRef.value as any).open();
+      if ((canvasRef.value as any).props?.type == "ohis") {
+        if (
+          rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.ohis.ohisItem
+            .length
+        ) {
+          (canvasRef.value as any).open();
+        }
+      } else {
+        const tempLowerCaseFirstChar =
+          (canvasRef.value as any).props?.type.charAt(0).toLowerCase() +
+          (canvasRef.value as any).props?.type.slice(1);
+        if (
+          rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik[
+            tempLowerCaseFirstChar.replace(/ /g, "")
+          ]
+        ) {
+          (canvasRef.value as any).open();
+        }
+      }
     }
   });
 };
@@ -113,8 +138,13 @@ const submitAllCanvas = () => {
   let tempObjectData: any = {};
   arrCanvas.value.forEach((canvasRef) => {
     if (canvasRef.value) {
-      let data = (canvasRef.value as any).saveCanvas();
-      tempObjectData = { ...tempObjectData, ...data };
+      if ((canvasRef.value as any).props?.type == "ohis") {
+        let data = (canvasRef.value as any).saveOhis();
+        tempObjectData = { ...tempObjectData, ohis: data };
+      } else {
+        let data = (canvasRef.value as any).saveCanvas();
+        tempObjectData = { ...tempObjectData, ...data };
+      }
     }
   });
   return tempObjectData;
@@ -144,10 +174,26 @@ const onSubmit = async () => {
   }
 };
 
+const setFormData = () => {
+  if (
+    rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik &&
+    rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum
+  ) {
+    keadaanUmum.value =
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum;
+  } else keadaanUmum.value = "";
+};
+
 onMounted(() => {
   if (props.selectedPemeriksaanFisik) {
     goToEdit(props.selectedPemeriksaanFisik);
   }
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -231,7 +277,9 @@ defineExpose({
         <div v-else class="py-5 flex flex-col gap-[19px]">
           <CustomInfoRow
             label="Keadaan Umum"
-            :value="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum"
+            :value="
+              rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik.keadaanUmum
+            "
           />
           <hr class="border-grey-200" />
         </div>
@@ -302,6 +350,7 @@ defineExpose({
         <OhisInput
           ref="canvasOHIS"
           header="Oral Hyhiene Index Simplified (OHI-S)"
+          type="ohis"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -337,6 +386,7 @@ defineExpose({
           ref="canvasDada"
           header="Dada"
           type="Dada"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -364,6 +414,7 @@ defineExpose({
           ref="canvasAbdomen"
           header="Abdomen"
           type="Abdomen"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -382,6 +433,7 @@ defineExpose({
           ref="canvasUrogenital"
           header="Urogenital"
           type="Urogenital"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -409,6 +461,7 @@ defineExpose({
           ref="canvasMuskuloskeletal"
           header="Muskuloskeletal"
           type="Muskuloskeletal"
+          :jenisKelamin="patientData?.patient.gender"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
@@ -416,12 +469,12 @@ defineExpose({
         />
         <CustomCanvasDrawer
           ref="canvasPemeriksaanLainya"
-          header="Pemeriksaan Lainya"
-          type="Pemeriksaan Lainya"
+          header="Pemeriksaan Lainnya"
+          type="Pemeriksaan Lainnya"
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanFisik"
-          @editAsesmen="emit('editAsesmen', 'Pemeriksaan Lainya')"
+          @editAsesmen="emit('editAsesmen', 'Pemeriksaan Lainnya')"
         />
       </div>
     </template>

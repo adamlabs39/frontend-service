@@ -7,7 +7,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -166,7 +166,7 @@ const onSubmitTandaVital = handleSubmitTandaVital(async (values: any) => {
   }
 });
 
-onBeforeMount(async () => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.tandaVital) {
     const tempTandaVital = rekamMedisStore.openedRekamMedis.data.tandaVital;
     setValues({
@@ -187,7 +187,17 @@ onBeforeMount(async () => {
       tekananDarahDiastole: tempTandaVital.tekananDarahDiastole,
       petugas: tempTandaVital.petugas,
     });
-  }
+  } else resetForm();
+};
+
+onBeforeMount(async () => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const compareDialog = ref(false);

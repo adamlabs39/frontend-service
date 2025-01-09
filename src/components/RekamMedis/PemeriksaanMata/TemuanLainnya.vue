@@ -1,23 +1,79 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, onMounted, ref, watch, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import HistoriTemuanLainnya from "@/components/RekamMedis/PemeriksaanMata/HistoriTemuanLainnya.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  type: {
+    type: String,
+    required: true,
+  },
+  openedData: {
+    type: Object as PropType<any>,
+    default: null,
+  },
 });
 
+const temuanLainnya = ref();
 const compareDialog = ref(false);
 const showDialogCompare = () => {
   compareDialog.value = true;
 };
+
+const saveData = () => {
+  return {
+    temuanLainnya: temuanLainnya.value,
+  };
+};
+
+const setFormData = () => {
+  if (props.openedData) {
+    temuanLainnya.value = props.openedData.temuanLainnya;
+  } else temuanLainnya.value = undefined;
+};
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
+
+onMounted(() => {
+  setFormData();
+});
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+  saveData,
+  props,
+});
 </script>
 
 <template>
@@ -37,10 +93,11 @@ const showDialogCompare = () => {
         </div>
         <CustomTextArea
           v-if="method == 'form'"
+          v-model="temuanLainnya"
           label="Temuan Lainnya"
           placeholder="Masukkan Temuan Lainnya..."
         />
-        <CustomInfoRow v-else label="Temuan Lainnya" value="-" />
+        <CustomInfoRow v-else label="Temuan Lainnya" :value="temuanLainnya" />
       </div>
 
       <!-- Dialog compare -->

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import Adult from "./BurnSVG/Adult.vue";
 import AdultWomen from "./BurnSVG/AdultWomen.vue";
 import Child from "./BurnSVG/Child.vue";
@@ -80,13 +80,27 @@ const submit = async () => {
   }
 };
 
-onBeforeMount(() => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.lukaBakar) {
     persentaseLukaBakar.value =
       rekamMedisStore.openedRekamMedis.data.lukaBakar.persentaseLuka;
     lpt.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.lpt;
     petugas.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.petugas;
+  } else {
+    persentaseLukaBakar.value = 0;
+    lpt.value = 0;
+    petugas.value = "Super Admin";
   }
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const historyDialog = ref(false);
@@ -156,10 +170,16 @@ defineExpose({
           </div>
           <Adult
             v-if="patientData?.patient.gender == 'Male'"
+            :openedData="rekamMedisStore.openedRekamMedis.data.lukaBakar"
             ref="adultSvgRefs"
             class="w-[800px]"
           />
-          <AdultWomen v-else ref="adultWomanSvgRefs" class="w-[800px]" />
+          <AdultWomen
+            v-else
+            :openedData="rekamMedisStore.openedRekamMedis.data.lukaBakar"
+            ref="adultWomanSvgRefs"
+            class="w-[800px]"
+          />
           <!-- <Child class="w-[800px]" /> -->
           <!-- <ChildWomen class="w-[800px]" /> -->
           <!-- <Baby class="w-[800px]" /> -->
@@ -218,8 +238,18 @@ defineExpose({
       <template #body>
         <div class="pt-5">
           <div class="flex justify-between pt-5">
-            <Adult class="w-[800px]" />
-            <!-- <AdultWomen class="w-[800px]" /> -->
+            <Adult
+              v-if="patientData?.patient.gender == 'Male'"
+              :openedData="rekamMedisStore.openedRekamMedis.data.lukaBakar"
+              ref="adultSvgRefs"
+              class="w-[800px]"
+            />
+            <AdultWomen
+              v-else
+              :openedData="rekamMedisStore.openedRekamMedis.data.lukaBakar"
+              ref="adultWomanSvgRefs"
+              class="w-[800px]"
+            />
             <!-- <Child class="w-[800px]" /> -->
             <!-- <ChildWomen class="w-[800px]" /> -->
             <!-- <Baby class="w-[800px]" /> -->

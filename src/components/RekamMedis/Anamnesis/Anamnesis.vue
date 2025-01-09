@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, computed, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -77,7 +77,7 @@ const [riwayatKeluarga] = defineField("riwayatKeluarga");
 const [pernahDirawat] = defineField("pernahDirawat");
 const [petugas] = defineField("petugas");
 
-onBeforeMount(async () => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.anamnesis) {
     const tempAnamnesis = rekamMedisStore.openedRekamMedis.data.anamnesis;
     const tempArrRiwayatKeluarga = tempAnamnesis.riwayatKeluarga
@@ -93,7 +93,17 @@ onBeforeMount(async () => {
       pernahDirawat: tempAnamnesis.pernahDirawat,
       petugas: rekamMedisStore.openedRekamMedis.data.petugas,
     });
-  }
+  } else resetForm();
+};
+
+onBeforeMount(async () => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const onSubmit = handleSubmit(async (values: any) => {

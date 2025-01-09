@@ -4,8 +4,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref, watch, type PropType } from "vue";
 import { onBeforeUnmount, onMounted } from "vue";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const rekamMedisStore = useRekamMedisStore();
 
 interface ToothCondition {
   debrisIndex?: any;
@@ -13,8 +17,10 @@ interface ToothCondition {
 }
 
 interface OhisItem {
-  toothNumber: string;
-  toothCondition: ToothCondition;
+  noGigi: string;
+  debrisIndeks?: any;
+  kalkulusIndeks?: any;
+  // toothCondition?: ToothCondition;
 }
 
 const props = defineProps({
@@ -22,9 +28,17 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    required: true,
+  },
   method: {
     type: String,
     default: "form",
+  },
+  openedData: {
+    type: Object as PropType<any>,
+    default: null,
   },
 });
 
@@ -229,16 +243,15 @@ const handleClick = (event: MouseEvent) => {
   if (clickedTooth) {
     selectedTooth.value = `${clickedTooth.label}`;
     let findOhisIndex = itemsOhis.value.findIndex(
-      (ohis: OhisItem) => ohis.toothNumber == selectedTooth.value
+      (ohis: OhisItem) => ohis.noGigi == selectedTooth.value
     );
     if (findOhisIndex == -1) {
       selectedDebrisIndex.value = null;
       selectedKalkulusIndex.value = null;
     } else {
-      selectedDebrisIndex.value =
-        itemsOhis.value[findOhisIndex].toothCondition.debrisIndex;
+      selectedDebrisIndex.value = itemsOhis.value[findOhisIndex].debrisIndeks;
       selectedKalkulusIndex.value =
-        itemsOhis.value[findOhisIndex].toothCondition.calculusIndex;
+        itemsOhis.value[findOhisIndex].kalkulusIndeks;
     }
   }
 };
@@ -246,23 +259,21 @@ const handleClick = (event: MouseEvent) => {
 const itemsOhis = ref<OhisItem[]>([]);
 const addOhis = () => {
   const tempOhisData: OhisItem = {
-    toothNumber: selectedTooth.value,
-    toothCondition: {
-      debrisIndex: null,
-      calculusIndex: null,
-    },
+    noGigi: selectedTooth.value,
+    debrisIndeks: null,
+    kalkulusIndeks: null,
   };
 
   if (selectedDebrisIndex.value) {
-    tempOhisData.toothCondition.debrisIndex = selectedDebrisIndex.value;
-  } else tempOhisData.toothCondition.debrisIndex = null;
+    tempOhisData.debrisIndeks = selectedDebrisIndex.value;
+  } else tempOhisData.debrisIndeks = null;
 
   if (selectedKalkulusIndex.value) {
-    tempOhisData.toothCondition.calculusIndex = selectedKalkulusIndex.value;
-  } else tempOhisData.toothCondition.calculusIndex = null;
+    tempOhisData.kalkulusIndeks = selectedKalkulusIndex.value;
+  } else tempOhisData.kalkulusIndeks = null;
 
   let findOhisIndex = itemsOhis.value.findIndex(
-    (ohis: OhisItem) => ohis.toothNumber == selectedTooth.value
+    (ohis: OhisItem) => ohis.noGigi == selectedTooth.value
   );
 
   if (findOhisIndex == -1) {
@@ -275,12 +286,11 @@ const addOhis = () => {
 };
 const deleteOhis = (toothNumber: string) => {
   let findOhisIndex = itemsOhis.value.findIndex(
-    (ohis: OhisItem) => ohis.toothNumber == toothNumber
+    (ohis: OhisItem) => ohis.noGigi == toothNumber
   );
   if (findOhisIndex != -1) {
     itemsOhis.value.splice(findOhisIndex, 1);
   }
-
   countIndex();
 };
 
@@ -294,13 +304,13 @@ const countIndex = () => {
   let tempTotalDebrisScore = 0;
   let tempTotalCalculusScore = 0;
   itemsOhis.value.forEach((ohis: OhisItem) => {
-    if (ohis.toothCondition.debrisIndex) {
+    if (ohis.debrisIndeks) {
       tempTotalToothDebris++;
-      tempTotalDebrisScore += ohis.toothCondition.debrisIndex.score;
+      tempTotalDebrisScore += ohis.debrisIndeks.score;
     }
-    if (ohis.toothCondition.calculusIndex) {
+    if (ohis.kalkulusIndeks) {
       tempTotalToothCalculus++;
-      tempTotalCalculusScore += ohis.toothCondition.calculusIndex.score;
+      tempTotalCalculusScore += ohis.kalkulusIndeks.score;
     }
   });
   totalDebrisIndex.value = tempTotalDebrisScore
@@ -358,6 +368,44 @@ const listKalkulusIndex = ref([
   },
 ]);
 
+const setFormData = () => {
+  let tempOhisItem: any[] = [];
+  if (props.openedData && props.openedData.ohis) {
+    props.openedData.ohis.ohisItem.forEach((ohis: any) => {
+      const findedDebrisData = listDebrisIndex.value.find(
+        (debrisData: any) => debrisData.score == ohis.debrisIndeks
+      );
+      if (findedDebrisData) {
+        ohis.debrisIndeks = findedDebrisData;
+      }
+      const findedKalkulusData = listKalkulusIndex.value.find(
+        (kalulusData: any) => kalulusData.score == ohis.kalkulusIndeks
+      );
+      if (findedKalkulusData) {
+        ohis.kalkulusIndeks = findedKalkulusData;
+      }
+      tempOhisItem.push(ohis);
+    });
+    itemsOhis.value = tempOhisItem;
+    totalDebrisIndex.value = props.openedData.ohis.skorDi;
+    totalCalculusIndex.value = props.openedData.ohis.skorCi;
+    totalOhis.value = props.openedData.ohis.skorTotal;
+    if (totalOhis.value >= 0 && totalOhis.value <= 1.2) {
+      ohisIntepretation.value = { code: "OI000029", name: "baik" };
+    } else if (totalOhis.value >= 1.3 && totalOhis.value <= 3.0) {
+      ohisIntepretation.value = { code: "OI000030", name: "sedang/cukup baik" };
+    } else if (totalOhis.value >= 3.1 && totalOhis.value <= 6.0) {
+      ohisIntepretation.value = { code: "OI000031", name: "buruk" };
+    }
+  } else {
+    itemsOhis.value = tempOhisItem;
+    totalDebrisIndex.value = 0;
+    totalCalculusIndex.value = 0;
+    totalOhis.value = 0;
+    ohisIntepretation.value = {};
+  }
+}
+
 onMounted(() => {
   nextTick(() => {
     if (canvas.value) {
@@ -365,7 +413,31 @@ onMounted(() => {
       window.addEventListener("resize", resizeCanvas);
     }
   });
+  setFormData()
 });
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
+
+const saveOhis = () => {
+  const tempOhisItem = itemsOhis.value.map((item: OhisItem) => ({
+    noGigi: item.noGigi,
+    debrisIndeks: item.debrisIndeks ? item.debrisIndeks.score : null,
+    kalkulusIndeks: item.kalkulusIndeks ? item.kalkulusIndeks.score : null,
+  }));
+
+  let tempOhis = {
+    ohisItem: tempOhisItem,
+    skorDi: totalDebrisIndex.value,
+    skorCi: totalCalculusIndex.value,
+    skorTotal: totalOhis.value,
+    interpretasiOhis: ohisIntepretation.value.name ?? "",
+  };
+  return tempOhis;
+};
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resizeCanvas);
@@ -386,6 +458,8 @@ const close = () => {
 defineExpose({
   open,
   close,
+  saveOhis,
+  props,
 });
 </script>
 
@@ -459,19 +533,15 @@ defineExpose({
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">{{ slotProps.data.toothNumber }}</div>
+                <div class="text-SM">{{ slotProps.data.noGigi }}</div>
               </div>
             </template>
           </Column>
-          <Column
-            field="keadaanGigi"
-            header="Keadaan Gigi"
-            headerClass="bg-adameds-50"
-          >
+          <Column header="Keadaan Gigi" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
                 <div
-                  v-if="slotProps.data.toothCondition.debrisIndex"
+                  v-if="slotProps.data.debrisIndeks"
                   class="grid content-center grid-cols-[100px_min-content_max-content] auto-cols-min"
                 >
                   Debris Indeks
@@ -479,10 +549,10 @@ defineExpose({
                     :size="18"
                     class="text-adameds-400 mr-[5px]"
                   />
-                  {{ slotProps.data.toothCondition.debrisIndex.name }}
+                  {{ slotProps.data.debrisIndeks.name }}
                 </div>
                 <div
-                  v-if="slotProps.data.toothCondition.calculusIndex"
+                  v-if="slotProps.data.kalkulusIndeks"
                   class="grid content-center grid-cols-[100px_min-content_max-content] mt-[5px]"
                 >
                   Kalkulus Indeks
@@ -490,7 +560,7 @@ defineExpose({
                     :size="18"
                     class="text-adameds-400 mr-[5px]"
                   />
-                  {{ slotProps.data.toothCondition.calculusIndex.name }}
+                  {{ slotProps.data.kalkulusIndeks.name }}
                 </div>
               </div>
             </template>
@@ -502,7 +572,7 @@ defineExpose({
             <template #body="slotProps">
               <div class="flex justify-center">
                 <CustomButton
-                  @click="deleteOhis(slotProps.data.toothNumber)"
+                  @click="deleteOhis(slotProps.data.noGigi)"
                   icon="PhTrash"
                   label=""
                   class="h-[30px]"

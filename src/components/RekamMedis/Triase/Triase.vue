@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -162,7 +162,7 @@ const listDoa = ref([
 
 const emit = defineEmits(["editAsesmen"]);
 
-onBeforeMount(() => {
+const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.triase) {
     const tempTriase = rekamMedisStore.openedRekamMedis.data.triase;
     setValues({
@@ -188,6 +188,17 @@ onBeforeMount(() => {
     });
     countKesimpulan();
   }
+  resetForm();
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const countKesimpulan = () => {

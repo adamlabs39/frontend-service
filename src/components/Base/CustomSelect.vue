@@ -61,12 +61,31 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  clearable: {
+    type: Boolean,
+    default: true,
+  },
+  customValue: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const selectedData = ref<any>();
 
 // const value = ref(props.modelValue);
 const value = computed({
   get: () => props.modelValue as string,
-  set: (value: string) => emit("update:modelValue", value),
+  set: (value: string) => {
+    if (props.customValue && props.optionValue) {
+      selectedData.value = props.options.find(
+        (data: any) => data[props.optionValue] == value
+      );
+    } else if (props.customValue) {
+      selectedData.value = value
+    }
+    emit("update:modelValue", value);
+  },
 });
 
 const emit = defineEmits([
@@ -78,7 +97,7 @@ const emit = defineEmits([
 ]);
 
 const showClear = computed(() => {
-  return value.value !== "";
+  return value.value !== "" && props.clearable;
 });
 
 const filterData = (event: SelectFilterEvent) => {
@@ -159,7 +178,7 @@ const filterData = (event: SelectFilterEvent) => {
         @blur="emit('blur')"
       >
         <template v-if="$slots.customValue" #value="{ value, placeholder }">
-          <slot name="customValue" :value="value" :placeholder="placeholder" />
+          <slot name="customValue" :value="value" :placeholder="placeholder" :selectedData="selectedData" />
         </template>
         <template
           v-if="$slots.customOptions"
