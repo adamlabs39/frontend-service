@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import { useDrugSalesStore } from "@/stores/farmasi/DrugSales";
-import * as XLSX from "xlsx-js-style";
 import { utilsStore } from "@/stores/utils";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
@@ -25,19 +26,11 @@ const filterFarmasi = ref([
   { label: "Rawat Inap", value: "0" },
 ]);
 
-function dateToEpoch(date: any) {
-  if (!(date instanceof Date)) {
-    throw new Error("Input harus berupa objek Date");
-  }
-  return date.getTime();
-}
-
 // Filter Menunggu Pembayaran
 const selectedPayType = ref<string>("belum_lunas");
 
 const onSelectPayType = (label: string) => {
   selectedPayType.value = label;
-  console.log(selectedPayType.value, 'selectedPayType');
   fetchDrugSales()
 };
 
@@ -53,7 +46,6 @@ const onPoliSelect = (label: string) => {
     selectedFilterFarmasi.value.push(label);
   }
   fetchDrugSales()
-  console.log(selectedFilterFarmasi.value, 'selectedFilterFarmasi');  
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -64,6 +56,22 @@ const changeSection = (label: string) => {
   } else {
     dataBreadCrumb.value.push({ label: label });
   }
+};
+
+// Filter Search Data
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchDrugSales()
+};
+
+// Filter Reset Data
+const resetData = () => {
+  searchQuery.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  fetchDrugSales()
 };
 
 // State Management
@@ -85,7 +93,6 @@ const hasData = computed(
 // Fetch Drug Sales
 const fetchDrugSales = async () => {
   UseUtilsStore.setLoading(true);
-
   const selectedTest = [...selectedFilterFarmasi.value];
   try {
     const response = await DrugSalesStore.getApi(
@@ -112,19 +119,20 @@ const fetchDrugSales = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchDrugSales();
-  }, 500); 
-});
-
 // Handle Pagination
 const handlePage = (event: any) => {
   DrugSalesProperties.value.page = event.page + 1;
   DrugSalesProperties.value.page_size = event.rows;
   fetchDrugSales();
+};
+
+// Detail Management
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  changeSection('Detail Obat')
 };
 
 onMounted(() => {
@@ -145,7 +153,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDrugSales" />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Penjualan Obat',
@@ -167,7 +175,7 @@ onMounted(() => {
                 v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
+                placeholder="Cari No. Transaksi / Nama Pembeli"
                 class="mr-5 grow"
               />
               <CustomDatePicker
@@ -182,11 +190,13 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -207,28 +217,28 @@ onMounted(() => {
                 class="font-semibold"
               />
               <CustomButton
-                @click="onSelectPayType('Lunas')"
+                @click="onSelectPayType('lunas')"
                 label="LUNAS"
-                :outlined="selectedPayType != 'Lunas'"
+                :outlined="selectedPayType != 'lunas'"
                 borderColor="border-adameds-300"
-                :textColor="selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="selectedPayType != 'lunas' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'lunas' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold "
               />
               <CustomButton
-                @click="onSelectPayType('Dibatalkan')"
+                @click="onSelectPayType('cancel')"
                 label="DIBATALKAN"
-                :outlined="selectedPayType != 'Dibatalkan'"
+                :outlined="selectedPayType != 'cancel'"
                 borderColor="border-adameds-300"
-                :textColor="selectedPayType != 'Dibatalkan' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedPayType != 'Dibatalkan' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="selectedPayType != 'cancel' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="selectedPayType != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold"
               />
             </div>
             
             <!-- Filter Farmasi -->
             <div class="flex mb-[10px] mt-5">
-              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Farmasi</div>
+              <div class="w-[10%] font-semibold text-SM text-grey-300">Filter Farmasi</div>
                 <div class="flex">
                   <span class="font-semibold text-grey-300">|</span>
                   <CustomChip
@@ -268,36 +278,40 @@ onMounted(() => {
       <template #content>
         <NoData v-if="!hasData" />
         <DataTable
-          v-else
           :value="DrugSalesPayload"
-          tableStyle="min-width: 50rem"
-          class="mt-2"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
+          stripedRows
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
+          :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+          }"
         >
           <!-- Penjualan -->
-          <Column field="penjualan" header="Penjualan" headerClass="bg-adameds-50">
+          <Column header="Penjualan" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="">
-                <div v-if="slotProps.data.no_antrian"
-                  class="text-SM">
-                  {{ slotProps.data.no_antrian }}
-                </div>
-                <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-                <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
+              <div class="text-SM">
+                <p>{{ slotProps.data.noTransaksi }}</p>
+                <p>{{ epochToDate(slotProps.data.tanggalPembelian, "dateTime") }}</p>
               </div>
             </template>
           </Column>
           <!-- Pembeli -->
-          <Column field="pembeli" header="Pembeli" headerClass="bg-adameds-50">
+          <Column header="Pembeli" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <p class="font-semibold">{{ slotProps.data.name }}</p>
+                <p class="font-semibold">{{ slotProps.data.namaPembeli }}</p>
               </div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.layanan"
+                  :label="slotProps.data.lokasiStok.name"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
@@ -307,23 +321,41 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <!-- Harga -->
-          <Column field="harga" header="Harga" headerClass="bg-adameds-50">
+          <!-- Nama Petugas -->
+          <Column header="Nama Petugas" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.harga }}</div>
+              <div class="text-SM">{{ slotProps.data.dokterPemberiResep }}</div>
+            </template>
+          </Column>
+          <!-- Harga -->
+          <Column header="Harga" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
             </template>
           </Column>
         </DataTable>
-        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-end">
+          <CustomPaginator
+            :rows="DrugSalesProperties.page_size"
+            :totalRecords="DrugSalesProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>
     <DetailDrugSalesPage
       v-else-if="dataBreadCrumb[0].label == 'Beli Obat'"
       :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      @back="dataBreadCrumb.pop()"
+    />
+    <DetailDrugSalesPage2
+      v-else-if="dataBreadCrumb[0].label == 'Detail Obat'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :selectedData="selectedData"
       :pageType="pageType"
       @back="dataBreadCrumb.pop()"
     />

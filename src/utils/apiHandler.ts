@@ -377,7 +377,7 @@ const apiFarmasiPut = async (url: string, data: object) => {
 };
 const apiFarmasiDelete = async (url: string, data: object) => {
   try {
-    let response = await baseInstanceFarmasi.delete(url, data);
+    let response = await baseInstanceFarmasi.delete(url, { data: data });
     app.config.globalProperties.$toast.add({
       severity: "success",
       summary: response.data.message,
@@ -474,7 +474,7 @@ export {
   apiFarmasiGet,
   apiFarmasiPost,
   apiFarmasiPut,
-  apiFarmasiDelete,,
+  apiFarmasiDelete,
   apiRekamMedisGet,
   apiRekamMedisPost,
   apiRekamMedisPut

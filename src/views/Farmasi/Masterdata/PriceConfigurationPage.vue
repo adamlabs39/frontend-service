@@ -28,7 +28,7 @@ const PriceConfigurationPayload = ref({
   petugas: "",
   created_at: "",
   updated_at: "",
-  deleted_at: null
+  deleted_at: null,
 });
 
 // State Management
@@ -48,42 +48,46 @@ const fetchPriceConfiguration = async () => {
     const response = await PriceConfigurationStore.getApiKonfig();
     if (response && response.payload) {
       PriceConfigurationPayload.value = response.payload;
-      
+
       // Metode Pemotongan Stok
-      if (PriceConfigurationPayload.value.metodePemotonganStok == 'FIFO'){
-        statusFIFO.value = 'FIFO'
-      } else if (PriceConfigurationPayload.value.metodePemotonganStok == 'LIFO'){
-        statusLIFO.value = 'LIFO'
-      } else if (PriceConfigurationPayload.value.metodePemotonganStok == 'FEFO'){
-        statusFEFO.value = 'FEFO'
+      if (PriceConfigurationPayload.value.metodePemotonganStok == "FIFO") {
+        statusFIFO.value = "FIFO";
+      } else if (
+        PriceConfigurationPayload.value.metodePemotonganStok == "LIFO"
+      ) {
+        statusLIFO.value = "LIFO";
+      } else if (
+        PriceConfigurationPayload.value.metodePemotonganStok == "FEFO"
+      ) {
+        statusFEFO.value = "FEFO";
       } else {
-        statusFIFO.value = 'false'
-        statusLIFO.value = 'false'
-        statusFEFO.value = 'false'
+        statusFIFO.value = "false";
+        statusLIFO.value = "false";
+        statusFEFO.value = "false";
       }
-      
+
       // Metode Hpp
-      if (PriceConfigurationPayload.value.metodeHpp == 'average') {
-        statusRata.value = 'average'
-      } else if (PriceConfigurationPayload.value.metodeHpp == 'last') {
-        statusHargaTerakhir.value = 'last'
+      if (PriceConfigurationPayload.value.metodeHpp == "average") {
+        statusRata.value = "average";
+      } else if (PriceConfigurationPayload.value.metodeHpp == "last") {
+        statusHargaTerakhir.value = "last";
       } else {
-        statusRata.value = 'false'
-        statusHargaTerakhir.value = 'false'
+        statusRata.value = "false";
+        statusHargaTerakhir.value = "false";
       }
-      
+
       // Konfigurasi Biaya Embalase & Racik
-      if (PriceConfigurationPayload.value.metodeBiayaRacikan == 'paket') {
-        bentukRacikan.value = 'paket'
-      } else if (PriceConfigurationPayload.value.metodeBiayaRacikan == 'item'){
-        itemEmbalase.value = 'item'
+      if (PriceConfigurationPayload.value.metodeBiayaRacikan == "paket") {
+        bentukRacikan.value = "paket";
+      } else if (PriceConfigurationPayload.value.metodeBiayaRacikan == "item") {
+        itemEmbalase.value = "item";
       } else {
-        bentukRacikan.value = 'false'
-        itemEmbalase.value = 'false'
+        bentukRacikan.value = "false";
+        itemEmbalase.value = "false";
       }
       ppn.value = PriceConfigurationPayload.value.ppn;
-      margin.value = PriceConfigurationPayload.value.margin;   
-    } 
+      margin.value = PriceConfigurationPayload.value.margin;
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -146,18 +150,20 @@ const confirmDelete = async (item: any) => {
 };
 
 const schema = toTypedSchema(
-  yup.object({
-    statusFIFO: yup.string().default("false"),
-    statusLIFO: yup.string().default("false"),
-    statusFEFO: yup.string().default("false"),
-    statusHargaTerakhir: yup.string().default("false"),
-    statusRata: yup.string().default("false"),
-    statusEmbalase: yup.bool().default(true),
-    bentukRacikan: yup.string().default("false"),
-    itemEmbalase: yup.string().default("false"),
-    ppn: yup.number().required(""),
-    margin: yup.number().required(""),
-  }).noUnknown()
+  yup
+    .object({
+      statusFIFO: yup.string().default("false"),
+      statusLIFO: yup.string().default("false"),
+      statusFEFO: yup.string().default("false"),
+      statusHargaTerakhir: yup.string().default("false"),
+      statusRata: yup.string().default("false"),
+      statusEmbalase: yup.bool().default(true),
+      bentukRacikan: yup.string().default("false"),
+      itemEmbalase: yup.string().default("false"),
+      ppn: yup.number().required(""),
+      margin: yup.number().required(""),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField } = useForm({
@@ -177,28 +183,24 @@ const [margin] = defineField("margin");
 
 const onSubmit = handleSubmit(async (values) => {
   UseUtilsStore.setLoading(true);
-    try {
-      const payload = {
-        metodePemotonganStok: [values.statusFIFO , values.statusLIFO, values.statusFEFO].find((data: string) =>
-        data !== 'false'
-        ),
-        metodeHpp: [values.statusHargaTerakhir, values.statusRata].find((data: string) => data !== 'false'),
-        ppn: values.ppn,
-        margin: values.margin,
-        biayaEmbalaseRacik: values.statusEmbalase,
-        metodeBiayaRacikan: [values.bentukRacikan, values.itemEmbalase].find((data: string) => data !== 'false'),
-      };
-      console.log(payload, 'test')
-      await PriceConfigurationStore.putApiKonfig(payload);
-      fetchPriceConfiguration();
-      // Reload halaman setelah submit berhasil
-    } catch (error: any) {
-      console.log(error.message, 'error');
-    } finally {
-      UseUtilsStore.setLoading(false);
-    }
+  try {
+    const payload = {
+      metodePemotonganStok: [values.statusFIFO, values.statusLIFO, values.statusFEFO].find((data: string) => data !== "false"),
+      metodeHpp: [values.statusHargaTerakhir, values.statusRata].find((data: string) => data !== "false"),
+      ppn: values.ppn,
+      margin: values.margin,
+      biayaEmbalaseRacik: values.statusEmbalase,
+      metodeBiayaRacikan: [values.bentukRacikan, values.itemEmbalase].find((data: string) => data !== "false"),
+    };
+    await PriceConfigurationStore.putApiKonfig(payload);
+    fetchPriceConfiguration();
+    // Reload halaman setelah submit berhasil
+  } catch (error: any) {
+    console.log(error.message, "error");
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
-);
+});
 
 onMounted(() => {
   fetchPriceConfiguration();
@@ -207,184 +209,67 @@ onMounted(() => {
 </script>
 
 <template>
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
-      <template #header>
-        <div class="flex mt-5 mb-[20px] ml-5">
-          <CustomButton icon="PhArrowClockwise" class="mr-5" />
-          <CustomBreadCrumb
-            :home="{
-              label: 'Datamaster',
-              home: true,
-            }"
-          />
-          <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+  <Card
+    pt:body:class="h-full pt-0 overflow-auto"
+    pt:content:class="h-full overflow-auto"
+  >
+    <template #header>
+      <div class="flex mt-5 mb-[20px] ml-5">
+        <CustomButton icon="PhArrowClockwise" class="mr-5" />
+        <CustomBreadCrumb
+          :home="{
+            label: 'Datamaster',
+            home: true,
+          }"
+        />
+        <PhCaretRight
+          :size="25"
+          weight="bold"
+          class="ml-[10px] mt-[8px] text-adameds-300"
+        />
+        <div class="">
+          <p
+            class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+          >
+            Konfigurasi Harga
+          </p>
+        </div>
+      </div>
+    </template>
+    <template #content>
+      <hr class="border border-slate-200" />
+      <!-- Metode Pemotong Stok -->
+      <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+        <div class="flex justify-between">
           <div class="">
-            <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Konfigurasi Harga</p>
+            <p class="text-lg font-bold text-adameds-300 font-poppins">
+              Metode Pemotongan Stok
+            </p>
           </div>
-        </div>
-      </template>
-      <template #content>
-        <hr class="border border-slate-200"/>
-        <!-- Metode Pemotong Stok -->
-        <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
-          <div class="flex justify-between">
-            <div class="">
-              <p class="text-lg font-bold text-adameds-300 font-poppins">Metode Pemotongan Stok</p>
-            </div>
-            <div class="flex">
-              <div v-if="statusFIFO !== 'false'">
-                <CustomChip
-                  label="FIFO"
-                  textColor="text-white"
-                  bgColor="bg-adameds-300"
-                  borderColor="border-none"
-                  icon-color="white"
-                  customClass="text-sm font-semibold h-6"
-                />                
-              </div>
-              <div v-if="statusLIFO !== 'false'">
-                <CustomChip
-                  label="LIFO"
-                  textColor="text-white"
-                  bgColor="bg-adameds-300"
-                  borderColor="border-none"
-                  icon-color="white"
-                  customClass="text-sm font-semibold h-6"
-                />
-              </div>
-              <div v-if="statusFEFO !== 'false'">
-                <CustomChip
-                  label="FEFO"
-                  textColor="text-white"
-                  bgColor="bg-adameds-300"
-                  borderColor="border-none"
-                  icon-color="white"
-                  customClass="text-sm font-semibold h-6"
-                />
-              </div>
-            </div>
-          </div>
-          <hr class="mt-[10px] border border-slate-200"/>
-          
-          <!-- FIFO -->
-          <div class="flex justify-between">
-            <div class="mt-[10px]">
-              <p class="font-bold">First In First Out (FIFO)</p>
-              <p class="text-xs text-mediumGrey-400">Persediaan yang diperoleh diawal akan dipotong (digunakan) terlebih dahulu</p>
-            </div>
-            <div class="mt-[20px]">
-              <CustomSwitch
-                v-if="statusLIFO !== 'false' || statusFEFO !== 'false'"
-                disabled
-                v-model="statusFIFO"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="statusFIFO"
-                :show-label="false"
-                trueValue="FIFO"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
-          </div>
-
-          <!-- LIFO -->
-          <div class="flex justify-between">
-            <div class="mt-[20px]">
-              <p class="font-bold">Last In First Out (LIFO)</p>
-              <p class="text-xs text-mediumGrey-400">Persediaan yang diperoleh diakhir akan dipotong (digunakan) terlebih dahulu</p>
-            </div>
-            <div class="mt-[30px]">
-              <CustomSwitch
-                v-if="statusFIFO !== 'false' || statusFEFO !== 'false'"
-                disabled
-                v-model="statusLIFO"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="statusLIFO"
-                :show-label="false"
-                trueValue="LIFO"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
-          </div>
-          
-          <!-- FEFO -->
-          <div class="flex justify-between">
-            <div class="mt-[20px]">
-              <p class="font-bold">First Expired First Out (FEFO)</p>
-              <p class="text-xs text-mediumGrey-400">Persediaan yang akan kadaluarsa (*Jika tanggal kadaluarsa diisi ketika penerimaan / produksi) akan tipotong (digunakan) terlebih dahulu</p>
-            </div>
-            <div class="mt-[30px]">
-              <CustomSwitch
-                v-if="statusFIFO !== 'false' || statusLIFO !== 'false'"
-                disabled
-                v-model="statusFEFO"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="statusFEFO"
-                :show-label="false"
-                trueValue="FEFO"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Metode HPP -->
-        <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
-          <div class="flex justify-between">
-            <div class="">
-              <p class="text-lg font-bold text-adameds-300 font-poppins">Metode HPP</p>
-            </div>
-            <div>
+          <div class="flex">
+            <div v-if="statusFIFO !== 'false'">
               <CustomChip
-                v-if="statusHargaTerakhir !== 'false'"
-                label="Harga Terakhir"
+                label="FIFO"
                 textColor="text-white"
                 bgColor="bg-adameds-300"
                 borderColor="border-none"
                 icon-color="white"
                 customClass="text-sm font-semibold h-6"
               />
+            </div>
+            <div v-if="statusLIFO !== 'false'">
               <CustomChip
-                v-if="statusRata !== 'false'"
-                label="Rata-rata"
+                label="LIFO"
+                textColor="text-white"
+                bgColor="bg-adameds-300"
+                borderColor="border-none"
+                icon-color="white"
+                customClass="text-sm font-semibold h-6"
+              />
+            </div>
+            <div v-if="statusFEFO !== 'false'">
+              <CustomChip
+                label="FEFO"
                 textColor="text-white"
                 bgColor="bg-adameds-300"
                 borderColor="border-none"
@@ -393,406 +278,580 @@ onMounted(() => {
               />
             </div>
           </div>
-          <hr class="mt-[10px] border border-slate-200"/>
-          <!-- Harga Terakhir -->
-          <div class="flex justify-between">
-            <div class="mt-[10px]">
-              <p class="font-bold">Harga Terakhir</p>
-              <p class="text-xs text-mediumGrey-400">Penggunaan HPP dengan Harga Terakhir</p>
-            </div>
-            <div class="mt-[20px]">
-              <CustomSwitch
-                v-if="statusRata !== 'false'"
-                disabled
-                v-model="statusHargaTerakhir"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="statusHargaTerakhir"
-                :show-label="false"
-                trueValue="last"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
+        </div>
+        <hr class="mt-[10px] border border-slate-200" />
+
+        <!-- FIFO -->
+        <div class="flex justify-between">
+          <div class="mt-[10px]">
+            <p class="font-bold">First In First Out (FIFO)</p>
+            <p class="text-xs text-mediumGrey-400">
+              Persediaan yang diperoleh diawal akan dipotong (digunakan)
+              terlebih dahulu
+            </p>
           </div>
-          <!-- Rata-rata -->
-          <div class="flex justify-between">
-            <div class="mt-[20px]">
-              <p class="font-bold">Rata-rata</p>
-              <p class="text-xs text-mediumGrey-400">Penggunaan HPP dengan rata-rata</p>
-            </div>
-            <div class="mt-[30px]">
-              <CustomSwitch
-                v-if="statusHargaTerakhir !== 'false'"
-                disabled
-                v-model="statusRata"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="statusRata"
-                :show-label="false"
-                trueValue="average"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
+          <div class="mt-[20px]">
+            <CustomSwitch
+              v-if="statusLIFO !== 'false' || statusFEFO !== 'false'"
+              disabled
+              v-model="statusFIFO"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="statusFIFO"
+              :show-label="false"
+              trueValue="FIFO"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
           </div>
         </div>
 
-        <!-- Margin -->
-        <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
-          <div class="flex justify-between">
-            <div class="">
-              <p class="text-lg font-bold text-adameds-300 font-poppins">Margin</p>
-            </div>
-            <div>
-              <CustomChip
-                :label="`${margin ?? '0'}%`"
-                textColor="text-white"
-                bgColor="bg-adameds-300"
-                borderColor="border-none"
-                icon-color="white"
-                customClass="text-sm font-semibold h-6"
-              />
-            </div>
+        <!-- LIFO -->
+        <div class="flex justify-between">
+          <div class="mt-[20px]">
+            <p class="font-bold">Last In First Out (LIFO)</p>
+            <p class="text-xs text-mediumGrey-400">
+              Persediaan yang diperoleh diakhir akan dipotong (digunakan)
+              terlebih dahulu
+            </p>
           </div>
-          <hr class="mt-[10px] border border-slate-200"/>
-          
-          <!-- Presentasi Margin -->
-          <div class="flex justify-between">
-            <div class="mt-[10px]">
-              <p class="font-bold">Presentasi Margin</p>
-              <li class="text-xs text-mediumGrey-400 mt-[5px]">Mempengaruhi pada kolom <span class="font-bold text-black">Harga Dasar</span> di master item medis</li>
-              <li class="text-xs text-mediumGrey-400">HNA otomatis terhitung</li>
-            </div>
-            <div class="mt-[10px]">
-              <p class="font-bold">Input Margin (%)</p>
-              <CustomInputNumber 
-                placeholder="5" 
-                :show-label="false" 
-                class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]"
-                v-model = "margin"
-                :invalid="!!errors.margin"
-                :invalidMessage="errors.margin"
+          <div class="mt-[30px]">
+            <CustomSwitch
+              v-if="statusFIFO !== 'false' || statusFEFO !== 'false'"
+              disabled
+              v-model="statusLIFO"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="statusLIFO"
+              :show-label="false"
+              trueValue="LIFO"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+
+        <!-- FEFO -->
+        <div class="flex justify-between">
+          <div class="mt-[20px]">
+            <p class="font-bold">First Expired First Out (FEFO)</p>
+            <p class="text-xs text-mediumGrey-400">
+              Persediaan yang akan kadaluarsa (*Jika tanggal kadaluarsa diisi
+              ketika penerimaan / produksi) akan tipotong (digunakan) terlebih
+              dahulu
+            </p>
+          </div>
+          <div class="mt-[30px]">
+            <CustomSwitch
+              v-if="statusFIFO !== 'false' || statusLIFO !== 'false'"
+              disabled
+              v-model="statusFEFO"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="statusFEFO"
+              :show-label="false"
+              trueValue="FEFO"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Metode HPP -->
+      <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+        <div class="flex justify-between">
+          <div class="">
+            <p class="text-lg font-bold text-adameds-300 font-poppins">
+              Metode HPP
+            </p>
+          </div>
+          <div>
+            <CustomChip
+              v-if="statusHargaTerakhir !== 'false'"
+              label="Harga Terakhir"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              icon-color="white"
+              customClass="text-sm font-semibold h-6"
+            />
+            <CustomChip
+              v-if="statusRata !== 'false'"
+              label="Rata-rata"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              icon-color="white"
+              customClass="text-sm font-semibold h-6"
+            />
+          </div>
+        </div>
+        <hr class="mt-[10px] border border-slate-200" />
+        <!-- Harga Terakhir -->
+        <div class="flex justify-between">
+          <div class="mt-[10px]">
+            <p class="font-bold">Harga Terakhir</p>
+            <p class="text-xs text-mediumGrey-400">
+              Penggunaan HPP dengan Harga Terakhir
+            </p>
+          </div>
+          <div class="mt-[20px]">
+            <CustomSwitch
+              v-if="statusRata !== 'false'"
+              disabled
+              v-model="statusHargaTerakhir"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="statusHargaTerakhir"
+              :show-label="false"
+              trueValue="last"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+        <!-- Rata-rata -->
+        <div class="flex justify-between">
+          <div class="mt-[20px]">
+            <p class="font-bold">Rata-rata</p>
+            <p class="text-xs text-mediumGrey-400">
+              Penggunaan HPP dengan rata-rata
+            </p>
+          </div>
+          <div class="mt-[30px]">
+            <CustomSwitch
+              v-if="statusHargaTerakhir !== 'false'"
+              disabled
+              v-model="statusRata"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="statusRata"
+              :show-label="false"
+              trueValue="average"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Margin -->
+      <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+        <div class="flex justify-between">
+          <div class="">
+            <p class="text-lg font-bold text-adameds-300 font-poppins">
+              Margin
+            </p>
+          </div>
+          <div>
+            <CustomChip
+              :label="`${margin ?? '0'}%`"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              icon-color="white"
+              customClass="text-sm font-semibold h-6"
+            />
+          </div>
+        </div>
+        <hr class="mt-[10px] border border-slate-200" />
+
+        <!-- Presentasi Margin -->
+        <div class="flex justify-between">
+          <div class="mt-[10px]">
+            <p class="font-bold">Presentasi Margin</p>
+            <li class="text-xs text-mediumGrey-400 mt-[5px]">
+              Mempengaruhi pada kolom
+              <span class="font-bold text-black">Harga Dasar</span> di master
+              item medis
+            </li>
+            <li class="text-xs text-mediumGrey-400">HNA otomatis terhitung</li>
+          </div>
+          <div class="mt-[10px]">
+            <p class="font-bold">Input Margin (%)</p>
+            <CustomInputNumber
+              placeholder="5"
+              :show-label="false"
+              class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]"
+              v-model="margin"
+              :invalid="!!errors.margin"
+              :invalidMessage="errors.margin"
+            >
+              <template #appendText>
+                <div
+                  class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
                 >
-                <template #appendText>
-                  <div class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
-                    %
+                  %
+                </div>
+              </template>
+            </CustomInputNumber>
+          </div>
+        </div>
+      </div>
+
+      <!-- PPN -->
+      <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+        <div class="flex justify-between">
+          <div class="">
+            <p class="text-lg font-bold text-adameds-300 font-poppins">PPN</p>
+          </div>
+          <div>
+            <CustomChip
+              :label="`${ppn ?? '0'}%`"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              icon-color="white"
+              customClass="text-sm font-semibold h-6"
+            />
+          </div>
+        </div>
+        <hr class="mt-[10px] border border-slate-200" />
+        <!-- Presentasi PPN -->
+        <div class="flex justify-between">
+          <div class="mt-[10px]">
+            <p class="font-bold">Presentasi PPN</p>
+            <li class="text-xs text-mediumGrey-400 mt-[5px]">
+              Mempengaruhi pada kolom
+              <span class="font-bold text-black">Harga Dasar</span> di master
+              item medis
+            </li>
+            <li class="text-xs text-mediumGrey-400">HJA otomatis terhitung</li>
+          </div>
+          <div class="mt-[10px]">
+            <p class="font-bold">Input PPN (%)</p>
+            <CustomInputNumber
+              placeholder="12"
+              :show-label="false"
+              class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]"
+              v-model="ppn"
+              :invalid="!!errors.ppn"
+              :invalidMessage="errors.ppn"
+            >
+              <template #appendText>
+                <div
+                  class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
+                >
+                  %
+                </div>
+              </template>
+            </CustomInputNumber>
+          </div>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Biaya Embalase & Racik -->
+      <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
+        <div class="flex justify-between">
+          <div class="">
+            <p class="text-lg font-bold text-adameds-300 font-poppins">
+              Konfigurasi Biaya Embalase & Racik
+            </p>
+          </div>
+          <div class="flex">
+            <div v-if="bentukRacikan !== 'false' || itemEmbalase !== 'false'">
+              <CustomSwitch
+                v-model="statusEmbalase"
+                :show-label="false"
+                leftLabel
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+                sideLabelColor="text-danger-300"
+                sideLabelColorTrue="text-success-300"
+              />
+            </div>
+            <div v-if="bentukRacikan !== 'false' || itemEmbalase !== 'false'">
+              <div
+                class="bg-adameds-300 w-[2px] h-[25px] mr-[20px] ml-[20px]"
+              ></div>
+            </div>
+            <div v-if="bentukRacikan !== 'false'">
+              <CustomChip
+                label="Bentuk Racikan (Paket)"
+                textColor="text-white"
+                bgColor="bg-adameds-300"
+                borderColor="border-none"
+                icon-color="white"
+                customClass="text-sm font-semibold h-6"
+              />
+            </div>
+            <div v-if="itemEmbalase !== 'false'">
+              <CustomChip
+                label="HJA Jenis Item Embalase (Item)"
+                textColor="text-white"
+                bgColor="bg-adameds-300"
+                borderColor="border-none"
+                icon-color="white"
+                customClass="text-sm font-semibold h-6"
+              />
+            </div>
+          </div>
+        </div>
+        <hr class="mt-[10px] border border-slate-200" />
+        <!-- Bentuk Racikan (Paket) -->
+        <div class="flex justify-between">
+          <div class="mt-[10px]">
+            <p class="font-bold">Bentuk Racikan (Paket)</p>
+            <p class="text-xs text-mediumGrey-400">
+              Biaya jasa akan terakmulasi berdasarkan paket racikan
+            </p>
+          </div>
+          <div class="mt-[20px]">
+            <CustomSwitch
+              v-if="itemEmbalase !== 'false'"
+              disabled
+              v-model="bentukRacikan"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="bentukRacikan"
+              :show-label="false"
+              trueValue="paket"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+        <!-- HJA Jenis Item Embalase (Item) -->
+        <div class="flex justify-between">
+          <div class="mt-[20px]">
+            <p class="font-bold">HJA Jenis Item Embalase (Item)</p>
+            <p class="text-xs text-mediumGrey-400">
+              Biaya jasa akan terakumulasi berdasarkan per-item racikan
+            </p>
+          </div>
+          <div class="mt-[30px]">
+            <CustomSwitch
+              v-if="bentukRacikan == 'true'"
+              disabled
+              v-model="itemEmbalase"
+              :show-label="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+            <CustomSwitch
+              v-else
+              v-model="itemEmbalase"
+              :show-label="false"
+              trueValue="item"
+              falseValue="false"
+              leftLabel
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+              sideLabelColor="text-danger-300"
+              sideLabelColorTrue="text-success-300"
+            />
+          </div>
+        </div>
+        <!-- Pengelompokan Bentuk Racikan -->
+        <div class="mt-[20px] p-4 bg-white rounded-lg">
+          <div class="flex justify-between">
+            <div>
+              <p class="font-bold">Pengelompokan Bentuk Racikan</p>
+            </div>
+            <div>
+              <CustomButton
+                @click="openDialog('add', 'Tambah')"
+                icon="PhPlus"
+                label="Tarif Jasa Baru"
+              />
+            </div>
+          </div>
+          <hr class="mt-[20px] border border-slate-200" />
+          <div class="mt-[20px] relative overflow-y-auto" style="max-height: 220px">
+            <NoData v-if="!hasData" />
+            <DataTable
+              v-else
+              :value="HerbFormPayload"
+              stripedRows
+              class="text-xs"
+              scrollable
+              scrollHeight="flex"
+            >
+              <Column headerClass="bg-adameds-50 font-semibold text-SM">
+                <template #header>
+                  <div class="w-full text-center">No.</div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    {{ slotProps.index + 1 }}
                   </div>
                 </template>
-              </CustomInputNumber>
-            </div>
-          </div>
-        </div>
-
-        <!-- PPN -->
-        <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
-          <div class="flex justify-between">
-            <div class="">
-              <p class="text-lg font-bold text-adameds-300 font-poppins">PPN</p>
-            </div>
-            <div>
-              <CustomChip
-                :label="`${ppn ?? '0'}%`"
-                textColor="text-white"
-                bgColor="bg-adameds-300"
-                borderColor="border-none"
-                icon-color="white"
-                customClass="text-sm font-semibold h-6"
-              />
-            </div>
-          </div>
-          <hr class="mt-[10px] border border-slate-200"/>
-          <!-- Presentasi PPN -->
-          <div class="flex justify-between">
-            <div class="mt-[10px]">
-              <p class="font-bold">Presentasi PPN</p>
-              <li class="text-xs text-mediumGrey-400 mt-[5px]">Mempengaruhi pada kolom <span class="font-bold text-black">Harga Dasar</span> di master item medis</li>
-              <li class="text-xs text-mediumGrey-400">HJA otomatis terhitung</li>
-            </div>
-            <div class="mt-[10px]">
-              <p class="font-bold">Input PPN (%)</p>
-              <CustomInputNumber 
-                placeholder="12" 
-                :show-label="false" 
-                class="w-[80px] bg-white rounded-xl mt-[5px] ml-[50px]"
-                v-model = "ppn"
-                :invalid="!!errors.ppn"
-                :invalidMessage="errors.ppn"
-                >
-                <template #appendText>
-                  <div class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
-                    %
+              </Column>
+              <!-- Bentuk Racikan -->
+              <Column
+                field="namaBentukRacikan"
+                header="Bentuk Racikan"
+                headerClass="bg-adameds-50 font-semibold text-SM"
+              ></Column>
+              <!-- Jumlah Paket -->
+              <Column field="jumlah" headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="w-full font-semibold text-center text-SM">
+                    Jumlah Paket
                   </div>
                 </template>
-              </CustomInputNumber>
-            </div>
-          </div>
-        </div>
-                
-        <!-- Konfigurasi Biaya Embalase & Racik -->
-        <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
-          <div class="flex justify-between">
-            <div class="">
-              <p class="text-lg font-bold text-adameds-300 font-poppins">Konfigurasi Biaya Embalase & Racik</p>
-            </div>
-            <div class="flex">
-              <div v-if="bentukRacikan !== 'false' || itemEmbalase !== 'false'">
-                <CustomSwitch
-                  v-model="statusEmbalase"
-                  :show-label="false"
-                  leftLabel
-                  sideLabel="Non-Aktif"
-                  sideLabelTrue="Aktif"
-                  sideLabelColor="text-danger-300"
-                  sideLabelColorTrue="text-success-300"
-                />
-              </div>
-              <div v-if="bentukRacikan !== 'false' || itemEmbalase !== 'false'">
-                <div class="bg-adameds-300 w-[2px] h-[25px] mr-[20px] ml-[20px]"></div>
-              </div>
-              <div v-if="bentukRacikan !== 'false'">
-                <CustomChip
-                  label="Bentuk Racikan (Paket)"
-                  textColor="text-white"
-                  bgColor="bg-adameds-300"
-                  borderColor="border-none"
-                  icon-color="white"
-                  customClass="text-sm font-semibold h-6"
-                />
-              </div>
-              <div v-if="itemEmbalase !== 'false'">
-                <CustomChip
-                  label="HJA Jenis Item Embalase (Item)"
-                  textColor="text-white"
-                  bgColor="bg-adameds-300"
-                  borderColor="border-none"
-                  icon-color="white"
-                  customClass="text-sm font-semibold h-6"
-                />
-              </div>
-            </div>
-          </div>
-          <hr class="mt-[10px] border border-slate-200"/>
-          <!-- Bentuk Racikan (Paket) -->
-          <div class="flex justify-between">
-            <div class="mt-[10px]">
-              <p class="font-bold">Bentuk Racikan (Paket)</p>
-              <p class="text-xs text-mediumGrey-400">Biaya jasa akan terakmulasi berdasarkan paket racikan</p>
-            </div>
-            <div class="mt-[20px]">
-              <CustomSwitch
-                v-if="itemEmbalase !== 'false'"
-                disabled
-                v-model="bentukRacikan"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="bentukRacikan"
-                :show-label="false"
-                trueValue="paket"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
-          </div>
-          <!-- HJA Jenis Item Embalase (Item) -->
-          <div class="flex justify-between">
-            <div class="mt-[20px]">
-              <p class="font-bold">HJA Jenis Item Embalase (Item)</p>
-              <p class="text-xs text-mediumGrey-400">Biaya jasa akan terakumulasi berdasarkan per-item racikan</p>
-            </div>
-            <div class="mt-[30px]">
-              <CustomSwitch
-                v-if="bentukRacikan == 'true'"
-                disabled
-                v-model="itemEmbalase"
-                :show-label="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-              <CustomSwitch
-                v-else
-                v-model="itemEmbalase"
-                :show-label="false"
-                trueValue="item"
-                falseValue="false"
-                leftLabel
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-                sideLabelColor="text-danger-300"
-                sideLabelColorTrue="text-success-300"
-              />
-            </div>
-          </div>
-          <!-- Pengelompokan Bentuk Racikan -->
-          <div class="mt-[20px] p-4 bg-white rounded-lg">
-            <div class="flex justify-between">
-              <div>
-                <p class="font-bold">Pengelompokan Bentuk Racikan</p>
-              </div>
-              <div>
-                <CustomButton
-                  @click="openDialog('add', 'Tambah')"
-                  icon="PhPlus"
-                  label="Tarif Jasa Baru"
-                />
-              </div>
-            </div>
-            <hr class="mt-[20px] border border-slate-200"/>
-            <div class="mt-[20px] relative overflow-y-auto" style="max-height: 220px">
-              <NoData v-if="!hasData" />
-              <DataTable
-                v-else
-                :value="HerbFormPayload"
-                stripedRows
-                class="text-xs"
-                scrollable
-                scrollHeight="flex"
-              >
-                <Column headerClass="bg-adameds-50 font-semibold text-SM">
-                  <template #header>
-                    <div class="w-full text-center">No.</div>
-                  </template>
-                  <template #body="slotProps">
-                    <div class="flex items-center justify-center">
-                      {{ slotProps.index + 1 }}
-                    </div>
-                  </template>
-                </Column>
-                <!-- Bentuk Racikan -->
-                <Column field="namaBentukRacikan" header="Bentuk Racikan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-                <!-- Jumlah Paket -->
-                <Column field="jumlah" headerClass="bg-adameds-50">
-                  <template #header>
-                    <div class="w-full font-semibold text-center text-SM">
-                      Jumlah Paket
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div class="flex items-center justify-center">
-                      <p>{{ slotProps.data.jumlah }}</p>
-                    </div>
-                  </template>
-                </Column>
-                <!-- Tarif Embalase -->
-                <Column field="tarifEmbalase" headerClass="bg-adameds-50">
-                  <template #header>
-                    <div class="w-full font-semibold text-center text-SM">
-                      Tarif Embalase
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div class="flex items-center justify-center">
-                      <p>{{ slotProps.data.tarifEmbalase }}</p>
-                    </div>
-                  </template>
-                </Column>
-                <!-- Tarif Racikan -->
-                <Column field="tarifRacik" headerClass="bg-adameds-50">
-                  <template #header>
-                    <div class="w-full font-semibold text-center text-SM">
-                      Tarif Racikan
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div class="flex items-center justify-center">
-                      <p>{{ slotProps.data.tarifRacik }}</p>
-                    </div>
-                  </template>
-                </Column>
-                <!-- Action -->
-                <Column headerClass="bg-adameds-50">
-                  <template #header="slotProps">
-                    <div
-                      class="w-full font-semibold text-center text-SM"
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    <p>{{ slotProps.data.jumlah }}</p>
+                  </div>
+                </template>
+              </Column>
+              <!-- Tarif Embalase -->
+              <Column field="tarifEmbalase" headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="w-full font-semibold text-center text-SM">
+                    Tarif Embalase
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    <p>{{ slotProps.data.tarifEmbalase }}</p>
+                  </div>
+                </template>
+              </Column>
+              <!-- Tarif Racikan -->
+              <Column field="tarifRacik" headerClass="bg-adameds-50">
+                <template #header>
+                  <div class="w-full font-semibold text-center text-SM">
+                    Tarif Racikan
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center justify-center">
+                    <p>{{ slotProps.data.tarifRacik }}</p>
+                  </div>
+                </template>
+              </Column>
+              <!-- Action -->
+              <Column headerClass="bg-adameds-50">
+                <template #header="slotProps">
+                  <div class="w-full font-semibold text-center text-SM">
+                    Action
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex items-center gap-2.5 justify-center">
+                    <CustomButton
+                      label=""
+                      background-color="bg-[#3D84E5] rounded-lg"
+                      class="h-6 w-[26px] p-0"
+                      @click="openDialog('edit', 'Edit Data', slotProps.data)"
                     >
-                      Action
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div class="flex items-center gap-2.5 justify-center">
-                      <CustomButton
-                        label=""
-                        background-color="bg-[#3D84E5] rounded-lg"
-                        class="h-6 w-[26px] p-0"
-                        @click="openDialog('edit', 'Edit Data', slotProps.data)"
-                      >
-                        <img src="@/assets/icons/edit.svg" alt="" />
-                      </CustomButton>
-                      <CustomButton
-                        label=""
-                        background-color="bg-danger-300 rounded-lg"
-                        class="h-6 w-[26px] p-0"
-                        @click="deleteDialog('delete', `${slotProps.data.namaBentukRacikan} - ${slotProps.data.jumlah}`, slotProps.data)"
-                      >
-                        <img src="@/assets/icons/delete.svg" alt="" />
-                      </CustomButton>
-                    </div>
-                  </template>
-                </Column>
-              </DataTable>
-              <AddPriceConfiguration 
-                v-model:isDialogVisible="PriceConfigurationDialog"
-                :title="dialogConfig.title"
-                :method="dialogConfig.method"
-                :payload="dialogConfig.data"
-                @data-updated="fetchHerbForm"
-              />
-              <DeletePriceConfiguration 
-                v-model:isDialogVisible="DeletePriceConfigurationDialog"
-                :title="dialogConfig.title"
-                :itemToDelete="dialogConfig.data"
-                @delete="confirmDelete"
-              />
-            </div>
+                      <img src="@/assets/icons/edit.svg" alt="" />
+                    </CustomButton>
+                    <CustomButton
+                      label=""
+                      background-color="bg-danger-300 rounded-lg"
+                      class="h-6 w-[26px] p-0"
+                      @click="deleteDialog('delete',`${slotProps.data.namaBentukRacikan} - ${slotProps.data.jumlah}`, slotProps.data)
+                      "
+                    >
+                      <img src="@/assets/icons/delete.svg" alt="" />
+                    </CustomButton>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+            <AddPriceConfiguration
+              v-model:isDialogVisible="PriceConfigurationDialog"
+              :title="dialogConfig.title"
+              :method="dialogConfig.method"
+              :payload="dialogConfig.data"
+              @data-updated="fetchHerbForm"
+            />
+            <DeletePriceConfiguration
+              v-model:isDialogVisible="DeletePriceConfigurationDialog"
+              :title="dialogConfig.title"
+              :itemToDelete="dialogConfig.data"
+              @delete="confirmDelete"
+            />
           </div>
         </div>
-      </template>
-      <template #footer>
-        <div class="flex justify-end">
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex justify-end">
         <div class="mt-3">
-          <p class="text-xs font-bold text-right underline underline-offset-2">Perubahan Dilakukan Oleh</p>
-          <p>{{ PriceConfigurationPayload.petugas }} - <span>01/01/2024</span> <span>09:00</span></p>
+          <p class="text-xs font-bold text-right underline underline-offset-2">
+            Perubahan Dilakukan Oleh
+          </p>
+          <p>{{ PriceConfigurationPayload.petugas }} - <span>01/01/2024</span> <span>09:00</span>
+          </p>
         </div>
         <div class="mt-3">
           <div class="bg-mediumGrey-300 w-[1px] h-[33px] ml-[20px] mt-1"></div>
         </div>
-        <div class="mt-3">         
+        <div class="mt-3">
           <CustomButton
             label="Simpan Perubahan"
             class="ml-[20px]"
@@ -800,6 +859,6 @@ onMounted(() => {
           />
         </div>
       </div>
-      </template>
-    </Card>
+    </template>
+  </Card>
 </template>

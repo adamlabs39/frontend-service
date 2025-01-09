@@ -1,38 +1,95 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { onMounted, ref, computed } from "vue";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useRevenueRecapStore } from "@/stores/laporanFarmasi/revenueRecap";
+import { utilsStore } from "@/stores/utils";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const reportData = ref([]);
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
+const metodePembayaran = ref("")
+const optionPembayaran = ref([
+  { label: "Semua", value: "" },
+  { label: "Tunai", value: 1 },
+  { label: "Asuransi", value: 2 },
+]);
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
-
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+// State Management Lokasi
+const lokasiStore = useLokasiStore();
+const lokasiPayload = ref<any[]>([]);
+const lokasiProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
 
+// Fetch Lokasi
+const fetchLokasi = async () => {
+  try {
+    const response = await lokasiStore.getApi(
+      lokasiProperties.value.page,
+      lokasiProperties.value.page_size
+    );
+
+    if (response && response.payload) {
+      lokasiProperties.value.total = response.properties.total;
+      lokasiPayload.value = response.payload;
+    } else {
+      lokasiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    lokasiPayload.value = [];
+  }
+};
+
+// State Management Revenue Recap
+const revenueRecapStore = useRevenueRecapStore();
+const UseUtilsStore = utilsStore();
+const revenueRecapPayload = ref<any[]>([]);
+const revenueRecapProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// Check if Data Exists
+const hasData = computed(
+  () => revenueRecapPayload.value && revenueRecapPayload.value.length > 0
+);
+
+// Fetch Revenue Recap
+const fetchRevenueRecap = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await revenueRecapStore.getApi(
+      revenueRecapProperties.value.page,
+      revenueRecapProperties.value.page_size
+    );
+
+    if (response && response.payload) {
+      revenueRecapProperties.value.total = response.properties.total;
+      revenueRecapPayload.value = response.payload;
+    } else {
+      revenueRecapPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    revenueRecapPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 onMounted(() => {
-  updatePageType(route.path);
+  fetchRevenueRecap()
+  fetchLokasi();
 });
 </script>
 
@@ -44,7 +101,7 @@ onMounted(() => {
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
+        <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
@@ -61,9 +118,7 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div>
-                  <p
-                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
-                  >
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Rekap Pendapatan Resep Per Apotik
                   </p>
                 </div>
@@ -71,62 +126,47 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-2 gap-4 mt-[10px]">
-              <div>
-                <CustomSelect
-                  label="Metode Pembayaran"
-                  class=""
-                  optionLabel=""
-                  optionValue=""
-                  :options="['Tunai', 'BPJS', 'ASURANSI LAIN']"
-                  place-holder="Tunai"
-                />
-              </div>
-              <div>
-                <CustomSelect
-                  label="Lokasi Stok"
-                  class=""
-                  optionLabel=""
-                  optionValue=""
-                  :options="['Semua', 'Farmasi Rawat Jalan', 'Farmasi IGD']"
-                  place-holder="Semua"
-                />
-              </div>
-              <div>
-                <CustomTextfield
-                  label="Cari Pasien"
-                  prependIcon="PhMagnifyingGlass"
-                  placeholder="Cari Asal Resep / No. RM"
-                />
-              </div>
-              <div class="flex justify-between">
-                <CustomDatePicker
-                  v-model="startDateFilter"
-                  label="Tanggal"
-                  class="w-[150px]"
-                />
-                <PhMinus class="mt-auto mb-3 text-black" />
-                <div class="flex">
-                  <CustomDatePicker
-                    v-model="endDateFilter"
-                    :showLabel="false"
-                    class="mt-auto w-[150px]"
-                  />
-                  <CustomButton
-                    icon="PhMagnifyingGlass"
-                    label="Cari"
-                    borderColor="border-adameds-300"
-                    class="mt-auto ml-[20px]"
-                  />
-                  <CustomButton
-                    label="Reset"
-                    outlined
-                    borderColor="border-adameds-300"
-                    textColor="text-adameds-300"
-                    class="mt-auto"
-                  />
-                </div>
-              </div>
+            <div class="flex mt-[10px]">
+              <CustomSelect
+                v-model="metodePembayaran"
+                label="Metode Pembayaran"
+                placeHolder="Semua"
+                class="mr-5 grow"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionPembayaran"
+              />
+              <CustomSelect
+                label="Lokasi Stok"
+                class="mr-5 grow"
+                optionLabel=""
+                optionValue=""
+                :options="lokasiPayload"
+              />
+              <CustomDatePicker
+                v-model="startDateFilter"
+                :maxDate="endDateFilter"
+                label="Tanggal"
+                class="w-[150px]"
+              />
+              <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
+              <CustomDatePicker
+                v-model="endDateFilter"
+                :showLabel="false"
+                class="mt-auto w-[150px]"
+              />
+              <CustomButton
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
+              />
             </div>
           </template>
           <template #collapseIcon>
@@ -147,9 +187,10 @@ onMounted(() => {
       </template>
 
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          v-if="reportData.length"
-          :value="reportData"
+          v-else
+          :value="revenueRecapPayload"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
@@ -157,11 +198,11 @@ onMounted(() => {
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center">No.</div>
+              <div class="w-full font-semibold">No.</div>
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
+                <div class="text-SM">{{}}</div>
               </div>
             </template>
           </Column>
@@ -182,26 +223,19 @@ onMounted(() => {
           <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50">
           </Column>
         </DataTable>
-        <NoData />
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <CustomButton
-            @click="() => {}"
-            icon="PhPrinter"
-            label="Cetak"
-            class="mr-[10px]"
-            backgroundColor="bg-adameds-300"
-          />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+          <div class="flex items-center">
+            <CustomButton
+              @click="() => {}"
+              icon="PhPrinter"
+              label="Cetak"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
+          <CustomPaginator />
         </div>
       </template>
     </Card>
