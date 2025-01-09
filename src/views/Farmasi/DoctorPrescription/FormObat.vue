@@ -225,12 +225,9 @@ const tempDeletedRacikan = ref<Racikan[]>([]);
 const handleRemoveRacikan = (index: number) => {
   const racikanToRemove = fields.value[index].value;
   const parseItem = JSON.parse(JSON.stringify(racikanToRemove));
-  // Check if tarifLabUuid is an empty string
   if (!parseItem.uuid) {
-    // Remove the last item from tempDeletedLab if the UUID is empty
     tempDeletedRacikan.value.pop();
   } else {
-    // Check if the item is in tempPenjamin
     const tempKomponen = tempArrayRacikan.value.find(
       (temp: any) => temp.uuid === parseItem.uuid
     );

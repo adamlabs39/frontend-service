@@ -102,10 +102,7 @@ watch(
 </script>
 
 <template>
-    <CustomDialog 
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
-    width="600px">
+    <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="600px">
       <template #header>
         <div class="grid grid-cols-1">
           <p>Tambah Data Cara Pakai</p>
@@ -149,7 +146,6 @@ watch(
       </template>
       <template #footer>
         <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
           <div class="mt-5 flex justify-end gap-2.5">
             <CustomButton
               label="Reset"

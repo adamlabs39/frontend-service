@@ -397,13 +397,9 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />

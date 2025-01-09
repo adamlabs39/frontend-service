@@ -296,11 +296,11 @@ const baseInstanceFarmasi = axios.create({
 
 baseInstanceFarmasi.interceptors.request.use(
   (config) => {
-    const token =localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token")
     if (!token) {
       config.headers["Authorization"] = "";
     } else {
-      config.headers["Authorization"] = `${token}`;
+      config.headers["Authorization"] = token;
     }
     if (config.data) {
       config.data = toSnakeCase(config.data);

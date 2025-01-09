@@ -252,7 +252,7 @@ const schema = toTypedSchema(
         yup.object({
           jenisStokUuid: yup.string().when("isCompound", {
             is: (value: boolean) => value === false,
-            then: (schema) => schema.required("Komponen Tarif harus dipilih"),
+            then: (schema) => schema.required("Stok Obat harus dipilih"),
             otherwise: (schema) => schema.notRequired(),
           }),
           racikan: yup.array().when("isCompound", {
@@ -263,7 +263,7 @@ const schema = toTypedSchema(
                   yup.object({
                     jenisStokUuid: yup
                       .string()
-                      .required("Komponen Tarif harus dipilih"),
+                      .required("Stok Obat harus dipilih"),
                   })
                 )
                 .strict(),
@@ -1273,6 +1273,7 @@ if (userData.value) {
                     optionLabel="name"
                   />
                   <CustomTextfield
+                    v-model="noHpPenerima"
                     label="No. Handphone Penerima"
                     placeholder="08XX-XXXX-XXXX"
                     class="mt-[20px]"

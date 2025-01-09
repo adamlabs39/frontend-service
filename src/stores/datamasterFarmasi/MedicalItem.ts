@@ -11,19 +11,7 @@ export const useMedicalItemStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    // async getApi(page: number = 1, limit: number = 10, name:String="", payload = {}) {
-    //   console.log(payload, 'payload');
-      
-    //   return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}`, payload);
-    // },
-    async getApi(
-      {
-        page = 1,
-        limit = 10,
-        name = "",
-      },
-      payload = {}
-    ) {
+    async getApi(page: number = 1, limit: number = 10, name:String="", payload = {}) {      
       return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}`, payload);
     },
     async getAvailableStockApi(uuid:string, payload = {}) {
@@ -47,6 +35,11 @@ export const useMedicalItemStore = defineStore({
     async importApi(payload: any) {
       return apiFarmasiPost("/farmasi/datamaster/item-medis/import", payload);
     },
-    
+    async getWithoutPaginationApi(payload = {}) {      
+      return apiFarmasiGet(`/farmasi/datamaster/item-medis/without-pagination?jenis_item=obat`, payload);
+    },
+    async getAvailableJenisStokApi(uuid: string, payload = {}) {      
+      return apiFarmasiGet(`/farmasi/datamaster/item-medis/available-jenis-stock/${uuid}`, payload);
+    },
   },
 });

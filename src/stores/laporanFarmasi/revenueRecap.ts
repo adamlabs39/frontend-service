@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { apiFarmasiGet } from "@/utils/apiHandler";
 
-export const usePendapatanStore = defineStore({
-  id: "pendapatan",
+export const useRevenueRecapStore = defineStore({
+  id: "revenueRecap",
   state: () => ({}),
   getters: {},
   actions: {
@@ -15,12 +15,12 @@ export const usePendapatanStore = defineStore({
       payload = {}
     ) {
       return apiFarmasiGet(
-        `/farmasi/rekap/pendapatan?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&name=${name}`,
+        `/farmasi/rekap/pendapatan-apotik?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&name=${name}`,
         payload
       );
     },
     async exportApi(payload = {}) {
-      return apiFarmasiGet(`/farmasi/rekap/pendapatan/export`, payload);
+      return apiFarmasiGet(`/farmasi/rekap/pendapatan-apotik/export`, payload);
     },
   },
 });

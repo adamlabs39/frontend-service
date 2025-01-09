@@ -1,3 +1,10 @@
+export function formatPrice(price: number){
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(price);
+};
+
 export function formatDate(date: Date, reverse: boolean = false) {
   if (date) {
     const day = String(date.getDate()).padStart(2, "0");
