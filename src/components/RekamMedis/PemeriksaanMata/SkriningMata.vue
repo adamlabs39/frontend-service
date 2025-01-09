@@ -7,13 +7,29 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { ref } from "vue";
+import { computed, onMounted, ref, watch, type PropType } from "vue";
 import HistoriSkriningMata from "@/components/RekamMedis/PemeriksaanMata/HistoriSkriningMata.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const snomedCTStore = useSnomedCTStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  type: {
+    type: String,
+    required: true,
+  },
+  openedData: {
+    type: Object as PropType<any>,
+    default: null,
   },
 });
 
@@ -24,9 +40,9 @@ const listHasilPinhole = ref([
 const hasilPihnhole = (mata: string) => {
   let tempHasil = 0;
   if (mata == "OD") {
-    tempHasil = odPinholeDenominator.value / odPinholeNumerat.value;
+    tempHasil = odPinholeDenominator.value / odPinholeNumerator.value;
   } else if (mata == "OS") {
-    tempHasil = osPinholeDenominator.value / osPinholeNumerat.value;
+    tempHasil = osPinholeDenominator.value / osPinholeNumerator.value;
   }
 
   let tempHasilStr = "";
@@ -134,14 +150,14 @@ const countHasilGlaukoma = (mata: string) => {
 
 // Kanan
 const odVisusDenominator = ref();
-const odVisusNumerat = ref();
+const odVisusNumerator = ref();
 
 const odPinholeDenominator = ref();
-const odPinholeNumerat = ref();
+const odPinholeNumerator = ref();
 const odHasilPinhole = ref();
-const odPupilIskatarak = ref(true);
+const odPupilIsKatarak = ref(false);
 const odSnomed = ref();
-const odSnomedUuid = ref();
+const snomedUuid = ref();
 
 const odFundus = ref();
 const odShadowTest = ref();
@@ -158,15 +174,15 @@ const odPemeriksaanLanjutan = ref();
 const odSphDekat = ref();
 const odGlaukoma = ref();
 const odHasilGlaukoma = ref();
-const odIsretinopati = ref(false);
+const odIsRetinopati = ref(false);
 // Kiri
 const osVisusDenominator = ref();
-const osVisusNumerat = ref();
+const osVisusNumerator = ref();
 
 const osPinholeDenominator = ref();
-const osPinholeNumerat = ref();
+const osPinholeNumerator = ref();
 const osHasilPinhole = ref();
-const osPupilIskatarak = ref(true);
+const osPupilIsKatarak = ref(false);
 const osSnomed = ref();
 const osSnomedUuid = ref();
 
@@ -185,12 +201,214 @@ const osPemeriksaanLanjutan = ref();
 const osSphDekat = ref();
 const osGlaukoma = ref();
 const osHasilGlaukoma = ref();
-const osIsretinopati = ref(false);
+const osIsRetinopati = ref(false);
 
 const historyDialog = ref(false);
 const showDialogHistory = () => {
   historyDialog.value = true;
 };
+
+// NOTE Get Text
+const getFundusText = (code: string) => {
+  const selectedFundus = listFundus.value.find((fundus) => fundus.code == code);
+  return selectedFundus?.tampilan;
+};
+const getShadowTestText = (code: string) => {
+  const selectedShadowTest = listShadowTest.value.find(
+    (shadowTest) => shadowTest.code == code
+  );
+  return selectedShadowTest?.tampilan;
+};
+const getPemeriksaanLanjutanText = (code: string) => {
+  const selectedPemeriksaanLanjutan = listPemeriksaanLanjutan.value.find(
+    (pemeriksaanLanjutan) => pemeriksaanLanjutan.code == code
+  );
+  return selectedPemeriksaanLanjutan?.tampilan;
+};
+
+const fieldList = ref([
+  { name: "odVisusDenominator", value: odVisusDenominator },
+  { name: "odVisusNumerator", value: odVisusNumerator },
+  { name: "odPinholeDenominator", value: odPinholeDenominator },
+  { name: "odPinholeNumerator", value: odPinholeNumerator },
+  { name: "odHasilPinhole", value: odHasilPinhole },
+  { name: "odPupilIsKatarak", value: odPupilIsKatarak },
+  { name: "odSnomed", value: odSnomed },
+  { name: "snomedUuid", value: snomedUuid },
+  { name: "odFundus", value: odFundus },
+  { name: "odShadowTest", value: odShadowTest },
+  { name: "odSphJauh", value: odSphJauh },
+  { name: "odCyl", value: odCyl },
+  { name: "odAxis", value: odAxis },
+  { name: "odVisusTajamDenominator", value: odVisusTajamDenominator },
+  { name: "odVisusTajamNumerator", value: odVisusTajamNumerator },
+  { name: "odHasilVisusTajam", value: odHasilVisusTajam },
+  { name: "odPemeriksaanLanjutan", value: odPemeriksaanLanjutan },
+  { name: "odSphDekat", value: odSphDekat },
+  { name: "odGlaukoma", value: odGlaukoma },
+  { name: "odHasilGlaukoma", value: odHasilGlaukoma },
+  { name: "odIsRetinopati", value: odIsRetinopati },
+  { name: "osVisusDenominator", value: osVisusDenominator },
+  { name: "osVisusNumerator", value: osVisusNumerator },
+  { name: "osPinholeDenominator", value: osPinholeDenominator },
+  { name: "osPinholeNumerator", value: osPinholeNumerator },
+  { name: "osHasilPinhole", value: osHasilPinhole },
+  { name: "osPupilIsKatarak", value: osPupilIsKatarak },
+  { name: "osSnomed", value: osSnomed },
+  { name: "osSnomedUuid", value: osSnomedUuid },
+  { name: "osFundus", value: osFundus },
+  { name: "osShadowTest", value: osShadowTest },
+  { name: "osSphJauh", value: osSphJauh },
+  { name: "osCyl", value: osCyl },
+  { name: "osAxis", value: osAxis },
+  { name: "osVisusTajamDenominator", value: osVisusTajamDenominator },
+  { name: "osVisusTajamNumerator", value: osVisusTajamNumerator },
+  { name: "osHasilVisusTajam", value: osHasilVisusTajam },
+  { name: "osPemeriksaanLanjutan", value: osPemeriksaanLanjutan },
+  { name: "osSphDekat", value: osSphDekat },
+  { name: "osGlaukoma", value: osGlaukoma },
+  { name: "osHasilGlaukoma", value: osHasilGlaukoma },
+  { name: "osIsRetinopati", value: osIsRetinopati },
+]);
+
+const saveData = () => {
+  const tempData: any = {};
+
+  fieldList.value.forEach((field) => {
+    tempData[field.name] = field.value;
+  });
+  if (tempData.odSnomed) {
+    tempData.snomedUuid = tempData.odSnomed.uuid;
+    tempData.odSnomed = tempData.odSnomed.name;
+  }
+  if (tempData.osSnomed) {
+    tempData.osSnomedUuid = tempData.osSnomed.uuid;
+    tempData.osSnomed = tempData.osSnomed.name;
+  }
+  return tempData;
+};
+
+const checkFilledForm = () => {
+  let isFilled = false;
+  fieldList.value.forEach((fieldData) => {
+    if (fieldData.value && typeof fieldData.value != "boolean") {
+      isFilled = true;
+    }
+  });
+  return isFilled;
+};
+
+const setFormData = () => {
+  if (props.openedData) {
+    odVisusDenominator.value = props.openedData.odVisusDenominator;
+    odVisusNumerator.value = props.openedData.odVisusNumerator;
+    odPinholeDenominator.value = props.openedData.odPinholeDenominator;
+    odPinholeNumerator.value = props.openedData.odPinholeNumerator;
+    odHasilPinhole.value = props.openedData.odHasilPinhole;
+    odPupilIsKatarak.value = props.openedData.odPupilIsKatarak;
+    odSnomed.value = props.openedData.odSnomed;
+    snomedUuid.value = props.openedData.snomedUuid;
+    odFundus.value = props.openedData.odFundus;
+    odShadowTest.value = props.openedData.odShadowTest;
+    odSphJauh.value = props.openedData.odSphJauh;
+    odCyl.value = props.openedData.odCyl;
+    odAxis.value = props.openedData.odAxis;
+    odVisusTajamDenominator.value = props.openedData.odVisusTajamDenominator;
+    odVisusTajamNumerator.value = props.openedData.odVisusTajamNumerator;
+    odHasilVisusTajam.value = props.openedData.odHasilVisusTajam;
+    odPemeriksaanLanjutan.value = props.openedData.odPemeriksaanLanjutan;
+    odSphDekat.value = props.openedData.odSphDekat;
+    odGlaukoma.value = props.openedData.odGlaukoma;
+    odHasilGlaukoma.value = props.openedData.odHasilGlaukoma;
+    odIsRetinopati.value = props.openedData.odIsRetinopati;
+    osVisusDenominator.value = props.openedData.osVisusDenominator;
+    osVisusNumerator.value = props.openedData.osVisusNumerator;
+    osPinholeDenominator.value = props.openedData.osPinholeDenominator;
+    osPinholeNumerator.value = props.openedData.osPinholeNumerator;
+    osHasilPinhole.value = props.openedData.osHasilPinhole;
+    osPupilIsKatarak.value = props.openedData.osPupilIsKatarak;
+    osSnomed.value = props.openedData.osSnomed;
+    osSnomedUuid.value = props.openedData.osSnomedUuid;
+    osFundus.value = props.openedData.osFundus;
+    osShadowTest.value = props.openedData.osShadowTest;
+    osSphJauh.value = props.openedData.osSphJauh;
+    osCyl.value = props.openedData.osCyl;
+    osAxis.value = props.openedData.osAxis;
+    osVisusTajamDenominator.value = props.openedData.osVisusTajamDenominator;
+    osVisusTajamNumerator.value = props.openedData.osVisusTajamNumerator;
+    osHasilVisusTajam.value = props.openedData.osHasilVisusTajam;
+    osPemeriksaanLanjutan.value = props.openedData.osPemeriksaanLanjutan;
+    osSphDekat.value = props.openedData.osSphDekat;
+    osGlaukoma.value = props.openedData.osGlaukoma;
+    osHasilGlaukoma.value = props.openedData.osHasilGlaukoma;
+    osIsRetinopati.value = props.openedData.osIsRetinopati;
+    if (odSnomed.value) {
+      odSnomed.value = {
+        uuid: snomedUuid.value,
+        name: odSnomed.value,
+      };
+    }
+    if (osSnomed.value) {
+      osSnomed.value = {
+        uuid: osSnomedUuid.value,
+        name: osSnomed.value,
+      };
+    }
+  } else {
+    fieldList.value.forEach((field) => {
+      field.value = undefined;
+    });
+    odPupilIsKatarak.value = false;
+    osPupilIsKatarak.value = false;
+    odIsRetinopati.value = false;
+    osIsRetinopati.value = false;
+  }
+};
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
+
+const listSnomedData = ref<any[]>([]);
+onMounted(async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await snomedCTStore.getAktifApi();
+    if (response && response.payload) {
+      listSnomedData.value = response.payload;
+    } else {
+      listSnomedData.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listSnomedData.value = [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
+  setFormData();
+});
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+  saveData,
+  checkFilledForm,
+  props,
+});
 </script>
 
 <template>
@@ -226,7 +444,7 @@ const showDialogHistory = () => {
             />
             <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
             <CustomInputNumber
-              v-model="odVisusNumerat"
+              v-model="odVisusNumerator"
               :showLabel="false"
               class="mt-auto"
             />
@@ -237,16 +455,26 @@ const showDialogHistory = () => {
             />
             <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
             <CustomInputNumber
-              v-model="osVisusNumerat"
+              v-model="osVisusNumerator"
               :showLabel="false"
               class="mt-auto"
             />
           </div>
           <div v-else>
             <div class="flex flex-col gap-[19px]">
-              <CustomInfoRow label="Pemeriksaan Visus Kanan" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Visus Kanan"
+                :value="`${odVisusDenominator ?? '-'}/${
+                  odVisusNumerator ?? '-'
+                }`"
+              />
               <hr class="border-adameds-300" />
-              <CustomInfoRow label="Pemeriksaan Visus Kiri" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Visus Kiri"
+                :value="`${osVisusDenominator ?? '-'}/${
+                  osVisusNumerator ?? '-'
+                }`"
+              />
             </div>
             <hr class="-mx-4 border-grey-200 mt-[10px]" />
           </div>
@@ -277,7 +505,7 @@ const showDialogHistory = () => {
                   />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
                   <CustomInputNumber
-                    v-model="odPinholeNumerat"
+                    v-model="odPinholeNumerator"
                     :showLabel="false"
                     class="mt-auto"
                     @update:model-value="hasilPihnhole('OD')"
@@ -298,28 +526,42 @@ const showDialogHistory = () => {
                 <div class="flex">
                   <!-- OV000393 -->
                   <CustomRadio
-                    v-model="odPupilIskatarak"
+                    v-model="odPupilIsKatarak"
                     :value="true"
                     sideLabel="Curiga Katarak"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="odPupilIskatarak"
+                    v-model="odPupilIsKatarak"
                     :value="false"
                     sideLabel="Kelainan Mata Lainnya"
                   />
                 </div>
               </div>
               <CustomSelect
-                v-if="!odPupilIskatarak"
+                v-if="!odPupilIsKatarak"
                 v-model="odSnomed"
                 :showLabel="false"
-                placeHolder="Kelainan Mata Lain (Snomed-CT)"
+                :placeHolder="
+                  odSnomed?.name ?? 'Kelainan Mata Lain (Snomed-CT)'
+                "
                 class="col-span-2"
-                optionLabel=""
+                optionLabel="name"
                 optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
-              />
+                :options="listSnomedData"
+                customValue
+              >
+                <template #customOptions="{ option }">
+                  {{ option.name }} ({{ option.code }})
+                </template>
+                <template #customValue="{ value, placeholder, selectedData }">
+                  {{
+                    value && selectedData
+                      ? `${selectedData?.name} (${selectedData?.code})`
+                      : placeholder
+                  }}
+                </template>
+              </CustomSelect>
             </div>
             <div class="border border-gray-200 mx-[35px]"></div>
             <div class="grid grid-cols-2 gap-5">
@@ -336,7 +578,7 @@ const showDialogHistory = () => {
                   />
                   <span class="text-adameds-300 mx-[30px] mt-auto mb-2">/</span>
                   <CustomInputNumber
-                    v-model="osPinholeNumerat"
+                    v-model="osPinholeNumerator"
                     :showLabel="false"
                     class="mt-auto"
                     @update:model-value="hasilPihnhole('OS')"
@@ -357,42 +599,69 @@ const showDialogHistory = () => {
                 <div class="flex">
                   <!-- OV000393 -->
                   <CustomRadio
-                    v-model="osPupilIskatarak"
+                    v-model="osPupilIsKatarak"
                     :value="true"
                     sideLabel="Curiga Katarak"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="osPupilIskatarak"
+                    v-model="osPupilIsKatarak"
                     :value="false"
                     sideLabel="Kelainan Mata Lainnya"
                   />
                 </div>
               </div>
               <CustomSelect
-                v-if="!osPupilIskatarak"
+                v-if="!osPupilIsKatarak"
                 v-model="osSnomed"
                 :showLabel="false"
-                placeHolder="Kelainan Mata Lain (Snomed-CT)"
+                :placeHolder="
+                  odSnomed?.name ?? 'Kelainan Mata Lain (Snomed-CT)'
+                "
                 class="col-span-2"
-                optionLabel=""
+                optionLabel="uuid"
                 optionValue=""
-                :options="['dr. Budi', 'dr. Ali', 'dr. Doom']"
-              />
+                :options="listSnomedData"
+                :placeholder="osSnomed"
+                customValue
+              >
+                <template #customOptions="{ option }">
+                  {{ option.name }} ({{ option.code }})
+                </template>
+                <template #customValue="{ value, placeholder, selectedData }">{{
+                  value && selectedData
+                    ? `${selectedData.name} (${selectedData.code})`
+                    : placeholder
+                }}</template>
+              </CustomSelect>
             </div>
           </div>
           <div v-else>
             <div class="flex flex-col gap-[19px]">
-              <CustomInfoRow label="Pemeriksaan Pinhole Kanan" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Pinhole Kanan"
+                :value="odHasilPinhole"
+              />
               <CustomInfoRow
                 label="Pemeriksaan Segment Anterior (Pupil) Kanan*"
-                value="-"
+                :value="
+                  odPupilIsKatarak
+                    ? 'Curiga Katarak'
+                    : odSnomed?.name ?? 'Kelainan mata lainnya'
+                "
               />
               <hr class="border-adameds-300" />
-              <CustomInfoRow label="Pemeriksaan Pinhole Kiri" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Pinhole Kiri"
+                :value="osHasilPinhole"
+              />
               <CustomInfoRow
                 label="Pemeriksaan Segment Anterior (Pupil) Kiri*"
-                value="-"
+                :value="
+                  osPupilIsKatarak
+                    ? 'Curiga Katarak'
+                    : osSnomed?.name ?? 'Kelainan mata lainnya'
+                "
               />
             </div>
             <hr class="-mx-4 border-grey-200 mt-[10px]" />
@@ -457,12 +726,21 @@ const showDialogHistory = () => {
             <div class="flex flex-col gap-[19px]">
               <CustomInfoRow
                 label="Pemeriksaan Reflek Fundus Kanan"
-                value="-"
+                :value="odFundus ? getFundusText(odFundus) : '-'"
               />
-              <CustomInfoRow label="Pemeriksaan Shadow Test Kanan" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Shadow Test Kanan"
+                :value="odShadowTest ? getShadowTestText(odShadowTest) : '-'"
+              />
               <hr class="border-adameds-300" />
-              <CustomInfoRow label="Pemeriksaan Reflek Fundus Kiri" value="-" />
-              <CustomInfoRow label="Pemeriksaan Shadow Test Kiri" value="-" />
+              <CustomInfoRow
+                label="Pemeriksaan Reflek Fundus Kiri"
+                :value="osFundus ? getFundusText(osFundus) : '-'"
+              />
+              <CustomInfoRow
+                label="Pemeriksaan Shadow Test Kiri"
+                :value="osShadowTest ? getShadowTestText(osShadowTest) : '-'"
+              />
             </div>
             <hr class="-mx-4 border-grey-200 mt-[10px]" />
           </div>
@@ -561,32 +839,42 @@ const showDialogHistory = () => {
                 Pemeriksaan Refraksi Subjektif Jauh Mata Kanan
               </div>
               <div class="grid grid-cols-2 gap-y-[19px]">
-                <CustomInfoRow label="Sph" value="-" />
-                <CustomInfoRow label="Cyl" value="-" />
-                <CustomInfoRow label="Axis" value="-" />
+                <CustomInfoRow label="Sph" :value="`${odSphJauh ?? '-'}`" />
+                <CustomInfoRow label="Cyl" :value="`${odCyl ?? '-'}`" />
+                <CustomInfoRow label="Axis" :value="`${odAxis ?? '-'}`" />
               </div>
               <div class="font-semibold underline text-normal">
                 Pemeriksaan Visus Tajam Penglihatan Jarak Jauh Mata Kanan
               </div>
               <div class="grid grid-cols-2">
-                <CustomInfoRow label="Nilai" value="-" />
-                <CustomInfoRow label="Hasil" value="-" />
+                <CustomInfoRow
+                  label="Nilai"
+                  :value="`${odVisusTajamDenominator ?? '-'}/${
+                    odVisusTajamNumerator ?? '-'
+                  }`"
+                />
+                <CustomInfoRow label="Hasil" :value="odHasilVisusTajam" />
               </div>
               <hr class="border-adameds-300" />
               <div class="font-semibold underline text-normal">
                 Pemeriksaan Refraksi Subjektif Jauh Mata Kiri
               </div>
               <div class="grid grid-cols-2 gap-y-[19px]">
-                <CustomInfoRow label="Sph" value="-" />
-                <CustomInfoRow label="Cyl" value="-" />
-                <CustomInfoRow label="Axis" value="-" />
+                <CustomInfoRow label="Sph" :value="`${osSphJauh ?? '-'}`" />
+                <CustomInfoRow label="Cyl" :value="`${osCyl ?? '-'}`" />
+                <CustomInfoRow label="Axis" :value="`${osAxis ?? '-'}`" />
               </div>
               <div class="font-semibold underline text-normal">
                 Pemeriksaan Visus Tajam Penglihatan Jarak Jauh Mata Kiri
               </div>
               <div class="grid grid-cols-2">
-                <CustomInfoRow label="Nilai" value="-" />
-                <CustomInfoRow label="Hasil" value="-" />
+                <CustomInfoRow
+                  label="Nilai"
+                  :value="`${osVisusTajamDenominator ?? '-'}/${
+                    osVisusTajamNumerator ?? '-'
+                  }`"
+                />
+                <CustomInfoRow label="Hasil" :value="osHasilVisusTajam" />
               </div>
             </div>
             <hr class="-mx-4 border-grey-200 mt-[10px]" />
@@ -629,12 +917,20 @@ const showDialogHistory = () => {
             <div class="flex flex-col gap-[19px]">
               <CustomInfoRow
                 label="Pemeriksaan Lanjutan Jika Dinyatakan Buta Warna Kanan"
-                value="-"
+                :value="
+                  odPemeriksaanLanjutan
+                    ? getPemeriksaanLanjutanText(odPemeriksaanLanjutan)
+                    : '-'
+                "
               />
               <hr class="border-adameds-300" />
               <CustomInfoRow
                 label="Pemeriksaan Lanjutan Jika Dinyatakan Buta Warna Kiri"
-                value="-"
+                :value="
+                  osPemeriksaanLanjutan
+                    ? getPemeriksaanLanjutanText(odPemeriksaanLanjutan)
+                    : '-'
+                "
               />
             </div>
             <hr class="-mx-4 border-grey-200 mt-[10px]" />
@@ -687,13 +983,13 @@ const showDialogHistory = () => {
                 </label>
                 <div class="flex">
                   <CustomRadio
-                    v-model="odIsretinopati"
+                    v-model="odIsRetinopati"
                     :value="false"
                     sideLabel="Normal"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="odIsretinopati"
+                    v-model="odIsRetinopati"
                     :value="true"
                     sideLabel="Suspek Retinopati"
                   />
@@ -736,13 +1032,13 @@ const showDialogHistory = () => {
                 </label>
                 <div class="flex">
                   <CustomRadio
-                    v-model="osIsretinopati"
+                    v-model="osIsRetinopati"
                     :value="false"
                     sideLabel="Normal"
                     class="mr-5"
                   />
                   <CustomRadio
-                    v-model="osIsretinopati"
+                    v-model="osIsRetinopati"
                     :value="true"
                     sideLabel="Suspek Retinopati"
                   />
@@ -757,15 +1053,15 @@ const showDialogHistory = () => {
               </div>
               <CustomInfoRow
                 label="Koreksi Lensa addisi untuk penglihatan dekat (Sph +) Kanan"
-                value="-"
+                :value="`${odSphDekat ?? '-'}`"
               />
               <CustomInfoRow
                 label="Dicurigai Glaukoma pada mata Kanan"
-                value="-"
+                :value="odHasilGlaukoma"
               />
               <CustomInfoRow
                 label="Dicurigai Retinopati pada Mata Kanan"
-                value="-"
+                :value="osIsRetinopati ? 'Normal' : 'Suspek Retinopati'"
               />
               <hr class="border-adameds-300" />
               <div class="font-semibold underline text-normal">
@@ -773,15 +1069,15 @@ const showDialogHistory = () => {
               </div>
               <CustomInfoRow
                 label="Koreksi Lensa addisi untuk penglihatan dekat (Sph +) Kiri"
-                value="-"
+                :value="`${osSphDekat ?? '-'}`"
               />
               <CustomInfoRow
                 label="Dicurigai Glaukoma pada mata Kiri"
-                value="-"
+                :value="osHasilGlaukoma"
               />
               <CustomInfoRow
                 label="Dicurigai Retinopati pada Mata Kiri"
-                value="-"
+                :value="odIsRetinopati ? 'Normal' : 'Suspek Retinopati'"
               />
             </div>
           </div>

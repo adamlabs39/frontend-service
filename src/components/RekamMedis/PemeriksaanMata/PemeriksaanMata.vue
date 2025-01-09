@@ -4,6 +4,16 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCanvasDrawer from "../PemeriksaanFisik/CustomCanvasDrawer.vue";
 import SkriningMata from "./SkriningMata.vue";
 import TemuanLainnya from "./TemuanLainnya.vue";
+import { isCanvasEmpty } from "../PemeriksaanFisik/pemeriksaanFisikUtils";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { ref } from "vue";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+
+const emit = defineEmits(["edit", "editAsesmen"]);
 
 const props = defineProps({
   header: {
@@ -14,9 +24,140 @@ const props = defineProps({
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["edit"]);
+const canvasOftalmologis = ref<HTMLCanvasElement | null>(null);
+const canvasAnterior = ref<HTMLCanvasElement | null>(null);
+const canvasPosterior = ref<HTMLCanvasElement | null>(null);
+const skriningMata = ref<any>(null);
+const temuanLainnya = ref<any>(null);
+
+const arrRefElement = ref<any[]>([
+  canvasOftalmologis,
+  canvasAnterior,
+  canvasPosterior,
+  skriningMata,
+  temuanLainnya,
+]);
+
+const openFilledCanvas = () => {
+  const pemeriksaanMata =
+    rekamMedisStore.openedRekamMedis?.data?.pemeriksaanMata;
+
+  if (!pemeriksaanMata) return;
+
+  arrRefElement.value.forEach((elementRef) => {
+    const element = elementRef.value;
+
+    if (!element) return;
+
+    const { props, checkFilledForm, open } = element || {};
+    const gambarKey = `gambar${props.type}`;
+    const isNotEmptyCanvas =
+    pemeriksaanMata[gambarKey] && !isCanvasEmpty(pemeriksaanMata[gambarKey]);
+
+    switch (props.type) {
+      case "skriningMata":
+        if (checkFilledForm()) open();
+        console.log("🚀 ~ arrRefElement.value.forEach ~ checkFilledForm:", checkFilledForm())
+        break;
+
+      case "temuanLainnya":
+        if (pemeriksaanMata.temuanLainnya) open();
+        break;
+
+      case "Anterior":
+        if (
+          isNotEmptyCanvas ||
+          pemeriksaanMata.ketOd ||
+          pemeriksaanMata.ketOs
+        ) {
+          open();
+        }
+        break;
+
+      default:
+        if (isNotEmptyCanvas) {
+          open();
+        }
+        break;
+    }
+  });
+};
+const closeAllAccordion = () => {
+  arrRefElement.value.forEach((canvasRef) => {
+    if (canvasRef.value) {
+      (canvasRef.value as any).close();
+      if (typeof (canvasRef.value as any).close === "function") {
+      }
+    }
+  });
+};
+
+const submitData = () => {
+  let tempObjectData: any = {};
+  arrRefElement.value.forEach((elementRef) => {
+    if (elementRef.value) {
+      if (
+        (elementRef.value as any).props.type != "skriningMata" &&
+        (elementRef.value as any).props.type != "temuanLainnya"
+      ) {
+        let data = (elementRef.value as any).saveCanvas();
+        tempObjectData = { ...tempObjectData, ...data };
+      } else {
+        let data = (elementRef.value as any).saveData();
+        tempObjectData = { ...tempObjectData, ...data };
+      }
+    }
+  });
+  return tempObjectData;
+};
+
+const onSubmit = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const tempPemeriksaanMataData = submitData();
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "pemeriksaan_mata",
+      data: tempPemeriksaanMataData,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => {
+  if (accordion.value) {
+    (accordion.value as any).open();
+  }
+};
+const close = () => {
+  if (accordion.value) {
+    (accordion.value as any).close();
+  }
+};
+
+defineExpose({
+  open,
+  close,
+});
 </script>
 
 <template>
@@ -27,7 +168,7 @@ const emit = defineEmits(["edit"]);
         <div v-if="method == 'form'" class="flex justify-end mb-5">
           <div class="flex">
             <CustomButton
-              @click="() => {}"
+              @click="openFilledCanvas"
               class="my-auto !rounded-md ml-5 mx-[10px]"
               borderColor="border-adameds-300"
               textColor="text-adameds-300"
@@ -36,7 +177,7 @@ const emit = defineEmits(["edit"]);
               outlined
             />
             <CustomButton
-              @click="() => {}"
+              @click="closeAllAccordion"
               class="my-auto !rounded-md"
               borderColor="border-adameds-300"
               textColor="text-adameds-300"
@@ -53,6 +194,7 @@ const emit = defineEmits(["edit"]);
           type="Oftalmologis"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
         />
         <CustomCanvasDrawer
           ref="canvasAnterior"
@@ -60,6 +202,7 @@ const emit = defineEmits(["edit"]);
           type="Anterior"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
         />
         <CustomCanvasDrawer
           ref="canvasPosterior"
@@ -67,9 +210,22 @@ const emit = defineEmits(["edit"]);
           type="Posterior"
           class="mb-[10px]"
           :method="method"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
         />
-        <SkriningMata ref="skriningMata" class="mb-[10px]" :method="method" />
-        <TemuanLainnya ref="temuanLainnya" class="mb-[10px]" :method="method" />
+        <SkriningMata
+          ref="skriningMata"
+          class="mb-[10px]"
+          :method="method"
+          type="skriningMata"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+        />
+        <TemuanLainnya
+          ref="temuanLainnya"
+          class="mb-[10px]"
+          :method="method"
+          type="temuanLainnya"
+          :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+        />
       </div>
     </template>
     <template #footer>
@@ -81,10 +237,14 @@ const emit = defineEmits(["edit"]);
           borderColor="border-2 border-grey-200"
           outlined
         />
-        <CustomButton v-if="method == 'form'" label="Simpan" />
+        <CustomButton
+          v-if="method == 'form'"
+          @click="onSubmit"
+          label="Simpan "
+        />
         <CustomButton
           v-if="props.method == 'detail'"
-          @click="emit('edit')"
+          @click="emit('editAsesmen')"
           label="Edit"
         />
       </div>

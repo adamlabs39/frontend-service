@@ -30,6 +30,10 @@ const props = defineProps({
     type: String as PropType<string | null>,
     default: null,
   },
+  selectedPemeriksaanMata: {
+    type: String as PropType<string | null>,
+    default: null,
+  },
   rmUuid: {
     type: String,
     default: "",
@@ -155,6 +159,9 @@ const props = defineProps({
     <PemeriksaanMata
       v-if="selectedAssesment == 'Pemeriksaan Mata'"
       initialState="0"
+      :selectedPemeriksaanMata="selectedPemeriksaanMata"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <BurnInput
       v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"

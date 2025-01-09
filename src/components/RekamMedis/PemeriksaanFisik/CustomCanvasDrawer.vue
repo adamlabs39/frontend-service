@@ -255,18 +255,32 @@ const drawing = (e: MouseEvent) => {
 };
 
 const keterangan = ref("");
+const keteranganOd = ref("");
+const keteranganOs = ref("");
 const saveCanvas = () => {
   let tempData: any = {};
   let dataURL = canvas.value!.toDataURL("image/png");
-  if (keterangan.value || !isCanvasEmpty(dataURL)) {
-    tempData[props.type.toLowerCase().replace(/ /g, "_")] = true;
+  if (
+    props.type == "Oftalmologis" ||
+    props.type == "Anterior" ||
+    props.type == "Posterior"
+  ) {
+    tempData[`gambar_${props.type.toLowerCase().replace(/ /g, "_")}`] = dataURL;
+    if (props.type == "Anterior") {
+      tempData.ketOd = keteranganOd.value;
+      tempData.ketOs = keteranganOs.value;
+    }
   } else {
-    dataURL = "";
-    tempData[props.type.toLowerCase().replace(/ /g, "_")] = false;
+    if (keterangan.value || !isCanvasEmpty(dataURL)) {
+      tempData[props.type.toLowerCase().replace(/ /g, "_")] = true;
+    } else {
+      dataURL = "";
+      tempData[props.type.toLowerCase().replace(/ /g, "_")] = false;
+    }
+    tempData[`gambar_${props.type.toLowerCase().replace(/ /g, "_")}`] = dataURL;
+    tempData[`ket_${props.type.toLowerCase().replace(/ /g, "_")}`] =
+      keterangan.value;
   }
-  tempData[`gambar_${props.type.toLowerCase().replace(/ /g, "_")}`] = dataURL;
-  tempData[`ket_${props.type.toLowerCase().replace(/ /g, "_")}`] =
-    keterangan.value;
   return tempData;
 };
 
@@ -282,7 +296,18 @@ const loadImage = () => {
 
 const setFormData = () => {
   if (props.openedData) {
-    keterangan.value = props.openedData[`ket${props.type}`];
+    if (
+      props.type == "Oftalmologis" ||
+      props.type == "Anterior" ||
+      props.type == "Posterior"
+    ) {
+      if (props.type == "Anterior") {
+        keteranganOd.value = props.openedData[`ketOd`];
+        keteranganOs.value = props.openedData[`ketOs`];
+      }
+    } else {
+      keterangan.value = props.openedData[`ket${props.type}`];
+    }
     loadImage();
   } else {
     keterangan.value = "";
@@ -605,12 +630,14 @@ defineExpose({
             </div>
             <div v-if="type == 'Anterior'">
               <CustomTextArea
+                v-model="keteranganOd"
                 label="Keterangan Oculus Dextra"
                 class="mt-[30px]"
                 placeholder="Keterangan oculus dextra"
                 height="h-10"
               />
               <CustomTextArea
+                v-model="keteranganOs"
                 label="Keterangan Oculus Sinistra"
                 class="mt-[30px]"
                 placeholder="Keterangan oculus sinistra"
@@ -642,10 +669,13 @@ defineExpose({
           <div v-if="type == 'Anterior'">
             <CustomInfoRow
               label="Keterangan Oculus Dextra"
-              value="-"
+              :value="openedData ? openedData.ketOd : '-'"
               class="mb-[19px]"
             />
-            <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
+            <CustomInfoRow
+              label="Keterangan Oculus Sinistra"
+              :value="openedData ? openedData.ketOs : '-'"
+            />
           </div>
           <CustomInfoRow
             v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
@@ -666,7 +696,15 @@ defineExpose({
             label="Detail"
             icon="DetailIcon"
           />
-          <CustomButton label="Edit" @click="emit('editAsesmen')" />
+          <CustomButton
+            v-if="
+              type != 'Oftalmologis' &&
+              type != 'Anterior' &&
+              type != 'Posterior'
+            "
+            label="Edit"
+            @click="emit('editAsesmen')"
+          />
         </div>
       </template>
     </CustomAccordion>
@@ -700,7 +738,15 @@ defineExpose({
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomButton label="Edit" @click="emit('editAsesmen')" />
+          <CustomButton
+            v-if="
+              type != 'Oftalmologis' &&
+              type != 'Anterior' &&
+              type != 'Posterior'
+            "
+            label="Edit"
+            @click="emit('editAsesmen')"
+          />
         </div>
       </template>
     </CustomDialog>
@@ -757,15 +803,18 @@ defineExpose({
               <div v-if="type == 'Anterior'">
                 <CustomInfoRow
                   label="Keterangan Oculus Dextra"
-                  value="-"
+                  :value="openedData ? openedData.ketOd : '-'"
                   class="mb-[19px]"
                 />
-                <CustomInfoRow label="Keterangan Oculus Sinistra" value="-" />
+                <CustomInfoRow
+                  label="Keterangan Oculus Sinistra"
+                  :value="openedData ? openedData.ketOs : '-'"
+                />
               </div>
               <CustomInfoRow
                 v-else-if="type != 'Posterior' && type != 'Oftalmologis'"
                 :label="`Keterangan ${type}`"
-                value="Nama Asesmen Ulang"
+                :value="openedData ? openedData[`ket${props.type}`] : '-'"
               />
               <hr class="border-grey-200" />
               <CustomInfoRow label="Petugas Input" value="Nama Petugas" />

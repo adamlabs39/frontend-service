@@ -28,7 +28,7 @@ import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vue";
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";
 
-const emit = defineEmits(["editAsesmen"]);
+const emit = defineEmits(["editAsesmen", "editAsesmenMata"]);
 
 const props = defineProps({
   rmType: {
@@ -148,14 +148,15 @@ const toggleShowAllDetailMR = (method = "show") => {
         @editAsesmen="emit('editAsesmen', 'Pemeriksaan Fisik', $event)"
       />
       <PemeriksaanGigi
-        v-if="rmAssesmentData.pemeriksaanGigi"
+        v-if="rmType == 'rawat-jalan' && rmAssesmentData.pemeriksaanGigi"
         :ref="refs.pemeriksaanGigi"
         method="detail"
       />
       <PemeriksaanMata
-        v-if="rmAssesmentData.pemeriksaanMata"
+        v-if="rmType == 'rawat-jalan' && rmAssesmentData.pemeriksaanMata"
         :ref="refs.pemeriksaanMata"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Pemeriksaan Mata')"
       />
       <BurnInput
         v-if="rmAssesmentData.lukaBakar"

@@ -23,9 +23,7 @@ const assesmentList = ref([
   "Antropometri",
   "Asesmen Nyeri",
   "Kesadaran",
-  "Pemeriksaan Fisik",
-  "Pemeriksaan Gigi",
-  "Pemeriksaan Mata",
+  "Pemeriksaan Fisik", 
   "Derajat Luka Bakar (RON)",
   "Catatan Hasil Penunjang",
   "Diagnosis Dokter",
@@ -130,6 +128,8 @@ const onSuratListSelect = (label: string) => {
 onMounted(() => {
   if (props.rmType == "igd") {
     assesmentList.value.splice(2, 0, "Triase");
+  } if (props.rmType == 'rawat-jalan') {
+    assesmentList.value.splice(7, 0, "Pemeriksaan Gigi", "Pemeriksaan Mata")
   }
 });
 </script>
