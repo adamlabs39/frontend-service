@@ -39,15 +39,15 @@ const props = defineProps({
     default: "#14B8A6",
   },
   modelValue: {
-    type: [Boolean, String],
+    type: [Boolean, String, Number],
     default: false,
   },
   trueValue: {
-    type: [Boolean, String],
+    type: [Boolean, String,Number],
     default: true,
   },
   falseValue: {
-    type: [Boolean, String],
+    type: [Boolean, String, Number],
     default: false,
   },
   disabled: {
@@ -66,7 +66,7 @@ const props = defineProps({
 
 const checked = computed({
   get: () => props.modelValue,
-  set: (value: Boolean | String) => emit("update:modelValue", value),
+  set: (value: Boolean | String | Number) => emit("update:modelValue", value),
 });
 const emit = defineEmits(["update:modelValue", "change"]);
 </script>

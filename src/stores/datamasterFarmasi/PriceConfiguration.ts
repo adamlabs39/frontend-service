@@ -23,6 +23,9 @@ export const usePriceConfigurationStore = defineStore({
     async postApi(payload = {}) {
       return apiFarmasiPost("/farmasi/datamaster/bentuk-racikan", payload);
     },
+    async getRacikanApi(payload = {}) {
+      return apiFarmasiGet("/farmasi/datamaster/bentuk-racikan", payload);
+    },
     async putApi(uuid: string, payload = {}) {
       return apiFarmasiPut(`/farmasi/datamaster/bentuk-racikan/${uuid}`, payload);
     },
