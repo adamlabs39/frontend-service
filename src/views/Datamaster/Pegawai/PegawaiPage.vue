@@ -161,7 +161,7 @@ const downloadExportExcel = async () => {
       NIK: "NIK",
       TglLahir: "Tanggal Lahir",
       Gender: "Jenis Kelamin",
-      Status:"Status"
+      Status: "Status",
     });
 
     // Data Rows
@@ -169,12 +169,12 @@ const downloadExportExcel = async () => {
       data.push({
         No: i + 1,
         Tipe: rows[i].tipe === 1 ? "Nakes" : "Non-Nakes",
-        Gelar: rows[i].firstTitle ?? '-',
+        Gelar: rows[i].firstTitle ?? "-",
         Name: rows[i].name,
-        GelarAkhir: rows[i].lastTitle ?? '-',
+        GelarAkhir: rows[i].lastTitle ?? "-",
         NIK: rows[i].nik,
         TglLahir: rows[i].tanggalLahir,
-        Gender : rows[i].gender === "perempuan" ? "Perempuan" : "Laki-laki",
+        Gender: rows[i].gender === "perempuan" ? "Perempuan" : "Laki-laki",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -194,7 +194,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -202,7 +202,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -288,7 +288,7 @@ const downloadFormatExcel = async () => {
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -296,7 +296,7 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
@@ -310,18 +310,6 @@ const downloadFormatExcel = async () => {
     XLSX.writeFile(workbook, `Format Datamaster Pegawai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
-  }
-};
-
-const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData();
-  dataUpload.append("file", file);
-  try {
-    const response = await pegawaiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchPegawaiData();
-    console.log("File uploaded successfully:", response);
-  } catch (error) {
-    console.error("Error uploading file:", error);
   }
 };
 </script>
@@ -510,9 +498,9 @@ const handleFileUpload = async (file: File) => {
       <Footer
         :rows="pegawaiProperties.page_size"
         :totalRecords="pegawaiProperties.total"
+        :showImport="false"
         @page="handlePage"
         @export="downloadExportExcel"
-        @import="handleFileUpload"
         @download="downloadFormatExcel"
       />
     </template>
