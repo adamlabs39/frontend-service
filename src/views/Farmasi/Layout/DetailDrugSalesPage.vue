@@ -33,7 +33,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 const schema = toTypedSchema(
   yup.object({
     lokasiStokUuid: yup.string().required("Lokasi farmasi harus diisi"),
-    tanggalPemberian: yup.date().default(new Date()).required("Tanggal harus diisi"),
+    tanggalPembelian: yup.date().default(new Date()).required("Tanggal harus diisi"),
     dokterPemberiResep: yup.string().required("Dokter yang meresepkan harus diisi"),
     namaPembeli: yup.string().required("Nama pembeli harus diisi"),
     noHp: yup.string().required("No handphone harus diisi"),
@@ -68,7 +68,7 @@ const { errors, handleSubmit, defineField } = useForm({
 });
 
 const [lokasiStokUuid] = defineField("lokasiStokUuid");
-const [tanggalPemberian] = defineField("tanggalPemberian");
+const [tanggalPembelian] = defineField("tanggalPembelian");
 const [dokterPemberiResep] = defineField("dokterPemberiResep");
 const [namaPembeli] = defineField("namaPembeli");
 const [noHp] = defineField("noHp");
@@ -96,9 +96,9 @@ const addRow = () => {
   });
 };
 
-const onSubmit = handleSubmit(async (values: any) => {
-  values.noTransaksi = DrugSalesPayload.value.Code
-  values.tanggalPemberian = dateToEpoch(values.tanggalPemberian)
+const onSubmit = handleSubmit(async (values: any) => {  
+  values.noTransaksi = DrugSalesCodePayload.value.code
+  values.tanggalPembelian = dateToEpoch(values.tanggalPembelian)
   
   try {
     const response = await DrugSalesStore.createApi(values);
@@ -141,8 +141,12 @@ const updateDiskon = (index: number) => {
 };
 
 const handleDelete = (index: number) => {
+  grandTotal.value = 0
   remove(index);
-  totalItem.value = filedsPenjualan.value.length  
+  totalItem.value = filedsPenjualan.value.length
+  filedsPenjualan.value.forEach(item => {
+    grandTotal.value = item.value.qty * item.value.hargaSatuan - item.value.diskon    
+  })
 };
 
 // State Management
@@ -173,7 +177,7 @@ const fetchStockLocation = async () => {
 
 // State Management
 const DrugSalesStore = useDrugSalesStore();
-const DrugSalesPayload = ref<any>({});
+const DrugSalesCodePayload = ref<any>({});
 
 // Fetch Code Transaksi
 const fetchCode = async () => {
@@ -181,13 +185,13 @@ const fetchCode = async () => {
     const response = await DrugSalesStore.getCode();
 
     if (response && response.payload) {
-      DrugSalesPayload.value = response.payload;
+      DrugSalesCodePayload.value = response.payload;
     } else {
-      DrugSalesPayload.value = {};
+      DrugSalesCodePayload.value = {};
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    DrugSalesPayload.value = {};
+    DrugSalesCodePayload.value = {};
   }
 };
 
@@ -199,7 +203,7 @@ const AvailableJenisStokPayload = ref<any[]>([]);
 // Fetch Without Pagination
 const fetchWithoutPagination = async () => {
   try {
-    const response = await MedicalItemStore.getWithoutPaginationApi();
+    const response = await MedicalItemStore.getWithoutPaginationApi2();
 
     if (response && response.payload) {
       WithoutPaginationPayload.value = response.payload;
@@ -282,7 +286,7 @@ onMounted(() => {
               <div>
                 <CustomTextfield
                   disabled
-                  v-model="DrugSalesPayload.code"
+                  v-model="DrugSalesCodePayload.code"
                   label="No. Transaksi"
                   placeholder="OTC1234"
                   class="mr-[20px]"
@@ -290,12 +294,12 @@ onMounted(() => {
               </div>
               <div>
                 <CustomDatePicker
-                  v-model="tanggalPemberian"
+                  v-model="tanggalPembelian"
                   label="Tanggal"
                   class="mr-[20px]"
-                  :invalid="!!errors.tanggalPemberian"
-                  :invalidMessage="errors.tanggalPemberian"
-                  :required="errors.tanggalPemberian ? true : false"
+                  :invalid="!!errors.tanggalPembelian"
+                  :invalidMessage="errors.tanggalPembelian"
+                  :required="errors.tanggalPembelian ? true : false"
                 />
               </div>
               <div>
@@ -470,9 +474,7 @@ onMounted(() => {
                         :invalidMessage="(errors as any)[`items[${slotProps.index}].diskon`]"
                       >
                         <template #prependText>
-                          <div
-                            class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                          >
+                          <div class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r">
                             Rp.
                           </div>
                         </template>

@@ -35,7 +35,7 @@ export const useMedicalItemStore = defineStore({
     async importApi(payload: any) {
       return apiFarmasiPost("/farmasi/datamaster/item-medis/import", payload);
     },
-    async getWithoutPaginationApi(payload = {}) {      
+    async getWithoutPaginationApi2(payload = {}) {      
       return apiFarmasiGet(`/farmasi/datamaster/item-medis/without-pagination?jenis_item=obat`, payload);
     },
     async getAvailableJenisStokApi(uuid: string, payload = {}) {      

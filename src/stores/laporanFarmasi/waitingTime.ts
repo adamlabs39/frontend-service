@@ -7,15 +7,19 @@ export const useWaitingTimeStore = defineStore({
   getters: {},
   actions: {
     async getApi(
-      page: number = 1,
-      limit: number = 10,
+      name: string = "",
+      paymentMethod: string = "",
+      recipeOrigin: string = "",
+      recipe: string = "",
+      typeOfService: string = "",
       startDate: number = 0,
       endDate: number = 0,
-      name: String = "",
+      page: number = 1,
+      limit: number = 10,
       payload = {}
     ) {
       return apiFarmasiGet(
-        `/farmasi/rekap/tat?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&name=${name}`,
+        `/farmasi/rekap/tat?&name=${name}&payment_method=${paymentMethod}&lokasi_uuid=${recipeOrigin}&racikan=${recipe}&jenisPelayanan=${typeOfService}&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}`,
         payload
       );
     },

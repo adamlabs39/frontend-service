@@ -1,49 +1,155 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { onMounted, ref, computed, watch } from "vue";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useWaitingTimeStore } from "@/stores/laporanFarmasi/waitingTime";
+import { utilsStore } from "@/stores/utils";
+import { dateToEpoch, epochToDate } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const reportData = ref([]);
 const expandedRows = ref();
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
+const typeOfService = ref<string>("");
+const recipe = ref<string>("");
+const recipeOrigin = ref<string>("");
+const paymentMethod = ref<string>("");
+const searchQuery = ref<string>("");
+const optionPelayanan = ref([
+  { label: "Semua", value: "" },
+  { label: "IGD", value: "igd" },
+  { label: "Rawat Jalan", value: "rj" },
+  { label: "Rawat Inap", value: "ri" },
+]);
+const optionResep = ref([
+  { label: "Semua", value: "" },
+  { label: "Racikan", value: "racikan" },
+  { label: "Non-Racikan", value: "non-racikan" },
+]);
+const optionPembayaran = ref([
+  { label: "Semua", value: "" },
+  { label: "Tunai", value: 1 },
+  { label: "Asuransi", value: 2 },
+]);
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
+// State Management Location
+const locationStore = useLokasiStore();
+const locationPayload = ref<any[]>([]);
 
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
+// Fetch Location
+const fetchLocation = async () => {
+  try {
+    const response = await locationStore.getApi(1, 9999);
+    if (response && response.payload) {
+      locationPayload.value = response.payload;
+    } else {
+      locationPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    locationPayload.value = [];
+  }
 };
 
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+// State Management Revenue Recap
+const waitingTimeStore = useWaitingTimeStore();
+const UseUtilsStore = utilsStore();
+const waitingTimePayload = ref<any[]>([]);
+const waitingTimeProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
 
+// Check if Data Exists
+const hasData = computed(
+  () => waitingTimePayload.value && waitingTimePayload.value.length > 0
+);
+
+// Fetch Waiting Time
+const fetchWaitingTime = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await waitingTimeStore.getApi(
+      searchQuery.value,
+      paymentMethod.value,
+      recipeOrigin.value,
+      recipe.value,
+      typeOfService.value,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      waitingTimeProperties.value.page,
+      waitingTimeProperties.value.page_size
+    );
+
+    if (response && response.payload) {
+      waitingTimeProperties.value.total = response.properties.total;
+      waitingTimePayload.value = response.payload;
+    } else {
+      waitingTimePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    waitingTimePayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchWaitingTime();
+  }, 500);
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  waitingTimeProperties.value.page = event.page + 1;
+  waitingTimeProperties.value.page_size = event.rows;
+  fetchWaitingTime();
+};
+
+// Filter Search Data
+const searchData = () => {
+  typeOfService.value;
+  searchQuery.value;
+  recipe.value;
+  recipeOrigin.value;
+  paymentMethod.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchWaitingTime();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  paymentMethod.value = "";
+  searchQuery.value = "";
+  typeOfService.value = "";
+  recipe.value = "";
+  recipeOrigin.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  fetchWaitingTime();
+};
+
 onMounted(() => {
-  updatePageType(route.path);
+  fetchWaitingTime();
+  fetchLocation();
 });
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -62,9 +168,7 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div>
-                  <p
-                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
-                  >
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Waktu Tunggu
                   </p>
                 </div>
@@ -74,40 +178,41 @@ onMounted(() => {
           <template #content>
             <div class="grid grid-cols-4 gap-4 mt-[10px]">
               <CustomSelect
+                v-model="typeOfService"
                 label="Jenis Pelayanan"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'IGD', 'RAJAL', 'RANAP']"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionPelayanan"
                 place-holder="Semua"
               />
               <CustomSelect
+                v-model="recipe"
                 label="Resep"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Racikan', 'Non-Racikan']"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionResep"
                 place-holder="Semua"
               />
               <CustomSelect
+                v-model="recipeOrigin"
                 label="Asal Resep"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Poli', 'Ranap']"
+                optionLabel="name"
+                optionValue="uuid"
+                :options="locationPayload"
                 place-holder="Semua"
               />
               <CustomSelect
-                label="Pendapatan"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Resep Dokter', 'Penjualan Obat']"
+                v-model="paymentMethod"
+                label="Metode Pembayaran"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionPembayaran"
                 place-holder="Semua"
               />
             </div>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Pasien"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Asal Resep / No. RM"
@@ -125,11 +230,13 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -137,7 +244,6 @@ onMounted(() => {
                 class="mt-auto"
               />
             </div>
-            
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -157,123 +263,165 @@ onMounted(() => {
       </template>
 
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
+          v-else
           v-model:expandedRows="expandedRows"
-          :value="reportData"
+          :value="waitingTimePayload"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
           class="text-SM"
         >
-          <Column
-            expander
-            style="width: 40px"
-            header-class="text-black bg-adameds-50"
-          />
+          <Column expander style="width: 40px" headerClass="bg-adameds-50" />
           <!-- No -->
-          <Column
-            field="no"
-            header="No."
-            header-class="text-black bg-adameds-50"
-            style="width: 40px"
-          ></Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold">No.</div>
+            </template>
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.index + 1 }}</div>
+            </template>
+          </Column>
           <!-- Tanggal -->
-          <Column
-            field="tanggal"
-            header="Tangal"
-            header-class="text-black bg-adameds-50"
-          ></Column>
+          <Column header="Tangal" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ epochToDate(slotProps.data.orderDate, "date") }}
+              </div>
+            </template>
+          </Column>
           <!-- No. Resep -->
-          <Column
-            field="resepNumber"
-            header="No. Resep"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="registrationNo"
-            header="No. Registrasi"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="rmNumber"
-            header="No. RM"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="patientName"
-            header="Nama Pasien"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="pelayanan"
-            header="Jenis Pelayanan"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="pembayaranMethod"
-            header="Metode Pembayaran"
-            header-class="text-black bg-adameds-50"
-          ></Column>
+          <Column header="No. Resep" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.noResep }}
+              </div>
+            </template>
+          </Column>
+          <!-- No. Registrasi -->
+          <Column header="No. Registrasi" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.noReg }}
+              </div>
+            </template>
+          </Column>
+          <!-- No. RM -->
+          <Column header="No. RM" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.noRm }}
+              </div>
+            </template>
+          </Column>
+          <!-- Nama Pasien -->
+          <Column header="Nama Pasien" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.patient }}
+              </div>
+            </template>
+          </Column>
+          <!-- Jenis Pelayanan -->
+          <Column header="Jenis Pelayanan" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'ri'">
+                Rawat Inap
+              </div>
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'igd'">
+                IGD
+              </div>
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'rj'">
+                Rawat Jalan
+              </div>
+            </template>
+          </Column>
+          <!-- Metode Pembayaran -->
+          <Column header="Metode Pembayaran" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.paymentMethod }}
+              </div>
+            </template>
+          </Column>
           <template #expansion="slotProps">
             <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
               <DataTable
-                :value="slotProps.data.orders"
+                :value="[slotProps.data]"
                 class="overflow-hidden rounded-lg bg-adameds-50"
                 :pt="{ headerRow: 'text-SM' }"
               >
-                <Column
-                  field="waktuVerif"
-                  header="Waktu Verifikasi"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="waktuPenyerahan"
-                  header="Waktu Penyerahan"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="poli"
-                  header="Asal Resep"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="waktuPelayanan"
-                  header="Waktu Pelayanan"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="resep"
-                  header="Resep"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="racikan"
-                  header="Racikan"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
+                <!-- Waktu Verifikasi -->
+                <Column header="Waktu Verifikasi" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ epochToDate(slotProps.data.waktuVerifikasi, "dateTime") }}
+                    </div>
+                  </template>
+                </Column>
+                <!-- Waktu Penyerahan -->
+                <Column header="Waktu Penyerahan" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ epochToDate(slotProps.data.waktuPemberian, "dateTime") }}
+                    </div>
+                  </template>
+                </Column>
+                <!-- Asal Resep -->
+                <Column header="Asal Resep" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ slotProps.data.asalResep }}
+                    </div>
+                  </template>
+                </Column>
+                <!-- Waktu Pelayanan -->
+                <Column header="Waktu Pelayanan" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ slotProps.data.waktuPelayanan }}
+                    </div>
+                  </template>
+                </Column>
+                <!-- Resep -->
+                <Column header="Resep" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ slotProps.data.jenisResep }}
+                    </div>
+                  </template>
+                </Column>
+                <!-- Jumlah Racikan -->
+                <Column header="Jumlah Racikan" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      {{ slotProps.data.jumlahRacikan }}
+                    </div>
+                  </template>
+                </Column>
               </DataTable>
             </div>
           </template>
         </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-between">
-          <CustomButton
-            @click="() => {}"
-            icon="PhPrinter"
-            label="Cetak"
-            class="mr-[10px]"
-            backgroundColor="bg-adameds-300"
-          />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
+        <div class="flex justify-between mt-[10px]">
+          <div class="flex items-center">
+            <CustomButton
+              @click="() => {}"
+              icon="PhPrinter"
+              label="Cetak"
+              class="mr-[10px]"
+              backgroundColor="bg-adameds-300"
+            />
+          </div>
+          <CustomPaginator
+            :rows="waitingTimeProperties.page_size"
+            :totalRecords="waitingTimeProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>
