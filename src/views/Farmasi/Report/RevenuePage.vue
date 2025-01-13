@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
-import { usePendapatanStore } from "@/stores/laporanFarmasi/pendapatan";
-import * as XLSX from "xlsx-js-style";
+import { useRevenueStore } from "@/stores/laporanFarmasi/revenue";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -16,45 +16,91 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const expandedRows = ref();
-const pageType = ref("");
+const revenue = ref<string>("");
+const recipeOrigin = ref<string>("");
+const typeOfService = ref<string>("");
+const paymentMethod = ref<string>("");
+const searchQuery = ref<string>("");
+const optionRevenue = ref([
+  { label: "Semua", value: "" },
+  { label: "Resep Dokter", value: "prescription" },
+  { label: "Penjualan Obat", value: "penjualan_obat"},
+]);
+const optionPelayanan = ref([
+  { label: "Semua", value: "" },
+  { label: "IGD", value: "igd" },
+  { label: "Rawat Jalan", value: "rj" },
+  { label: "Rawat Inap", value: "ri" },
+]);
+const optionPembayaran = ref([
+  { label: "Semua", value: "" },
+  { label: "Tunai", value: 1 },
+  { label: "Asuransi", value: 2 },
+]);
+
+// State Management Lokasi
+const lokasiStore = useLokasiStore();
+const lokasiPayload = ref<any[]>([]);
+
+// State Management Location
+const locationStore = useLokasiStore();
+const locationPayload = ref<any[]>([]);
+
+// Fetch Location
+const fetchLocation = async () => {
+  try {
+    const response = await locationStore.getApi(1, 9999);
+    if (response && response.payload) {
+      locationPayload.value = response.payload;
+    } else {
+      locationPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch kategori ruangan", error);
+    locationPayload.value = [];
+  }
+};
 
 // State Management
-const PendapatanStore = usePendapatanStore();
+const revenueStore = useRevenueStore();
 const UseUtilsStore = utilsStore();
-const PendapatanPayload = ref<any[]>([]);
-const PendapatanProperties = ref({
+const revenuePayload = ref<any[]>([]);
+const revenueProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasData = computed(
-  () => PendapatanPayload.value && PendapatanPayload.value.length > 0
+  () => revenuePayload.value && revenuePayload.value.length > 0
 );
 
-// Fetch Pendapatan
-const fetchPendapatan = async () => {
+// Fetch Revenue
+const fetchRevenue = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await PendapatanStore.getApi(
-      PendapatanProperties.value.page,
-      PendapatanProperties.value.page_size,
+    const response = await revenueStore.getApi(
       dateToEpoch(startDateFilter.value),
       dateToEpoch(endDateFilter.value),
-      searchQuery.value
+      recipeOrigin.value,
+      typeOfService.value,
+      paymentMethod.value,
+      searchQuery.value,
+      revenue.value,
+      revenueProperties.value.page,
+      revenueProperties.value.page_size
     );
 
     if (response && response.payload) {
-      PendapatanProperties.value.total = response.properties.total;
-      PendapatanPayload.value = response.payload;
+      revenueProperties.value.total = response.properties.total;
+      revenuePayload.value = response.payload;
     } else {
-      PendapatanPayload.value = [];
+      revenuePayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    PendapatanPayload.value = [];
+    revenuePayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -64,29 +110,43 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    fetchPendapatan();
+    fetchRevenue();
   }, 500);
 });
 
 // Handle Pagination
 const handlePage = (event: any) => {
-  PendapatanProperties.value.page = event.page + 1;
-  PendapatanProperties.value.page_size = event.rows;
-  fetchPendapatan();
+  revenueProperties.value.page = event.page + 1;
+  revenueProperties.value.page_size = event.rows;
+  fetchRevenue();
+};
+
+// Filter Search Data
+const searchData = () => {
+  dateToEpoch(startDateFilter.value),
+  dateToEpoch(endDateFilter.value),
+  recipeOrigin.value,
+  typeOfService.value,
+  paymentMethod.value,
+  searchQuery.value,
+  revenue.value,
+  fetchRevenue();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  fetchRevenue();
 };
 
 onMounted(() => {
-  fetchPendapatan();
+  fetchRevenue();
+  fetchLocation();
 });
 </script>
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -105,9 +165,7 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div>
-                  <p
-                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
-                  >
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Pendapatan
                   </p>
                 </div>
@@ -117,40 +175,41 @@ onMounted(() => {
           <template #content>
             <div class="grid grid-cols-4 gap-4 mt-[10px]">
               <CustomSelect
+                v-model="revenue"
                 label="Pendapatan"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Resep Dokter', 'Penjualan Obat']"
                 place-holder="Semua"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionRevenue"
               />
               <CustomSelect
+                v-model="typeOfService"
                 label="Jenis Pelayanan"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'IGD', 'RAJAL', 'RANAP']"
+                place-holder="Semua"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionPelayanan"
+              />
+              <CustomSelect
+                v-model="recipeOrigin"
+                label="Asal Resep"
+                optionLabel="name"
+                optionValue="uuid"
+                :options="locationPayload"
                 place-holder="Semua"
               />
               <CustomSelect
+                v-model="paymentMethod"
                 label="Metode Pembayaran"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Lunas', 'Piutang']"
-                place-holder="Semua"
-              />
-              <CustomSelect
-                label="Pendapatan"
-                class=""
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Resep Dokter', 'Penjualan Obat']"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionPembayaran"
                 place-holder="Semua"
               />
             </div>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Pasien"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Asal Resep / No. RM"
@@ -168,11 +227,13 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -202,81 +263,84 @@ onMounted(() => {
         <NoData v-if="!hasData" />
         <DataTable
           v-model:expandedRows="expandedRows"
-          :value="PendapatanPayload"
+          :value="revenuePayload"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
           class="text-SM"
         >
-          <Column
-            expander
-            style="width: 40px"
-            header-class="text-black bg-adameds-50"
-          />
+          <Column expander style="width: 40px" headerClass="bg-adameds-50" />
           <!-- No -->
-          <Column
-            field="no"
-            header="No."
-            header-class="text-black bg-adameds-50"
-            style="width: 40px"
-          >
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold">No.</div>
+            </template>
             <template #body="slotProps">
-              <div class="text-center">
-                <div class="text-right text-SM">{{ slotProps.index + 1 }}</div>
-              </div>
+              <div class="text-SM">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
           <!-- Tanggal -->
-          <Column
-            field="tanggal_daftar"
-            header="Tangal"
-            header-class="text-black bg-adameds-50"
-          >
+          <Column header="Tanggal" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-center">
-                <div>{{ slotProps.data.tanggal_daftar.split(" ")[0] }}</div>
+              <div class="text-SM">
+                <div>{{ epochToDate(slotProps.data.orderDate, "date") }}</div>
               </div>
             </template>
           </Column>
-          <Column
-            field="resepNumber"
-            header="No. Resep"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="noReg"
-            header="No. Registrasi"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="noRM"
-            header="No. RM"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="name"
-            header="Nama Pasien"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="pelayanan"
-            header="Jenis Pelayanan"
-            header-class="text-black bg-adameds-50"
-          >
+          <!-- No. Resep -->
+          <Column header="No. Resep / Transaksi" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-center">
-                <div v-if="slotProps.data.polyclinic.includes('POLI')">
-                  RAJAL
-                </div>
-                <div v-else></div>
+              <div class="text-SM">
+                <div>{{ slotProps.data.noResep }}</div>
               </div>
             </template>
           </Column>
-          <Column
-            field="insurance_account_name"
-            header="Metode Pembayaran"
-            header-class="text-black bg-adameds-50"
-          ></Column>
+          <!-- No. Registrasi -->
+          <Column header="No. Registrasi" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noReg }}</div>
+              </div>
+            </template>
+          </Column>
+          <!-- No. RM -->
+          <Column header="No. RM" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noRm }}</div>
+              </div>
+            </template>
+          </Column>
+          <!-- Nama Pasien -->
+          <Column header="Nama Pasien" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.patient.name }}</div>
+              </div>
+            </template>
+          </Column>
+          <!-- Jenis Pelayanan -->
+          <Column header="Jenis Pelayanan" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'ri'">
+                Rawat Inap
+              </div>
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'igd'">
+                IGD
+              </div>
+              <div class="text-SM" v-if="slotProps.data.jenisPelayanan == 'rj'">
+                Rawat Jalan
+              </div>
+            </template>
+          </Column>
+          <!-- Metode Pembayaran -->
+          <Column header="Metode Pembayaran" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.paymentMethod }}</div>
+              </div>
+            </template>
+          </Column>
           <template #expansion="slotProps">
             <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
               <DataTable
@@ -284,34 +348,40 @@ onMounted(() => {
                 class="overflow-hidden rounded-lg bg-adameds-50"
                 :pt="{ headerRow: 'text-SM' }"
               >
-                <Column
-                  field="invoiceNumber"
-                  header="No. Invoice"
-                  header-class="text-black bg-adameds-50"
-                >
+                <!-- No. Invoice -->
+                <Column header="No. Invoice" headerClass="bg-adameds-50">
                 </Column>
-                <Column
-                  field="doctorData.doctor"
-                  header="Nama Dokter"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="polyclinic"
-                  header="Asal Resep"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
-                <Column
-                  field="total"
-                  header="Total"
-                  header-class="text-black bg-adameds-50"
-                ></Column>
+                <!-- Nama Dokter -->
+                <Column header="Nama Dokter" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      <div>{{ slotProps.data.dokterOrder }}</div>
+                    </div>
+                  </template>
+                </Column>
+                <!-- Asal Resep -->
+                <Column header="Asal Resep" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      <div>{{ slotProps.data.lokasi }}</div>
+                    </div>
+                  </template>
+                </Column>
+                <!-- Total -->
+                <Column header="Total" headerClass="bg-adameds-50">
+                  <template #body="slotProps">
+                    <div class="text-SM">
+                      <div>{{ formatPrice(slotProps.data.totalHarga) }}</div>
+                    </div>
+                  </template>
+                </Column>
               </DataTable>
             </div>
           </template>
         </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-between">
+        <div class="flex justify-between mt-[10px]">
           <CustomButton
             @click="() => {}"
             icon="PhPrinter"
@@ -320,8 +390,8 @@ onMounted(() => {
             backgroundColor="bg-adameds-300"
           />
           <CustomPaginator
-            :rows="PendapatanProperties.page_size"
-            :totalRecords="PendapatanProperties.total"
+            :rows="revenueProperties.page_size"
+            :totalRecords="revenueProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
             @page="handlePage"
           />

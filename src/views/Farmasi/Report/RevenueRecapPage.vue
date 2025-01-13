@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from "vue";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRevenueRecapStore } from "@/stores/laporanFarmasi/revenueRecap";
 import { utilsStore } from "@/stores/utils";
+import { dateToEpoch, formatPrice } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -13,39 +14,39 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const metodePembayaran = ref("")
+const metodePembayaran = ref(0);
+const stockLocation = ref("");
 const optionPembayaran = ref([
   { label: "Semua", value: "" },
   { label: "Tunai", value: 1 },
   { label: "Asuransi", value: 2 },
 ]);
 
-// State Management Lokasi
-const lokasiStore = useLokasiStore();
-const lokasiPayload = ref<any[]>([]);
-const lokasiProperties = ref({
-  page: 1,
-  page_size: 10,
-  total: 0,
-});
+function formatDate(date: any) {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
 
-// Fetch Lokasi
-const fetchLokasi = async () => {
+  return `${day}-${month}-${year}`;
+}
+
+// State Management Location
+const locationStore = useLokasiStore();
+const locationPayload = ref<any[]>([]);
+
+// Fetch Location
+const fetchLocation = async () => {
   try {
-    const response = await lokasiStore.getApi(
-      lokasiProperties.value.page,
-      lokasiProperties.value.page_size
-    );
-
+    const response = await locationStore.getApi(1, 9999);
     if (response && response.payload) {
-      lokasiProperties.value.total = response.properties.total;
-      lokasiPayload.value = response.payload;
+      locationPayload.value = response.payload;
     } else {
-      lokasiPayload.value = [];
+      locationPayload.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch data", error);
-    lokasiPayload.value = [];
+    console.error("Failed to fetch kategori ruangan", error);
+    locationPayload.value = [];
   }
 };
 
@@ -70,7 +71,11 @@ const fetchRevenueRecap = async () => {
   try {
     const response = await revenueRecapStore.getApi(
       revenueRecapProperties.value.page,
-      revenueRecapProperties.value.page_size
+      revenueRecapProperties.value.page_size,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      metodePembayaran.value,
+      stockLocation.value,
     );
 
     if (response && response.payload) {
@@ -87,9 +92,34 @@ const fetchRevenueRecap = async () => {
   }
 };
 
-onMounted(() => {
-  fetchRevenueRecap()
-  fetchLokasi();
+// Handle Pagination
+const handlePage = (event: any) => {
+  revenueRecapProperties.value.page = event.page + 1;
+  revenueRecapProperties.value.page_size = event.rows;
+  fetchRevenueRecap();
+};
+
+// Filter Search Data
+const searchData = () => {
+  metodePembayaran.value;
+  stockLocation.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchRevenueRecap();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  metodePembayaran.value = 0;
+  stockLocation.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  fetchRevenueRecap();
+};
+
+onMounted(() => {    
+  fetchRevenueRecap();
+  fetchLocation();  
 });
 </script>
 
@@ -137,11 +167,13 @@ onMounted(() => {
                 :options="optionPembayaran"
               />
               <CustomSelect
+                v-model="stockLocation"
                 label="Lokasi Stok"
+                placeHolder="Semua"
                 class="mr-5 grow"
-                optionLabel=""
-                optionValue=""
-                :options="lokasiPayload"
+                optionLabel="name"
+                optionValue="uuid"
+                :options="locationPayload"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
@@ -156,11 +188,13 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -196,36 +230,39 @@ onMounted(() => {
           :pt="{ headerRow: 'text-SM' }"
           class="text-SM"
         >
-          <Column field="nomor" headerClass="bg-adameds-50">
+          <Column headerClass="bg-adameds-50">
             <template #header>
               <div class="w-full font-semibold">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="text-center">
-                <div class="text-SM">{{}}</div>
+              <div class="text-SM">{{ slotProps.index + 1 }}</div>
+            </template>
+          </Column>
+          <Column header="Tanggal" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ formatDate(slotProps.data.orderDate) }}
               </div>
             </template>
           </Column>
-          <Column field="tanggal" header="Tanggal" headerClass="bg-adameds-50">
+          <Column header="Lokasi Stok" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.lokasiStok }}
+              </div>
+            </template>
           </Column>
-          <Column
-            field="stock_location"
-            header="Lokasi Stok"
-            headerClass="bg-adameds-50"
-          >
-          </Column>
-          <Column
-            field="pembayaran"
-            header="Metode Pembayaran"
-            headerClass="bg-adameds-50"
-          >
-          </Column>
-          <Column field="jumlah" header="Jumlah" headerClass="bg-adameds-50">
+          <Column header="Jumlah" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ formatPrice(slotProps.data.totalHarga) }}
+              </div>
+            </template>
           </Column>
         </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-between">
+        <div class="flex justify-between mt-[10px]">
           <div class="flex items-center">
             <CustomButton
               @click="() => {}"
@@ -235,7 +272,12 @@ onMounted(() => {
               backgroundColor="bg-adameds-300"
             />
           </div>
-          <CustomPaginator />
+          <CustomPaginator
+            :rows="revenueRecapProperties.page_size"
+            :totalRecords="revenueRecapProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>
