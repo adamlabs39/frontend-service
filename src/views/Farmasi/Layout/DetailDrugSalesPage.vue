@@ -141,12 +141,8 @@ const updateDiskon = (index: number) => {
 };
 
 const handleDelete = (index: number) => {
-  grandTotal.value = 0
   remove(index);
-  totalItem.value = filedsPenjualan.value.length
-  filedsPenjualan.value.forEach(item => {
-    grandTotal.value = item.value.qty * item.value.hargaSatuan - item.value.diskon    
-  })
+  totalItem.value = filedsPenjualan.value.length  
 };
 
 // State Management
