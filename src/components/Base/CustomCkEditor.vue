@@ -50,7 +50,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: "CK Editor Vue....",
+    default: "Insert text here ...",
   },
 });
 const editor = ref(ClassicEditor);

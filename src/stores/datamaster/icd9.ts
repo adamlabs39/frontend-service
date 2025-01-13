@@ -22,7 +22,7 @@ export const useIcd9Store = defineStore({
         payload
       );
     },
-    async getAktifApi(payload = {}) {      
+    async getAktifApi(payload = {}) {
       return apiDatamasterGet(`/datamaster/icd9/aktif`, payload);
     },
     async postApi(payload = {}) {

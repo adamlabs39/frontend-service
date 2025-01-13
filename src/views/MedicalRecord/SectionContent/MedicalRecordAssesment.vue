@@ -121,6 +121,8 @@ const props = defineProps({
       v-if="selectedAssesment == 'Diagnosis Dokter'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <AsuhanKeperawatan
       v-if="selectedAssesment == 'Asuhan Keperawatan'"
@@ -133,6 +135,8 @@ const props = defineProps({
       v-if="selectedAssesment == 'Catatan Perawat'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <InstruksiMedis
       v-if="selectedAssesment == 'Intruksi Medis'"

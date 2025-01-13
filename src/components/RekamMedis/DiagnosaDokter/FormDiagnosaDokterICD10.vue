@@ -2,96 +2,218 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriDiagnosaDokter from "@/components/RekamMedis/DiagnosaDokter/HistoriDiagnosaDokter.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
+import { epochToDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const diagnosisStore = useDiagnosisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "editAsesmen"]);
 const currentMethod = ref(props.method);
 
 const schema = toTypedSchema(
   yup.object({
-    primer: yup.string().required("Primer is required"),
-    petugas: yup.string().required("Petugas is required"),
-    diagnosisDiferensial: yup.string(),
+    diagnosisUuid: yup.string(),
+    diagnosis: yup.mixed<any>().required("Diagnosis harus diisi"),
+    diferensial: yup.mixed<any>(),
+    diferensialUuid: yup.string(),
+    petugas: yup.string().default("Super Admin"),
     datas: yup.array().of(
       yup.object({
-        sekunder: yup.string().required("Sekunder is required"),
-        diagnosisDiferensialDinamis: yup.string(),
+        diagnosisUuid: yup.string(),
+        diagnosis: yup.mixed<any>().required("Sekunder is required"),
+        diferensial: yup.mixed<any>(),
+        diferensialUuid: yup.string(),
+        petugas: yup.string().default("Super Admin"),
       })
     ),
   })
 );
 
-const { errors, handleSubmit, resetForm, defineField } = useForm({
+const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
   validationSchema: schema,
-  initialValues: {
-    primer: "",
-    petugas: "MBOH",
-    diagnosisDiferensial: "",
-    datas: [], // Inisialisasi array kosong
-  },
 });
 
-const [primer] = defineField("primer");
+const setFormData = () => {
+  if (rekamMedisStore.openedRekamMedis.data.diagnosisDokter) {
+    const tempDiagnosaDokter =
+      rekamMedisStore.openedRekamMedis.data.diagnosisDokter;
+    const primerData: any[] = [];
+    const sekunderData: any[] = [];
+    tempDiagnosaDokter.forEach((diagnosa: any, index: number) => {
+      const tempData = {
+        diagnosisUuid: diagnosa.diagnosisUuid,
+        diagnosis: {
+          name: diagnosa.diagnosis,
+          uuid: diagnosa.diagnosisUuid,
+        },
+        diferensial: diagnosa.diferensial
+          ? {
+              name: diagnosa.diferensial,
+              uuid: diagnosa.diferensialUuid,
+            }
+          : "",
+        diferensialUuid: diagnosa.diferensialUuid,
+        tipe: diagnosa.tipe,
+        petugas: diagnosa.petugas,
+      };
+      if (diagnosa.tipe == "primer") {
+        primerData.push(tempData);
+        createdAt.value = diagnosa.createdAt;
+      } else if (diagnosa.tipe == "sekunder") {
+        sekunderData.push(tempData);
+        if (index == tempDiagnosaDokter.length) {
+          createdAt.value = diagnosa.createdAt;
+        }
+      }
+    });
+
+    setValues({
+      diagnosis: primerData[0].diagnosis,
+      diagnosisUuid: primerData[0].diagnosisUuid,
+      diferensial: primerData[0].diferensial,
+      diferensialUuid: primerData[0].diferensialUuid,
+      petugas: primerData[0].petugas,
+      datas: sekunderData,
+    });
+    // const tempArrRiwayatKeluarga = tempAnamnesis.riwayatKeluarga
+    //   .trim()
+    //   .split(",");
+    // setValues({
+    //   anamnesis: tempAnamnesis.anamnesis,
+    //   keluhanUtama: tempAnamnesis.keluhanUtama,
+    //   riwayatPenyakit: tempAnamnesis.riwayatPenyakit,
+    //   riwayatPengobatan: tempAnamnesis.riwayatPengobatan,
+    //   catatan: tempAnamnesis.catatan,
+    //   riwayatKeluarga: tempArrRiwayatKeluarga,
+    //   pernahDirawat: tempAnamnesis.pernahDirawat,
+    //   petugas: tempAnamnesis.petugas,
+    // });
+  } else resetForm();
+};
+
+const [diagnosisUuid] = defineField("diagnosisUuid");
+const [diagnosis] = defineField("diagnosis");
 const [petugas] = defineField("petugas");
-const [diagnosisDiferensial] = defineField("diagnosisDiferensial");
+const [diferensialUuid] = defineField("diferensialUuid");
+const [diferensial] = defineField("diferensial");
+const createdAt = ref<any>();
+
+const listIcd9Data = ref<any[]>([]);
+onBeforeMount(async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await diagnosisStore.exportApi();
+    if (response && response.payload) {
+      listIcd9Data.value = response.payload;
+    } else {
+      listIcd9Data.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listIcd9Data.value = [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
+
+const onSubmit = handleSubmit(async (values: any) => {
+  const tempData = [];
+  const tempDiagnosisPrimer: any = {
+    diagnosisUuid: values.diagnosis.uuid,
+    diagnosis: values.diagnosis.name,
+    diferensialUuid: values.diferensial ? values.diferensial.uuid : "",
+    diferensial: values.diferensial ? values.diferensial.name : "",
+    tipe: "primer",
+  };
+  if (values.pegawai) {
+    tempDiagnosisPrimer.petugas = values.petugas;
+  }
+  tempData.push(tempDiagnosisPrimer);
+  values.datas.forEach((sekunderData: any) => {
+    const tempDiagnosisSekunder: any = {
+      diagnosisUuid: sekunderData.diagnosis.uuid,
+      diagnosis: sekunderData.diagnosis.name,
+      diferensialUuid: sekunderData.diferensial
+        ? sekunderData.diferensial.uuid
+        : "",
+      diferensial: sekunderData.diferensial
+        ? sekunderData.diferensial.name
+        : "",
+      tipe: "sekunder",
+    };
+    if (sekunderData.pegawai) {
+      tempDiagnosisSekunder.petugas = sekunderData.petugas;
+    }
+    tempData.push(tempDiagnosisSekunder);
+  });
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertAssesment({
+      sessionUuid: props.sessionUuid,
+      rekamMedisUuid: props.rmUuid,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
+      key: "diagnosis_dokter",
+      data: tempData,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
 
 const { remove, push, fields } = useFieldArray<{
-  sekunder: string;
-  diagnosisDiferensialDinamis: string;
+  diagnosisUuid: string;
+  diagnosis: any;
+  diferensialUuid: string | null;
+  diferensial: any;
+  petugas: any;
 }>("datas");
 
 const addDiagnosis = () => {
-  push({ sekunder: "", diagnosisDiferensialDinamis: "" });
-};
-
-const diagnosaPrimers = ref([
-  { id: "1", diagnosaPrimer: "Sakit Kepala" },
-  { id: "2", diagnosaPrimer: "Sakit Perut" },
-  { id: "3", diagnosaPrimer: "Sakit Jantung" },
-  { id: "4", diagnosaPrimer: "Tekanan Darah Tinggi" },
-]);
-
-const diagnosaSekunders = ref([
-  { id: "1", diagnosaSekunder: "Sakit Perut 3" },
-  { id: "2", diagnosaSekunder: "Jantung Berdebar" },
-  { id: "3", diagnosaSekunder: "Hepatitis" },
-  { id: "4", diagnosaSekunder: "Sakit Demam" },
-]);
-
-const diagnosaDds = ref([
-  { id: "1", diagnosaDd: "Tangan Berdarah" },
-  { id: "2", diagnosaDd: "Luka Hati" },
-  { id: "3", diagnosaDd: "Masuk Angin" },
-  { id: "4", diagnosaDd: "Gabisa Ngapa-ngapain" },
-]);
-
-const onSubmit = handleSubmit((values) => {
-  console.log("Submitted with", values);
-  currentMethod.value = "detail";
-  emit("edit");
-});
-
-// Fungsi reset yang juga mengosongkan array
-const onReset = () => {
-  resetForm({
-    values: {
-      primer: "",
-      petugas: "MBOH",
-      diagnosisDiferensial: "",
-    },
+  push({
+    diagnosisUuid: "",
+    diagnosis: null,
+    diferensialUuid: "",
+    diferensial: "",
+    petugas: "",
   });
 };
 
@@ -141,34 +263,57 @@ defineExpose({
           <div class="grid grid-cols-2 gap-5">
             <CustomSelect
               label="Primer"
-              v-model:model-value="primer"
-              :options="diagnosaPrimers"
-              optionValue="diagnosaPrimer"
-              optionLabel="diagnosaPrimer"
+              v-model="diagnosis"
+              :options="listIcd9Data"
+              optionLabel="name"
+              optionValue=""
               :isLoading="false"
-              :invalid="!!errors.primer"
-              :invalidMessage="errors.primer"
+              :invalid="!!errors.diagnosis"
+              :invalidMessage="errors.diagnosis"
               :disabled="false"
-              placeHolder="Pilih Diagnosis"
+              :placeHolder="diagnosis ? diagnosis.name : 'Pilih Diagnosis'"
               customSelectClass="border-[#C7CBD2]"
               prependIcon="PhMagnifyingGlass"
+              customValue
             >
+              <template #customOptions="{ option }">
+                {{ option.name }} ({{ option.code }})
+              </template>
+              <template #customValue="{ value, placeholder, selectedData }">
+                {{
+                  value && selectedData
+                    ? `${selectedData?.name} (${selectedData?.code})`
+                    : placeholder
+                }}
+              </template>
             </CustomSelect>
 
             <CustomSelect
               label="Diagnosis Diferensial"
-              v-model="diagnosisDiferensial"
-              :options="diagnosaSekunders"
-              optionValue="diagnosaSekunder"
-              optionLabel="diagnosaSekunder"
+              v-model="diferensial"
+              :options="listIcd9Data"
+              optionLabel="name"
+              optionValue=""
               :isLoading="false"
               :invalid="false"
               invalidMessage="Wajib diisi"
               :disabled="false"
-              placeHolder="Pilih Diagnosis"
+              :placeHolder="diferensial ? diferensial.name : 'Pilih Diagnosis'"
               customSelectClass="border-[#C7CBD2]"
               prependIcon="PhMagnifyingGlass"
-            />
+              customValue
+            >
+              <template #customOptions="{ option }">
+                {{ option.name }} ({{ option.code }})
+              </template>
+              <template #customValue="{ value, placeholder, selectedData }">
+                {{
+                  value && selectedData
+                    ? `${selectedData?.name} (${selectedData?.code})`
+                    : placeholder
+                }}
+              </template>
+            </CustomSelect>
           </div>
 
           <div
@@ -179,34 +324,66 @@ defineExpose({
             <div class="basis-2/5">
               <CustomSelect
                 label="Sekunder"
-                v-model="field.value.sekunder"
-                :options="diagnosaSekunders"
-                optionValue="diagnosaSekunder"
-                optionLabel="diagnosaSekunder"
+                v-model="field.value.diagnosis"
+                :options="listIcd9Data"
+                optionLabel="name"
+                optionValue=""
                 :isLoading="false"
-                :invalid="!!errors[`datas[${index}].sekunder` as keyof typeof errors]"
-                :invalidMessage="errors[`datas[${index}].sekunder` as keyof typeof errors]"
+                :invalid="!!errors[`datas[${index}].diagnosis` as keyof typeof errors]"
+                :invalidMessage="errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                 :disabled="false"
-                placeHolder="Pilih Diagnosis"
+                :placeHolder="
+                  field.value.diagnosis
+                    ? field.value.diagnosis.name
+                    : 'Pilih Diagnosis'
+                "
                 customSelectClass="border-[#C7CBD2]"
                 prependIcon="PhMagnifyingGlass"
-              />
+                customValue
+              >
+                <template #customOptions="{ option }">
+                  {{ option.name }} ({{ option.code }})
+                </template>
+                <template #customValue="{ value, placeholder, selectedData }">
+                  {{
+                    value && selectedData
+                      ? `${selectedData?.name} (${selectedData?.code})`
+                      : placeholder
+                  }}
+                </template>
+              </CustomSelect>
             </div>
             <div class="grow">
               <CustomSelect
                 label="Diagnosis Diferensial"
-                v-model="field.value.diagnosisDiferensialDinamis"
-                :options="diagnosaDds"
-                optionValue="diagnosaDd"
-                optionLabel="diagnosaDd"
+                v-model="field.value.diferensial"
+                :options="listIcd9Data"
+                optionLabel="name"
+                optionValue=""
                 :isLoading="false"
                 :invalid="false"
                 invalidMessage="Wajib diisi"
                 :disabled="false"
-                placeHolder="Pilih Diagnosis"
+                :placeHolder="
+                  field.value.diferensial
+                    ? field.value.diferensial.name
+                    : 'Pilih Diagnosis'
+                "
                 customSelectClass="border-[#C7CBD2]"
                 prependIcon="PhMagnifyingGlass"
-              />
+                customValue
+              >
+                <template #customOptions="{ option }">
+                  {{ option.name }} ({{ option.code }})
+                </template>
+                <template #customValue="{ value, placeholder, selectedData }">
+                  {{
+                    value && selectedData
+                      ? `${selectedData?.name} (${selectedData?.code})`
+                      : placeholder
+                  }}
+                </template>
+              </CustomSelect>
             </div>
             <div class="flex items-center justify-start">
               <CustomButton
@@ -234,14 +411,37 @@ defineExpose({
       </div>
       <div v-else>
         <div class="py-5 flex flex-col gap-[19px]">
-          <CustomInfoRow label="Primer" value="ICD-10" />
-          <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
-          <CustomInfoRow label="Sekunder" value="ICD-10" />
-          <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
-          <CustomInfoRow label="Sekunder" value="ICD-10" />
-          <CustomInfoRow label="Diagnosis Diferensial" value="ICD-10" />
+          <CustomInfoRow
+            label="Primer"
+            :value="diagnosis && diagnosis != '' ? diagnosis.name : '-'"
+          />
+          <CustomInfoRow
+            label="Diagnosis Diferensial"
+            :value="diferensial && diferensial != '' ? diferensial.name : '-'"
+          />
+          <div v-for="data in fields">
+            <div class="flex flex-col gap-[19px]">
+              <CustomInfoRow
+                label="Sekunder"
+                :value="data.value.diagnosis.name"
+              />
+              <CustomInfoRow
+                label="Diagnosis Diferensial"
+                :value="data.value.diferensial.name"
+              />
+            </div>
+          </div>
           <hr class="border-grey-200" />
-          <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
+          <CustomInfoRow
+            label="Petugas Input"
+            :value="
+              fields.length ? fields[fields.length - 1]?.value.petugas : petugas
+            "
+          />
+          <CustomInfoRow
+            label="Jam Input"
+            :value="`${epochToDate(createdAt, 'time')}`"
+          />
         </div>
       </div>
       <!-- Dialog compare -->
@@ -287,32 +487,58 @@ defineExpose({
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <CustomSelect
                   label="Primer"
-                  v-model:model-value="primer"
-                  :options="diagnosaPrimers"
-                  optionValue="diagnosaPrimer"
-                  optionLabel="diagnosaPrimer"
+                  v-model="diagnosis"
+                  :options="listIcd9Data"
+                  optionLabel="name"
+                  optionValue=""
                   :isLoading="false"
-                  :invalid="!!errors.primer"
-                  :invalidMessage="errors.primer"
+                  :invalid="!!errors.diagnosis"
+                  :invalidMessage="errors.diagnosis"
                   :disabled="false"
-                  placeHolder="Pilih Diagnosis"
+                  :placeHolder="diagnosis ? diagnosis.name : 'Pilih Diagnosis'"
                   customSelectClass="border-[#C7CBD2]"
                   prependIcon="PhMagnifyingGlass"
-                />
+                  customValue
+                >
+                  <template #customOptions="{ option }">
+                    {{ option.name }} ({{ option.code }})
+                  </template>
+                  <template #customValue="{ value, placeholder, selectedData }">
+                    {{
+                      value && selectedData
+                        ? `${selectedData?.name} (${selectedData?.code})`
+                        : placeholder
+                    }}
+                  </template>
+                </CustomSelect>
                 <CustomSelect
                   label="Diagnosis Diferensial"
-                  v-model="diagnosisDiferensial"
-                  :options="diagnosaSekunders"
-                  optionValue="diagnosaSekunder"
-                  optionLabel="diagnosaSekunder"
+                  v-model="diferensial"
+                  :options="listIcd9Data"
+                  optionLabel="name"
+                  optionValue=""
                   :isLoading="false"
                   :invalid="false"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
-                  placeHolder="Pilih Diagnosis"
+                  :placeHolder="
+                    diferensial ? diferensial.name : 'Pilih Diagnosis'
+                  "
                   customSelectClass="border-[#C7CBD2]"
                   prependIcon="PhMagnifyingGlass"
-                />
+                  customValue
+                >
+                  <template #customOptions="{ option }">
+                    {{ option.name }} ({{ option.code }})
+                  </template>
+                  <template #customValue="{ value, placeholder, selectedData }">
+                    {{
+                      value && selectedData
+                        ? `${selectedData?.name} (${selectedData?.code})`
+                        : placeholder
+                    }}
+                  </template>
+                </CustomSelect>
                 <div
                   class="w-full"
                   v-for="(field, index) in fields"
@@ -322,44 +548,80 @@ defineExpose({
                   <div class="flex grow">
                     <CustomSelect
                       label="Sekunder"
-                      v-model="field.value.sekunder"
-                      :options="diagnosaSekunders"
+                      v-model="field.value.diagnosis"
+                      :options="listIcd9Data"
                       class="grow"
-                      optionValue="diagnosaSekunder"
-                      optionLabel="diagnosaSekunder"
+                      optionLabel="name"
+                      optionValue=""
                       :isLoading="false"
-                      :invalid="!!errors[`datas[${index}].sekunder` as keyof typeof errors]"
-                      :invalidMessage="errors[`datas[${index}].sekunder` as keyof typeof errors]"
+                      :invalid="!!errors[`datas[${index}].diagnosis` as keyof typeof errors]"
+                      :invalidMessage="errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                       :disabled="false"
-                      placeHolder="Pilih Diagnosis"
+                      :placeHolder="
+                        field.value.diagnosis
+                          ? field.value.diagnosis.name
+                          : 'Pilih Diagnosis'
+                      "
                       customSelectClass="border-[#C7CBD2]"
                       prependIcon="PhMagnifyingGlass"
-                    />
+                      customValue
+                    >
+                      <template #customOptions="{ option }">
+                        {{ option.name }} ({{ option.code }})
+                      </template>
+                      <template
+                        #customValue="{ value, placeholder, selectedData }"
+                      >
+                        {{
+                          value && selectedData
+                            ? `${selectedData?.name} (${selectedData?.code})`
+                            : placeholder
+                        }}
+                      </template>
+                    </CustomSelect>
                     <CustomButton
                       label=""
                       icon="PhTrash"
                       textColor="text-white"
                       backgroundColor="bg-danger-300"
                       class="ml-5"
-                      :class="[field.value.sekunder ? 'mt-auto' : 'my-auto']"
+                      :class="[field.value.diagnosis ? 'mt-auto' : 'my-auto']"
                       @click="remove(index)"
                     />
                   </div>
                   <CustomSelect
                     label="Diagnosis Diferensial"
-                    v-model="field.value.diagnosisDiferensialDinamis"
-                    :options="diagnosaDds"
+                    v-model="field.value.diferensial"
+                    :options="listIcd9Data"
                     class="mt-[10px]"
-                    optionValue="diagnosaDd"
-                    optionLabel="diagnosaDd"
+                    optionLabel="name"
+                    optionValue=""
                     :isLoading="false"
                     :invalid="false"
                     invalidMessage="Wajib diisi"
                     :disabled="false"
-                    placeHolder="Pilih Diagnosis"
+                    :placeHolder="
+                      field.value.diagnosis
+                        ? field.value.diagnosis.name
+                        : 'Pilih Diagnosis'
+                    "
                     customSelectClass="border-[#C7CBD2]"
                     prependIcon="PhMagnifyingGlass"
-                  />
+                    customValue
+                  >
+                    <template #customOptions="{ option }">
+                      {{ option.name }} ({{ option.code }})
+                    </template>
+                    <template
+                      #customValue="{ value, placeholder, selectedData }"
+                    >
+                      {{
+                        value && selectedData
+                          ? `${selectedData?.name} (${selectedData?.code})`
+                          : placeholder
+                      }}
+                    </template>
+                  </CustomSelect>
                 </div>
                 <div
                   class="flex items-center justify-center p-5 my-7 border border-dashed rounded-lg border-adameds-300 gap-2.5"
@@ -394,7 +656,7 @@ defineExpose({
             <CustomButton
               v-if="currentMethod === 'detail'"
               label="Edit"
-              @click="onEditClick"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -408,7 +670,7 @@ defineExpose({
           textColor="text-[#9DA4B1]"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-[#9DA4B1]"
-          @click="onReset"
+          @click="resetForm"
           v-if="currentMethod === 'form'"
         />
         <CustomButton
@@ -419,7 +681,7 @@ defineExpose({
         <CustomButton
           v-if="currentMethod === 'detail'"
           label="Edit"
-          @click="onEditClick"
+          @click="emit('editAsesmen')"
         />
       </div>
     </template>

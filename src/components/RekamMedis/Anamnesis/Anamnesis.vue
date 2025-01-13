@@ -35,7 +35,7 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
 const anamnesisOption = ref([
   { name: "Auto Anamnesa" },
@@ -91,7 +91,7 @@ const setFormData = () => {
       catatan: tempAnamnesis.catatan,
       riwayatKeluarga: tempArrRiwayatKeluarga,
       pernahDirawat: tempAnamnesis.pernahDirawat,
-      petugas: rekamMedisStore.openedRekamMedis.data.petugas,
+      petugas: tempAnamnesis.petugas,
     });
   } else resetForm();
 };
@@ -389,7 +389,11 @@ defineExpose({
               borderColor="border-2 border-grey-200"
             />
             <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+            <CustomButton
+              v-if="!isEditing"
+              label="Edit"
+              @click="emit('editAsesmen')"
+            />
           </div>
         </template>
       </CustomDialog>
@@ -405,7 +409,7 @@ defineExpose({
           borderColor="border-2 border-grey-200"
         />
         <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-        <CustomButton v-else label="Edit" @click="toggleEdit" />
+        <CustomButton v-else label="Edit" @click="emit('editAsesmen')" />
       </div>
     </template>
   </CustomAccordion>

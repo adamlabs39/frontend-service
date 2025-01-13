@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, computed, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -32,12 +32,12 @@ const props = defineProps({
 });
 
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
 const schema = toTypedSchema(
   yup.object({
     diagnosaPerawat: yup.string(),
-    petugas: yup.string().required(),
+    petugas: yup.string().default("Super Admin"),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -47,11 +47,24 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 const [diagnosaPerawat] = defineField("diagnosaPerawat");
 const [petugas] = defineField("petugas");
 
+const setFormData = () => {
+  if (rekamMedisStore.openedRekamMedis.data.diagnosaPerawat) {
+    setValues({
+      diagnosaPerawat:
+        rekamMedisStore.openedRekamMedis.data.diagnosaPerawat.diagnosaPerawat,
+      petugas: rekamMedisStore.openedRekamMedis.data.diagnosaPerawat.petugas,
+    });
+  } else resetForm();
+};
+
 onBeforeMount(async () => {
-  setValues({
-    diagnosaPerawat: "DB/Tipes",
-    petugas: "Adam",
-  });
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 const onSubmit = handleSubmit(async (values: any) => {
@@ -60,12 +73,12 @@ const onSubmit = handleSubmit(async (values: any) => {
     const response = await rekamMedisStore.insertAssesment({
       sessionUuid: props.sessionUuid,
       rekamMedisUuid: props.rmUuid,
-      // NOTE Apa ini
-      isLatest: true,
+      isLatest: rekamMedisStore.openedRekamMedis.isLatest,
       key: "diagnosa_perawat",
       data: values,
     });
     if (response && response.payload) {
+      rekamMedisStore.setAsesmentSummaryRekamMedisData(response.payload);
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -73,11 +86,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     storeUtils.setLoading(false);
   }
 });
-
-const toggleEdit = () => {
-  isEditing.value = true;
-  emit("edit");
-};
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -122,7 +130,11 @@ defineExpose({
           v-model="diagnosaPerawat"
         />
         <div v-if="!isEditing" class="py-5 flex flex-col gap-[19px]">
-          <CustomInfoRow label="Diagnosis Perawat" :value="diagnosaPerawat" />
+          <CustomInfoRow label="Diagnosis Perawat">
+            <template #value>
+              <div v-html="diagnosaPerawat"></div>
+            </template>
+          </CustomInfoRow>
           <hr class="border-grey-200" />
           <CustomInfoRow label="Petugas Input" :value="petugas" />
         </div>
@@ -186,7 +198,11 @@ defineExpose({
               borderColor="border-2 border-grey-200"
             />
             <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+            <CustomButton
+              v-if="!isEditing"
+              label="Edit"
+              @click="emit('editAsesmen')"
+            />
           </div>
         </template>
       </CustomDialog>
@@ -202,7 +218,11 @@ defineExpose({
           borderColor="border-2 border-[#9DA4B1]"
         />
         <CustomButton v-if="isEditing" label="Simpan" @click="onSubmit" />
-        <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+        <CustomButton
+          v-if="!isEditing"
+          label="Edit"
+          @click="emit('editAsesmen')"
+        />
       </div>
     </template>
   </CustomAccordion>
