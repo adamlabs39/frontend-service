@@ -17,7 +17,7 @@ export const useMedicalItemStore = defineStore({
     async getAvailableStockApi(uuid:string, payload = {}) {
       return apiFarmasiGet(`/farmasi/datamaster/item-medis/available-jenis-stock/${uuid}`, payload);
     },
-    async getWithoutPaginationApi(itemMedis:string, payload = {}) {
+    async getWithoutPaginationApi2(itemMedis:string, payload = {}) {
       return apiFarmasiGet(`/farmasi/datamaster/item-medis/without-pagination?jenis_item=${itemMedis}`, payload);
     },
     async postApi(payload = {}) {

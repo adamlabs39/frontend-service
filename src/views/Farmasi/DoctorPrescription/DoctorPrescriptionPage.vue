@@ -171,10 +171,8 @@ const fetchStockObat = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await MedicalItemStore.getApi(
-      {
-        page : 1,
-        limit :9999
-      }
+        1,
+        9999
     );
 
     if (response && response.payload) {
