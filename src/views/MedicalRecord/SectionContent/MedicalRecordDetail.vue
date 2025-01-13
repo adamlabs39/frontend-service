@@ -168,21 +168,25 @@ const toggleShowAllDetailMR = (method = "show") => {
         v-if="rmAssesmentData.catatanPenunjang"
         :ref="refs.catatanHasilPenunjang"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Catatan Hasil Penunjang')"
       />
       <FormDiagnosaDokterICD10
         v-if="rmAssesmentData.diagnosisDokter?.length"
         :ref="refs.diagnosisDokter"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Diagnosis Dokter')"
       />
       <AsuhanKeperawatan
         v-if="rmAssesmentData.diagnosaPerawat"
         :ref="refs.asuhanKeperawatan"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Asuhan Keperawatan')"
       />
       <FormCatatanPerawat
         v-if="rmAssesmentData.catatanPerawat?.length"
         :ref="refs.catatanPerawat"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Catatan Perawat')"
       />
       <InstruksiMedis
         v-if="rmAssesmentData.instruksiMedis?.length"
