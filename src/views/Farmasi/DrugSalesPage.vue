@@ -135,6 +135,11 @@ const onRowSelect = (event: any) => {
   changeSection('Detail Obat')
 };
 
+const closeDrugsalesPage = () => {
+  dataBreadCrumb.value.pop();
+  fetchDrugSales();
+};
+
 onMounted(() => {
   fetchDrugSales();
 });
@@ -350,14 +355,14 @@ onMounted(() => {
       v-else-if="dataBreadCrumb[0].label == 'Beli Obat'"
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
-      @back="dataBreadCrumb.pop()"
+      @back="closeDrugsalesPage"
     />
     <DetailDrugSalesPage2
       v-else-if="dataBreadCrumb[0].label == 'Detail Obat'"
       :dataBreadCrumb="dataBreadCrumb"
       :selectedData="selectedData"
       :pageType="pageType"
-      @back="dataBreadCrumb.pop()"
+      @back="closeDrugsalesPage"
     />
   </div>
 </template>

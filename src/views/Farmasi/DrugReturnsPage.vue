@@ -23,7 +23,7 @@ const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {
+const fetchStockLocation = async () => {  
   try {
     const response = await StockLocationStore.getApi();
 
@@ -558,12 +558,14 @@ onMounted(() => {
           v-model:isDialogVisible="dialogDetailObat"
           :payloadObat="selectedDataObat"
           :selectMedicine="selectMedicine"
+          @update:isDialogVisible="fetchDrugRetur"
           ref="refDialogDetailObat"
         />
         <DialogDetailAlkes
           v-model:isDialogVisible="dialogDetailAlkes"
           :payloadAlkes="selectedDataAlkes"
           :selectMedicine="selectMedicine"
+          @update:isDialogVisible="fetchDrugRetur"
           ref="refDialogDetailAlkes"
         />
       </template>

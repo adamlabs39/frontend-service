@@ -452,7 +452,7 @@ onMounted(() => {
               place-holder="Pilih Bentuk Sediaan"
               label="Bentuk Sediaan"
               optionLabel="name"
-              optionValue="name"
+              optionValue="uuid"
               :options="DosageFormPayload"
               class="ml-2"
             />
@@ -478,7 +478,7 @@ onMounted(() => {
               place-holder="Pilih Satuan"
               label="Satuan"
               optionLabel="name"
-              optionValue="code"
+              optionValue="uuid"
               :options="UnitPayload"
               class="ml-2 mr-1"
             />
@@ -518,7 +518,7 @@ onMounted(() => {
               place-holder="Kategori Item"
               label="Kategori Item"
               optionLabel="name"
-              optionValue="name"
+              optionValue="uuid"
               :options="DrugCategoryPayload"
               class="mr-2"
             />

@@ -170,12 +170,7 @@ const fetchStockLocation = async () => {
 const fetchStockObat = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await MedicalItemStore.getApi(
-      {
-        page : 1,
-        limit :9999
-      }
-    );
+    const response = await MedicalItemStore.getApi(1,9999);
 
     if (response && response.payload) {
       stockObatPayload.value = response.payload.filter((item:any) => item.status === true);
