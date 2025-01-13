@@ -27,11 +27,17 @@ export const useTagihanStore = defineStore({
     async getItemBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}/items`, payload);
     },
+    async getKasirStatus(payload = {}) {
+      return apiPembayaranGet(`/cashier/check`, payload);
+    },
     async postVoucher(uuid: string, payload = {}) {
       return apiPembayaranPost(`/payment/${uuid}/voucher`, payload);
     },
     async postDiscount(uuid: string, payload = {}) {
       return apiPembayaranPost(`/payment/${uuid}/discount`, payload);
+    },
+    async postKasirCloseBill(uuid: string, payload = {}) {
+      return apiPembayaranPost(`/payment/${uuid}/close`, payload);
     },
     async postOpenKasir(payload = {}) {
       return apiPembayaranPost(`/cashier/open`, payload);
@@ -41,6 +47,9 @@ export const useTagihanStore = defineStore({
     },
     async postCloseHarianKasir(payload = {}) {
       return apiPembayaranPost(`/cashier/close/day`, payload);
+    },
+    async postPayment(uuid: string, payload = {}) {
+      return apiPembayaranPost(`/payment/${uuid}/payment`, payload);
     },
 
     async putApi(uuid: string, payload = {}) {
