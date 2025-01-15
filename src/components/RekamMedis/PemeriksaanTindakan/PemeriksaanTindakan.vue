@@ -11,44 +11,101 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import HistoriPemeriksaanTindakan from "@/components/RekamMedis/PemeriksaanTindakan/HistoriPemeriksaanTindakan.vue";
+import { utilsStore } from "@/stores/utils";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { useTarifStore } from "@/stores/datamaster/tarif";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const praktisiStore = usePraktisiStore();
+const tarifStore = useTarifStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
 const tambahTindakan = ref();
 const detail = ref();
 const deletedData = ref<any[]>([]);
 const selectedItems = ref<any[]>([]);
 const cariItemMultiple = ref();
-const itemsPetugas = ref(["dr.Spesialis Sp. M", "Perawat"]);
 const products = ref<any[]>([]);
+
 onMounted(() => {
-  products.value = [
-    { nama: "Pemeriksaan Poli Umum", harga: 100000, mode: "Single" },
-    { nama: "Pemeriksaan Poli Gigi", harga: 50000, mode: "Multiple" },
-    { nama: "Pemeriksaan Poli Mata", harga: 50000, mode: "Single" },
-  ];
+  try {
+    storeUtils.setLoading(true);
+    fetchPraktisi();
+    fetchTarif();
+  } catch (error) {
+    console.error("Failed to get data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
+
+const praktisiPayload = ref<any[]>([]);
+const tarifPayload = ref<any[]>([]);
+const fetchPraktisi = async () => {
+  try {
+    const response = await praktisiStore.getAktifApi();
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload;
+    } else {
+      praktisiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch praktisi", error);
+    praktisiPayload.value = [];
+  }
+};
+const fetchTarif = async () => {
+  try {
+    const response = await tarifStore.getApi(1, 9999, "", "Tindakan");
+    if (response && response.payload) {
+      const filteredTarif = response.payload.filter((tarifData: any) =>
+        tarifData.pelayanan.some(
+          (pelayananData: any) => pelayananData.unitPelayanan == 1
+        )
+      );
+      tarifPayload.value = filteredTarif;
+    } else {
+      tarifPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch tarif", error);
+    tarifPayload.value = [];
+  }
+};
 
 const schema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
-        namaTindakan: yup.string().required("List tindakan harus dipilih"),
+        tindakan: yup.mixed<any>().required("Tindakan harus dipilih"),
         hargaTindakan: yup.number(),
-        qtyTindakan: yup.number(),
+        qtyTindakan: yup.number().min(1, "Jumlah setidaknya harus 1"),
         petugas: yup
           .array()
-          .of(yup.string())
+          .of(yup.mixed<any>())
           .min(1, "Petugas harus dipilih")
           .required("Petugas harus dipilih"),
+        isNew: yup.boolean(),
       })
     ),
   })
@@ -58,7 +115,13 @@ const { errors, handleSubmit, resetForm, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
     datas: [
-      { namaTindakan: "", hargaTindakan: 0, qtyTindakan: 0, petugas: [] },
+      {
+        tindakan: null,
+        hargaTindakan: 0,
+        qtyTindakan: 1,
+        petugas: [],
+        isNew: true,
+      },
     ],
   },
 });
@@ -66,40 +129,86 @@ const { remove, push, fields } = useFieldArray("datas");
 
 const myPushFunction = (index: any) => {
   const newItem = {
-    namaTindakan: "",
+    tindakan: "",
     hargaTindakan: 0,
-    qtyTindakan: 0,
+    qtyTindakan: 1,
     petugas: [],
     isNew: true,
   };
 
   push(newItem);
 };
-const onSubmit = handleSubmit((values: any) => {
-  const parseData = JSON.parse(JSON.stringify(deletedData.value));
-  const allData = [...values.datas, ...parseData];
-  console.log(allData);
-  emit("submit", allData);
-  isEditing.value = false;
+
+interface PayloadPetugasData {
+  nama: string;
+  isDoctor: boolean;
+  practitionerUuid: string;
+}
+
+interface PayloadTindakanData {
+  tarifUuid: string;
+  namaTindakan: string;
+  hargaTindakan: number;
+  qtyTindakan: number;
+  isMcu: boolean;
+  petugas: PayloadPetugasData[];
+  isNew?: boolean;
+  isDeleted?: boolean;
+}
+
+const onSubmit = handleSubmit(async (values: any) => {
+  console.log("🚀 ~ onSubmit ~ values:", values);
+  // const parseData = JSON.parse(JSON.stringify(deletedData.value));
+  // const allData = [...values.datas, ...parseData];
+  // console.log(allData);
+  // emit("submit", allData);
+  // isEditing.value = false;
+  try {
+    storeUtils.setLoading(true);
+    const payloadData: PayloadTindakanData[] = values.datas.map(
+      (tindakanData: any) => {
+        // Membuat array petugas menggunakan map
+        const payloadPetugas: PayloadPetugasData[] = tindakanData.petugas.map(
+          (petugasData: any) => ({
+            nama: petugasData.pegawai.name,
+            isDoctor: petugasData.isDoctor,
+            practitionerUuid: petugasData.uuid,
+          })
+        );
+
+        // Membuat objek tindakan, dengan menggunakan spread untuk properti opsional
+        const tempData: TindakanData = {
+          tarifUuid: tindakanData.tindakan.uuid,
+          namaTindakan: tindakanData.tindakan.name,
+          hargaTindakan: tindakanData.tindakan.grandTotal,
+          qtyTindakan: tindakanData.qtyTindakan,
+          isMcu: tindakanData.tindakan.isMcu,
+          petugas: payloadPetugas,
+          ...(tindakanData.isNew && { isNew: true }),
+          ...(tindakanData.isDeleted && { isDeleted: true }),
+        };
+
+        return tempData;
+      }
+    );
+    const response = await rekamMedisStore.insertTindakan({
+      sessionUuid: props.sessionUuid,
+      data: payloadData,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+    }
+    console.log("🚀 ~ onSubmit ~ payloadData:", payloadData);
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
 const toggleEdit = () => {
   isEditing.value = true;
   emit("edit");
-};
-
-const getHargaTindakan = (namaTindakan: string) => {
-  const tindakan = products.value.find(
-    (product) => product.nama === namaTindakan
-  );
-  return tindakan ? tindakan.harga : 0;
-};
-
-const getModeTindakan = (namaTindakan: string) => {
-  const tindakan = products.value.find(
-    (product) => product.nama === namaTindakan
-  );
-  return tindakan ? tindakan.mode : "Multiple";
 };
 
 const handleRemove = (index: number) => {
@@ -116,27 +225,53 @@ const handleRemove = (index: number) => {
   }
 };
 
+const setFormData = () => {
+  if (rekamMedisStore.openedRekamMedis.data.pemeriksaanTindakan?.length) {
+    const tempTindakan =
+      rekamMedisStore.openedRekamMedis.data.pemeriksaanTindakan;
+
+    const reversedData = tempTindakan.map(
+      (tindakanData: PayloadTindakanData) => {
+        const petugas = tindakanData.petugas.map(
+          (petugasData: PayloadPetugasData) => ({
+            uuid: petugasData.practitionerUuid,
+            isDoctor: petugasData.isDoctor,
+            pegawai: {
+              name: petugasData.nama,
+            },
+          })
+        );
+
+        return {
+          tindakan: {
+            uuid: tindakanData.tarifUuid,
+            name: tindakanData.namaTindakan,
+            grandTotal: tindakanData.hargaTindakan,
+            isMcu: tindakanData.isMcu,
+          },
+          qtyTindakan: tindakanData.qtyTindakan,
+          petugas,
+        };
+      }
+    );
+    setValues({
+      datas: reversedData,
+    });
+  } else resetForm();
+};
+
 onBeforeMount(async () => {
-  setValues({
-    datas: [
-      {
-        namaTindakan: "Pemeriksaan Poli Gigi",
-        hargaTindakan: 0,
-        qtyTindakan: 3,
-        petugas: ["dr.Spesialis Sp. M"],
-      },
-      {
-        namaTindakan: "Pemeriksaan Poli Mata",
-        hargaTindakan: 100000,
-        qtyTindakan: 1,
-        petugas: ["dr.Spesialis Sp. M"],
-      },
-    ],
-  });
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 interface TindakanData {
-  namaTindakan: string;
+  tindakan: any;
   hargaTindakan?: number;
   qtyTindakan?: number;
   petugas: (string | undefined)[];
@@ -159,19 +294,13 @@ const resetNewData = () => {
 };
 
 const addToSelectedItems = (item: any) => {
-  const selectedProduct = products.value.find(
-    (product) => product.nama === item
-  );
-  if (selectedProduct) {
-    selectedItems.value.push({
-      namaTindakan: selectedProduct.nama,
-      hargaTindakan: selectedProduct.harga,
-      qtyTindakan: selectedProduct.mode === "Single" ? 1 : 0,
-      petugas: [],
-      isNew: true,
-    });
-    cariItemMultiple.value = "";
-  }
+  selectedItems.value.push({
+    tindakan: item,
+    qtyTindakan: item.mode === "Single" ? 1 : 0,
+    petugas: [],
+    isNew: true,
+  });
+  cariItemMultiple.value = "";
 };
 const removeFromSelectedItems = (index: any) => {
   selectedItems.value.splice(index, 1);
@@ -248,31 +377,26 @@ defineExpose({
               <div class="font-semibold">List Tindakan</div>
             </template>
             <template #body="slotProps">
-              <CustomSelect
-                v-if="isEditing"
-                prepend-icon="PhMagnifyingGlass"
-                v-model="slotProps.data.value.namaTindakan"
-                :options="products"
-                optionValue="nama"
-                optionLabel="nama"
-                label=""
-                place-holder="Pilih Tindakan"
-                @change="
-                  slotProps.data.value.qtyTindakan =
-                    getModeTindakan(slotProps.data.value.namaTindakan) ===
-                    'Single'
-                      ? 1
-                      : slotProps.data.value.qtyTindakan
-                "
-                :disabled="!slotProps.data.value.isNew"
-                :invalid="!slotProps.data.value.namaTindakan"
-              />
-              <ErrorMessage
-                :name="`datas[${slotProps.index}].namaTindakan`"
-                class="pt-10 text-danger-300 text-XS"
-              />
+              <div v-if="isEditing">
+                <CustomSelect
+                  prepend-icon="PhMagnifyingGlass"
+                  v-model="slotProps.data.value.tindakan"
+                  :options="tarifPayload"
+                  optionLabel="name"
+                  optionValue=""
+                  dataKey="uuid"
+                  label=""
+                  place-holder="Pilih Tindakan"
+                  :disabled="!slotProps.data.value.isNew"
+                  :invalid="!slotProps.data.value.tindakan"
+                />
+                <ErrorMessage
+                  :name="`datas[${slotProps.index}].tindakan`"
+                  class="pt-10 text-danger-300 text-XS"
+                />
+              </div>
               <div v-if="!isEditing">
-                {{ slotProps.data.value.namaTindakan }}
+                {{ slotProps.data.value.tindakan?.name }}
               </div>
             </template>
           </Column>
@@ -284,15 +408,11 @@ defineExpose({
               <div
                 :class="{
                   'text-grey-300':
-                    getHargaTindakan(slotProps.data.value.namaTindakan) === 0,
+                    slotProps.data.value.tindakan?.grandTotal === 0,
                 }"
               >
                 Rp.
-                {{
-                  (slotProps.data.value.hargaTindakan = getHargaTindakan(
-                    slotProps.data.value.namaTindakan
-                  ))
-                }}
+                {{ slotProps.data.value.tindakan?.grandTotal ?? 0 }}
               </div>
             </template>
           </Column>
@@ -301,35 +421,28 @@ defineExpose({
               <div class="w-full font-semibold text-center">Jumlah</div>
             </template>
             <template #body="slotProps">
-              <div
-                v-if="
-                  getModeTindakan(slotProps.data.value.namaTindakan) ===
-                    'Single' && isEditing
-                "
-                class="w-full text-center"
-              >
-                <span> {{ (slotProps.data.value.qtyTindakan = 1) }}</span>
-              </div>
               <div v-if="!isEditing" class="w-full text-center">
                 <span> {{ slotProps.data.value.qtyTindakan }}</span>
               </div>
-
               <div v-else>
                 <CustomInputNumber
                   v-if="
-                    getModeTindakan(slotProps.data.value.namaTindakan) ===
-                      'Multiple' && isEditing
+                    slotProps.data.value.tindakan?.mode === 'Multiple' &&
+                    isEditing
                   "
                   :show-label="false"
                   v-model="slotProps.data.value.qtyTindakan"
                   :show-buttons="true"
                   :disabled="!slotProps.data.value.isNew"
                   @change="
-                    slotProps.data.value.namaTindakan === null
+                    slotProps.data.value.tindakan === null
                       ? 0
                       : slotProps.data.value.qtyTindakan
                   "
                 />
+                <div v-else-if="isEditing" class="w-full text-center">
+                  <span>1</span>
+                </div>
               </div>
             </template>
           </Column>
@@ -341,13 +454,14 @@ defineExpose({
               <CustomMultiSelect
                 prepend-icon="PhMagnifyingGlass"
                 v-model="slotProps.data.value.petugas"
-                :options="itemsPetugas"
+                :options="praktisiPayload"
+                optionLabel="pegawai.name"
                 optionValue=""
-                optionLabel=""
+                dataKey="uuid"
                 label=""
                 place-holder="Pilih Petugas"
                 :disabled="!slotProps.data.value.isNew"
-                :invalid="!slotProps.data.value.petugas"
+                :invalid="slotProps.data.value.petugas.length == 0"
               />
               <ErrorMessage
                 :name="`datas[${slotProps.index}].petugas`"
@@ -379,16 +493,12 @@ defineExpose({
               <div
                 :class="{
                   'text-grey-300':
-                    getHargaTindakan(slotProps.data.value.namaTindakan) === 0,
+                    slotProps.data.value.tindakan?.grandTotal === 0,
                 }"
                 class="w-full text-end"
               >
                 Rp.
-                {{
-                  (slotProps.data.value.hargaTindakan = getHargaTindakan(
-                    slotProps.data.value.namaTindakan
-                  ))
-                }}
+                {{ slotProps.data.value.tindakan?.grandTotal ?? 0 }}
               </div>
             </template>
           </Column>
@@ -426,9 +536,9 @@ defineExpose({
               <div class="flex items-end w-full gap-5">
                 <CustomSelect
                   prepend-icon="PhMagnifyingGlass"
-                  :options="products"
-                  optionValue="nama"
-                  optionLabel="nama"
+                  :options="tarifPayload"
+                  optionLabel="name"
+                  optionValue=""
                   v-model="cariItemMultiple"
                   label="Cari Item"
                   place-holder="Asuhan Keperawatan"
@@ -457,12 +567,12 @@ defineExpose({
                   </template>
                 </Column>
                 <Column
-                  field="namaTindakan"
+                  field="tindakan.name"
                   header="List Tindakan"
                   headerClass="bg-adameds-50"
                 ></Column>
                 <Column
-                  field="hargaTindakan"
+                  field="tindakan.grandTotal"
                   header="Harga"
                   headerClass="bg-adameds-50"
                 ></Column>
@@ -540,12 +650,12 @@ defineExpose({
                 </template>
               </Column>
               <Column
-                field="value.namaTindakan"
+                field="value.tindakan.name"
                 header="List Tindakan"
                 headerClass="bg-adameds-50"
               ></Column>
               <Column
-                field="value.hargaTindakan"
+                field="value.tindakan.grandTotal"
                 header="Harga"
                 headerClass="bg-adameds-50"
               ></Column>
@@ -562,7 +672,7 @@ defineExpose({
                       :key="items"
                     >
                       <CustomChip
-                        :label="items"
+                        :label="items.pegawai.name"
                         :showCheckedIcon="false"
                         border-color="border-none"
                         bg-color="bg-adameds-300"
@@ -576,7 +686,7 @@ defineExpose({
           </template>
           <template #footer v-if="!isEditing">
             <div>
-              <CustomButton label="Edit" @click="toggleEdit" />
+              <CustomButton label="Edit" @click="emit('editAsesmen')" />
             </div>
           </template>
         </CustomDialog>
@@ -642,7 +752,7 @@ defineExpose({
       <div v-if="!isEditing" class="flex justify-between">
         <CustomButton label="Detail" icon="DetailIcon" @click="detail = true" />
 
-        <CustomButton label="Edit" @click="toggleEdit" />
+        <CustomButton label="Edit" @click="emit('editAsesmen')" />
       </div>
     </template>
   </CustomAccordion>

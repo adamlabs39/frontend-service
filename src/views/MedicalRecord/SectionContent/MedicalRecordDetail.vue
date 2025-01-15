@@ -198,11 +198,11 @@ const toggleShowAllDetailMR = (method = "show") => {
         :ref="refs.orderObat"
         method="detail"
       />
-      <!-- FIXME Belum ada -->
       <PemeriksaanTindakan
         v-if="rmAssesmentData.pemeriksaanTindakan?.length"
         :ref="refs.pemeriksaanTindakan"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Pemeriksaan dan Tindakan')"
       />
       <FormImplementation
         v-if="rmType == 'fisio' && rmAssesmentData.implementation"

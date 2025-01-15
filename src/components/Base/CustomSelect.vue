@@ -69,6 +69,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  dataKey: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
+  },
 });
 
 const selectedData = ref<any>();
@@ -150,6 +154,7 @@ const filterData = (event: SelectFilterEvent) => {
         :options="options"
         :optionLabel="optionLabel"
         :optionValue="optionValue"
+        :dataKey="dataKey"
         :loading="isLoading"
         :showClear="showClear"
         :placeholder="placeHolder"

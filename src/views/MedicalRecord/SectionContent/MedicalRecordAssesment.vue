@@ -147,6 +147,8 @@ const props = defineProps({
       v-if="selectedAssesment == 'Pemeriksaan dan Tindakan'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <PemeriksaanFisik
       v-if="selectedAssesment == 'Pemeriksaan Fisik'"

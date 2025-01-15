@@ -20,6 +20,9 @@ export const useRekamMedisStore = defineStore({
       this.openedRekamMedis.data = asesmenSummary.data
       this.openedRekamMedis.summary = asesmenSummary.summary
     },
+    setAsesmentRekamMedisData(asesmen: any) {
+      this.openedRekamMedis.data = asesmen.data
+    },
 
     async createRekamMedis(payload = {}) {
       return apiRekamMedisPost("/rekam-medis", payload);
