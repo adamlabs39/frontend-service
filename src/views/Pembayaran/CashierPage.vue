@@ -10,7 +10,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
 import type { DataTableRowClickEvent } from "primevue/datatable";
-import { epochToDate } from "@/utils/Helpers";
+import { epochToDate, dateToEpoch } from "@/utils/Helpers";
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const storeUtils = utilsStore();
@@ -307,7 +307,7 @@ const startShortPolling = () => {
     } catch (error) {
       console.error("Error during polling:", error);
     }
-  }, 10000);
+  }, 50000);
 };
 
 const stopShortPolling = () => {

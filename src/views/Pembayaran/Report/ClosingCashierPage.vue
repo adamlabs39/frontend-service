@@ -9,7 +9,6 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
-import { useReportKasirStore } from "@/stores/pembayaran/reportKasir";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -17,7 +16,6 @@ const reportType = ref("");
 const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
-const reportKasirStore = useReportKasirStore;
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
