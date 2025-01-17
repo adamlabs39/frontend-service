@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import DataPatient from "@/components/RekamMedis/DataPatient.vue";
 import PemeriksaanFisik from "@/components/RekamMedis/PemeriksaanFisik/PemeriksaanFisik.vue";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
@@ -50,12 +51,14 @@ import type { PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
-import { formatDate } from "@/utils/Helpers";
+import { useRekamMedisPelayananStore } from "@/stores/rekamMedis/rekamMedisPelayanan";
+import { epochToDate, formatDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const toast = useToast();
 const rekamMedisStore = useRekamMedisStore();
+const rekamMedisPelayananStore = useRekamMedisPelayananStore();
 
 const emit = defineEmits([]);
 
@@ -184,6 +187,25 @@ const resetInitialDialog = () => {
   selectedPemeriksaanMata.value = null;
   selectedSoap.value = "Subjective";
   selectedSoapier.value = "Subjective";
+};
+
+const listHistoryData = ref<any[]>([]);
+const showHistoryDialog = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisPelayananStore.getHistory(
+      props.patientData.noRm
+    );
+    if (response && response.payload) {
+      listHistoryData.value = response.payload;
+      historyVisitDialog.value = true;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listHistoryData.value = [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 // NOTE Logic Function
@@ -399,7 +421,7 @@ defineExpose({ showDialogRM });
                 </span>
               </div>
               <CustomButton
-                @click="historyVisitDialog = true"
+                @click="showHistoryDialog"
                 icon="PhClockCounterClockwise"
                 label="Riwayat"
                 size="small"
@@ -573,12 +595,14 @@ defineExpose({ showDialogRM });
                   <InstruksiMedis
                     id="Instruksi Medis"
                     :ref="refs.instruksiMedis"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
                   />
                   <FormCatatanPerawat
                     id="Catatan Perawat"
                     :ref="refs.catatanPerawat"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
                   />
@@ -817,6 +841,7 @@ defineExpose({ showDialogRM });
       headerHeight="h-5"
       width="350px"
       closeIcon="PhTextIndent"
+      dismissableMask
     >
       <template #header>
         <div class="flex">
@@ -830,20 +855,56 @@ defineExpose({ showDialogRM });
         </div>
       </template>
       <template #body>
-        <div class="h-[60vh]">
-          <!-- <div>
-            <div>
-              Rawat Jalan - Poli Mata
-              <CustomChip
-                :showCheckedIcon="false"
-                label="BPJS"
-                bgColor="bg-warning-50"
-                textColor="text-warning-300"
-                borderColor="border-warning-300"
-                customClass="h-5 pr-[6px] mr-[5px]"
-              />
+        <div class="h-[60vh] text-SM py-[10px]">
+          <div v-for="history in listHistoryData">
+            <div class="px-[10px] py-[5px]">
+              <div class="font-bold">
+                {{
+                  history.statusRj
+                    ? "Rawat Jalan"
+                    : history.statusRi
+                    ? "Rawat Inap"
+                    : history.statusIgd
+                    ? "IGD"
+                    : ""
+                }}
+                {{ history.lokasi ? "- " + history.lokasi.name : "" }}
+                <CustomChip
+                  v-if="history.paymentMethod == 1"
+                  label="TUNAI"
+                  bgColor="bg-mint-50"
+                  text-color="text-mint-300"
+                  border-color="border-mint-300"
+                  :showCheckedIcon="false"
+                  customClass="h-5 ml-[5px]"
+                />
+                <CustomChip
+                  v-else
+                  :showCheckedIcon="false"
+                  label="BPJS"
+                  bgColor="bg-warning-50"
+                  textColor="text-warning-300"
+                  borderColor="border-warning-300"
+                  customClass="h-5 ml-[5px]"
+                />
+              </div>
+              <div class="flex">
+                <DoctorIcon class="text-[#79808F] mr-1" :size="16" />
+                <!-- FIXME Perlu Perbaikan kolom -->
+                <div>
+                  {{
+                    `${history.practitioner.pegawai.title} ${history.practitioner.pegawai.nama}`
+                  }}
+                </div>
+              </div>
+              <div class="flex text-[#5E646F">
+                <div>Tanggal</div>
+                <ArrowRightBrokenIcon class="mx-3 my-auto text-success-300" />
+                <div>{{ epochToDate(history.tanggalDaftar, "dateTime") }}</div>
+              </div>
             </div>
-          </div> -->
+            <hr class="my-[10px]" />
+          </div>
         </div>
       </template>
       <template #customCloseIcon>

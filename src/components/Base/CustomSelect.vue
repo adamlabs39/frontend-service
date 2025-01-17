@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { SelectFilterEvent } from "primevue/select";
-import { ref, computed, type PropType } from "vue";
+import { ref, computed, type PropType, watch } from "vue";
 
 const props = defineProps({
   showLabel: {
@@ -77,6 +77,16 @@ const props = defineProps({
 
 const selectedData = ref<any>();
 
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      selectedData.value = newValue;
+    }
+  },
+  { immediate: true }
+);
+
 // const value = ref(props.modelValue);
 const value = computed({
   get: () => props.modelValue as string,
@@ -86,7 +96,7 @@ const value = computed({
         (data: any) => data[props.optionValue] == value
       );
     } else if (props.customValue) {
-      selectedData.value = value
+      selectedData.value = value;
     }
     emit("update:modelValue", value);
   },
@@ -183,7 +193,12 @@ const filterData = (event: SelectFilterEvent) => {
         @blur="emit('blur')"
       >
         <template v-if="$slots.customValue" #value="{ value, placeholder }">
-          <slot name="customValue" :value="value" :placeholder="placeholder" :selectedData="selectedData" />
+          <slot
+            name="customValue"
+            :value="value"
+            :placeholder="placeholder"
+            :selectedData="selectedData"
+          />
         </template>
         <template
           v-if="$slots.customOptions"

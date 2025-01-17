@@ -37,6 +37,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  dismissableMask: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['closeDialog'])
@@ -64,6 +68,7 @@ const maximize = () => {
     pt:pcMaximizeButton:root:class="hidden"
     :pt:content:class="noScroll ? 'flex flex-col overflow-hidden' : ''"
     :style="fullScreen ? '' : `width: ${width ? width : '400px'}`"
+    :dismissableMask="dismissableMask"
   >
     <template #header>
       <div class="w-full font-semibold text-white text-MD">

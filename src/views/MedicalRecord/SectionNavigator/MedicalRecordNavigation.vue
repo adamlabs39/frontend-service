@@ -181,7 +181,7 @@ onMounted(() => {
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             borderColor="border-adameds-300"
-            customClass="h-5 pr-[6px] mr-[5px]"
+            customClass="h-5 mr-[5px]"
           />
         </div>
       </div>
@@ -218,7 +218,7 @@ onMounted(() => {
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             borderColor="border-adameds-300"
-            customClass="h-5 pr-[6px] mr-[5px]"
+            customClass="h-5 mr-[5px]"
           />
         </div>
       </div>
@@ -285,7 +285,7 @@ onMounted(() => {
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             borderColor="border-adameds-300"
-            customClass="h-5 pr-[6px] mr-[5px]"
+            customClass="h-5 mr-[5px]"
           />
         </div>
       </div>

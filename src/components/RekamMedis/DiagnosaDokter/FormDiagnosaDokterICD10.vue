@@ -267,11 +267,12 @@ defineExpose({
               :options="listIcd9Data"
               optionLabel="name"
               optionValue=""
+              dataKey="uuid"
               :isLoading="false"
               :invalid="!!errors.diagnosis"
               :invalidMessage="errors.diagnosis"
               :disabled="false"
-              :placeHolder="diagnosis ? diagnosis.name : 'Pilih Diagnosis'"
+              :placeHolder="'Pilih Diagnosis'"
               customSelectClass="border-[#C7CBD2]"
               prependIcon="PhMagnifyingGlass"
               customValue
@@ -282,7 +283,9 @@ defineExpose({
               <template #customValue="{ value, placeholder, selectedData }">
                 {{
                   value && selectedData
-                    ? `${selectedData?.name} (${selectedData?.code})`
+                    ? `${selectedData?.name} ${
+                        selectedData?.code ? "(" + selectedData?.code + ")" : ""
+                      }`
                     : placeholder
                 }}
               </template>
@@ -294,11 +297,12 @@ defineExpose({
               :options="listIcd9Data"
               optionLabel="name"
               optionValue=""
+              dataKey="uuid"
               :isLoading="false"
               :invalid="false"
               invalidMessage="Wajib diisi"
               :disabled="false"
-              :placeHolder="diferensial ? diferensial.name : 'Pilih Diagnosis'"
+              :placeHolder="'Pilih Diagnosis'"
               customSelectClass="border-[#C7CBD2]"
               prependIcon="PhMagnifyingGlass"
               customValue
@@ -309,7 +313,9 @@ defineExpose({
               <template #customValue="{ value, placeholder, selectedData }">
                 {{
                   value && selectedData
-                    ? `${selectedData?.name} (${selectedData?.code})`
+                    ? `${selectedData?.name} ${
+                        selectedData?.code ? "(" + selectedData?.code + ")" : ""
+                      }`
                     : placeholder
                 }}
               </template>
@@ -328,15 +334,12 @@ defineExpose({
                 :options="listIcd9Data"
                 optionLabel="name"
                 optionValue=""
+                dataKey="uuid"
                 :isLoading="false"
                 :invalid="!!errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                 :invalidMessage="errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                 :disabled="false"
-                :placeHolder="
-                  field.value.diagnosis
-                    ? field.value.diagnosis.name
-                    : 'Pilih Diagnosis'
-                "
+                :placeHolder="'Pilih Diagnosis'"
                 customSelectClass="border-[#C7CBD2]"
                 prependIcon="PhMagnifyingGlass"
                 customValue
@@ -347,7 +350,11 @@ defineExpose({
                 <template #customValue="{ value, placeholder, selectedData }">
                   {{
                     value && selectedData
-                      ? `${selectedData?.name} (${selectedData?.code})`
+                      ? `${selectedData?.name} ${
+                          selectedData?.code
+                            ? "(" + selectedData?.code + ")"
+                            : ""
+                        }`
                       : placeholder
                   }}
                 </template>
@@ -360,15 +367,12 @@ defineExpose({
                 :options="listIcd9Data"
                 optionLabel="name"
                 optionValue=""
+                dataKey="uuid"
                 :isLoading="false"
                 :invalid="false"
                 invalidMessage="Wajib diisi"
                 :disabled="false"
-                :placeHolder="
-                  field.value.diferensial
-                    ? field.value.diferensial.name
-                    : 'Pilih Diagnosis'
-                "
+                :placeHolder="'Pilih Diagnosis'"
                 customSelectClass="border-[#C7CBD2]"
                 prependIcon="PhMagnifyingGlass"
                 customValue
@@ -379,7 +383,11 @@ defineExpose({
                 <template #customValue="{ value, placeholder, selectedData }">
                   {{
                     value && selectedData
-                      ? `${selectedData?.name} (${selectedData?.code})`
+                      ? `${selectedData?.name} ${
+                          selectedData?.code
+                            ? "(" + selectedData?.code + ")"
+                            : ""
+                        }`
                       : placeholder
                   }}
                 </template>
@@ -491,11 +499,12 @@ defineExpose({
                   :options="listIcd9Data"
                   optionLabel="name"
                   optionValue=""
+                  dataKey="uuid"
                   :isLoading="false"
                   :invalid="!!errors.diagnosis"
                   :invalidMessage="errors.diagnosis"
                   :disabled="false"
-                  :placeHolder="diagnosis ? diagnosis.name : 'Pilih Diagnosis'"
+                  :placeHolder="'Pilih Diagnosis'"
                   customSelectClass="border-[#C7CBD2]"
                   prependIcon="PhMagnifyingGlass"
                   customValue
@@ -506,7 +515,11 @@ defineExpose({
                   <template #customValue="{ value, placeholder, selectedData }">
                     {{
                       value && selectedData
-                        ? `${selectedData?.name} (${selectedData?.code})`
+                        ? `${selectedData?.name} ${
+                            selectedData?.code
+                              ? "(" + selectedData?.code + ")"
+                              : ""
+                          }`
                         : placeholder
                     }}
                   </template>
@@ -517,13 +530,12 @@ defineExpose({
                   :options="listIcd9Data"
                   optionLabel="name"
                   optionValue=""
+                  dataKey="uuid"
                   :isLoading="false"
                   :invalid="false"
                   invalidMessage="Wajib diisi"
                   :disabled="false"
-                  :placeHolder="
-                    diferensial ? diferensial.name : 'Pilih Diagnosis'
-                  "
+                  :placeHolder="'Pilih Diagnosis'"
                   customSelectClass="border-[#C7CBD2]"
                   prependIcon="PhMagnifyingGlass"
                   customValue
@@ -534,7 +546,11 @@ defineExpose({
                   <template #customValue="{ value, placeholder, selectedData }">
                     {{
                       value && selectedData
-                        ? `${selectedData?.name} (${selectedData?.code})`
+                        ? `${selectedData?.name} ${
+                            selectedData?.code
+                              ? "(" + selectedData?.code + ")"
+                              : ""
+                          }`
                         : placeholder
                     }}
                   </template>
@@ -553,15 +569,12 @@ defineExpose({
                       class="grow"
                       optionLabel="name"
                       optionValue=""
+                      dataKey="uuid"
                       :isLoading="false"
                       :invalid="!!errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                       :invalidMessage="errors[`datas[${index}].diagnosis` as keyof typeof errors]"
                       :disabled="false"
-                      :placeHolder="
-                        field.value.diagnosis
-                          ? field.value.diagnosis.name
-                          : 'Pilih Diagnosis'
-                      "
+                      :placeHolder="'Pilih Diagnosis'"
                       customSelectClass="border-[#C7CBD2]"
                       prependIcon="PhMagnifyingGlass"
                       customValue
@@ -574,7 +587,11 @@ defineExpose({
                       >
                         {{
                           value && selectedData
-                            ? `${selectedData?.name} (${selectedData?.code})`
+                            ? `${selectedData?.name} ${
+                                selectedData?.code
+                                  ? "(" + selectedData?.code + ")"
+                                  : ""
+                              }`
                             : placeholder
                         }}
                       </template>
@@ -596,15 +613,12 @@ defineExpose({
                     class="mt-[10px]"
                     optionLabel="name"
                     optionValue=""
+                    dataKey="uuid"
                     :isLoading="false"
                     :invalid="false"
                     invalidMessage="Wajib diisi"
                     :disabled="false"
-                    :placeHolder="
-                      field.value.diagnosis
-                        ? field.value.diagnosis.name
-                        : 'Pilih Diagnosis'
-                    "
+                    :placeHolder="'Pilih Diagnosis'"
                     customSelectClass="border-[#C7CBD2]"
                     prependIcon="PhMagnifyingGlass"
                     customValue
@@ -617,7 +631,11 @@ defineExpose({
                     >
                       {{
                         value && selectedData
-                          ? `${selectedData?.name} (${selectedData?.code})`
+                          ? `${selectedData?.name} ${
+                              selectedData?.code
+                                ? "(" + selectedData?.code + ")"
+                                : ""
+                            }`
                           : placeholder
                       }}
                     </template>

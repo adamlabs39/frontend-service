@@ -134,7 +134,7 @@ const showPatientData = ref(true);
                       ? 'border-adameds-300'
                       : 'border-warning-300'
                   "
-                  customClass="h-5 pr-[6px] ml-[5px]"
+                  customClass="h-5 ml-[5px]"
                 />
               </div>
               <!-- FIXME Belum Ada -->

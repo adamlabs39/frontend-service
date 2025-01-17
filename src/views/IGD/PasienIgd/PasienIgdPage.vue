@@ -476,7 +476,7 @@ const fetchPraktisiData = async () => {
                     ? 'Dirawat'
                     : 'Discharge'
                 "
-                customClass="h-5 pr-[5px] mr-[5px] border-none"
+                customClass="h-5 mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusIgd == 0
                     ? 'bg-danger-75'
@@ -497,7 +497,7 @@ const fetchPraktisiData = async () => {
               <CustomChip
                 :showCheckedIcon="false"
                 label="Lunas"
-                customClass="h-5 pr-[5px] mr-[5px] border-none"
+                customClass="h-5 mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusPembayaran == 'Belum Lunas'
                     ? 'bg-grey-100'

@@ -45,6 +45,7 @@ import ExpandIcon from "./ExpandIcon.vue";
 import UangIcon from "./UangIcon.vue";
 import WalletIcon from "./WalletIcon.vue";
 import CreditCardIcon from "./CreditCardIcon.vue";
+import DoctorIcon from "./DoctorIcon.vue";
 
 export default {
   install: (app: App<Element>) => {
@@ -87,6 +88,7 @@ export default {
     app.component("UserAccountIcon",UserAccountIcon)
     app.component("SideMenuTitle",SideMenuTitle)
     app.component("ExpandIcon",ExpandIcon)
+    app.component("DoctorIcon",DoctorIcon)
 
     // NOTE Inventory
     app.component("OpenBoxIcon", OpenBoxIcon);
