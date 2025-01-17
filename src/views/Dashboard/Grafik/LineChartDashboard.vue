@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import Chart from "primevue/chart";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CardGrafik from "./CardGrafik.vue";

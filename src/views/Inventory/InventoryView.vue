@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import GearFillIcon from "@/components/icons/GearFillIcon.vue";
 import Sidebar from "@/components/section/Sidebar.vue";
 import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
-import { link } from "fs";
 import { ref } from "vue";
 
 const sidebarBodyList = ref<SidebarBody[]>([
