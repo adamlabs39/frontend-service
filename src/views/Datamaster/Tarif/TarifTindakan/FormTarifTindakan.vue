@@ -57,7 +57,7 @@ interface ListKomponenTarif {
 interface Tindakan {
   tindakanUuid: string;
   listKomponenTarif: Array<ListKomponenTarif>;
-  isPersentase: boolean;
+  isPresentase: boolean;
   total: number;
 }
 
@@ -165,12 +165,12 @@ const schema = toTypedSchema(
               persentase: yup.number().required("Persentasi harus diisi"),
             })
           ),
-          isPersentase: yup.bool().default(false),
+          isPresentase: yup.bool().default(false),
           total: yup.number().required("Persentasi harus diisi"),
         })
       ),
       tarifLab: yup.array().when("isMcu", {
-        is: true, 
+        is: true,
         then: (schema) =>
           schema
             .of(
@@ -179,7 +179,7 @@ const schema = toTypedSchema(
               })
             )
             .strict(),
-        otherwise: (schema) => schema.notRequired(), 
+        otherwise: (schema) => schema.notRequired(),
       }),
       unitPelayananSelected: yup
         .array()
@@ -191,7 +191,7 @@ const schema = toTypedSchema(
         .of(yup.string().required("Penjamin harus dipilih"))
         .min(1, "Minimal satu Penjamin harus dipilih")
         .required("Penjamin harus dipilih"),
-      // isPersentase: yup.bool().default(false),
+      // isPresentase: yup.bool().default(false),
     })
     .noUnknown()
 );
@@ -220,7 +220,7 @@ const [penjamin] = defineField("penjamin");
 const [status] = defineField("status");
 const [unitPelayananSelected] = defineField("unitPelayananSelected");
 const [penjaminSelected] = defineField("penjaminSelected");
-// const [isPersentase] = defineField("isPersentase");
+// const [isPresentase] = defineField("isPresentase");
 const {
   remove: removeTindakan,
   push: pushTindakan,
@@ -352,7 +352,7 @@ const handlePushTindakan = () => {
     listKomponenTarif: [
       { tarifKomponenUuid: "", tarifPerKomponen: 0, persentase: 0 },
     ],
-    isPersentase: false,
+    isPresentase: false,
     total: 0,
   });
 };
@@ -426,8 +426,9 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (!values.isPersentase) {
-      values.grandTotal = grandTotalValues.value;
+    if (!values.isPresentase) {
+      values.grandTotal = grandTotalData.value;
+      console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
     }
     delete values.unitPelayananSelected;
     delete values.penjaminSelected;
@@ -562,7 +563,9 @@ const totalLabPrices = computed(() => {
   }, 0);
 });
 
+const grandTotalData = ref<number>(0);
 const grandTotalValues = computed(() => {
+  grandTotalData.value = 0;
   const totalDataTindakan = fieldsTindakan.value.reduce(
     (grandTotal, tindakanWrapper) => {
       return grandTotal + (tindakanWrapper.value.total || 0); // Pastikan total bernilai angka, jika tidak maka gunakan 0
@@ -571,6 +574,7 @@ const grandTotalValues = computed(() => {
   );
   const totalLabPricesValue = totalLabPrices?.value || 0; // Pastikan nilai default jika undefined atau null
   const total = totalDataTindakan + totalLabPricesValue;
+  grandTotalData.value = total;
   return formatCurrency(total);
 });
 
@@ -618,8 +622,8 @@ const totalTindakan = (tindakanIndex: number): string => {
     return formatCurrency(0);
   }
 
-  // Hitung total hanya jika isPersentase adalah false
-  if (!tindakan.value.isPersentase) {
+  // Hitung total hanya jika isPresentase adalah false
+  if (!tindakan.value.isPresentase) {
     const total = tindakan.value.listKomponenTarif.reduce((sum, komponen) => {
       return sum + (komponen.tarifPerKomponen || 0);
     }, 0); // Mulai dengan nilai total 0
@@ -627,7 +631,7 @@ const totalTindakan = (tindakanIndex: number): string => {
     return formatCurrency(total); // Format sebagai uang
   }
 
-  return formatCurrency(0); // Jika isPersentase true, kembalikan 0 dalam format uang
+  return formatCurrency(0); // Jika isPresentase true, kembalikan 0 dalam format uang
 };
 </script>
 
@@ -807,7 +811,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                             <CustomInputNumber
                               v-model="slotProps.data.persentase"
                               label=""
-                              :disabled="!fieldTindakan.value.isPersentase"
+                              :disabled="!fieldTindakan.value.isPresentase"
                               @update:model-value="
                                 handlePersentase(
                                   slotProps.data.persentase,
@@ -841,7 +845,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                               v-model="slotProps.data.tarifPerKomponen"
                               label=""
                               align-number="text-end"
-                              :disabled="fieldTindakan.value.isPersentase"
+                              :disabled="fieldTindakan.value.isPresentase"
                               :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`] ? true : false"
                               :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`]"
                               @update:model-value="handleTotalKomponen(idx)"
@@ -893,7 +897,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                     </div>
                     <div class="flex items-center justify-between gap-4">
                       <CustomSwitch
-                        v-model="fieldTindakan.value.isPersentase"
+                        v-model="fieldTindakan.value.isPresentase"
                         :show-label="false"
                         label=""
                         sideLabel="Persentase"
@@ -910,7 +914,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                           class="min-w-[300px] flex justify-end font-bold text-MD"
                         >
                           <CustomInputNumber
-                            v-if="fieldTindakan.value.isPersentase"
+                            v-if="fieldTindakan.value.isPresentase"
                             v-model="fieldTindakan.value.total"
                             label=""
                             align-number="text-end"

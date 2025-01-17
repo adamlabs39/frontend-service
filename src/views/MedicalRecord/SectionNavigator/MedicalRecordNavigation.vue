@@ -29,7 +29,7 @@ const assesmentList = ref([
   "Diagnosis Dokter",
   "Asuhan Keperawatan",
   "Catatan Perawat",
-  "Intruksi Medis",
+  "Instruksi Medis",
   "Pemeriksaan dan Tindakan",
 ]);
 const selectedAssesment = defineModel<string>("selectedAssesment", {

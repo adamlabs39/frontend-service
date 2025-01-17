@@ -38,6 +38,10 @@ const props = defineProps({
   rmAssesmentData: {
     type: Object as PropType<any>,
   },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
 const refs = {
@@ -185,24 +189,27 @@ const toggleShowAllDetailMR = (method = "show") => {
       <FormCatatanPerawat
         v-if="rmAssesmentData.catatanPerawat?.length"
         :ref="refs.catatanPerawat"
+        :sessionUuid="sessionUuid"
         method="detail"
         @editAsesmen="emit('editAsesmen', 'Catatan Perawat')"
       />
       <InstruksiMedis
         v-if="rmAssesmentData.instruksiMedis?.length"
         :ref="refs.instruksiMedis"
+        :sessionUuid="sessionUuid"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Instruksi Medis')"
       />
       <FormOrderObat
         v-if="rmAssesmentData.obatUuides?.length"
         :ref="refs.orderObat"
         method="detail"
       />
-      <!-- FIXME Belum ada -->
       <PemeriksaanTindakan
         v-if="rmAssesmentData.pemeriksaanTindakan?.length"
         :ref="refs.pemeriksaanTindakan"
         method="detail"
+        @editAsesmen="emit('editAsesmen', 'Pemeriksaan dan Tindakan')"
       />
       <FormImplementation
         v-if="rmType == 'fisio' && rmAssesmentData.implementation"

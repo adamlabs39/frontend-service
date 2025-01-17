@@ -67,6 +67,10 @@ const props = defineProps({
     type: Number,
     default: undefined,
   },
+  dataKey: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
+  },
 });
 // const value = ref(props.modelValue);
 const value2 = computed({
@@ -86,18 +90,20 @@ const removeSelect = (data: any) => {
   }
 };
 
-// const getLabel = (value: any) => {
-//   const findData: any = props.options.find(
-//     (data: any) => data[`${props.optionValue}`] == value
-//   );
-//   return findData[`${props.optionLabel}`];
-// };
-
 const getLabel = (value: any) => {
   const findData: any = props.options.find(
     (data: any) => data?.[`${props.optionValue}`] == value
   );
-  return findData ? findData[`${props.optionLabel}`] : "Unknown";
+  return findData ? getObjectValue(props.optionLabel, findData) : "Unknown";
+};
+
+const getObjectValue = (key: string, object: any) => {
+  const keys = key.split(".");
+  let value = object;
+  keys.forEach((keyData) => {
+    value = value[keyData];
+  });
+  return value;
 };
 </script>
 
@@ -124,7 +130,7 @@ const getLabel = (value: any) => {
     <InputGroup>
       <InputGroupAddon
         v-if="prependIcon"
-        class="rounded-l-lg"
+        class="px-3 py-2 rounded-l-lg"
         :class="{
           'text-danger-300 border-danger-300': invalid,
           'border-grey-200': !disabled && !invalid,
@@ -148,6 +154,7 @@ const getLabel = (value: any) => {
         :options="options"
         :optionLabel="optionLabel"
         :optionValue="optionValue"
+        :dataKey="dataKey"
         fluid
         :filter="showFilter"
         :disabled="disabled"
@@ -160,14 +167,15 @@ const getLabel = (value: any) => {
         pt:pcHeaderCheckbox:root:class="hidden"
         pt:pcFilter:root:class="text-black border-grey-200 text-SM"
         class="h-10 text-black rounded-lg text-SM"
-        :class="{
-          'border-l-0 rounded-l-none': prependIcon,
-          'border-danger-300 text-danger-300': invalid,
-          'border-grey-200 bg-grey-100 text-grey-300': disabled,
-          'border-grey-200': !disabled && !invalid,
-        }"
+        :class="[
+          prependIcon ? 'border-l-0 rounded-l-none' : '',
+          invalid ? 'border-danger-300 text-danger-300' : '',
+          disabled ? ' bg-grey-100 text-grey-300' : '',
+          !invalid && !disabled ? 'text-white' : '',
+        ]"
         :dt="{
           placeholderColor: invalid ? '#e9594c' : '#90969E',
+          color: invalid ? '#e9594c' : '#000000',
           borderColor: invalid ? '#e9594c' : '#D0D5DD',
           focusBorderColor: '#D0D5DD',
           hoverBorderColor: '#D0D5DD',
@@ -192,7 +200,13 @@ const getLabel = (value: any) => {
               'bg-adameds-300 text-white': !disabled && !invalid,
             }"
           >
-            {{ optionLabel && optionValue ? getLabel(value) : value }}
+            {{
+              optionLabel && optionValue
+                ? getLabel(value)
+                : optionLabel && !optionValue
+                ? getObjectValue(optionLabel, value)
+                : value
+            }}
             <template #removeicon>
               <PhX
                 class="cursor-pointer"

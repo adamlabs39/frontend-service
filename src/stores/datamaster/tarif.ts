@@ -11,8 +11,19 @@ export const useTarifStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10,name:String="", jenis:String="",unit:String="",penjamin:String="", payload = {}) {      
-      return apiDatamasterGet(`/datamaster/tarif?page=${page}&limit=${limit}&jenis=${jenis}&name=${name}&unit=${unit}&penjamin=${penjamin}`, payload);
+    async getApi(
+      page: number = 1,
+      limit: number = 10,
+      name: String = "",
+      jenis: String = "",
+      unit: String = "",
+      penjamin: String = "",
+      payload = {}
+    ) {
+      return apiDatamasterGet(
+        `/datamaster/tarif?page=${page}&limit=${limit}&jenis=${jenis}&name=${name}&unit=${unit}&penjamin=${penjamin}`,
+        payload
+      );
     },
     // async getApi(
     //   params: {
@@ -48,7 +59,7 @@ export const useTarifStore = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/tarif/${uuid}`, payload);
     },
-    async exportApi(payload = {}) {      
+    async exportApi(payload = {}) {
       return apiDatamasterGet(`/datamaster/tarif/export`, payload);
     },
   },

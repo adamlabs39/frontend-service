@@ -188,6 +188,7 @@ onMounted(() => {
   if (props.selectedPemeriksaanFisik) {
     goToEdit(props.selectedPemeriksaanFisik);
   }
+  setFormData()
 });
 
 // NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data

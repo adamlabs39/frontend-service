@@ -139,14 +139,18 @@ const props = defineProps({
       :sessionUuid="sessionUuid"
     />
     <InstruksiMedis
-      v-if="selectedAssesment == 'Intruksi Medis'"
+      v-if="selectedAssesment == 'Instruksi Medis'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <PemeriksaanTindakan
       v-if="selectedAssesment == 'Pemeriksaan dan Tindakan'"
       method="form"
       initialState="0"
+      :rmUuid="rmUuid"
+      :sessionUuid="sessionUuid"
     />
     <PemeriksaanFisik
       v-if="selectedAssesment == 'Pemeriksaan Fisik'"
