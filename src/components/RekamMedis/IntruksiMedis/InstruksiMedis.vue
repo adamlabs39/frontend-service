@@ -1,71 +1,49 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import dokterPerempuan from "@/assets/icons/Avatar/avatar_dokter_perempuan.svg";
-import dokterLaki from "@/assets/icons/Avatar/avatar_dokter_laki.svg";
+import GeneralIcon from "@/assets/icons/Avatar/general.svg";
 import HistoriInstruksiMedis from "@/components/RekamMedis/IntruksiMedis/HistoriInstruksiMedis.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { epochToDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const praktisiStore = usePraktisiStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
 // Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
-const emit = defineEmits(["edit", "submit"]);
+const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
-const messages = ref([
-  {
-    role: "Dokter Spesialis",
-    text: "Lorem ipsum dolor sit amet consectetur.",
-    date: "01 Januari 2024",
-    instruksiDokter: "Bambang",
-    time: "10:01",
-    isSender: false,
-    gender: "female",
-  },
-  {
-    role: "Dokter Spesialis",
-    text: "Lorem ipsum dolor sit amet consecteturrrrrrrrrrrrrrrrrrrrr.",
-    date: "01 Januari 2024",
-    instruksiDokter: "Bambang",
-
-    time: "10:05",
-    isSender: false,
-    gender: "male",
-  },
-  {
-    role: "Anda",
-    text: "Lorem ipsum dolor sit amet consectetur.",
-    date: "01 Januari 2024",
-    instruksiDokter: "Bambang",
-
-    time: "10:10",
-    isSender: true,
-    gender: "female",
-  },
-]);
-
-const selectedDoctor = ref();
-const optionsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
-
-// Function to determine avatar based on gender
-const getAvatar = (gender: string) => {
-  return gender === "female" ? dokterPerempuan : dokterLaki;
-};
+const messages = ref<any>([]);
 
 // Schema for validation
 const schema = yup.object({
   instruksi: yup.string().required("Instruksi Medis tidak boleh kosong"),
-  dokter: yup.string().required("Dokter harus dipilih"),
+  dokter: yup.mixed<any>().required("Dokter harus dipilih"),
 });
 
 // Use form with validation schema
@@ -76,36 +54,67 @@ const { errors, handleSubmit, resetForm, defineField } = useForm({
 const [instruksi] = defineField("instruksi");
 const [dokter] = defineField("dokter");
 
-const onSubmitInstruksiMedis = handleSubmit((values: any) => {
-  // Push new message to the messages array
-  messages.value.push({
-    role: "Anda",
-    text: values.instruksi,
-    instruksiDokter: values.dokter,
-    date: new Date().toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }),
-    time: new Date().toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    isSender: true,
-    gender: "female", // Assuming the sender is always female in this context
-  });
-  emit("submit", values);
-
-  resetForm();
-
-  console.log(instruksi);
-  console.log(messages);
+const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.insertInstruksi({
+      sessionUuid: props.sessionUuid,
+      message: values.instruksi,
+      name: values.dokter.detailPegawai.name,
+      userUuid: values.dokter.pegawaiUuid,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+      resetForm();
+      const responseInstruksi = await rekamMedisStore.getInstruksi(
+        props.sessionUuid
+      );
+      if (responseInstruksi && responseInstruksi.payload) {
+        messages.value = responseInstruksi.payload;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 });
 
-const toggleEdit = () => {
-  isEditing.value = true;
-  emit("edit");
+const listDpjp = ref<any[]>([]);
+const fetchPraktisi = async () => {
+  // FIXME Masih menggunakan api biasa dan filter by FE
+  const responseDpjp = await praktisiStore.getApi({
+    limit: 9999,
+    non_doctor: false,
+  });
+  if (responseDpjp && responseDpjp.payload) {
+    listDpjp.value = responseDpjp.payload.filter(
+      (praktisi: any) => praktisi.isDoctor && praktisi.status
+    );
+  }
 };
+
+const setFormData = async () => {
+  if (rekamMedisStore.openedRekamMedis.data.instruksiMedis) {
+    const responseInstruksi = await rekamMedisStore.getInstruksi(
+      props.sessionUuid
+    );
+    if (responseInstruksi && responseInstruksi.payload) {
+      messages.value = responseInstruksi.payload;
+    }
+  } else resetForm();
+};
+
+onBeforeMount(() => {
+  setFormData();
+  fetchPraktisi();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -152,23 +161,23 @@ defineExpose({
           class="flex items-start gap-2.5"
         >
           <img
-            :src="getAvatar(message.gender)"
+            :src="GeneralIcon"
             alt="Avatar"
             :class="message.isSender ? 'order-2' : ''"
           />
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.role }}
+                {{ message.name }}
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
                   <PhCalendarDots :size="12" weight="fill" />
-                  {{ message.date }}
+                  {{ epochToDate(message.time, "date") }}
                 </div>
                 <div class="flex items-center gap-[2px]">
                   <PhClock :size="12" weight="fill" />
-                  {{ message.time }}
+                  {{ epochToDate(message.time, "time") }}
                 </div>
               </div>
             </div>
@@ -180,7 +189,7 @@ defineExpose({
               "
               class="min-h-[45px] bg-adameds-50 flex items-center px-4 text-SM font-normal"
             >
-              {{ message.text }}
+              {{ message.message }}
             </div>
           </div>
         </div>
@@ -190,8 +199,8 @@ defineExpose({
             label="Dokter Pemberi Instruksi"
             v-model="dokter"
             place-holder="Pilih Dokter Pemberi Instruksi"
-            :options="optionsDokter"
-            option-label=""
+            :options="listDpjp"
+            option-label="detailPegawai.name"
             option-value=""
             :invalid="!!errors.dokter"
             :invalidMessage="errors.dokter"
@@ -218,7 +227,7 @@ defineExpose({
         </div>
 
         <div v-else class="flex items-end justify-end gap-3">
-          <CustomButton label="Edit" @click="toggleEdit" />
+          <CustomButton label="Edit" @click="emit('editAsesmen')" />
         </div>
       </div>
 
@@ -266,7 +275,7 @@ defineExpose({
                   class="flex items-start gap-2.5"
                 >
                   <img
-                    :src="getAvatar(message.gender)"
+                    :src="GeneralIcon"
                     alt="Avatar"
                     :class="message.isSender ? 'order-2' : ''"
                   />
@@ -306,8 +315,8 @@ defineExpose({
                     label="Dokter Pemberi Instruksi"
                     v-model="dokter"
                     place-holder="Pilih Dokter Pemberi Instruksi"
-                    :options="optionsDokter"
-                    option-label=""
+                    :options="listDpjp"
+                    option-label="detailPegawai.name"
                     option-value=""
                     :invalid="!!errors.dokter"
                     :invalidMessage="errors.dokter"
@@ -346,7 +355,11 @@ defineExpose({
               borderColor="border-2 border-grey-200"
             />
             <CustomButton v-if="isEditing" label="Simpan" @click="() => {}" />
-            <CustomButton v-if="!isEditing" label="Edit" @click="toggleEdit" />
+            <CustomButton
+              v-if="!isEditing"
+              label="Edit"
+              @click="emit('editAsesmen')"
+            />
           </div>
         </template>
       </CustomDialog>

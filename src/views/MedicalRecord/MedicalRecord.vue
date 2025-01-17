@@ -430,6 +430,7 @@ defineExpose({ showDialogRM });
               v-if="selectedTab == 'rekam-medis'"
               :rmType="rmType"
               :rmAssesmentData="rekamMedisStore.openedRekamMedis.data"
+              :sessionUuid="selectedSessionData.id"
               @editAsesmen="
                 (data, editedPemeriksaanFisik) => {
                   selectedTab = 'asesmen';

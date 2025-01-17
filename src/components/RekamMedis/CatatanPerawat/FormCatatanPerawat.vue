@@ -2,64 +2,44 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-import catatanPerawat01 from "@/assets/icons/Avatar/catatanPerawat01.svg";
-import catatanPerawatAnda from "@/assets/icons/Avatar/catatanPerawatAnda.svg";
+import GeneralIcon from "@/assets/icons/Avatar/general.svg";
 import { PhCalendarDots, PhClock } from "@phosphor-icons/vue";
-import { computed, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriCatatanPerawat from "@/components/RekamMedis/CatatanPerawat/HistoriCatatanPerawat.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { epochToDate } from "@/utils/Helpers";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "detail",
   },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "editAsesmen"]);
 
 const currentMethod = ref(props.method);
-const modeChat = ref("");
+const modeChat = ref("Add");
 
-interface Message {
-  role: string;
-  roleYangDibalas?: string;
-  text: string;
-  textLama?: string;
-  date: string;
-  time: string;
-  isSender: boolean;
-  avatar: string;
-  actions: { text: string; icon: string }[];
-}
-
-const messages = ref<Message[]>([
-  {
-    role: "Perawat 01",
-    text: "Lorem ipsum dolor sit amet consectetur.",
-    date: "01 Januari 2024",
-    time: "10:01",
-    isSender: false,
-    avatar: catatanPerawat01,
-    actions: [{ text: "Balas", icon: "PhArrowUUpLeft" }],
-  },
-  {
-    role: "Anda",
-    text: "Lorem ipsum dolor sit amet consectetur.",
-    date: "01 Januari 2024",
-    time: "10:10",
-    isSender: true,
-    avatar: catatanPerawatAnda,
-    actions: [
-      { text: "Edit", icon: "PhPencil" },
-      { text: "Balas", icon: "PhArrowUUpLeft" },
-    ],
-  },
-]);
+const messages = ref<any[]>([]);
 
 const schemaCatatanPerawat = computed(() =>
   toTypedSchema(
@@ -106,70 +86,84 @@ const onReplyMessage = (message: any) => {
   catatanPerawat.value = "";
 };
 
-const onSubmitCatatanPerawat = handleSubmitCatatanPerawat((values: any) => {
-  if (modeChat.value === "Edit" && editMessageIndex.value !== null) {
-    messages.value[editMessageIndex.value].text = values.catatanPerawat;
-    resetForm();
-  } else if (modeChat.value === "Add") {
-    const newMessage = {
-      role: "Anda",
-      text: values.catatanPerawat,
-      date: new Date().toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }),
-      time: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isSender: true,
-      avatar: catatanPerawatAnda,
-      actions: [
-        { text: "Edit", icon: "PhPencil" },
-        { text: "Balas", icon: "PhArrowUUpLeft" },
-      ],
-    };
-    messages.value.push(newMessage);
-    emit("edit", newMessage);
-    resetForm();
-  } else if (modeChat.value === "Balas") {
-    const newReplyMessage = {
-      role: "Anda",
-      roleYangDibalas: replyMessageRole.value || "",
-      text: values.catatanPerawat,
-      textLama: textLama.value,
-      date: new Date().toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }),
-      time: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isSender: true,
-      avatar: catatanPerawatAnda,
-      actions: [
-        { text: "Edit", icon: "PhPencil" },
-        { text: "Balas", icon: "PhArrowUUpLeft" },
-      ],
-    };
-    messages.value.push(newReplyMessage);
-    emit("edit", newReplyMessage);
-    resetForm();
+const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
+  async (values: any) => {
+    if (modeChat.value === "Edit" && editMessageIndex.value !== null) {
+      messages.value[editMessageIndex.value].text = values.catatanPerawat;
+      resetForm();
+    } else if (modeChat.value === "Add") {
+      try {
+        storeUtils.setLoading(true);
+        const response = await rekamMedisStore.insertCatatan({
+          sessionUuid: props.sessionUuid,
+          message: values.catatanPerawat,
+        });
+        if (response && response.payload) {
+          rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+          resetForm();
+          const responseCatatan = await rekamMedisStore.getCatatan(
+            props.sessionUuid
+          );
+          if (responseCatatan && responseCatatan.payload) {
+            messages.value = responseCatatan.payload;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to post data", error);
+      } finally {
+        storeUtils.setLoading(false);
+      }
+    } else if (modeChat.value === "Balas") {
+      const newReplyMessage = {
+        role: "Anda",
+        roleYangDibalas: replyMessageRole.value || "",
+        text: values.catatanPerawat,
+        textLama: textLama.value,
+        date: new Date().toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }),
+        time: new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        isSender: true,
+        avatar: GeneralIcon,
+        actions: [
+          { text: "Edit", icon: "PhPencil" },
+          { text: "Balas", icon: "PhArrowUUpLeft" },
+        ],
+      };
+      messages.value.push(newReplyMessage);
+      emit("edit", newReplyMessage);
+      resetForm();
+    }
+    modeChat.value = "";
+    replyMessageRole.value = null;
+    editMessageRole.value = null;
+    editMessageIndex.value = null;
   }
-  currentMethod.value = "detail";
-  modeChat.value = "";
-  replyMessageRole.value = null;
-  editMessageRole.value = null;
-  editMessageIndex.value = null;
+);
+
+const setFormData = async () => {
+  if (rekamMedisStore.openedRekamMedis.data.catatanPerawat) {
+    const responseCatatan = await rekamMedisStore.getCatatan(props.sessionUuid);
+    if (responseCatatan && responseCatatan.payload) {
+      messages.value = responseCatatan.payload;
+    }
+  } else resetForm();
+};
+
+onBeforeMount(() => {
+  setFormData();
 });
 
-const onEditClick = () => {
-  currentMethod.value = "form";
-  modeChat.value = "Add";
-};
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
+});
 
 const compareDialog = ref(false);
 const showDialogCompare = () => {
@@ -215,20 +209,20 @@ defineExpose({
           class="flex items-start gap-2.5"
           :class="{ 'flex-row-reverse': message.isSender }"
         >
-          <img :src="message.avatar" alt="Avatar" />
+          <img :src="GeneralIcon" alt="Avatar" />
           <div class="space-y-2.5">
             <div class="flex items-center w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.role }}
+                {{ message.name }}
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
                   <PhCalendarDots :size="12" weight="fill" />
-                  {{ message.date }}
+                  {{ epochToDate(message.time, "date") }}
                 </div>
                 <div class="flex items-center gap-[2px]">
                   <PhClock :size="12" weight="fill" />
-                  {{ message.time }}
+                  {{ epochToDate(message.time, "time") }}
                 </div>
               </div>
             </div>
@@ -243,8 +237,7 @@ defineExpose({
                   : 'items-center',
               ]"
             >
-              {{ message.text }}
-
+              {{ message.message }}
               <div
                 v-if="message.textLama"
                 class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
@@ -359,7 +352,9 @@ defineExpose({
                       <div class="font-semibold text-adameds-300 text-SM">
                         {{ message.role }}
                       </div>
-                      <div class="flex gap-2.5 font-medium text-SM text-grey-400">
+                      <div
+                        class="flex gap-2.5 font-medium text-SM text-grey-400"
+                      >
                         <div class="flex items-center gap-[2px]">
                           <PhCalendarDots :size="12" weight="fill" />
                           {{ message.date }}
@@ -382,7 +377,7 @@ defineExpose({
                       ]"
                     >
                       {{ message.text }}
-  
+
                       <div
                         v-if="message.textLama"
                         class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
@@ -397,7 +392,9 @@ defineExpose({
                       </div>
                     </div>
                     <div
-                      :class="message.isSender ? 'justify-start' : 'justify-end'"
+                      :class="
+                        message.isSender ? 'justify-start' : 'justify-end'
+                      "
                       class="flex gap-4"
                     >
                       <button
@@ -418,7 +415,7 @@ defineExpose({
                     </div>
                   </div>
                 </div>
-  
+
                 <hr
                   class="border-grey-200 my-2.5"
                   v-if="currentMethod == 'form'"
@@ -473,7 +470,7 @@ defineExpose({
             <CustomButton
               v-if="currentMethod == 'detail'"
               label="Edit"
-              @click="onEditClick"
+              @click="emit('editAsesmen')"
             />
           </div>
         </template>
@@ -481,7 +478,7 @@ defineExpose({
     </template>
     <template #footer v-if="currentMethod == 'detail'">
       <div class="flex items-end justify-end gap-3">
-        <CustomButton label="Edit" @click="onEditClick" />
+        <CustomButton label="Edit" @click="emit('editAsesmen')" />
       </div>
     </template>
   </CustomAccordion>

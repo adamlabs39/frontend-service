@@ -14,14 +14,18 @@ export const useRekamMedisStore = defineStore({
   getters: {},
   actions: {
     setOpenedRekamMedisData(rmData: any) {
-      this.openedRekamMedis = rmData
+      this.openedRekamMedis = rmData;
     },
     setAsesmentSummaryRekamMedisData(asesmenSummary: any) {
-      this.openedRekamMedis.data = asesmenSummary.data
-      this.openedRekamMedis.summary = asesmenSummary.summary
+      this.openedRekamMedis.data = asesmenSummary.data;
+      this.openedRekamMedis.summary = asesmenSummary.summary;
     },
     setAsesmentRekamMedisData(asesmen: any) {
-      this.openedRekamMedis.data = asesmen.data
+      if (asesmen.data) {
+        this.openedRekamMedis.data = asesmen.data;
+      } else {
+        this.openedRekamMedis.data = asesmen;
+      }
     },
 
     async createRekamMedis(payload = {}) {
@@ -52,7 +56,7 @@ export const useRekamMedisStore = defineStore({
       return apiRekamMedisPost("/rekam-medis/session", payload);
     },
     async deleteSession(payload = {}) {
-      return apiRekamMedisDelete("/rekam-medis/session", payload)
+      return apiRekamMedisDelete("/rekam-medis/session", payload);
     },
 
     async insertAssesment(payload = {}) {
@@ -62,6 +66,12 @@ export const useRekamMedisStore = defineStore({
       return apiRekamMedisPost("/rekam-medis/tindakan", payload);
     },
 
+    async getInstruksi(sessionUuid: string, payload = {}) {
+      return apiRekamMedisGet(
+        `/rekam-medis/chat/instruksi?session_uuid=${sessionUuid}`,
+        payload
+      );
+    },
     async insertInstruksi(payload = {}) {
       return apiRekamMedisPost("/rekam-medis/chat/instruksi", payload);
     },
@@ -69,6 +79,12 @@ export const useRekamMedisStore = defineStore({
       return apiRekamMedisPut("/rekam-medis/chat/instruksi", payload);
     },
 
+    async getCatatan(sessionUuid: string, payload = {}) {
+      return apiRekamMedisGet(
+        `/rekam-medis/chat/catatan?session_uuid=${sessionUuid}`,
+        payload
+      );
+    },
     async insertCatatan(payload = {}) {
       return apiRekamMedisPost("/rekam-medis/chat/catatan", payload);
     },
