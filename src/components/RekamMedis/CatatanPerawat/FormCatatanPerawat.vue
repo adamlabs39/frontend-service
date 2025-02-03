@@ -207,13 +207,13 @@ defineExpose({
           v-for="(message, index) in messages"
           :key="index"
           class="flex items-start gap-2.5"
-          :class="{ 'flex-row-reverse': message.isSender }"
+          :class="{ 'flex-row-reverse': message.isMe }"
         >
           <img :src="GeneralIcon" alt="Avatar" />
           <div class="space-y-2.5">
             <div class="flex items-center w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.name }}
+                {{ message.isMe ? "Anda" : message.name }}
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
@@ -228,7 +228,7 @@ defineExpose({
             </div>
             <div
               :class="[
-                message.isSender
+                message.isMe
                   ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                   : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
                 'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
@@ -252,7 +252,7 @@ defineExpose({
               </div>
             </div>
             <div
-              :class="message.isSender ? 'justify-start' : 'justify-end'"
+              :class="message.isMe ? 'justify-start' : 'justify-end'"
               class="flex gap-4"
             >
               <button
@@ -344,7 +344,7 @@ defineExpose({
                   v-for="(message, index) in messages"
                   :key="index"
                   class="flex items-start gap-2.5"
-                  :class="{ 'flex-row-reverse': message.isSender }"
+                  :class="{ 'flex-row-reverse': message.isMe }"
                 >
                   <img :src="message.avatar" alt="Avatar" />
                   <div class="space-y-2.5">
@@ -367,7 +367,7 @@ defineExpose({
                     </div>
                     <div
                       :class="[
-                        message.isSender
+                        message.isMe
                           ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                           : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
                         'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
@@ -392,9 +392,7 @@ defineExpose({
                       </div>
                     </div>
                     <div
-                      :class="
-                        message.isSender ? 'justify-start' : 'justify-end'
-                      "
+                      :class="message.isMe ? 'justify-start' : 'justify-end'"
                       class="flex gap-4"
                     >
                       <button

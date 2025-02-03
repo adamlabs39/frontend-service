@@ -60,8 +60,7 @@ const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
     const response = await rekamMedisStore.insertInstruksi({
       sessionUuid: props.sessionUuid,
       message: values.instruksi,
-      name: values.dokter.detailPegawai.name,
-      userUuid: values.dokter.pegawaiUuid,
+      dokterName: values.dokter.detailPegawai.name,
     });
     if (response && response.payload) {
       rekamMedisStore.setAsesmentRekamMedisData(response.payload);
@@ -157,18 +156,18 @@ defineExpose({
         <div
           v-for="(message, index) in messages"
           :key="index"
-          :class="{ 'justify-end': message.isSender }"
+          :class="{ 'justify-end': message.isMe }"
           class="flex items-start gap-2.5"
         >
           <img
             :src="GeneralIcon"
             alt="Avatar"
-            :class="message.isSender ? 'order-2' : ''"
+            :class="message.isMe ? 'order-2' : ''"
           />
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.name }}
+                {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokterName }})
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
@@ -183,7 +182,7 @@ defineExpose({
             </div>
             <div
               :class="
-                message.isSender
+                message.isMe
                   ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                   : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'
               "
@@ -271,13 +270,13 @@ defineExpose({
                 <div
                   v-for="(message, index) in messages"
                   :key="index"
-                  :class="{ 'justify-end': message.isSender }"
+                  :class="{ 'justify-end': message.isMe }"
                   class="flex items-start gap-2.5"
                 >
                   <img
                     :src="GeneralIcon"
                     alt="Avatar"
-                    :class="message.isSender ? 'order-2' : ''"
+                    :class="message.isMe ? 'order-2' : ''"
                   />
                   <div class="flex flex-col gap-2.5">
                     <div class="flex w-full gap-5">
@@ -299,7 +298,7 @@ defineExpose({
                     </div>
                     <div
                       :class="
-                        message.isSender
+                        message.isMe
                           ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                           : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'
                       "
