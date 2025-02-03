@@ -710,7 +710,6 @@ defineExpose({
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressVillage"
             label="Kelurahan / Desa"
@@ -718,7 +717,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kelurahanPayload]"
+            :options="kelurahanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.village']"
             :invalidMessage="errors['address.village']"

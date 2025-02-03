@@ -11,6 +11,12 @@ export const useDoctorPrescriptionStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
+    async createPrescription(payload = {}) {
+      return apiFarmasiPost("/farmasi/prescriptions/first-order", payload)
+    },
+    async getSomeOrderPrescription(payload = {}) {
+      return apiFarmasiPost("/farmasi/prescriptions/some-order", payload)
+    },
     async getApi(payload = {}) {
       return apiFarmasiPost("/farmasi/prescriptions/all", payload);
     },

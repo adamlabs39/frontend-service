@@ -5,7 +5,7 @@ import DataTable from "primevue/datatable";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import Card from "primevue/card";
@@ -24,11 +24,34 @@ import DialogDetailObat from "./DialogDetailObat.vue";
 import DialogOrderObat from "@/components/RekamMedis/OrderObat/DialogOrderObat.vue";
 import NoData from "@/components/section/NoData.vue";
 import DialogCardObat from "@/components/RekamMedis/OrderObat/DialogCardObat.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const doctorPrescriptionStore = useDoctorPrescriptionStore();
 
 const props = defineProps({
   method: {
     type: String,
     default: "form",
+  },
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+  patientData: {
+    type: Object,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -37,7 +60,7 @@ const dialogTambahOrder = ref({
   title: "",
 });
 
-const results = ref<any[]>([]);
+const listOrder = ref<any[]>([]);
 
 function handleTambahOrder() {
   dialogTambahOrder.value.isVisible = true;
@@ -46,38 +69,36 @@ function handleTambahOrder() {
 
 // terima payload dari file DialogOrderObat
 const handleSubmitOrder = (payload: any) => {
-   const penulisResepList = [
+  const penulisResepList = [
     "dr Adameds, Sp.A",
     "dr Budi, Sp.B",
     "dr Clara, Sp.KK",
     "dr Dani, Sp.PD",
-    "dr Erika, Sp.M"
+    "dr Erika, Sp.M",
   ];
-  const statusList = [
-    "Resep Masuk",
-    "Obat Disiapkan",
-    "Obat Diserahkan"
-  ];
+  const statusList = ["Resep Masuk", "Obat Disiapkan", "Obat Diserahkan"];
 
   // Pilih penulis resep secara acak
-  const randomPenulisResep = penulisResepList[Math.floor(Math.random() * penulisResepList.length)];
+  const randomPenulisResep =
+    penulisResepList[Math.floor(Math.random() * penulisResepList.length)];
   const tglOrder = new Date(Date.now()).toLocaleDateString("id-ID");
   const orderCode = `RSP${Math.floor(1000 + Math.random() * 9000)}`;
-  const randomStatus = statusList[Math.floor(Math.random() * statusList.length)];
+  const randomStatus =
+    statusList[Math.floor(Math.random() * statusList.length)];
 
-  results.value.push({
+  listOrder.value.push({
     ...payload,
     penulisResep: randomPenulisResep,
     tglOrder,
     orderCode,
-    statusOrder: randomStatus
+    statusOrder: randomStatus,
   });
-  console.log(results.value);
+  console.log(listOrder.value);
 };
 
 const resetOrderObat = () => {
-  results.value = [];
-}
+  listOrder.value = [];
+};
 
 // Variabel inisialisasi dialog
 const dialogCardObat = ref({
@@ -86,81 +107,46 @@ const dialogCardObat = ref({
   obatDetail: null as any | null,
 });
 
-// aksi 
-const selectResult = (result:any) => {
+// aksi
+const selectResult = (result: any) => {
   dialogCardObat.value = {
     isVisible: true,
     title: "Detail Obat",
-    obatDetail: result
-  }
-}
+    obatDetail: result,
+  };
+};
 
 // Ketika METHOD adalah detail
-const detailObats = ref<any[]>([])
-onMounted(() => {
-  if (props.method === "detail") {
-    detailObats.value = [
-      {
-        aturanPakai: "2x Sehari",
-        caraPakai: "Setelah Makan",
-        namaObat: "Paracetamol",
-        rutePemberian: "Rektal",
-        satuanDosis: "Sendok Makan",
-        catatan: "",
-        jumlahKonsumsi: 1,
-        jumlahTotal: 1,
-        obatKronis: true,
-        periode: "Minggu",
-      },
-      {
-        aturanPakai: "3x Sehari",
-        caraPakai: "Setelah Makan",
-        namaObat: "Paracetamol",
-        rutePemberian: "Rektal",
-        satuanDosis: "Sendok Makan",
-        catatan: "",
-        jumlahKonsumsi: 4,
-        jumlahTotal: 1,
-        obatKronis: false,
-        periode: "Hari",
-      },
-      {
-        aturanPakai: "2x Sehari",
-        caraPakai: "Setelah Makan",
-        namaObat: "Paracetamol",
-        rutePemberian: "Oral",
-        satuanDosis: "Sendok Makan",
-        catatan: "",
-        jumlahKonsumsi: 1,
-        jumlahTotal: 1,
-        obatKronis: false,
-        periode: "Minggu",
-      },
-      {
-        namaRacikan: "PuyerIndo",
-        aturanPakai: "2x Sehari",
-        caraPakai: "Setelah Makan",
-        rutePemberian: "Oral",
-        satuanDosis: "Sendok Makan",
-        catatan: "",
-        datas: [{ namaObat: "Amoxan", jumlahTotal: 3 }],
-        jumlahKonsumsi: 1,
-        obatKronis: false,
-        periode: "Minggu",
-        sirup: true,
-        racikan: true,
-        satuanEmbalase: "Tablet",
-        jumlahEmbalase: "1",
-      },
-    ];
-  }
-});
+const detailObats = ref<any[]>([]);
+onMounted(() => {});
 
 // inisialisasi dialog ketika methodnya detail
 const dialogDetailData = ref({
   isVisible: false,
   title: "",
   detailObatData: null as any | null,
+});
+
+const setFormData = async () => {
+  if (rekamMedisStore.openedRekamMedis.data.obatUuides.length) {
+    const responseOrderObat =
+      await doctorPrescriptionStore.getSomeOrderPrescription({
+        uuides: rekamMedisStore.openedRekamMedis.data.obatUuides,
+      });
+    if (responseOrderObat && responseOrderObat.payload) {
+      listOrder.value = responseOrderObat.payload;
+    }
+  } else resetOrderObat();
+};
+
+onBeforeMount(() => {
+  setFormData();
+});
+
+// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
+watch(storedRMData, (newRM) => {
+  setFormData();
 });
 
 // fungsi supaya Dialog Detail bisa terbuka
@@ -199,12 +185,12 @@ defineExpose({
   >
     <template #header>Order Obat</template>
     <template #content>
-      
-      <div class="grid grid-cols-3 gap-3 py-6" v-if="results.length > 0">
+      <div class="grid grid-cols-3 gap-3 py-6" v-if="listOrder.length > 0">
         <div
           class="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm shadow-black/10 cursor-pointer"
-          v-for="(result, index) in results"
-          :key="index" @click="selectResult(result)"  
+          v-for="(result, index) in listOrder"
+          :key="index"
+          @click="selectResult(result)"
         >
           <!-- Header -->
           <div
@@ -222,7 +208,9 @@ defineExpose({
               <div class="font-semibold underline text-XS">
                 Lokasi Tujuan Order
               </div>
-              <div class="font-normal text-SM">{{ result.selectedLokasiTujuanOrder }} </div>
+              <div class="font-normal text-SM">
+                {{ result.selectedLokasiTujuanOrder }}
+              </div>
             </div>
 
             <!-- Right side -->
@@ -230,7 +218,9 @@ defineExpose({
               <div class="font-semibold underline text-XS">Tgl. Order</div>
               <div class="font-normal text-SM">{{ result.tglOrder }}</div>
               <div class="font-semibold underline text-XS">Jumlah Order</div>
-              <div class="font-normal text-SM">{{ result.orderObats.length }} Obat</div>
+              <div class="font-normal text-SM">
+                {{ result.orderObats.length }} Obat
+              </div>
             </div>
           </div>
 
@@ -294,28 +284,19 @@ defineExpose({
       <DialogOrderObat
         v-model:is-dialog-visible="dialogTambahOrder.isVisible"
         :title="dialogTambahOrder.title"
+        :rmType="rmType"
+        :rmUuid="props.rmUuid"
+        :patientData="patientData"
+        :sessionUuid="props.sessionUuid"
         @submit-order="handleSubmitOrder"
       />
       <DialogCardObat
-       v-model:is-dialog-visible="dialogCardObat.isVisible"
-       :title="dialogCardObat.title"
-       :obat-detail="dialogCardObat.obatDetail"
+        v-model:is-dialog-visible="dialogCardObat.isVisible"
+        :title="dialogCardObat.title"
+        :obat-detail="dialogCardObat.obatDetail"
       />
     </template>
-    <template #footer>
-      <div class="flex items-end justify-end gap-3">
-        <CustomButton
-          label="Reset"
-          textColor="text-[#9DA4B1]"
-          backgroundColor="bg-transparent"
-          borderColor="border-2 border-[#9DA4B1]"
-          @click="resetOrderObat"
-        />
-        <CustomButton label="Simpan" />
-      </div>
-    </template>
   </CustomAccordion>
-
 
   <!-- Ketika Method adalah Detail -->
   <CustomAccordion v-else headerClass="bg-adameds-50">

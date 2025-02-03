@@ -11,6 +11,16 @@ import DialogTambahObat from "./DialogTambahObat.vue";
 import DialogEdit from "./DialogEdit.vue";
 import DialogObatRacikan from "./DialogObatRacikan.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const doctorPrescriptionStore = useDoctorPrescriptionStore();
+const stockLocationStore = useStockLocationStore();
 
 const props = defineProps({
   isDialogVisible: {
@@ -24,6 +34,21 @@ const props = defineProps({
   method: {
     type: String,
     default: "add",
+  },
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+  patientData: {
+    type: Object,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  sessionUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -69,69 +94,33 @@ const { errors, handleSubmit, resetForm, defineField } = useForm({
 const [selectedLokasiTujuanOrder] = defineField("selectedLokasiTujuanOrder");
 const [obatPulang] = defineField("obatPulang");
 
-const listLokasiTujuanOrder = ref([
-  { id: "1", label: "Farmasi Rawat Jalan" },
-  { id: "2", label: "Farmasi Rawat Inap" },
-]);
-
+const listLokasiTujuanOrder = ref<any[]>([]);
 const orderObats = ref<any[]>([]);
 
-onMounted(() => {
-  orderObats.value = [
-    {
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Rektal",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 1,
-      jumlahTotal: 1,
-      obatKronis: true,
-      periode: "Minggu",
-    },
-    {
-      aturanPakai: "3x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Rektal",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 4,
-      jumlahTotal: 1,
-      obatKronis: false,
-      periode: "Hari",
-    },
-    {
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      namaObat: "Paracetamol",
-      rutePemberian: "Oral",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      jumlahKonsumsi: 1,
-      jumlahTotal: 1,
-      obatKronis: false,
-      periode: "Minggu",
-    },
-    {
-      namaRacikan: "PuyerIndo",
-      aturanPakai: "2x Sehari",
-      caraPakai: "Setelah Makan",
-      rutePemberian: "Oral",
-      satuanDosis: "Sendok Makan",
-      catatan: "",
-      datas: [{ namaObat: "Amoxan", jumlahTotal: 3 }],
-      jumlahKonsumsi: 1,
-      obatKronis: false,
-      periode: "Minggu",
-      sirup: true,
-      racikan: true,
-      satuanEmbalase: "Tablet",
-      jumlahEmbalase: "1",
-    },
-  ];
+onMounted(async () => {
+  await fetchLokasiTujuanStok();
 });
+
+const fetchLokasiTujuanStok = async () => {
+  const response = await stockLocationStore.getApi(
+    1,
+    9999,
+    "",
+    "",
+    props.rmType == "rawat-inap"
+      ? "0"
+      : props.rmType == "rawat-jalan"
+      ? "1"
+      : props.rmType == "igd"
+      ? "2"
+      : "3"
+  );
+  if (response && response.payload) {
+    listLokasiTujuanOrder.value = response.payload.filter(
+      (lokasiTujuan: any) => lokasiTujuan.status
+    );
+  }
+};
 
 const dialogDetailData = ref({
   isVisible: false,
@@ -190,9 +179,8 @@ function handleEdit(index: number) {
   // console.log(dialogRacikanData.value);
 }
 
-function handleAddObat(newObat: any) {
+const handleAddObat = (newObat: any) => {
   orderObats.value.push(...newObat);
-  console.log(orderObats.value);
 }
 
 // Menerima data obat yang diperbarui dari DialogEdit & DialogRacikan
@@ -219,17 +207,48 @@ const deleteObat = (index: number) => {
   console.log(orderObats.value.length);
 };
 
-const onSubmit = handleSubmit((values) => {
-  const payload = {
-    ...values,
-    orderObats: JSON.parse(JSON.stringify(orderObats.value)), // Tambahkan data dari tabel
-  };
+const onSubmit = handleSubmit(async (values: any) => {
+  try {
+    storeUtils.setLoading(true);
+    console.log("orderObats", orderObats.value);
 
-  emit("submitOrder", payload);
-  resetFormFields();
-  emit("update:isDialogVisible", false);
+    // const response = await doctorPrescriptionStore.createPrescription({
+    //   noReg: props.patientData?.noReg,
+    //   noRm: props.patientData?.noRm,
+    //   isTakeaway: obatPulang.value,
+    //   patientUuid: props.patientData?.patient.uuid,
+    //   lokasiStokUuid: selectedLokasiTujuanOrder.value,
+    //   jenisPelayanan:
+    //     props.rmType == "rawat-jalan"
+    //       ? "rj"
+    //       : props.rmType == "rawat-inap"
+    //       ? "ri"
+    //       : props.rmType == "igd"
+    //       ? "igd"
+    //       : "fisio",
+    //   sessionUuid: props.sessionUuid,
+    //   rekamMedisUuid: props.rmUuid,
+    //   obat: orderObats.value,
+    // });
+    // if (response && response.payload) {
+    //   rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+    //   resetForm();
+    // }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+  // const payload = {
+  //   ...values,
+  //   orderObats: JSON.parse(JSON.stringify(orderObats.value)), // Tambahkan data dari tabel
+  // };
 
-  console.log("Submitted with", payload);
+  // emit("submitOrder", payload);
+  // resetFormFields();
+  // emit("update:isDialogVisible", false);
+
+  // console.log("Submitted with", payload);
 });
 
 const resetFormFields = () => {
@@ -252,8 +271,8 @@ const resetFormFields = () => {
             prepend-icon="PhMagnifyingGlass"
             v-model="selectedLokasiTujuanOrder"
             :options="listLokasiTujuanOrder"
-            optionValue="label"
-            optionLabel="label"
+            optionLabel="name"
+            optionValue="uuid"
             label="Lokasi Tujuan Order"
             place-holder="Pilih Lokasi Tujuan Order"
             class="grow"
@@ -303,27 +322,26 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Nama Obat</div>
             </template>
             <template #body="slotProps">
-              <div v-if="slotProps.data.racikan">
-                {{ slotProps.data.namaRacikan }}
-                <span v-if="slotProps.data.sirup">- Sirup</span>
+              <div v-if="slotProps.data.isCompound">
+                {{ slotProps.data.namaRacikan }} {{ slotProps.data.satuanEmbalase ? `- ${slotProps.data.satuanEmbalase.name}` : '' }}
               </div>
               <div v-else>
-                {{ slotProps.data.namaObat }}
+                {{ slotProps.data.itemMedis?.name }}
               </div>
               <div class="flex gap-1.5 justify-left">
-                <CustomChip
-                  v-if="slotProps.data.racikan"
+                <!-- <CustomChip
+                  v-if="slotProps.data.isCompound"
                   :showCheckedIcon="false"
                   label="RACIKAN"
                   bgColor="bg-none"
                   textColor="text-grass-300"
                   customClass="h-5 pr-[6px] border-grass-200 border-1"
-                />
+                /> -->
                 <CustomChip
-                  v-if="slotProps.data.obatKronis"
+                  v-if="slotProps.data.isChronic"
                   :showCheckedIcon="false"
                   label="OBAT KRONIS"
-                  bgColor="bg-none"
+                  bgColor="bg-sunFlower-50"
                   textColor="text-sunFlower-300"
                   customClass="h-5 border-sunFlower-300"
                 />
@@ -335,8 +353,8 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Total Obat</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.jumlahKonsumsi }}
-              {{ slotProps.data.satuanDosis }}
+              {{ slotProps.data.medicationDoseQty }}
+              {{ slotProps.data.medicationDoseSatuan?.name }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -344,8 +362,8 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Dosis</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.jumlahKonsumsi }}
-              {{ slotProps.data.satuanDosis }}
+              {{ slotProps.data.medicationDoseQty }}
+              {{ slotProps.data.medicationDoseSatuan?.name }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -353,7 +371,7 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Aturan Pakai</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.aturanPakai }}
+              {{ slotProps.data.aturanPakai?.name }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -361,7 +379,7 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Cara Pakai</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.caraPakai }}
+              {{ slotProps.data.caraPakai?.caraPakai }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -369,7 +387,7 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Rute Pemberian</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.rutePemberian }}
+              {{ slotProps.data.route?.rutePemberian }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto">
@@ -399,11 +417,12 @@ const resetFormFields = () => {
           </Column>
         </DataTable>
       </div>
-    
+
       <!-- DialogTambahObat -->
       <DialogTambahObat
         v-model:isDialogVisible="dialogTambahData.isVisible"
         :title="dialogTambahData.title"
+        :patientData="patientData"
         @add-obat="handleAddObat"
       />
 

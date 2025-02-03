@@ -11,8 +11,8 @@ export const useStockLocationStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10, name: String = "", jenisLokasi: String = "", payload = {}) {
-      return apiFarmasiGet(`/farmasi/datamaster/lokasi-stok?page=${page}&limit=${limit}&name=${name}&jenis_lokasi=${jenisLokasi}`, payload);
+    async getApi(page: number = 1, limit: number = 10, name: String = "", jenisLokasi: String = "", kodeTujuan = "", payload = {}) {
+      return apiFarmasiGet(`/farmasi/datamaster/lokasi-stok?page=${page}&limit=${limit}&name=${name}&jenis_lokasi=${jenisLokasi}&kode_tujuan=${kodeTujuan}`, payload);
     },
     async postApi(payload = {}) {
       return apiFarmasiPost("/farmasi/datamaster/lokasi-stok", payload);

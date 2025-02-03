@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -12,9 +12,23 @@ import { useFieldArray, useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import RiwayatSebelumnya from "./RiwayatSebelumnya.vue";
+import { utilsStore } from "@/stores/utils";
+import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
+import { useHowToUseStore } from "@/stores/datamasterFarmasi/HowToUse";
+import { useUnitStore } from "@/stores/datamasterFarmasi/Unit";
+import { useRulesOfUseStore } from "@/stores/datamasterFarmasi/RulesOfUse";
+import { useDosageFormStore } from "@/stores/datamasterFarmasi/DosageForm";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const medicalItemStore = useMedicalItemStore();
+const rulesOfUseStore = useRulesOfUseStore();
+const unitStore = useUnitStore();
+const howToUseStore = useHowToUseStore();
+const dosageFormStore = useDosageFormStore();
 
 type ObatRacikan = {
-  namaObat: string;
+  itemMedis: any;
   jumlahTotal: number;
 };
 const props = defineProps({
@@ -32,27 +46,32 @@ const props = defineProps({
   },
 });
 
+const sirup = ref(false);
 const schema = toTypedSchema(
   yup.object({
     namaRacikan: yup.string().required("Nama Racikan Harus diisi"),
-    sirup: yup.bool(),
-    jumlahEmbalase: yup.string().required("Jumlah Embalase Harus diisi"),
-    satuanEmbalase: yup.string().required("Satuan Embalase Harus diisi"),
-    periode: yup.string().required("Periode Harus diisi"),
-    jumlahKonsumsi: yup.number().required("Jumlah Konsumsi Harus diisi"),
-    satuanDosis: yup.string().required("Satuan Dosis Harus diisi"),
-    aturanPakai: yup.string().required("Aturan Pakai Harus diisi"),
-    caraPakai: yup.string().required("Cara Pakai Harus diisi"),
-    rutePemberian: yup.string().required("Rute Pemberian Harus diisi"),
-    obatKronis: yup.bool(),
-    catatan: yup.string(),
-    racikan: yup.bool().required("Racikan Harus diisi"),
-    datas: yup
+    jumlahEmbalase: yup.number().required("Jumlah Embalase Harus diisi"),
+    satuanEmbalase: yup.mixed<any>().required("Satuan Embalase Harus diisi"),
+    medicationPeriod: yup.mixed<any>().required("Periode harus dipilih"),
+    medicationDoseQty: yup
+      .number()
+      .required("Jumlah Konsumsi harus diisi")
+      .min(0),
+    medicationDoseSatuan: yup
+      .mixed<any>()
+      .required("Satuan Dosis harus dipilih"),
+    aturanPakai: yup.mixed<any>().required("Aturan Pakai harus dipilih"),
+    caraPakai: yup.mixed<any>().required("Cara Pakai harus dipilih"),
+    route: yup.mixed<any>(),
+    isChronic: yup.bool().default(false),
+    prescriptionNotes: yup.string(),
+    isCompound: yup.bool().default(true),
+    racikan: yup
       .array()
       .of(
         yup.object({
-          namaObat: yup.string().required("Nama Obat is required"),
-          jumlahTotal: yup.number(),
+          itemMedis: yup.mixed<any>().required("Nama Obat harus dipilih"),
+          jumlahTotal: yup.number().required().min(0),
         })
       )
       .min(1, "Harus ada minimal 1 data obat"),
@@ -63,35 +82,31 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
     namaRacikan: "",
-    sirup: false,
-    jumlahEmbalase: "1",
+    jumlahEmbalase: 0,
     satuanEmbalase: "",
-    periode: "",
-    jumlahKonsumsi: 1,
-    satuanDosis: "",
-    aturanPakai: "",
-    caraPakai: "",
-    rutePemberian: "",
-    obatKronis: false,
-    catatan: "",
-    racikan: true,
-    datas: [{ namaObat: "Panadol", jumlahTotal: 1 }],
+    medicationPeriod: null,
+    medicationDoseQty: 0,
+    medicationDoseSatuan: null,
+    aturanPakai: null,
+    caraPakai: null,
+    route: "",
+    isChronic: false,
+    prescriptionNotes: "",
+    racikan: [],
   },
 });
 
 const [namaRacikan] = defineField("namaRacikan");
-const [sirup] = defineField("sirup");
 const [jumlahEmbalase] = defineField("jumlahEmbalase");
 const [satuanEmbalase] = defineField("satuanEmbalase");
-const [periode] = defineField("periode");
-const [jumlahKonsumsi] = defineField("jumlahKonsumsi");
-const [satuanDosis] = defineField("satuanDosis");
+const [medicationPeriod] = defineField("medicationPeriod");
+const [medicationDoseQty] = defineField("medicationDoseQty");
+const [medicationDoseSatuan] = defineField("medicationDoseSatuan");
 const [aturanPakai] = defineField("aturanPakai");
 const [caraPakai] = defineField("caraPakai");
-const [rutePemberian] = defineField("rutePemberian");
-const [obatKronis] = defineField("obatKronis");
-const [catatan] = defineField("catatan");
-const [racikan] = defineField("racikan");
+const [route] = defineField("route");
+const [isChronic] = defineField("isChronic");
+const [prescriptionNotes] = defineField("prescriptionNotes");
 
 const emit = defineEmits([
   "update:isDialogVisible",
@@ -99,11 +114,7 @@ const emit = defineEmits([
   "after-edit-obat-racikan",
 ]);
 
-const namaObats = ref([
-  { id: 1, namaObat: "Panadol" },
-  { id: 2, namaObat: "Paracetamol" },
-  { id: 3, namaObat: "Amoxan" },
-]);
+const namaObats = ref<any[]>([]);
 
 const periodes = ref([
   { id: 1, periode: "Hari" },
@@ -113,42 +124,31 @@ const periodes = ref([
   { id: 5, periode: "Khusus" },
 ]);
 
-const aturanPakais = ref([
-  { id: 1, aturanPakai: "1x Sehari" },
-  { id: 2, aturanPakai: "2x Sehari" },
-  { id: 3, aturanPakai: "3x Sehari" },
-]);
+const aturanPakais = ref<any[]>([]);
 
-const satuanDosiss = ref([
-  { id: 1, satuanDosis: "Sendok Makan" },
-  { id: 2, satuanDosis: "Kapsul" },
-  { id: 3, satuanDosis: "Botol" },
-  { id: 4, satuanDosis: "Tablet" },
-]);
+const satuanDosiss = ref<any[]>([]);
 
-const caraPakais = ref([
-  { id: 1, caraPakai: "Setelah Makan" },
-  { id: 2, caraPakai: "Sebelum Makan" },
-  { id: 3, caraPakai: "Sebelum Tidur" },
-]);
+const caraPakais = ref<any[]>([]);
 
 const rutePemberians = ref([
-  { id: 1, rutePemberian: "Oral" },
-  { id: 2, rutePemberian: "Rektal" },
-  { id: 3, rutePemberian: "Sublingual" },
+  { kode: "Implant", rutePemberian: "Implant" },
+  { kode: "Inhal", rutePemberian: "Inhalation" },
+  { kode: "Instill", rutePemberian: "Instillation" },
+  { kode: "N", rutePemberian: "nasal" },
+  { kode: "O", rutePemberian: "oral" },
+  { kode: "P", rutePemberian: "parenteral" },
+  { kode: "R", rutePemberian: "rectal" },
+  { kode: "SL", rutePemberian: "sublingual/buccal/oromucosal" },
+  { kode: "TD", rutePemberian: "transdermal" },
+  { kode: "V", rutePemberian: "vaginal" },
 ]);
 
-const satuanEmbalases = ref([
-  { id: 1, satuanEmbalase: "Kapsul" },
-  { id: 2, satuanEmbalase: "Pil" },
-  { id: 3, satuanEmbalase: "Tablet" },
-  { id: 4, satuanEmbalase: "Botol" },
-]);
-const { remove, push, fields } = useFieldArray<ObatRacikan>("datas");
+const satuanEmbalases = ref<any[]>([]);
+const { remove, push, fields } = useFieldArray<ObatRacikan>("racikan");
 
 const addObatRacikan = () => {
   push({
-    namaObat: "",
+    itemMedis: null,
     jumlahTotal: 0,
   });
 };
@@ -196,6 +196,53 @@ watch(
     }
   }
 );
+
+const getListObat = async () => {
+  const response = await medicalItemStore.getWithoutPaginationApi2();
+  if (response && response.payload) {
+    namaObats.value = response.payload;
+  }
+};
+
+const getListAturanPakai = async () => {
+  const response = await rulesOfUseStore.exportApi();
+  if (response && response.payload) {
+    aturanPakais.value = response.payload;
+  }
+};
+
+const getListSatuanDosis = async () => {
+  const response = await unitStore.exportApi();
+  if (response && response.payload) {
+    satuanDosiss.value = response.payload.filter(
+      (unit: any) => unit.satuanDosis
+    );
+  }
+};
+
+const getListCaraPakai = async () => {
+  const response = await howToUseStore.exportApi();
+  if (response && response.payload) {
+    caraPakais.value = response.payload;
+  }
+};
+
+const getListBentukSediaan = async () => {
+  const response = await dosageFormStore.exportApi();
+  if (response && response.payload) {
+    satuanEmbalases.value = response.payload;
+  }
+};
+
+onMounted(async () => {
+  storeUtils.setLoading(true);
+  await getListObat();
+  await getListAturanPakai();
+  await getListSatuanDosis();
+  await getListCaraPakai();
+  await getListBentukSediaan();
+  storeUtils.setLoading(false);
+});
 </script>
 
 <template>
@@ -217,8 +264,8 @@ watch(
         <hr class="h-auto border border-adameds-300" />
         <!-- {{ index }} -->
         <div class="grow">
-          <div class="flex items-center justify-between">
-            <div class="min-w-[280px]">
+          <div class="flex items-center">
+            <div class="grow">
               <CustomTextfield
                 label="Nama Racikan"
                 class="border-[#C7CBD2]"
@@ -228,15 +275,13 @@ watch(
                 :invalidMessage="errors.namaRacikan"
               />
             </div>
-            <CustomSwitch v-model="sirup" label="Sirup" />
+            <CustomSwitch v-model="sirup" label="Sirup" class="mx-10" />
             <CustomButton
               label="Tambah Obat"
               showIcon
               icon-pos="left"
               icon="PhPlus"
               @click="addObatRacikan"
-              :invalid="!!errors.sirup"
-              :invalidMessage="errors.sirup"
             />
           </div>
           <hr class="my-4 bg-grey-200 border-1" />
@@ -244,23 +289,32 @@ watch(
           <div class="flex flex-col gap-5 overflow-y-auto max-h-[400px] w-auto">
             <!-- Atas -->
             <div
-              class="flex items-end justify-between gap-4"
+              class="flex items-end gap-4"
               v-for="(field, index) in fields"
               :key="index"
             >
-              <div class="min-w-[400px]">
+              <div class="grow">
                 <CustomSelect
                   :label="`Nama Obat - ${index + 1}`"
-                  v-model="field.value.namaObat"
+                  placeHolder="Pilih Obat"
+                  v-model="field.value.itemMedis"
                   :options="namaObats"
-                  optionValue="namaObat"
-                  optionLabel="namaObat"
-                  :invalid="!!errors[`datas[${index}].namaObats` as keyof typeof errors]"
-                  :invalidMessage="errors[`datas[${index}].namaObats` as keyof typeof errors]"
-                  :disabled="false"
-                />
+                  optionLabel="name"
+                  optionValue=""
+                  dataKey="uuid"
+                  :invalid="!!(errors as any)[`racikan[${index}].itemMedis`]"
+                  :invalidMessage="(errors as any)[`racikan[${index}].itemMedis`]"
+                >
+                  <template #customOptions="{ option }">
+                    {{ option.name }} - {{ option.satuanDosis?.name }} -
+                    {{ option.bentukSediaan?.name }}
+                    {{
+                      option.manufacture ? `- ${option.manufacture.name}` : ""
+                    }}
+                  </template>
+                </CustomSelect>
               </div>
-              <div class="min-w-[130px]">
+              <div class="w-[12.5%] mx-[15px]">
                 <CustomInputNumber
                   label="Jumlah Total"
                   v-model="field.value.jumlahTotal"
@@ -284,74 +338,84 @@ watch(
           </div>
 
           <div
-            class="flex items-center justify-between gap-5 p-5 mt-5 rounded-lg bg-adameds-50"
+            class="grid items-center justify-between grid-cols-4 gap-5 p-5 mt-5 rounded-lg bg-adameds-50"
           >
-            <div class="font-semibold text-MD">Dibuat sebanyak (Embalase)</div>
-            <div class="max-w-[100px]">
-              <CustomTextfield
-                label=""
-                v-model="jumlahEmbalase"
-                type="number"
-                :invalid="!!errors.jumlahEmbalase"
-                :invalidMessage="errors.jumlahEmbalase"
-              />
+            <div class="col-span-2 font-semibold text-MD">
+              Dibuat sebanyak (Embalase)
             </div>
-            <div class="grow">
-              <CustomSelect
-                label=""
-                v-model="satuanEmbalase"
-                :options="satuanEmbalases"
-                optionValue="satuanEmbalase"
-                optionLabel="satuanEmbalase"
-                :invalid="!!errors.satuanEmbalase"
-                :invalidMessage="errors.satuanEmbalase"
-                :disabled="sirup"
-              />
+            <div class="flex col-span-2 gap-5">
+              <div class="w-1/4">
+                <CustomInputNumber
+                  label=""
+                  v-model="jumlahEmbalase"
+                  :show-buttons="true"
+                  :invalid="!!errors.jumlahEmbalase"
+                  :invalidMessage="errors.jumlahEmbalase"
+                />
+              </div>
+              <div class="grow">
+                <CustomSelect
+                  label=""
+                  v-model="satuanEmbalase"
+                  :options="satuanEmbalases"
+                  optionLabel="name"
+                  optionValue=""
+                  dataKey="uuid"
+                  :invalid="!!errors.satuanEmbalase"
+                  :invalidMessage="errors.satuanEmbalase"
+                  :disabled="sirup"
+                />
+              </div>
             </div>
           </div>
           <div class="pt-5">
             <div class="flex flex-col gap-5">
-              <div class="flex gap-5">
-                <div class="w-1/4">
+              <div class="grid grid-cols-4 gap-5">
+                <div class="flex col-span-2 gap-5">
                   <CustomSelect
                     label="Periode"
-                    v-model="periode"
+                    placeHolder="Pilih periode"
+                    v-model="medicationPeriod"
                     :options="periodes"
+                    class="w-1/4"
                     optionValue="periode"
                     optionLabel="periode"
-                    :invalid="!!errors.periode"
-                    :invalidMessage="errors.periode"
+                    :invalid="!!errors.medicationPeriod"
+                    :invalidMessage="errors.medicationPeriod"
                   />
-                </div>
-                <div class="w-1/4">
                   <CustomSelect
                     label="Aturan Pakai"
+                    placeHolder="Pilih aturan pakai"
                     v-model="aturanPakai"
                     :options="aturanPakais"
-                    optionValue="aturanPakai"
-                    optionLabel="aturanPakai"
+                    class="grow"
+                    optionLabel="name"
+                    optionValue=""
+                    dataKey="uuid"
                     :invalid="!!errors.aturanPakai"
                     :invalidMessage="errors.aturanPakai"
                   />
                 </div>
-                <div class="w-1/3">
+                <div class="flex col-span-2 gap-5">
                   <CustomInputNumber
                     label="Jumlah Konsumsi"
-                    v-model="jumlahKonsumsi"
+                    v-model="medicationDoseQty"
+                    class="w-1/4"
                     :show-buttons="true"
-                    :invalid="!!errors.jumlahKonsumsi"
-                    :invalidMessage="errors.jumlahKonsumsi"
+                    :invalid="!!errors.medicationDoseQty"
+                    :invalidMessage="errors.medicationDoseQty"
                   />
-                </div>
-                <div class="w-1/4">
                   <CustomSelect
                     label="Satuan Dosis"
-                    v-model="satuanDosis"
+                    placeHolder="Pilih satuan dosis"
+                    v-model="medicationDoseSatuan"
                     :options="satuanDosiss"
-                    optionValue="satuanDosis"
-                    optionLabel="satuanDosis"
-                    :invalid="!!errors.satuanDosis"
-                    :invalidMessage="errors.satuanDosis"
+                    class="grow"
+                    optionLabel="name"
+                    optionValue=""
+                    dataKey="uuid"
+                    :invalid="!!errors.medicationDoseSatuan"
+                    :invalidMessage="errors.medicationDoseSatuan"
                   />
                 </div>
               </div>
@@ -359,10 +423,12 @@ watch(
                 <div class="w-1/2">
                   <CustomSelect
                     label="Cara Pakai"
+                    placeHolder="Pilih cara pakai"
                     v-model="caraPakai"
                     :options="caraPakais"
-                    optionValue="caraPakai"
                     optionLabel="caraPakai"
+                    optionValue=""
+                    dataKey="uuid"
                     :invalid="!!errors.caraPakai"
                     :invalidMessage="errors.caraPakai"
                   />
@@ -370,23 +436,22 @@ watch(
                 <div class="w-1/2">
                   <CustomSelect
                     label="Rute Pemberian"
-                    v-model="rutePemberian"
+                    placeHolder="Pilih rute pemberian"
+                    v-model="route"
                     :options="rutePemberians"
-                    optionValue="rutePemberian"
                     optionLabel="rutePemberian"
-                    :invalid="!!errors.rutePemberian"
-                    :invalidMessage="errors.rutePemberian"
+                    optionValue=""
+                    dataKey="kode"
                   />
                 </div>
               </div>
               <div class="flex gap-7">
-                <CustomSwitch label="Obat Kronis" v-model="obatKronis" />
-                <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->
+                <CustomSwitch label="Obat Kronis" v-model="isChronic" />
                 <div class="grow">
                   <CustomTextArea
                     label="Catatan"
-                    placeholder="-"
-                    v-model="catatan"
+                    placeholder="Masukkan catatan"
+                    v-model="prescriptionNotes"
                   />
                 </div>
               </div>
@@ -398,7 +463,6 @@ watch(
 
     <template #footer>
       <div class="w-full">
-        <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"

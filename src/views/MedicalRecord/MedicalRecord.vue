@@ -521,6 +521,8 @@ defineExpose({ showDialogRM });
                   <FormTandaVital
                     id="Tanda Vital"
                     :ref="refs.tandaVital"
+                    :rmUuid="patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
                   />
@@ -551,6 +553,8 @@ defineExpose({ showDialogRM });
                   <PemeriksaanFisik
                     id="Pemeriksaan Fisik"
                     :ref="refs.pemeriksaanFisik"
+                    :rmUuid="patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                     class="mb-[10px]"
                     :patientData="patientData"
                   />
@@ -573,6 +577,8 @@ defineExpose({ showDialogRM });
                   <FormDiagnosaDokterICD10
                     id="Diagnosis Dokter"
                     :ref="refs.diagnosisDokter"
+                    :rmUuid="patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
                   />
@@ -595,6 +601,7 @@ defineExpose({ showDialogRM });
                   <InstruksiMedis
                     id="Instruksi Medis"
                     :ref="refs.instruksiMedis"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
@@ -602,6 +609,7 @@ defineExpose({ showDialogRM });
                   <FormCatatanPerawat
                     id="Catatan Perawat"
                     :ref="refs.catatanPerawat"
+                    :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
@@ -609,12 +617,18 @@ defineExpose({ showDialogRM });
                   <FormOrderObat
                     id="Order Obat"
                     :ref="refs.orderObat"
+                    :rmType="rmType"
+                    :patientData="patientData"
+                    :rmUuid="patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class="mb-[10px]"
                   />
                   <PemeriksaanTindakan
                     id="Pemeriksaan dan Tindakan"
                     :ref="refs.pemeriksaanTindakan"
+                    :rmUuid="patientData.rekamMedisUuid"
+                    :sessionUuid="selectedSessionData.id"
                     method="form"
                     class=""
                   />

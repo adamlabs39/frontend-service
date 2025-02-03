@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -13,19 +13,18 @@ import * as yup from "yup";
 import DetailPasien from "./DetailPasien.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import RiwayatSebelumnya from "./RiwayatSebelumnya.vue";
+import { utilsStore } from "@/stores/utils";
+import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
+import { useHowToUseStore } from "@/stores/datamasterFarmasi/HowToUse";
+import { useUnitStore } from "@/stores/datamasterFarmasi/Unit";
+import { useRulesOfUseStore } from "@/stores/datamasterFarmasi/RulesOfUse";
 
-type Obat = {
-  namaObat: string;
-  jumlahTotal: number;
-  periode: string;
-  jumlahKonsumsi: number;
-  satuanDosis: string;
-  aturanPakai: string;
-  caraPakai: string;
-  rutePemberian: string;
-  obatKronis: boolean;
-  catatan: string;
-};
+// NOTE Store
+const storeUtils = utilsStore();
+const medicalItemStore = useMedicalItemStore();
+const rulesOfUseStore = useRulesOfUseStore();
+const unitStore = useUnitStore();
+const howToUseStore = useHowToUseStore();
 
 const props = defineProps({
   isDialogVisible: {
@@ -40,15 +39,27 @@ const props = defineProps({
     type: String,
     default: "add",
   },
+  patientData: {
+    type: Object,
+  },
 });
+
+type Obat = {
+  itemMedis: any;
+  medicationQty: number;
+  medicationPeriod: any;
+  medicationDoseQty: number;
+  medicationDoseSatuan: any;
+  aturanPakai: any;
+  caraPakai: any;
+  route: any;
+  isChronic: boolean;
+  prescriptionNotes: string;
+};
 
 const emit = defineEmits(["update:isDialogVisible", "add-obat"]);
 
-const namaObats = ref([
-  { id: 1, namaObat: "Panadol" },
-  { id: 2, namaObat: "Paracetamol" },
-  { id: 3, namaObat: "Amoxan" },
-]);
+const namaObats = ref<any[]>([]);
 
 const periodes = ref([
   { id: 1, periode: "Hari" },
@@ -58,45 +69,44 @@ const periodes = ref([
   { id: 5, periode: "Khusus" },
 ]);
 
-const aturanPakais = ref([
-  { id: 1, aturanPakai: "1x Sehari" },
-  { id: 2, aturanPakai: "2x Sehari" },
-  { id: 3, aturanPakai: "3x Sehari" },
-]);
+const aturanPakais = ref<any[]>([]);
 
-const satuanDosiss = ref([
-  { id: 1, satuanDosis: "Sendok Makan" },
-  { id: 2, satuanDosis: "Kapsul" },
-  { id: 3, satuanDosis: "Botol" },
-  { id: 4, satuanDosis: "Tablet" },
-]);
+const satuanDosiss = ref<any[]>([]);
 
-const caraPakais = ref([
-  { id: 1, caraPakai: "Setelah Makan" },
-  { id: 2, caraPakai: "Sebelum Makan" },
-  { id: 3, caraPakai: "Sebelum Tidur" },
-]);
+const caraPakais = ref<any[]>([]);
 
 const rutePemberians = ref([
-  { id: 1, rutePemberian: "Oral" },
-  { id: 2, rutePemberian: "Rektal" },
-  { id: 3, rutePemberian: "Sublingual" },
+  { kode: "Implant", rutePemberian: "Implant" },
+  { kode: "Inhal", rutePemberian: "Inhalation" },
+  { kode: "Instill", rutePemberian: "Instillation" },
+  { kode: "N", rutePemberian: "nasal" },
+  { kode: "O", rutePemberian: "oral" },
+  { kode: "P", rutePemberian: "parenteral" },
+  { kode: "R", rutePemberian: "rectal" },
+  { kode: "SL", rutePemberian: "sublingual/buccal/oromucosal" },
+  { kode: "TD", rutePemberian: "transdermal" },
+  { kode: "V", rutePemberian: "vaginal" },
 ]);
 // Definisikan skema validasi
 const schema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
-        namaObat: yup.string(),
-        jumlahTotal: yup.number(),
-        periode: yup.string(),
-        jumlahKonsumsi: yup.number(),
-        satuanDosis: yup.string(),
-        aturanPakai: yup.string(),
-        caraPakai: yup.string(),
-        rutePemberian: yup.string(),
-        obatKronis: yup.bool(),
-        catatan: yup.string(),
+        itemMedis: yup.mixed<any>().required("Nama Obat harus dipilih"),
+        medicationQty: yup.number().required("Jumlah Total harus diisi").min(0),
+        medicationPeriod: yup.mixed<any>().required("Periode harus dipilih"),
+        medicationDoseQty: yup
+          .number()
+          .required("Jumlah Konsumsi harus diisi")
+          .min(0),
+        medicationDoseSatuan: yup
+          .mixed<any>()
+          .required("Satuan Dosis harus dipilih"),
+        aturanPakai: yup.mixed<any>().required("Aturan Pakai harus dipilih"),
+        caraPakai: yup.mixed<any>().required("Cara Pakai harus dipilih"),
+        route: yup.mixed<any>(),
+        isChronic: yup.bool().default(false),
+        prescriptionNotes: yup.string(),
       })
     ),
   })
@@ -122,16 +132,16 @@ const onSubmit = handleSubmit((values) => {
 
 const addObat = () => {
   push({
-    namaObat: "",
-    jumlahTotal: 0,
-    periode: "",
-    jumlahKonsumsi: 0,
-    satuanDosis: "",
-    aturanPakai: "",
-    caraPakai: "",
-    rutePemberian: "",
-    obatKronis: false,
-    catatan: "",
+    medicationQty: 0,
+    itemMedis: null,
+    medicationDoseQty: 0,
+    medicationDoseSatuan: null,
+    medicationPeriod: null,
+    aturanPakai: null,
+    caraPakai: null,
+    prescriptionNotes: "",
+    isChronic: false,
+    route: "",
   });
 };
 
@@ -146,6 +156,45 @@ function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
   resetForm();
 }
+
+const getListObat = async () => {
+  const response = await medicalItemStore.getWithoutPaginationApi2();
+  if (response && response.payload) {
+    namaObats.value = response.payload;
+  }
+};
+
+const getListAturanPakai = async () => {
+  const response = await rulesOfUseStore.exportApi();
+  if (response && response.payload) {
+    aturanPakais.value = response.payload;
+  }
+};
+
+const getListSatuanDosis = async () => {
+  const response = await unitStore.exportApi();
+  if (response && response.payload) {
+    satuanDosiss.value = response.payload.filter(
+      (unit: any) => unit.satuanDosis
+    );
+  }
+};
+
+const getListCaraPakai = async () => {
+  const response = await howToUseStore.exportApi();
+  if (response && response.payload) {
+    caraPakais.value = response.payload;
+  }
+};
+
+onMounted(async () => {
+  storeUtils.setLoading(true);
+  await getListObat();
+  await getListAturanPakai();
+  await getListSatuanDosis();
+  await getListCaraPakai();
+  storeUtils.setLoading(false);
+});
 </script>
 
 <template>
@@ -160,7 +209,7 @@ function updateVisibility(value: boolean) {
       <!--  -->
       <div class="flex gap-5 my-5">
         <div class="min-w-[500px]">
-          <DetailPasien />
+          <DetailPasien :patientData="patientData" />
           <RiwayatSebelumnya />
         </div>
 
@@ -189,57 +238,87 @@ function updateVisibility(value: boolean) {
                   <div class="py-5">
                     <div class="flex flex-col gap-5">
                       <div class="flex gap-7">
-                        <div class="min-w-[420px]">
+                        <div class="grow">
                           <CustomSelect
                             label="Nama Obat"
-                            v-model="field.value.namaObat"
+                            placeHolder="Pilih obat"
+                            v-model="field.value.itemMedis"
                             :options="namaObats"
-                            optionValue="namaObat"
-                            optionLabel="namaObat"
-                          />
+                            optionLabel="name"
+                            optionValue=""
+                            dataKey="uuid"
+                            :invalid="!!(errors as any)[`datas[${index}].itemMedis`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].itemMedis`]"
+                          >
+                            <template #customOptions="{ option }">
+                              {{ option.name }} -
+                              {{ option.satuanDosis?.name }} -
+                              {{ option.bentukSediaan?.name }}
+                              {{
+                                option.manufacture
+                                  ? `- ${option.manufacture.name}`
+                                  : ""
+                              }}
+                            </template>
+                          </CustomSelect>
                         </div>
-                        <div class="grow">
+                        <div class="w-[12.5%]">
                           <CustomInputNumber
                             label="Jumlah Total"
                             :show-buttons="true"
-                            v-model="field.value.jumlahTotal"
+                            v-model="field.value.medicationQty"
+                            :invalid="!!(errors as any)[`datas[${index}].medicationQty`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].medicationQty`]"
                           />
                         </div>
                       </div>
 
-                      <div class="flex gap-5">
-                        <div class="w-1/4">
+                      <div class="grid grid-cols-4 gap-5">
+                        <div class="flex col-span-2 gap-5">
                           <CustomSelect
                             label="Periode"
-                            v-model="field.value.periode"
+                            placeHolder="Pilih periode"
+                            v-model="field.value.medicationPeriod"
                             :options="periodes"
+                            class="w-1/4"
                             optionValue="periode"
                             optionLabel="periode"
+                            :invalid="!!(errors as any)[`datas[${index}].medicationPeriod`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].medicationPeriod`]"
                           />
-                        </div>
-                        <div class="w-1/4">
                           <CustomSelect
                             label="Aturan Pakai"
+                            placeHolder="Pilih aturan pakai"
                             v-model="field.value.aturanPakai"
                             :options="aturanPakais"
-                            optionValue="aturanPakai"
-                            optionLabel="aturanPakai"
+                            class="grow"
+                            optionLabel="name"
+                            optionValue=""
+                            dataKey="uuid"
+                            :invalid="!!(errors as any)[`datas[${index}].aturanPakai`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].aturanPakai`]"
                           />
                         </div>
-                        <div class="w-1/3">
+                        <div class="flex col-span-2 gap-5">
                           <CustomInputNumber
                             label="Jumlah Konsumsi"
                             :show-buttons="true"
-                            v-model="field.value.jumlahKonsumsi"
+                            v-model="field.value.medicationDoseQty"
+                            class="w-1/4"
+                            :invalid="!!(errors as any)[`datas[${index}].medicationDoseQty`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].medicationDoseQty`]"
                           />
-                        </div>
-                        <div class="w-1/4">
                           <CustomSelect
                             label="Satuan Dosis"
-                            v-model="field.value.satuanDosis"
+                            placeHolder="Pilih satuan dosis"
+                            v-model="field.value.medicationDoseSatuan"
                             :options="satuanDosiss"
-                            optionValue="satuanDosis"
-                            optionLabel="satuanDosis"
+                            class="grow"
+                            optionLabel="name"
+                            optionValue=""
+                            dataKey="uuid"
+                            :invalid="!!(errors as any)[`datas[${index}].medicationDoseSatuan`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].medicationDoseSatuan`]"
                           />
                         </div>
                       </div>
@@ -247,34 +326,38 @@ function updateVisibility(value: boolean) {
                         <div class="w-1/2">
                           <CustomSelect
                             label="Cara Pakai"
+                            placeHolder="Pilih cara pakai"
                             v-model="field.value.caraPakai"
                             :options="caraPakais"
-                            optionValue="caraPakai"
                             optionLabel="caraPakai"
+                            optionValue=""
+                            dataKey="uuid"
+                            :invalid="!!(errors as any)[`datas[${index}].caraPakai`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].caraPakai`]"
                           />
                         </div>
                         <div class="w-1/2">
                           <CustomSelect
                             label="Rute Pemberian"
-                            v-model="field.value.rutePemberian"
+                            placeHolder="Pilih rute pemberian"
+                            v-model="field.value.route"
                             :options="rutePemberians"
-                            optionValue="rutePemberian"
                             optionLabel="rutePemberian"
+                            optionValue=""
+                            dataKey="kode"
                           />
                         </div>
                       </div>
                       <div class="flex gap-7">
                         <CustomSwitch
                           label="Obat Kronis "
-                          v-model="field.value.obatKronis"
+                          v-model="field.value.isChronic"
                         />
-                        <!-- <div class="mt-2.5">{{ status === true ? "Aktif" : "Non-Aktif" }}</div> -->
-
                         <div class="grow">
                           <CustomTextArea
                             label="Catatan"
-                            placeholder="-"
-                            v-model="field.value.catatan"
+                            placeholder="Masukkan catatan"
+                            v-model="field.value.prescriptionNotes"
                           />
                         </div>
                       </div>
@@ -289,7 +372,6 @@ function updateVisibility(value: boolean) {
     </template>
     <template #footer>
       <div class="w-full">
-        <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
             label="Reset"
