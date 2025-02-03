@@ -38,7 +38,7 @@ import LaporanPendapatanPage from "@/views/Pembayaran/Report/LaporanPendapatanPa
 import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescription/DoctorPrescriptionPage.vue";
 import DrugSalesPage from "@/views/Farmasi/DrugSalesPage.vue";
 import DrugReturnsPage from "@/views/Farmasi/DrugReturnsPage.vue";
-import RoomPharmacyPage from "@/views/Farmasi/RoomPharmacyPage.vue";
+import RoomPharmacyPage from "@/views/Farmasi/RoomPharmacy/RoomPharmacyPage.vue";
 import TransactionHistoryPage from "@/views/Farmasi/TransactionHistoryPage.vue";
 // NOTE Farmasi/Datamaster
 import RulesOfUsePage from "@/views/Farmasi/Masterdata/RulesOfUsePage.vue";

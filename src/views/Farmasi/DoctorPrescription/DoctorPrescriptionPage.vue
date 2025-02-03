@@ -14,9 +14,9 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailPrescription from "./DetailPrescription.vue";
+
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-
 const lokasiStok = ref("");
 const layanan = ref("");
 
@@ -41,9 +41,9 @@ const onRecipeSelect = (label: string) => {
   } else {
     selectedRecipe.value.push(label);
   }
-  // console.log(selectedRecipe.value, 'selectedRecipe.value');
   fetchDoctorPrescription();
 };
+
 interface Prescription {
   uuid: string;
   noRm: string;
@@ -58,6 +58,7 @@ interface Prescription {
   patient: string;
   lokasiStok: { name: string };
 }
+
 interface ApiResponse {
   resepMasuk: Prescription[];
   obatDisiapkan: Prescription[];
@@ -67,9 +68,8 @@ interface ApiResponse {
 const DoctorPrescriptionPayload = ref<ApiResponse>({
   resepMasuk: [],
   obatDisiapkan: [],
-  penyerahanObat: []
+  penyerahanObat: [],
 });
-
 
 // State Management
 const StockLocationStore = useStockLocationStore();
@@ -78,9 +78,8 @@ const StockLocationPayload = ref<any[]>([]);
 const DoctorPrescriptionStore = useDoctorPrescriptionStore();
 const UseUtilsStore = utilsStore();
 const searchQuery = ref<string>("");
-const PrescriptionDetail=ref<any>();
-const stockObatPayload=ref();
-
+const PrescriptionDetail = ref<any>();
+const stockObatPayload = ref();
 
 // Fetch Doctor Prescription
 const fetchDoctorPrescription = async () => {
@@ -99,9 +98,6 @@ const fetchDoctorPrescription = async () => {
     chronicDrugs = "";
     concoction = "";
   }
-  console.log(returnMedicine, "returnMedicine");
-  console.log(chronicDrugs, "chronicDrugs");
-  console.log(concoction, "chronicDrugs");
 
   try {
     const response = await DoctorPrescriptionStore.getApi({
@@ -119,17 +115,25 @@ const fetchDoctorPrescription = async () => {
     if (response && response.payload) {
       DoctorPrescriptionPayload.value = response.payload;
     } else {
-      DoctorPrescriptionPayload.value = { resepMasuk: [], obatDisiapkan: [], penyerahanObat: [] };
+      DoctorPrescriptionPayload.value = {
+        resepMasuk: [],
+        obatDisiapkan: [],
+        penyerahanObat: [],
+      };
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    DoctorPrescriptionPayload.value = { resepMasuk: [], obatDisiapkan: [], penyerahanObat: [] };
+    DoctorPrescriptionPayload.value = {
+      resepMasuk: [],
+      obatDisiapkan: [],
+      penyerahanObat: [],
+    };
   } finally {
     UseUtilsStore.setLoading(false);
   }
 };
 
-const detailPrescription = async (uuid:string) => {
+const detailPrescription = async (uuid: string) => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await DoctorPrescriptionStore.detailApi(uuid);
@@ -170,10 +174,12 @@ const fetchStockLocation = async () => {
 const fetchStockObat = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await MedicalItemStore.getApi(1,9999);
+    const response = await MedicalItemStore.getApi(1, 9999);
 
     if (response && response.payload) {
-      stockObatPayload.value = response.payload.filter((item:any) => item.status === true);
+      stockObatPayload.value = response.payload.filter(
+        (item: any) => item.status === true
+      );
     } else {
       StockLocationPayload.value = [];
     }
@@ -185,9 +191,7 @@ const fetchStockObat = async () => {
   }
 };
 
-
 const emits = defineEmits(["update:rows", "update:current-page"]);
-
 
 const defaultData = [
   {
@@ -202,7 +206,7 @@ const data = ref([...defaultData]);
 const incomingRecipes = ref(true);
 const incomingRecipesDetails = ref(false);
 
-const incomingRecipesOpen = (uuid:string) => {
+const incomingRecipesOpen = (uuid: string) => {
   readyMedicine.value = false;
   drugHandover.value = false;
   incomingRecipesDetails.value = true;
@@ -219,7 +223,7 @@ const incomingRecipesClose = () => {
 const readyMedicine = ref(true);
 const readyMedicineDetails = ref(false);
 
-const readyMedicineOpen = (uuid:string) => {
+const readyMedicineOpen = (uuid: string) => {
   incomingRecipes.value = false;
   drugHandover.value = false;
   readyMedicineDetails.value = true;
@@ -236,7 +240,7 @@ const readyMedicineClose = () => {
 const drugHandover = ref(true);
 const drugHandoverDetails = ref(false);
 
-const drugHandoverOpen = (uuid:string) => {
+const drugHandoverOpen = (uuid: string) => {
   incomingRecipes.value = false;
   readyMedicine.value = false;
   drugHandoverDetails.value = true;
@@ -265,11 +269,7 @@ const handleReset = () => {
 
 <template>
   <div>
-    <Card
-      pt:body:class="h-full pt-0"
-      pt:content:class="h-full"
-      class="h-full overflow-hidden overflow-y-auto"
-    >
+    <Card pt:body:class="h-full pt-0" pt:content:class="h-full" class="h-full overflow-hidden overflow-y-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -346,7 +346,7 @@ const handleReset = () => {
                 @click="handleReset"
               />
             </div>
-            
+
             <!-- Filter Jenis Resep -->
             <div class="flex my-[10px] mt-5">
               <div class="w-[15%] font-semibold text-SM text-grey-300">
@@ -414,46 +414,49 @@ const handleReset = () => {
         <div class="grid grid-cols-3 gap-3">
           <!-- Resep Masuk -->
           <div v-show="incomingRecipes">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between ">
+            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
               <div class="text-lg font-bold text-white font-poppins">
                 Resep Masuk
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">{{ DoctorPrescriptionPayload.resepMasuk.length }}</div>
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                  {{ DoctorPrescriptionPayload.resepMasuk.length }}
+                </div>
               </div>
             </div>
-            <div
-              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
-            >
-              <div
-              v-if="DoctorPrescriptionPayload.resepMasuk.length"
-                v-for="(
-                  prescription, prescriptionIndex
-                ) in DoctorPrescriptionPayload.resepMasuk"
+            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
+              <div v-if="DoctorPrescriptionPayload.resepMasuk.length"
+                v-for="(prescription, prescriptionIndex) in DoctorPrescriptionPayload.resepMasuk"
                 :key="prescription.uuid"
-                @click="incomingRecipesOpen( prescription.uuid)"
-                class=""
+                @click="incomingRecipesOpen(prescription.uuid)"
               >
                 <div class="grid grid-cols-2">
-                  
                   <div class="grid justify-items-start">
                     <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.patient }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Penulis Resep
                     </div>
                     <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
+                    <div class="mt-[5px]">
+                      {{ prescription.lokasiStok.name }}
+                    </div>
                     <div>
                       <CustomChip
-                        :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
+                        :label="
+                          prescription.jenisPelayanan === 'igd'
+                            ? 'IGD'
+                            : prescription.jenisPelayanan === 'ri'
+                            ? 'RAWAT JALAN'
+                            : prescription.jenisPelayanan === 'rj'
+                            ? 'RAWAT JALAN'
+                            : ''
+                        "
                         borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
@@ -462,7 +465,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isTakeaway"
+                        v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -472,7 +475,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isChronic"
+                        v-if="prescription.isChronic"
                         label="OBAT KRONIS"
                         borderColor="border-sunFlower-300"
                         bgColor="bg-sunFlower-50"
@@ -482,7 +485,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isCompound"
+                        v-if="prescription.isCompound"
                         label="MENGANDUNG RACIKAN"
                         borderColor="border-grass-300"
                         bgColor="bg-grass-50"
@@ -494,14 +497,18 @@ const handleReset = () => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold">
+                      {{ prescription.noResep }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.noReg }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]"> {{ epochToDate(prescription.orderDate, "date") }}</div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(prescription.orderDate, "date") }}
+                    </div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -519,8 +526,7 @@ const handleReset = () => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <NoData v-else/>
-              <!-- hapus Sebagian array -->
+              <NoData v-else />
             </div>
           </div>
 
@@ -531,38 +537,46 @@ const handleReset = () => {
                 Obat Disiapkan
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">{{ DoctorPrescriptionPayload.obatDisiapkan.length }}</div>
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                  {{ DoctorPrescriptionPayload.obatDisiapkan.length }}
+                </div>
               </div>
             </div>
-            <div
-              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
-            >
-              <div  
-              v-if="DoctorPrescriptionPayload.obatDisiapkan.length"
-              v-for="(
-                  prescription, prescriptionIndex
-                ) in DoctorPrescriptionPayload.obatDisiapkan"
-                :key="prescription.uuid" @click="readyMedicineOpen(prescription.uuid)" class="">
+            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
+              <div v-if="DoctorPrescriptionPayload.obatDisiapkan.length"
+                v-for="(prescription, prescriptionIndex) in DoctorPrescriptionPayload.obatDisiapkan"
+                :key="prescription.uuid"
+                @click="readyMedicineOpen(prescription.uuid)"
+                class=""
+              >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
                     <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.patient }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Penulis Resep
                     </div>
                     <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
+                    <div class="mt-[5px]">
+                      {{ prescription.lokasiStok.name }}
+                    </div>
                     <div>
                       <CustomChip
-                      :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
-                      borderColor="border-grey-300"
+                        :label="
+                          prescription.jenisPelayanan === 'igd'
+                            ? 'IGD'
+                            : prescription.jenisPelayanan === 'ri'
+                            ? 'RAWAT JALAN'
+                            : prescription.jenisPelayanan === 'rj'
+                            ? 'RAWAT JALAN'
+                            : ''
+                        "
+                        borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
                         textColor="text-grey-300"
@@ -570,7 +584,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isTakeaway"
+                        v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -580,7 +594,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isChronic"
+                        v-if="prescription.isChronic"
                         label="OBAT KRONIS"
                         borderColor="border-sunFlower-300"
                         bgColor="bg-sunFlower-50"
@@ -590,7 +604,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isCompound"
+                        v-if="prescription.isCompound"
                         label="MENGANDUNG RACIKAN"
                         borderColor="border-grass-300"
                         bgColor="bg-grass-50"
@@ -602,14 +616,18 @@ const handleReset = () => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold">
+                      {{ prescription.noResep }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.noReg }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]"> {{ epochToDate(prescription.orderDate, "date") }}</div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(prescription.orderDate, "date") }}
+                    </div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -627,8 +645,7 @@ const handleReset = () => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <NoData v-else/>
-              <!-- hapus sebagian array -->
+              <NoData v-else />
             </div>
           </div>
 
@@ -639,38 +656,44 @@ const handleReset = () => {
                 Penyerahan Obat
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">{{ DoctorPrescriptionPayload.penyerahanObat.length }}</div>
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                  {{ DoctorPrescriptionPayload.penyerahanObat.length }}
+                </div>
               </div>
             </div>
-            <div
-              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
-            >
-              <div 
-              v-if="DoctorPrescriptionPayload.penyerahanObat.length"
-              v-for="(
-                  prescription, prescriptionIndex
-                ) in DoctorPrescriptionPayload.penyerahanObat"
-                :key="prescription.uuid" @click="drugHandoverOpen(prescription.uuid)" class="">
+            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
+              <div v-if="DoctorPrescriptionPayload.penyerahanObat.length"
+                v-for="(prescription, prescriptionIndex) in DoctorPrescriptionPayload.penyerahanObat"
+                :key="prescription.uuid"
+                @click="drugHandoverOpen(prescription.uuid)"
+              >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
                     <CustomButton class="h-5 text-xs">{{ prescription.noRm }}</CustomButton>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.patient }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.patient }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Penulis Resep
                     </div>
                     <div class="mt-[5px]">{{ prescription.dokterOrder }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Lokasi Tujuan Order
                     </div>
-                    <div class="mt-[5px]">{{ prescription.lokasiStok.name }}</div>
+                    <div class="mt-[5px]">
+                      {{ prescription.lokasiStok.name }}
+                    </div>
                     <div>
                       <CustomChip
-                      :label="prescription.jenisPelayanan==='igd'? 'IGD' : prescription.jenisPelayanan==='ri'?'RAWAT JALAN' :prescription.jenisPelayanan==='rj'?'RAWAT JALAN':''"
-
+                        :label="
+                          prescription.jenisPelayanan === 'igd'
+                            ? 'IGD'
+                            : prescription.jenisPelayanan === 'ri'
+                            ? 'RAWAT JALAN'
+                            : prescription.jenisPelayanan === 'rj'
+                            ? 'RAWAT JALAN'
+                            : ''
+                        "
                         borderColor="border-grey-300"
                         bgColor="bg-grey-50"
                         :showCheckedIcon="false"
@@ -679,7 +702,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isTakeaway"
+                        v-if="prescription.isTakeaway"
                         label="OBAT PULANG"
                         borderColor="border-male-300"
                         bgColor="bg-male-50"
@@ -689,7 +712,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isChronic"
+                        v-if="prescription.isChronic"
                         label="OBAT KRONIS"
                         borderColor="border-sunFlower-300"
                         bgColor="bg-sunFlower-50"
@@ -699,7 +722,7 @@ const handleReset = () => {
                         class="mr-[5px]"
                       />
                       <CustomChip
-                      v-if="prescription.isCompound"
+                        v-if="prescription.isCompound"
                         label="MENGANDUNG RACIKAN"
                         borderColor="border-grass-300"
                         bgColor="bg-grass-50"
@@ -711,14 +734,18 @@ const handleReset = () => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ prescription.noResep }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ prescription.noReg }}</div>
-                    <div
-                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
-                    >
+                    <div class="text-sm font-bold">
+                      {{ prescription.noResep }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ prescription.noReg }}
+                    </div>
+                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">
                       Tgl. Order
                     </div>
-                    <div class="mt-[5px]">{{ epochToDate(prescription.orderDate, "date") }}</div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(prescription.orderDate, "date") }}
+                    </div>
                     <div class="mt-[5px] invisible">test</div>
                     <div class="mt-[5px] invisible">test</div>
                     <div>
@@ -736,31 +763,18 @@ const handleReset = () => {
                 </div>
                 <hr class="mt-[10px] mb-[10px] border-[1px] border-grey-200" />
               </div>
-              <NoData v-else/>
-              <!-- hapus data -->
+              <NoData v-else />
             </div>
           </div>
 
           <!-- Detail Resep - Telaah -->
-          <DetailPrescription v-if="incomingRecipesDetails"  :payloadDetail="PrescriptionDetail" @close="incomingRecipesClose"/>
+          <DetailPrescription v-if="incomingRecipesDetails" :payloadDetail="PrescriptionDetail" @close="incomingRecipesClose"/>
           <!-- Detail Resep - Obat Siap Diserahkan -->
-          <DetailPrescription v-if="readyMedicineDetails"  :payloadDetail="PrescriptionDetail" @close="readyMedicineClose"/>
+          <DetailPrescription v-if="readyMedicineDetails" :payloadDetail="PrescriptionDetail" @close="readyMedicineClose"/>
           <!-- Detail Resep - Serahkan Obat -->
-          <DetailPrescription v-if="drugHandoverDetails"  :payloadDetail="PrescriptionDetail" @close="drugHandoverClose"/>
+          <DetailPrescription v-if="drugHandoverDetails" :payloadDetail="PrescriptionDetail" @close="drugHandoverClose"/>
         </div>
       </template>
     </Card>
-
-    <!-- Batal Notification -->
-
-
-    <!-- Pindah Lokasi Dialog -->
-
-
-    <!-- Edit Dialog -->
- 
-
-    <!-- Gerus Dialog -->
-
   </div>
 </template>

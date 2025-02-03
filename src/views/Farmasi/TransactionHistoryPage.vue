@@ -18,6 +18,64 @@ import DialogDetailAlkes from "./Layout/DetailTransactionAlkesPage.vue";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 
+// State Management
+const TransactionHistoryStore = useTransactionHistoryStore();
+const UseUtilsStore = utilsStore();
+const TransactionHistoryObatPayload = ref<any[]>([]);
+const TransactionHistoryAlkesPayload = ref<any[]>([]);
+const TransactionHistoryProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+
+// Check if Data Exists
+const hasDataObat = computed(
+  () => TransactionHistoryObatPayload.value && TransactionHistoryObatPayload.value.length > 0
+);
+const hasDataAlkes = computed(
+  () => TransactionHistoryAlkesPayload.value && TransactionHistoryAlkesPayload.value.length > 0
+);
+
+// Fetch Transaction History
+const fetchTransactionHistory = async () => {
+  UseUtilsStore.setLoading(true);
+  const selectedPaymentNew = [...selectedPayment.value];
+  const selectedLocationNew = [...selectedLocation.value];
+  try {
+    const response = await TransactionHistoryStore.getApi({
+      item_type: selectMedicine.value,
+      status_type: selectedHistory.value,
+      start_date: dateToEpoch(startDateFilter.value),
+      end_date: dateToEpoch(endDateFilter.value),
+      search: searchQuery.value,
+      lokasi_stok_uuid: selectedLocationNew.join(""),
+      payment_method: selectedPaymentNew.join(""),
+      page: TransactionHistoryProperties.value.page,
+      limit: TransactionHistoryProperties.value.page_size
+    });
+
+    if (response && response.payload) {
+      TransactionHistoryProperties.value.total = response.properties.total;
+      if (selectMedicine.value === "obat") {
+        TransactionHistoryObatPayload.value = response.payload;
+      } else {
+        TransactionHistoryAlkesPayload.value = response.payload;
+      }
+    } else {
+      TransactionHistoryObatPayload.value = [];
+      TransactionHistoryAlkesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    TransactionHistoryObatPayload.value = [];
+    TransactionHistoryAlkesPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 // Filter Riwayat
 const selectedHistory = ref<string>("resep");
 const onSelectHistory = (label: string) => {
@@ -94,64 +152,6 @@ const fetchStockLocation = async () => {
   }
 };
 
-// State Management
-const TransactionHistoryStore = useTransactionHistoryStore();
-const UseUtilsStore = utilsStore();
-const TransactionHistoryObatPayload = ref<any[]>([]);
-const TransactionHistoryAlkesPayload = ref<any[]>([]);
-const TransactionHistoryProperties = ref({
-  page: 1,
-  page_size: 10,
-  total: 0,
-});
-const searchQuery = ref<string>("");
-
-// Check if Data Exists
-const hasDataObat = computed(
-  () => TransactionHistoryObatPayload.value && TransactionHistoryObatPayload.value.length > 0
-);
-const hasDataAlkes = computed(
-  () => TransactionHistoryAlkesPayload.value && TransactionHistoryAlkesPayload.value.length > 0
-);
-
-// Fetch Transaction History
-const fetchTransactionHistory = async () => {
-  UseUtilsStore.setLoading(true);
-  const selectedPaymentNew = [...selectedPayment.value];
-  const selectedLocationNew = [...selectedLocation.value];
-  try {
-    const response = await TransactionHistoryStore.getApi({
-      item_type: selectMedicine.value,
-      status_type: selectedHistory.value,
-      start_date: dateToEpoch(startDateFilter.value),
-      end_date: dateToEpoch(endDateFilter.value),
-      search: searchQuery.value,
-      lokasi_stok_uuid: selectedLocationNew.join(""),
-      payment_method: selectedPaymentNew.join(""),
-      page: TransactionHistoryProperties.value.page,
-      limit: TransactionHistoryProperties.value.page_size
-    });
-
-    if (response && response.payload) {
-      TransactionHistoryProperties.value.total = response.properties.total;
-      if (selectMedicine.value === "obat") {
-        TransactionHistoryObatPayload.value = response.payload;
-      } else {
-        TransactionHistoryAlkesPayload.value = response.payload;
-      }
-    } else {
-      TransactionHistoryObatPayload.value = [];
-      TransactionHistoryAlkesPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    TransactionHistoryObatPayload.value = [];
-    TransactionHistoryAlkesPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
-
 // Handle Pagination
 const handlePage = (event: any) => {
   TransactionHistoryProperties.value.page = event.page + 1;
@@ -201,7 +201,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchTransactionHistory" />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Riwayat Transaksi',
