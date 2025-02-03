@@ -193,8 +193,8 @@ const onSubmit = handleSubmit(async (values) => {
       metodeBiayaRacikan: [values.bentukRacikan, values.itemEmbalase].find((data: string) => data !== "false"),
     };
     await PriceConfigurationStore.putApiKonfig(payload);
-    fetchPriceConfiguration();
     // Reload halaman setelah submit berhasil
+    fetchPriceConfiguration();
   } catch (error: any) {
     console.log(error.message, "error");
   } finally {
@@ -228,9 +228,7 @@ onMounted(() => {
           class="ml-[10px] mt-[8px] text-adameds-300"
         />
         <div class="">
-          <p
-            class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
-          >
+          <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
             Konfigurasi Harga
           </p>
         </div>
@@ -512,10 +510,10 @@ onMounted(() => {
         </div>
         <hr class="mt-[10px] border border-slate-200" />
 
-        <!-- Presentasi Margin -->
+        <!-- Presentase Margin -->
         <div class="flex justify-between">
           <div class="mt-[10px]">
-            <p class="font-bold">Presentasi Margin</p>
+            <p class="font-bold">Presentase Margin</p>
             <li class="text-xs text-mediumGrey-400 mt-[5px]">
               Mempengaruhi pada kolom
               <span class="font-bold text-black">Harga Dasar</span> di master
@@ -563,10 +561,10 @@ onMounted(() => {
           </div>
         </div>
         <hr class="mt-[10px] border border-slate-200" />
-        <!-- Presentasi PPN -->
+        <!-- Presentase PPN -->
         <div class="flex justify-between">
           <div class="mt-[10px]">
-            <p class="font-bold">Presentasi PPN</p>
+            <p class="font-bold">Presentase PPN</p>
             <li class="text-xs text-mediumGrey-400 mt-[5px]">
               Mempengaruhi pada kolom
               <span class="font-bold text-black">Harga Dasar</span> di master

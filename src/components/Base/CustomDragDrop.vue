@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, computed, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import CustomButton from './CustomButton.vue';
 
 // Definisikan props sebagai array

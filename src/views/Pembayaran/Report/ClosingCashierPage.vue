@@ -1,138 +1,95 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
+import { useReportCloseCashierStore } from "@/stores/pembayaran/reportClosingCashier";
+import { utilsStore } from "@/stores/utils";
+import { dateToEpoch, epochToDate } from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
-
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
+const type = ref("");
+const optionType = ref([
+  { label: "Semua", value: "" },
+  { label: "Closing Harian", value: "DAYS" },
+  { label: "Closing Shift", value: "SHIFT" },
 ]);
 
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
-};
+const emits = defineEmits(["update:rows", "update:current-page"]);
 
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+// State Management
+const reportCloseCashier = useReportCloseCashierStore();
+const UseUtilsStore = utilsStore();
+const closeCashierPayload = ref<any[]>([]);
+const closeCashierProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
 
+// Check if Data Exists
+const hasData = computed(
+  () => closeCashierPayload.value && closeCashierPayload.value.length > 0
+);
+
+// Fetch data
+const fetchCloseCashier = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await reportCloseCashier.getApi(
+      closeCashierProperties.value.page,
+      closeCashierProperties.value.page_size,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      type.value
+    );
+
+    if (response && response.payload) {
+      closeCashierProperties.value.total = response.properties.total;
+      closeCashierPayload.value = response.payload;
+    } else {
+      closeCashierPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    closeCashierPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  closeCashierProperties.value.page = event.page + 1;
+  closeCashierProperties.value.page_size = event.rows;
+  fetchCloseCashier();
+};
+
+// Filter Search Data
+const searchData = () => {
+  dateToEpoch(startDateFilter.value),
+    dateToEpoch(endDateFilter.value),
+    type.value;
+  fetchCloseCashier();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  type.value = "";
+  fetchCloseCashier();
+};
+
 onMounted(() => {
-  updatePageType(route.path);
+  fetchCloseCashier();
 });
 </script>
 
@@ -144,7 +101,7 @@ onMounted(() => {
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
+        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
@@ -172,18 +129,13 @@ onMounted(() => {
           </template>
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomTextfield
-                label="Pencarian"
-                prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
-                class="mr-5 grow"
-              />
               <CustomSelect
-                label="Jenis Pelayanan"
-                class="mr-5 w-[250px]"
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Lunas', 'Piutang']"
+                v-model="type"
+                label="Jenis Kasir"
+                class="mr-5 grow"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionType"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
@@ -197,11 +149,13 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -228,90 +182,61 @@ onMounted(() => {
       </template>
       <template #content>
         <DataTable
-          v-if="itemsPasien.length"
-          :value="itemsPasien"
+          v-if="hasData"
+          :value="closeCashierPayload"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
         >
-          <Column field="nomor" headerClass="bg-adameds-50">
+          <Column headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center">No.</div>
+              <div class="w-full font-semibold">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="text-center">
-                <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
-              </div>
+              <div class="text-SM">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
-          <Column
-            field="pasien"
-            header="Jenis Kasir"
-            headerClass="bg-adameds-50"
-          >
+          <Column header="Jenis Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.address }}</div>
+              <div class="text-SM">{{ slotProps.data.type }}</div>
             </template>
           </Column>
-          <Column
-            field="keperawatan"
-            header="Tgl. Buka Kasir"
-            headerClass="bg-adameds-50"
-          >
+          <Column header="Tgl. Buka Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                {{ slotProps.data.doctor }}
-                <span class="text-adameds-300">|</span>
-                {{ slotProps.data.tanggal_jadwal }}
+                <div>
+                  {{ epochToDate(slotProps.data.shiftTimeOpen, "date") }}
+                </div>
               </div>
             </template>
           </Column>
-          <Column
-            field="keperawatan"
-            header="Tgl. Tutup Kasir"
-            headerClass="bg-adameds-50"
-          >
+          <Column header="Tgl. Tutup Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                {{ slotProps.data.doctor }}
-                <span class="text-adameds-300">|</span>
-                {{ slotProps.data.tanggal_jadwal }}
+                <div>
+                  {{ epochToDate(slotProps.data.shiftTimeClosed, "date") }}
+                </div>
               </div>
             </template>
           </Column>
-          <Column
-            field="keperawatan"
-            header="Shift"
-            headerClass="bg-adameds-50"
-          >
+          <!-- Shift belum fix, antara ambil shiftType atau shiftList -->
+          <Column header="Shift" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.shiftType }}</div>
+            </template>
+          </Column>
+          <Column header="Tgl. Closing Harian" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                {{ slotProps.data.doctor }}
-                <span class="text-adameds-300">|</span>
-                {{ slotProps.data.tanggal_jadwal }}
+                <div>
+                  {{ epochToDate(slotProps.data.daysTimeClosed, "date") }}
+                </div>
               </div>
             </template>
           </Column>
-          <Column
-            field="keperawatan"
-            header="Tgl. Closing Harian"
-            headerClass="bg-adameds-50"
-          >
+          <Column header="Petugas" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.doctor }}
-                <span class="text-adameds-300">|</span>
-                {{ slotProps.data.tanggal_jadwal }}
-              </div>
-            </template>
-          </Column>
-          <Column field="Petugas" header="Petugas" headerClass="bg-adameds-50">
-            <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.doctor }}
-                <span class="text-adameds-300">|</span>
-                {{ slotProps.data.tanggal_jadwal }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.cashierName }}</div>
             </template>
           </Column>
         </DataTable>
@@ -326,15 +251,12 @@ onMounted(() => {
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
+          <CustomPaginator
+            :rows="closeCashierProperties.page_size"
+            :totalRecords="closeCashierProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
+            @page="handlePage"
+          />
         </div>
       </template>
     </Card>

@@ -31,6 +31,9 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Faskes harus diisi"),
     name: yup.string().required("Nama Faskes harus diisi"),
+    organizationIhsNumber: yup.string().required("IHS Number Organisasi harus diisi"),
+    clientId: yup.string().required("Client ID harus diisi"),
+    clientSecret: yup.string().required("Client Secret harus diisi"),
     status: yup.bool().default(true),
   }).noUnknown()
 );
@@ -43,6 +46,9 @@ const faskesStore = useFaskesStore();
 
 const [code] = defineField("code");
 const [name] = defineField("name");
+const [organizationIhsNumber] = defineField("organizationIhsNumber");
+const [clientId] = defineField("clientId");
+const [clientSecret] = defineField("clientSecret");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -137,6 +143,33 @@ watch(
           :invalidMessage="errors.name"
           :required="errors.name ? true : false"
         />
+        <CustomTextfield
+          label="IHS Number Organization"
+          v-model="organizationIhsNumber"
+          placeholder="IHS Number Organization"
+          class="col-span-12"
+          :invalid="!!errors.organizationIhsNumber"
+          :invalidMessage="errors.organizationIhsNumber"
+          :required="errors.organizationIhsNumber ? true : false"
+        />
+        <CustomTextfield
+          label="Client ID"
+          v-model="clientId"
+          placeholder="Client ID"
+          class="col-span-12"
+          :invalid="!!errors.clientId"
+          :invalidMessage="errors.clientId"
+          :required="errors.clientId ? true : false"
+        />
+        <CustomTextfield
+          label="Client Secret"
+          v-model="clientSecret"
+          placeholder="Client Secret"
+          class="col-span-12"
+          :invalid="!!errors.clientSecret"
+          :invalidMessage="errors.clientSecret"
+          :required="errors.clientSecret ? true : false"
+        />
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
@@ -152,6 +185,9 @@ watch(
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Faskes" :value="code" />
         <CustomInfoRow label="Nama Faskes" :value="name" />
+        <CustomInfoRow label="IHS Number Organisasi" :value="organizationIhsNumber" />
+        <CustomInfoRow label="Client ID" :value="clientId" />
+        <CustomInfoRow label="Client Secret" :value="clientSecret" />
         <hr class="col-span-12 border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>

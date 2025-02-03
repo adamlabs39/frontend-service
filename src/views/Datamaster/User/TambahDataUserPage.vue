@@ -1,12 +1,5 @@
 <script lang="ts" setup>
-import {
-  ref,
-  watch,
-  defineProps,
-  computed,
-  onMounted,
-  onBeforeMount,
-} from "vue";
+import { ref, watch, computed, onMounted, onBeforeMount } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";

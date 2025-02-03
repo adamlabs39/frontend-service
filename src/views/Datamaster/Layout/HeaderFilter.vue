@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, type PropType, computed, watch, defineExpose } from "vue";
+import { ref, type PropType, computed, watch } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";

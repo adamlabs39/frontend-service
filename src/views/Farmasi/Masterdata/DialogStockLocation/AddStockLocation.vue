@@ -46,7 +46,7 @@ const schema = toTypedSchema(
     jenisLokasi: yup.string().required("Jenis Lokasi harus diisi"),
     defaultTujuanOrderPermintaan: yup.array().when("jenisLokasi", 
       ([jenisLokasi], schema) => jenisLokasi == "depo" ? schema.min(1, "at least 1").required("Tujuan Order harus dipilih"): schema.nullable()),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

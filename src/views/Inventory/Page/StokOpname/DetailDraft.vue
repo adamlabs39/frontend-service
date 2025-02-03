@@ -9,7 +9,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import NoData from "@/components/section/NoData.vue";
 import type { MenuItem } from "primevue/menuitem";
-import { computed, ref, defineProps, defineEmits } from "vue";
+import { computed, ref } from "vue";
 import LayoutDialog from "../../Layout/LayoutDialog.vue";
 import type { PropType } from "vue";
 

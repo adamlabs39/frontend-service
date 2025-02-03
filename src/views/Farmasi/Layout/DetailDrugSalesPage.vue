@@ -110,18 +110,18 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 });
 
-const updateJenisStok = (index: number) => {
-  const newHarga = AvailableJenisStokPayload.value.find(
-    (item) => filedsPenjualan.value[index].value.jenisStokUuid == item.detailStok.uuid 
-  );  
-  filedsPenjualan.value[index].value.hargaSatuan = newHarga.harga;
-};
-
 const updateNameItem = (index: number) => {
   const newSatuan = WithoutPaginationPayload.value.find(
     (item) => filedsPenjualan.value[index].value.itemMedisUuid == item.uuid 
   );  
   filedsPenjualan.value[index].value.satuan = newSatuan.satuanPenggunaan.name;
+};
+
+const updateJenisStok = (index: number) => {
+  const newHarga = AvailableJenisStokPayload.value.find(
+    (item) => filedsPenjualan.value[index].value.jenisStokUuid == item.detailStok.uuid 
+  );  
+  filedsPenjualan.value[index].value.hargaSatuan = newHarga.harga;
 };
 
 const updateQty = (index: number) => {

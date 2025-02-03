@@ -14,6 +14,7 @@ import AddHowToUse from "./DialogHowToUse/AddHowToUse.vue";
 import DeleteHowToUse from "./DialogHowToUse/DeleteHowToUse.vue";
 
 // State Management
+const searchQuery = ref<string>("");
 const HowToUseStore = useHowToUseStore();
 const UseUtilsStore = utilsStore();
 const HowToUsePayload = ref<any[]>([]);
@@ -22,7 +23,6 @@ const HowToUseProperties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasData = computed(
@@ -68,6 +68,60 @@ const handlePage = (event: any) => {
   fetchHowToUse();
 };
 
+// Dialog Management
+const HowToUseDialog = ref(false);
+const DeleteHowToUseDialog = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  HowToUseDialog.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  DeleteHowToUseDialog.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  // console.log(item,'item');
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await HowToUseStore.deleteApi(item.uuid);
+      fetchHowToUse();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      DeleteHowToUseDialog.value = false;
+    }
+  }
+};
+
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+// Import Excel
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("files", file);
+  try {
+    const response = await HowToUseStore.importApi(dataUpload);
+    fetchHowToUse();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
 // Export Excel
 const ExportExcel = async () => {
   try {
@@ -79,7 +133,7 @@ const ExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
+    const title = ["DATAMASTER CARA PAKAI"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -87,9 +141,8 @@ const ExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
+      Kode: "Kode Cara Pakai",
+      CaraPakai: "Cara Pakai",
       Status: "Status",
     });
 
@@ -97,9 +150,8 @@ const ExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
+        Kode: rows[i].code,
+        CaraPakai: rows[i].caraPakai,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -142,12 +194,10 @@ const ExportExcel = async () => {
         }
 
         // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
 
         // Fill header with background color (row 3)
         if (row === 2) {
@@ -159,46 +209,52 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Cara Pakai");
+    XLSX.writeFile(workbook, `Datamaster Cara Pakai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
 
-// Dialog Management
-const HowToUseDialog = ref(false);
-const DeleteHowToUseDialog = ref(false);
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
 
-const dialogConfig = ref<any>({
-  method: "add",
-  title: "Tambah",
-  data: null,
-});
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Cara Pakai*",
+      CaraPakai: "Nama Cara Pakai*",
+    });
 
-const openDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  HowToUseDialog.value = true;
-};
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ No: "1", Kode: "CP001", CaraPakai: "Setelah Makan" });
 
-const deleteDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  DeleteHowToUseDialog.value = true;
-};
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-const confirmDelete = async (item: any) => {
-  // console.log(item,'item');
-  if (item) {
-    UseUtilsStore.setLoading(true);
-    try {
-      await HowToUseStore.deleteApi(item.uuid);
-      fetchHowToUse();
-    } catch (error) {
-      console.error("Failed to delete data", error);
-    } finally {
-      UseUtilsStore.setLoading(false);
-      DeleteHowToUseDialog.value = false;
-    }
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Cara Pakai");
+    XLSX.writeFile(workbook, `Format Datamaster Cara Pakai.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
   }
 };
 
@@ -209,11 +265,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -234,7 +286,7 @@ onMounted(() => {
               <CustomButton
                 @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
-                label="Beli"
+                label="Data"
                 class="mr-[10px]"
               />
             </div>
@@ -245,7 +297,7 @@ onMounted(() => {
                 v-model="searchQuery"
                 label="Cari Cara Pakai"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Cara Pakai"
+                placeholder="Cari Nama Cara Pakai"
                 class=""
               />
             </div>
@@ -279,10 +331,10 @@ onMounted(() => {
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="w-full text-center">No.</div>
+              <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="">
                 {{ slotProps.index + 1 }}
               </div>
             </template>
@@ -297,13 +349,9 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -312,11 +360,7 @@ onMounted(() => {
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header="slotProps">
-              <div
-                class="w-full font-semibold text-center text-SM"
-              >
-                Action
-              </div>
+              <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center gap-2.5 justify-center">
@@ -355,15 +399,28 @@ onMounted(() => {
         />
       </template>
       <template #footer>
-        <div class="flex justify-between px-5 py-2.5">
+        <div class="flex justify-between">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton @click="ExportExcel">
+              <img src="@/assets/icons/File Export.svg" alt="" />Export
             </CustomButton>
-            <CustomButton label="Eksport">
-              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-            </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

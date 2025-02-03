@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import GreenCard from "../GreenCard.vue";
 import NoData from "@/assets/icons/no-data-icon.svg";
-import { defineProps, ref } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   profilFaskesResponse: {

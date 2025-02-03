@@ -115,6 +115,8 @@ import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNon
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
+import ExpertisePage from "@/views/Laboratorium/ExpertisePage.vue";
+import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
@@ -188,8 +190,6 @@ import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
 import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
-
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -774,13 +774,13 @@ const router = createRouter({
     {
       path: "/laboratorium/expertise",
       name: "laboratorium-expertise",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: ExpertisePage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
       path: "/laboratorium/datamaster/kategori-pemeriksaan",
       name: "laboratorium-datamaster/kategori-pemeriksaan",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: KategoriPemeriksaanPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
@@ -1310,7 +1310,11 @@ const router = createRouter({
     {
       path: "/inventory/pengadaan-barang/verifikasi-pembelian-barang-supplier",
       name: "inventory-pengadaan-barang-verifikasi-pembelian-barang-supplier",
-      meta: { layout: SidebarLayout, page: VerificationPurchasePage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: VerificationPurchasePage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
@@ -1322,43 +1326,71 @@ const router = createRouter({
     {
       path: "/inventory/pengeluaran-barang/verifikasi-pengiriman-unit",
       name: "inventory-pengeluaran-barang-verifikasi-pengiriman-unit",
-      meta: { layout: SidebarLayout, page: PengirimanUnitPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PengirimanUnitPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/pengeluaran-barang/pengeluaran-unit",
       name: "inventory-pengeluaran-barang-pengeluaran-unit",
-      meta: { layout: SidebarLayout, page: PengeluaranUnitPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PengeluaranUnitPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/penerimaan-barang/penerimaan-pembelian",
       name: "inventory-penerimaan-barang-penerimaan-pembelian",
-      meta: { layout: SidebarLayout, page: PenerimaanPembelianPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PenerimaanPembelianPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/penerimaan-barang/penerimaan-retur-unit",
       name: "inventory-penerimaan-barang-penerimaan-retur-unit",
-      meta: { layout: SidebarLayout, page: PenerimaanReturUnitPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: PenerimaanReturUnitPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/datamaster/supplier",
       name: "inventory-datamaster-supplier",
-      meta: { layout: SidebarLayout, page: DatamasterSupplierPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DatamasterSupplierPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/riwayat-tarif",
       name: "inventory-riwayat-tarif",
-      meta: { layout: SidebarLayout, page: RiwayatTarifPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RiwayatTarifPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/kartustok-mutasi",
       name: "inventory-kartustok-mutasi",
-      meta: { layout: SidebarLayout, page: KartustokMutasiPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KartustokMutasiPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
@@ -1370,13 +1402,21 @@ const router = createRouter({
     {
       path: "/inventory/stok-adjustment",
       name: "inventory-stok-adjustment",
-      meta: { layout: SidebarLayout, page: StokAdjustmentPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: StokAdjustmentPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
       path: "/inventory/laporan/obat-expired",
       name: "inventory-laporan-obat-expired",
-      meta: { layout: SidebarLayout, page: ObatExpiredPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ObatExpiredPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
@@ -1395,13 +1435,21 @@ const router = createRouter({
     {
       path: "/training/daftar-kelas",
       name: "training-daftar-kelas",
-      meta: { layout: SidebarLayout, page: DaftarKelasPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: DaftarKelasPage,
+        requiresAuth: true,
+      },
       component: TrainingView,
     },
     {
       path: "/training/booking-kelas",
       name: "training-booking-kelas",
-      meta: { layout: SidebarLayout, page: BookingKelasPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: BookingKelasPage,
+        requiresAuth: true,
+      },
       component: TrainingView,
     },
     {
@@ -1413,7 +1461,11 @@ const router = createRouter({
     {
       path: "/training/laporan/rekapitulasi",
       name: "training-laporan-rekapitulasi",
-      meta: { layout: SidebarLayout, page: SectionRekapitulasi, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: SectionRekapitulasi,
+        requiresAuth: true,
+      },
       component: TrainingView,
     },
 
@@ -1426,25 +1478,41 @@ const router = createRouter({
     {
       path: "/laporan/jumlah-kunjungan",
       name: "laporan-jumlah-kunjungan",
-      meta: { layout: SidebarLayout, page: JumlahKunjunganPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: JumlahKunjunganPage,
+        requiresAuth: true,
+      },
       component: LaporanView,
     },
     {
       path: "/laporan/rekapitulasi-tindakan",
       name: "laporan-rekapitulasi-tindakan",
-      meta: { layout: SidebarLayout, page: RekapTindakanPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapTindakanPage,
+        requiresAuth: true,
+      },
       component: LaporanView,
     },
     {
       path: "/laporan/rekapitulasi-pemeriksaan-lab",
       name: "laporan-rekapitulasi-pemeriksaan-lab",
-      meta: { layout: SidebarLayout, page: RekapPemeriksaanPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapPemeriksaanPage,
+        requiresAuth: true,
+      },
       component: LaporanView,
     },
     {
       path: "/laporan/rekapitulasi-pendapatan",
       name: "laporan-rekapitulasi-pendapatan",
-      meta: { layout: SidebarLayout, page: RekapPendapatan, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapPendapatan,
+        requiresAuth: true,
+      },
       component: LaporanView,
     },
     {

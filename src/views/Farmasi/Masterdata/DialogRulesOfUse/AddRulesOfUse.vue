@@ -35,7 +35,7 @@ const schema = toTypedSchema(
     periodeUnit: yup.string().required("Periode Unit harus diisi"),
     periode: yup.number().required("Periode harus diisi"),
     frekuensi: yup.number().required("Frekuensi harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
