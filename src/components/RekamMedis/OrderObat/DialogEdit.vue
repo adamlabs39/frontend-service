@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { defineEmits, defineProps, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import CustomDialog from '@/components/Base/CustomDialog.vue';
 import DetailPasien from './DetailPasien.vue';
 import CustomButton from '@/components/Base/CustomButton.vue';

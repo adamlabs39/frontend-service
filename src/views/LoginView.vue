@@ -95,7 +95,7 @@ const getImage = (image: string) => {
               />
             </template>
             <template #content>
-              <form class="px-5">
+              <form class="px-5" @keydown.enter="onSubmit">
                 <CustomTextfield
                   v-model="username"
                   label="Username"
