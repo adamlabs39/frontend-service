@@ -135,6 +135,13 @@ const searchData = () => {
 
 // Filter Reset Data
 const resetData = () => {
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  recipeOrigin.value = "";
+  typeOfService.value = "";
+  paymentMethod.value = "";
+  searchQuery.value = "";
+  revenue.value = "";
   fetchRevenue();
 };
 
