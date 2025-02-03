@@ -26,6 +26,7 @@ const props = defineProps({
 });
 
 const payload = ref({ ...props.payloadDetail });
+
 const emit = defineEmits(["close"]);
 
 // data user from local storage
@@ -141,8 +142,6 @@ const fetchPegawai = async () => {
 };
 
 const fetchStockObat = async (uuid: string) => {
-  UseUtilsStore.setLoading(true);
-  console.log(uuid);
   try {
     const response = await MedicalItemStore.getAvailableStockApi(uuid);
 
@@ -154,9 +153,9 @@ const fetchStockObat = async (uuid: string) => {
   } catch (error) {
     console.error("Failed to fetch data", error);
     stockObatPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
   }
+  console.log(stockObatPayload.value, 'test');
+  
 };
 
 const fetchStockLocation = async () => {
@@ -246,8 +245,7 @@ const itemEdukasi = ref([
 
 
 const schema = toTypedSchema(
-  yup
-    .object({
+  yup.object({
       obat: yup.array().of(
         yup.object({
           jenisStokUuid: yup.string().when("isCompound", {
@@ -308,7 +306,6 @@ const updateStokObat = async (
     if (fields.value[indexObat].value.isCompound) {
       const selectedRacikan =
         fields.value[indexObat].value.racikan[indexRacikan];
-      console.log("selected stock", selectedRacikan);
 
       selectedRacikan.hargaSatuan = selectedStock.harga;
       selectedRacikan.sisaStok = selectedStock.totalStok;
@@ -387,16 +384,12 @@ watch(
       fetchStockObat(payload.value.lokasiStokUuid);
       awalLokasi.value = newPayload.lokasiStokUuid;
     }
-    console.log("Payload:", newPayload);
-
     setValues({
       obat:
         payload.value.obat?.map((item: any) => ({
           ...item,
         })) || [],
     });
-
-    console.log("Payload fields:", fields);
   },
   { immediate: true }
 );
@@ -556,9 +549,7 @@ if (userData.value) {
           <div class="basis-1/2">
             <p class="font-bold text-MD">Nama lengkap pasien</p>
             <p>{{ payload.noReg }}</p>
-            <CustomButton class="w-24 h-5 text-sm">{{
-              payload.noRm
-            }}</CustomButton>
+            <CustomButton class="w-24 h-5 text-sm">{{ payload.noRm }}</CustomButton>
             <CustomChip
               :showCheckedIcon="false"
               label="Laki-laki"
@@ -775,7 +766,7 @@ if (userData.value) {
                     />
                     <Column field="itemsObat">
                       <template #header>
-                        <div class="flex justify-between items-center w-full">
+                        <div class="flex items-center justify-between w-full">
                           <div class="font-semibold">Stok Obat</div>
                           <CustomButton
                             v-if="
@@ -1305,7 +1296,7 @@ if (userData.value) {
             payload.orderStatus === 2 ||
             payload.orderStatus === 4
           "
-          class="flex justify-between items-end"
+          class="flex items-end justify-between"
         >
           <CustomSelect
             v-if="
