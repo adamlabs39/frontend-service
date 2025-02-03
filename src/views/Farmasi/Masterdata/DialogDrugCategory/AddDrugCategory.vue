@@ -30,7 +30,7 @@ const schema = toTypedSchema(
     code: yup.string().required("Kode Satuan harus diisi"),
     name: yup.string().required("Nama Satuan harus diisi"),
     satuanDosis: yup.bool().default(false),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

@@ -29,7 +29,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Cara Pakai harus diisi"),
     caraPakai: yup.string().required("Nama Cara Pakai harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

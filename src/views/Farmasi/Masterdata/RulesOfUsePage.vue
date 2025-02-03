@@ -14,6 +14,7 @@ import AddRulesOfUse from "./DialogRulesOfUse/AddRulesOfUse.vue";
 import DeleteRulesOfUse from "./DialogRulesOfUse/DeleteRulesOfUse.vue";
 
 // State Management
+const searchQuery = ref<string>("");
 const RulesOfUseStore = useRulesOfUseStore();
 const UseUtilsStore = utilsStore();
 const RulesOfUsePayload = ref<any[]>([]);
@@ -22,7 +23,6 @@ const RulesOfUseProperties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasData = computed(
@@ -66,102 +66,6 @@ const handlePage = (event: any) => {
   RulesOfUseProperties.value.page = event.page + 1;
   RulesOfUseProperties.value.page_size = event.rows;
   fetchRulesOfUse();
-};
-
-// Export Excel
-const ExportExcel = async () => {
-  try {
-    const response = await RulesOfUseStore.exportApi();
-    const rows = response.payload;
-    if (!rows || rows.length === 0) {
-      console.error("No data available for export");
-      return;
-    }
-
-    // Prepare Data for Export
-    const title = ["DATAMASTER ATURAN PAKAI"];
-    const data = [];
-
-    // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({});
-    data.push({});
-    data.push({
-      No: "No",
-      code: "code",
-      name: "name",
-      Status: "Status",
-    });
-
-    // Data Rows
-    for (let i = 0; i < rows.length; i++) {
-      data.push({
-        No: i + 1,
-        code: rows[i].code,
-        name: rows[i].name,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
-      });
-    }
-
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
-
-    // Add Title and Merge Cells
-    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
-
-    // Style Title
-    worksheet["A1"].s = {
-      alignment: { horizontal: "center", vertical: "center" },
-      font: { bold: true, sz: 14 },
-    };
-
-    // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
-
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
-    for (let row = 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
-
-        // Apply border only to row 3 and beyond (table rows)
-        if (row >= 2) {
-          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-          worksheet[cellAddress].s.border = {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
-
-        // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
-
-        // Fill header with background color (row 3)
-        if (row === 2) {
-          worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "9fe2db" },
-          };
-        }
-      }
-    }
-
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
-  }
 };
 
 // Selected Row
@@ -208,6 +112,176 @@ const confirmDelete = async (item: any) => {
   }
 };
 
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+// Import Excel
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("files", file);
+  try {
+    const response = await RulesOfUseStore.importApi(dataUpload);
+    fetchRulesOfUse();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await RulesOfUseStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER ATURAN PAKAI"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Kode: "Kode Aturan Pakai",
+      Nama: "Nama Aturan Pakai",
+      PeriodeUnit: "Periode Unit",
+      Frekuensi: "Frekuensi",
+      Periode: "Periode",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        PeriodeUnit: rows[i].periodeUnit,
+        Frekuensi: rows[i].frekuensi,
+        Periode: rows[i].periode,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Aturan Pakai");
+    XLSX.writeFile(workbook, `Datamaster Aturan Pakai.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Aturan Pakai*",
+      Nama: "Nama Aturan Pakai*",
+      PeriodeUnit: "Periode Unit*",
+      Frekuensi: "Frekuensi*",
+      Periode: "Periode*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ 
+      No: "1", 
+      Kode: "AP001", 
+      Nama: "Minum 3x sehari",
+      PeriodeUnit: "Hari",
+      Frekuensi: "3",
+      Periode: "1"
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Aturan Pakai");
+    XLSX.writeFile(workbook, `Format Datamaster Aturan Pakai.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 onMounted(() => {
   fetchRulesOfUse();
 });
@@ -215,11 +289,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -251,7 +321,7 @@ onMounted(() => {
                 v-model="searchQuery"
                 label="Cari Aturan Pakai"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Aturan Pakai"
+                placeholder="Cari Nama Aturan Pakai"
                 class=""
               />
             </div>
@@ -295,19 +365,46 @@ onMounted(() => {
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="w-full text-center">No.</div>
+              <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="">
                 {{ slotProps.index + 1 }}
               </div>
             </template>
           </Column>
           <Column field="code" header="Kode Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <Column field="name" header="Nama Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="periodeUnit" header="Periode Unit" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="frekuensi" header="Frekuensi" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="periode" header="Periode" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center text-SM">Periode Unit</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.data.periodeUnit }}
+              </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center text-SM">Frekuensi</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.data.frekuensi }}
+              </div>
+            </template>
+          </Column>
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center text-SM">Periode</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                {{ slotProps.data.periode }}
+              </div>
+            </template>
+          </Column>
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="slotProps">
               <div class="w-full font-semibold text-center text-SM">Status</div>
@@ -316,13 +413,9 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -331,11 +424,7 @@ onMounted(() => {
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header="slotProps">
-              <div
-                class="w-full font-semibold text-center text-SM"
-              >
-                Action
-              </div>
+              <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center gap-2.5 justify-center">
@@ -374,15 +463,28 @@ onMounted(() => {
         />
       </template>
       <template #footer>
-        <div class="flex justify-between px-5 py-2.5">
+        <div class="flex justify-between">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import" @click="">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton @click="ExportExcel">
+              <img src="@/assets/icons/File Export.svg" alt="" />Export
             </CustomButton>
-            <CustomButton label="Eksport" @click="ExportExcel">
-              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-            </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

@@ -14,6 +14,7 @@ import AddUnit from "../Masterdata/DialogUnit/AddUnit.vue";
 import DeleteUnit from "../Masterdata/DialogUnit/DeleteUnit.vue";
 
 // State Management
+const searchQuery = ref<string>("");
 const UnitStore = useUnitStore();
 const UseUtilsStore = utilsStore();
 const UnitPayload = ref<any[]>([]);
@@ -22,7 +23,6 @@ const UnitProperties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasData = computed(
@@ -58,7 +58,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchSatuan();
-  }, 500); 
+  }, 500);
 });
 
 // Handle Pagination
@@ -66,104 +66,6 @@ const handlePage = (event: any) => {
   UnitProperties.value.page = event.page + 1;
   UnitProperties.value.page_size = event.rows;
   fetchSatuan();
-};
-
-// Export Excel
-const ExportExcel = async () => {
-  try {
-    const response = await UnitStore.exportApi();
-    const rows = response.payload;
-    if (!rows || rows.length === 0) {
-      console.error("No data available for export");
-      return;
-    }
-
-    // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
-    const data = [];
-
-    // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({});
-    data.push({});
-    data.push({
-      No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
-      Status: "Status",
-    });
-
-    // Data Rows
-    for (let i = 0; i < rows.length; i++) {
-      data.push({
-        No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
-      });
-    }
-
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
-
-    // Add Title and Merge Cells
-    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
-
-    // Style Title
-    worksheet["A1"].s = {
-      alignment: { horizontal: "center", vertical: "center" },
-      font: { bold: true, sz: 14 },
-    };
-
-    // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
-
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
-    for (let row = 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
-
-        // Apply border only to row 3 and beyond (table rows)
-        if (row >= 2) {
-          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-          worksheet[cellAddress].s.border = {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
-
-        // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
-
-        // Fill header with background color (row 3)
-        if (row === 2) {
-          worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "9fe2db" },
-          };
-        }
-      }
-    }
-
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
-  }
 };
 
 // Dialog Management
@@ -202,6 +104,166 @@ const confirmDelete = async (item: any) => {
   }
 };
 
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  // console.log('Uploaded Files:', uploadedFiles); // Cetak file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+// Import Excel
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("files", file);
+  try {
+    const response = await UnitStore.importApi(dataUpload);
+    fetchSatuan();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await UnitStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER SATUAN"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      KodeSatuan: "Kode Satuan",
+      NamaSatuan: "Nama Satuan",
+      SatuanDosis: "Satuan Dosis",
+      Editable: "Editable",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        KodeSatuan: rows[i].code,
+        NamaSatuan: rows[i].name,
+        SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
+        Editable: rows[i].Editable ? "AKTIF" : "NON-AKTIF",
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Satuan");
+    XLSX.writeFile(workbook, `Datamaster Satuan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Satuan*",
+      Nama: "Nama Satuan*",
+      Satuan: "Satuan Dosis*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ No: "1", Kode: "KODE-001", Nama: "Nama Satuan 1", Satuan: "Aktif"});
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Satuan");
+    XLSX.writeFile(workbook, `Format Datamaster Satuan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 onMounted(() => {
   fetchSatuan();
 });
@@ -209,11 +271,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -226,7 +284,11 @@ onMounted(() => {
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Satuan</p>
                 </div>
@@ -246,7 +308,6 @@ onMounted(() => {
                 label="Cari Satuan"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Satuan"
-                class=""
               />
             </div>
           </template>
@@ -279,31 +340,27 @@ onMounted(() => {
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="w-full text-center">No.</div>
+              <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
-              </div>
+              <div class="">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
           <Column field="code" header="Kode Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <Column field="name" header="Nama Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <Column field="satuanDosis" headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center text-SM">Satuan Dosis</div>
+              <div class="w-full font-semibold text-center text-SM">
+                Satuan Dosis
+              </div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.satuanDosis ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.satuanDosis ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.satuanDosis ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.satuanDosis ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.satuanDosis ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.satuanDosis ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.satuanDosis ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -312,19 +369,17 @@ onMounted(() => {
           </Column>
           <Column field="editable" headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center text-SM">Editable</div>
+              <div class="w-full font-semibold text-center text-SM">
+                Editable
+              </div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.editable ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.editable ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.editable ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.editable ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.editable ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.editable ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.editable ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -339,13 +394,9 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -378,7 +429,7 @@ onMounted(() => {
             </template>
           </Column>
         </DataTable>
-        <AddUnit 
+        <AddUnit
           v-model:isDialogVisible="unitDialog"
           :title="dialogConfig.title"
           :method="dialogConfig.method"
@@ -393,15 +444,28 @@ onMounted(() => {
         />
       </template>
       <template #footer>
-        <div class="flex justify-between px-5 py-2.5">
+        <div class="flex justify-between">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton @click="ExportExcel">
+              <img src="@/assets/icons/File Export.svg" alt="" />Export
             </CustomButton>
-            <CustomButton label="Eksport">
-              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-            </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

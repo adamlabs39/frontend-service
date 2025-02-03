@@ -10,23 +10,19 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import AddMedicalItem from "./DialogMedicalItem/AddMedicalItem.vue";
 import DeleteMedicalItem from "./DialogMedicalItem/DeleteMedicalItem.vue";
 
-const selectedFilterJenisStok = ref<string[]>([]);
-const onPoliSelect = (label: string) => {
-  if (selectedFilterJenisStok.value.includes(label)) {    
-    selectedFilterJenisStok.value = selectedFilterJenisStok.value.filter(
-      (item) => item != label
-    );
-  } else {
-    selectedFilterJenisStok.value.push(label);
-  }
-  fetchMedicalItem()  
-};
+const optionJenisItem = ref([
+  { name: "OBAT", value: "obat" },
+  { name: "ALKES", value: "alkes" },
+]);
 
 // State Management
+const searchQuery = ref<string>("");
+const jenisItem = ref<string>("");
 const MedicalItemStore = useMedicalItemStore();
 const UseUtilsStore = utilsStore();
 const MedicalItemPayload = ref<any[]>([]);
@@ -35,7 +31,6 @@ const MedicalItemProperties = ref({
   page_size: 10,
   total: 0,
 });
-const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasData = computed(
@@ -50,6 +45,7 @@ const fetchMedicalItem = async () => {
       MedicalItemProperties.value.page,
       MedicalItemProperties.value.page_size,
       searchQuery.value,
+      jenisItem.value,
       {jenis_stok_uuides: selectedFilterJenisStok.value}
     );
     
@@ -67,14 +63,6 @@ const fetchMedicalItem = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchMedicalItem();
-  }, 500); 
-});
-
 // Handle Pagination
 const handlePage = (event: any) => {
   MedicalItemProperties.value.page = event.page + 1;
@@ -82,102 +70,30 @@ const handlePage = (event: any) => {
   fetchMedicalItem();
 };
 
-// Export Excel
-const ExportExcel = async () => {
-  try {
-    const response = await  MedicalItemStore.exportApi();
-    const rows = response.payload;
-    if (!rows || rows.length === 0) {
-      console.error("No data available for export");
-      return;
-    }
-
-    // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
-    const data = [];
-
-    // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({});
-    data.push({});
-    data.push({
-      No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
-      Status: "Status",
-    });
-
-    // Data Rows
-    for (let i = 0; i < rows.length; i++) {
-      data.push({
-        No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].satuan_dosis ? "AKTIF" : "NON-AKTIF",
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
-      });
-    }
-
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
-
-    // Add Title and Merge Cells
-    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
-
-    // Style Title
-    worksheet["A1"].s = {
-      alignment: { horizontal: "center", vertical: "center" },
-      font: { bold: true, sz: 14 },
-    };
-
-    // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
-
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
-    for (let row = 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
-
-        // Apply border only to row 3 and beyond (table rows)
-        if (row >= 2) {
-          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
-          worksheet[cellAddress].s.border = {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
-
-        // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
-
-        // Fill header with background color (row 3)
-        if (row === 2) {
-          worksheet[cellAddress].s.fill = {
-            fgColor: { rgb: "9fe2db" },
-          };
-        }
-      }
-    }
-
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
+const selectedFilterJenisStok = ref<string[]>([]);
+const onPoliSelect = (label: string) => {
+  if (selectedFilterJenisStok.value.includes(label)) {    
+    selectedFilterJenisStok.value = selectedFilterJenisStok.value.filter(
+      (item) => item != label
+    );
+  } else {
+    selectedFilterJenisStok.value.push(label);
   }
+  fetchMedicalItem()  
+};
+
+// Filter Search Data
+const searchData = () => {
+  searchQuery.value,
+  jenisItem.value,
+  fetchMedicalItem();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  searchQuery.value = "";
+  jenisItem.value = "";
+  fetchMedicalItem();
 };
 
 // Selected Row
@@ -243,6 +159,210 @@ const fetchStockType = async () => {
   }
 };
 
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+// Import Excel
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("files", file);
+  try {
+    const response = await MedicalItemStore.importApi(dataUpload);
+    fetchMedicalItem();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await  MedicalItemStore.exportApi();
+    const rows = response.payload.itemMedis;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER ITEM MEDIS"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Kode: "Kode Item Medis",
+      Nama: "Nama Item Medis",
+      JenisItem: "Jenis Item",
+      SatuanPenggunaan: "Satuan Penggunaan",
+      JenisStok: "Jenis Stok",
+      Manufaktur: "Manufaktur",
+      BentukSediaan: "Bentuk Sediaan",
+      DosisKemasan: "Dosis Kemasan",
+      SatuanDosis: "Satuan Dosis",
+      IsiKemasan: "Isi Kemasan",
+      SatuanKemasan: "Satuan Kemasan",
+      KategoriItem: "Kategori Item",
+      Komposisi: "Komposisi",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        JenisItem: rows[i].jenisItem,
+        SatuanPenggunaan: rows[i].satuanPenggunaan,
+        JenisStok: rows[i].jenisStok,
+        Manufaktur: rows[i].manufacture,
+        BentukSediaan: rows[i].bentukSediaan,
+        DosisKemasan: rows[i].dosis,
+        SatuanDosis: rows[i].satuanDosis,
+        IsiKemasan: rows[i].IsiKemasan,
+        SatuanKemasan: rows[i].satuanKemasan,
+        KategoriItem: rows[i].kategoriObat,
+        Komposisi: rows[i].ingridients,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Item Medis");
+    XLSX.writeFile(workbook, `Datamaster Item Medis.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Item Medis*",
+      Nama: "Nama Item Medis*",
+      JenisItem: "Jenis Item*",
+      SatuanPenggunaan: "Satuan Penggunaan*",
+      SatuanPembelian: "Satuan Pembelian*",
+      JenisStok: "Jenis Stok",
+      Pabrik: "Pabrik",
+      BentukSediaan: "Bentuk Sediaan*",
+      DosisKemasan: "Dosis Kemasan*",
+      SatuanDosis: "Satuan Dosis*",
+      IsiKemasan: "Isi Kemasan",
+      SatuanKemasan: "Satuan Kemasan",
+      KategoriItem: "Kategori Item*",
+      Komposisi: "Komposisi",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ 
+      No: "1", 
+      Kode: "MD001", 
+      Nama: "Betadine",
+      JenisItem: "Alkes",
+      SatuanPenggunaan: "btl",
+      SatuanPembelian: "btl",
+      JenisStok: "bpjs",
+      Pabrik: "mn1",
+      BentukSediaan: "bs1",
+      DosisKemasan: "500",
+      SatuanDosis: "btl",
+      IsiKemasan: "10",
+      SatuanKemasan: "btl",
+      KategoriItem: "kategori1",
+      Komposisi: "KODE-001"
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Item Medis");
+    XLSX.writeFile(workbook, `Format Datamaster Item Medis.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 onMounted(() => {
   fetchMedicalItem();
   fetchStockType();
@@ -251,11 +371,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -282,13 +398,36 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
-                label="Cari Item Medis"
+                label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Item Medis (Obat / Alkes / dll)"
-                class=""
+                class="w-[70%] mr-5"
+              />
+              <CustomSelect
+                v-model="jenisItem"
+                place-holder="Pilih Jenis Item"
+                label="Jenis Item"
+                class="mr-5 w-[30%]"
+                optionLabel="name"
+                optionValue="value"
+                :options="optionJenisItem"
+              />
+              <CustomButton
+                @click="searchData"
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="mt-auto"
+              />
+              <CustomButton
+                @click="resetData"
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto ml-[10px]"
               />
             </div>
             <!-- Filter Jenis Stok -->
@@ -354,10 +493,10 @@ onMounted(() => {
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="w-full text-center">No.</div>
+              <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="">
                 {{ slotProps.index + 1 }}
               </div>
             </template>
@@ -408,9 +547,7 @@ onMounted(() => {
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header="slotProps">
-              <div class="w-full font-semibold text-center text-SM">
-                Action
-              </div>
+              <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center gap-2.5 justify-center">
@@ -450,15 +587,28 @@ onMounted(() => {
         />
       </template>
       <template #footer>
-        <div class="flex justify-between px-5 py-2.5">
+        <div class="flex justify-between">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton @click="ExportExcel">
+              <img src="@/assets/icons/File Export.svg" alt="" />Export
             </CustomButton>
-            <CustomButton label="Eksport">
-              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
-            </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

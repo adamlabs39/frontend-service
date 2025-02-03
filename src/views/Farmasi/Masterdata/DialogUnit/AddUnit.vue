@@ -31,7 +31,7 @@ const schema = toTypedSchema(
     name: yup.string().required("Nama Satuan harus diisi"),
     satuanDosis: yup.bool().default(false),
     editable: yup.bool().default(false),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 

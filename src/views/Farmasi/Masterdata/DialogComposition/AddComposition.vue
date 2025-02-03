@@ -29,7 +29,7 @@ const schema = toTypedSchema(
   yup.object({
     code: yup.string().required("Kode Komposisi harus diisi"),
     name: yup.string().required("Nama Komposisi harus diisi"),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -102,10 +102,7 @@ watch(
 </script>
 
 <template>
-    <CustomDialog 
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
-    width="550px">
+    <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="550px">
       <template #header>
         <div class="grid grid-cols-1">
           <p>Tambah Data Komposisi</p>

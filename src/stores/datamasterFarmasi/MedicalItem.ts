@@ -11,8 +11,8 @@ export const useMedicalItemStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10, name:String="", payload = {}) {      
-      return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}`, payload);
+    async getApi(page: number = 1, limit: number = 10, name: String="", jenisItem: String="", payload = {}) {      
+      return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}&jenis_item=${jenisItem}`, payload);
     },
     async getAvailableStockApi(uuid:string, payload = {}) {
       return apiFarmasiGet(`/farmasi/datamaster/item-medis/available-jenis-stock/${uuid}`, payload);

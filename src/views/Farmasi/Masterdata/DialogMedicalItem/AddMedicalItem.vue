@@ -60,7 +60,7 @@ const schema = toTypedSchema(
       kategoriObatUuid: yup.string().required("Kategori Item harus diisi"),
       jenisStocks: yup.array().min(1, "Minimal satu Jenis Stok harus dipilih").required("Jenis Stok harus diisi"),
       ingridients: yup.array().min(1, "Minimal satu Komposisi harus dipilih").required("Komposisi harus diisi"),
-      status: yup.bool().default(false),
+      status: yup.bool().default(true),
     })
     .noUnknown()
 );

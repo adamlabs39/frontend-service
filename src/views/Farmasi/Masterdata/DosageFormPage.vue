@@ -68,6 +68,60 @@ const handlePage = (event: any) => {
   fetchDosageForm();
 };
 
+// Dialog Management
+const sediaanDialog = ref(false);
+const deleteSediaanDialog = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+  title: "Tambah",
+  data: null,
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  sediaanDialog.value = true;
+};
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  deleteSediaanDialog.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  // console.log(item,'item');
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await DosageFormStore.deleteApi(item.uuid);
+      fetchDosageForm();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      deleteSediaanDialog.value = false;
+    }
+  }
+};
+
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+// Import Excel
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("files", file);
+  try {
+    const response = await DosageFormStore.importApi(dataUpload);
+    fetchDosageForm();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
 // Export Excel
 const ExportExcel = async () => {
   try {
@@ -79,7 +133,7 @@ const ExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
+    const title = ["DATAMASTER BENTUK SEDIAAN"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -87,9 +141,8 @@ const ExportExcel = async () => {
     data.push({});
     data.push({
       No: "No",
-      KodeSatuan: "Kode Satuan",
-      NamaSatuan: "Nama Satuan",
-      SatuanDosis: "Satuan Dosis",
+      Kode: "Kode Bentuk Sediaan",
+      Nama: "Nama Bentuk Sediaan",
       Status: "Status",
     });
 
@@ -97,9 +150,8 @@ const ExportExcel = async () => {
     for (let i = 0; i < rows.length; i++) {
       data.push({
         No: i + 1,
-        KodeSatuan: rows[i].code,
-        NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].satuan_dosis ? "AKTIF" : "NON-AKTIF",
+        Kode: rows[i].code,
+        Nama: rows[i].name,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -142,12 +194,10 @@ const ExportExcel = async () => {
         }
 
         // Align header cells (row 3)
-        if (row === 2 || col === 0) {
-          worksheet[cellAddress].s.alignment = {
-            horizontal: "center",
-            vertical: "center",
-          };
-        }
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
 
         // Fill header with background color (row 3)
         if (row === 2) {
@@ -159,46 +209,52 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster ICD 9 CM");
-    XLSX.writeFile(workbook, `Datamaster ICD 9 CM.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Bentuk Sediaan");
+    XLSX.writeFile(workbook, `Datamaster Bentuk Sediaan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
 
-// Dialog Management
-const sediaanDialog = ref(false);
-const deleteSediaanDialog = ref(false);
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
 
-const dialogConfig = ref<any>({
-  method: "add",
-  title: "Tambah",
-  data: null,
-});
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Bentuk Sediaan*",
+      Nama: "Nama Bentuk Sediaan*",
+    });
 
-const openDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  sediaanDialog.value = true;
-};
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ No: "1", Kode: "KODE-001", Nama: "Nama Bentuk Sediaan 1" });
 
-const deleteDialog = (method: string, title: string, data: any = null) => {
-  dialogConfig.value = { method, title, data };
-  deleteSediaanDialog.value = true;
-};
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-const confirmDelete = async (item: any) => {
-  // console.log(item,'item');
-  if (item) {
-    UseUtilsStore.setLoading(true);
-    try {
-      await DosageFormStore.deleteApi(item.uuid);
-      fetchDosageForm();
-    } catch (error) {
-      console.error("Failed to delete data", error);
-    } finally {
-      UseUtilsStore.setLoading(false);
-      deleteSediaanDialog.value = false;
-    }
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Bentuk");
+    XLSX.writeFile(workbook, `Format Datamaster Bentuk Sediaan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
   }
 };
 
@@ -209,11 +265,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
-    >
+    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -279,10 +331,10 @@ onMounted(() => {
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="w-full text-center">No.</div>
+              <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="">
                 {{ slotProps.index + 1 }}
               </div>
             </template>
@@ -297,13 +349,9 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="
-                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
-                  "
+                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
                   :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="
-                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
-                  "
+                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -312,11 +360,7 @@ onMounted(() => {
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header="slotProps">
-              <div
-                class="w-full font-semibold text-center text-SM"
-              >
-                Action
-              </div>
+              <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center gap-2.5 justify-center">
@@ -355,15 +399,28 @@ onMounted(() => {
         />
       </template>
       <template #footer>
-        <div class="flex justify-between px-5 py-2.5">
+        <div class="flex justify-between">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
-            </CustomButton>
-            <CustomButton label="Eksport">
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton label="Eksport" @click="ExportExcel">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton label="Eksport" @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

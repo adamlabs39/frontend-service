@@ -105,7 +105,7 @@ const schema = toTypedSchema(
     kabupatenCode: yup.string(),
     kecamatanCode: yup.string(),
     kelurahanCode: yup.string(),
-    status: yup.bool().default(false),
+    status: yup.bool().default(true),
   }).noUnknown()
 );
 
@@ -239,10 +239,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <CustomDialog
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
-    width="600px">
+    <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="600px">
       <template #header>
         <div v-if="method !== 'detail'" class="grid grid-cols-1">
             <p>Tambah Data Manufaktur</p>
