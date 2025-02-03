@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import { onMounted, ref, computed, type PropType } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import HeaderFilter from "../Layout/OrderHeader.vue";
-import AntrianFooter from "../Layout/LaboratoriumFooter.vue";
 import NoData from "@/components/section/NoData.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 
 const pageType = ref("");
 const route = useRoute();
+const rowsPerPage = ref(10);
+
+const emits = defineEmits(['update:rows', 'update:current-page']);
+const handleRowsUpdate = (rows: number) => {
+  console.log('Rows updated:', rows);
+};
+const handlePageUpdate = (page: number) => {
+  console.log('Page updated:', page);
+};
 
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -42,6 +52,7 @@ onMounted(() => {
 const itemsPasien = ref([
   {
     noRM: "123456",
+    no_registrasi: "REG000001",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
     age_year: 20,
@@ -60,6 +71,7 @@ const itemsPasien = ref([
   },
   {
     noRM: "123456",
+    no_registrasi: "REG000002",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
     age_year: 20,
@@ -78,6 +90,7 @@ const itemsPasien = ref([
   },
   {
     noRM: "123456",
+    no_registrasi: "REG000003",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
     age_year: 20,
@@ -96,6 +109,7 @@ const itemsPasien = ref([
   },
   {
     noRM: "123456",
+    no_registrasi: "REG000004",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
     age_year: 20,
@@ -116,6 +130,7 @@ const itemsPasien = ref([
   },
   {
     noRM: "123456",
+    no_registrasi: "REG000005",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
     age_year: 20,
@@ -167,6 +182,7 @@ const getChipCustomClass = (status: string) => {
 };
 
 const showCancelVisit = ref(false);
+const cancelReason = ref<string>();
 
 const selectedPatient = ref([]);
 </script>
@@ -202,6 +218,7 @@ const selectedPatient = ref([]);
           <template #body="slotProps">
             <div class="text-center">
               <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
+              <div class="text-SM">{{ slotProps.data.no_registrasi }}</div>
               <div class="text-SM">No.{{ slotProps.data.no_antrian }}</div>
             </div>
           </template>
@@ -333,7 +350,7 @@ const selectedPatient = ref([]);
             </div>
           </template>
         </Column>
-        <Column
+        <!-- <Column
           field="status"
           header="Status"
           header-class="flex items-center justify-center text-black bg-adameds-50"
@@ -357,7 +374,7 @@ const selectedPatient = ref([]);
               />
             </div>
           </template>
-        </Column>
+        </Column> -->
         <Column
           v-if="showCancelVisit"
           selectionMode="multiple"
@@ -369,7 +386,49 @@ const selectedPatient = ref([]);
       <NoData v-else />
     </template>
     <template #footer>
-      <AntrianFooter />
+        <div class="flex justify-between">
+          <div class="flex">
+            <CustomButton
+              v-if="!showCancelVisit"
+              @click="showCancelVisit = true"
+              class="my-auto bg-danger-300"
+              label="Batal Order"
+            />
+
+            <CustomButton
+              v-if="showCancelVisit"
+              @click="showCancelVisit = false"
+              class="my-auto mr-[10px]"
+              label="Batal"
+              outlined
+              borderColor="border-grey-200"
+              textColor="text-grey-300"
+            />
+
+            <CustomButton
+              v-if="showCancelVisit"
+              @click="showCancelVisit = true"
+              class="my-auto mr-[10px] bg-danger-300 w-[20%]"
+              label="Iya, Batalkan"
+              :disabled="!cancelReason"
+            />
+
+            <CustomTextfield
+              v-if="showCancelVisit"
+              v-model="cancelReason"
+              :showLabel="false"
+              class="my-auto w-[400px]"
+              placeholder="Alasan Batal Order"
+            />
+          </div>
+          <CustomPaginator
+            :rows="rowsPerPage"
+            :totalRecords="100"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @update:rows="handleRowsUpdate"
+            @update:current-page="handlePageUpdate"
+          />
+        </div>
     </template>
   </Card>
 </template>

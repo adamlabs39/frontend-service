@@ -51,6 +51,13 @@ const onPaymentMethodSelect = (label: string) => {
 
 const filters = [selectedPaymentMethod];
 
+const selectedOrderType = ref<string>("");
+
+const onSelectOrderType = (label: string) => {
+  selectedOrderType.value = label;
+  console.log(selectedOrderType, "selectedOrderType");
+};
+
 const emit = defineEmits(["order"]);
 
 const resetFilter = () => {
@@ -65,7 +72,7 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion :openWithHeader="false" noBorder>
+  <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <div class="flex items-center justify-between w-full gap-5 mr-2.5">
         <CustomButton label="" icon="PhArrowClockwise" />
@@ -126,6 +133,42 @@ defineExpose({
           class="mt-auto w-[70px]"
         />
       </div>
+       <div class="flex mt-[10px]">
+              <CustomButton
+                @click="onSelectOrderType('')"
+                label="ORDER"
+                :outlined="selectedOrderType != ''"
+                borderColor="border-adameds-300"
+                :textColor="
+                  selectedOrderType != ''
+                    ? 'text-adameds-300'
+                    : 'text-white'
+                "
+                :backgroundColor="
+                  selectedOrderType != ''
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
+                class="mt-auto mr-[5px] font-semibold"
+                full
+              />
+              <CustomButton
+                @click="onSelectOrderType('Batal')"
+                label="BATAL"
+                :outlined="selectedOrderType != 'Batal'"
+                borderColor="border-adameds-300"
+                :textColor="
+                  selectedOrderType != 'Batal' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectedOrderType != 'Batal'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
+                class="mt-auto ml-[5px] font-semibold"
+                full
+              />
+            </div>
       <div class="font-semibold text-SM text-grey-300">
         <div class="flex mb-[10px] mt-[30px]">
           <div class="w-[15%]">Filter Pembayaran</div>
