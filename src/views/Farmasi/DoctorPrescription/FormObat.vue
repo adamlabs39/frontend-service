@@ -261,8 +261,6 @@ const handleEditRacikan = ({
         temp.madicationQty !== parseItem.valueQty)
   );
 
-  console.log("tempKomponen", tempKomponen);
-
   if (tempKomponen) {
     const parseItemRacikan = JSON.parse(
       JSON.stringify({ ...fields.value[index].value, isUpdated: true })
@@ -290,10 +288,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     if (!props.payload || !props.payload.uuid) {
       throw new Error("UUID is missing for edit operation");
     }
-
-    console.log("data edit", values);
     const uuid = props.payload.uuid;
-    console.log("data edit", values);
     const response = await doctorPrescriptionStore.updateObatApi(uuid, values);
     console.log("Data updated successfully:", response);
     emit("data-updated");
