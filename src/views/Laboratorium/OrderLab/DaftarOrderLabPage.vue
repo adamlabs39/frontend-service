@@ -40,7 +40,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         <div class="flex justify-between">
           <CustomBreadCrumb
             :home="{
-              label: 'Order Fisio',
+              label: 'Order Lab',
               home: true,
             }"
             :model="dataBreadCrumb"

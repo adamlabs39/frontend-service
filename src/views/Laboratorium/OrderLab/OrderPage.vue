@@ -13,6 +13,8 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -70,7 +72,7 @@ const itemsPasien = ref([
     no_registrasi: "REG000001",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
-    age_year: 20,
+    ageYear: 20,
     age_month: 3,
     age_day: 5,
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -89,7 +91,7 @@ const itemsPasien = ref([
     no_registrasi: "REG000002",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
-    age_year: 20,
+    ageYear: 20,
     age_month: 3,
     age_day: 5,
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -108,7 +110,7 @@ const itemsPasien = ref([
     no_registrasi: "REG000003",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
-    age_year: 20,
+    ageYear: 20,
     age_month: 3,
     age_day: 5,
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -127,7 +129,7 @@ const itemsPasien = ref([
     no_registrasi: "REG000004",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
-    age_year: 20,
+    ageYear: 20,
     age_month: 3,
     age_day: 5,
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -148,7 +150,7 @@ const itemsPasien = ref([
     no_registrasi: "REG000005",
     no_antrian: "000001",
     name: "Nama Pasien Lengkap",
-    age_year: 20,
+    ageYear: 20,
     age_month: 3,
     age_day: 5,
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -163,7 +165,6 @@ const itemsPasien = ref([
   },
 ]);
 
-
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
 
@@ -174,6 +175,52 @@ const onSelectOrderType = (label: string) => {
   selectedOrderType.value = label;
   console.log(selectedOrderType, "selectedOrderType");
 };
+
+const medicalRecord = ref<typeof MedicalRecord>();
+const openDialogRM = () => {
+  medicalRecord.value?.showDialogRM();
+};
+const popupDialog = ref(false);
+
+const selectedRow = (data: any) => {
+  popupDialog.value = true;
+  dialogData.value = data.data;
+  console.log(`Data`, dialogData);
+};
+
+interface DialogData {
+  noPendaftaran: string;
+  name: string;
+  address: string;
+  doctor: string;
+  practicHour: string;
+  tanggalDaftar: string;
+  tanggalJadwal: string;
+  no_SEP: string;
+  insuranceAccountName: string;
+  polyclinic: string;
+  gender: string;
+  phone: string;
+  ageYear: number;
+  ageMonth: number;
+  ageDay: number;
+  noMT: string;
+  noREG: string;
+  newPatient: boolean;
+  statusPelayanan: string;
+  statusPembayaran: string;
+}
+const dialogData = ref<DialogData>();
+
+const editIdentitas = () => {
+  popupDialog.value = false;
+  changeSection("Edit Order");
+};
+const handleBack = () => {
+  popupDialog.value = true; // Menampilkan popup dialog
+  dataBreadCrumb.value = [];
+};
+const editOrderDialog = ref(false);
 </script>
 
 <template>
@@ -192,7 +239,7 @@ const onSelectOrderType = (label: string) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Order Fisioterapi',
+                    label: 'Order Lab',
                     home: true,
                   }"
                 />
@@ -204,7 +251,7 @@ const onSelectOrderType = (label: string) => {
               <CustomButton
                 @click="changeSection('Daftar')"
                 icon="PhPlus"
-                label="Daftar"
+                label="Order"
                 class="mr-[10px]"
               />
             </div>
@@ -276,7 +323,9 @@ const onSelectOrderType = (label: string) => {
                 :outlined="selectedOrderType != 'Lunas'"
                 borderColor="border-adameds-300"
                 :textColor="
-                  selectedOrderType != 'Lunas' ? 'text-adameds-300' : 'text-white'
+                  selectedOrderType != 'Lunas'
+                    ? 'text-adameds-300'
+                    : 'text-white'
                 "
                 :backgroundColor="
                   selectedOrderType != 'Lunas'
@@ -342,6 +391,7 @@ const onSelectOrderType = (label: string) => {
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
+          @rowClick="selectedRow"
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
@@ -360,7 +410,7 @@ const onSelectOrderType = (label: string) => {
               <div class="text-SM">
                 <span class="font-semibold">{{ slotProps.data.name }}</span>
                 <span class="text-grey-300">
-                  ({{ slotProps.data.age_year }}Th
+                  ({{ slotProps.data.ageYear }}Th
                   {{ slotProps.data.age_month }}Bln
                   {{ slotProps.data.age_day }}Hr)
                 </span>
@@ -482,31 +532,6 @@ const onSelectOrderType = (label: string) => {
               </div>
             </template>
           </Column>
-          <!-- <Column
-              field="status"
-              header="Status"
-              header-class="flex items-center justify-center text-black bg-adameds-50"
-              class="text-center"
-            >
-              <template #body="slotProps">
-                <div class="flex items-center justify-center">
-                  <CustomChip
-                    :showCheckedIcon="false"
-                    :bgColor="getChipBgColor(slotProps.data.status)"
-                    :textColor="getChipTextColor(slotProps.data.status)"
-                    :customClass="getChipCustomClass(slotProps.data.status)"
-                    class="border-none"
-                    :label="
-                      slotProps.data.status === 'Belum Lunas'
-                        ? 'Belum lunas'
-                        : slotProps.data.status === 'Batal Order'
-                        ? 'Batal order'
-                        : 'Belum lunas'
-                    "
-                  />
-                </div>
-              </template>
-            </Column> -->
           <Column
             v-if="showCancelVisit"
             selectionMode="multiple"
@@ -563,6 +588,7 @@ const onSelectOrderType = (label: string) => {
         </div>
       </template>
     </Card>
+
     <DaftarOrderLabPage
       v-else-if="dataBreadCrumb[0].label == 'Daftar'"
       :dataBreadCrumb="dataBreadCrumb"
@@ -570,5 +596,457 @@ const onSelectOrderType = (label: string) => {
       :patientData="patientData"
       @back="dataBreadCrumb.pop()"
     />
+
+    <!-- Pop Up Dialog -->
+    <CustomDialog v-model:visible="popupDialog" width="1000px">
+      <template #header>
+        <div class="flex justify-between">
+          <div class="flex">
+            <p>
+              Detail Order Lab
+              <CustomChip
+                label="Poli"
+                :showCheckedIcon="false"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-50"
+                textColor="text-adameds-300"
+                customClass="h-6"
+                class="ml-[5px]"
+              />
+              <CustomChip
+                label="TUNAI"
+                :showCheckedIcon="false"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-50"
+                textColor="text-adameds-300"
+                customClass="h-6"
+                class="ml-[5px]"
+              />
+            </p>
+          </div>
+          <div></div>
+          <div class="flex ml-[470px]">
+            <div class="bg-white w-[1px] h-[30px]"></div>
+            <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
+          </div>
+          <div></div>
+        </div>
+      </template>
+      <template #body>
+        <div>
+          <div class="pt-5 mb-20">
+            <div class="grid grid-cols-3 gap-4 mt-8">
+              <div class="basis-1/4">
+                <p class="font-bold text-MD">Nama lengkap pasien</p>
+                <p>REG1231235</p>
+                <CustomButton class="w-24 h-5 text-sm">00-00-00</CustomButton>
+                <CustomChip
+                  :showCheckedIcon="false"
+                  label="Laki-laki"
+                  bgColor="bg-male-75"
+                  textColor="text-male-300"
+                  customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
+                />
+              </div>
+              <div class="flex">
+                <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
+                <div class="mt-[20px] mr-[40px]">
+                  <p class="text-xs font-bold underline underline-offset-2">
+                    Tgl. Lahir
+                  </p>
+                  <p class="">10 Januari 2090</p>
+                </div>
+              </div>
+              <div class="mt-[20px] mr-[40px]">
+                <p class="text-xs font-bold underline underline-offset-2">
+                  Umur
+                </p>
+                <p class="">
+                  {{ dialogData?.ageYear }}Th {{ dialogData?.ageMonth }}Bln
+                  {{ dialogData?.ageDay }}Hr
+                </p>
+              </div>
+            </div>
+
+            <!-- Profil Pasien  -->
+
+            <div class="grid grid-cols-1 mt-2">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full mt-5">
+                    <div class="mt-4 basis-1/4">
+                      <p class="font-bold text-MD">Profil Pasien</p>
+                    </div>
+                  </div>
+                </template>
+                <template #content>
+                  <div class="grid grid-cols-3 gap-4 mt-8">
+                    <div class="">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        KTP
+                      </p>
+                      <p>1666666666666666</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Provinsi
+                        <span> </span>
+                      </p>
+                      <p>Jawa Timur</p>
+                      <p
+                        class="mt-3 text-xs font-bold underline underline-offset-2"
+                      >
+                        Kelurahahn / Desa
+                      </p>
+                      <p>Keputih</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Alamat
+                        <span> </span>
+                      </p>
+                      <p>Jl. Ijo Abang no. 17</p>
+                    </div>
+
+                    <div>
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        No. Handphone
+                      </p>
+                      <p class="">081234567890</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kabupaten / Kota
+                      </p>
+                      <p class="">Surabaya</p>
+                      <div class="flex flex-row mt-[10px]">
+                        <div class="basis-1/4">
+                          <p
+                            class="text-xs font-bold underline underline-offset-2"
+                          >
+                            RT
+                          </p>
+                          <p>01</p>
+                        </div>
+                        <div class="basis-1/4">
+                          <p
+                            class="text-xs font-bold underline underline-offset-2"
+                          >
+                            RW
+                          </p>
+                          <p>02</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Agama
+                      </p>
+                      <p class="">Islam</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kecamatan
+                      </p>
+                      <p class="">Sukolilo</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kode Pos
+                      </p>
+                      <p class="">12345</p>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
+
+            <!-- Asesmen Medis -->
+            <div class="grid grid-cols-1 mt-2">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full mt-5">
+                    <div class="mt-4 basis-1/4">
+                      <p class="font-bold text-MD">Asesmen Medis</p>
+                    </div>
+                    <div>
+                      <CustomButton
+                        @click="openDialogRM"
+                        label="Rekam Medis"
+                        class="mr-4"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template #content>
+                  <div class="grid grid-cols-3 gap-4 mt-8">
+                    <div class="basis-1/4">
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Unit Asal
+                      </p>
+                      <p>Laboratorium</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Maternitas
+                        <span> </span>
+                      </p>
+                      <p>Tidak</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Catatan
+                        <span> </span>
+                      </p>
+                      <p>-</p>
+                    </div>
+
+                    <div>
+                      <div class="flex">
+                        <p
+                          class="mr-2 text-xs font-bold underline underline-offset-2"
+                        >
+                          Dokter Pengirim
+                        </p>
+                        <CustomChip
+                          :showCheckedIcon="false"
+                          :label="dialogData?.polyclinic"
+                          customClass="h-5 pr-[5px] mr-[5px]"
+                        />
+                      </div>
+                      <p class="">dr. Ibab</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Keluhan Utama
+                      </p>
+                      <p class="">Sakit</p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Alergi
+                      </p>
+                      <p class="">Tidak Ada</p>
+                    </div>
+                    <div class="flex mr-[80px]">
+                      <div
+                        class="bg-mediumGrey-300 w-[1px] h-[135px] mr-[20px]"
+                      ></div>
+                      <div class="">
+                        <p
+                          class="text-xs font-bold underline underline-offset-2"
+                        >
+                          Diagnosa Sekunder
+                        </p>
+                        <p class="">H10.9 Conjuctivitis</p>
+                        <p
+                          class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                        >
+                          Diagnosa Sekunder
+                        </p>
+                        <p class="">-</p>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
+
+            <!-- List Order  -->
+            <div class="grid grid-cols-1 mt-[20px]">
+              <CustomAccordion
+                no-border
+                :openWithHeader="false"
+                initial-state="0"
+              >
+                <template #header>
+                  <div class="flex justify-between w-full">
+                    <div class="mt-2">
+                      <p>List Pemeriksaan Lab</p>
+                    </div>
+                    <div class="flex mt-2 ml-[300px]">
+                      <div class="bg-mediumGrey-300 w-[1px] h-[30px]"></div>
+                      <p class="text-xs ml-2 mt-[3px]">
+                        Tgl. Pemeriksaan Lab : 3-10-2024
+                      </p>
+                    </div>
+
+                    <div class="ml-[10px] items-center">
+                      <CustomButton
+                        v-if="dialogData?.polyclinic === 'APS'"
+                        label="Edit Order"
+                        @click="editIdentitas"
+                        class="mr-4"
+                      />
+                      <CustomButton
+                        v-if="dialogData?.polyclinic !== 'APS'"
+                        label="Edit Order"
+                        @click="editOrderDialog = true"
+                        class="mr-4"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template #content>
+                  <div class="mt-[20px]">
+                    <card class="bg-adameds-50">
+                      <template #content>
+                        <div class="flex justify-between">
+                          <div class="flex">
+                            <p class="text-base font-bold text-adameds-300">
+                              LAB1234
+                            </p>
+                            <div
+                              class="bg-black w-[2px] h-[15px] ml-2 mt-1"
+                            ></div>
+                            <p class="ml-2 text-base">
+                              Nama Tarif Pemeriksaan
+                            </p>
+                          </div>
+                        </div>
+                      </template>
+                    </card>
+                    <div class="pt-5 mt-[-20px]">
+                      <DataTable
+                        class="overflow-hidden rounded-[10px]"
+                        scrollable
+                        scrollHeight="flex"
+                        :pt="{ headerRow: 'text-SM', thead: 'z-0' }"
+                      >
+                        <Column
+                          field="pemeriksaanName"
+                          header="Nama Pemeriksaan"
+                        >
+                          <template #body="slotProps">
+                            <div class="flex justify-between">
+                              <div>
+                                <p class="text-SM">
+                                  {{ slotProps.data.pemeriksaanName }}
+                                </p>
+                              </div>
+                            </div>
+                          </template>
+                        </Column>
+
+                        <Column field="diagnosa" header="Diagnosis">
+                          <template #body="slotProps">
+                            <div>
+                              <p class="text-sm">
+                                {{ slotProps.data.diagnosa }}
+                              </p>
+                            </div>
+                          </template>
+                        </Column>
+
+                        <!-- Harga -->
+                        <Column field="harga">
+                          <template #header>
+                            <div class="font-bold text-end">Harga</div>
+                          </template>
+                          <template #body="slotProps">
+                            <div class="text-SM text-end">
+                              {{ slotProps.data.harga }}
+                            </div>
+                          </template>
+                        </Column>
+                      </DataTable>
+                    </div>
+                    <div class="mt-4">
+                      <card class="bg-adameds-50">
+                        <template #content>
+                          <div class="grid grid-cols-3">
+                            <div>
+                              <p
+                                class="text-xs font-bold underline underline-offset-2"
+                              >
+                                Dokter Pengirim
+                              </p>
+                              <p>dr. Anji Sp. M</p>
+                            </div>
+                            <div class="flex">
+                              <div class="bg-black w-[1px] h-[30px] ml-2"></div>
+                              <p class="mt-1 ml-4 text-base font-bold">
+                                Total Tagihan Lab
+                              </p>
+                            </div>
+                            <div>
+                              <p
+                                class="flex justify-end mt-1 text-base font-bold"
+                              >
+                                RP. 0, 00
+                              </p>
+                            </div>
+                          </div>
+                        </template>
+                      </card>
+                    </div>
+                  </div>
+                </template>
+                <template #collapseIcon>
+                  <CustomButton
+                    icon="PhCaretUp"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+                <template #expandIcon>
+                  <CustomButton
+                    icon="PhCaretDown"
+                    backgroundColor="bg-transparent"
+                    textColor="text-adameds-300"
+                  />
+                </template>
+              </CustomAccordion>
+            </div>
+          </div>
+        </div>
+        <Card class="absolute inset-x-0 bottom-0">
+          <template #footer>
+            <div class="flex justify-end">
+              <CustomButton
+                label="Validasi Order"
+                backgroundColor="bg-adameds-300"
+              />
+            </div>
+          </template>
+        </Card>
+      </template>
+    </CustomDialog>
   </div>
 </template>
