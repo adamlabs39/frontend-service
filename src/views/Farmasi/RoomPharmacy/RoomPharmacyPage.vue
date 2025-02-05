@@ -535,7 +535,7 @@ onMounted(() => {
           <DetailRoomPharmacyPage 
             v-if="incomingDetail" 
             :payloadDetail="RoomPharmacyIncomingDetail" 
-            @close="incomingClose"
+            @close="incomingClose(), fetchRoomPharmacy()"
             @nextPage1="funcNextPage1"  
           />
           <!-- Detail Sedang Disiapkan -->

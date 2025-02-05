@@ -21,6 +21,10 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "nextPage1"]);
 
+const closeDetail = () => {
+  emit("close");
+};
+
 // State Management Medical Item
 const MedicalItemStore = useMedicalItemStore();
 const MedicalItemPayload = ref();
@@ -107,6 +111,7 @@ const IncomingDetail = async () => {
   }
 };
 
+// Verify
 const activedVerif = ref(false);
 const verify = async () => {
   props.payloadDetail.alkesItems.forEach((item: any) => {
@@ -490,5 +495,5 @@ onMounted(() => {
   </div>
   <DialogAlkes v-model:isDialogVisible="editDialog" :payloadEdit="editDialogConfig.data" @data-updated="IncomingDetail"/>
   <DialogCancel v-model:isDialogVisible="cancelDialog" :payloadCancel="cancelDialogConfig.data"/>
-  <DialogMoving v-model:isDialogVisible="movingLocationDialog" :payloadMoving="movingLocationDialogConfig.data" @data-updated="fetchMedicalItem"/>
+  <DialogMoving v-model:isDialogVisible="movingLocationDialog" :payloadMoving="movingLocationDialogConfig.data" @data-updated="closeDetail"/>
 </template>
