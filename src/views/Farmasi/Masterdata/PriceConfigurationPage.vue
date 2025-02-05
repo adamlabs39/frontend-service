@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { usePriceConfigurationStore } from "@/stores/datamasterFarmasi/PriceConfiguration";
 import { utilsStore } from "@/stores/utils";
+import { epochToDate } from "@/utils/Helpers";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -26,9 +27,9 @@ const PriceConfigurationPayload = ref({
   biayaEmbalaseRacik: true,
   metodeBiayaRacikan: "",
   petugas: "",
-  created_at: "",
-  updated_at: "",
-  deleted_at: null,
+  createdAt: 0,
+  updatedAt: "",
+  deletedAt: null,
 });
 
 // State Management
@@ -209,13 +210,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <Card
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
-  >
+  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
     <template #header>
       <div class="flex mt-5 mb-[20px] ml-5">
-        <CustomButton icon="PhArrowClockwise" class="mr-5" />
+        <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPriceConfiguration"/>
         <CustomBreadCrumb
           :home="{
             label: 'Datamaster',
@@ -493,9 +491,7 @@ onMounted(() => {
       <div class="mt-[10px] p-4 rounded-lg bg-adameds-50">
         <div class="flex justify-between">
           <div class="">
-            <p class="text-lg font-bold text-adameds-300 font-poppins">
-              Margin
-            </p>
+            <p class="text-lg font-bold text-adameds-300 font-poppins">Margin</p>
           </div>
           <div>
             <CustomChip
@@ -516,8 +512,8 @@ onMounted(() => {
             <p class="font-bold">Presentase Margin</p>
             <li class="text-xs text-mediumGrey-400 mt-[5px]">
               Mempengaruhi pada kolom
-              <span class="font-bold text-black">Harga Dasar</span> di master
-              item medis
+              <span class="font-bold text-black">Harga Dasar</span> 
+              di master item medis
             </li>
             <li class="text-xs text-mediumGrey-400">HNA otomatis terhitung</li>
           </div>
@@ -532,11 +528,7 @@ onMounted(() => {
               :invalidMessage="errors.margin"
             >
               <template #appendText>
-                <div
-                  class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
-                >
-                  %
-                </div>
+                <div class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">%</div>
               </template>
             </CustomInputNumber>
           </div>
@@ -567,8 +559,8 @@ onMounted(() => {
             <p class="font-bold">Presentase PPN</p>
             <li class="text-xs text-mediumGrey-400 mt-[5px]">
               Mempengaruhi pada kolom
-              <span class="font-bold text-black">Harga Dasar</span> di master
-              item medis
+              <span class="font-bold text-black">Harga Dasar</span> 
+              di master item medis
             </li>
             <li class="text-xs text-mediumGrey-400">HJA otomatis terhitung</li>
           </div>
@@ -583,11 +575,7 @@ onMounted(() => {
               :invalidMessage="errors.ppn"
             >
               <template #appendText>
-                <div
-                  class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
-                >
-                  %
-                </div>
+                <div class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">%</div>
               </template>
             </CustomInputNumber>
           </div>
@@ -746,13 +734,9 @@ onMounted(() => {
                 </template>
               </Column>
               <!-- Bentuk Racikan -->
-              <Column
-                field="namaBentukRacikan"
-                header="Bentuk Racikan"
-                headerClass="bg-adameds-50 font-semibold text-SM"
-              ></Column>
+              <Column field="namaBentukRacikan" header="Bentuk Racikan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
               <!-- Jumlah Paket -->
-              <Column field="jumlah" headerClass="bg-adameds-50">
+              <Column headerClass="bg-adameds-50">
                 <template #header>
                   <div class="w-full font-semibold text-center text-SM">
                     Jumlah Paket
@@ -765,7 +749,7 @@ onMounted(() => {
                 </template>
               </Column>
               <!-- Tarif Embalase -->
-              <Column field="tarifEmbalase" headerClass="bg-adameds-50">
+              <Column headerClass="bg-adameds-50">
                 <template #header>
                   <div class="w-full font-semibold text-center text-SM">
                     Tarif Embalase
@@ -778,7 +762,7 @@ onMounted(() => {
                 </template>
               </Column>
               <!-- Tarif Racikan -->
-              <Column field="tarifRacik" headerClass="bg-adameds-50">
+              <Column headerClass="bg-adameds-50">
                 <template #header>
                   <div class="w-full font-semibold text-center text-SM">
                     Tarif Racikan
@@ -843,7 +827,7 @@ onMounted(() => {
           <p class="text-xs font-bold text-right underline underline-offset-2">
             Perubahan Dilakukan Oleh
           </p>
-          <p>{{ PriceConfigurationPayload.petugas }} - <span>01/01/2024</span> <span>09:00</span>
+          <p>{{ PriceConfigurationPayload.petugas }} - <span>{{ epochToDate(PriceConfigurationPayload.createdAt, "dateTime") }}</span>
           </p>
         </div>
         <div class="mt-3">
