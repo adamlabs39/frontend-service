@@ -8,6 +8,18 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import DialogTambahAlkesMultiple from "./DialogTambahAlkesMultiple.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
+import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const stockLocationStore = useStockLocationStore();
+const medicalItemStore = useMedicalItemStore();
+const roomPharmacyStore = useRoomPharmacyStore();
 
 const props = defineProps({
   isDialogVisible: {
@@ -17,6 +29,21 @@ const props = defineProps({
   title: {
     type: String,
     default: "Tambah",
+  },
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+  patientData: {
+    type: Object,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  rmDate: {
+    type: String,
+    default: "",
   },
 });
 
@@ -29,10 +56,12 @@ function updateVisibility(value: boolean) {
 }
 
 const orderAlkesSchema = toTypedSchema(
-  yup.object({
-    selectedLokasiTujuanOrder: yup.string(),
-    petugas: yup.string().required("Petugas harus diisi"),
-  }).noUnknown()
+  yup
+    .object({
+      selectedLokasiTujuanOrder: yup.string(),
+      petugas: yup.string().required("Petugas harus diisi"),
+    })
+    .noUnknown()
 );
 const { handleSubmit, resetForm, defineField } = useForm({
   validationSchema: orderAlkesSchema,
@@ -45,45 +74,58 @@ const { handleSubmit, resetForm, defineField } = useForm({
 const [selectedLokasiTujuanOrder] = defineField("selectedLokasiTujuanOrder");
 const [petugas] = defineField("petugas");
 
-const listLokasiTujuanOrder = ref([
-  { id: "1", value: "Farmasi Rawat Inap" },
-  { id: "2", value: "Farmasi Rawat Jalan" },
-]);
+const listLokasiTujuanOrder = ref([]);
 
-onMounted(() => {
+onMounted(async () => {
   orderAlkess.value = [
     {
-      listAlkes: "Kasa",
-      jumlah: 2,
-      satuan: "Gulung",
-      sisaStok: 2000,
+      itemMedis: "Kasa",
+      qty: 2,
     },
   ];
+  await fetchLokasiTujuanStok();
+  await getListAlkes();
 });
+
+const fetchLokasiTujuanStok = async () => {
+  const response = await stockLocationStore.getApi(
+    1,
+    9999,
+    "",
+    "",
+    props.rmType == "rawat-inap"
+      ? "0"
+      : props.rmType == "rawat-jalan"
+      ? "1"
+      : props.rmType == "igd"
+      ? "2"
+      : "3"
+  );
+  if (response && response.payload) {
+    listLokasiTujuanOrder.value = response.payload.filter(
+      (lokasiTujuan: any) => lokasiTujuan.status
+    );
+  }
+};
+
+const getListAlkes = async () => {
+  const response = await medicalItemStore.getWithoutPaginationApi("alkes");
+  if (response && response.payload) {
+    listAlkes.value = response.payload;
+  }
+};
 
 const dialogTambahMultipleData = ref({
   isVisible: false,
   title: "Tambah Alkes Multiple",
 });
 
-const listAlkes = ref([
-  { id: "1", value: "Kasa" },
-  { id: "2", value: "Perban" },
-  { id: "2", value: "Pil" },
-]);
-
-const satuanAlkes = ref([
-  { id: "1", value: "Gulung" },
-  { id: "2", value: "Kaleng" },
-  { id: "2", value: "Botol" },
-]);
+const listAlkes = ref([]);
 
 const myPushFunction = () => {
   orderAlkess.value.push({
-    listAlkes: "",
-    jumlah: "",
-    satuan: "",
-    sisaStok: 100,
+    listAlkes: null,
+    jumlah: 0,
   });
 };
 
@@ -95,17 +137,51 @@ const deleteAlkes = (index: number) => {
   orderAlkess.value.splice(index, 1);
 };
 
-const onSubmit = handleSubmit((values) => {
-  const payload = {
-    ...values,
-    datas: JSON.parse(JSON.stringify(orderAlkess.value)), // Tambahkan data dari tabel
-    };
-    emit("submit-order", payload);
-    resetForm();
-    emit('update:isDialogVisible', false); 
-    console.log("Submitted with", payload);
-});
+const onSubmit = handleSubmit(async (values) => {
+  const payloadListAlkes = orderAlkess.value.map((dataAlkes) => {
+    return { itemMedisUuid: dataAlkes?.listAlkes?.uuid, qty: dataAlkes.qty };
+  });
+  console.log("🚀 ~ payloadListAlkes ~ payloadListAlkes:", payloadListAlkes)
 
+  try {
+    storeUtils.setLoading(true);
+    const response = await roomPharmacyStore.createApi({
+      noReg: props.patientData?.noReg,
+      patientUuid: props.patientData?.patient.uuid,
+      noRm: props.patientData?.noRm,
+      jenisPelayanan:
+        props.rmType == "rawat-jalan"
+          ? "rj"
+          : props.rmType == "rawat-inap"
+          ? "ri"
+          : props.rmType == "igd"
+          ? "igd"
+          : "fisio",
+      rekamMedisUuid: props.rmUuid,
+      rekamMedisDate: props.rmDate,
+      alkes: payloadListAlkes,
+      lokasiUuid: selectedLokasiTujuanOrder.value,
+      paymentMethod: props.patientData?.paymentMethod,
+    });
+    if (response && response.payload) {
+      rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+      resetForm();
+    }
+  } catch (error) {
+    console.error("Failed to post data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+
+  // const payload = {
+  //   ...values,
+  //   datas: JSON.parse(JSON.stringify(orderAlkess.value)), // Tambahkan data dari tabel
+  // };
+  emit("submit-order");
+  resetForm();
+  // emit("update:isDialogVisible", false);
+  // console.log("Submitted with", payload);
+});
 
 // Terima data dari Alkes Multiple
 function addToArray(newAlkes: any) {
@@ -128,8 +204,8 @@ function addToArray(newAlkes: any) {
           prepend-icon="PhMagnifyingGlass"
           v-model="selectedLokasiTujuanOrder"
           :options="listLokasiTujuanOrder"
-          optionValue="value"
-          optionLabel="value"
+          optionLabel="name"
+          optionValue="uuid"
           label="Lokasi Tujuan Order"
           place-holder="Pilih Lokasi Tujuan Order"
           class="w-1/3"
@@ -162,15 +238,22 @@ function addToArray(newAlkes: any) {
                 prepend-icon="PhMagnifyingGlass"
                 v-model="slotProps.data.listAlkes"
                 :options="listAlkes"
-                optionValue="value"
-                optionLabel="value"
+                optionLabel="name"
+                optionValue=""
+                dataKey="uuid"
                 label=""
                 place-holder="Cari & Pilih Tindakan"
-              />
+              >
+                <template #customOptions="{ option }">
+                  {{ option.name }} -
+                  {{ option.bentukSediaan?.name }}
+                  {{ option.manufacture ? `- ${option.manufacture.name}` : "" }}
+                </template>
+              </CustomSelect>
             </template>
           </Column>
 
-          <Column headerClass="bg-adameds-50 " class="w-[200px]">
+          <Column headerClass="bg-adameds-50 " class="w-[300px]">
             <template #header>
               <div class="w-full font-semibold text-center">Jumlah</div>
             </template>
@@ -182,28 +265,22 @@ function addToArray(newAlkes: any) {
               />
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50">
+          <Column headerClass="bg-adameds-50 w-[300px]">
             <template #header>
               <div class="w-full font-semibold text-center">Satuan</div>
             </template>
             <template #body="slotProps">
-              <CustomSelect
-                prepend-icon="PhMagnifyingGlass"
-                v-model="slotProps.data.satuan"
-                :options="satuanAlkes"
-                optionValue="value"
-                optionLabel="value"
-                label=""
-                place-holder="Pilih Satuan"
-              />
+              {{ slotProps.data.listAlkes?.satuanPenggunaan?.name ?? "-" }}
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50">
+          <Column headerClass="bg-adameds-50" class="w-[300px]">
             <template #header>
               <div class="w-full font-semibold text-center">Sisa Stok</div>
             </template>
             <template #body="slotProps">
-              <div class="text-center">{{ slotProps.data.sisaStok }}</div>
+              <div class="text-center">
+                {{ slotProps.data.listAlkes?.sisaStok ?? " Statis" }}
+              </div>
             </template>
           </Column>
 
@@ -244,19 +321,19 @@ function addToArray(newAlkes: any) {
             backgroundColor="bg-white"
             @click="handleAddMultiple"
           />
-
         </div>
       </div>
-       <DialogTambahAlkesMultiple
+      <DialogTambahAlkesMultiple
         v-model:isDialogVisible="dialogTambahMultipleData.isVisible"
         :title="dialogTambahMultipleData.title"
+        :dataAlkes="listAlkes"
         @add-alkes="addToArray"
       />
     </template>
     <template #footer>
-        <div class="flex justify-end">
-            <CustomButton label="Simpan Alkes" @click="onSubmit"/>
-        </div>
+      <div class="flex justify-end">
+        <CustomButton label="Simpan Alkes" @click="onSubmit" />
+      </div>
     </template>
   </CustomDialog>
 </template>

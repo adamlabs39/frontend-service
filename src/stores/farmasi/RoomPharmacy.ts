@@ -1,5 +1,10 @@
 import { defineStore } from "pinia";
-import { apiFarmasiGet, apiFarmasiPost, apiFarmasiPut, apiFarmasiDelete } from "@/utils/apiHandler";
+import {
+  apiFarmasiGet,
+  apiFarmasiPost,
+  apiFarmasiPut,
+  apiFarmasiDelete,
+} from "@/utils/apiHandler";
 
 export const useRoomPharmacyStore = defineStore({
   id: "RoomPharmacy",
@@ -11,6 +16,18 @@ export const useRoomPharmacyStore = defineStore({
     },
     async detailApi(uuid: string, payload = {}) {
       return apiFarmasiGet(`/farmasi/alkes/${uuid}`, payload);
+    },
+    async createApi(payload = {}) {
+      return apiFarmasiPost(`/farmasi/alkes`, payload);
+    },
+    async geInOneDate(
+      { rekamMedisUuid = "", rekamMedisDate = "" },
+      payload = {}
+    ) {
+      return apiFarmasiGet(
+        `/farmasi/alkes/some-order?rekam_medis_uuid=${rekamMedisUuid}&rekam_medis_date=${rekamMedisDate}`,
+        payload
+      );
     },
     async cancelOrderApi(uuid: string, payload = {}) {
       return apiFarmasiDelete(`/farmasi/alkes/${uuid}`, payload);

@@ -218,7 +218,8 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
         noReg: openedPatientData.value.noReg,
         date: formatDate(new Date(), true),
         pelayanan: "igd",
-        lokasiUuid: "",
+        // FIXME Statis UUID
+        lokasiUuid: "0192b31f-365d-731c-8b16-3a4565c9475e",
         noPelayanan: openedPatientData.value.noPelayanan,
         paymentMethod: openedPatientData.value.paymentMethod,
       });

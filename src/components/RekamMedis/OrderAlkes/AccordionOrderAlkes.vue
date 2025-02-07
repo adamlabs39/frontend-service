@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, type PropType } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -15,6 +15,15 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import DialogTambahAlkesMultiple from "./DialogTambahAlkesMultiple.vue";
 import DialogOrderAlkes from "@/components/RekamMedis/OrderAlkes/DialogOrderAlkes.vue";
 import NoData from "@/components/section/NoData.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
+import { epochToDate } from "@/utils/Helpers";
+import DialogDetailOrderAlkes from "./DialogDetailOrderAlkes.vue";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const roomPharmacyStore = useRoomPharmacyStore();
+
 const props = defineProps({
   method: {
     type: String,
@@ -24,19 +33,53 @@ const props = defineProps({
     type: Array as () => Array<string>,
     default: () => ["ORDER", "PROSES", "SELESAI"],
   },
+  rmType: {
+    type: String,
+    default: "rawat-jalan",
+  },
+  patientData: {
+    type: Object,
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  rmDate: {
+    type: String,
+    default: "",
+  },
 });
 
 const results = ref<any[]>([]);
 
-const statusList = [
-  { label: "ORDER", bgColor: "bg-[#D4D8DC]", textColor: "text-[#687077]" },
-  {
-    label: "PROSES",
-    bgColor: "bg-blueJeans-75",
-    textColor: "text-blueJeans-400",
-  },
-  { label: "SELESAI", bgColor: "bg-mint-75", textColor: "text-mint-400" },
-];
+const getStringStatus = (index: number) => {
+  if (index == 0) return "Cancel";
+  else if (index == 1) return "Request";
+  else if (index == 2) return "Waiting";
+  else if (index == 3) return "Process";
+  else if (index == 4) return "Order Siap";
+  else if (index == 5) return "Dispense";
+  else if (index == 6) return "Return";
+};
+
+const openedAlkesData = ref<any>({});
+const detailOrderAlkesData = ref<any>({});
+const showDialogDetail = async (alkesData: any) => {
+  try {
+    storeUtils.setLoading(true);
+    openedAlkesData.value = alkesData;
+    const response = await roomPharmacyStore.detailApi(alkesData.uuid);
+    if (response && response.payload) {
+      detailOrderAlkesData.value = response.payload;
+      dialogDetailOrder.value.isVisible = true;
+      dialogDetailOrder.value.title = "Detail Order Alkes";
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -54,6 +97,10 @@ const dialogTambahOrder = ref({
   isVisible: false,
   title: "",
 });
+const dialogDetailOrder = ref({
+  isVisible: false,
+  title: "",
+});
 
 function handleTambahOrder() {
   dialogTambahOrder.value.isVisible = true;
@@ -61,41 +108,42 @@ function handleTambahOrder() {
 }
 
 // terima payload dari file DialogOrderAlkes
-const handleSubmitOrder = (payload: any) => {
-  const pengorderAlkesList = [
-    "dr Adameds, Sp.A",
-    "dr Budi, Sp.B",
-    "dr Clara, Sp.KK",
-    "dr Dani, Sp.PD",
-    "dr Erika, Sp.M",
-  ];
-
-  const statusList = [
-    "Order Masuk",
-    "Sedang Disiapkan",
-    "Alkes/Obat Diserahkan",
-  ];
-
-  // Pilih penulis resep secara acak
-  const randomPengorderAlkes =
-    pengorderAlkesList[Math.floor(Math.random() * pengorderAlkesList.length)];
-  const tglOrder = new Date(Date.now()).toLocaleDateString("id-ID");
-  const orderCode = `ALK${Math.floor(1000 + Math.random() * 9000)}`;
-  const randomStatus =
-    statusList[Math.floor(Math.random() * statusList.length)];
-
-  results.value.push({
-    ...payload,
-    pengorderAlkes: randomPengorderAlkes,
-    tglOrder,
-    orderCode,
-    randomStatus,
-  });
-  console.log(results.value);
+const handleSubmitOrder = async (payload: any) => {
+  try {
+    storeUtils.setLoading(true);
+    await getListOrderAlkes();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 const resetOrderAlkes = () => {
   results.value = [];
 };
+
+const getListOrderAlkes = async () => {
+  if (props.rmUuid && props.rmDate) {
+    const response = await roomPharmacyStore.geInOneDate({
+      rekamMedisUuid: props.rmUuid,
+      rekamMedisDate: props.rmDate,
+    });
+    if (response && response.payload) {
+      results.value = response.payload;
+    }
+  }
+};
+
+onMounted(async () => {
+  try {
+    storeUtils.setLoading(true);
+    await getListOrderAlkes();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
 </script>
 
 <template>
@@ -108,6 +156,7 @@ const resetOrderAlkes = () => {
     <template #content>
       <div class="grid grid-cols-3 gap-3 py-6" v-if="results.length > 0">
         <div
+          @click="showDialogDetail(result)"
           class="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm shadow-black/10 cursor-pointer"
           v-for="(result, index) in results"
           :key="index"
@@ -116,7 +165,7 @@ const resetOrderAlkes = () => {
           <div
             class="py-1 font-semibold text-center text-white bg-teal-400 rounded-lg text-SM"
           >
-            {{ result.orderCode }}
+            {{ result.noOrderAlkes }}
           </div>
 
           <!-- Content -->
@@ -124,33 +173,34 @@ const resetOrderAlkes = () => {
             <!-- Left side -->
             <div>
               <div class="font-semibold underline text-XS">Pengorder Alkes</div>
-              <div class="font-normal text-SM">{{ result.pengorderAlkes }}</div>
+              <div class="font-normal text-SM">{{ result.petugasOrder }}</div>
               <div class="font-semibold underline text-XS">
                 Lokasi Tujuan Order
               </div>
               <div class="font-normal text-SM">
-                {{ result.selectedLokasiTujuanOrder }}
+                {{ result.lokasiStok }}
               </div>
             </div>
 
             <!-- Right side -->
             <div class="text-end">
               <div class="font-semibold underline text-XS">Tgl. Order</div>
-              <div class="font-normal text-SM">{{ result.tglOrder }}</div>
+              <div class="font-normal text-SM">
+                {{ epochToDate(result.createdAt, "dateTime") }}
+              </div>
               <div class="font-semibold underline text-XS">Jumlah Order</div>
               <div class="font-normal text-SM">
-                {{ result.datas.length }} Item
+                {{ result.jumlahItem }} Item
               </div>
             </div>
           </div>
 
           <!-- Buttons -->
-
           <div class="flex flex-col items-end justify-start gap-0.5">
             <div class="font-semibold underline text-XS">Status</div>
             <CustomChip
               :showCheckedIcon="false"
-              :label="result.randomStatus"
+              :label="getStringStatus(result.orderStatus)"
               bgColor="bg-adameds-300"
               textColor="text-white"
               customClass="h-5 border-none"
@@ -177,23 +227,18 @@ const resetOrderAlkes = () => {
       <DialogOrderAlkes
         v-model:is-dialog-visible="dialogTambahOrder.isVisible"
         :title="dialogTambahOrder.title"
+        :rmType="rmType"
+        :patientData="patientData"
+        :rmUuid="rmUuid"
+        :rmDate="rmDate"
         @submit-order="handleSubmitOrder"
       />
-    </template>
-
-    <template #footer>
-      <div class="flex items-end justify-end gap-3">
-        <CustomButton
-          v-if="props.method == 'form'"
-          label="Reset"
-          textColor="text-[#9DA4B1]"
-          backgroundColor="bg-transparent"
-          borderColor="border-2 border-[#9DA4B1]"
-          @click="resetOrderAlkes"
-        />
-        <CustomButton v-if="props.method == 'form'" label="Simpan Order" />
-        <CustomButton v-else label="Edit" />
-      </div>
+      <DialogDetailOrderAlkes
+        v-model:is-dialog-visible="dialogDetailOrder.isVisible"
+        :title="dialogDetailOrder.title"
+        :alkesData="openedAlkesData"
+        :dataDetail="detailOrderAlkesData"
+      />
     </template>
   </CustomAccordion>
 
@@ -202,27 +247,34 @@ const resetOrderAlkes = () => {
     <template #content>
       <div class="flex flex-col gap-2.5 pt-5">
         <CustomAccordion
-          v-for="(status, index) in statusList"
+          v-for="(result, index) in results"
           :key="index"
           headerClass="bg-adameds-50"
         >
           <template #header>
             <div class="flex justify-between w-full">
               <div class="flex justify-start gap-2.5 items-center">
-                <div>ORD1234</div>
+                <div>{{ result.noOrderAlkes }}</div>
                 <CustomChip
-                  :label="status.label"
-                  :show-checked-icon="false"
-                  :bgColor="status.bgColor"
-                  :textColor="status.textColor"
-                  customClass="h-6 pr-[6px] border-none w-auto"
+                  :showCheckedIcon="false"
+                  :label="getStringStatus(result.orderStatus)"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="h-5 border-none"
                 />
               </div>
-              <div>Tgl. Order : 01-01-2024</div>
+              <div class="mr-5">
+                Tgl. Order : {{ epochToDate(result.createdAt, "date") }}
+              </div>
             </div>
           </template>
           <template #content>
             <div class="pt-5">
+              <CustomInfoRow
+                class="mb-5"
+                label="Lokasi Tujuan Order"
+                :value="result.lokasiStok"
+              />
               <DataTable class="text-xs">
                 <Column
                   headerClass="bg-adameds-50 font-semibold text-SM"
@@ -280,17 +332,15 @@ const resetOrderAlkes = () => {
                   </template>
                 </Column>
               </DataTable>
-              <div class="pt-5">
-                <CustomInfoRow label="Petugas" value="Nama Petugas " />
-              </div>
-            </div>
-          </template>
-          <template #footer>
-            <div class="flex justify-end gap-3">
-              <CustomButton
-                v-if="status.label === 'ORDER'"
-                label="Batal Order"
-                backgroundColor="bg-danger-300"
+              <CustomInfoRow
+                class="mt-5"
+                label="Petugas"
+                :value="result.petugasOrder"
+              />
+              <CustomInfoRow
+                class="mt-5"
+                label="Jam Input"
+                :value="String(epochToDate(result.createdAt, 'time'))"
               />
             </div>
           </template>

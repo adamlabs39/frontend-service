@@ -5,7 +5,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { ref } from "vue";
+import { ref, type PropType } from "vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -20,6 +20,10 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  dataAlkes: {
+    type: Array as PropType<any>,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits(["update:isDialogVisible", "add-alkes"]);
@@ -32,8 +36,7 @@ const tambahAlkesMultipleSchema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
-        listAlkes: yup.string().required("List tindakan harus diisi"),
-        sisaStok: yup.number(),
+        listAlkes: yup.mixed<any>().required("List tindakan harus diisi"),
       })
     ),
   })
@@ -48,11 +51,11 @@ const { errors, handleSubmit, resetForm, defineField } = useForm({
 
 const { remove, push, fields } = useFieldArray("datas");
 
-const listAlkes = ref([
-  { id: "1", value: "Kasa" },
-  { id: "2", value: "Perban" },
-  { id: "2", value: "Pil" },
-]);
+// const listAlkes = ref([
+//   { id: "1", value: "Kasa" },
+//   { id: "2", value: "Perban" },
+//   { id: "2", value: "Pil" },
+// ]);
 
 const selectedItem = ref(""); // Store selected item
 
@@ -60,18 +63,17 @@ function addItemToDataTable() {
   if (selectedItem.value) {
     push({
       listAlkes: selectedItem.value,
-      sisaStok: 100,
     });
     selectedItem.value = "";
   }
 }
 
 const onSubmitTambahAlkesMultiple = handleSubmit((values: any) => {
-    emit('add-alkes', values.datas);
-    console.log(values.datas)
-    resetForm(); // Reset form setelah submit
-    emit('update:isDialogVisible', false); // Tutup dialog
-})
+  emit("add-alkes", values.datas);
+  console.log(values.datas);
+  resetForm(); // Reset form setelah submit
+  emit("update:isDialogVisible", false); // Tutup dialog
+});
 </script>
 
 <template>
@@ -91,11 +93,18 @@ const onSubmitTambahAlkesMultiple = handleSubmit((values: any) => {
             label="Cari Item"
             place-holder="Cari Item"
             class="grow"
-            :options="listAlkes"
-            optionValue="value"
-            optionLabel="value"
+            :options="dataAlkes"
+            optionLabel="name"
+            optionValue=""
+            dataKey="uuid"
             v-model="selectedItem"
-          />
+          >
+            <template #customOptions="{ option }">
+              {{ option.name }} -
+              {{ option.bentukSediaan?.name }}
+              {{ option.manufacture ? `- ${option.manufacture.name}` : "" }}
+            </template>
+          </CustomSelect>
           <CustomButton @click="addItemToDataTable">
             <PhPlus :size="16" />
           </CustomButton>
@@ -118,20 +127,20 @@ const onSubmitTambahAlkesMultiple = handleSubmit((values: any) => {
               </div>
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50" class="w-1/2">
+          <Column headerClass="bg-adameds-50" class="w-[70%]">
             <template #header>
-              <div class="font-semibold">List Alkes</div>
+              <div class="font-semibold">Nama Alkes</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.value.listAlkes }}
+              {{ slotProps.data.value.listAlkes?.name }}
             </template>
           </Column>
-          <Column headerClass="bg-adameds-50" class="w-1/2">
+          <Column headerClass="bg-adameds-50" class="w-[300px]">
             <template #header>
-              <div class="font-semibold">List Alkes</div>
+              <div class="font-semibold">Sisa Stok</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.value.sisaStok }}
+              {{ slotProps.data.listAlkes?.sisaStok ?? " Statis" }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50">
@@ -157,7 +166,9 @@ const onSubmitTambahAlkesMultiple = handleSubmit((values: any) => {
           </Column>
         </DataTable>
         <hr class="border-grey-200" />
-        <div class="font-semibold text-MD">Total Item Terpilih : {{ fields.length }}</div>
+        <div class="font-semibold text-MD">
+          Total Item Terpilih : {{ fields.length }}
+        </div>
       </div>
     </template>
     <template #footer>
@@ -172,7 +183,8 @@ const onSubmitTambahAlkesMultiple = handleSubmit((values: any) => {
             @click="resetForm"
           >
           </CustomButton>
-          <CustomButton label="Ambil Item" @click="onSubmitTambahAlkesMultiple"> </CustomButton>
+          <CustomButton label="Ambil Item" @click="onSubmitTambahAlkesMultiple">
+          </CustomButton>
         </div>
       </div>
     </template>
