@@ -271,7 +271,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchComposition"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',

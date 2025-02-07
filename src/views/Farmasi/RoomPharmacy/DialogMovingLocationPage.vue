@@ -57,8 +57,8 @@ const movingLocation = async () => {
     console.error("Failed to process the data:", error);
   }
   destinationLocation.value = ""
-  emit("data-updated");
   closeDialog();
+  emit("data-updated");
 };
 
 onMounted(() => {
