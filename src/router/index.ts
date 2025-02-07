@@ -115,7 +115,7 @@ import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNon
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
-import ExpertisePage from "@/views/Laboratorium/ExpertisePage.vue";
+import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
 
 // NOTE Page Rawat Inap

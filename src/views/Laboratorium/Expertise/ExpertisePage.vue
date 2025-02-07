@@ -11,13 +11,12 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
-
+import ExpertiseDetailPage from "./ExpertiseDetailPage.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
 const patientData = ref<any>({});
-
 
 const selectedPayType = ref<string>("MenungguPembayaran");
 
@@ -26,10 +25,8 @@ const onSelectPayType = (label: string) => {
   console.log(selectedPayType, "selectedPayType");
 };
 
-
 const selectedPaymentMethod = ref<string[]>([]);
 const selectedPayStatus = ref<string>("Semua"); // Default: tampilkan semua
-
 
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -172,7 +169,7 @@ const changeSection = (label: string) => {
 };
 
 const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Penjadwalan Terapi");
+  changeSection("Expertise");
 };
 </script>
 
@@ -471,7 +468,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
             </template>
           </Column>
         </DataTable>
-        <NoData v-else/>
+        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-end">
@@ -485,6 +482,12 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
-   
+    <ExpertiseDetailPage
+      v-else-if="dataBreadCrumb[0].label == 'Expertise'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :patientData="patientData"
+      @back="dataBreadCrumb.pop()"
+    />
   </div>
 </template>
