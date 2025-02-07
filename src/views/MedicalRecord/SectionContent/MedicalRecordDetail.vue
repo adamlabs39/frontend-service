@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { onMounted, ref, type PropType } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import FormAlergi from "@/components/RekamMedis/Alergi/FormAlergi.vue";
 import Anamnesis from "@/components/RekamMedis/Anamnesis/Anamnesis.vue";
@@ -27,6 +27,12 @@ import FormOrderAlkes from "@/components/RekamMedis/OrderAlkes/AccordionOrderAlk
 import OrderLab from "@/components/RekamMedis/OrderLab/OrderLab.vue";
 import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vue";
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";
+import { utilsStore } from "@/stores/utils";
+import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
+
+// NOTE Store
+const storeUtils = utilsStore();
+const roomPharmacyStore = useRoomPharmacyStore();
 
 const emit = defineEmits(["editAsesmen", "editAsesmenMata"]);
 
@@ -39,6 +45,14 @@ const props = defineProps({
     type: Object as PropType<any>,
   },
   sessionUuid: {
+    type: String,
+    default: "",
+  },
+  rmUuid: {
+    type: String,
+    default: "",
+  },
+  rmDate: {
     type: String,
     default: "",
   },
@@ -92,6 +106,31 @@ const toggleShowAllDetailMR = (method = "show") => {
     }
   });
 };
+
+const results = ref<any[]>([]);
+const getListOrderAlkes = async () => {
+  if (props.rmUuid && props.rmDate) {
+    const response = await roomPharmacyStore.geInOneDate({
+      rekamMedisUuid: props.rmUuid,
+      rekamMedisDate: props.rmDate,
+    });
+    console.log("🚀 ~ getListOrderAlkes ~ response:", response);
+    if (response && response.payload) {
+      results.value = response.payload;
+    }
+  }
+};
+
+onMounted(async () => {
+  try {
+    storeUtils.setLoading(true);
+    await getListOrderAlkes();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+});
 </script>
 
 <template>
@@ -227,7 +266,13 @@ const toggleShowAllDetailMR = (method = "show") => {
         method="detail"
       />
       <!-- FIXME Belum Ada -->
-      <FormOrderAlkes :ref="refs.orderAlkes" method="detail" />
+      <FormOrderAlkes
+        v-if="results.length"
+        :ref="refs.orderAlkes"
+        :rmUuid="rmUuid"
+        :rmDate="rmDate"
+        method="detail"
+      />
       <OrderLab :ref="refs.orderLab" method="detail" />
       <FormOrderFisio :ref="refs.orderFisio" method="detail" />
       <FormPersetujuanPasien :ref="refs.persetujuanPasien" method="detail" />

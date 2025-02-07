@@ -467,6 +467,8 @@ defineExpose({ showDialogRM });
                   selectedPemeriksaanMata = editedPemeriksaanMata ?? null;
                 }
               "
+              :rmUuid="patientData.rekamMedisUuid"
+              :rmDate="rmDate"
             />
 
             <MedicalRecordAssesment
@@ -689,7 +691,14 @@ defineExpose({ showDialogRM });
             </div>
 
             <div v-if="selectedTab == 'alkes'" class="overflow-auto mt-[10px]">
-              <FormOrderAlkes method="form" initialState="0" />
+              <FormOrderAlkes
+                method="form"
+                initialState="0"
+                :rmType="rmType"
+                :patientData="patientData"
+                :rmUuid="patientData.rekamMedisUuid"
+                :rmDate="rmDate"
+              />
             </div>
 
             <div
