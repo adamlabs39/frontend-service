@@ -4,6 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const historyVisitDialog = ref(false);
 const submitForm = () => {
@@ -95,15 +96,15 @@ defineExpose({
               </template>
             </Column>
             
+            
             <Column field="hasilPemeriksaan" header="Hasil Pemeriksaan" >
-              <template #body="slotProps">
-                <div class="flex justify-between">
-                  <div>
-                    <p class="text-SM">
-                      {{ slotProps.data.pemeriksaanName }}
-                    </p>
-                  </div>
-                </div>
+           <template #body="slotProps">
+                <CustomInputNumber
+                  :show-label="false"
+                  v-model="slotProps.data.jumlah"
+              
+                  class=""
+                />
               </template>
             </Column>
             
@@ -197,7 +198,7 @@ defineExpose({
           weight="bold"
           class="my-auto"
         />
-        <span class="ml-[10px] text-normal"> Riwayat Pemeriksaan </span>
+        <span class="ml-[10px] text-normal"> Status Pemeriksaan </span>
       </div>
     </template>
     <template #body>

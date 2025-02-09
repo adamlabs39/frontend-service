@@ -114,9 +114,10 @@ import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNon
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
-import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
+import HasilPemeriksaanPage from "@/views/Laboratorium/HasilPemeriksaan/HasilPemeriksaanPage.vue";
 import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
+import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaanPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
@@ -768,7 +769,7 @@ const router = createRouter({
     {
       path: "/laboratorium/hasil-pemeriksaan",
       name: "laboratorium-hasil-pemeriksaan",
-      meta: { layout: SidebarLayout, page: HasilPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: HasilPemeriksaanPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
@@ -786,7 +787,7 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/kelompok-pemeriksaan",
       name: "laboratorium-datamaster/kelompok-pemeriksaan",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: KelompokPemeriksaanPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
