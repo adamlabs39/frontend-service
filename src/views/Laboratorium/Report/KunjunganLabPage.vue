@@ -75,6 +75,15 @@ const pageType = ref("");
 const route = useRoute();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
+const jenisPelayanan = ref();
+const optionJenisPelayanan = ref([
+  { label: "Semua", value: "0" },
+  { label: "Rawat Jalan", value: "1" },
+  { label: "Rawat Inap", value: "2" },
+  { label: "IGD", value: "3" },
+  { label: "APS", value: "4" },
+]);
+
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
   console.log("Rows updated:", rows);
@@ -143,12 +152,12 @@ onMounted(() => {
                 class="mr-5 grow"
               />
               <CustomSelect
-                label="Metode Bayar"
+                v-model="jenisPelayanan"
+                label="Jenis Pelayanan"
                 class="mr-5 w-[250px]"
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Lunas', 'Piutang']"
-                place-holder="Semua"
+                optionLabel="label"
+                optionValue="value"
+                :options="optionJenisPelayanan"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
@@ -249,71 +258,61 @@ onMounted(() => {
             header-class="text-black bg-adameds-50"
           ></Column>
           <Column
+            field="polyclinic"
+            header="Jenis Pelayanan"
+            header-class="text-black bg-adameds-50"
+          ></Column>
+          <Column
+            field="unitAsal"
+            header="Unit Asal"
+            header-class="text-black bg-adameds-50"
+          ></Column>
+          <Column
             field="insurance_account_name"
-            header="Metode Pembayaran"
+            header="Cara Bayar"
             header-class="text-black bg-adameds-50"
           ></Column>
           <Column
-            field="faseRehab"
-            header="Fase Rehabilitasi"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="terapisName"
-            header="Terapis"
+            field="total"
+            header="Total"
             header-class="text-black bg-adameds-50"
           ></Column>
           <template #expansion="slotProps">
-            <div class="p-3 -mx-3 -my-1.5 bg-adameds-50">
+            <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
               <DataTable
                 :value="[slotProps.data]"
-                class="overflow-hidden rounded-lg bg-adameds-50"
+                class="overflow-hidden rounded-lg"
                 :pt="{ headerRow: 'text-SM' }"
               >
                 <Column
-                  field="age_year"
-                  header="Usia"
-                  header-class="text-white bg-adameds-300"
+                  field="dokter"
+                  header="Dokter"
+                  header-class=" bg-adameds-50"
                 >
                   <template #body="slotProps">
                     <div>
-                      {{ slotProps.data.age_year }} Th
-                      {{ slotProps.data.age_month }} Bl
-                      {{ slotProps.data.age_day }} Hr
+                      {{ slotProps.data.doctorData.doctor }}
                     </div>
                   </template>
                 </Column>
                 <Column
-                  field="gender"
-                  header="Jenis Kelamin"
-                  header-class="text-white bg-adameds-300"
+                  field="petugas"
+                  header="Petugas"
+                  header-class=" bg-adameds-50"
                 >
                   <template #body="slotProps">
-                    <div>
-                      <div v-if="slotProps.data.gender.includes('L')">
-                        Laki-Laki
-                      </div>
-                      <div v-else-if="slotProps.data.gender.includes('P')">
-                        Perempuan
-                      </div>
-                      <div v-else></div>
-                    </div>
+                    <div></div>
                   </template>
                 </Column>
                 <Column
-                  field="diagnosa"
-                  header="Diagnosa Fisioterapi"
-                  header-class="text-white bg-adameds-300"
+                  field="tarifPemeriksaan"
+                  header="Tarif Pemeriksaan"
+                  header-class="bg-adameds-50"
                 ></Column>
                 <Column
-                  field="painScale"
-                  header="Numeric Rating Scale (Pain Scale)"
-                  header-class="text-white bg-adameds-300"
-                ></Column>
-                <Column
-                  field="note"
-                  header="Catatan Fisioterapi (SOAPIER)"
-                  header-class="text-white bg-adameds-300"
+                  field="hargaPemeriksaan"
+                  header="Harga Pemeriksaan"
+                  header-class=" bg-adameds-50"
                 ></Column>
               </DataTable>
             </div>
