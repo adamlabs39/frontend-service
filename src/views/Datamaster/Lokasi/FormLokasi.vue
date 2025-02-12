@@ -166,12 +166,12 @@ watch(isPoli, (newValue) => {
   }
 });
 
-// const selectedPartOf = () => {
-//   const selectedItem = lokasiPayload.value.find(
-//     (item) => item.uuid === partOf.value
-//   );
-//   partOfName.value = selectedItem ? selectedItem.name : "";
-// };
+const selectedPartOf = () => {
+  const selectedItem = lokasiPayload.value.find(
+    (item) => item.uuid === partOf.value
+  );
+  partOfName.value = selectedItem ? selectedItem.name : "";
+};
 const selectedClass = () => {
   const selectedItem = optionsKelas.value.find(
     (item) => item.value === classCode.value
@@ -305,13 +305,13 @@ watch(
         <CustomSelect
           label="Part Of"
           v-model="partOf"
+          @update:modelValue="selectedPartOf"
           place-holder="Pilih Part Of"
           class="col-span-6"
           :options="lokasiPayload"
-          optionValue="name"
+          optionValue="uuid"
           optionLabel="name"
           />
-          <!-- @update:modelValue="selectedPartOf" -->
         <hr class="col-span-12 border-grey-200" />
           <CustomSwitch
             v-model="statusOperasional"
