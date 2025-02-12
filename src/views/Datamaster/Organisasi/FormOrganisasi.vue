@@ -118,22 +118,41 @@ onMounted(() => {
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-])|(\\([0-9]{2,3}\\)[ \\-])|([0-9]{2,4})[ \\-])?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Organisasi harus diisi"),
-    name: yup.string().required("Nama Organisasi harus diisi"),
-    phone: yup.string().required("No. Telepon harus diisi").matches(phoneRegExp, "Format tidak sesuai"),
-    email: yup.string().required("Email harus diisi").email("Format email tidak sesuai"),
-    url: yup.string().required("URL harus diisi").matches(/^https:\/\//, "URL harus dimulai dengan https://"),
-    addressCode: yup.string().required("Kelurahan harus dipilih"),
-    kodePos: yup.string().required("Kode Pos harus diisi"),
-    alamat: yup.string().required("Alamat harus diisi"),
-    partOfName:yup.string().notRequired(),
-    partOf: yup.string().notRequired(),
-    status: yup.bool().default(true),
-    provinsi:yup.string().required("Provinsi harus dipilih"),
-    kabupaten:yup.string().required("Kab/Kota harus dipilih"),
-    kecamatan:yup.string().required("Kecamatan harus dipilih"),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode Organisasi harus diisi"),
+      name: yup.string().required("Nama Organisasi harus diisi"),
+      phone: yup
+        .string()
+        .required("No. Telepon harus diisi")
+        .matches(phoneRegExp, "Format tidak sesuai"),
+      email: yup
+        .string()
+        .required("Email harus diisi")
+        .email("Format email tidak sesuai"),
+      url: yup
+        .string()
+        .required("URL harus diisi")
+        .matches(/^https:\/\//, "URL harus dimulai dengan https://"),
+      partOfName: yup.string().notRequired(),
+      status: yup.bool().default(true),
+      address: yup.object({
+        fullAddress: yup.string().required("Alamat harus diisi"),
+        prov: yup.string().required("Provinsi harus dipilih"),
+        city: yup.string().required("Kab/Kota harus dipilih"),
+        district: yup.string().required("Kecamatan harus dipilih"),
+        rt: yup.string().required("RT harus diisi"),
+        rw: yup.string().required("RW harus diisi"),
+        village: yup.string().required("Kelurahan harus dipilih"),
+        postalCode: yup.string().required("Kode Pos harus diisi"),
+        country: yup.string().default("Indonesia"),
+      }),
+      satuSehatId: yup.string().required("ID Satusehat harus diisi"),
+      organizationIhsNumber: yup
+        .string()
+        .required("IHS No. Organization harus diisi"),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -145,15 +164,17 @@ const [name] = defineField("name");
 const [phone] = defineField("phone");
 const [email] = defineField("email");
 const [url] = defineField("url");
-const [addressCode] = defineField("addressCode");
-const [kodePos] = defineField("kodePos");
-const [alamat] = defineField("alamat");
-const [partOf] = defineField("partOf");
 const [status] = defineField("status");
-const [provinsi] = defineField("provinsi");
-const [kabupaten] = defineField("kabupaten");
-const [kecamatan] = defineField("kecamatan");
-const [partOfName] = defineField("partOfName");
+const [kodePos] = defineField("address.postalCode");
+const [alamat] = defineField("address.fullAddress");
+const [provinsi] = defineField("address.prov");
+const [kabupaten] = defineField("address.city");
+const [kecamatan] = defineField("address.district");
+const [kelurahan] = defineField("address.village");
+const [rt] = defineField("address.rt");
+const [rw] = defineField("address.rw");
+const [satuSehatId] = defineField("satuSehatId");
+const [organizationIhsNumber] = defineField("organizationIhsNumber");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
@@ -203,14 +224,14 @@ const closeDialog = () => {
 
 const onProvinsiUpdate = async (newProvinsi: string) => {
   await fetchKabupaten(newProvinsi);
-  kabupaten.value = '';
-  kecamatan.value = '';
+  kabupaten.value = "";
+  kecamatan.value = "";
   kelurahanPayload.value = [];
 };
 
 const onKabupatenUpdate = async (newKabupaten: string) => {
   await fetchKecamatan(newKabupaten);
-  kecamatan.value = '';
+  kecamatan.value = "";
   kelurahanPayload.value = [];
 };
 
@@ -218,11 +239,12 @@ const onKecamatanUpdate = async (newKecamatan: string) => {
   await fetchKelurahan(newKecamatan);
 };
 
-const selectedPartOf = () => {
-  const selectedItem = organisasiPayload.value.find(
-    (item) => item.uuid === partOf.value
-  );
-  partOfName.value = selectedItem ? selectedItem.name : "";
+const getName = (code: string | undefined, payload: any[]) => {
+  if (code) {
+    const tempData = payload.find((item: any) => item.code == code);
+    return tempData ? tempData.name : "-";
+  }
+  return "-";
 };
 
 watch(
@@ -230,27 +252,27 @@ watch(
   async (newValue) => {
     if (newValue) {
       resetDialogMode();
-      
+
       // Check if we are editing, and if so, set initial values
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
         });
-        if (props.payload.detailAlamat) {
+        if (props.payload.address) {
           // Set provinsi
-          provinsi.value = props.payload?.detailAlamat?.provinsi.code as string;
-          await fetchKabupaten(provinsi.value);  
+          provinsi.value = props.payload?.address?.prov as string;
+          await fetchKabupaten(provinsi.value);
 
           // Set kabupaten
-          kabupaten.value = props.payload?.detailAlamat?.kabupaten.code as string;
-          await fetchKecamatan(kabupaten.value);  
+          kabupaten.value = props.payload?.address?.city as string;
+          await fetchKecamatan(kabupaten.value);
 
           // Set kecamatan
-          kecamatan.value = props.payload?.detailAlamat?.kecamatan.code as string;
-          await fetchKelurahan(kecamatan.value);  
+          kecamatan.value = props.payload?.address?.district as string;
+          await fetchKelurahan(kecamatan.value);
 
           // Set kelurahan
-          addressCode.value = props.payload?.detailAlamat?.kelurahan.code as string;
+          kelurahan.value = props.payload?.address?.village as string;
         }
       }
     } else {
@@ -259,7 +281,6 @@ watch(
     }
   }
 );
-
 </script>
 <template>
   <CustomDialog
@@ -313,9 +334,9 @@ watch(
           v-model="url"
           placeholder="URL"
           class="col-span-12"
-           :invalid="!!errors.url"
+          :invalid="!!errors.url"
           :invalidMessage="errors.url"
-          :required="errors.url ==='URL harus diisi' ? true : false"
+          :required="errors.url === 'URL harus diisi' ? true : false"
         />
         <CustomSelect
           label="Provinsi"
@@ -326,9 +347,9 @@ watch(
           option-label="name"
           option-value="code"
           @update:modelValue="onProvinsiUpdate"
-          :invalid="!!errors.provinsi"
-          :invalidMessage="errors.provinsi"
-          :required="errors.provinsi ? true : false"
+          :invalid="!!errors['address.prov']"
+          :invalidMessage="errors['address.prov']"
+          :required="errors['address.prov'] ? true : false"
         />
         <CustomSelect
           label="Kab/Kota"
@@ -339,10 +360,9 @@ watch(
           option-label="name"
           option-value="code"
           @update:modelValue="onKabupatenUpdate"
-          :invalid="!!errors.kabupaten"
-          :invalidMessage="errors.kabupaten"
-          :required="errors.kabupaten ? true : false"
-
+          :invalid="!!errors['address.city']"
+          :invalidMessage="errors['address.city']"
+          :required="errors['address.city'] ? true : false"
         />
         <CustomSelect
           label="Kecamatan"
@@ -353,49 +373,73 @@ watch(
           option-label="name"
           option-value="code"
           @update:modelValue="onKecamatanUpdate"
-          :invalid="!!errors.kecamatan"
-          :invalidMessage="errors.kecamatan"
-          :required="errors.kecamatan ? true : false"
+          :invalid="!!errors['address.district']"
+          :invalidMessage="errors['address.district']"
+          :required="errors['address.district'] ? true : false"
         />
         <CustomSelect
           label="Kelurahan/Desa"
-          v-model="addressCode"
+          v-model="kelurahan"
           place-holder="Pilih Kelurahan/Desa"
           class="col-span-6"
           :options="kelurahanPayload"
           option-label="name"
           option-value="code"
-          :invalid="!!errors.addressCode"
-          :invalidMessage="errors.addressCode"
-          :required="errors.addressCode ? true : false"
+          :invalid="!!errors['address.village']"
+          :invalidMessage="errors['address.village']"
+          :required="errors['address.village'] ? true : false"
         />
         <CustomTextfield
           label="Kode Pos"
           v-model="kodePos"
           placeholder="Pilih Kode Pos"
           class="col-span-4"
-          :invalid="!!errors.kodePos"
-          :invalidMessage="errors.kodePos"
-          :required="errors.kodePos ? true : false"
+          :invalid="!!errors['address.postalCode']"
+          :invalidMessage="errors['address.postalCode']"
+          :required="errors['address.postalCode'] ? true : false"
+        />
+        <CustomTextfield
+          label="RT"
+          v-model="rt"
+          placeholder="RT"
+          class="col-span-4"
+          :invalid="!!errors['address.rt']"
+          :invalidMessage="errors['address.rt']"
+          :required="errors['address.rt'] ? true : false"
+        />
+        <CustomTextfield
+          label="RW"
+          v-model="rw"
+          placeholder="RW"
+          class="col-span-4"
+          :invalid="!!errors['address.rw']"
+          :invalidMessage="errors['address.rw']"
+          :required="errors['address.rw'] ? true : false"
         />
         <CustomTextArea
           label="Alamat"
           v-model="alamat"
           placeholder="Alamat"
-          class="col-span-8"
-          :invalid="!!errors.alamat"
-          :invalidMessage="errors.alamat"
-          :required="errors.kodePos ? true : false"
-        />
-        <CustomSelect
-          label="Part Of"
-          v-model="partOf"
-          :options="organisasiPayload"
-          option-label="name"
-          option-value="uuid"
-          place-holder="Pilih Part Of"
           class="col-span-12"
-          @update:modelValue="selectedPartOf"
+          :invalid="!!errors['address.fullAddress']"
+          :invalidMessage="errors['address.fullAddress']"
+          :required="errors['address.fullAddress'] ? true : false"
+        />
+        <CustomTextfield
+          label="ID SATUSEHAT"
+          v-model="satuSehatId"
+          placeholder="ID SATUSEHAT"
+          class="col-span-12"
+          :invalid="!!errors.satuSehatId"
+          :invalidMessage="errors.satuSehatId"
+        />
+        <CustomTextfield
+          label="IHS No. Organization"
+          v-model="organizationIhsNumber"
+          placeholder="IHS No. Organization"
+          class="col-span-12"
+          :invalid="!!errors.organizationIhsNumber"
+          :invalidMessage="errors.organizationIhsNumber"
         />
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
@@ -419,30 +463,35 @@ watch(
         <CustomInfoRow label="URL" :value="payload.url" />
         <CustomInfoRow
           label="Provinsi"
-          :value="payload.detailAlamat.provinsi.nama ?? '-'"
+          :value="getName(payload.address.prov, provinsiPayload)"
         />
         <CustomInfoRow
           label="Kab/Kota"
-          :value="payload.detailAlamat.kabupaten.nama ?? '-'"
+          :value="getName(payload.address.city, kabupatenPayload)"
         />
         <CustomInfoRow
           label="Kecamatan"
-          :value="payload.detailAlamat.kecamatan.nama ?? '-'"
+          :value="getName(payload.address.district, kecamatanPayload)"
         />
         <CustomInfoRow
           label="Kelurahan/Desa"
-          :value="payload.detailAlamat.kelurahan.nama ?? '-'"
+          :value="getName(payload.address.village, kelurahanPayload)"
         />
-        <CustomInfoRow label="Kode Pos" :value="payload.kodePos ?? '-'" />
-        <CustomInfoRow label="Alamat" :value="payload.alamat ?? '-'" />
-        <CustomInfoRow label="Part Of Id" :value="payload.partOf ?? '-'" />
         <CustomInfoRow
-          label="Part Of Name"
-          :value="payload.partOfName ?? '-'"
+          label="Kode Pos"
+          :value="payload.address.postalCode ?? '-'"
+        />
+        <CustomInfoRow
+          label="Alamat"
+          :value="payload.address.fullAddress ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"
           :value="payload.satuSehatId ?? '-'"
+        />
+        <CustomInfoRow
+          label="IHS No. Organization"
+          :value="payload.organizationIhsNumber ?? '-'"
         />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
@@ -463,7 +512,9 @@ watch(
               :label="payload.satuSehatId ? 'AKTIF' : 'NON-AKTIF'"
               :textColor="payload.satuSehatId ? 'text-white' : 'text-[#80868d]'"
               :bgColor="payload.satuSehatId ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="payload.satuSehatId ? 'border-none' : 'border-[#80868d]'"
+              :borderColor="
+                payload.satuSehatId ? 'border-none' : 'border-[#80868d]'
+              "
               :icon-color="payload.satuSehatId ? 'white' : '#80868d'"
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
