@@ -9,12 +9,16 @@ import HeaderFilter from "../Layout/OrderHeader.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import DaftarOrderLabPage from "./DaftarOrderLabPage.vue";
+import EditOrderLabApsPage from "./EditOrderLabApsPage.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -22,6 +26,24 @@ const rowsPerPage = ref(10);
 const patientData = ref<any>({});
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
+const dateFilter = ref<Date>(new Date());
+const puasaStatus = ref(false);
+const citoStatus = ref(false);
+const hematokrit = ref(false);
+const hematologiLengkap = ref(false);
+const jumlahLeukosit = ref(false);
+
+const tesFaalHati = ref(false);
+const tesGulaDarah = ref(false);
+const tesFaalGinjal = ref(false);
+const elektrolit = ref(false);
+const sgot = ref(true);
+const sgpt = ref(true);
+
+const urinLengkap = ref(false);
+const glukosaRutin = ref(false);
+
+const mcuWahana = ref(false);
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
@@ -221,6 +243,15 @@ const handleBack = () => {
   dataBreadCrumb.value = [];
 };
 const editOrderDialog = ref(false);
+
+const spesimen = ref();
+const optionSpesimen = ref([
+  { label: "Darah", value: "1" },
+  { label: "Urine", value: "2" },
+  { label: "Feses", value: "3" },
+  { label: "Sputum", value: "4" },
+  { label: "Lainnya", value: "Lainnya" },
+]);
 </script>
 
 <template>
@@ -596,6 +627,13 @@ const editOrderDialog = ref(false);
       :patientData="patientData"
       @back="dataBreadCrumb.pop()"
     />
+    <EditOrderLabApsPage
+      v-else-if="dataBreadCrumb[0].label == 'Edit Order'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :patientData="patientData"
+      @back="handleBack"
+    />
 
     <!-- Pop Up Dialog -->
     <CustomDialog v-model:visible="popupDialog" width="1000px">
@@ -624,12 +662,12 @@ const editOrderDialog = ref(false);
               />
             </p>
           </div>
-          <div></div>
+          
           <div class="flex ml-[470px]">
             <div class="bg-white w-[1px] h-[30px]"></div>
             <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
           </div>
-          <div></div>
+          
         </div>
       </template>
       <template #body>
@@ -924,7 +962,28 @@ const editOrderDialog = ref(false);
                   </div>
                 </template>
                 <template #content>
-                  <div class="mt-[20px]">
+                  <div class="flex mt-[20px]">
+                    <CustomSelect
+                      label="Dokter Pengirim"
+                      placeHolder="Pilih dokter Pengirim"
+                      optionLabel=""
+                      optionValue=""
+                      :showFilter="false"
+                      :options="['dr. Anji Sp. M']"
+                      class="mr-3 w-[40%]"
+                    />
+                    <CustomMultiSelect
+                      v-model="spesimen"
+                      placeholder="Pilih Spesimen"
+                      label="Spesimen"
+                      optionLabel="label"
+                      optionValue="value"
+                      :maxSelectedLabels="4"
+                      :options="optionSpesimen"
+                      class="mr-3 grow"
+                    />
+                  </div>
+                  <div class="mt-[40px]">
                     <card class="bg-adameds-50">
                       <template #content>
                         <div class="flex justify-between">
@@ -935,9 +994,7 @@ const editOrderDialog = ref(false);
                             <div
                               class="bg-black w-[2px] h-[15px] ml-2 mt-1"
                             ></div>
-                            <p class="ml-2 text-base">
-                              Nama Tarif Pemeriksaan
-                            </p>
+                            <p class="ml-2 text-base">Nama Tarif Pemeriksaan</p>
                           </div>
                         </div>
                       </template>
@@ -949,10 +1006,10 @@ const editOrderDialog = ref(false);
                         scrollHeight="flex"
                         :pt="{ headerRow: 'text-SM', thead: 'z-0' }"
                       >
-                        <Column
-                          field="pemeriksaanName"
-                          header="Nama Pemeriksaan"
-                        >
+                        <Column field="pemeriksaanName" class="w-[80%]">
+                          <template #header>
+                            <div class="font-bold">Pemeriksaan</div>
+                          </template>
                           <template #body="slotProps">
                             <div class="flex justify-between">
                               <div>
@@ -963,17 +1020,6 @@ const editOrderDialog = ref(false);
                             </div>
                           </template>
                         </Column>
-
-                        <Column field="diagnosa" header="Diagnosis">
-                          <template #body="slotProps">
-                            <div>
-                              <p class="text-sm">
-                                {{ slotProps.data.diagnosa }}
-                              </p>
-                            </div>
-                          </template>
-                        </Column>
-
                         <!-- Harga -->
                         <Column field="harga">
                           <template #header>
@@ -1000,7 +1046,9 @@ const editOrderDialog = ref(false);
                               <p>dr. Anji Sp. M</p>
                             </div>
                             <div class="flex">
-                              <div class="bg-black w-[1px] h-[30px] ml-2"></div>
+                              <div
+                                class="bg-adameds-300 w-[1px] h-[30px] ml-2"
+                              ></div>
                               <p class="mt-1 ml-4 text-base font-bold">
                                 Total Tagihan Lab
                               </p>
@@ -1048,5 +1096,184 @@ const editOrderDialog = ref(false);
         </Card>
       </template>
     </CustomDialog>
+
+    <!-- Edit Order Dialog -->
+    <CustomDialog
+      v-model:visible="editOrderDialog"
+      class="h-full"
+      width="800px"
+    >
+      <template #header>
+        <div class="flex">
+          <p>Edit Order Lab</p>
+        </div>
+      </template>
+      <template #body>
+        <div class="flex justify-between gap-3 pt-5">
+          <CustomDatePicker
+            v-model="dateFilter"
+            label="Tanggal"
+            class="w-[50%]"
+          />
+
+          <CustomSwitch
+            v-model="citoStatus"
+            :show-label="true"
+            label="CITO"
+            sideLabel="Tidak"
+            sideLabelTrue="Iya"
+            class="ml-[20px]"
+          />
+          <CustomSwitch
+            v-model="puasaStatus"
+            :show-label="true"
+            label="Status Puasa"
+            sideLabel="Tidak"
+            sideLabelTrue="Iya"
+            class="mr-[20px]"
+          />
+        </div>
+        <div class="flex mt-[30px]">
+          <span class="font-bold text-md"> Tarif Pemeriksaan </span>
+        </div>
+        <hr class="mt-5 mb-[30px]" />
+        <div class="mt-4">
+          <CustomAccordion
+            :openWithHeader="false"
+            header-class="bg-adameds-50"
+            initialState="0"
+          >
+            <template #header>
+              <div class="flex justify-between w-full align-middle text-normal">
+                HEMATOLOGI
+              </div>
+            </template>
+            <template #content>
+              <div class="flex flex-wrap gap-4 pt-5">
+                <CustomCheckbox
+                  v-model="hematokrit"
+                  title="Hematokrit"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="hematologiLengkap"
+                  title="Hematologi Lengkap"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="jumlahLeukosit"
+                  title="Jumlah Leukosit"
+                  subTitle=""
+                />
+              </div>
+            </template>
+          </CustomAccordion>
+
+          <CustomAccordion
+            :openWithHeader="false"
+            header-class="bg-adameds-50"
+            initialState="0"
+          >
+            <template #header>
+              <div class="flex justify-between w-full align-middle text-normal">
+                KIMIA KLINIK
+              </div>
+            </template>
+            <template #content>
+              <div class="flex flex-wrap gap-4 pt-5">
+                <CustomCheckbox
+                  v-model="tesFaalHati"
+                  title="TES FAAL HATI"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="tesGulaDarah"
+                  title="TES GULA DARAH"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="tesFaalGinjal"
+                  title="TES FAAL GINJAL"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="elektrolit"
+                  title="ELEKTROLIT"
+                  subTitle=""
+                />
+                <CustomCheckbox v-model="sgot" title="SGOT" subTitle="" />
+                <CustomCheckbox v-model="sgpt" title="SGPT" subTitle="" />
+              </div>
+            </template>
+          </CustomAccordion>
+
+          <CustomAccordion
+            :openWithHeader="false"
+            header-class="bg-adameds-50"
+            initialState="0"
+          >
+            <template #header>
+              <div class="flex justify-between w-full align-middle text-normal">
+                URINALISIS
+              </div>
+            </template>
+            <template #content>
+              <div class="flex flex-wrap gap-4 pt-5">
+                <CustomCheckbox
+                  v-model="urinLengkap"
+                  title="URIN LENGKAP"
+                  subTitle=""
+                />
+                <CustomCheckbox
+                  v-model="glukosaRutin"
+                  title="GLUKOSA RUTIN"
+                  subTitle=""
+                />
+              </div>
+            </template>
+          </CustomAccordion>
+
+          <div class="flex mt-[50px]">
+            <span class="font-bold text-md"> Tarif Pemeriksaan - Paket</span>
+          </div>
+          <hr class="mt-5 mb-[30px]" />
+
+          <div class="flex flex-wrap gap-4">
+            <CustomCheckbox
+              v-model="mcuWahana"
+              title="MCU PT. WAHANA"
+              subTitle="Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT"
+            />
+          </div>
+        </div>
+
+        <Card class="inset-x-0 bottom-0">
+          <template #footer>
+            <div class="flex justify-end">
+              <CustomButton
+                label="Reset"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-grey-200"
+                textColor="text-grey-300"
+              />
+              <CustomButton
+                label="Batal Edit"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+              />
+              <CustomButton
+                label="Simpan"
+                class=""
+                backgroundColor="bg-adameds-300"
+              />
+            </div>
+          </template>
+        </Card>
+      </template>
+    </CustomDialog>
   </div>
+  <MedicalRecord ref="medicalRecord" :patientData="{}" />
 </template>

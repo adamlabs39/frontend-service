@@ -6,7 +6,6 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
@@ -14,9 +13,21 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const reportType = ref("");
-const reportData = ref([
+const pageType = ref("");
+const route = useRoute();
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const emits = defineEmits(["update:rows", "update:current-page"]);
+const handleRowsUpdate = (rows: number) => {
+  console.log("Rows updated:", rows);
+};
+const handlePageUpdate = (page: number) => {
+  console.log("Page updated:", page);
+};
+
+const itemsPasien = ref([
   {
-    noRM: "00-00-00",
+    noRM: "00-00-01",
     noReg: "REG2407010049",
     name: "Nama Pasien Lengkap",
     address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
@@ -29,8 +40,116 @@ const reportData = ref([
     tanggal_checkin: "10-10-2024 09:30",
     no_SEP: "",
     insurance_account_name: "TUNAI",
-    polyclinic: "POLI Anak",
-    gender: "L",
+    polyclinic: "-",
+    gender: "P",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "1",
+    new_patient: true,
+    platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
+  },
+  {
+    noRM: "00-00-01",
+    noReg: "REG2407010049",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "-",
+    gender: "P",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "1",
+    new_patient: true,
+    platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
+  },
+  {
+    noRM: "00-00-01",
+    noReg: "REG2407010049",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "-",
+    gender: "P",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "1",
+    new_patient: true,
+    platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
+  },
+  {
+    noRM: "00-00-01",
+    noReg: "REG2407010049",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "-",
+    gender: "P",
+    phone: "082112341234",
+    age_year: 10,
+    age_month: 3,
+    age_day: 5,
+    no_antrian: "1",
+    new_patient: true,
+    platform: "ADMISI",
+    status_rj: "1",
+    status_ri: "1",
+    is_newborn: false,
+  },
+  {
+    noRM: "00-00-01",
+    noReg: "REG2407010049",
+    name: "Nama Pasien Lengkap",
+    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+    doctorData: {
+      doctor: "dr. Spesialis Sp. A",
+      schedule: "08:00-10:00",
+    },
+    tanggal_daftar: "10-10-2024 09:00",
+    tanggal_jadwal: "10-10-2024 10:00",
+    tanggal_checkin: "10-10-2024 09:30",
+    no_SEP: "",
+    insurance_account_name: "TUNAI",
+    polyclinic: "-",
+    gender: "P",
     phone: "082112341234",
     age_year: 10,
     age_month: 3,
@@ -70,18 +189,6 @@ const reportData = ref([
     is_newborn: false,
   },
 ]);
-const expandedRows = ref();
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
@@ -123,17 +230,16 @@ onMounted(() => {
                   weight="bold"
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
-                <div>
+                <div class="">
                   <p
                     class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
                   >
-                    Kunjungan
+                    Rekapitulasi Jumlah Pemeriksaan
                   </p>
                 </div>
               </div>
             </div>
           </template>
-
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
@@ -141,14 +247,6 @@ onMounted(() => {
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / No. RM / No. Reg"
                 class="mr-5 grow"
-              />
-              <CustomSelect
-                label="Metode Bayar"
-                class="mr-5 w-[250px]"
-                optionLabel=""
-                optionValue=""
-                :options="['Semua', 'Lunas', 'Piutang']"
-                place-holder="Semua"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
@@ -165,7 +263,6 @@ onMounted(() => {
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
-                borderColor="border-adameds-300"
               />
               <CustomButton
                 label="Reset"
@@ -192,135 +289,54 @@ onMounted(() => {
           </template>
         </CustomAccordion>
       </template>
-
       <template #content>
         <DataTable
-          v-if="reportData.length"
-          v-model:expandedRows="expandedRows"
-          :value="reportData"
+          v-if="itemsPasien.length"
+          :value="itemsPasien"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          class="text-SM"
         >
-          <Column
-            expander
-            style="width: 40px"
-            header-class="text-black bg-adameds-50"
-          />
-          <!-- No -->
-          <Column
-            field="no"
-            header="No."
-            header-class="text-black bg-adameds-50"
-            style="width: 40px"
-          >
-            <template #body="slotProps">
-              <div class="text-center">
-                <div class="text-right text-SM">{{ slotProps.index + 1 }}</div>
-              </div>
+          <Column field="no" headerClass="bg-adameds-50 mr-5 w-5">
+            <template #header>
+              <div class="w-full font-semibold text-center">No.</div>
             </template>
-          </Column>
-          <!-- Tanggal -->
-          <Column
-            field="tanggal_daftar"
-            header="Tangal"
-            header-class="text-black bg-adameds-50"
-          >
             <template #body="slotProps">
               <div class="text-center">
-                <div>{{ slotProps.data.tanggal_daftar.split(" ")[0] }}</div>
+                <div class="text-SM">{{ slotProps.index + 1 }}</div>
               </div>
             </template>
           </Column>
           <Column
-            field="noReg"
-            header="No. Registrasi"
+            field="tanggal"
+            header="Tanggal"
             header-class="text-black bg-adameds-50"
-          ></Column>
+            class="w-1/6"
+          >
+            <template #body="slotProps">
+              <div class="text-center">
+                <div class="text-left text-SM">
+                  {{ slotProps.data.tanggal_jadwal.split(" ")[0] }}
+                </div>
+              </div>
+            </template>
+          </Column>
           <Column
-            field="noRM"
-            header="No. RM"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="name"
-            header="Nama Pasien"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="insurance_account_name"
-            header="Metode Pembayaran"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="faseRehab"
-            header="Fase Rehabilitasi"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="terapisName"
-            header="Terapis"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <template #expansion="slotProps">
-            <div class="p-3 -mx-3 -my-1.5 bg-adameds-50">
-              <DataTable
-                :value="[slotProps.data]"
-                class="overflow-hidden rounded-lg bg-adameds-50"
-                :pt="{ headerRow: 'text-SM' }"
-              >
-                <Column
-                  field="age_year"
-                  header="Usia"
-                  header-class="text-white bg-adameds-300"
-                >
-                  <template #body="slotProps">
-                    <div>
-                      {{ slotProps.data.age_year }} Th
-                      {{ slotProps.data.age_month }} Bl
-                      {{ slotProps.data.age_day }} Hr
-                    </div>
-                  </template>
-                </Column>
-                <Column
-                  field="gender"
-                  header="Jenis Kelamin"
-                  header-class="text-white bg-adameds-300"
-                >
-                  <template #body="slotProps">
-                    <div>
-                      <div v-if="slotProps.data.gender.includes('L')">
-                        Laki-Laki
-                      </div>
-                      <div v-else-if="slotProps.data.gender.includes('P')">
-                        Perempuan
-                      </div>
-                      <div v-else></div>
-                    </div>
-                  </template>
-                </Column>
-                <Column
-                  field="diagnosa"
-                  header="Diagnosa Fisioterapi"
-                  header-class="text-white bg-adameds-300"
-                ></Column>
-                <Column
-                  field="painScale"
-                  header="Numeric Rating Scale (Pain Scale)"
-                  header-class="text-white bg-adameds-300"
-                ></Column>
-                <Column
-                  field="note"
-                  header="Catatan Fisioterapi (SOAPIER)"
-                  header-class="text-white bg-adameds-300"
-                ></Column>
-              </DataTable>
-            </div>
-          </template>
+            field="pemeriksaan"
+            header="Pemeriksaan"
+            headerClass="bg-adameds-50"
+          >
+            <template #body="slotProps">
+              <div class="text-SM"></div>
+            </template>
+          </Column>
+          <Column field="total" header="Total" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM"></div>
+            </template>
+          </Column>
         </DataTable>
-
-        <NoData v-else />
+        <NoData />
       </template>
       <template #footer>
         <div class="flex justify-between">
@@ -333,7 +349,7 @@ onMounted(() => {
           />
           <CustomPaginator
             :rows="10"
-            :totalRecords="reportData.length"
+            :totalRecords="100"
             :rowsPerPageOptions="[10, 20, 30]"
             @update:rows="handleRowsUpdate"
             @update:current-page="handlePageUpdate"

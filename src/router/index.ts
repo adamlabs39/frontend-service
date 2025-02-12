@@ -114,9 +114,14 @@ import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNon
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
-import HasilPage from "@/views/Laboratorium/Hasil/HasilPage.vue";
-import ExpertisePage from "@/views/Laboratorium/ExpertisePage.vue";
+import HasilPemeriksaanPage from "@/views/Laboratorium/HasilPemeriksaan/HasilPemeriksaanPage.vue";
+import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
+import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaanPage.vue";
+import SpesimenPage from "@/views/Laboratorium/Masterdata/SpesimenPage.vue";
+import KunjunganLabPage from "@/views/Laboratorium/Report/KunjunganLabPage.vue";
+import WaktuTungguLabPage from "@/views/Laboratorium/Report/WaktuTungguLabPage.vue";
+import RekapJumlahPemeriksaanLabPage from "@/views/Laboratorium/Report/RekapJumlahPemeriksaanLabPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
@@ -768,7 +773,11 @@ const router = createRouter({
     {
       path: "/laboratorium/hasil-pemeriksaan",
       name: "laboratorium-hasil-pemeriksaan",
-      meta: { layout: SidebarLayout, page: HasilPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: HasilPemeriksaanPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
@@ -780,13 +789,21 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/kategori-pemeriksaan",
       name: "laboratorium-datamaster/kategori-pemeriksaan",
-      meta: { layout: SidebarLayout, page: KategoriPemeriksaanPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KategoriPemeriksaanPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
       path: "/laboratorium/datamaster/kelompok-pemeriksaan",
       name: "laboratorium-datamaster/kelompok-pemeriksaan",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KelompokPemeriksaanPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
@@ -798,7 +815,7 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/spesimen",
       name: "laboratorium-datamaster/spesimen",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: SpesimenPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
@@ -810,19 +827,31 @@ const router = createRouter({
     {
       path: "/laboratorium/laporan/kunjungan",
       name: "laboratorium-laporan-kunjungan",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: KunjunganLabPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
       path: "/laboratorium/laporan/waktu-tunggu",
       name: "laboratorium-laporan-waktu-tunggu",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: WaktuTungguLabPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
       path: "/laboratorium/laporan/rekap-jumlah",
       name: "laboratorium-laporan-rekap-jumlah",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: RekapJumlahPemeriksaanLabPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
 

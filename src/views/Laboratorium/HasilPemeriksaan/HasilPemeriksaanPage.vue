@@ -11,13 +11,12 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
-
+import DetailHasilPemeriksaanPage from "./DetailHasilPemeriksaanPage.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
 const patientData = ref<any>({});
-
 
 const selectedPayType = ref<string>("MenungguPembayaran");
 
@@ -26,10 +25,8 @@ const onSelectPayType = (label: string) => {
   console.log(selectedPayType, "selectedPayType");
 };
 
-
 const selectedPaymentMethod = ref<string[]>([]);
 const selectedPayStatus = ref<string>("Semua"); // Default: tampilkan semua
-
 
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -172,8 +169,11 @@ const changeSection = (label: string) => {
 };
 
 const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Penjadwalan Terapi");
+  changeSection("Hasil Pemeriksaan");
 };
+
+const showBatal = ref(false);
+const cancelReason = ref<string>();
 </script>
 
 <template>
@@ -192,7 +192,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Expertise',
+                    label: 'Hasil Pemeriksaan',
                     home: true,
                   }"
                 />
@@ -470,11 +470,52 @@ const showDetail = (event: DataTableRowClickEvent) => {
               </div>
             </template>
           </Column>
+          <Column
+            v-if="showBatal"
+            selectionMode="multiple"
+            headerStyle="width: 3rem"
+            headerClass="bg-adameds-50"
+            class="custom-checkbox"
+          ></Column>
         </DataTable>
-        <NoData v-else/>
+        <NoData v-else />
       </template>
       <template #footer>
-        <div class="flex justify-end">
+        <div class="flex justify-between">
+          <div class="flex">
+            <CustomButton
+              v-if="!showBatal"
+              @click="showBatal = true"
+              class="my-auto bg-danger-300"
+              label="Batal Validasi"
+            />
+
+            <CustomButton
+              v-if="showBatal"
+              @click="showBatal = false"
+              class="my-auto mr-[10px]"
+              label="Batal"
+              outlined
+              borderColor="border-grey-200"
+              textColor="text-grey-300"
+            />
+
+            <CustomButton
+              v-if="showBatal"
+              @click="showBatal = true"
+              class="my-auto mr-[10px] bg-danger-300 w-[20%]"
+              label="Iya, Batalkan"
+              :disabled="!cancelReason"
+            />
+
+            <CustomTextfield
+              v-if="showBatal"
+              v-model="cancelReason"
+              :showLabel="false"
+              class="my-auto w-[400px]"
+              placeholder="Alasan Batal Booking"
+            />
+          </div>
           <CustomPaginator
             :rows="10"
             :totalRecords="10"
@@ -485,6 +526,12 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </div>
       </template>
     </Card>
-   
+    <DetailHasilPemeriksaanPage
+      v-else-if="dataBreadCrumb[0].label == 'Hasil Pemeriksaan'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :patientData="patientData"
+      @back="dataBreadCrumb.pop()"
+    />
   </div>
 </template>
