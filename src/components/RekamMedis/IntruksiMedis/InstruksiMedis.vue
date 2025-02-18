@@ -60,7 +60,7 @@ const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
     const response = await rekamMedisStore.insertInstruksi({
       sessionUuid: props.sessionUuid,
       message: values.instruksi,
-      dokterName: values.dokter.detailPegawai.name,
+      dokterName: values.dokter.pegawai.name,
     });
     if (response && response.payload) {
       rekamMedisStore.setAsesmentRekamMedisData(response.payload);
@@ -199,7 +199,7 @@ defineExpose({
             v-model="dokter"
             place-holder="Pilih Dokter Pemberi Instruksi"
             :options="listDpjp"
-            option-label="detailPegawai.name"
+            option-label="pegawai.name"
             option-value=""
             :invalid="!!errors.dokter"
             :invalidMessage="errors.dokter"
@@ -315,7 +315,7 @@ defineExpose({
                     v-model="dokter"
                     place-holder="Pilih Dokter Pemberi Instruksi"
                     :options="listDpjp"
-                    option-label="detailPegawai.name"
+                    option-label="pegawai.name"
                     option-value=""
                     :invalid="!!errors.dokter"
                     :invalidMessage="errors.dokter"

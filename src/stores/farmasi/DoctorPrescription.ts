@@ -14,6 +14,9 @@ export const useDoctorPrescriptionStore = defineStore({
     async createPrescription(payload = {}) {
       return apiFarmasiPost("/farmasi/prescriptions/first-order", payload)
     },
+    async addObatPrescription(payload = {}) {
+      return apiFarmasiPost("/farmasi/prescriptions/add-obat", payload)
+    },
     async getSomeOrderPrescription(payload = {}) {
       return apiFarmasiPost("/farmasi/prescriptions/some-order", payload)
     },
@@ -22,6 +25,12 @@ export const useDoctorPrescriptionStore = defineStore({
     },
     async detailApi(uuid: string, payload = {}) {
       return apiFarmasiGet(`/farmasi/prescriptions/${uuid}`, payload);
+    },
+    async updatePrescription(uuid: string, payload = {}) {
+      return apiFarmasiPut(`/farmasi/prescriptions/obat/${uuid}`, payload);
+    },
+    async deleteObatApi(uuid: string, payload = {}) {
+      return apiFarmasiDelete(`/farmasi/prescriptions/obat/${uuid}`, payload);
     },
     async updateObatApi(uuid: string, payload = {}) {
       return apiFarmasiPut(`/farmasi/prescriptions/obat/${uuid}`, payload);

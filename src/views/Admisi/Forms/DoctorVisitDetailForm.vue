@@ -282,7 +282,7 @@ defineExpose({
               :class="{
                 'col-span-2': pageType == 'igd',
               }"
-              optionLabel="detailPegawai.name"
+              optionLabel="pegawai.name"
               optionValue="uuid"
               :options="listDpjp"
               :showFilter="false"

@@ -99,7 +99,7 @@ const schema = toTypedSchema(
         then: (schema) => schema.required("Kode Antrian Dokter harus diisi"),
         otherwise: (schema) => schema.notRequired(),
       }),
-      practitionerPoli: yup.array().of(
+      poliPelayanan: yup.array().of(
         yup.object().shape({
           lokasiUuid: yup.string().notRequired(),
         })
@@ -129,15 +129,17 @@ const [sip] = defineField("sip");
 const [str] = defineField("str");
 const [isDoctor] = defineField("isDoctor");
 const [codeAntrianDokter] = defineField("codeAntrianDokter");
-const [practitionerPoli] = defineField("practitionerPoli");
+const [poliPelayanan] = defineField("poliPelayanan");
 const [status] = defineField("status");
 const [practitionerPoliSelected] = defineField("practitionerPoliSelected");
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-const { push: pushPractitionerPoli } = useFieldArray("practitionerPoli");
+const { push: pushPractitionerPoli } = useFieldArray("poliPelayanan");
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  practitionerPoli.value = tempPoli.value.map(
+  console.log("🚀 ~ handlePenjaminUpdate ~ selectedValues:", selectedValues)
+  console.log("🚀 ~ handlePenjaminUpdate ~ tempPoli.value:", tempPoli.value)
+  poliPelayanan.value = tempPoli.value.map(
     (item: { lokasiUuid: string; uuid: string }) => {
       if (!selectedValues.includes(item.lokasiUuid)) {
         return {
@@ -147,7 +149,7 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
         };
       } else {
         return {
-          lokasiUuid: item.lokasiUuid,
+          lokasiUuid: item.uuid,
           uuid: item.uuid,
         };
       }
@@ -170,12 +172,12 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     delete values.practitionerPoliSelected;
-    if(values.codeBpjs===""){
-      values.codeBpjs=null;
-    }else if(values.sip===""){
-      values.sip=null;
-    }else if(values.str===""){
-      values.str=null;
+    if (values.codeBpjs === "") {
+      values.codeBpjs = null;
+    } else if (values.sip === "") {
+      values.sip = null;
+    } else if (values.str === "") {
+      values.str = null;
     }
     
     if (method.value === "edit") {
@@ -228,14 +230,14 @@ watch(
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         const poliPayload =
-          props.payload.practitionerPoli?.map(
+          props.payload.poliPelayanan?.map(
             (item: { lokasiUuid: string }) => item.lokasiUuid
           ) || [];
         const tempPoliObject =
-          props.payload.practitionerPoli?.map(
+          props.payload.poliPelayanan?.map(
             (item: { lokasiUuid: string; uuid: string }) => ({
               lokasiUuid: item.lokasiUuid,
-              uuid: item.uuid,
+              uuid: item.lokasiUuid,
             })
           ) || [];
         setValues({
@@ -394,24 +396,17 @@ const tempPoli = ref([]);
         <CustomInfoRow
           label="Nama Lengkap"
           :value="`${
-            payload.detailPegawai.firstTitle
-              ? payload.detailPegawai.firstTitle + '. '
-              : ''
-          }${payload.detailPegawai.name}${
-            payload.detailPegawai.lastTitle
-              ? ', ' + payload.detailPegawai.lastTitle
-              : ''
+            payload.pegawai.firstTitle ? payload.pegawai.firstTitle + '. ' : ''
+          }${payload.pegawai.name}${
+            payload.pegawai.lastTitle ? ', ' + payload.pegawai.lastTitle : ''
           }`"
         />
-        <CustomInfoRow label="NIK" :value="payload.detailPegawai.nik" />
+        <CustomInfoRow label="NIK" :value="payload.pegawai.nik" />
         <CustomInfoRow
           label="Tanggal Lahir"
-          :value="payload.detailPegawai.tanggalLahir"
+          :value="payload.pegawai.tanggalLahir"
         />
-        <CustomInfoRow
-          label="Jenis Kelamin"
-          :value="payload.detailPegawai.gender"
-        />
+        <CustomInfoRow label="Jenis Kelamin" :value="payload.pegawai.gender" />
         <CustomInfoRow
           v-if="payload.isDoctor"
           label="Kode HFIS (BPJS)"
@@ -443,12 +438,12 @@ const tempPoli = ref([]);
         <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
             <div
-              v-if="practitionerPoli && practitionerPoli.length"
+              v-if="poliPelayanan && poliPelayanan.length"
               class="flex flex-wrap w-full h-full gap-1"
             >
               <CustomChip
-                v-for="poli in payload.practitionerPoli"
-                :label="poli.lokasiName"
+                v-for="poli in payload.poliPelayanan"
+                :label="poli.name"
                 textColor="text-white"
                 bgColor="bg-adameds-300"
                 borderColor="border-none"

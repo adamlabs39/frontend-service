@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -104,7 +104,7 @@ const schema = toTypedSchema(
           .required("Satuan Dosis harus dipilih"),
         aturanPakai: yup.mixed<any>().required("Aturan Pakai harus dipilih"),
         caraPakai: yup.mixed<any>().required("Cara Pakai harus dipilih"),
-        route: yup.mixed<any>(),
+        route: yup.mixed<any>().required("Rute Pemberihan harus dipilih"),
         isChronic: yup.bool().default(false),
         prescriptionNotes: yup.string(),
       })
@@ -187,19 +187,26 @@ const getListCaraPakai = async () => {
   }
 };
 
-onMounted(async () => {
-  storeUtils.setLoading(true);
-  await getListObat();
-  await getListAturanPakai();
-  await getListSatuanDosis();
-  await getListCaraPakai();
-  storeUtils.setLoading(false);
-});
+onMounted(async () => {});
+
+watch(
+  () => props.isDialogVisible,
+  async (newValue) => {
+    if (newValue) {
+      storeUtils.setLoading(true);
+      await getListObat();
+      await getListAturanPakai();
+      await getListSatuanDosis();
+      await getListCaraPakai();
+      storeUtils.setLoading(false);
+    }
+  }
+);
 </script>
 
 <template>
   <CustomDialog
-    :full-screen="true"
+    fullScreen
     :visible="isDialogVisible"
     headerBg="bg-adameds-300"
     @update:visible="updateVisibility"
@@ -345,6 +352,8 @@ onMounted(async () => {
                             optionLabel="rutePemberian"
                             optionValue=""
                             dataKey="kode"
+                            :invalid="!!(errors as any)[`datas[${index}].route`]"
+                            :invalidMessage="(errors as any)[`datas[${index}].route`]"
                           />
                         </div>
                       </div>

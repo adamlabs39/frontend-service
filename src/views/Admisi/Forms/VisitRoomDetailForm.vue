@@ -360,7 +360,7 @@ defineExpose({
               label="DPJP"
               placeHolder="Pilih DPJP"
               class="col-span-2"
-              optionLabel="detailPegawai.name"
+              optionLabel="pegawai.name"
               optionValue="uuid"
               :options="listDpjp"
               :showFilter="false"

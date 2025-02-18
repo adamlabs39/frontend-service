@@ -317,19 +317,19 @@ defineExpose({
           v-model="searchDPJPFilter"
           label="DPJP"
           class="mr-5 grow"
-          optionLabel="detailPegawai.name"
+          optionLabel="pegawai.name"
           optionValue="uuid"
           :options="[
             {
               uuid: 'Semua',
-              detailPegawai: {
+              pegawai: {
                 name: 'Semua',
               },
             },
             // FIXME Dummy
             {
               uuid: '0191a18a-22e4-79f7-9da5-a10a6e1a60f9',
-              detailPegawai: {
+              pegawai: {
                 name: 'Rudi tabuti',
               },
             },

@@ -2,7 +2,7 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { onMounted, ref } from "vue";
+import { onMounted, onUpdated, ref, type PropType } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -50,6 +50,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  type: {
+    type: String,
+    default: "",
+  },
+  obatOrder: {
+    type: Object,
+    default: () => {},
+  },
 });
 
 const dialogTambahData = ref({
@@ -68,9 +76,14 @@ const dialogRacikanData = ref({
   isVisible: false,
   title: "Tambah Obat Racikan",
   obatToEdit: null as any | null,
+  type: "add",
 });
 
-const emit = defineEmits(["update:isDialogVisible", "submitOrder"]);
+const emit = defineEmits([
+  "update:isDialogVisible",
+  "submitOrder",
+  "deleteObat",
+]);
 
 function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
@@ -99,6 +112,13 @@ const orderObats = ref<any[]>([]);
 
 onMounted(async () => {
   await fetchLokasiTujuanStok();
+});
+onUpdated(() => {
+  if (props.type == "edit") {
+    selectedLokasiTujuanOrder.value = props.obatOrder.lokasiStokUuid;
+    obatPulang.value = props.obatOrder.isTakeaway;
+    orderObats.value = reverseTransformPayloadData(props.obatOrder.obat);
+  }
 });
 
 const fetchLokasiTujuanStok = async () => {
@@ -134,7 +154,6 @@ const selectedObatIndex = ref(0);
 
 function handleAdd() {
   dialogTambahData.value.isVisible = true;
-  console.log("ononnon");
 }
 
 // Detail Dialog
@@ -149,10 +168,7 @@ function handleDetail() {
 
 function handleAddRacikan() {
   dialogRacikanData.value.isVisible = true;
-}
-
-function handleCloseEdit() {
-  dialogEditData.value.isVisible = false;
+  dialogRacikanData.value.type = "add";
 }
 
 // Edit Obat (Racikan atau BUKAN)
@@ -161,11 +177,12 @@ function handleEdit(index: number) {
   const obatToEdit = orderObats.value[index];
 
   // Cek apakah obat yang diedit adalah racikan
-  if (obatToEdit.namaRacikan) {
+  if (obatToEdit.isCompound) {
     dialogRacikanData.value = {
       isVisible: true,
       title: "Edit Obat Racikan",
       obatToEdit: { ...obatToEdit },
+      type: "edit",
     };
     selectedObatIndex.value = index;
   } else {
@@ -181,15 +198,17 @@ function handleEdit(index: number) {
 
 const handleAddObat = (newObat: any) => {
   orderObats.value.push(...newObat);
-}
+};
 
 // Menerima data obat yang diperbarui dari DialogEdit & DialogRacikan
-function handleEditObat(updatedObat: any) {
-  if (selectedObatIndex.value !== null) {
-    orderObats.value[selectedObatIndex.value] = updatedObat;
+const handleEditObat = async () => {
+  const resultRefetch = await doctorPrescriptionStore.detailApi(
+    props.obatOrder.uuid
+  );
+  if (resultRefetch && resultRefetch.payload) {
+    orderObats.value = reverseTransformPayloadData(resultRefetch.payload.obat);
   }
-  handleCloseEdit();
-}
+};
 
 function handleAddObatRacikan(newObat: any) {
   if (Array.isArray(newObat)) {
@@ -199,57 +218,185 @@ function handleAddObatRacikan(newObat: any) {
     // Jika yang diterima adalah satu objek langsung
     orderObats.value.push(newObat);
   }
-  console.log(orderObats.value);
 }
 
-const deleteObat = (index: number) => {
-  orderObats.value.splice(index, 1);
-  console.log(orderObats.value.length);
+const deleteObat = async (index: number, data: any) => {
+  if (props.type == "add") {
+    orderObats.value.splice(index, 1);
+  } else {
+    try {
+      storeUtils.setLoading(true);
+      const result = await doctorPrescriptionStore.deleteObatApi(data.uuid);
+      if (result && result.data.sucess) {
+        const resultRefetch = await doctorPrescriptionStore.detailApi(
+          props.obatOrder.uuid
+        );
+        if (resultRefetch && resultRefetch.payload) {
+          orderObats.value = reverseTransformPayloadData(
+            resultRefetch.payload.obat
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to post data", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     storeUtils.setLoading(true);
-    console.log("orderObats", orderObats.value);
-
-    // const response = await doctorPrescriptionStore.createPrescription({
-    //   noReg: props.patientData?.noReg,
-    //   noRm: props.patientData?.noRm,
-    //   isTakeaway: obatPulang.value,
-    //   patientUuid: props.patientData?.patient.uuid,
-    //   lokasiStokUuid: selectedLokasiTujuanOrder.value,
-    //   jenisPelayanan:
-    //     props.rmType == "rawat-jalan"
-    //       ? "rj"
-    //       : props.rmType == "rawat-inap"
-    //       ? "ri"
-    //       : props.rmType == "igd"
-    //       ? "igd"
-    //       : "fisio",
-    //   sessionUuid: props.sessionUuid,
-    //   rekamMedisUuid: props.rmUuid,
-    //   obat: orderObats.value,
-    // });
-    // if (response && response.payload) {
-    //   rekamMedisStore.setAsesmentRekamMedisData(response.payload);
-    //   resetForm();
-    // }
+    let response: any;
+    if (props.type == "add") {
+      response = await doctorPrescriptionStore.createPrescription({
+        noReg: props.patientData?.noReg,
+        noRm: props.patientData?.noRm,
+        isTakeaway: obatPulang.value,
+        patientUuid: props.patientData?.patient.uuid,
+        lokasiStokUuid: selectedLokasiTujuanOrder.value,
+        jenisPelayanan:
+          props.rmType == "rawat-jalan"
+            ? "rj"
+            : props.rmType == "rawat-inap"
+            ? "ri"
+            : props.rmType == "igd"
+            ? "igd"
+            : "fisio",
+        sessionUuid: props.sessionUuid,
+        rekamMedisUuid: props.rmUuid,
+        // FIXME Statis UUID
+        lokasiUuid: "0194f3e1-1b65-709e-8b57-e7eecb4c2a10",
+        paymentMethod: props.patientData?.paymentMethod,
+        obat: transformPayloadData(),
+      });
+    } else {
+      response = await doctorPrescriptionStore.addObatPrescription({
+        prescriptionUuid: props.obatOrder.uuid,
+        obat: transformPayloadData().filter((data: any) => data),
+      });
+    }
+    if (response && (response.payload || response.sucess)) {
+      if (response.payload)
+        rekamMedisStore.setAsesmentRekamMedisData(response.payload);
+      emit("submitOrder");
+      emit("update:isDialogVisible", false);
+      resetFormFields();
+      resetForm();
+    }
   } catch (error) {
     console.error("Failed to post data", error);
   } finally {
     storeUtils.setLoading(false);
   }
-  // const payload = {
-  //   ...values,
-  //   orderObats: JSON.parse(JSON.stringify(orderObats.value)), // Tambahkan data dari tabel
-  // };
-
-  // emit("submitOrder", payload);
-  // resetFormFields();
-  // emit("update:isDialogVisible", false);
-
-  // console.log("Submitted with", payload);
 });
+
+const transformPayloadData = () => {
+  return orderObats.value.map((dataObat) => {
+    if (!dataObat.uuid) {
+      const baseData = {
+        medicationQty: dataObat.medicationQty || 0,
+        itemMedisUuid: "-",
+        medicationDoseQty: dataObat.medicationDoseQty || 0,
+        medicationDoseSatuanUuid: dataObat.medicationDoseSatuan?.uuid || "",
+        medicationPeriod: dataObat.medicationPeriod || "",
+        aturanPakaiUuid: dataObat.aturanPakai?.uuid || "",
+        caraPakaiUuid: dataObat.caraPakai?.uuid || "",
+        prescriptionNotes: dataObat.prescriptionNotes || "",
+        isChronic: dataObat.isChronic || false,
+        route: dataObat.route?.kode || "",
+      };
+
+      if (dataObat.isCompound) {
+        return {
+          ...baseData,
+          itemMedisUuid: "-", // Keep itemMedisUuid as "-" for compounds
+          isCompound: true,
+          namaRacikan: dataObat.namaRacikan || "",
+          jenisRacikan: dataObat.jenisRacikan ? 1 : 0,
+          bentukRacikanUuid: dataObat.bentukRacikan?.uuid || "",
+          racikan: dataObat.racikan.map((obatRacikan: any) => ({
+            itemMedisUuid: obatRacikan.itemMedis.uuid,
+            medicationQty: obatRacikan.jumlahTotal || 0,
+          })),
+        };
+      } else {
+        return {
+          ...baseData,
+          itemMedisUuid: dataObat.itemMedis.uuid || "",
+          medicationQty: dataObat.medicationQty || 0,
+        };
+      }
+    }
+  });
+};
+const reverseTransformPayloadData = (transformedData: any[]) => {
+  return transformedData.map((data) => {
+    const baseData = {
+      uuid: data.uuid,
+      medicationQty: data.medicationQty,
+      medicationDoseQty: data.medicationDoseQty,
+      medicationDoseSatuan: {
+        uuid: data.medicationDoseSatuanUuid,
+      },
+      medicationPeriod: data.medicationPeriod,
+      aturanPakai: {
+        uuid: data.aturanPakaiUuid,
+        ...data.aturanPakai,
+      },
+      caraPakai: {
+        uuid: data.caraPakaiUuid,
+        ...data.caraPakai,
+      },
+      prescriptionNotes: data.prescriptionNotes,
+      isChronic: data.isChronic,
+      route: {
+        kode: data.route,
+        rutePemberian: getStringRutePembelian(data.route),
+      },
+    };
+
+    if (data.isCompound) {
+      return {
+        ...baseData,
+        isCompound: true,
+        namaRacikan: data.namaRacikan,
+        jenisRacikan: data.jenisRacikan === 1,
+        bentukRacikan: {
+          uuid: data.bentukRacikanUuid,
+          ...data.bentukRacikan,
+        },
+        racikan: data.racikan.map((obatRacikan: any) => ({
+          itemMedis: {
+            uuid: obatRacikan.itemMedisUuid,
+          },
+          jumlahTotal: obatRacikan.medicationQty,
+        })),
+      };
+    } else {
+      return {
+        ...baseData,
+        itemMedis: data.itemMedis,
+        isCompound: false,
+        medicationQty: data.medicationQty,
+      };
+    }
+  });
+};
+
+const getStringRutePembelian = (code: string) => {
+  if (code == "Implant") return code;
+  else if (code == "Inhal") return "Inhalation";
+  else if (code == "Instill") return "Instillation";
+  else if (code == "N") return "nasal";
+  else if (code == "O") return "oral";
+  else if (code == "P") return "parenteral";
+  else if (code == "R") return "rectal";
+  else if (code == "SL") return "sublingual/buccal/oromucosal";
+  else if (code == "TD") return "transdermal";
+  else if (code == "V") return "vaginal";
+};
 
 const resetFormFields = () => {
   resetForm();
@@ -323,7 +470,12 @@ const resetFormFields = () => {
             </template>
             <template #body="slotProps">
               <div v-if="slotProps.data.isCompound">
-                {{ slotProps.data.namaRacikan }} {{ slotProps.data.satuanEmbalase ? `- ${slotProps.data.satuanEmbalase.name}` : '' }}
+                {{ slotProps.data.namaRacikan }}
+                {{
+                  slotProps.data.bentukRacikan
+                    ? `- ${slotProps.data.bentukRacikan.namaBentukRacikan}`
+                    : ""
+                }}
               </div>
               <div v-else>
                 {{ slotProps.data.itemMedis?.name }}
@@ -353,8 +505,13 @@ const resetFormFields = () => {
               <div class="w-full font-semibold text-left">Total Obat</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.medicationDoseQty }}
-              {{ slotProps.data.medicationDoseSatuan?.name }}
+              {{ slotProps.data.medicationQty }}
+              <span v-if="slotProps.data.isCompound">
+                - {{ slotProps.data.bentukRacikan?.namaBentukRacikan }}
+              </span>
+              <span v-else>
+                - {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}
+              </span>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -408,7 +565,7 @@ const resetFormFields = () => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteObat(slotProps.index)"
+                  @click="deleteObat(slotProps.index, slotProps.data)"
                 >
                   <img src="@/assets/icons/delete.svg" alt="Delete" />
                 </CustomButton>
@@ -431,18 +588,23 @@ const resetFormFields = () => {
         v-model:isDialogVisible="dialogEditData.isVisible"
         :title="dialogEditData.title"
         :obatToEdit="dialogEditData.obatToEdit"
+        :patientData="patientData"
         @update-obat="handleEditObat"
         :index="selectedObatIndex"
+        :editedObatOrder="props.obatOrder"
       />
 
       <!-- DialogTambahObatRacikan -->
       <DialogObatRacikan
         v-model:is-dialog-visible="dialogRacikanData.isVisible"
         :title="dialogRacikanData.title"
+        :patientData="patientData"
         @add-obat-racikan="handleAddObatRacikan"
         :index="selectedObatIndex"
         :obatToEdit="dialogRacikanData.obatToEdit"
-        @after-edit-obat-racikan="handleEditObat"
+        :prescriptionUuid="props.obatOrder.uuid"
+        :type="dialogRacikanData.type"
+        @update-obat="handleEditObat"
       />
     </template>
     <template #footer>
