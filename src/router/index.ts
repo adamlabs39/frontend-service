@@ -118,10 +118,12 @@ import HasilPemeriksaanPage from "@/views/Laboratorium/HasilPemeriksaan/HasilPem
 import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
 import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaanPage.vue";
+import ItemPemeriksaanLabPage from "@/views/Laboratorium/Masterdata/ItemPemeriksaanLabPage.vue";
 import SpesimenPage from "@/views/Laboratorium/Masterdata/SpesimenPage.vue";
 import KunjunganLabPage from "@/views/Laboratorium/Report/KunjunganLabPage.vue";
 import WaktuTungguLabPage from "@/views/Laboratorium/Report/WaktuTungguLabPage.vue";
 import RekapJumlahPemeriksaanLabPage from "@/views/Laboratorium/Report/RekapJumlahPemeriksaanLabPage.vue";
+import TarifLabPage from "@/views/Laboratorium/Masterdata/TarifLabPage.vue";
 
 // NOTE Page Rawat Inap
 import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
@@ -809,7 +811,7 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/item-pemeriksaan",
       name: "laboratorium-datamaster/item-pemeriksaan",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: ItemPemeriksaanLabPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
@@ -821,7 +823,7 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/tarif-lab",
       name: "laboratorium-datamaster/tarif-lab",
-      meta: { layout: SidebarLayout, page: OrderPage, requiresAuth: true },
+      meta: { layout: SidebarLayout, page: TarifLabPage, requiresAuth: true },
       component: LaboratoriumView,
     },
     {
