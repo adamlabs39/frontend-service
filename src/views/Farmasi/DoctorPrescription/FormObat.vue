@@ -330,11 +330,7 @@ const handlePushRacikan = () => {
 const test = ref();
 </script>
 <template>
-  <CustomDialog
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility"
-    width="1030px"
-  >
+  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="1030px">
     <template #header>Edit Obat</template>
     <template #body>
       <div class="grid grid-cols-[40%,3%,57%]">
@@ -355,20 +351,15 @@ const test = ref();
               />
             </div>
             <div class="mt-[20px]">
-              <p class="text-xs font-bold underline underline-offset-2">
-                Tanggal Lahir
-              </p>
-              <p class="text-sm mt-[10px]">
-                17-10-2024 <span class="font-bold">|</span>
-                <span class="font-bold text-adameds-300">24Th 0Bl 1Hr</span>
+              <p class="text-xs font-bold underline underline-offset-2">Tanggal Lahir</p>
+              <p class="text-sm mt-[10px]">17-10-2024 <span class="font-bold">|</span>
+                <span class="font-bold text-adameds-300 ml-[5px]">24Th 0Bl 1Hr</span>
               </p>
             </div>
           </div>
           <!-- Part 1 -->
           <div class="grid grid-cols-1">
-            <div
-              class="mt-[20px] rounded-lg bg-adameds-50 h-[250px] grid grid-cols-2"
-            >
+            <div class="mt-[20px] rounded-lg bg-adameds-50 h-[250px] grid grid-cols-2">
               <!-- T.Darah -->
               <div class="flex mt-[10px] ml-[10px]">
                 <p class="text-sm font-bold">T.Darah</p>
@@ -436,9 +427,7 @@ const test = ref();
           </div>
           <!-- Part 2 -->
           <div class="grid grid-cols-1">
-            <div
-              class="mt-[20px] rounded-lg bg-adameds-50 h-[160px] grid grid-cols-1"
-            >
+            <div class="mt-[20px] rounded-lg bg-adameds-50 h-[160px] grid grid-cols-1">
               <!-- Keluhan & Diagnosa Primer -->
               <div class="mt-[10px] ml-[10px]">
                 <p class="text-sm font-bold">Keluhan</p>
@@ -447,52 +436,51 @@ const test = ref();
                 </div>
                 <p class="text-sm font-bold mt-[20px]">Diagnosa Primer</p>
                 <div class="bg-white rounded-lg h-[23px] w-[370px] mt-[10px]">
-                  <p class="text-sm ml-[10px]">
-                    G12.1 - OTHER INHERITED SPINAL MUSCULAR ATROPHY
-                  </p>
+                  <p class="text-sm ml-[10px]">G12.1 - OTHER INHERITED SPINAL MUSCULAR ATROPHY</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div
-          class="bg-mediumGrey-300 w-[2px] h-[500px] mt-[20px] ml-[13px]"
-        ></div>
+        <div class="bg-mediumGrey-300 w-[2px] h-[500px] mt-[20px] ml-[13px]"></div>
+        
         <!-- Form Obat -->
         <div>
           <!-- Racikan tambah obat -->
-          <div
-            v-if="payload.isCompound || digerus"
-            class="flex justify-between items-end mt-[15px]"
-          >
-            <CustomTextfield
-              v-model="namaRacikan"
-              label="Nama Racikan"
-              placeholder="Masukkan Nama Racikan"
-            />
-            <CustomSwitch
-              v-model="jenisRacikan"
-              :show-label="true"
-              label="Sirup"
-              sideLabel="Tidak"
-              sideLabelTrue="Ya"
-              :true-value="1"
-              :false-value="0"
-            />
-            <CustomButton
-              label="Tambah Obat"
-              icon="PhPlus"
-              @click="handlePushRacikan"
-            />
+          <div v-if="payload.isCompound || digerus" class="grid grid-cols-[49%,20%,30%] gap-3 mt-[15px]">
+            <div>
+              <CustomTextfield
+                v-model="namaRacikan"
+                label="Nama Racikan"
+                placeholder="Masukkan Nama Racikan"
+              />
+            </div>
+            <div>
+              <CustomSwitch
+                v-model="jenisRacikan"
+                :show-label="true"
+                label="Sirup"
+                sideLabel="Tidak"
+                sideLabelTrue="Ya"
+                :true-value="1"
+                :false-value="0"
+              />
+            </div>
+            <div class="mt-[25px]">
+              <CustomButton
+                label="Tambah Obat"
+                icon="PhPlus"
+                @click="handlePushRacikan"
+              />
+            </div>
           </div>
+
+          <!-- Substitusi -->
           <p v-if="!payload.isCompound && !digerus" class="mt-[15px] font-bold">
             Obat 1
           </p>
           <hr class="border border-slate-200 mt-[10px]" />
-          <div
-            v-if="!payload.isCompound && !digerus"
-            class="grid grid-cols-[80%,20%]"
-          >
+          <div v-if="!payload.isCompound && !digerus" class="grid grid-cols-[80%,20%]">
             <!-- Nama Obat -->
             <div class="mt-[20px]">
               <CustomSelect
@@ -520,11 +508,10 @@ const test = ref();
               />
             </div>
           </div>
-          <div
-            v-if="payload.isCompound || digerus"
-            v-for="(fieldsRacikan, idx) in fields"
-            class="flex justify-between w-full items-end mt-5 gap-2.5"
-          >
+
+          <!-- Racikan tambah obat -->
+          <div v-if="payload.isCompound || digerus" v-for="(fieldsRacikan, idx) in fields"
+            class="flex justify-between mt-[10px] gap-3">
             <!-- Nama Obat -->
             <CustomSelect
               v-model="fieldsRacikan.value.itemMedisUuid"
@@ -561,24 +548,22 @@ const test = ref();
             <CustomButton
               label=""
               background-color="bg-danger-300 rounded-lg"
-              class="h-1/2 w-[40px] p-0 mt-3"
+              class="h-1/2 w-[40px] p-0 mt-[25px]"
               @click="handleRemoveRacikan(idx)"
             >
               <img src="@/assets/icons/delete.svg" alt="" />
             </CustomButton>
           </div>
+          <!-- Racikan tambah obat -->
           <!-- Embalase -->
-          <div
-            v-if="payload.isCompound || digerus"
-            class="flex bg-adameds-50 items-center gap-2.5 w-full my-5 p-5 rounded-[10px] juetify-center"
-          >
-            <div class="font-semibold text-MD grow">
+          <div v-if="payload.isCompound || digerus" class="flex bg-adameds-50 items-center gap-2.5 w-full my-5 p-5 rounded-[10px] mt-[20px]">
+            <div class="font-semibold">
               Dibuat Sebanyak (Embalase)
             </div>
             <CustomInputNumber
               v-model="medicationQty"
               label=""
-              class="w-[50px]"
+              class="w-[50px] mr-[10px]"
               :invalid="!!errors.medicationQty"
               :invalidMessage="errors.medicationQty"
               :required="errors.medicationQty ? true : false"

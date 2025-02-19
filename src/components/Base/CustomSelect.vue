@@ -98,6 +98,7 @@ const emit = defineEmits([
   "clickPrepend",
   "filter",
   "blur",
+  "focus",
 ]);
 
 const showClear = computed(() => {
@@ -181,6 +182,7 @@ const filterData = (event: SelectFilterEvent) => {
         }"
         @filter="filterData"
         @blur="emit('blur')"
+        @focus="emit('focus')"
       >
         <template v-if="$slots.customValue" #value="{ value, placeholder }">
           <slot name="customValue" :value="value" :placeholder="placeholder" :selectedData="selectedData" />

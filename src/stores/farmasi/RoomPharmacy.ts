@@ -25,9 +25,12 @@ export const useRoomPharmacyStore = defineStore({
       return apiFarmasiPut(`/farmasi/alkes/items/${uuid}`, payload);
     },
     async verifyApi(payload = {}) {
+      return apiFarmasiPut("/farmasi/alkes/update-verifikasi", payload);
+    },
+    async verify2Api(payload = {}) {
       return apiFarmasiPut("/farmasi/alkes/siap-diserahkan", payload);
     },
-    async handoverApi(payload = {}) {
+    async verify3Api(payload = {}) {
       return apiFarmasiPut("/farmasi/alkes/diserahkan", payload);
     },
     async previousApi(payload = {}) {

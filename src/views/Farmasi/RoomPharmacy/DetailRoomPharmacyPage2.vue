@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
 import { formatPrice, epochToDate } from "@/utils/Helpers";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const props = defineProps({
   payloadDetail2: {
@@ -15,6 +17,8 @@ const props = defineProps({
 
 const emit = defineEmits(["close","nextPage2"]);
 
+const cetakDialog = ref(false);
+
 // State Management Detail Room Pharmacy
 const RoomPharmacyStoreStore = useRoomPharmacyStore();
 const UseUtilsStore = utilsStore();
@@ -22,7 +26,7 @@ const UseUtilsStore = utilsStore();
 const ReadyToBeHandedOver = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await RoomPharmacyStoreStore.verifyApi({
+    const response = await RoomPharmacyStoreStore.verify2Api({
       uuid: props.payloadDetail2.uuid,
     });
   } catch (error) {
@@ -280,7 +284,7 @@ const ReadyToBeHandedOver = async () => {
         <!-- Ready -->
         <div class="grid grid-cols-2">
           <div class="mt-[20px]">
-            <CustomButton>
+            <CustomButton @click="cetakDialog = true">
               <div class="flex items-center gap-2">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
@@ -296,4 +300,30 @@ const ReadyToBeHandedOver = async () => {
       </div>
     </div>
   </div>
+  <!-- Cetak Dialog -->
+  <CustomDialog v-model:visible="cetakDialog" width="435px">
+    <template #header>Cetak</template>
+    <template #body>
+      <div class="flex gap-3 mt-[20px]">
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Tiket</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Resep</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">Salinan E-Resep</div>
+          </div>
+        </CustomButton>
+      </div>
+    </template>
+  </CustomDialog>
 </template>
