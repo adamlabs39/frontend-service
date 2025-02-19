@@ -12,13 +12,13 @@ export const useDoctorPrescriptionStore = defineStore({
   getters: {},
   actions: {
     async createPrescription(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/first-order", payload)
+      return apiFarmasiPost("/farmasi/prescriptions/first-order", payload);
     },
     async addObatPrescription(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/add-obat", payload)
+      return apiFarmasiPost("/farmasi/prescriptions/add-obat", payload);
     },
     async getSomeOrderPrescription(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/some-order", payload)
+      return apiFarmasiPost("/farmasi/prescriptions/some-order", payload);
     },
     async getApi(payload = {}) {
       return apiFarmasiPost("/farmasi/prescriptions/all", payload);
@@ -26,7 +26,13 @@ export const useDoctorPrescriptionStore = defineStore({
     async detailApi(uuid: string, payload = {}) {
       return apiFarmasiGet(`/farmasi/prescriptions/${uuid}`, payload);
     },
-    async updatePrescription(uuid: string, payload = {}) {
+    async updatePrescription(
+      uuid: string,
+      payload: { isTakeaway?: boolean; lokasiStokUuid?: string }
+    ) {
+      return apiFarmasiPut(`/farmasi/prescriptions/${uuid}`, payload);
+    },
+    async updatePrescriptionObat(uuid: string, payload = {}) {
       return apiFarmasiPut(`/farmasi/prescriptions/obat/${uuid}`, payload);
     },
     async deleteObatApi(uuid: string, payload = {}) {
@@ -36,16 +42,28 @@ export const useDoctorPrescriptionStore = defineStore({
       return apiFarmasiPut(`/farmasi/prescriptions/obat/${uuid}`, payload);
     },
     async updateStokObat(uuid: string, payload = {}) {
-      return apiFarmasiPut(`/farmasi/prescriptions/obat/${uuid}/jenis-stok`, payload);
+      return apiFarmasiPut(
+        `/farmasi/prescriptions/obat/${uuid}/jenis-stok`,
+        payload
+      );
     },
     async statusVerifikasi(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/status-verifikasi", payload);
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/status-verifikasi",
+        payload
+      );
     },
     async statusSiapDiserahkan(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/status-siap-diserahkan", payload);
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/status-siap-diserahkan",
+        payload
+      );
     },
     async statusDiserahkan(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/status-diserahkan", payload);
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/status-diserahkan",
+        payload
+      );
     },
     async lokasiStok(payload = {}) {
       return apiFarmasiPost("/farmasi/prescriptions/lokasi-stok", payload);
@@ -57,7 +75,10 @@ export const useDoctorPrescriptionStore = defineStore({
       return apiFarmasiPost("/farmasi/prescriptions/batal-order", payload);
     },
     async batalSiapDiserahkan(payload = {}) {
-      return apiFarmasiPost("/farmasi/prescriptions/batal-siap-diserahkan", payload);
+      return apiFarmasiPost(
+        "/farmasi/prescriptions/batal-siap-diserahkan",
+        payload
+      );
     },
   },
 });

@@ -137,7 +137,7 @@ const [prescriptionNotes] = defineField("prescriptionNotes");
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     storeUtils.setLoading(true);
-    let response = await doctorPrescriptionStore.updatePrescription(
+    let response = await doctorPrescriptionStore.updatePrescriptionObat(
       values.uuid,
       transformPayloadData(values)
     );

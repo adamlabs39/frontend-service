@@ -272,10 +272,17 @@ const onSubmit = handleSubmit(async (values: any) => {
         obat: transformPayloadData(),
       });
     } else {
-      response = await doctorPrescriptionStore.addObatPrescription({
-        prescriptionUuid: props.obatOrder.uuid,
-        obat: transformPayloadData().filter((data: any) => data),
-      });
+      const responseEditPrescription =
+        await doctorPrescriptionStore.updatePrescription(props.obatOrder.uuid, {
+          isTakeaway: obatPulang.value,
+          lokasiStokUuid: selectedLokasiTujuanOrder.value,
+        });
+      if (responseEditPrescription && responseEditPrescription.data.sucess) {
+        response = await doctorPrescriptionStore.addObatPrescription({
+          prescriptionUuid: props.obatOrder.uuid,
+          obat: transformPayloadData().filter((data: any) => data),
+        });
+      }
     }
     if (response && (response.payload || response.sucess)) {
       if (response.payload)
@@ -368,6 +375,7 @@ const reverseTransformPayloadData = (transformedData: any[]) => {
           ...data.bentukRacikan,
         },
         racikan: data.racikan.map((obatRacikan: any) => ({
+          uuid: obatRacikan.uuid,
           itemMedis: {
             uuid: obatRacikan.itemMedisUuid,
           },
@@ -602,7 +610,7 @@ const resetFormFields = () => {
         @add-obat-racikan="handleAddObatRacikan"
         :index="selectedObatIndex"
         :obatToEdit="dialogRacikanData.obatToEdit"
-        :prescriptionUuid="props.obatOrder.uuid"
+        :prescriptionUuid="props.obatOrder?.uuid ?? ''"
         :type="dialogRacikanData.type"
         @update-obat="handleEditObat"
       />

@@ -140,7 +140,7 @@ const getStringRutePembelian = (code: string) => {
             </template>
             <template #body="slotProps">
               {{ slotProps.data.medicationDoseQty }}
-              {{ slotProps.data.medicationDoseSatuanUuid }}
+              {{ slotProps.data.itemMedis?.medicationDoseSatuanNama }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">

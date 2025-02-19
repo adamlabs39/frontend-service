@@ -143,7 +143,7 @@ const dialogDetailData = ref({
 });
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.obatUuides.length) {
+  if (rekamMedisStore.openedRekamMedis.data.obatUuides?.length) {
     try {
       storeUtils.setLoading(true);
       const responseOrderObat =

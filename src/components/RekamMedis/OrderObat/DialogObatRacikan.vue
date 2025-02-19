@@ -62,7 +62,7 @@ const sirup = ref(false);
 const schema = toTypedSchema(
   yup.object({
     namaRacikan: yup.string().required("Nama Racikan Harus diisi"),
-    jumlahEmbalase: yup.number().required("Jumlah Embalase Harus diisi"),
+    medicationQty: yup.number().required("Jumlah Embalase Harus diisi"),
     bentukRacikan: yup.mixed<any>().required("Satuan Embalase Harus diisi"),
     medicationPeriod: yup.mixed<any>().required("Periode harus dipilih"),
     medicationDoseQty: yup
@@ -95,7 +95,7 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
     namaRacikan: "",
-    jumlahEmbalase: 0,
+    medicationQty: 0,
     bentukRacikan: "",
     medicationPeriod: null,
     medicationDoseQty: 0,
@@ -110,7 +110,7 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
 });
 
 const [namaRacikan] = defineField("namaRacikan");
-const [jumlahEmbalase] = defineField("jumlahEmbalase");
+const [medicationQty] = defineField("medicationQty");
 const [bentukRacikan] = defineField("bentukRacikan");
 const [medicationPeriod] = defineField("medicationPeriod");
 const [medicationDoseQty] = defineField("medicationDoseQty");
@@ -176,7 +176,7 @@ const onSubmit = handleSubmit(async (values: any) => {
   } else {
     try {
       storeUtils.setLoading(true);
-      let response = await doctorPrescriptionStore.updatePrescription(
+      let response = await doctorPrescriptionStore.updatePrescriptionObat(
         values.uuid,
         transformPayloadData(values)
       );
@@ -194,7 +194,7 @@ const onSubmit = handleSubmit(async (values: any) => {
 });
 
 const transformPayloadData = (dataObat: any) => {
-  return {
+  let tempObatRacikan = {
     type: "racikan",
     prescriptionUuid: props.prescriptionUuid,
     medicationQty: dataObat.medicationQty || 0,
@@ -211,11 +211,30 @@ const transformPayloadData = (dataObat: any) => {
     namaRacikan: dataObat.namaRacikan || "",
     jenisRacikan: dataObat.jenisRacikan ? 1 : 0,
     bentukRacikanUuid: dataObat.bentukRacikan?.uuid || "",
-    racikan: dataObat.racikan.map((obatRacikan: any) => ({
-      itemMedisUuid: obatRacikan.itemMedis.uuid,
-      medicationQty: obatRacikan.jumlahTotal || 0,
-    })),
+    racikan: dataObat.racikan.map((obatRacikan: any) => {
+      if (obatRacikan.uuid)
+        return {
+          isUpdated: true,
+          uuid: obatRacikan.uuid,
+          itemMedisUuid: obatRacikan.itemMedis.uuid,
+          medicationQty: obatRacikan.jumlahTotal || 0,
+        };
+      else
+        return {
+          itemMedisUuid: obatRacikan.itemMedis.uuid,
+          medicationQty: obatRacikan.jumlahTotal || 0,
+        };
+    }),
   };
+  listDeletedObat.value.forEach((deletedObat: any) => {
+    tempObatRacikan.racikan.push({
+      isDeleted: deletedObat.isDeleted,
+      uuid: deletedObat.uuid,
+      itemMedisUuid: deletedObat.itemMedis.uuid,
+      medicationQty: deletedObat.jumlahTotal || 0,
+    });
+  });
+  return tempObatRacikan;
 };
 
 function updateVisibility(value: boolean) {
@@ -233,6 +252,15 @@ watch(
     setValues(newVal);
   }
 );
+
+const listDeletedObat = ref<any[]>([]);
+const deleteObat = (index: number) => {
+  listDeletedObat.value.push({
+    isDeleted: true,
+    ...fields.value[index].value,
+  });
+  remove(index);
+};
 
 // watch(
 //   () => sirup.value,
@@ -385,7 +413,7 @@ watch(
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-10 w-[45px] p-0"
-                  @click="remove(index)"
+                  @click="deleteObat(index)"
                   :disabled="index === 0"
                 >
                   <img src="@/assets/icons/delete.svg" alt="" width="15px" />
@@ -406,10 +434,10 @@ watch(
               <div class="w-1/4">
                 <CustomInputNumber
                   label=""
-                  v-model="jumlahEmbalase"
+                  v-model="medicationQty"
                   :show-buttons="true"
-                  :invalid="!!errors.jumlahEmbalase"
-                  :invalidMessage="errors.jumlahEmbalase"
+                  :invalid="!!errors.medicationQty"
+                  :invalidMessage="errors.medicationQty"
                 />
               </div>
               <div class="grow">

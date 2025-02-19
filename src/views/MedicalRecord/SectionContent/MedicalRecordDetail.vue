@@ -114,7 +114,6 @@ const getListOrderAlkes = async () => {
       rekamMedisUuid: props.rmUuid,
       rekamMedisDate: props.rmDate,
     });
-    console.log("🚀 ~ getListOrderAlkes ~ response:", response);
     if (response && response.payload) {
       results.value = response.payload;
     }
