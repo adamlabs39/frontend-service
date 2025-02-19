@@ -191,8 +191,6 @@ const fetchStockObat = async () => {
   }
 };
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
-
 const defaultData = [
   {
     namaObat: "",
@@ -206,51 +204,54 @@ const data = ref([...defaultData]);
 const incomingRecipes = ref(true);
 const incomingRecipesDetails = ref(false);
 
-const incomingRecipesOpen = (uuid: string) => {
+const incomingRecipesOpen = async (uuid: string) => {
   readyMedicine.value = false;
   drugHandover.value = false;
+  await detailPrescription(uuid);
   incomingRecipesDetails.value = true;
-  detailPrescription(uuid);
 };
 
 const incomingRecipesClose = () => {
   readyMedicine.value = true;
   drugHandover.value = true;
   incomingRecipesDetails.value = false;
+  fetchDoctorPrescription();
 };
 
 // Ready Medicine
 const readyMedicine = ref(true);
 const readyMedicineDetails = ref(false);
 
-const readyMedicineOpen = (uuid: string) => {
+const readyMedicineOpen = async (uuid: string) => {
   incomingRecipes.value = false;
   drugHandover.value = false;
+  await detailPrescription(uuid);
   readyMedicineDetails.value = true;
-  detailPrescription(uuid);
 };
 
 const readyMedicineClose = () => {
   incomingRecipes.value = true;
   drugHandover.value = true;
   readyMedicineDetails.value = false;
+  fetchDoctorPrescription();
 };
 
 // Drug Handover
 const drugHandover = ref(true);
 const drugHandoverDetails = ref(false);
 
-const drugHandoverOpen = (uuid: string) => {
+const drugHandoverOpen = async (uuid: string) => {
   incomingRecipes.value = false;
   readyMedicine.value = false;
+  await detailPrescription(uuid);
   drugHandoverDetails.value = true;
-  detailPrescription(uuid);
 };
 
 const drugHandoverClose = () => {
   incomingRecipes.value = true;
   readyMedicine.value = true;
   drugHandoverDetails.value = false;
+  fetchDoctorPrescription();
 };
 
 onMounted(() => {
@@ -275,11 +276,7 @@ const handleReset = () => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton
-                  icon="PhArrowClockwise"
-                  class="mr-5"
-                  @click="fetchDoctorPrescription"
-                />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDoctorPrescription"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Resep Dokter',
@@ -419,7 +416,7 @@ const handleReset = () => {
                 Resep Masuk
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
                   {{ DoctorPrescriptionPayload.resepMasuk.length }}
                 </div>
               </div>
@@ -537,7 +534,7 @@ const handleReset = () => {
                 Obat Disiapkan
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
                   {{ DoctorPrescriptionPayload.obatDisiapkan.length }}
                 </div>
               </div>
@@ -650,13 +647,13 @@ const handleReset = () => {
           </div>
 
           <!-- Penyerahan Obat -->
-          <div v-show="drugHandover">
+          <div v-show="drugHandover"> 
             <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
               <div class="text-lg font-bold text-white font-poppins">
                 Penyerahan Obat
               </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins">
+                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
                   {{ DoctorPrescriptionPayload.penyerahanObat.length }}
                 </div>
               </div>

@@ -23,8 +23,5 @@ export const useWaitingTimeStore = defineStore({
         payload
       );
     },
-    async exportApi(payload = {}) {
-      return apiFarmasiGet(`/farmasi/rekap/tat/export`, payload);
-    },
   },
 });

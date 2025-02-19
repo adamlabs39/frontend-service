@@ -23,8 +23,5 @@ export const useRevenueStore = defineStore({
         payload
       );
     },
-    async exportApi(payload = {}) {
-      return apiFarmasiGet(`/farmasi/rekap/pendapatan/export`, payload);
-    },
   },
 });

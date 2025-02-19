@@ -3,6 +3,7 @@ import { onMounted, ref, computed, watch } from "vue";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useWaitingTimeStore } from "@/stores/laporanFarmasi/waitingTime";
 import { utilsStore } from "@/stores/utils";
+import * as XLSX from "xlsx-js-style";
 import { dateToEpoch, epochToDate } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -37,6 +38,30 @@ const optionPembayaran = ref([
   { label: "Tunai", value: 1 },
   { label: "Asuransi", value: 2 },
 ]);
+
+function formatDate(date: any) {
+  const parsedDate = new Date(date);
+  const day = String(parsedDate.getDate()).padStart(2);
+  const monthIndex = parsedDate.getMonth();
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const month = monthNames[monthIndex];
+  const year = parsedDate.getFullYear();
+
+  return `${day} ${month} ${year}`;
+}
 
 // State Management Location
 const locationStore = useLokasiStore();
@@ -88,9 +113,9 @@ const fetchWaitingTime = async () => {
       waitingTimeProperties.value.page_size
     );
 
-    if (response && response.payload) {
+    if (response && response.payload.items) {
       waitingTimeProperties.value.total = response.properties.total;
-      waitingTimePayload.value = response.payload;
+      waitingTimePayload.value = response.payload.items;
     } else {
       waitingTimePayload.value = [];
     }
@@ -117,18 +142,6 @@ const handlePage = (event: any) => {
   fetchWaitingTime();
 };
 
-// Filter Search Data
-const searchData = () => {
-  typeOfService.value;
-  searchQuery.value;
-  recipe.value;
-  recipeOrigin.value;
-  paymentMethod.value;
-  dateToEpoch(startDateFilter.value);
-  dateToEpoch(endDateFilter.value);
-  fetchWaitingTime();
-};
-
 // Filter Reset Data
 const resetData = () => {
   paymentMethod.value = "";
@@ -139,6 +152,184 @@ const resetData = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   fetchWaitingTime();
+};
+
+// Cetak Excel
+const print = async () => {
+  try {
+    const response = await waitingTimeStore.getApi(
+      searchQuery.value,
+      paymentMethod.value,
+      recipeOrigin.value,
+      recipe.value,
+      typeOfService.value,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      waitingTimeProperties.value.page,
+      waitingTimeProperties.value.page_size
+    );
+    
+    const faskes = response.payload.faskes;
+    const address = response.payload.address;
+    const user = response.payload.message;
+    const rows = response.payload.items;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }    
+
+    // Prepare Data for Export;
+    const faskesName = [`${faskes}`];
+    const faskesAddress = [`${address}`];
+    const userName = [`${user}`];
+    const title = ["Laporan Pelayanan Farmasi - Waktu Tunggu"];
+    const periode = [`Periode: ${formatDate(startDateFilter.value)} - ${formatDate(endDateFilter.value)}`];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Tanggal: "Tanggal",
+      NoResep: "No. Resep",
+      NoRegis: "No. Registrasi",
+      NoRM: "No. RM",
+      Nama: "Nama Pasien",
+      JenisPelayanan: "Jenis Pelayanan",
+      MetodePembayaran: "Metode Pembayaran",
+      Waktu: "Waktu Verifikasi",
+      WaktuPenyerahan: "Waktu Penyerahan",
+      Asal: "Asal Resep",
+      WaktuPelayanan: "Waktu Pelayanan",
+      Resep: "Resep",
+      Racikan: "Racikan",
+    });
+
+    const jenisPelayananMapping: Record<string, string> = {
+      ri: "Rawat Inap",
+      rj: "Rawat Jalan",
+      igd: "Instalasi Gawat Darurat",
+    };
+
+    // Data Rows
+    let grandTotalValue = 0;
+    for (let i = 0; i < rows.length; i++) {
+      grandTotalValue += rows[i].totalHarga || 0;
+      data.push({
+        No: i + 1,
+        Tanggal: epochToDate(rows[i].orderDate, 'date'),
+        NoResep: rows[i].noResep,
+        NoRegis: rows[i].noReg,
+        NoRM: rows[i].noRm,
+        Nama: rows[i].patient,
+        JenisPelayanan: jenisPelayananMapping[rows[i].jenisPelayanan as string] || rows[i].jenisPelayanan,
+        MetodePembayaran: rows[i].paymentMethod,
+        Waktu: epochToDate(rows[i].waktuVerifikasi, 'dateTime'),
+        WaktuPenyerahan: epochToDate(rows[i].waktuPemberian, 'dateTime'),
+        Asal: rows[i].asalResep,
+        WaktuPelayanan: rows[i].waktuPelayanan,
+        Resep: rows[i].jenisResep,
+        Racikan: rows[i].jumlahRacikan,
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [faskesName], { origin: "A1" });
+    XLSX.utils.sheet_add_aoa(worksheet, [faskesAddress], { origin: "A2" });
+    XLSX.utils.sheet_add_aoa(worksheet, [userName], { origin: "A3" });
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A4" });
+    XLSX.utils.sheet_add_aoa(worksheet, [periode], { origin: "A5" });
+    worksheet["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 13 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 13 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 13 } },
+      { s: { r: 3, c: 0 }, e: { r: 3, c: 13 } },
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 13 } },   
+    ];
+
+    // Style Title
+    worksheet["A1"].s = {
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A2"].s = {
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A3"].s = {
+      font: { bold: false, sz: 10 },
+    };
+    worksheet["A4"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A5"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 5; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 5) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Alignment header cells
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Alignment header row 3
+        if (row === 5) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = {
+            bold: true,
+            sz: 10
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 5) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "D3D3D3" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Pelayanan Farmasi");
+    XLSX.writeFile(workbook, `Laporan Pelayanan Farmasi - Waktu Tunggu.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 
 onMounted(() => {
@@ -230,7 +421,7 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
-                @click="searchData"
+                @click="fetchWaitingTime"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
@@ -284,43 +475,33 @@ onMounted(() => {
             </template>
           </Column>
           <!-- Tanggal -->
-          <Column header="Tangal" headerClass="bg-adameds-50">
+          <Column header="Tanggal" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ epochToDate(slotProps.data.orderDate, "date") }}
-              </div>
+              <div class="text-SM">{{ epochToDate(slotProps.data.orderDate, "date") }}</div>
             </template>
           </Column>
           <!-- No. Resep -->
           <Column header="No. Resep" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.noResep }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.noResep }}</div>
             </template>
           </Column>
           <!-- No. Registrasi -->
           <Column header="No. Registrasi" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.noReg }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.noReg }}</div>
             </template>
           </Column>
           <!-- No. RM -->
           <Column header="No. RM" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.noRm }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.noRm }}</div>
             </template>
           </Column>
           <!-- Nama Pasien -->
           <Column header="Nama Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.patient }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.patient }}</div>
             </template>
           </Column>
           <!-- Jenis Pelayanan -->
@@ -340,9 +521,7 @@ onMounted(() => {
           <!-- Metode Pembayaran -->
           <Column header="Metode Pembayaran" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.paymentMethod }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.paymentMethod }}</div>
             </template>
           </Column>
           <template #expansion="slotProps">
@@ -371,33 +550,25 @@ onMounted(() => {
                 <!-- Asal Resep -->
                 <Column header="Asal Resep" headerClass="bg-adameds-50">
                   <template #body="slotProps">
-                    <div class="text-SM">
-                      {{ slotProps.data.asalResep }}
-                    </div>
+                    <div class="text-SM">{{ slotProps.data.asalResep }}</div>
                   </template>
                 </Column>
                 <!-- Waktu Pelayanan -->
                 <Column header="Waktu Pelayanan" headerClass="bg-adameds-50">
                   <template #body="slotProps">
-                    <div class="text-SM">
-                      {{ slotProps.data.waktuPelayanan }}
-                    </div>
+                    <div class="text-SM">{{ slotProps.data.waktuPelayanan }}</div>
                   </template>
                 </Column>
                 <!-- Resep -->
                 <Column header="Resep" headerClass="bg-adameds-50">
                   <template #body="slotProps">
-                    <div class="text-SM">
-                      {{ slotProps.data.jenisResep }}
-                    </div>
+                    <div class="text-SM">{{ slotProps.data.jenisResep }}</div>
                   </template>
                 </Column>
                 <!-- Jumlah Racikan -->
                 <Column header="Jumlah Racikan" headerClass="bg-adameds-50">
                   <template #body="slotProps">
-                    <div class="text-SM">
-                      {{ slotProps.data.jumlahRacikan }}
-                    </div>
+                    <div class="text-SM">{{ slotProps.data.jumlahRacikan }}</div>
                   </template>
                 </Column>
               </DataTable>
@@ -409,7 +580,7 @@ onMounted(() => {
         <div class="flex justify-between mt-[10px]">
           <div class="flex items-center">
             <CustomButton
-              @click="() => {}"
+              @click="print"
               icon="PhPrinter"
               label="Cetak"
               class="mr-[10px]"

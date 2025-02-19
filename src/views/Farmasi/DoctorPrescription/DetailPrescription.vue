@@ -16,8 +16,9 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import Obat from "@/components/RekamMedis/ResumeDiscarge/Obat.vue";
 
-// define props 
+// define props
 const props = defineProps({
   payloadDetail: {
     type: Object,
@@ -42,6 +43,8 @@ const pegawaiPayload = ref<any[]>([]);
 const StockLocationPayload = ref<any[]>([]);
 const StockLocationStore = useStockLocationStore();
 const stockObatPayload = ref();
+const stockObatNonRacikanPayload = ref();
+const stockObatRacikanPayload = ref();
 const penerima = ref("");
 const noHpPenerima = ref("");
 const alasanBatal = ref("");
@@ -110,7 +113,8 @@ interface AturanPakai {
 interface Obat {
   uuid: string;
   isCompound: boolean;
-  namaObat: string;
+  itemMedis: { name: string };
+  jenisStok: { name: string };
   medicationQty: number;
   aturanPakai: AturanPakai;
   racikan: Array<Racikan>;
@@ -141,25 +145,87 @@ const fetchPegawai = async () => {
   }
 };
 
-const fetchStockObat = async (uuid: string) => {
-  try {
-    const response = await MedicalItemStore.getAvailableStockApi(uuid);
-
-    if (response && response.payload) {
-      stockObatPayload.value = response.payload;
-    } else {
+const fetchStockObat = async () => {
+  if (props.payloadDetail.isCompound == true) {
+    const itemMedsUuidInRacikan = props.payloadDetail.obat.flatMap((obat: any) => 
+      obat.racikan.map((racikan: any) => racikan.itemMedis ? racikan.itemMedis.uuid : null)
+    );
+    try {
+      const response = await MedicalItemStore.getAvailableStockApi(itemMedsUuidInRacikan);
+      if (response && response.payload) {
+        stockObatPayload.value = response.payload;
+      } else {
+        stockObatPayload.value = [];
+      }
+    } catch (error) {
+      console.error("Failed to fetch data", error);
       stockObatPayload.value = [];
     }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    stockObatPayload.value = [];
+  } else {
+    const uuidObat = props.payloadDetail.obat[0].itemMedis.uuid;
+
+    try {
+      const response = await MedicalItemStore.getAvailableStockApi(uuidObat);
+
+      if (response && response.payload) {
+        stockObatPayload.value = response.payload;
+      } else {
+        stockObatPayload.value = [];
+      }
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+      stockObatPayload.value = [];
+    }
   }
-  console.log(stockObatPayload.value, 'test');
-  
 };
 
+// Fetch Obat Racikan
+const fetchObatRacikan = async () => {
+  const itemMedsUuidInRacikan = props.payloadDetail.obat
+    .flatMap((obat: any) =>
+      obat.racikan.map((racikan: any) => racikan.itemMedis ? racikan.itemMedis.uuid : null)
+    )
+    .filter((uuid: string): uuid is string => uuid !== null); // Pastikan hanya string, bukan null
+
+  try {
+    const responses = await Promise.all(
+      itemMedsUuidInRacikan.map((uuid: string) =>
+        MedicalItemStore.getAvailableStockApi(uuid).catch((error) => {
+          console.error(`Failed to fetch data for UUID: ${uuid}`, error);
+          return null; // Hindari error menghentikan semua request
+        })
+      )
+    );
+    stockObatRacikanPayload.value = responses
+      .filter((response) => response && response.payload) // Hanya ambil respons yang valid
+      .map((response) => response.payload)
+      .flat();
+  } catch (error) {
+    console.error("Failed to fetch all data", error);
+    stockObatRacikanPayload.value = [];
+  }
+  console.log(stockObatRacikanPayload.value, 'stockObatRacikanPayload.value');
+};
+
+// Fetch Obat Non Racikan
+const fetchObatNonRacikan = async () => {
+  const uuidNonRacikan = props.payloadDetail.obat[0].itemMedis.uuid;
+
+  try {
+    const response = await MedicalItemStore.getAvailableStockApi(uuidNonRacikan);
+    if (response && response.payload) {
+      stockObatNonRacikanPayload.value = response.payload;
+    } else {
+      stockObatNonRacikanPayload.value = [];
+    }    
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    stockObatNonRacikanPayload.value = [];
+  }
+};
+
+// Fetch Stock Location
 const fetchStockLocation = async () => {
-  UseUtilsStore.setLoading(true);
   try {
     const response = await StockLocationStore.getApi();
 
@@ -171,8 +237,6 @@ const fetchStockLocation = async () => {
   } catch (error) {
     console.error("Failed to fetch data", error);
     StockLocationPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -243,9 +307,9 @@ const itemEdukasi = ref([
   },
 ]);
 
-
 const schema = toTypedSchema(
-  yup.object({
+  yup
+    .object({
       obat: yup.array().of(
         yup.object({
           jenisStokUuid: yup.string().when("isCompound", {
@@ -259,18 +323,14 @@ const schema = toTypedSchema(
               schema
                 .of(
                   yup.object({
-                    jenisStokUuid: yup
-                      .string()
-                      .required("Stok Obat harus dipilih"),
+                    jenisStokUuid: yup.string().required("Stok Obat harus dipilih"),
                   })
-                )
-                .strict(),
+                ).strict(),
             otherwise: (schema) => schema.notRequired(),
           }),
         })
       ),
-    })
-    .noUnknown()
+    }).noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -279,7 +339,7 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 
 const { remove, push, fields } = useFieldArray<Obat>("obat");
 
-const updateStokObat = async (
+const updateObatRacikan = async (
   racikan: any,
   uuidObat: string,
   uuidStock: string,
@@ -299,18 +359,15 @@ const updateStokObat = async (
     );
 
     // find data stok obat
-    const selectedStock = stockObatPayload.value.find(
+    const selectedStock = stockObatRacikanPayload.value.find(
       (stock: any) => stock.uuid === uuidStock
     );
 
     if (fields.value[indexObat].value.isCompound) {
-      const selectedRacikan =
-        fields.value[indexObat].value.racikan[indexRacikan];
-
+      const selectedRacikan = fields.value[indexObat].value.racikan[indexRacikan];
       selectedRacikan.hargaSatuan = selectedStock.harga;
       selectedRacikan.sisaStok = selectedStock.totalStok;
-      selectedRacikan.subTotal =
-        selectedStock.harga * selectedRacikan.medicationQty;
+      selectedRacikan.subTotal = selectedStock.harga * selectedRacikan.medicationQty;
 
       // Hitung grandTotal
       const racikanItems = fields.value[indexObat].value.racikan;
@@ -327,7 +384,6 @@ const updateStokObat = async (
       selectedObat.grandTotal =
         selectedObat.hargaSatuan * selectedObat.medicationQty;
     }
-
     // Hitung Total Tagihan secara aman
     totalTagihan.value = fields.value.reduce((total, item) => {
       const itemGrandTotal = item.value?.grandTotal || 0;
@@ -340,59 +396,89 @@ const updateStokObat = async (
   }
 };
 
-onMounted(() => {
-  if (payload.value?.lokasiStokUuid) {
-    fetchStockObat(payload.value.lokasiStokUuid);
+const updateObatNonRacikan = async (
+  racikan: any,
+  uuidObat: string,
+  uuidStock: string,
+  indexObat: number,
+  indexRacikan: number
+) => {
+  UseUtilsStore.setLoading(true);
+
+  const value = {
+    isRacikan: racikan,
+    jenisStokUuid: uuidStock,
+  };
+  try {
+    const response = await DoctorPrescriptionStore.updateStokObat(
+      uuidObat,
+      value
+    );
+
+    // find data stok obat
+    const selectedStock = stockObatNonRacikanPayload.value.find(
+      (stock: any) => stock.uuid === uuidStock
+    );
+
+    if (fields.value[indexObat].value.isCompound) {
+      const selectedRacikan = fields.value[indexObat].value.racikan[indexRacikan];
+      selectedRacikan.hargaSatuan = selectedStock.harga;
+      selectedRacikan.sisaStok = selectedStock.totalStok;
+      selectedRacikan.subTotal = selectedStock.harga * selectedRacikan.medicationQty;
+
+      // Hitung grandTotal
+      const racikanItems = fields.value[indexObat].value.racikan;
+      const grandTotal = racikanItems.reduce((total: number, item: any) => {
+        return total + (item.subTotal || 0);
+      }, 0);
+
+      // Tambahkan grandTotal ke fields[indexObat]
+      fields.value[indexObat].value.grandTotal = grandTotal;
+    } else {
+      const selectedObat = fields.value[indexObat].value;
+      selectedObat.hargaSatuan = selectedStock.harga;
+      selectedObat.sisaStok = selectedStock.totalStok;
+      selectedObat.grandTotal =
+        selectedObat.hargaSatuan * selectedObat.medicationQty;
+    }
+    // Hitung Total Tagihan secara aman
+    totalTagihan.value = fields.value.reduce((total, item) => {
+      const itemGrandTotal = item.value?.grandTotal || 0;
+      return total + itemGrandTotal;
+    }, 0);
+  } catch (error) {
+    console.error("Failed to update data", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
-  fetchPegawai();
-  fetchStockLocation();
-});
+};
+
+// Focus Obat Racikan
+// const focusObatRacikan = (selectedUuid: string) => {
+//   console.log("UUID yang difokuskan:", selectedUuid);
+// };
+// const focusObatRacikan = (uuid: string) => {
+//   console.log(uuid, 'uuid');
+  
+//   fetchObatRacikan(uuid)
+// };
 
 const fetchDetailPrescription = async () => {
   try {
-    // Set loading state to true
-    UseUtilsStore.setLoading(true);
     const response = await DoctorPrescriptionStore.detailApi(
       payload.value.uuid
     );
-
     payload.value = response?.payload || {};
   } catch (error) {
     console.error("Failed to fetch data:", error);
     payload.value = {};
-  } finally {
-    UseUtilsStore.setLoading(false);
   }
-  setValues({
-    obat:
-      payload.value.obat?.map((item: any) => ({
-        ...item,
-      })) || [],
-  });
+  
   totalTagihan.value = 0;
   if (payload.value?.lokasiStokUuid) {
-    fetchStockObat(payload.value.lokasiStokUuid);
     awalLokasi.value = payload.value.lokasiStokUuid;
   }
 };
-
-watch(
-  () => props.payloadDetail,
-  (newPayload: any) => {
-    payload.value = newPayload;
-    if (payload.value?.lokasiStokUuid) {
-      fetchStockObat(payload.value.lokasiStokUuid);
-      awalLokasi.value = newPayload.lokasiStokUuid;
-    }
-    setValues({
-      obat:
-        payload.value.obat?.map((item: any) => ({
-          ...item,
-        })) || [],
-    });
-  },
-  { immediate: true }
-);
 
 // Format rupiah
 const formatRupiah = (value: any) => {
@@ -409,10 +495,6 @@ const formatRupiah = (value: any) => {
   }).format(number);
 };
 
-const checkEdukasi = computed(() => {
-  return selectedEdukasi.value.length === itemEdukasi.value.length;
-});
-
 const checkTelaah = computed(() => {
   return (
     selectedTelaah.value.length === itemTelaah.value.length &&
@@ -420,6 +502,7 @@ const checkTelaah = computed(() => {
     selectedTelaah3.value.length === itemTelaah3.value.length
   );
 });
+
 const simpanTelaah = async (uuid: string) => {
   try {
     const response = await DoctorPrescriptionStore.updateTelaah({
@@ -434,7 +517,7 @@ const simpanTelaah = async (uuid: string) => {
 
 const verifikasiPetugas = async (uuid: string) => {
   try {
-    if (payload.value.orderStatus === 2) {
+    if (payload.value.orderStatus === 1) {
       const response = await DoctorPrescriptionStore.statusVerifikasi({
         uuid: uuid,
       });
@@ -449,6 +532,7 @@ const verifikasiPetugas = async (uuid: string) => {
         noHpPenerima: noHpPenerima.value,
         petugasEdukasi: selectedPegawai.value,
       });
+      emit("close");
     }
     fetchDetailPrescription();
   } catch (error) {
@@ -462,7 +546,6 @@ const batalOrder = async (uuid: string) => {
       uuid: uuid,
       alasanBatal: alasanBatal.value,
     });
-
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
@@ -493,12 +576,13 @@ const pindahLokasi = async (uuid: string) => {
   }
   pindahDialog.value = false;
   lokasiTujuan.value = "";
-  fetchDetailPrescription();
+  emit("close");
 };
 
 const closeBatalDialog = () => {
   alasanBatal.value = "";
 };
+
 const closePindahLokasiDialog = () => {
   lokasiTujuan.value = "";
 };
@@ -506,7 +590,35 @@ const closePindahLokasiDialog = () => {
 if (userData.value) {
   selectedPegawai.value = userData.value.name;
 }
+
+watch(
+  () => props.payloadDetail,
+  (newPayload: any) => {
+    payload.value = newPayload;
+    if (payload.value?.lokasiStokUuid) {
+      awalLokasi.value = newPayload.lokasiStokUuid;
+    }
+    setValues({
+      obat:
+        payload.value.obat?.map((item: any) => ({
+          ...item,
+        })) || [],
+    });
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  if (props.payloadDetail.isCompound == true) {
+    fetchObatRacikan();
+  }
+  // fetchStockObat();
+  fetchObatNonRacikan();
+  fetchPegawai();
+  fetchStockLocation();
+});
 </script>
+
 <template>
   <div class="col-span-2">
     <div class="mt-[10px] p-3 bg-adameds-75">
@@ -527,9 +639,7 @@ if (userData.value) {
           </div>
           <div class="flex justify-end">
             <div class="bg-white w-[0.5px] h-[30px] mr-[20px]"></div>
-            <p
-              class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]"
-            >
+            <p class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]">
               Tgl. Order : {{ epochToDate(payload.orderDate, "date") }}
             </p>
             <CustomButton
@@ -579,6 +689,7 @@ if (userData.value) {
             <p class="">24Thn 2Bln 1Hari</p>
           </div>
         </div>
+
         <!-- Asesmen Medis -->
         <div class="grid grid-cols-1">
           <CustomAccordion no-border initial-state="0">
@@ -602,9 +713,7 @@ if (userData.value) {
                       <p>Tidak Ada</p>
                     </div>
                     <div>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
+                      <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
                         Dokter Pengirim
                         <span>
                           <CustomButton
@@ -626,9 +735,7 @@ if (userData.value) {
                     Diagnosa Primer
                   </p>
                   <p class="">H10.9 Conjuctivitis</p>
-                  <p
-                    class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                  >
+                  <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
                     Diagnosa Sekunder
                   </p>
                   <p class="">-</p>
@@ -673,11 +780,9 @@ if (userData.value) {
                 <div class="mt-[20px] p-4 rounded-t-lg bg-adameds-50 shadow-md">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex">
-                      <CustomButton class="text-sm h-7">{{
-                        idx + 1
-                      }}</CustomButton>
+                      <CustomButton class="text-sm h-7">{{ idx + 1 }}</CustomButton>
                       <p class="my-auto ml-2 text-sm font-bold">
-                        {{ obat.value.namaObat }}
+                        {{ obat.value.itemMedis?.name }}
                       </p>
                       <PhArrowRight
                         :size="20"
@@ -722,12 +827,11 @@ if (userData.value) {
                       />
                       <CustomButton
                         v-if="!obat.value.isCompound"
+                        v-show="payload.orderStatus === 1"
                         label=""
                         background-color="bg-grass-300 rounded-lg"
                         class="h-6 w-[26px] p-0 ml-[10px] mr-[10px]"
-                        @click="
-                          openDialog('digerus', 'Tambah Data', obat.value)
-                        "
+                        @click="openDialog('digerus', 'Tambah Data', obat.value)"
                       >
                         <img
                           src="@/assets/icons/Exclude.svg"
@@ -736,6 +840,7 @@ if (userData.value) {
                         />
                       </CustomButton>
                       <CustomButton
+                        v-show="payload.orderStatus === 1"
                         label=""
                         background-color="bg-[#3D84E5] rounded-lg"
                         class="h-6 w-[26px] p-0"
@@ -747,32 +852,30 @@ if (userData.value) {
                   </div>
                 </div>
                 <div class="p-4 bg-white rounded-b-lg shadow-md">
-                  <DataTable
-                    :value="
-                      obat.value.isCompound ? obat.value.racikan : itemsObat
-                    "
-                    class="text-xs"
-                  >
-                    <!-- Stok Obat -->
-                    <Column v-if="obat.value.isCompound" header="No.">
+                  <DataTable :value="obat.value.isCompound ? obat.value.racikan : itemsObat" class="text-xs">
+                     <!-- Rincian Obat -->
+                    <Column v-if="obat.value.isCompound" header="Rincian Obat">
                       <template #body="slotProps">
-                        {{ slotProps.index + 1 }}
+                        <div class="grid grid-cols-1">
+                          <p>{{ slotProps.data.itemMedis.name}}</p>
+                          <div class="flex">
+                            <PhArrowRight
+                              :size="15"
+                              class="my-auto text-success-300"
+                              weight="bold"
+                            />
+                            <p class="ml-[5px]">{{ slotProps.data.medicationQty }} {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}</p>
+                          </div>
+                        </div>
                       </template>
                     </Column>
-                    <Column
-                      v-if="obat.value.isCompound"
-                      field="itemMedis.name"
-                      header="Obat"
-                    />
+                    <!-- Stok Obat -->
                     <Column field="itemsObat">
                       <template #header>
                         <div class="flex items-center justify-between w-full">
                           <div class="font-semibold">Stok Obat</div>
                           <CustomButton
-                            v-if="
-                              payload.orderStatus !== 1 &&
-                              payload.orderStatus !== 2
-                            "
+                            v-if="payload.orderStatus !== 1"
                             icon="PhCheck"
                             backgroundColor="bg-success-300"
                             size="small"
@@ -781,7 +884,7 @@ if (userData.value) {
                         </div>
                       </template>
                       <template #body="slotProps">
-                        <div class="">
+                        <div v-if="payload.orderStatus === 1">
                           <CustomSelect
                             v-if="obat.value.isCompound"
                             v-model="slotProps.data.jenisStokUuid"
@@ -789,21 +892,17 @@ if (userData.value) {
                             place-holder="Pilih Stok"
                             optionValue="uuid"
                             optionLabel="detailStok.name"
-                            :options="stockObatPayload"
+                            :options="stockObatRacikanPayload"
                             :invalid="(errors as any)[`obat[${idx}].racikan[${slotProps.index}].jenisStokUuid`] ? true : false"
                             :invalidMessage="(errors as any)[`obat[${idx}].racikan[${slotProps.index}].jenisStokUuid`]"
                             @update:model-value="
-                              updateStokObat(
+                              updateObatRacikan(
                                 obat.value.isCompound,
                                 slotProps.data.uuid,
                                 slotProps.data.jenisStokUuid,
                                 idx,
                                 slotProps.index
                               )
-                            "
-                            :disabled="
-                              payload.orderStatus !== 1 &&
-                              payload.orderStatus !== 2
                             "
                           />
                           <CustomSelect
@@ -813,11 +912,11 @@ if (userData.value) {
                             place-holder="Pilih Stok"
                             optionValue="uuid"
                             optionLabel="detailStok.name"
-                            :options="stockObatPayload"
+                            :options="stockObatNonRacikanPayload"
                             :invalid="(errors as any)[`obat[${idx}].jenisStokUuid`] ? true : false"
                             :invalidMessage="(errors as any)[`obat[${idx}].jenisStokUuid`]"
                             @update:model-value="
-                              updateStokObat(
+                              updateObatNonRacikan(
                                 obat.value.isCompound,
                                 obat.value.uuid,
                                 obat.value.jenisStokUuid,
@@ -825,38 +924,22 @@ if (userData.value) {
                                 slotProps.index
                               )
                             "
-                            :disabled="
-                              payload.orderStatus !== 1 &&
-                              payload.orderStatus !== 2
-                            "
                           />
                         </div>
+                        <div v-if="payload.orderStatus !== 1">{{ obat.value.jenisStok.name }}</div>
                       </template>
                     </Column>
-
                     <!-- Sisa Stok -->
-                    <Column
-                      headerClass="font-semibold"
-                      class="text-center"
-                      bodyClass="align-top text-center"
-                    >
+                    <Column v-if="payload.orderStatus === 1" headerClass="font-semibold" class="text-center" bodyClass="align-top text-center">
                       <template #header>
                         <div class="w-full text-center">Sisa Stok</div>
                       </template>
                       <template #body="slotProps">
-                        {{
-                          obat.value.isCompound
-                            ? slotProps.data.sisaStok || "-"
-                            : obat.value.sisaStok || "-"
-                        }}
+                        {{ obat.value.isCompound ? slotProps.data.sisaStok || "-" : obat.value.sisaStok || "-" }}
                       </template>
                     </Column>
                     <!-- Aturan & Cara Pakai -->
-                    <Column
-                      v-if="!obat.value.isCompound"
-                      field="caraPakai"
-                      header="Aturan & Cara Pakai"
-                    >
+                    <Column v-if="!obat.value.isCompound" field="caraPakai" header="Aturan & Cara Pakai">
                       <template #body="slotProps">
                         <div>
                           <p class="text-sm">
@@ -866,73 +949,35 @@ if (userData.value) {
                         </div>
                       </template>
                     </Column>
-                    <!-- Jumlah -->
-                    <Column
-                      v-if="obat.value.isCompound"
-                      headerClass="font-semibold"
-                      class="text-center"
-                      bodyClass="align-top text-center"
-                    >
-                      <template #header>
-                        <div class="w-full text-center">Jumlah</div>
-                      </template>
-                      <template #body="slotProps">
-                        {{ slotProps.data.medicationQty }}
-                        {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}
-                      </template>
-                    </Column>
                     <!-- Biaya Satuan -->
-                    <Column
-                      headerClass="font-semibold"
-                      class="w-2/12 text-end"
-                      bodyClass="align-top text-end"
-                    >
+                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
                       <template #header>
                         <div class="w-full text-end">Biaya Satuan</div>
                       </template>
                       <template #body="slotProps">
-                        {{
-                          obat.value.isCompound
-                            ? formatRupiah(slotProps.data.hargaSatuan) || "-"
-                            : formatRupiah(obat.value.hargaSatuan) || "-"
-                        }}
+                        {{ obat.value.isCompound ? formatRupiah(slotProps.data.hargaSatuan) || "-" : formatRupiah(obat.value.hargaSatuan) || "-" }}
                       </template>
                     </Column>
                     <!-- Sub. Total -->
-                    <Column
-                      headerClass="font-semibold"
-                      class="w-2/12 text-end"
-                      bodyClass="align-top text-end"
-                    >
+                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
                       <template #header>
                         <div class="w-full text-end">Sub. Total</div>
                       </template>
                       <template #body="slotProps">
-                        {{
-                          obat.value.isCompound
-                            ? formatRupiah(slotProps.data.subTotal) || "-"
-                            : formatRupiah(obat.value.grandTotal) || "-"
-                        }}
+                        {{ obat.value.isCompound ? formatRupiah(slotProps.data.subTotal) || "-" : formatRupiah(obat.value.grandTotal) || "-" }}
                       </template>
                     </Column>
                   </DataTable>
 
-                  <DataTable
-                    v-if="obat.value.isCompound"
-                    :value="itemsRacikan"
-                    class="text-xs"
-                  >
+                  <DataTable v-if="obat.value.isCompound" :value="itemsRacikan" class="text-xs">
                     <Column class="w-4/12" header="Aturan & Cara Pakai">
                       <template #body>
                         {{ obat.value.aturanPakai?.name }} <br />
                         {{ obat.value.caraPakai?.caraPakai }}
                       </template>
                     </Column>
-                    <Column
-                      headerClass="font-semibold"
-                      class="w-3/12 text-end"
-                      bodyClass="align-top text-end"
-                    >
+                    <!-- Biaya Embalase -->
+                    <Column headerClass="font-semibold" class="w-3/12 text-end" bodyClass="align-top text-end">
                       <template #header>
                         <div class="w-full text-end">Biaya Embalase</div>
                       </template>
@@ -940,11 +985,8 @@ if (userData.value) {
                         {{ formatRupiah(obat.value.biayaEmbalase) }}
                       </template>
                     </Column>
-                    <Column
-                      headerClass="font-semibold"
-                      class="w-2/12 text-end"
-                      bodyClass="align-top text-end"
-                    >
+                    <!-- Biaya Racik -->
+                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
                       <template #header>
                         <div class="w-full text-end">Biaya Racik</div>
                       </template>
@@ -952,21 +994,13 @@ if (userData.value) {
                         {{ formatRupiah(obat.value.biayaRacik) }}
                       </template>
                     </Column>
-
-                    <Column
-                      headerClass="font-semibold"
-                      class="w-2/12 text-end"
-                      bodyClass="align-top text-end"
-                    >
+                    <!-- Sub. Total -->
+                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
                       <template #header>
                         <div class="w-full text-end">Sub. Total</div>
                       </template>
                       <template #body="slotProps">
-                        {{
-                          obat.value.grandTotal
-                            ? formatRupiah(obat.value.grandTotal)
-                            : "-"
-                        }}
+                        {{ obat.value.grandTotal ? formatRupiah(obat.value.grandTotal) : "-" }}
                       </template>
                     </Column>
                   </DataTable>
@@ -989,6 +1023,7 @@ if (userData.value) {
             </template>
           </CustomAccordion>
         </div>
+
         <!-- Penulis Resep -->
         <div class="grid grid-cols-1">
           <card class="bg-adameds-50">
@@ -1017,6 +1052,7 @@ if (userData.value) {
             </template>
           </card>
         </div>
+
         <!-- Telaah Resep -->
         <div class="grid grid-cols-1">
           <CustomAccordion no-border initial-state="0">
@@ -1044,12 +1080,7 @@ if (userData.value) {
                         </div>
                       </template>
                     </Column>
-                    <Column
-                      v-if="
-                        payload.orderStatus !== 1 && payload.orderStatus !== 2
-                      "
-                      headerClass="bg-adameds-50"
-                    >
+                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1063,19 +1094,19 @@ if (userData.value) {
                       </template>
                     </Column>
                     <Column
-                      v-if="
-                        payload.orderStatus === 1 || payload.orderStatus === 2
-                      "
+                      v-if="payload.orderStatus === 1"
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
                       class="custom-checkbox"
-                      ><template #header>
-                        <div class="w-full font-bold">Hasil</div>
-                      </template></Column
                     >
+                      <template #header>
+                        <div class="w-full font-bold">Hasil</div>
+                      </template>
+                    </Column>
                   </DataTable>
                 </div>
+
                 <!-- itemTelaah2 -->
                 <div class="mt-[20px]">
                   <DataTable
@@ -1097,12 +1128,7 @@ if (userData.value) {
                         </div>
                       </template>
                     </Column>
-                    <Column
-                      v-if="
-                        payload.orderStatus !== 1 && payload.orderStatus !== 2
-                      "
-                      headerClass="bg-adameds-50"
-                    >
+                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1115,20 +1141,19 @@ if (userData.value) {
                         />
                       </template>
                     </Column>
-                    <Column
-                      v-if="
-                        payload.orderStatus === 1 || payload.orderStatus === 2
-                      "
+                    <Column v-if="payload.orderStatus === 1"
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
                       class="custom-checkbox"
-                      ><template #header>
-                        <div class="w-full font-bold">Hasil</div>
-                      </template></Column
                     >
+                      <template #header>
+                        <div class="w-full font-bold">Hasil</div>
+                      </template>
+                    </Column>
                   </DataTable>
                 </div>
+
                 <!-- itemTelaah3 -->
                 <div class="mt-[20px]">
                   <DataTable
@@ -1150,12 +1175,7 @@ if (userData.value) {
                         </div>
                       </template>
                     </Column>
-                    <Column
-                      v-if="
-                        payload.orderStatus !== 1 && payload.orderStatus !== 2
-                      "
-                      headerClass="bg-adameds-50"
-                    >
+                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1168,18 +1188,16 @@ if (userData.value) {
                         />
                       </template>
                     </Column>
-                    <Column
-                      v-if="
-                        payload.orderStatus === 1 || payload.orderStatus === 2
-                      "
+                    <Column v-if="payload.orderStatus === 1"
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
                       class="custom-checkbox"
-                      ><template #header>
-                        <div class="w-full font-bold">Hasil</div>
-                      </template></Column
                     >
+                      <template #header>
+                        <div class="w-full font-bold">Hasil</div>
+                      </template>
+                    </Column>
                   </DataTable>
                 </div>
               </div>
@@ -1200,6 +1218,7 @@ if (userData.value) {
             </template>
           </CustomAccordion>
         </div>
+
         <!-- Edukasi Pemberian Obat -->
         <div v-if="payload.orderStatus === 4" class="grid grid-cols-1">
           <CustomAccordion no-border initial-state="0">
@@ -1238,6 +1257,7 @@ if (userData.value) {
                     ></Column>
                   </DataTable>
                 </div>
+
                 <div class="mt-[20px]">
                   <div v-if="payload.isTakeway" class="mt-[20px] mb-[20px]">
                     <p
@@ -1288,26 +1308,12 @@ if (userData.value) {
             </template>
           </CustomAccordion>
         </div>
-
-        <hr class="my-5 border-[1px] border-grey-200" />
-        <div
-          v-if="
-            payload.orderStatus === 1 ||
-            payload.orderStatus === 2 ||
-            payload.orderStatus === 4
-          "
-          class="flex items-end justify-between"
-        >
+        <hr v-if="payload.orderStatus === 1 || payload.orderStatus === 4" class="my-5 border-[1px] border-grey-200" />
+        <div class="flex items-end justify-between">
           <CustomSelect
-            v-if="
-              payload.orderStatus === 1 ||
-              payload.orderStatus === 2 ||
-              payload.orderStatus === 4
-            "
+            v-if="payload.orderStatus === 1 || payload.orderStatus === 4"
             v-model="selectedPegawai"
-            :label="
-              payload.orderStatus === 4 ? 'Petugas Edukasi' : 'Petugas Telaah'
-            "
+            :label="payload.orderStatus === 4 ? 'Petugas Edukasi' : 'Petugas Telaah'"
             place-holder="Pilih Petugas"
             :options="pegawaiPayload"
             optionValue="name"
@@ -1315,48 +1321,44 @@ if (userData.value) {
             class="w-1/3"
           />
           <CustomButton
-            v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
+            v-if="payload.orderStatus === 1"
             @click="simpanTelaah(payload.uuid)"
-            :disabled="
-              !checkTelaah || !selectedPegawai || Object.keys(errors).length > 0
-            "
+            :disabled="!checkTelaah || !selectedPegawai || Object.keys(errors).length > 0"
           >
             <div class="flex items-center gap-2">
               <div class="text-sm">Simpan Telaah</div>
             </div>
           </CustomButton>
         </div>
-        <hr class="mt-5 border-[1px] border-grey-200" />
-        <!-- Diverifikasi Oleh -->
+        <hr class="my-5 border-[1px] border-grey-200" />
 
+        <!-- Diverifikasi Oleh -->
         <div class="grid grid-cols-2">
-          <div class="flex gap-2.5 item-center mt-[20px]">
+          <div class="flex gap-2 item-center">
+            <!-- Batal Order -->
             <CustomButton
-              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
+              v-if="payload.orderStatus === 1"
               background-color="bg-danger-300"
               @click="batalDialog = true"
+              class="w-[110px]"
+              label="Batal Order"
             >
-              <div class="flex items-center gap-2">
-                <div class="text-sm">Batal Order</div>
-              </div>
             </CustomButton>
+            <!-- Batal Penyerahan -->
             <CustomButton
               v-if="payload.orderStatus === 4"
               background-color="bg-danger-300"
               @click="batalPenyerahan(payload.uuid)"
+              label="Batal Penyerahan"
             >
-              <div class="flex items-center gap-2">
-                <div class="text-sm">Batal Penyerahan</div>
-              </div>
             </CustomButton>
-
+            <!-- Pindah Lokasi Order -->
             <CustomButton
-              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
+              v-if="payload.orderStatus === 1"
               @click="pindahDialog = true"
+              label="Pindah Lokasi Order"
+              class="w-[170px]"
             >
-              <div class="flex items-center gap-2">
-                <div class="text-sm">Pindah Lokasi Order</div>
-              </div>
             </CustomButton>
             <CustomButton @click="cetakDialog = true">
               <div class="flex items-center gap-2">
@@ -1366,25 +1368,19 @@ if (userData.value) {
             </CustomButton>
           </div>
           <div class="flex justify-end">
-            <div class="mt-[20px]">
-              <p
-                class="text-xs font-bold text-right underline underline-offset-2"
-              >
+            <div class="">
+              <p class="text-xs font-bold text-right underline underline-offset-2">
                 Diverifikasi Oleh
               </p>
-              <p>{{ userData?.name }}</p>
+              <p>{{ payload.petugasVerifikasi }}</p>
             </div>
-            <div class="mt-[20px]">
-              <div
-                class="bg-mediumGrey-300 w-[1px] h-[33px] ml-[20px] mt-1"
-              ></div>
+            <div class="">
+              <div class="bg-mediumGrey-300 w-[1px] h-[33px] ml-[20px] mt-1"></div>
             </div>
-            <div class="mt-[20px]">
+            <div class="">
               <CustomButton
                 :label="
                   payload.orderStatus === 1
-                    ? 'Verifikasi'
-                    : payload.orderStatus === 2
                     ? 'Verifikasi'
                     : payload.orderStatus === 3
                     ? 'Obat Siap Diserahkan'
@@ -1392,9 +1388,7 @@ if (userData.value) {
                     ? 'Serahkan Obat'
                     : ''
                 "
-                :disabled="
-                  payload.orderStatus === 1
-                "
+                :disabled="payload.orderStatus === 1"
                 class="ml-[20px]"
                 @click="verifikasiPetugas(payload.uuid)"
               />
@@ -1476,17 +1470,16 @@ if (userData.value) {
             v-model="awalLokasi"
             place-holder="Lokasi Awal Order"
             label="Lokasi Awal Order"
-            class=""
             optionLabel="name"
             optionValue="uuid"
             :options="StockLocationPayload"
             disabled
           />
         </div>
-        <div class="mt-[20px]">
+        <div class="">
           <ArrowRightBrokenIcon
             :size="20"
-            class="text-adameds-300 mt-[23px] ml-[15px]"
+            class="text-adameds-300 ml-[15px] mt-[55px]"
             weight="bold"
           />
         </div>
@@ -1521,11 +1514,12 @@ if (userData.value) {
       </div>
     </template>
   </CustomDialog>
+
   <!-- Cetak Dialog -->
-  <CustomDialog v-model:visible="cetakDialog" width="550px">
+  <CustomDialog v-model:visible="cetakDialog" width="435px">
     <template #header>Cetak</template>
     <template #body>
-      <div class="flex justify-between mt-[20px]">
+      <div class="flex gap-3 mt-[20px]">
         <CustomButton>
           <div class="flex items-center gap-2">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
@@ -1548,13 +1542,3 @@ if (userData.value) {
     </template>
   </CustomDialog>
 </template>
-<style scoped>
-/* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
-  @apply border-adameds-300 bg-adameds-300;
-}
-
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
-  @apply text-white;
-}
-</style>

@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from "vue";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRevenueRecapStore } from "@/stores/laporanFarmasi/revenueRecap";
 import { utilsStore } from "@/stores/utils";
+import * as XLSX from "xlsx-js-style";
 import { dateToEpoch, formatPrice } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -29,6 +30,30 @@ function formatDate(date: any) {
   const day = String(parsedDate.getDate()).padStart(2, "0");
 
   return `${day}-${month}-${year}`;
+}
+
+function formatDateExport(date: any) {
+  const parsedDate = new Date(date);
+  const day = String(parsedDate.getDate()).padStart(2);
+  const monthIndex = parsedDate.getMonth();
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const month = monthNames[monthIndex];
+  const year = parsedDate.getFullYear();
+
+  return `${day} ${month} ${year}`;
 }
 
 // State Management Location
@@ -78,9 +103,9 @@ const fetchRevenueRecap = async () => {
       stockLocation.value,
     );
 
-    if (response && response.payload) {
+    if (response && response.payload.items) {
       revenueRecapProperties.value.total = response.properties.total;
-      revenueRecapPayload.value = response.payload;
+      revenueRecapPayload.value = response.payload.items;
     } else {
       revenueRecapPayload.value = [];
     }
@@ -99,15 +124,6 @@ const handlePage = (event: any) => {
   fetchRevenueRecap();
 };
 
-// Filter Search Data
-const searchData = () => {
-  metodePembayaran.value;
-  stockLocation.value;
-  dateToEpoch(startDateFilter.value);
-  dateToEpoch(endDateFilter.value);
-  fetchRevenueRecap();
-};
-
 // Filter Reset Data
 const resetData = () => {
   metodePembayaran.value = 0;
@@ -115,6 +131,171 @@ const resetData = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   fetchRevenueRecap();
+};
+
+// Cetak Excel
+const print = async () => {
+  try {
+    const response = await revenueRecapStore.getApi(
+      revenueRecapProperties.value.page,
+      revenueRecapProperties.value.page_size,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      metodePembayaran.value,
+      stockLocation.value,
+    );
+    
+    const faskes = response.payload.faskes;
+    const address = response.payload.address;
+    const user = response.payload.message;
+    const rows = response.payload.items;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }    
+
+    // Prepare Data for Export;
+    const faskesName = [`${faskes}`];
+    const faskesAddress = [`${address}`];
+    const userName = [`${user}`];
+    const title = ["Laporan Pendapatan Resep Per Apotek"];
+    const periode = [`Periode: ${formatDateExport(startDateFilter.value)} - ${formatDateExport(endDateFilter.value)}`];
+    const total = ["Total"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Tanggal: "Tanggal",
+      Lokasi: "Lokasi Stok",
+      MetodePembayaran: "Metode Pembayaran",
+      Jumlah: "Jumlah",
+    });
+
+    // Data Rows
+    let totalValue = 0;
+    for (let i = 0; i < rows.length; i++) {
+      totalValue += rows[i].totalHarga || 0;
+      data.push({
+        No: i + 1,
+        Tanggal: formatDate(rows[i].orderDate),
+        Lokasi: rows[i].lokasiStok,
+        MetodePembayaran: rows[i].paymentMethod,
+        Jumlah: formatPrice(rows[i].totalHarga)
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [faskesName], { origin: "A1" });
+    XLSX.utils.sheet_add_aoa(worksheet, [faskesAddress], { origin: "A2" });
+    XLSX.utils.sheet_add_aoa(worksheet, [userName], { origin: "A3" });
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A4" });
+    XLSX.utils.sheet_add_aoa(worksheet, [periode], { origin: "A5" });
+    XLSX.utils.sheet_add_aoa(worksheet, [total], { origin: "A8" });
+    XLSX.utils.sheet_add_aoa(worksheet, [[totalValue]], { origin: "E8" });
+    worksheet["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }, // Merge Title
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // Merge Address
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } }, // Merge User
+      { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } }, // Merge Title
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 4 } }, // Merge Period
+      { s: { r: 7, c: 0 }, e: { r: 7, c: 3 } }, // Merge Total
+    ];
+
+    // Style Title
+    worksheet["A1"].s = {
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A2"].s = {
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A3"].s = {
+      font: { bold: false, sz: 10 },
+    };
+    worksheet["A4"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A5"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A8"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 10 },
+    };
+    worksheet["E8"] = { v: formatPrice(totalValue), 
+      s: { 
+        alignment: { horizontal: "center", vertical: "center" }, 
+        font: { bold: true, sz: 10 } 
+      }      
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 5; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 5) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Alignment header cells
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Alignment header row 3
+        if (row === 5) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = {
+            bold: true,
+            sz: 10
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 5) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "D3D3D3" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Pendapatan Farmasi");
+    XLSX.writeFile(workbook, `Laporan Pendapatan Resep Per Apotek.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 
 onMounted(() => {    
@@ -188,7 +369,7 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
-                @click="searchData"
+                @click="fetchRevenueRecap"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
@@ -247,16 +428,17 @@ onMounted(() => {
           </Column>
           <Column header="Lokasi Stok" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.lokasiStok }}
-              </div>
+              <div class="text-SM">{{ slotProps.data.lokasiStok }}</div>
+            </template>
+          </Column>
+          <Column header="Metode Pembayaran" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.paymentMethod }}</div>
             </template>
           </Column>
           <Column header="Jumlah" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">
-                {{ formatPrice(slotProps.data.totalHarga) }}
-              </div>
+              <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
             </template>
           </Column>
         </DataTable>
@@ -265,7 +447,7 @@ onMounted(() => {
         <div class="flex justify-between mt-[10px]">
           <div class="flex items-center">
             <CustomButton
-              @click="() => {}"
+              @click="print"
               icon="PhPrinter"
               label="Cetak"
               class="mr-[10px]"

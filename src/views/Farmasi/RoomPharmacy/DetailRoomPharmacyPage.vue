@@ -8,6 +8,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DialogAlkes from "./DialogAlkesPage.vue";
 import DialogCancel from "./DialogCancelOrderPage.vue";
 import DialogMoving from "./DialogMovingLocationPage.vue";
@@ -25,10 +26,13 @@ const closeDetail = () => {
   emit("close");
 };
 
+const cetakDialog = ref(false);
+
 // State Management Medical Item
 const MedicalItemStore = useMedicalItemStore();
 const MedicalItemPayload = ref();
 
+// Fetch MedicalItem
 const fetchMedicalItem = async () => {
   const itemMedisName = props.payloadDetail.alkesItems[0].itemMedis.uuid;
   try {
@@ -472,7 +476,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="mt-[20px] ml-[-10px]">
-            <CustomButton>
+            <CustomButton @click="cetakDialog = true">
               <div class="flex items-center gap-2">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
@@ -493,6 +497,33 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  
+  <!-- Cetak Dialog -->
+  <CustomDialog v-model:visible="cetakDialog" width="435px">
+    <template #header>Cetak</template>
+    <template #body>
+      <div class="flex gap-3 mt-[20px]">
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Tiket</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">E-Resep</div>
+          </div>
+        </CustomButton>
+        <CustomButton>
+          <div class="flex items-center gap-2">
+            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
+            <div class="text-sm">Salinan E-Resep</div>
+          </div>
+        </CustomButton>
+      </div>
+    </template>
+  </CustomDialog>
   <DialogAlkes v-model:isDialogVisible="editDialog" :payloadEdit="editDialogConfig.data" @data-updated="IncomingDetail"/>
   <DialogCancel v-model:isDialogVisible="cancelDialog" :payloadCancel="cancelDialogConfig.data"/>
   <DialogMoving v-model:isDialogVisible="movingLocationDialog" :payloadMoving="movingLocationDialogConfig.data" @data-updated="closeDetail"/>
