@@ -17,8 +17,5 @@ export const useRevenueRecapStore = defineStore({
     ) {
       return apiFarmasiGet(`/farmasi/rekap/pendapatan-apotik?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&payment_method=${paymentMethod}&lokasi_stok_uuid=${location}`, payload);
     },
-    async exportApi(payload = {}) {
-      return apiFarmasiGet(`/farmasi/rekap/pendapatan-apotik/export`, payload);
-    },
   },
 });
