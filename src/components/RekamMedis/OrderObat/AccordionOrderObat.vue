@@ -27,6 +27,7 @@ import DialogCardObat from "@/components/RekamMedis/OrderObat/DialogCardObat.vue
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
+import { epochToDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -58,42 +59,41 @@ const props = defineProps({
 const dialogTambahOrder = ref({
   isVisible: false,
   title: "",
+  type: "add",
+  obatOrder: null as any | null,
 });
 
 const listOrder = ref<any[]>([]);
 
-function handleTambahOrder() {
+function handleTambahOrder(tipe: string) {
   dialogTambahOrder.value.isVisible = true;
-  dialogTambahOrder.value.title = "Form Tambah Obat";
+  dialogTambahOrder.value.title =
+    tipe == "add" ? "List Tambah Obat" : "Detail Obat";
+  dialogTambahOrder.value.type = tipe;
 }
 
-// terima payload dari file DialogOrderObat
-const handleSubmitOrder = (payload: any) => {
-  const penulisResepList = [
-    "dr Adameds, Sp.A",
-    "dr Budi, Sp.B",
-    "dr Clara, Sp.KK",
-    "dr Dani, Sp.PD",
-    "dr Erika, Sp.M",
-  ];
-  const statusList = ["Resep Masuk", "Obat Disiapkan", "Obat Diserahkan"];
-
-  // Pilih penulis resep secara acak
-  const randomPenulisResep =
-    penulisResepList[Math.floor(Math.random() * penulisResepList.length)];
-  const tglOrder = new Date(Date.now()).toLocaleDateString("id-ID");
-  const orderCode = `RSP${Math.floor(1000 + Math.random() * 9000)}`;
-  const randomStatus =
-    statusList[Math.floor(Math.random() * statusList.length)];
-
-  listOrder.value.push({
-    ...payload,
-    penulisResep: randomPenulisResep,
-    tglOrder,
-    orderCode,
-    statusOrder: randomStatus,
-  });
-  console.log(listOrder.value);
+const handleSubmitOrder = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const selectedDate = rekamMedisStore.openedRekamMedis.dates.filter(
+      (date: any) => date.isSelected
+    );
+    const selectedSession = rekamMedisStore.openedRekamMedis.sessions.filter(
+      (session: any) => session.isSelected
+    );
+    const result = await rekamMedisStore.getRekamMedis({
+      rekamMedisUuid: rekamMedisStore.openedRekamMedis.meta.rekamMedisUuid,
+      dateOrder: selectedDate.date,
+      sessionOrder: selectedSession.order,
+    });
+    if (result && result.payload) {
+      rekamMedisStore.setOpenedRekamMedisData(result.payload);
+    }
+  } catch (error) {
+    console.error("Failed to get data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const resetOrderObat = () => {
@@ -108,12 +108,27 @@ const dialogCardObat = ref({
 });
 
 // aksi
-const selectResult = (result: any) => {
-  dialogCardObat.value = {
-    isVisible: true,
-    title: "Detail Obat",
-    obatDetail: result,
-  };
+const selectResult = async (resepData: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const result = await doctorPrescriptionStore.detailApi(resepData.uuid);
+    if (result && result.payload) {
+      if (resepData.orderStatus === 1 || resepData.orderStatus === 2) {
+        handleTambahOrder("edit");
+        dialogTambahOrder.value.obatOrder = result.payload;
+      } else {
+        dialogCardObat.value = {
+          isVisible: true,
+          title: "Detail Obat",
+          obatDetail: { lokasiName: resepData.lokasiStok, ...result.payload },
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Failed to get data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 // Ketika METHOD adalah detail
@@ -128,15 +143,32 @@ const dialogDetailData = ref({
 });
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.obatUuides.length) {
-    const responseOrderObat =
-      await doctorPrescriptionStore.getSomeOrderPrescription({
-        uuides: rekamMedisStore.openedRekamMedis.data.obatUuides,
-      });
-    if (responseOrderObat && responseOrderObat.payload) {
-      listOrder.value = responseOrderObat.payload;
+  if (rekamMedisStore.openedRekamMedis.data.obatUuides?.length) {
+    try {
+      storeUtils.setLoading(true);
+      const responseOrderObat =
+        await doctorPrescriptionStore.getSomeOrderPrescription({
+          uuides: rekamMedisStore.openedRekamMedis.data.obatUuides,
+        });
+      if (responseOrderObat && responseOrderObat.payload) {
+        listOrder.value = responseOrderObat.payload;
+      }
+    } catch (error) {
+      console.error("Failed to post data", error);
+    } finally {
+      storeUtils.setLoading(false);
     }
   } else resetOrderObat();
+};
+
+const getStringStatus = (index: number) => {
+  if (index == 0) return "Cancel";
+  else if (index == 1) return "Request";
+  else if (index == 2) return "Waiting";
+  else if (index == 3) return "Process";
+  else if (index == 4) return "Order Siap";
+  else if (index == 5) return "Dispense";
+  else if (index == 6) return "Return";
 };
 
 onBeforeMount(() => {
@@ -149,15 +181,30 @@ watch(storedRMData, (newRM) => {
   setFormData();
 });
 
+watch(dialogTambahOrder.value, (newState)=> {
+  if (!newState.isVisible) {
+    setFormData();
+  }
+})
+
 // fungsi supaya Dialog Detail bisa terbuka
-function handleDetail() {
-  const obatDetail = detailObats.value;
-  dialogDetailData.value = {
-    isVisible: true,
-    title: "Detail Obat",
-    detailObatData: obatDetail,
-  };
-}
+const handleDetail = async (resepData: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const result = await doctorPrescriptionStore.detailApi(resepData.uuid);
+    if (result && result.payload) {
+      dialogCardObat.value = {
+        isVisible: true,
+        title: "Detail Obat",
+        obatDetail: { lokasiName: resepData.lokasiStok, ...result.payload },
+      };
+    }
+  } catch (error) {
+    console.error("Failed to get data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -185,101 +232,110 @@ defineExpose({
   >
     <template #header>Order Obat</template>
     <template #content>
-      <div class="grid grid-cols-3 gap-3 py-6" v-if="listOrder.length > 0">
-        <div
-          class="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm shadow-black/10 cursor-pointer"
-          v-for="(result, index) in listOrder"
-          :key="index"
-          @click="selectResult(result)"
-        >
-          <!-- Header -->
+      <div class="pt-5">
+        <div class="grid grid-cols-3 gap-3 pb-6" v-if="listOrder.length > 0">
           <div
-            class="py-1 font-semibold text-center text-white bg-teal-400 rounded-lg text-SM"
+            class="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm shadow-black/10 cursor-pointer"
+            v-for="(result, index) in listOrder"
+            :key="index"
+            @click="selectResult(result)"
           >
-            {{ result.orderCode }}
-          </div>
-
-          <!-- Content -->
-          <div class="grid grid-cols-2 pt-2.5">
-            <!-- Left side -->
-            <div>
-              <div class="font-semibold underline text-XS">Penulis Resep</div>
-              <div class="font-normal text-SM">{{ result.penulisResep }}</div>
-              <div class="font-semibold underline text-XS">
-                Lokasi Tujuan Order
+            <!-- Header -->
+            <div
+              class="py-1 font-semibold text-center text-white bg-teal-400 rounded-lg text-SM"
+            >
+              {{ result.noResep }}
+            </div>
+  
+            <!-- Content -->
+            <div class="grid grid-cols-2 pt-2.5">
+              <!-- Left side -->
+              <div>
+                <div class="font-semibold underline text-XS">Penulis Resep</div>
+                <div class="font-normal text-SM">{{ result.dokterOrder }}</div>
+                <div class="font-semibold underline text-XS">
+                  Lokasi Tujuan Order
+                </div>
+                <div class="font-normal text-SM">
+                  {{ result.lokasiStok }}
+                </div>
               </div>
-              <div class="font-normal text-SM">
-                {{ result.selectedLokasiTujuanOrder }}
+  
+              <!-- Right side -->
+              <div class="text-end">
+                <div class="font-semibold underline text-XS">Tgl. Order</div>
+                <div class="font-normal text-SM">
+                  {{ epochToDate(result.orderDate, "date") }}
+                </div>
+                <div class="font-semibold underline text-XS">Jumlah Order</div>
+                <div class="font-normal text-SM">
+                  {{ result.jumlahObat }} Obat
+                </div>
               </div>
             </div>
-
-            <!-- Right side -->
-            <div class="text-end">
-              <div class="font-semibold underline text-XS">Tgl. Order</div>
-              <div class="font-normal text-SM">{{ result.tglOrder }}</div>
-              <div class="font-semibold underline text-XS">Jumlah Order</div>
-              <div class="font-normal text-SM">
-                {{ result.orderObats.length }} Obat
+  
+            <!-- Buttons -->
+            <div class="flex items-end justify-between">
+              <div class="flex space-x-2">
+                <CustomChip
+                  v-if="result.isRacikan"
+                  :showCheckedIcon="false"
+                  label="MENGANDUNG RACIKAN"
+                  textColor="text-grass-300"
+                  borderColor="border-grass-300"
+                  bgColor="bg-grass-50"
+                  customClass="h-5"
+                />
+                <CustomChip
+                  v-if="result.isTakeaway"
+                  :showCheckedIcon="false"
+                  label="OBAT PULANG"
+                  textColor="text-info-300"
+                  borderColor="border-info-300"
+                  bgColor="bg-info-50"
+                  customClass="h-5"
+                />
+                <CustomChip
+                  v-if="result.isChronic"
+                  :showCheckedIcon="false"
+                  label="OBAT KRONIS"
+                  textColor="text-sunFlower-300"
+                  borderColor="border-sunFlower-300"
+                  bgColor="bg-sunFlower-50"
+                  customClass="h-5"
+                />
+              </div>
+  
+              <div class="flex flex-col items-end justify-start gap-0.5">
+                <div class="font-semibold underline text-XS">Status</div>
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="getStringStatus(result.orderStatus)"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="h-5 border-none"
+                />
               </div>
             </div>
           </div>
-
-          <!-- Buttons -->
-          <div class="flex items-end justify-between">
-            <div class="flex space-x-2">
-              <CustomChip
-                :showCheckedIcon="false"
-                label="RACIKAN"
-                bgColor="bg-none"
-                textColor="text-grass-200"
-                customClass="h-5 border-[#a0d468]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                label="OBAT PULANG"
-                bgColor="bg-none"
-                textColor="text-info-300"
-                customClass="h-5 border-info-300 min-w-[85px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                label="OBAT KRONIS"
-                bgColor="bg-none"
-                textColor="text-sunFlower-300"
-                customClass="h-5 border-sunFlower-300"
-              />
-            </div>
-
-            <div class="flex flex-col items-end justify-start gap-0.5">
-              <div class="font-semibold underline text-XS">Status</div>
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="result.statusOrder"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 border-none"
-              />
-            </div>
-          </div>
+          <!-- Card End -->
         </div>
-        <!-- Card End -->
-      </div>
-      <div v-else class="py-5">
-        <NoData />
-      </div>
-      <!-- TESS -->
-
-      <div
-        class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300 gap-2.5"
-      >
-        <CustomButton
-          icon="PhPlus"
-          label="Tambah Order"
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          backgroundColor="bg-white"
-          @click="handleTambahOrder"
-        />
+        <div v-else>
+          <NoData />
+        </div>
+        <!-- TESS -->
+        <div
+          class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300 gap-2.5 mt-6"
+        >
+          <CustomButton
+            icon="PhPlus"
+            label="Tambah Order"
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            backgroundColor="bg-white"
+            @click="handleTambahOrder('add')"
+          />
+        </div>
       </div>
       <DialogOrderObat
         v-model:is-dialog-visible="dialogTambahOrder.isVisible"
@@ -288,6 +344,8 @@ defineExpose({
         :rmUuid="props.rmUuid"
         :patientData="patientData"
         :sessionUuid="props.sessionUuid"
+        :type="dialogTambahOrder.type"
+        :obatOrder="dialogTambahOrder.obatOrder"
         @submit-order="handleSubmitOrder"
       />
       <DialogCardObat
@@ -302,110 +360,53 @@ defineExpose({
   <CustomAccordion v-else headerClass="bg-adameds-50">
     <template #header>Obat</template>
     <template #content>
-      <CustomAccordion headerClass="bg-adameds-50" class="p-5">
-        <template #header>
-          <div class="flex justify-between w-full">
-            <div>RSPK82L</div>
-            <div>Tgl. Order : 01-01-2024</div>
-          </div>
-        </template>
-        <template #content>
-          <div class="px-5 py-2.5">
-            <DataTable
-              :value="detailObats"
-              class="text-xs bg-adameds-50 min-h-[160px]"
-              scrollable
-              scrollHeight="flex"
-            >
-              <Column
-                headerClass="bg-adameds-50 font-semibold text-SM"
-                class="w-2 text-center"
-              >
-                <template #header>
-                  <div class="text-center">No.</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex items-center justify-center">
-                    {{ slotProps.index + 1 }}
-                  </div>
-                </template>
-              </Column>
-              <Column
-                headerClass="bg-adameds-50"
-                class="max-w-[300px] text-left"
-              >
-                <template #header>
-                  <div class="w-full font-semibold text-left">Nama Obat</div>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.racikan">
-                    {{ slotProps.data.namaRacikan }}
-                    <span v-if="slotProps.data.sirup">- Sirup</span>
-                  </div>
-                  <div v-else>
-                    {{ slotProps.data.namaObat }}
-                  </div>
-                  <div class="flex gap-1.5 justify-left">
-                    <CustomChip
-                      v-if="slotProps.data.racikan"
-                      :showCheckedIcon="false"
-                      label="RACIKAN"
-                      bgColor="bg-none"
-                      textColor="text-grass-300"
-                      customClass="h-5 pr-[6px] border-grass-300 "
-                    />
-                    <CustomChip
-                      v-if="slotProps.data.obatPulang"
-                      :showCheckedIcon="false"
-                      label="OBAT PULANG"
-                      bgColor="bg-none"
-                      textColor="text-info-300"
-                      customClass="h-5 pr-[6px] border-info-300 min-w-[85px]"
-                    />
-                    <CustomChip
-                      v-if="slotProps.data.obatKronis"
-                      :showCheckedIcon="false"
-                      label="OBAT KRONIS"
-                      bgColor="bg-none"
-                      textColor="text-sunFlower-300"
-                      customClass="h-5 border-sunFlower-300"
-                    />
-                  </div>
-                </template>
-              </Column>
-
-              <Column headerClass="bg-adameds-50" class="w-auto text-left">
-                <template #header>
-                  <div class="w-full font-semibold text-left">Aturan Pakai</div>
-                </template>
-                <template #body="slotProps">
-                  {{ slotProps.data.aturanPakai }}
-                </template>
-              </Column>
-            </DataTable>
-
-            <div class="pt-5">
-              <CustomInfoRow label="Petugas" value="Nama Petugas " />
+      <div class="pt-5">
+        <CustomAccordion
+          v-for="(result, index) in listOrder"
+          :key="index"
+          headerClass="bg-adameds-50"
+        >
+          <template #header>
+            <div class="flex justify-between w-full">
+              <div>{{ result.noResep }}</div>
+              <div>Tgl. Order : {{ epochToDate(result.orderDate, "date") }}</div>
             </div>
-          </div>
-        </template>
-        <template #footer>
-          <div class="flex justify-between gap-3">
-            <CustomButton
-              label="Detail"
-              textColor="text-white"
-              backgroundColor="bg-adameds-300"
-              @click="handleDetail"
-              icon="DetailIcon"
-            />
-            <CustomButton label="Batal Order" backgroundColor="bg-danger-300" />
-          </div>
-        </template>
-      </CustomAccordion>
+          </template>
+          <template #content>
+            <div class="px-5 py-2.5">
+              <div class="pt-5">
+                <CustomInfoRow label="Petugas" :value="result.dokterOrder" />
+              </div>
+              <div class="pt-5">
+                <CustomInfoRow
+                  label="Jam Input"
+                  :value="`${epochToDate(result.orderDate, 'time')}`"
+                />
+              </div>
+            </div>
+          </template>
+          <template #footer>
+            <div class="flex gap-3">
+              <CustomButton
+                label="Detail"
+                textColor="text-white"
+                backgroundColor="bg-adameds-300"
+                @click="handleDetail(result)"
+                icon="DetailIcon"
+              />
+            </div>
+          </template>
+        </CustomAccordion>
+      </div>
       <DialogDetailObat
         v-model:is-dialog-visible="dialogDetailData.isVisible"
         :title="dialogDetailData.title"
         :obatDetail="dialogDetailData.detailObatData"
+      />
+      <DialogCardObat
+        v-model:is-dialog-visible="dialogCardObat.isVisible"
+        :title="dialogCardObat.title"
+        :obat-detail="dialogCardObat.obatDetail"
       />
     </template>
   </CustomAccordion>

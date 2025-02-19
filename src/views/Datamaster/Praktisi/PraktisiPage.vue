@@ -390,13 +390,13 @@ const downloadExportExcel = async () => {
           <template #body="slotProps">
             <div>
               {{
-                slotProps.data.detailPegawai.firstTitle
-                  ? slotProps.data.detailPegawai.firstTitle + ". "
+                slotProps.data.pegawai?.firstTitle
+                  ? slotProps.data.pegawai?.firstTitle + ". "
                   : ""
-              }}{{ slotProps.data.detailPegawai.name
+              }}{{ slotProps.data.pegawai?.name
               }}{{
-                slotProps.data.detailPegawai.lastTitle
-                  ? ", " + slotProps.data.detailPegawai.lastTitle
+                slotProps.data.pegawai?.lastTitle
+                  ? ", " + slotProps.data.pegawai?.lastTitle
                   : ""
               }}
             </div>

@@ -264,7 +264,7 @@ defineExpose({
               v-model="dpjpFilter"
               label="DPJP"
               class="grow"
-              optionLabel="detailPegawai.name"
+              optionLabel="pegawai.name"
               optionValue="uuid"
               :options="[
                 {

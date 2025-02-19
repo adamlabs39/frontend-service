@@ -1,4 +1,9 @@
-import { apiAuthGet,apiAuthPost,apiAuthDelete,apiAuthPut } from "@/utils/apiHandler";
+import {
+  apiDatamasterGet,
+  apiDatamasterPost,
+  apiDatamasterDelete,
+  apiDatamasterPut,
+} from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 export const useUserStore = defineStore({
@@ -10,29 +15,29 @@ export const useUserStore = defineStore({
       params: {
         page?: number;
         limit?: number;
-        name?:string;
+        name?: string;
         role?: string;
         payload?: object;
       } = {}
     ) {
       const { page = 1, limit = 10, name, role, payload = {} } = params;
-    
+
       // Bangun URL secara dinamis
-      let url = `/user?page=${page}&total=${limit}&name=${name}`;
+      let url = `/datamaster/user?page=${page}&total=${limit}&name=${name}`;
       if (role) {
         url += `&role=${role}`;
       }
-    
-      return apiAuthGet(url, payload);
+
+      return apiDatamasterGet(url, payload);
     },
     async postApi(payload = {}) {
-      return apiAuthPost("/user", payload);
+      return apiDatamasterPost("/datamaster/user", payload);
     },
     async putApi(uuid: string, payload = {}) {
-      return apiAuthPut(`/user/${uuid}`, payload);
+      return apiDatamasterPut(`/datamaster/user/${uuid}`, payload);
     },
     async deleteApi(uuid: string, payload = {}) {
-      return apiAuthDelete(`/user/${uuid}`, payload);
+      return apiDatamasterDelete(`/datamaster/user/${uuid}`, payload);
     },
   },
 });

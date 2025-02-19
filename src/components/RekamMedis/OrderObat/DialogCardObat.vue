@@ -2,8 +2,10 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import { epochToDate } from "@/utils/Helpers";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -27,11 +29,18 @@ function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
 }
 
-const listLokasiTujuanOrder = ref([
-  { id: "1", label: "Farmasi Rawat Jalan" },
-  { id: "2", label: "Farmasi Rawat Inap" },
-]);
-
+const getStringRutePembelian = (code: string) => {
+  if (code == "Implant") return code;
+  else if (code == "Inhal") return "Inhalation";
+  else if (code == "Instill") return "Instillation";
+  else if (code == "N") return "nasal";
+  else if (code == "O") return "oral";
+  else if (code == "P") return "parenteral";
+  else if (code == "R") return "rectal";
+  else if (code == "SL") return "sublingual/buccal/oromucosal";
+  else if (code == "TD") return "transdermal";
+  else if (code == "V") return "vaginal";
+};
 </script>
 
 <template>
@@ -45,37 +54,29 @@ const listLokasiTujuanOrder = ref([
     <template #body>
       <div class="flex flex-col gap-5 py-3">
         <div class="flex gap-7">
-          <CustomSelect
-            prepend-icon="PhMagnifyingGlass"
-            v-model="obatDetail.selectedLokasiTujuanOrder"
-            :options ="listLokasiTujuanOrder"
-            disabled
-            optionValue="label"
-            optionLabel="label"
-            label="Lokasi Tujuan Order"
-            place-holder="Pilih Lokasi Tujuan Order"
-            class="grow"
+          <CustomInfoRow
+            label="Penulis Resep"
+            :value="obatDetail.dokterOrder"
+            type="vertical"
           />
-          <CustomSwitch label="Obat Pulang" v-model="obatDetail.obatPulang" disabled/>
-          <hr class="h-auto border border-adameds-300" />
-
-          <div class="grid items-center grid-cols-3 gap-3">
-            <div>
-              <div class="font-semibold underline text-XS">Penulis Resep</div>
-              <div class="font-normal text-SM">{{ obatDetail.penulisResep }}</div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-XS">Tgl Order</div>
-              <div class="font-normal text-SM">{{ obatDetail.tglOrder }}</div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-XS">Lokasi Tujuan Order</div>
-              <div class="font-normal text-SM">{{ obatDetail.selectedLokasiTujuanOrder }}</div>
-            </div>
-          </div>
+          <CustomInfoRow
+            label="Tgl. Order"
+            :value="`${epochToDate(obatDetail.orderDate, 'date')}`"
+            type="vertical"
+          />
+          <CustomInfoRow
+            label="Lokasi Tujuan Order"
+            :value="obatDetail.lokasiName"
+            type="vertical"
+          />
+          <CustomInfoRow
+            label="Obat Pulang"
+            :value="obatDetail.isTakeaway ? 'Ya' : 'Tidak'"
+            type="vertical"
+          />
         </div>
         <DataTable
-          :value="obatDetail.orderObats"
+          :value="obatDetail.obat"
           class="overflow-y-scroll text-xs bg-adameds-50 max-h-[300px]"
           scrollable
           scrollHeight="flex"
@@ -99,27 +100,20 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Nama Obat</div>
             </template>
             <template #body="slotProps">
-              <div v-if="slotProps.data.racikan">
-                {{ slotProps.data.namaRacikan }}
-                <span v-if="slotProps.data.sirup">- Sirup</span>
+              <div v-if="slotProps.data.isCompound">
+                {{ slotProps.data.namaRacikan }} -
+                {{ slotProps.data.bentukRacikan?.namaBentukRacikan }}
               </div>
               <div v-else>
-                {{ slotProps.data.namaObat }}
+                {{ slotProps.data.itemMedis?.name }} -
+                {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}
               </div>
               <div class="flex gap-1.5 justify-left">
                 <CustomChip
-                  v-if="slotProps.data.racikan"
-                  :showCheckedIcon="false"
-                  label="RACIKAN"
-                  bgColor="bg-none"
-                  textColor="text-grass-300"
-                  customClass="h-5 pr-[6px] border-grass-200 border-1"
-                />
-                <CustomChip
-                  v-if="slotProps.data.obatKronis"
+                  v-if="slotProps.data.isChronic"
                   :showCheckedIcon="false"
                   label="OBAT KRONIS"
-                  bgColor="bg-none"
+                  bgColor="bg-sunFlower-50"
                   textColor="text-sunFlower-300"
                   customClass="h-5 border-sunFlower-300"
                 />
@@ -131,8 +125,13 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Total Obat</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.jumlahKonsumsi }}
-              {{ slotProps.data.satuanDosis }}
+              {{ slotProps.data.medicationQty }}
+              <span v-if="slotProps.data.isCompound">
+                - {{ slotProps.data.bentukRacikan?.namaBentukRacikan }}
+              </span>
+              <span v-else>
+                - {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}
+              </span>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -140,8 +139,8 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Dosis</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.jumlahKonsumsi }}
-              {{ slotProps.data.satuanDosis }}
+              {{ slotProps.data.medicationDoseQty }}
+              {{ slotProps.data.satuanDosis?.name }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -149,7 +148,7 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Aturan Pakai</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.aturanPakai }}
+              {{ slotProps.data.aturanPakai?.name }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -157,7 +156,7 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Cara Pakai</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.caraPakai }}
+              {{ slotProps.data.caraPakai?.caraPakai }}
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-left">
@@ -165,32 +164,7 @@ const listLokasiTujuanOrder = ref([
               <div class="w-full font-semibold text-left">Rute Pemberian</div>
             </template>
             <template #body="slotProps">
-              {{ slotProps.data.rutePemberian }}
-            </template>
-          </Column>
-          <Column headerClass="bg-adameds-50" class="w-auto">
-            <template #header>
-              <div class="w-full font-semibold text-center">Status</div>
-            </template>
-            <template #body="slotProps">
-              <div class="flex justify-center gap-1.5">
-                <CustomButton
-                  label=""
-                  background-color="bg-[#3D84E5] rounded-lg"
-                  class="h-6 w-[26px] p-0"
-                 
-                >
-                  <img src="@/assets/icons/edit.svg" alt="Edit" />
-                </CustomButton>
-                <CustomButton
-                  label=""
-                  background-color="bg-danger-300 rounded-lg"
-                  class="h-6 w-[26px] p-0"
-                  
-                >
-                  <img src="@/assets/icons/delete.svg" alt="Delete" />
-                </CustomButton>
-              </div>
+              {{ getStringRutePembelian(slotProps.data.route) }}
             </template>
           </Column>
         </DataTable>

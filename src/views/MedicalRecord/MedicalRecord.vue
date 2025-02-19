@@ -916,7 +916,7 @@ defineExpose({ showDialogRM });
                 <!-- FIXME Perlu Perbaikan kolom -->
                 <div>
                   {{
-                    `${history.practitioner.pegawai.title} ${history.practitioner.pegawai.nama}`
+                    `${history?.practitioner?.pegawai?.firstTitle} ${history?.practitioner?.pegawai?.name} ${history?.practitioner?.pegawai?.lastTitle}`
                   }}
                 </div>
               </div>

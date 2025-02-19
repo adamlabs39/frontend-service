@@ -92,7 +92,10 @@ export const useRekamMedisStore = defineStore({
       return apiRekamMedisPut("/rekam-medis/chat/catatan", payload);
     },
 
-    async pushOrderObat(payload = {}) {
+    async pushOrderObat(payload: {
+      sessionUuid: string;
+      orderObatUuid: string;
+    }) {
       return apiRekamMedisPost("/rekam-medis/order-obat", payload);
     },
     async addFPO(payload = {}) {

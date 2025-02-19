@@ -199,7 +199,7 @@ defineExpose({
           :optionLabel="
             pageType === 'rekap-tindakan-pasien'
               ? 'pegawai.name'
-              : 'detailPegawai.name'
+              : 'pegawai.name'
           "
           optionValue="uuid"
           :place-holder="

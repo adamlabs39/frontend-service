@@ -77,12 +77,6 @@ const [petugas] = defineField("petugas");
 const listLokasiTujuanOrder = ref([]);
 
 onMounted(async () => {
-  orderAlkess.value = [
-    {
-      itemMedis: "Kasa",
-      qty: 2,
-    },
-  ];
   await fetchLokasiTujuanStok();
   await getListAlkes();
 });
@@ -125,7 +119,7 @@ const listAlkes = ref([]);
 const myPushFunction = () => {
   orderAlkess.value.push({
     listAlkes: null,
-    jumlah: 0,
+    qty: 0,
   });
 };
 
@@ -141,7 +135,6 @@ const onSubmit = handleSubmit(async (values) => {
   const payloadListAlkes = orderAlkess.value.map((dataAlkes) => {
     return { itemMedisUuid: dataAlkes?.listAlkes?.uuid, qty: dataAlkes.qty };
   });
-  console.log("🚀 ~ payloadListAlkes ~ payloadListAlkes:", payloadListAlkes)
 
   try {
     storeUtils.setLoading(true);
@@ -165,7 +158,9 @@ const onSubmit = handleSubmit(async (values) => {
     });
     if (response && response.payload) {
       rekamMedisStore.setAsesmentRekamMedisData(response.payload);
-      resetForm();
+      handleCloseDialog();
+      emit("submit-order");
+      emit("update:isDialogVisible", false);
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -177,16 +172,17 @@ const onSubmit = handleSubmit(async (values) => {
   //   ...values,
   //   datas: JSON.parse(JSON.stringify(orderAlkess.value)), // Tambahkan data dari tabel
   // };
-  emit("submit-order");
-  resetForm();
-  // emit("update:isDialogVisible", false);
   // console.log("Submitted with", payload);
 });
+
+const handleCloseDialog = () => {
+  resetForm();
+  orderAlkess.value = [];
+};
 
 // Terima data dari Alkes Multiple
 function addToArray(newAlkes: any) {
   orderAlkess.value.push(...newAlkes);
-  console.log(orderAlkess.value);
 }
 </script>
 
@@ -196,6 +192,7 @@ function addToArray(newAlkes: any) {
     :visible="isDialogVisible"
     headerBg="bg-adameds-300"
     @update:visible="updateVisibility"
+    @close-dialog="handleCloseDialog"
   >
     <template #header>{{ title }}</template>
     <template #body>
@@ -260,7 +257,7 @@ function addToArray(newAlkes: any) {
             <template #body="slotProps">
               <CustomInputNumber
                 :show-label="false"
-                v-model="slotProps.data.jumlah"
+                v-model="slotProps.data.qty"
                 :show-buttons="true"
               />
             </template>

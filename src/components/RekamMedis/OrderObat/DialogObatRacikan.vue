@@ -17,7 +17,8 @@ import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
 import { useHowToUseStore } from "@/stores/datamasterFarmasi/HowToUse";
 import { useUnitStore } from "@/stores/datamasterFarmasi/Unit";
 import { useRulesOfUseStore } from "@/stores/datamasterFarmasi/RulesOfUse";
-import { useDosageFormStore } from "@/stores/datamasterFarmasi/DosageForm";
+import { usePriceConfigurationStore } from "@/stores/datamasterFarmasi/PriceConfiguration";
+import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -25,7 +26,8 @@ const medicalItemStore = useMedicalItemStore();
 const rulesOfUseStore = useRulesOfUseStore();
 const unitStore = useUnitStore();
 const howToUseStore = useHowToUseStore();
-const dosageFormStore = useDosageFormStore();
+const priceConfigurationtore = usePriceConfigurationStore();
+const doctorPrescriptionStore = useDoctorPrescriptionStore();
 
 type ObatRacikan = {
   itemMedis: any;
@@ -39,10 +41,20 @@ const props = defineProps({
   title: {
     type: String,
   },
-  obatToEdit: Object,
+  obatToEdit: { type: Object, default: () => {} },
   index: {
     type: Number,
     default: null,
+  },
+  patientData: {
+    type: Object,
+  },
+  prescriptionUuid: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: String,
   },
 });
 
@@ -50,8 +62,8 @@ const sirup = ref(false);
 const schema = toTypedSchema(
   yup.object({
     namaRacikan: yup.string().required("Nama Racikan Harus diisi"),
-    jumlahEmbalase: yup.number().required("Jumlah Embalase Harus diisi"),
-    satuanEmbalase: yup.mixed<any>().required("Satuan Embalase Harus diisi"),
+    medicationQty: yup.number().required("Jumlah Embalase Harus diisi"),
+    bentukRacikan: yup.mixed<any>().required("Satuan Embalase Harus diisi"),
     medicationPeriod: yup.mixed<any>().required("Periode harus dipilih"),
     medicationDoseQty: yup
       .number()
@@ -62,10 +74,11 @@ const schema = toTypedSchema(
       .required("Satuan Dosis harus dipilih"),
     aturanPakai: yup.mixed<any>().required("Aturan Pakai harus dipilih"),
     caraPakai: yup.mixed<any>().required("Cara Pakai harus dipilih"),
-    route: yup.mixed<any>(),
+    route: yup.mixed<any>().required("Rute Pemberihan harus dipilih"),
     isChronic: yup.bool().default(false),
     prescriptionNotes: yup.string(),
     isCompound: yup.bool().default(true),
+    jenisRacikan: yup.boolean().default(false),
     racikan: yup
       .array()
       .of(
@@ -82,8 +95,8 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
     namaRacikan: "",
-    jumlahEmbalase: 0,
-    satuanEmbalase: "",
+    medicationQty: 0,
+    bentukRacikan: "",
     medicationPeriod: null,
     medicationDoseQty: 0,
     medicationDoseSatuan: null,
@@ -97,8 +110,8 @@ const { errors, handleSubmit, resetForm, defineField, setValues } = useForm({
 });
 
 const [namaRacikan] = defineField("namaRacikan");
-const [jumlahEmbalase] = defineField("jumlahEmbalase");
-const [satuanEmbalase] = defineField("satuanEmbalase");
+const [medicationQty] = defineField("medicationQty");
+const [bentukRacikan] = defineField("bentukRacikan");
 const [medicationPeriod] = defineField("medicationPeriod");
 const [medicationDoseQty] = defineField("medicationDoseQty");
 const [medicationDoseSatuan] = defineField("medicationDoseSatuan");
@@ -107,11 +120,12 @@ const [caraPakai] = defineField("caraPakai");
 const [route] = defineField("route");
 const [isChronic] = defineField("isChronic");
 const [prescriptionNotes] = defineField("prescriptionNotes");
+const [jenisRacikan] = defineField("jenisRacikan");
 
 const emit = defineEmits([
   "update:isDialogVisible",
   "add-obat-racikan",
-  "after-edit-obat-racikan",
+  "update-obat",
 ]);
 
 const namaObats = ref<any[]>([]);
@@ -143,7 +157,7 @@ const rutePemberians = ref([
   { kode: "V", rutePemberian: "vaginal" },
 ]);
 
-const satuanEmbalases = ref<any[]>([]);
+const listBentukRacikan = ref<any[]>([]);
 const { remove, push, fields } = useFieldArray<ObatRacikan>("racikan");
 
 const addObatRacikan = () => {
@@ -154,21 +168,74 @@ const addObatRacikan = () => {
 };
 
 // Submit pas nambah Racikan
-const onSubmit = handleSubmit((values) => {
-  emit("add-obat-racikan", values); // Emit event dengan data obat baru
-  console.log(values);
-  resetForm(); // Reset form setelah submit
-  emit("update:isDialogVisible", false); // Tutup dialog
+const onSubmit = handleSubmit(async (values: any) => {
+  if (props.type == "add") {
+    emit("add-obat-racikan", values); // Emit event dengan data obat baru
+    resetForm(); // Reset form setelah submit
+    emit("update:isDialogVisible", false); // Tutup dialog
+  } else {
+    try {
+      storeUtils.setLoading(true);
+      let response = await doctorPrescriptionStore.updatePrescriptionObat(
+        values.uuid,
+        transformPayloadData(values)
+      );
+      if (response && response.data.sucess) {
+        resetForm();
+        emit("update:isDialogVisible", false);
+        emit("update-obat");
+      }
+    } catch (error) {
+      console.error("Failed to post data", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
 });
 
-// EDIT Racikan yang sudah ada
-const afterEditObatRacikan = handleSubmit((values) => {
-  const editedObat = { ...values };
-  console.log(editedObat);
-  emit("after-edit-obat-racikan", editedObat);
-  resetForm();
-  emit("update:isDialogVisible", false);
-});
+const transformPayloadData = (dataObat: any) => {
+  let tempObatRacikan = {
+    type: "racikan",
+    prescriptionUuid: props.prescriptionUuid,
+    medicationQty: dataObat.medicationQty || 0,
+    itemMedisUuid: "-",
+    medicationDoseQty: dataObat.medicationDoseQty || 0,
+    medicationDoseSatuanUuid: dataObat.medicationDoseSatuan?.uuid || "",
+    medicationPeriod: dataObat.medicationPeriod || "",
+    aturanPakaiUuid: dataObat.aturanPakai?.uuid || "",
+    caraPakaiUuid: dataObat.caraPakai?.uuid || "",
+    prescriptionNotes: dataObat.prescriptionNotes || "",
+    isChronic: dataObat.isChronic || false,
+    route: dataObat.route?.kode || "",
+    isCompound: true,
+    namaRacikan: dataObat.namaRacikan || "",
+    jenisRacikan: dataObat.jenisRacikan ? 1 : 0,
+    bentukRacikanUuid: dataObat.bentukRacikan?.uuid || "",
+    racikan: dataObat.racikan.map((obatRacikan: any) => {
+      if (obatRacikan.uuid)
+        return {
+          isUpdated: true,
+          uuid: obatRacikan.uuid,
+          itemMedisUuid: obatRacikan.itemMedis.uuid,
+          medicationQty: obatRacikan.jumlahTotal || 0,
+        };
+      else
+        return {
+          itemMedisUuid: obatRacikan.itemMedis.uuid,
+          medicationQty: obatRacikan.jumlahTotal || 0,
+        };
+    }),
+  };
+  listDeletedObat.value.forEach((deletedObat: any) => {
+    tempObatRacikan.racikan.push({
+      isDeleted: deletedObat.isDeleted,
+      uuid: deletedObat.uuid,
+      itemMedisUuid: deletedObat.itemMedis.uuid,
+      medicationQty: deletedObat.jumlahTotal || 0,
+    });
+  });
+  return tempObatRacikan;
+};
 
 function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
@@ -186,16 +253,25 @@ watch(
   }
 );
 
-watch(
-  () => sirup.value,
-  (newVal) => {
-    if (newVal) {
-      satuanEmbalase.value = "Botol"; // Atur nilai default jika sirup aktif
-    } else {
-      satuanEmbalase.value = undefined;
-    }
-  }
-);
+const listDeletedObat = ref<any[]>([]);
+const deleteObat = (index: number) => {
+  listDeletedObat.value.push({
+    isDeleted: true,
+    ...fields.value[index].value,
+  });
+  remove(index);
+};
+
+// watch(
+//   () => sirup.value,
+//   (newVal) => {
+//     if (newVal) {
+//       bentukRacikan.value = "Botol"; // Atur nilai default jika sirup aktif
+//     } else {
+//       bentukRacikan.value = undefined;
+//     }
+//   }
+// );
 
 const getListObat = async () => {
   const response = await medicalItemStore.getWithoutPaginationApi2();
@@ -227,22 +303,33 @@ const getListCaraPakai = async () => {
   }
 };
 
-const getListBentukSediaan = async () => {
-  const response = await dosageFormStore.exportApi();
+const getBentukRacikanSediaan = async () => {
+  const response = await priceConfigurationtore.getRacikanApi();
   if (response && response.payload) {
-    satuanEmbalases.value = response.payload;
+    listBentukRacikan.value = response.payload;
   }
 };
 
-onMounted(async () => {
-  storeUtils.setLoading(true);
-  await getListObat();
-  await getListAturanPakai();
-  await getListSatuanDosis();
-  await getListCaraPakai();
-  await getListBentukSediaan();
-  storeUtils.setLoading(false);
-});
+onMounted(async () => {});
+watch(
+  () => props.isDialogVisible,
+  async (newValue) => {
+    if (newValue) {
+      try {
+        storeUtils.setLoading(true);
+        await getListObat();
+        await getListAturanPakai();
+        await getListSatuanDosis();
+        await getListCaraPakai();
+        await getBentukRacikanSediaan();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        storeUtils.setLoading(false);
+      }
+    }
+  }
+);
 </script>
 
 <template>
@@ -258,7 +345,7 @@ onMounted(async () => {
       <!--  -->
       <div class="flex gap-5 my-5">
         <div class="min-w-[500px]">
-          <DetailPasien />
+          <DetailPasien :patientData="patientData" />
           <RiwayatSebelumnya />
         </div>
         <hr class="h-auto border border-adameds-300" />
@@ -275,7 +362,7 @@ onMounted(async () => {
                 :invalidMessage="errors.namaRacikan"
               />
             </div>
-            <CustomSwitch v-model="sirup" label="Sirup" class="mx-10" />
+            <CustomSwitch v-model="jenisRacikan" label="Sirup" class="mx-10" />
             <CustomButton
               label="Tambah Obat"
               showIcon
@@ -326,7 +413,7 @@ onMounted(async () => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-10 w-[45px] p-0"
-                  @click="remove(index)"
+                  @click="deleteObat(index)"
                   :disabled="index === 0"
                 >
                   <img src="@/assets/icons/delete.svg" alt="" width="15px" />
@@ -347,22 +434,23 @@ onMounted(async () => {
               <div class="w-1/4">
                 <CustomInputNumber
                   label=""
-                  v-model="jumlahEmbalase"
+                  v-model="medicationQty"
                   :show-buttons="true"
-                  :invalid="!!errors.jumlahEmbalase"
-                  :invalidMessage="errors.jumlahEmbalase"
+                  :invalid="!!errors.medicationQty"
+                  :invalidMessage="errors.medicationQty"
                 />
               </div>
               <div class="grow">
                 <CustomSelect
                   label=""
-                  v-model="satuanEmbalase"
-                  :options="satuanEmbalases"
-                  optionLabel="name"
+                  placeHolder="Pilih bentuk embalase"
+                  v-model="bentukRacikan"
+                  :options="listBentukRacikan"
+                  optionLabel="namaBentukRacikan"
                   optionValue=""
                   dataKey="uuid"
-                  :invalid="!!errors.satuanEmbalase"
-                  :invalidMessage="errors.satuanEmbalase"
+                  :invalid="!!errors.bentukRacikan"
+                  :invalidMessage="errors.bentukRacikan"
                   :disabled="sirup"
                 />
               </div>
@@ -442,6 +530,8 @@ onMounted(async () => {
                     optionLabel="rutePemberian"
                     optionValue=""
                     dataKey="kode"
+                    :invalid="!!errors.route"
+                    :invalidMessage="errors.route"
                   />
                 </div>
               </div>
@@ -473,12 +563,12 @@ onMounted(async () => {
           >
           </CustomButton>
           <CustomButton
-            label="SimpanTAMBAH"
+            label="Simpan Obat"
             v-if="props.title === 'Tambah Obat Racikan'"
             @click="onSubmit"
           >
           </CustomButton>
-          <CustomButton label="SimpanEDIT" v-else @click="afterEditObatRacikan">
+          <CustomButton label="Simpan Edit" v-else @click="onSubmit">
           </CustomButton>
         </div>
       </div>
