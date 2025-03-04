@@ -6,7 +6,9 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import TambahDataItem from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/TambahData.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import DialogNilaiRujukanAngka from "./DialogNilaiRujukanAngka.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
@@ -17,7 +19,8 @@ const addItemDialog = ref(false);
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
 const status = ref(false);
-const nilaiRujukan = ref(false);
+const nilaiRujukanAngka = ref(false);
+const nilaiRujukanText = ref(false);
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
@@ -28,15 +31,27 @@ const handlePageUpdate = (newPage: number) => {
   currentPage.value = newPage;
 };
 
-
-
-const dataBedruangan = ref([
-  { namaRuangan: "Ruangan 1", jumlahBed: "10", status: "AKTIF" },
-  { namaRuangan: "Ruangan 2", jumlahBed: "15", status: "AKTIF" },
-  { namaRuangan: "Ruangan 3", jumlahBed: "17", status: "AKTIF" },
-  { namaRuangan: "Ruangan 4", jumlahBed: "18", status: "AKTIF" },
-  { namaRuangan: "Ruangan 5", jumlahBed: "12", status: "NON-AKTIF" },
-  { namaRuangan: "Ruangan 6", jumlahBed: "15", status: "NON-AKTIF" },
+const dataItemPemeriksaan = ref([
+  {
+    kodeItem: "HGB",
+    namaItem: "Hemogoblin",
+    kategori: "HEMATOLOGI",
+    satuan: "g/dL",
+    metode: "Colorimatic",
+    noUrut: "1",
+    status: "AKTIF",
+    jenisInput: "Angka",
+  },
+  {
+    kodeItem: "HMT",
+    namaItem: "Hematokrit",
+    kategori: "HEMATOLOGI",
+    satuan: "%",
+    metode: "Impedance",
+    noUrut: "3",
+    status: "AKTIF",
+    jenisInput: "Text",
+  },
 ]);
 const jenisInput = ref();
 const optionJenisInput = ref([
@@ -54,6 +69,28 @@ const optionItemPemeriksaan = ref([
   { label: "Item 2", value: "2" },
   { label: "Item 3", value: "3" },
   { label: "Item 4", value: "4" },
+]);
+
+const dataNilaiRujukan = ref([
+  {
+    item_pemeriksaan_uuid: "019527ec-2459-77dc-97a7-2552a662e521",
+    jenis_kelamin: "general",
+    umur_bawah_tahun: 1,
+    umur_bawah_bulan: 1,
+    umur_bawah_hari: 1,
+    umur_atas_tahun: 12,
+    umur_atas_hari: 1,
+    umur_atas_bulan: 1,
+    batas_bawah_nilai_normal: 5,
+    batas_atas_nilai_normal: 10,
+    kritis_bawah: 3,
+    kritis_atas: 15,
+    operator_kritis_bawah: "<",
+    operator_kritis_atas: ">",
+    operator_nilai_normal: "-",
+    status: true,
+    tampilan: "gacor",
+  },
 ]);
 
 watch(
@@ -133,7 +170,7 @@ watch(
       </template>
       <template #content>
         <DataTable
-          :value="dataBedruangan"
+          :value="dataItemPemeriksaan"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -157,7 +194,7 @@ watch(
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.kodeItem }}</div>
             </template>
           </Column>
           <Column
@@ -167,7 +204,7 @@ watch(
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.namaItem }}</div>
             </template>
           </Column>
           <Column
@@ -177,7 +214,7 @@ watch(
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.kategori }}</div>
             </template>
           </Column>
           <Column
@@ -186,6 +223,9 @@ watch(
             headerClass="bg-adameds-50"
             class=""
           >
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.satuan }}</div>
+            </template>
           </Column>
           <Column
             field="metode"
@@ -193,6 +233,9 @@ watch(
             headerClass="bg-adameds-50"
             class=""
           >
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.metode }}</div>
+            </template>
           </Column>
           <Column
             headerClass="bg-adameds-50 font-semibold text-SM"
@@ -203,7 +246,7 @@ watch(
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center text-SM">
-                {{ slotProps.data.jumlahBed }}
+                {{ slotProps.data.noUrut }}
               </div>
             </template>
           </Column>
@@ -256,9 +299,18 @@ watch(
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
                 <CustomButton
+                  v-if="slotProps.data.jenisInput === 'Angka'"
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
+                  @click="nilaiRujukanAngka = true"
+                />
+                <CustomButton
+                  v-if="slotProps.data.jenisInput !== 'Angka'"
+                  icon="PhListNumbers"
+                  class="h-6 w-[26px] p-0"
+                  background-color="rounded-lg bg-adameds-300"
+                  @click="nilaiRujukanText = true"
                 />
                 <CustomButton
                   label=""
@@ -287,7 +339,7 @@ watch(
           </div>
           <CustomPaginator
             :rows="rowsPerPage"
-            :totalRecords="dataBedruangan.length"
+            :totalRecords="dataItemPemeriksaan.length"
             :rowsPerPageOptions="[10, 20, 30]"
             @update:rows="handleRowsUpdate"
             @update:current-page="handlePageUpdate"
@@ -296,137 +348,12 @@ watch(
       </template>
     </Card>
 
-    <!-- addItemDialog -->
-    <CustomDialog v-model:visible="addItemDialog" :style="{ width: '600px' }">
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Data Item Pemeriksaan</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="grid grid-cols-[35%,45%,15%] gap-3">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Kode Item Pemeriksaan"
-              placeholder="Kode Item Pemeriksaan"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Nama Item Pemeriksaan"
-              placeholder="Nama Item Pemeriksaan"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px]">
-            <CustomInputNumber
-              label="No. Urut"
-              :show-buttons="false"
-              class="text-center"
-            />
-          </div>
-        </div>
-        <div class="grid gap-6 mt-5 grid-cols-[50%,45%]">
-          <CustomSelect
-            label="Kategori Pemeriksaan"
-            placeHolder="Pilih Kategori Pemeriksaan"
-            class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['Kategori Pemeriksaan 1']"
-          />
-          <CustomTextfield label="Satuan" placeholder="Satuan" class="ml-2" />
-        </div>
-        <div class="grid gap-6 mt-5 grid-cols-[50%,45%]">
-          <CustomTextfield label="Metode" placeholder="Metode" class="" />
-          <CustomSelect
-            v-model="jenisInput"
-            label="Jenis Input"
-            placeHolder="Pilih Jenis Input"
-            class="ml-2"
-            optionLabel="label"
-            optionValue="value"
-            :showFilter="false"
-            :options="optionJenisInput"
-          />
-        </div>
-        <CustomComboBox
-          v-if="jenisInput == 4"
-          v-model="itemPemeriksaan"
-          label="Pilihan Hasil"
-          placeholder="Input Hasil"
-          optionLabel="label"
-          optionValue="value"
-          class="mt-5 mb-5"
-       
-        />
+    <!-- nilaiRujukanAngka Dialog -->
+    <DialogNilaiRujukanAngka
+      v-model:visible="nilaiRujukanAngka"
+      :dataNilaiRujukan="dataNilaiRujukan"
+    />
 
-        <CustomSelect
-          label="Snomed - CT"
-          placeHolder="Pilih Snomed - CT"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['Snomed - CT 1']"
-        />
-        <CustomSelect
-          label="ICD 9-CM"
-          placeHolder="Pilih ICD 9-CM"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['ICD 9-CM 1']"
-        />
-        <CustomSelect
-          label="LOINC"
-          placeHolder="Pilih LOINC"
-          class="mt-5 mb-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['LOINC 1']"
-        />
-        <hr class="mt-[20px] border border-slate-200" />
-        <div class="grid grid-cols-2 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-          <div>
-            <CustomSwitch
-              v-model="nilaiRujukan"
-              :show-label="true"
-              label="Nilai Rujukan"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="addItemDialog = false"
-            />
-            <CustomButton label="Simpan" />
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
+    <TambahDataItem v-model:visible="addItemDialog" />
   </div>
 </template>
