@@ -9,6 +9,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import TambahDataItem from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/TambahData.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DialogNilaiRujukanAngka from "./DialogNilaiRujukanAngka.vue";
+import DialogRujukanText from "./DialogRujukanText.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
@@ -90,6 +91,40 @@ const dataNilaiRujukan = ref([
     operator_nilai_normal: "-",
     status: true,
     tampilan: "gacor",
+    text: [
+      "Negative",
+      "Negative ",
+      "NEGATIVE",
+      "NEGATIVE ",
+      "negative",
+      " negative ",
+      "Negatif",
+      "Negatif ",
+      "NEGATIF",
+      " NEGATIF ",
+      "negatif",
+      "negatif ",
+      "-",
+      "- ",
+      "Neg",
+      "Neg ",
+      "NEG",
+      "NEG ",
+      "neg",
+      "neg",
+      "Negatip",
+      "Negatip ",
+      "NEGATIP",
+      "NEGATIP ",
+      "negatip",
+      "negatip ",
+      "Neg/-",
+      "Neg/- ",
+      "NEG/-",
+      "NEG/- ",
+      "neg/-",
+      "neg/-",
+    ],
   },
 ]);
 
@@ -353,6 +388,11 @@ watch(
       v-model:visible="nilaiRujukanAngka"
       :dataNilaiRujukan="dataNilaiRujukan"
     />
+    
+    <DialogRujukanText
+      v-model:visible="nilaiRujukanText"
+      :dataNilaiRujukan="dataNilaiRujukan"
+      />
 
     <TambahDataItem v-model:visible="addItemDialog" />
   </div>
