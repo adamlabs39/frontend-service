@@ -118,7 +118,7 @@ import HasilPemeriksaanPage from "@/views/Laboratorium/HasilPemeriksaan/HasilPem
 import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
 import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaanPage.vue";
-import ItemPemeriksaanLabPage from "@/views/Laboratorium/Masterdata/ItemPemeriksaanLabPage.vue";
+import ItemPemeriksaanLabPage from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/ItemPemeriksaanLabPage.vue";
 import SpesimenPage from "@/views/Laboratorium/Masterdata/SpesimenPage.vue";
 import KunjunganLabPage from "@/views/Laboratorium/Report/KunjunganLabPage.vue";
 import WaktuTungguLabPage from "@/views/Laboratorium/Report/WaktuTungguLabPage.vue";
