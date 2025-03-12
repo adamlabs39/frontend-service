@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { utilsStore } from "@/stores/utils";
+import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -7,32 +9,58 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
+const spesimenStore = useSpesimenLabStore();
+const storeUtils = utilsStore();
+const spesimenPayload = ref(<any[]>[]);
 const addSpesimenDialog = ref(false);
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
+const searchQuery = ref("");
+const namaSpesimen = ref("");
+const kodeSpesimen = ref("");
 const status = ref(false);
-
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
+const spesimenProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const handleSearchQuery = (searchValue: string) => {
+  searchQuery.value = searchValue;
 };
 
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
+// Fetch data
+const fetchSpesimen = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await spesimenStore.getApi({
+      page: spesimenProperties.value.page,
+      limit: spesimenProperties.value.page_size,
+      name: namaSpesimen.value,
+    });
+    if (response && response.payload) {
+      spesimenProperties.value.total = response.payload.pagination.total;
+      spesimenPayload.value = response.payload.data;
+    } else {
+      spesimenPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch spesimen", error);
+    spesimenPayload.value = [];
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
-const dataBedruangan = ref([
-  { namaRuangan: "Ruangan 1", jumlahBed: "10", status: "AKTIF" },
-  { namaRuangan: "Ruangan 2", jumlahBed: "15", status: "AKTIF" },
-  { namaRuangan: "Ruangan 3", jumlahBed: "17", status: "AKTIF" },
-  { namaRuangan: "Ruangan 4", jumlahBed: "18", status: "AKTIF" },
-  { namaRuangan: "Ruangan 5", jumlahBed: "12", status: "NON-AKTIF" },
-  { namaRuangan: "Ruangan 6", jumlahBed: "15", status: "NON-AKTIF" },
-]);
+// Handle Page
+const handlePage = (event: any) => {
+  spesimenProperties.value.page = event.page + 1;
+  spesimenProperties.value.page_size = event.rows;
+  fetchSpesimen();
+};
+
+onMounted(async () => {
+  await fetchSpesimen();
+});
 </script>
 
 <template>
@@ -103,7 +131,7 @@ const dataBedruangan = ref([
       </template>
       <template #content>
         <DataTable
-          :value="dataBedruangan"
+          :value="spesimenPayload"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -127,7 +155,7 @@ const dataBedruangan = ref([
             class="w-[25%]"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.code }}</div>
             </template>
           </Column>
           <Column
@@ -137,7 +165,7 @@ const dataBedruangan = ref([
             class="w-[55%]"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.name }}</div>
             </template>
           </Column>
 
@@ -151,24 +179,26 @@ const dataBedruangan = ref([
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
                 <CustomChip
-                  :label="slotProps.data.status"
+                  :label="
+                    slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
+                  "
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'text-white'
                       : 'text-[#80868d]'
                   "
                   :bgColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'bg-adameds-300'
                       : 'bg-white'
                   "
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'border-none'
                       : 'border-[#80868d]'
                   "
                   :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                    slotProps.data.status === true ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -214,11 +244,10 @@ const dataBedruangan = ref([
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataBedruangan.length"
+            :rows="spesimenProperties.page_size"
+            :totalRecords="spesimenProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
