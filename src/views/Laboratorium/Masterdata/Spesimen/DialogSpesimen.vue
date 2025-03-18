@@ -1,142 +1,85 @@
-<script lang="ts" setup>
-import { ref, watch } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
-import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
+<script setup lang="ts">
+import { ref } from "vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 
-const props = defineProps({
-  isDialogVisible: {
-    default: false,
-  },
-  title: {
-    type: String,
-  },
-  method: {
-    type: String,
-  },
-  payload: {
-    type: Object,
-    default: () => ({}),
-  },
-});
+const visible = ref(false);
+const kodeSpesimen = ref("");
+const namaSpesimen = ref("");
+const status = ref(false);
+const editMode = ref(false);
+const selectedSpesimenId = ref<string | null>(null);
 
-const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Satuan harus diisi"),
-    name: yup.string().required("Nama Satuan harus diisi"),
-    satuanDosis: yup.bool().default(false),
-    status: yup.bool().default(true),
-  }).noUnknown()
-);
+const emit = defineEmits(["submit", "reset"]);
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
-  validationSchema: schema,
-});
-const spesimenStore = useSpesimenLabStore();
+// Fungsi untuk mereset form
+const resetForm = () => {
+  kodeSpesimen.value = "";
+  namaSpesimen.value = "";
+  status.value = false;
+  editMode.value = false;
+  selectedSpesimenId.value = null;
+};
 
-const [code] = defineField("code");
-const [name] = defineField("name");
-const [status] = defineField("status");
-
-const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
-
-const onSubmit = handleSubmit(async (values: any) => {
-  try {
-    if (method.value === "edit") {
-      if (!props.payload || !props.payload.uuid) {
-        throw new Error("UUID is missing for edit operation");
-      }
-      const uuid = props.payload.uuid;
-      const response = await spesimenStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      const response = await spesimenStore.postApi(values);
-      emit("data-updated");
-    }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
+// Fungsi untuk menangani saat dialog ditutup
+const onDialogClose = (isVisible: boolean) => {
+  if (!isVisible) {
+    resetForm(); // Reset form ketika dialog ditutup
   }
+};
+
+// Fungsi untuk submit data
+const submitSpesimen = () => {
+  emit("submit", {
+    code: kodeSpesimen.value,
+    name: namaSpesimen.value,
+    status: status.value,
+    id: selectedSpesimenId.value,
+  });
+};
+
+defineExpose({
+  visible,
+  kodeSpesimen,
+  namaSpesimen,
+  status,
+  editMode,
+  selectedSpesimenId,
+  resetForm,
 });
-
-const method = ref(props.method);
-const title = ref(props.title);
-
-const updateVisibility = (value: any) => {
-  emit("update:isDialogVisible", value);
-};
-
-const resetDialogMode = () => {
-  method.value = props.method;
-  title.value = props.title;
-};
-
-const closeDialog = () => {
-  emit("update:isDialogVisible", false);
-  resetDialogMode();
-  resetForm();
-};
-
-watch(
-  () => props.isDialogVisible,
-  (newValue) => {
-    if (newValue) {
-      resetDialogMode();
-      if (props.method !== "add" && props.payload) {
-        setValues({
-          ...props.payload,
-        });
-      }
-    } else {
-      resetForm();
-      resetDialogMode();
-    }
-  }
-);
 </script>
 
 <template>
-  <CustomDialog 
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
-    width="500px"
-    >
+  <CustomDialog v-model:visible="visible"  @update:visible="onDialogClose" :style="{ width: '600px' }">
     <template #header>
-    <div class="grid grid-cols-1">
-        <p>Tambah Spesimen</p>
-    </div>
+      <div class="grid grid-cols-1">
+        <p>{{ editMode ? "Edit Data Spesimen" : "Tambah Data Spesimen" }}</p>
+      </div>
     </template>
     <template #body>
-    <div class="grid grid-cols-[30%,70%]">
+      <div class="flex gap-3">
         <div class="mt-[20px]">
-        <CustomTextfield
-            v-model="code"
+          <CustomTextfield
+            v-model="kodeSpesimen"
             label="Kode Spesimen"
             placeholder="Kode Spesimen"
             class="mr-2"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-        />
+          />
         </div>
-        <div class="mt-[20px]">
-        <CustomTextfield
-            v-model="name"
+        <div class="mt-[20px] grow">
+          <CustomTextfield
+            v-model="namaSpesimen"
             label="Nama Spesimen"
             placeholder="Nama Spesimen"
-            class="ml-2"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-        />
+            class="mr-2"
+          />
         </div>
-    </div>
-    <hr class="mt-[20px] border border-slate-300"/>
-    <div class="grid grid-cols-2 mt-[15px]">
+      </div>
+
+      <hr class="mt-[20px] border border-slate-200" />
+      <div class="grid grid-cols-1 mt-[15px]">
         <div>
           <CustomSwitch
             v-model="status"
@@ -146,22 +89,21 @@ watch(
             sideLabelTrue="AKTIF"
           />
         </div>
-    </div>
+      </div>
     </template>
     <template #footer>
-    <div class="w-full">
-        <!-- <hr class="-mx-5 border-grey-200" /> -->
+      <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
-        <CustomButton
+          <CustomButton
             label="Reset"
             textColor="text-grey-300"
             backgroundColor="bg-transparent"
             borderColor="border-2 border-grey-200"
             @click="resetForm"
-        />
-        <CustomButton label="Simpan" @click="onSubmit"/>
+          />
+          <CustomButton label="Simpan" @click="submitSpesimen" />
         </div>
-    </div>
+      </div>
     </template>
-</CustomDialog>
+  </CustomDialog>
 </template>

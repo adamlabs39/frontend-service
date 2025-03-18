@@ -8,17 +8,13 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import DialogDelete from "../../Layout/DialogDelete.vue";
+import DialogSpesimen from "./DialogSpesimen.vue";
 
 const spesimenStore = useSpesimenLabStore();
 const storeUtils = utilsStore();
 const spesimenPayload = ref(<any[]>[]);
-const addSpesimenDialog = ref(false);
 const searchQuery = ref("");
-const namaSpesimen = ref("");
-const kodeSpesimen = ref("");
-const status = ref(false);
 const spesimenProperties = ref({
   page: 1,
   page_size: 10,
@@ -35,7 +31,7 @@ const fetchSpesimen = async () => {
     const response = await spesimenStore.getApi({
       page: spesimenProperties.value.page,
       limit: spesimenProperties.value.page_size,
-      name: namaSpesimen.value,
+      name: searchQuery.value,
     });
     if (response && response.payload) {
       spesimenProperties.value.total = response.payload.pagination.total;
@@ -49,6 +45,81 @@ const fetchSpesimen = async () => {
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+// Add and edit Spesimen
+const spesimenDialogRef = ref();
+
+// Fungsi untuk membuka dialog tambah data
+const openAddDialog = () => {
+  spesimenDialogRef.value.resetForm(); // Reset form sebelum membuka dialog
+  spesimenDialogRef.value.visible = true; // Buka dialog
+};
+
+// Fungsi untuk membuka dialog edit data
+const editDialog = (item: any) => {
+  spesimenDialogRef.value.editMode = true;
+  spesimenDialogRef.value.selectedSpesimenId = item.uuid;
+  spesimenDialogRef.value.kodeSpesimen = item.code;
+  spesimenDialogRef.value.namaSpesimen = item.name;
+  spesimenDialogRef.value.status = item.status;
+  spesimenDialogRef.value.visible = true;
+};
+const submitSpesimen = async (payload: any) => {
+  storeUtils.setLoading(true);
+  try {
+    let response;
+    if (payload.id) {
+      response = await spesimenStore.putApi(payload.id, payload);
+    } else {
+      response = await spesimenStore.postApi(payload);
+    }
+
+    if (response) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      searchQuery.value = "";
+      await fetchSpesimen();
+      resetForm();
+      spesimenDialogRef.value.visible = false;
+    }
+  } catch (error) {
+    console.error("Error submitting data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+// Delete Data
+const isDeleteDialogVisible = ref(false);
+const dialogConfig = ref({
+  method: "",
+  title: "",
+  data: {},
+});
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    storeUtils.setLoading(true);
+    try {
+      await spesimenStore.deleteApi(item.uuid);
+      fetchSpesimen();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      storeUtils.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Reset Data
+const resetForm = () => {
+  spesimenDialogRef.value?.resetForm();
 };
 
 // Handle Page
@@ -96,7 +167,7 @@ onMounted(async () => {
                 </div>
               </div>
               <CustomButton
-                @click="addSpesimenDialog = true"
+                @click="openAddDialog"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
@@ -214,6 +285,7 @@ onMounted(async () => {
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
+                  @click="editDialog(slotProps.data)"
                   class="h-6 w-[26px] p-0"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
@@ -222,6 +294,13 @@ onMounted(async () => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code}-${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -253,62 +332,18 @@ onMounted(async () => {
       </template>
     </Card>
 
-    <!-- addSpesimenDialog -->
-    <CustomDialog
-      v-model:visible="addSpesimenDialog"
-      :style="{ width: '600px' }"
-    >
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Data Spesimen</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="flex gap-3">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Kode Spesimen"
-              placeholder="Kode Spesimen"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px] grow">
-            <CustomTextfield
-              label="Nama Spesimen"
-              placeholder="Nama Spesimen"
-              class="mr-2"
-            />
-          </div>
-        </div>
+    <!-- DialogSpesimen -->
+    <DialogSpesimen
+      ref="spesimenDialogRef"
+      @submit="submitSpesimen"
+      @reset="resetForm"
+    />
 
-        <hr class="mt-[20px] border border-slate-200" />
-        <div class="grid grid-cols-1 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="addSpesimenDialog = false"
-            />
-            <CustomButton label="Simpan" />
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
+    <DialogDelete
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      :title="dialogConfig.title"
+      :itemToDelete="dialogConfig.data"
+      @delete="confirmDelete"
+    />
   </div>
 </template>

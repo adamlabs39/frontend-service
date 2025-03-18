@@ -75,6 +75,7 @@ const submitKategoriPemeriksaan = async () => {
       searchQuery.value = "";
       addKategoriDialog.value = false;
       await fetchKategoriPemeriksaan();
+      resetForm();
     }
   } catch (error) {
     console.error("Error submitting data", error);
