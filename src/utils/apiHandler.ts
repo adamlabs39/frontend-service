@@ -7,6 +7,7 @@ import {
   baseInstanceFarmasi,
   authInstance,
   baseInstancePembayaran,
+  baseInstanceLaboratorium,
   baseInstanceRawatJalan,
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
@@ -272,6 +273,56 @@ const apiPembayaranPut = async (url: string, data: object) => {
 const apiPembayaranDelete = async (url: string, data: object) => {
   try {
     let response = await baseInstancePembayaran.delete(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: "Data berhasil dihapus",
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
+// Laboratorium
+const apiLaboratoriumGet = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceLaboratorium.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiLaboratoriumPost = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceLaboratorium.post(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    console.log("response", response);
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiLaboratoriumPut = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceLaboratorium.put(url, data);
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiLaboratoriumDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceLaboratorium.delete(url, data);
     app.config.globalProperties.$toast.add({
       severity: "success",
       summary: "Data berhasil dihapus",
@@ -588,6 +639,10 @@ export {
   apiPembayaranPost,
   apiPembayaranPut,
   apiPembayaranDelete,
+  apiLaboratoriumGet,
+  apiLaboratoriumPost,
+  apiLaboratoriumPut,
+  apiLaboratoriumDelete,
   apiAdmisiGet,
   apiAdmisiPost,
   apiAdmisiPut,
