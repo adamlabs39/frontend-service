@@ -15,6 +15,25 @@ import {
 } from "./Api";
 import { app } from "@/main";
 
+const cekHost = (baseUrl: unknown, nextUrl: string) => {
+  const url = new URL(baseUrl as string);
+  const tempUrl = `:${url.port}${url.pathname}`;
+  let newUrl = nextUrl;
+  const currentHostUrl = window.location.hostname;
+  if (
+    !currentHostUrl.includes("localhost") &&
+    !currentHostUrl.includes("adameds")
+  ) {
+    newUrl =
+      window.location.protocol +
+      "//" +
+      window.location.hostname +
+      tempUrl +
+      nextUrl;
+  }
+  return newUrl;
+};
+
 const errorApiHandler = (error: any) => {
   let tempSummary = ``;
   let tempDetail = ``;
@@ -106,6 +125,7 @@ const apiBaseDelete = async (url: string, data: object) => {
 
 // Auth
 const apiAuthPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_AUTH, url);
   try {
     let response = await authInstance.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -120,6 +140,7 @@ const apiAuthPost = async (url: string, data: object) => {
   }
 };
 const apiAuthDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_AUTH, url);
   try {
     let response = await authInstance.delete(url, data);
     app.config.globalProperties.$toast.add({
@@ -134,6 +155,7 @@ const apiAuthDelete = async (url: string, data: object) => {
   }
 };
 const apiAuthGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_AUTH, url);
   try {
     let response = await authInstance.get(url, data);
     return response.data;
@@ -152,6 +174,7 @@ const apiAuthPut = async (url: string, data: object) => {
 
 // Setting
 const apiSettingPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_URL_SETTING, url);
   try {
     let response = await settingInstance.post(url, data);
     return response;
@@ -160,6 +183,7 @@ const apiSettingPost = async (url: string, data: object) => {
   }
 };
 const apiSettingGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_URL_SETTING, url);
   try {
     let response = await settingInstance.get(url, data);
     return response.data;
@@ -168,6 +192,7 @@ const apiSettingGet = async (url: string, data: object) => {
   }
 };
 const apiSettingPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_URL_SETTING, url);
   try {
     let response = await settingInstance.put(url, data);
     return response;
@@ -176,6 +201,7 @@ const apiSettingPut = async (url: string, data: object) => {
   }
 };
 const apiSettingDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_URL_SETTING, url);
   try {
     let response = await settingInstance.delete(url, data);
     return response;
@@ -186,6 +212,7 @@ const apiSettingDelete = async (url: string, data: object) => {
 
 //Datamaster
 const apiDatamasterGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
   try {
     let response = await baseInstanceDatamaster.get(url, data);
     return response.data;
@@ -194,6 +221,7 @@ const apiDatamasterGet = async (url: string, data: object) => {
   }
 };
 const apiDatamasterPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
   try {
     let response = await baseInstanceDatamaster.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -208,6 +236,7 @@ const apiDatamasterPost = async (url: string, data: object) => {
   }
 };
 const apiDatamasterPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
   try {
     let response = await baseInstanceDatamaster.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -221,6 +250,7 @@ const apiDatamasterPut = async (url: string, data: object) => {
   }
 };
 const apiDatamasterDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
   try {
     let response = await baseInstanceDatamaster.delete(url, data);
     app.config.globalProperties.$toast.add({
@@ -236,6 +266,7 @@ const apiDatamasterDelete = async (url: string, data: object) => {
 
 //Pembayaran
 const apiPembayaranGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_PEMBAYARAN, url);
   try {
     let response = await baseInstancePembayaran.get(url, data);
     return response.data;
@@ -244,6 +275,7 @@ const apiPembayaranGet = async (url: string, data: object) => {
   }
 };
 const apiPembayaranPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_PEMBAYARAN, url);
   try {
     let response = await baseInstancePembayaran.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -258,6 +290,7 @@ const apiPembayaranPost = async (url: string, data: object) => {
   }
 };
 const apiPembayaranPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_PEMBAYARAN, url);
   try {
     let response = await baseInstancePembayaran.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -271,6 +304,7 @@ const apiPembayaranPut = async (url: string, data: object) => {
   }
 };
 const apiPembayaranDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_PEMBAYARAN, url);
   try {
     let response = await baseInstancePembayaran.delete(url, data);
     app.config.globalProperties.$toast.add({
@@ -286,6 +320,7 @@ const apiPembayaranDelete = async (url: string, data: object) => {
 
 // Laboratorium
 const apiLaboratoriumGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_LABORATORIUM, url);
   try {
     let response = await baseInstanceLaboratorium.get(url, data);
     return response.data;
@@ -294,6 +329,7 @@ const apiLaboratoriumGet = async (url: string, data: object) => {
   }
 };
 const apiLaboratoriumPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_LABORATORIUM, url);
   try {
     let response = await baseInstanceLaboratorium.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -308,6 +344,7 @@ const apiLaboratoriumPost = async (url: string, data: object) => {
   }
 };
 const apiLaboratoriumPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_LABORATORIUM, url);
   try {
     let response = await baseInstanceLaboratorium.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -321,6 +358,7 @@ const apiLaboratoriumPut = async (url: string, data: object) => {
   }
 };
 const apiLaboratoriumDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_LABORATORIUM, url);
   try {
     let response = await baseInstanceLaboratorium.delete(url, data);
     app.config.globalProperties.$toast.add({
@@ -336,6 +374,7 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
 
 //Admisi
 const apiAdmisiGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   try {
     let response = await baseInstanceAdmisi.get(url, data);
     return response.data;
@@ -344,6 +383,7 @@ const apiAdmisiGet = async (url: string, data: object) => {
   }
 };
 const apiAdmisiPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   try {
     let response = await baseInstanceAdmisi.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -357,6 +397,7 @@ const apiAdmisiPost = async (url: string, data: object) => {
   }
 };
 const apiAdmisiPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   try {
     let response = await baseInstanceAdmisi.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -370,6 +411,7 @@ const apiAdmisiPut = async (url: string, data: object) => {
   }
 };
 const apiAdmisiPatch = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   try {
     let response = await baseInstanceAdmisi.patch(url, data);
     app.config.globalProperties.$toast.add({
@@ -383,6 +425,7 @@ const apiAdmisiPatch = async (url: string, data: object) => {
   }
 };
 const apiAdmisiDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   try {
     let response = await baseInstanceAdmisi.delete(url, { data: data });
     app.config.globalProperties.$toast.add({
@@ -398,6 +441,7 @@ const apiAdmisiDelete = async (url: string, data: object) => {
 
 //Igd
 const apiIgdGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_IGD, url);
   try {
     let response = await baseInstanceIgd.get(url, data);
     return response.data;
@@ -406,6 +450,7 @@ const apiIgdGet = async (url: string, data: object) => {
   }
 };
 const apiIgdPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_IGD, url);
   try {
     let response = await baseInstanceIgd.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -419,6 +464,7 @@ const apiIgdPost = async (url: string, data: object) => {
   }
 };
 const apiIgdPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_IGD, url);
   try {
     let response = await baseInstanceIgd.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -431,8 +477,8 @@ const apiIgdPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-
 const apiIgdDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_IGD, url);
   try {
     let response = await baseInstanceIgd.delete(url, data);
     app.config.globalProperties.$toast.add({
@@ -448,6 +494,7 @@ const apiIgdDelete = async (url: string, data: object) => {
 
 //Farmasi
 const apiFarmasiGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
   try {
     let response = await baseInstanceFarmasi.get(url, data);
     return response.data;
@@ -456,6 +503,7 @@ const apiFarmasiGet = async (url: string, data: object) => {
   }
 };
 const apiFarmasiPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
   try {
     let response = await baseInstanceFarmasi.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -469,6 +517,7 @@ const apiFarmasiPost = async (url: string, data: object) => {
   }
 };
 const apiFarmasiPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
   try {
     let response = await baseInstanceFarmasi.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -482,6 +531,7 @@ const apiFarmasiPut = async (url: string, data: object) => {
   }
 };
 const apiFarmasiDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
   try {
     let response = await baseInstanceFarmasi.delete(url, { data: data });
     app.config.globalProperties.$toast.add({
@@ -497,6 +547,7 @@ const apiFarmasiDelete = async (url: string, data: object) => {
 
 // Rawat Jalan
 const apiRawatJalanGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_RAWAT_JALAN, url);
   try {
     let response = await baseInstanceRawatJalan.get(url, data);
     app.config.globalProperties.$toast.add({
@@ -512,6 +563,7 @@ const apiRawatJalanGet = async (url: string, data: object) => {
 
 // Rekam Medis
 const apiRekamMedisGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_REKAM_MEDIS, url);
   try {
     let response = await baseInstanceRekamMedis.get(url, data);
     app.config.globalProperties.$toast.add({
@@ -525,6 +577,7 @@ const apiRekamMedisGet = async (url: string, data: object) => {
   }
 };
 const apiRekamMedisPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_REKAM_MEDIS, url);
   try {
     let response = await baseInstanceRekamMedis.post(url, data);
     app.config.globalProperties.$toast.add({
@@ -538,6 +591,7 @@ const apiRekamMedisPost = async (url: string, data: object) => {
   }
 };
 const apiRekamMedisPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_REKAM_MEDIS, url);
   try {
     let response = await baseInstanceRekamMedis.put(url, data);
     app.config.globalProperties.$toast.add({
@@ -551,6 +605,7 @@ const apiRekamMedisPut = async (url: string, data: object) => {
   }
 };
 const apiRekamMedisDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_REKAM_MEDIS, url);
   try {
     let response = await baseInstanceRekamMedis.delete(url, { data: data });
     app.config.globalProperties.$toast.add({
@@ -566,6 +621,7 @@ const apiRekamMedisDelete = async (url: string, data: object) => {
 
 // Rawat inap Perpindahan Bangsal
 const apiRawatInapGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_RAWAT_INAP, url);
   try {
     let response = await baseInstanceRawatInap.get(url, data);
     return response.data;
@@ -573,8 +629,8 @@ const apiRawatInapGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-
 const apiRawatInapPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_RAWAT_INAP, url);
   try {
     let response = await baseInstanceRawatInap.post(url, data);
     return response.data;
@@ -583,6 +639,7 @@ const apiRawatInapPost = async (url: string, data: object) => {
   }
 };
 const apiRawatInapPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_RAWAT_INAP, url);
   try {
     let response = await baseInstanceRawatInap.put(url, data);
     return response.data;
@@ -593,6 +650,7 @@ const apiRawatInapPut = async (url: string, data: object) => {
 
 // Inventory
 const apiInventoryGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_INVENTORY, url);
   try {
     let response = await baseInstanceInventory.get(url, data);
     return response.data;
@@ -600,8 +658,8 @@ const apiInventoryGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-
 const apiInventoryPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_INVENTORY, url);
   try {
     let response = await baseInstanceInventory.post(url, data);
     return response.data;
@@ -609,8 +667,8 @@ const apiInventoryPost = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-
 const apiInventoryPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_INVENTORY, url);
   try {
     let response = await baseInstanceInventory.put(url, data);
     return response.data;
@@ -618,6 +676,7 @@ const apiInventoryPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+
 export {
   apiBasePost,
   apiBaseGet,

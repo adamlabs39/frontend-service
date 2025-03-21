@@ -403,7 +403,7 @@ const baseInstanceRawatJalan = axios.create({
       Accept: "text/plain, */*",
     },
   },
-  baseURL: import.meta.env.VITE_BASE_LAPORAN,
+  baseURL: import.meta.env.VITE_BASE_RAWAT_JALAN,
 });
 
 baseInstanceRawatJalan.interceptors.request.use(
@@ -445,7 +445,7 @@ const baseInstanceRawatInap = axios.create({
       Accept: "text/plain, */*",
     },
   },
-  baseURL: import.meta.env.VITE_BASE_RAWATINAP,
+  baseURL: import.meta.env.VITE_BASE_RAWAT_INAP,
 });
 
 baseInstanceRawatInap.interceptors.request.use(
