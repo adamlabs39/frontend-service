@@ -567,6 +567,21 @@ const apiInventoryPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+
+const apiInventoryDelete = async (url: string, data: object) => {
+  try {
+    let response = await baseInstanceInventory.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+
 export {
   apiBasePost,
   apiBaseGet,
@@ -611,5 +626,6 @@ export {
   apiInventoryGet,
   apiInventoryPost,
   apiInventoryPut,
+  apiInventoryDelete,
   apiRekamMedisDelete,
 };
