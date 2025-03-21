@@ -1,20 +1,28 @@
-import { apiInventoryGet, apiInventoryPost, apiInventoryPut } from "@/utils/apiHandler";
+import { apiInventoryGet, apiInventoryPost, apiInventoryPut, apiInventoryDelete } from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
-
 export const useSupplierStore = defineStore({
-    id: "supplier",
-    state: () => ({}),
-    getters: {},
-    actions: {
-        async getAllSupplier({ page= 1, limit = 10, name = ""}, payload = {}) {
-            return apiInventoryGet(`/inventory/datamaster/supplier?page=${page}&limit=${limit}&name=${name}`, payload)
-        },
-        async createSupplier(payload = {}) {
-            return apiInventoryPost("/inventory/datamaster/supplier", payload)
-        },
-        async updateSupplier(uuid: string, payload = {}) {
-            return apiInventoryPut(`/inventory/datamaster/supplier/${uuid}`, payload)
-        }
-    }
-})
+  id: "supplier",
+  state: () => ({}),
+  getters: {},
+  actions: {
+    async getApi( page: number = 1, limit: number = 10, name: String = "", payload = {} ) {
+      return apiInventoryGet(`/inventory/datamaster/supplier?page=${page}&limit=${limit}&name=${name}`, payload);
+    },
+    async postApi(payload = {}) {
+      return apiInventoryPost("/inventory/datamaster/supplier", payload);
+    },
+    async putApi(uuid: string, payload = {}) {
+      return apiInventoryPut(`/inventory/datamaster/supplier/${uuid}`, payload);
+    },
+    async deleteApi(uuid: string, payload = {}) {
+      return apiInventoryDelete(`/inventory/datamaster/supplier/${uuid}`, payload);
+    },
+    async exportApi(payload = {}) {
+      return apiInventoryPut(`/inventory/datamaster/export`, payload);
+    },
+    async importApi(payload = {}) {
+      return apiInventoryPut(`/inventory/datamaster/import`, payload);
+    },
+  },
+});

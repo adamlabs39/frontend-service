@@ -155,8 +155,9 @@ import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
 import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
 import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerapiPage.vue";
 import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
+
 // NOTE Page Inventory
-import InventoryPurchasePage from "@/views/Inventory/Page/PengadaanBarang/InventoryPurchasePage.vue";
+import PurchaseOfSupplierPage from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/PurchaseOfSupplierPage.vue"
 
 // NOTE Training
 import TrainingView from "@/views/Training/TrainingView.vue";
@@ -190,7 +191,7 @@ import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/Pengiri
 import PengeluaranUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnitPage.vue";
 import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
 import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
-import DatamasterSupplierPage from "@/views/Inventory/Page/Datamaster/DatamasterSupplierPage.vue";
+import SupplierPage from "@/views/Inventory/Page/Datamaster/SupplierPage.vue";
 import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
 import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
 import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
@@ -1333,7 +1334,7 @@ const router = createRouter({
       name: "inventory-pengadaan-barang-pembelian-barang-supplier",
       meta: {
         layout: SidebarLayout,
-        page: InventoryPurchasePage,
+        page: PurchaseOfSupplierPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1399,7 +1400,7 @@ const router = createRouter({
       name: "inventory-datamaster-supplier",
       meta: {
         layout: SidebarLayout,
-        page: DatamasterSupplierPage,
+        page: SupplierPage,
         requiresAuth: true,
       },
       component: InventoryView,
