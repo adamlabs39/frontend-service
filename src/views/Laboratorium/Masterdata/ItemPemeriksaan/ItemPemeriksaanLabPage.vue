@@ -7,14 +7,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import TambahDataItem from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/TambahData.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DialogNilaiRujukanAngka from "./DialogNilaiRujukanAngka.vue";
 import DialogRujukanText from "./DialogRujukanText.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import CustomComboBox from "@/components/Base/CustomComboBox.vue";
 
 const addItemDialog = ref(false);
 const rowsPerPage = ref(10);
@@ -128,13 +122,7 @@ const dataNilaiRujukan = ref([
   },
 ]);
 
-watch(
-  () => itemPemeriksaan.value,
-  (newValue) => {
-    console.log("Nilai chips dari CustomComboBox:", newValue.join(", "));
-  },
-  { deep: true }
-);
+
 </script>
 
 <template>
