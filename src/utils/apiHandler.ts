@@ -17,21 +17,18 @@ import { app } from "@/main";
 
 const cekHost = (baseUrl: unknown, nextUrl: string) => {
   const url = new URL(baseUrl as string);
-  const tempUrl = `:${url.port}${url.pathname}`;
-  let newUrl = nextUrl;
+  let tempUrl = `:${url.port}${url.pathname}`;
   const currentHostUrl = window.location.hostname;
-  if (
-    !currentHostUrl.includes("localhost") &&
-    !currentHostUrl.includes("adameds")
-  ) {
-    newUrl =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      tempUrl +
-      nextUrl;
+  const baseLocation = window.location.protocol + "//" + window.location.hostname;
+
+  if (!currentHostUrl.includes("localhost") && !currentHostUrl.includes("adameds")) {
+    if (tempUrl.endsWith("/") && nextUrl.startsWith("/")) {
+      tempUrl = tempUrl.slice(0, -1);
+    }
+    return baseLocation + tempUrl + nextUrl;
   }
-  return newUrl;
+
+  return nextUrl;
 };
 
 const errorApiHandler = (error: any) => {
