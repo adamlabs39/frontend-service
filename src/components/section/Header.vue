@@ -149,7 +149,7 @@ onMounted(() => {
     const listPermission: Module[] = JSON.parse(listPermissionStr);
     listPermission.forEach((module) => {
       const listMenuFind = templistMenu.value.find(
-        (menu) => menu.title == module.module
+        (menu) => menu.title == module.module && menu.title != 'Dashboard'
       );
       if (listMenuFind) {
         listMenu.value.push(listMenuFind);
