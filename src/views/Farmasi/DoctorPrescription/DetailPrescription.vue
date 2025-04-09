@@ -1260,9 +1260,7 @@ onMounted(() => {
 
                 <div class="mt-[20px]">
                   <div v-if="payload.isTakeway" class="mt-[20px] mb-[20px]">
-                    <p
-                      class="text-xs font-bold text-left underline underline-offset-2"
-                    >
+                    <p class="text-xs font-bold text-left underline underline-offset-2">
                       Diberikan Oleh
                     </p>
                     <p>{{ userData?.name }}</p>
@@ -1337,7 +1335,7 @@ onMounted(() => {
           <div class="flex gap-2 item-center">
             <!-- Batal Order -->
             <CustomButton
-              v-if="payload.orderStatus === 1"
+              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
               background-color="bg-danger-300"
               @click="batalDialog = true"
               class="w-[110px]"
@@ -1354,7 +1352,7 @@ onMounted(() => {
             </CustomButton>
             <!-- Pindah Lokasi Order -->
             <CustomButton
-              v-if="payload.orderStatus === 1"
+              v-if="payload.orderStatus === 1 || payload.orderStatus === 2"
               @click="pindahDialog = true"
               label="Pindah Lokasi Order"
               class="w-[170px]"
@@ -1380,7 +1378,7 @@ onMounted(() => {
             <div class="">
               <CustomButton
                 :label="
-                  payload.orderStatus === 1
+                  payload.orderStatus === 1 || payload.orderStatus === 2
                     ? 'Verifikasi'
                     : payload.orderStatus === 3
                     ? 'Obat Siap Diserahkan'
