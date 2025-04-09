@@ -146,6 +146,7 @@ import PembatalanDirawatPage from "@/views/IGD/Laporan/PembatalanDirawat.vue";
 import RekapTindakanPasien from "@/views/IGD/Laporan/RekapTindakanPasien.vue";
 import BPJSPage from "@/views/IGD/BPJS/BPJSPage.vue";
 import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
+
 // NOTE FISIOTERAPI DATAMASTER
 import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
 
@@ -162,12 +163,11 @@ import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerap
 import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
 
 // NOTE Page Inventory
-// import PurchaseOfSupplierPage from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/PurchaseOfSupplierPage.vue"
-import InventoryView from "@/views/Inventory/InventoryView.vue";
-import VerificationPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerificationPurchasePage.vue";
-import ReturPage from "@/views/Inventory/Page/PengadaanBarang/ReturPage.vue";
-import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengirimanUnitPage.vue";
-import PengeluaranUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnitPage.vue";
+import PurchaseOfSupplierPage from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/PurchaseOfSupplierPage.vue";
+import VerificationOfGoodsPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerifikasiPembelianBarangSupplier/VerificationOfGoodsPurchasePage.vue";
+import SupplierReturnsPage from "@/views/Inventory/Page/PengadaanBarang/ReturPenggantian/SupplierReturnsPage.vue";
+import UnitDeliveryVerificationPage from "@/views/Inventory/Page/PengeluaranBarang/VerifikasiPengirimanUnit/UnitDeliveryVerificationPage.vue";
+import UnitOfExpenditurePage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnit/UnitOfExpenditurePage.vue";
 import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
 import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
 import SupplierPage from "@/views/Inventory/Page/Datamaster/SupplierPage.vue";
@@ -177,6 +177,7 @@ import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
 import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
+import InventoryView from "@/views/Inventory/InventoryView.vue";
 
 // NOTE Training
 import TrainingView from "@/views/Training/TrainingView.vue";
@@ -1335,22 +1336,22 @@ const router = createRouter({
       name: "inventory",
       redirect: "/inventory/pengadaan-barang/pembelian-barang-supplier",
     },
-    // {
-    //   path: "/inventory/pengadaan-barang/pembelian-barang-supplier",
-    //   name: "inventory-pengadaan-barang-pembelian-barang-supplier",
-    //   meta: {
-    //     layout: SidebarLayout,
-    //     page: PurchaseOfSupplierPage,
-    //     requiresAuth: true,
-    //   },
-    //   component: InventoryView,
-    // },
+    {
+      path: "/inventory/pengadaan-barang/pembelian-barang-supplier",
+      name: "inventory-pengadaan-barang-pembelian-barang-supplier",
+      meta: {
+        layout: SidebarLayout,
+        page: PurchaseOfSupplierPage,
+        requiresAuth: true,
+      },
+      component: InventoryView,
+    },
     {
       path: "/inventory/pengadaan-barang/verifikasi-pembelian-barang-supplier",
       name: "inventory-pengadaan-barang-verifikasi-pembelian-barang-supplier",
       meta: {
         layout: SidebarLayout,
-        page: VerificationPurchasePage,
+        page: VerificationOfGoodsPurchasePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1358,7 +1359,10 @@ const router = createRouter({
     {
       path: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
       name: "inventory-pengadaan-barang-retur-penggantian-barang-supplier",
-      meta: { layout: SidebarLayout, page: ReturPage, requiresAuth: true },
+      meta: { 
+        layout: SidebarLayout, 
+        page: SupplierReturnsPage, 
+        requiresAuth: true },
       component: InventoryView,
     },
     {
@@ -1366,7 +1370,7 @@ const router = createRouter({
       name: "inventory-pengeluaran-barang-verifikasi-pengiriman-unit",
       meta: {
         layout: SidebarLayout,
-        page: PengirimanUnitPage,
+        page: UnitDeliveryVerificationPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1376,7 +1380,7 @@ const router = createRouter({
       name: "inventory-pengeluaran-barang-pengeluaran-unit",
       meta: {
         layout: SidebarLayout,
-        page: PengeluaranUnitPage,
+        page: UnitOfExpenditurePage,
         requiresAuth: true,
       },
       component: InventoryView,
