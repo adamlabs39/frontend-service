@@ -523,7 +523,7 @@ defineExpose({
             <CustomSelect
               v-model="selectedRoom"
               @update:model-value="fetchListBedData"
-              label="RuanganTES"
+              label="Ruangan"
               placeHolder="Pilih Ruangan"
               class="col-span-2"
               optionLabel="name"

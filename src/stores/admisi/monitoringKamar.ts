@@ -34,7 +34,7 @@ export const useMonitoringKamarStore = defineStore({
     },
 
     async getDetailMonitoringKamar(uuid = "", payload = {}) {
-      return apiAdmisiGet(`monitoring-rooms/${uuid}`, payload);
+      return apiAdmisiGet(`/monitoring-rooms/${uuid}`, payload);
     },
   },
 });
