@@ -387,7 +387,7 @@ onMounted(() => {
           <div class="mt-[20px]">
             <CustomMultiSelect
               class="ml-2"
-              label="Kategori Item TOD"
+              label="Kategori Item"
               v-model="kategori"
               :options="kategoriItem"
               placeholder="Pilih Kategori Item"
