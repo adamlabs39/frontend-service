@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { apiFarmasiGet, apiFarmasiPost, apiFarmasiPut, apiFarmasiDelete } from "@/utils/apiHandler";
+import { apiFarmasiGet, apiFarmasiPost, apiFarmasiPostNoMessage, apiFarmasiPut, apiFarmasiDelete } from "@/utils/apiHandler";
 
 export const useMedicalItemStore = defineStore({
   id: "MedicalItem",
@@ -13,7 +13,7 @@ export const useMedicalItemStore = defineStore({
       jenisItem: String = "",
       payload = {}
     ) {
-      return apiFarmasiPost(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}&jenis_item=${jenisItem}`, payload);
+      return apiFarmasiPostNoMessage(`/farmasi/datamaster/item-medis/all?page=${page}&limit=${limit}&name=${name}&jenis_item=${jenisItem}`, payload);
     },
     async getAvailableStockApi(uuid: string, payload = {}) {
       return apiFarmasiGet(`/farmasi/datamaster/item-medis/available-jenis-stock/${uuid}`, payload);

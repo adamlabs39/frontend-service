@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
 import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
 import * as XLSX from "xlsx-js-style";
@@ -39,7 +39,6 @@ const hasData = computed(
 
 // Fetch MedicalItem
 const fetchMedicalItem = async () => {
-  UseUtilsStore.setLoading(true);  
   try {
     const response = await MedicalItemStore.getApi(
       MedicalItemProperties.value.page,
@@ -58,8 +57,6 @@ const fetchMedicalItem = async () => {
   } catch (error) {
     console.error("Failed to fetch data", error);
     MedicalItemPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
   }
 };
 

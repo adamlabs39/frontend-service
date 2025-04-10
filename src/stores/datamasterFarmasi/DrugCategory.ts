@@ -1,10 +1,5 @@
 import { defineStore } from "pinia";
-import {
-  apiFarmasiGet,
-  apiFarmasiPost,
-  apiFarmasiPut,
-  apiFarmasiDelete,
-} from "@/utils/apiHandler";
+import { apiFarmasiGet, apiFarmasiPost, apiFarmasiPut, apiFarmasiDelete } from "@/utils/apiHandler";
 
 export const useDrugCategoryStore = defineStore({
   id: "kategori-obat",
