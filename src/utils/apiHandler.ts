@@ -516,6 +516,15 @@ const apiFarmasiPost = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiFarmasiPostNoMessage = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
+  try {
+    let response = await baseInstanceFarmasi.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 const apiFarmasiPut = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_FARMASI, url);
   try {
@@ -728,6 +737,7 @@ export {
   apiRawatJalanGet,
   apiFarmasiGet,
   apiFarmasiPost,
+  apiFarmasiPostNoMessage,
   apiFarmasiPut,
   apiFarmasiDelete,
   apiRekamMedisGet,
