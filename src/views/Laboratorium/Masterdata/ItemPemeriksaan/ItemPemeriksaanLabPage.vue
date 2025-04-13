@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -9,45 +10,161 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import TambahDataItem from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/TambahData.vue";
 import DialogNilaiRujukanAngka from "./DialogNilaiRujukanAngka.vue";
 import DialogRujukanText from "./DialogRujukanText.vue";
+import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
+import DialogDelete from "../../Layout/DialogDelete.vue";
 
 const addItemDialog = ref(false);
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
-const status = ref(false);
-const nilaiRujukanAngka = ref(false);
+
 const nilaiRujukanText = ref(false);
+const UseUtilsStore = utilsStore();
+const itemPemeriksaanStore = useItemPemeriksaanStore();
 
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
+const itemPemeriksaanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const itemPemeriksaanPayload = ref(<any>[]);
+const searchQuery = ref("");
+const handleSearchQuery = (searchValue: string) => {
+  searchQuery.value = searchValue;
 };
 
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
+// Fetch Data Item Pemeriksaan
+const fetchItemPemeriksaan = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await itemPemeriksaanStore.getApi({
+      page: itemPemeriksaanProperties.value.page,
+      limit: itemPemeriksaanProperties.value.page_size,
+      name: searchQuery.value,
+    });
+    console.log("Response", response);
+
+    if (response && response.payload) {
+      itemPemeriksaanProperties.value.total = response.payload.pagination.total;
+      itemPemeriksaanPayload.value = response.payload.data;
+    } else {
+      itemPemeriksaanPayload.value = [];
+    }
+    console.log("Data Kategori Pemeriksaan", itemPemeriksaanPayload.value);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    itemPemeriksaanPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
 
-const dataItemPemeriksaan = ref([
-  {
-    kodeItem: "HGB",
-    namaItem: "Hemogoblin",
-    kategori: "HEMATOLOGI",
-    satuan: "g/dL",
-    metode: "Colorimatic",
-    noUrut: "1",
-    status: "AKTIF",
-    jenisInput: "Angka",
-  },
-  {
-    kodeItem: "HMT",
-    namaItem: "Hematokrit",
-    kategori: "HEMATOLOGI",
-    satuan: "%",
-    metode: "Impedance",
-    noUrut: "3",
-    status: "AKTIF",
-    jenisInput: "Text",
-  },
-]);
+//  dialog rujukan angka
+const nilaiRujukanAngka = ref(false);
+const dialogNilaiRujukanAngkaConfig = ref<any>({
+  method: "add",
+  data: null,
+});
+const dialogNilaiRujukanAngka = (method: string, data: any = null) => {
+  dialogNilaiRujukanAngkaConfig.value = { method, data };
+  nilaiRujukanAngka.value = true;
+};
+
+// Add and edit
+const tambahDataDialogRef = ref();
+
+// Fungsi untuk membuka dialog tambah data
+const openAddDialog = () => {
+  tambahDataDialogRef.value.resetForm(); // Reset form sebelum membuka dialog
+  tambahDataDialogRef.value.visible = true; // Buka dialog
+};
+
+// Fungsi untuk membuka dialog edit data
+const editDialog = (item: any) => {
+  tambahDataDialogRef.value.editMode = true;
+  tambahDataDialogRef.value.selectedItemId = item.uuid;
+  tambahDataDialogRef.value.kategoriPemeriksaan = item.categoryPemeriksaanUuid;
+  tambahDataDialogRef.value.satuan = item.satuan;
+  tambahDataDialogRef.value.metode = item.metode;
+  tambahDataDialogRef.value.noUrut = item.noUrut;
+  tambahDataDialogRef.value.jenisInput = item.jenisInput;
+  tambahDataDialogRef.value.nilaiRujukan = item.nilaiRujukan;
+  tambahDataDialogRef.value.pilihanHasilItemPemeriksaans =
+    item.pilihanHasilItemPemeriksaans;
+  tambahDataDialogRef.value.loinc = item.loincUuid;
+  tambahDataDialogRef.value.code = item.code;
+  tambahDataDialogRef.value.name = item.name;
+  tambahDataDialogRef.value.status = item.status;
+  tambahDataDialogRef.value.statusNilaiRujukan = item.statusNilaiRujukan;
+  tambahDataDialogRef.value.visible = true;
+  tambahDataDialogRef.value.icd9 = item.icd9Uuid;
+  tambahDataDialogRef.value.snomedCT = item.snomedUuid;
+};
+const submitData = async (payload: any) => {
+  UseUtilsStore.setLoading(true);
+  try {
+    let response;
+    if (payload.id) {
+      response = await itemPemeriksaanStore.putApi(payload.id, payload);
+    } else {
+      response = await itemPemeriksaanStore.postApi(payload);
+    }
+
+    if (response) {
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+      searchQuery.value = "";
+      await fetchItemPemeriksaan();
+      resetForm();
+      tambahDataDialogRef.value.visible = false;
+    }
+  } catch (error) {
+    console.error("Error submitting data", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// Delete Data
+const isDeleteDialogVisible = ref(false);
+const dialogConfig = ref({
+  method: "",
+  title: "",
+  data: {},
+});
+
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    UseUtilsStore.setLoading(true);
+    try {
+      await itemPemeriksaanStore.deleteApi(item.uuid);
+      fetchItemPemeriksaan();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+// Reset Data
+const resetForm = () => {
+  tambahDataDialogRef.value?.resetForm();
+};
+
+// Handle Page
+const handlePage = (event: any) => {
+  itemPemeriksaanProperties.value.page = event.page + 1;
+  itemPemeriksaanProperties.value.page_size = event.rows;
+  fetchItemPemeriksaan();
+};
+
+onMounted(async () => {
+  await fetchItemPemeriksaan();
+});
+
 const jenisInput = ref();
 const optionJenisInput = ref([
   { label: "Angka", value: "1" },
@@ -57,14 +174,6 @@ const optionJenisInput = ref([
 ]);
 
 console.log("jenis input", optionJenisInput.value);
-
-const itemPemeriksaan = ref();
-const optionItemPemeriksaan = ref([
-  { label: "Item 1", value: "1" },
-  { label: "Item 2", value: "2" },
-  { label: "Item 3", value: "3" },
-  { label: "Item 4", value: "4" },
-]);
 
 const dataNilaiRujukan = ref([
   {
@@ -121,8 +230,6 @@ const dataNilaiRujukan = ref([
     ],
   },
 ]);
-
-
 </script>
 
 <template>
@@ -158,7 +265,7 @@ const dataNilaiRujukan = ref([
                 </div>
               </div>
               <CustomButton
-                @click="addItemDialog = true"
+                @click="openAddDialog"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
@@ -193,7 +300,7 @@ const dataNilaiRujukan = ref([
       </template>
       <template #content>
         <DataTable
-          :value="dataItemPemeriksaan"
+          :value="itemPemeriksaanPayload"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -217,7 +324,7 @@ const dataNilaiRujukan = ref([
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.kodeItem }}</div>
+              <div class="text-SM">{{ slotProps.data.code }}</div>
             </template>
           </Column>
           <Column
@@ -227,7 +334,7 @@ const dataNilaiRujukan = ref([
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaItem }}</div>
+              <div class="text-SM">{{ slotProps.data.name }}</div>
             </template>
           </Column>
           <Column
@@ -237,7 +344,9 @@ const dataNilaiRujukan = ref([
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.kategori }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.categoryPemeriksaan.name }}
+              </div>
             </template>
           </Column>
           <Column
@@ -248,6 +357,18 @@ const dataNilaiRujukan = ref([
           >
             <template #body="slotProps">
               <div class="text-SM">{{ slotProps.data.satuan }}</div>
+            </template>
+          </Column>
+          <Column
+            field="test"
+            header="test kolom"
+            headerClass="bg-adameds-50"
+            class=""
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.uuid }}
+              </div>
             </template>
           </Column>
           <Column
@@ -276,7 +397,6 @@ const dataNilaiRujukan = ref([
           <Column
             field="status"
             headerClass="bg-adameds-50 font-semibold text-SM"
-            class="w-[5%]"
           >
             <template #header>
               <div class="w-full text-center">Status</div>
@@ -284,24 +404,26 @@ const dataNilaiRujukan = ref([
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
                 <CustomChip
-                  :label="slotProps.data.status"
+                  :label="
+                    slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
+                  "
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'text-white'
                       : 'text-[#80868d]'
                   "
                   :bgColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'bg-adameds-300'
                       : 'bg-white'
                   "
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'border-none'
                       : 'border-[#80868d]'
                   "
                   :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                    slotProps.data.status === true ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -317,19 +439,20 @@ const dataNilaiRujukan = ref([
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
+                  @click="editDialog(slotProps.data)"
                   class="h-6 w-[26px] p-0"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
                 <CustomButton
-                  v-if="slotProps.data.jenisInput === 'Angka'"
+                  v-if="slotProps.data.jenisInput === 'angka'"
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
-                  @click="nilaiRujukanAngka = true"
+                  @click="dialogNilaiRujukanAngka('detail', slotProps.data)"
                 />
                 <CustomButton
-                  v-if="slotProps.data.jenisInput !== 'Angka'"
+                  v-if="slotProps.data.jenisInput !== 'angka'"
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
@@ -339,6 +462,13 @@ const dataNilaiRujukan = ref([
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code}-${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -361,11 +491,10 @@ const dataNilaiRujukan = ref([
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataItemPemeriksaan.length"
+            :rows="itemPemeriksaanProperties.page_size"
+            :totalRecords="itemPemeriksaanProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
@@ -373,15 +502,26 @@ const dataNilaiRujukan = ref([
 
     <!-- nilaiRujukanAngka Dialog -->
     <DialogNilaiRujukanAngka
-      v-model:visible="nilaiRujukanAngka"
-      :dataNilaiRujukan="dataNilaiRujukan"
+      v-model:isDialogVisible="nilaiRujukanAngka"
+          :method="dialogNilaiRujukanAngkaConfig.method"
+          :payload="dialogNilaiRujukanAngkaConfig.data"
     />
-    
+
     <DialogRujukanText
       v-model:visible="nilaiRujukanText"
       :dataNilaiRujukan="dataNilaiRujukan"
-      />
+    />
 
-    <TambahDataItem v-model:visible="addItemDialog" />
+    <TambahDataItem
+      ref="tambahDataDialogRef"
+      @submit="submitData"
+      @reset="resetForm"
+    />
+    <DialogDelete
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      :title="dialogConfig.title"
+      :itemToDelete="dialogConfig.data"
+      @delete="confirmDelete"
+    />
   </div>
 </template>

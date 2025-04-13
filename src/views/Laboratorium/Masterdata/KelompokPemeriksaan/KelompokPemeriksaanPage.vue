@@ -1,46 +1,110 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { utilsStore } from "@/stores/utils";
+import { useKelompokPemeriksaanStore } from "@/stores/datamasterLaboratorium/kelompokPemeriksaan";
+import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import DialogKelompokPemeriksaan from "./DialogKelompokPemeriksaan.vue";
+import DialogDelete from "@/views/Laboratorium/Layout/DialogDelete.vue";
 
 const addKelompokDialog = ref(false);
-const rowsPerPage = ref(10);
-const currentPage = ref(0);
-const status = ref(false);
+const utils = utilsStore();
+const kelompokPemeriksaanStore = useKelompokPemeriksaanStore();
+const kelompokPemeriksaanPayload = ref(<any[]>[]);
+const kelompokPemeriksaanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref("");
+const itemPemeriksaanStore = useItemPemeriksaanStore();
+const itemPemeriksaanPayload = ref(<any[]>[]);
 
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
+const fetchKelompokPemeriksaan = async () => {
+  utils.setLoading(true);
+  try {
+    const response = await kelompokPemeriksaanStore.getApi({
+      page: kelompokPemeriksaanProperties.value.page,
+      limit: kelompokPemeriksaanProperties.value.page_size,
+      name: searchQuery.value,
+    });
+    if (response && response.payload) {
+      kelompokPemeriksaanProperties.value.total =
+        response.payload.pagination.total;
+      kelompokPemeriksaanPayload.value = response.payload.data;
+    } else {
+      kelompokPemeriksaanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching kelompok pemeriksaan:", error);
+    kelompokPemeriksaanPayload.value = [];
+  } finally {
+    utils.setLoading(false);
+  }
 };
 
-const handlePageUpdate = (newPage: number) => {
-  currentPage.value = newPage;
+const fetchItemPemeriksaan = async () => {
+  try {
+    const response = await itemPemeriksaanStore.getApi();
+    if (response && response.payload) {
+      itemPemeriksaanPayload.value = response.payload.data;
+    } else {
+      itemPemeriksaanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch", error);
+    itemPemeriksaanPayload.value = [];
+  }
 };
 
-const dataBedruangan = ref([
-  { namaRuangan: "Ruangan 1", jumlahBed: "10", status: "AKTIF" },
-  { namaRuangan: "Ruangan 2", jumlahBed: "15", status: "AKTIF" },
-  { namaRuangan: "Ruangan 3", jumlahBed: "17", status: "AKTIF" },
-  { namaRuangan: "Ruangan 4", jumlahBed: "18", status: "AKTIF" },
-  { namaRuangan: "Ruangan 5", jumlahBed: "12", status: "NON-AKTIF" },
-  { namaRuangan: "Ruangan 6", jumlahBed: "15", status: "NON-AKTIF" },
-]);
+// Handle Page
+const handlePage = (event: any) => {
+  kelompokPemeriksaanProperties.value.page = event.page + 1;
+  kelompokPemeriksaanProperties.value.page_size = event.rows;
+  fetchKelompokPemeriksaan();
+};
 
-const itemPemeriksaan = ref();
-const optionItemPemeriksaan = ref([
-  { label: "Item 1", value: "1" },
-  { label: "Item 2", value: "2" },
-  { label: "Item 3", value: "3" },
-  { label: "Item 4", value: "4" },
-]);
+// Delete Data
+const isDeleteDialogVisible = ref(false);
+const dialogConfig = ref({
+  method: "",
+  title: "",
+  data: {},
+});
+
+const openDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  addKelompokDialog.value = true;
+};
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDelete = async (item: any) => {
+  if (item) {
+    utils.setLoading(true);
+    try {
+      await kelompokPemeriksaanStore.deleteApi(item.uuid);
+      fetchKelompokPemeriksaan();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      utils.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+onMounted(() => {
+  fetchKelompokPemeriksaan();
+  fetchItemPemeriksaan();
+});
 </script>
 
 <template>
@@ -76,7 +140,7 @@ const optionItemPemeriksaan = ref([
                 </div>
               </div>
               <CustomButton
-                @click="addKelompokDialog = true"
+                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
@@ -111,7 +175,7 @@ const optionItemPemeriksaan = ref([
       </template>
       <template #content>
         <DataTable
-          :value="dataBedruangan"
+          :value="kelompokPemeriksaanPayload"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -135,7 +199,7 @@ const optionItemPemeriksaan = ref([
             class="w-[25%]"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.code }}</div>
             </template>
           </Column>
           <Column
@@ -145,7 +209,7 @@ const optionItemPemeriksaan = ref([
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">{{ slotProps.data.name }}</div>
             </template>
           </Column>
           <Column
@@ -155,13 +219,20 @@ const optionItemPemeriksaan = ref([
           >
             <template #body="slotProps">
               <div class="flex flex-wrap gap-2 text-SM">
-                <CustomChip
-                  :label="slotProps.data.jumlahBed"
-                  :showCheckedIcon="false"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass="text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white"
-                />
+                <div
+                  v-for="items in slotProps.data.itemPemeriksaan"
+                  :key="items"
+                >
+                  <CustomChip
+                    :label="items.name"
+                    :showCheckedIcon="false"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-300"
+                    textColor="text-white"
+                    customClass="h-6"
+                    class="mr-[5px]"
+                  />
+                </div>
               </div>
             </template>
           </Column>
@@ -175,24 +246,26 @@ const optionItemPemeriksaan = ref([
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
                 <CustomChip
-                  :label="slotProps.data.status"
+                 :label="
+                    slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
+                  "
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'text-white'
                       : 'text-[#80868d]'
                   "
                   :bgColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'bg-adameds-300'
                       : 'bg-white'
                   "
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'border-none'
                       : 'border-[#80868d]'
                   "
                   :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                    slotProps.data.status === true ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -209,6 +282,7 @@ const optionItemPemeriksaan = ref([
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -216,6 +290,13 @@ const optionItemPemeriksaan = ref([
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code}-${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -238,119 +319,30 @@ const optionItemPemeriksaan = ref([
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataBedruangan.length"
+            :rows="kelompokPemeriksaanProperties.page_size"
+            :totalRecords="kelompokPemeriksaanProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
     </Card>
 
     <!-- addKelompokDialog -->
-    <CustomDialog
-      v-model:visible="addKelompokDialog"
-      :style="{ width: '600px' }"
-    >
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Data Kelompok Pemeriksaan</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="flex gap-3">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              label="Kode Kelompok Pemeriksaan"
-              placeholder="Kode Kelompok Pemeriksaan"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px] grow">
-            <CustomTextfield
-              label="Nama Kelompok Pemeriksaan"
-              placeholder="Nama Kelompok Pemeriksaan"
-              class=""
-            />
-          </div>
-        </div>
-        <CustomSelect
-          label="Kategori Pemeriksaan"
-          placeHolder="Pilih Kategori Pemeriksaan"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['Kategori Pemeriksaan 1']"
-        />
-        <CustomSelect
-          label="Snomed - CT"
-          placeHolder="Pilih Snomed - CT"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['Snomed - CT 1']"
-        />
-        <CustomSelect
-          label="ICD 9-CM"
-          placeHolder="Pilih ICD 9-CM"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['ICD 9-CM 1']"
-        />
-        <CustomSelect
-          label="LOINC"
-          placeHolder="Pilih LOINC"
-          class="mt-5"
-          optionLabel=""
-          optionValue=""
-          :showFilter="false"
-          :options="['LOINC 1']"
-        />
-        <CustomMultiSelect
-          v-model="itemPemeriksaan"
-          placeholder="Pilih Item Pemeriksaan"
-          label="Item Pemeriksaan"
-          optionLabel="label"
-          optionValue="value"
-          :maxSelectedLabels="4"
-          :options="optionItemPemeriksaan"
-          class="mt-5 mb-5"
-        />
+    <DialogKelompokPemeriksaan
+      v-model:isDialogVisible="addKelompokDialog"
+      :title="dialogConfig.title"
+      :method="dialogConfig.method"
+      :payload="dialogConfig.data"
+      :dataItemPemeriksaan="itemPemeriksaanPayload"
+      @data-updated="fetchKelompokPemeriksaan"
+    />
 
-        <hr class="mt-[40px] border border-slate-200" />
-
-        <div class="grid grid-cols-1 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="addKelompokDialog = false"
-            />
-            <CustomButton label="Simpan" />
-          </div>
-        </div>
-      </template>
-    </CustomDialog>
+    <DialogDelete
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      :title="dialogConfig.title"
+      :itemToDelete="dialogConfig.data"
+      @delete="confirmDelete"
+    />
   </div>
 </template>

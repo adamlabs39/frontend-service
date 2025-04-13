@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -11,11 +12,58 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import FormTarifLab from "../Layout/FormTarifLab.vue";
+import { useTarifPemeriksaanStore } from "@/stores/datamasterLaboratorium/tarifPemeriksaan";
 
-const addSpesimenDialog = ref(false);
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
-const status = ref(false);
+const status = ref(true);
+const tarifPemeriksaanStore = useTarifPemeriksaanStore();
+const tarifPemeriksaanPayload = ref<any[]>([]);
+const namaTarif = ref("");
+const codeTarif = ref("");
+const grandTotal = ref(0);
+const pelayanans = ref([
+  { label: "Rajal", value: "rawat jalan" },
+  { label: "Ranap", value: "rawat inap" },
+  { label: "IGD", value: "igd" },
+]);
+const tarifPemeriksaanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+const handleSearchQuery = (searchValue: string) => {
+  searchQuery.value = searchValue;
+};
+const utils = utilsStore();
+
+// Fetch Tarif
+const fetchTarifPemeriksaan = async () => {
+  utils.setLoading(true);
+  try {
+    const response = await tarifPemeriksaanStore.getApi({
+      page: tarifPemeriksaanProperties.value.page,
+      limit: tarifPemeriksaanProperties.value.page_size,
+      name: searchQuery.value,
+    });
+    console.log("Response", response);
+
+    if (response && response.payload) {
+      tarifPemeriksaanProperties.value.total =
+        response.payload.pagination.total;
+      tarifPemeriksaanPayload.value = response.payload.data;
+    } else {
+      tarifPemeriksaanPayload.value = [];
+    }
+    console.log("Data Kategori Pemeriksaan", tarifPemeriksaanPayload.value);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    tarifPemeriksaanPayload.value = [];
+  } finally {
+    utils.setLoading(false);
+  }
+};
 
 const handleRowsUpdate = (newRows: number) => {
   rowsPerPage.value = newRows;
@@ -42,7 +90,7 @@ const dialogConfig = ref<any>({
   data: null,
 });
 
-const emit = defineEmits(["deleteItem","updated"]);
+const emit = defineEmits(["deleteItem", "updated"]);
 const FormTindakanDialog = (
   method: string,
   title: string,
@@ -51,6 +99,10 @@ const FormTindakanDialog = (
   dialogConfig.value = { method, title, data };
   isTambahTindakanDialogVisible.value = true;
 };
+
+onMounted(() => {
+  fetchTarifPemeriksaan();
+});
 </script>
 
 <template>
@@ -192,7 +244,7 @@ const FormTindakanDialog = (
       </template>
       <template #content>
         <DataTable
-          :value="dataBedruangan"
+          :value="tarifPemeriksaanPayload"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -217,19 +269,12 @@ const FormTindakanDialog = (
           >
             <template #body="slotProps">
               <div class="font-semibold text-SM">
-                {{ slotProps.data.namaRuangan }}
+                {{ slotProps.data.name }}
               </div>
               <div class="mt-2">
                 <CustomChip
-                  label="TUNAI"
-                  :showCheckedIcon="false"
-                  selectedColor="bg-adameds-300 border-adameds-300"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass=" cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3"
-                />
-                <CustomChip
-                  label="ASURANSI"
+                  v-for="(item, i) in slotProps.data.tarifLabPenjamin"
+                  :label="item.penjamin.name"
                   :showCheckedIcon="false"
                   selectedColor="bg-warning-300 border-warning-300"
                   border-color="border-none"
@@ -246,9 +291,9 @@ const FormTindakanDialog = (
           >
             <template #body="slotProps">
               <div class="flex flex-wrap gap-2 text-nowrap">
-                <div v-for="items in slotProps.data.pelayanan" :key="items">
+                <div v-for="items in slotProps.data.tarifLabItem" :key="items">
                   <CustomChip
-                    :label="items.unitPelayananName"
+                    :label="items.itemPemeriksaan.name"
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
@@ -267,7 +312,7 @@ const FormTindakanDialog = (
               <div class="flex flex-wrap gap-2 text-nowrap">
                 <div v-for="items in slotProps.data.pelayanan" :key="items">
                   <CustomChip
-                    :label="items.unitPelayananName"
+                    :label="items.pelayanan"
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
@@ -284,7 +329,7 @@ const FormTindakanDialog = (
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">Rp . {{ slotProps.data.grandTotal }}</div>
             </template>
           </Column>
 
@@ -297,25 +342,27 @@ const FormTindakanDialog = (
             </template>
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
-                <CustomChip
-                  :label="slotProps.data.status"
+                 <CustomChip
+                 :label="
+                    slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
+                  "
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'text-white'
                       : 'text-[#80868d]'
                   "
                   :bgColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'bg-adameds-300'
                       : 'bg-white'
                   "
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'border-none'
                       : 'border-[#80868d]'
                   "
                   :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                    slotProps.data.status === true ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -371,13 +418,12 @@ const FormTindakanDialog = (
       </template>
     </Card>
 
-   <FormTarifLab
-    v-model:isDialogVisible="isTambahTindakanDialogVisible"
-    :title="dialogConfig.title"
-    :method="dialogConfig.method"
-    :payload="dialogConfig.data"
-    @data-updated="$emit('updated')"
-
-  />
+    <FormTarifLab
+      v-model:isDialogVisible="isTambahTindakanDialogVisible"
+      :title="dialogConfig.title"
+      :method="dialogConfig.method"
+      :payload="dialogConfig.data"
+      @data-updated="$emit('updated')"
+    />
   </div>
 </template>

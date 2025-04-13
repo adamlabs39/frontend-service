@@ -8,7 +8,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 const visible = ref(false);
 const kodeSpesimen = ref("");
 const namaSpesimen = ref("");
-const status = ref(false);
+const status = ref(true);
 const editMode = ref(false);
 const selectedSpesimenId = ref<string | null>(null);
 
