@@ -14,6 +14,9 @@ const props = defineProps({
     type: Array as PropType<any[]>,
     default: () => [10, 20, 30],
   },
+  noPagination: {
+    default: false,
+  },
 });
 
 const emits = defineEmits([
@@ -25,6 +28,7 @@ const emits = defineEmits([
   <div class="flex gap-2.5 items-center">
     <div>Total Data: {{ props.totalRecords }}</div>
     <Paginator
+      v-if="!noPagination"
       :rows="props.rows"
       :totalRecords="props.totalRecords"
       :rowsPerPageOptions="props.rowsPerPageOptions"

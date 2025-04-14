@@ -135,6 +135,7 @@ const schema = toTypedSchema(
         .required("URL harus diisi")
         .matches(/^https:\/\//, "URL harus dimulai dengan https://"),
       partOfName: yup.string().notRequired(),
+      partOf: yup.string().notRequired(),
       status: yup.bool().default(true),
       address: yup.object({
         fullAddress: yup.string().required("Alamat harus diisi"),
@@ -167,6 +168,8 @@ const [url] = defineField("url");
 const [status] = defineField("status");
 const [kodePos] = defineField("address.postalCode");
 const [alamat] = defineField("address.fullAddress");
+const [partOfName] = defineField("partOfName");
+const [partOf] = defineField("partOf");
 const [provinsi] = defineField("address.prov");
 const [kabupaten] = defineField("address.city");
 const [kecamatan] = defineField("address.district");
@@ -425,6 +428,15 @@ watch(
           :invalidMessage="errors['address.fullAddress']"
           :required="errors['address.fullAddress'] ? true : false"
         />
+        <CustomSelect
+          label="Part Of"
+          v-model="partOf"
+          place-holder="Pilih Part Of"
+          class="col-span-12"
+          :options="organisasiPayload"
+          optionValue="uuid"
+          optionLabel="name"
+          />
         <CustomTextfield
           label="ID SATUSEHAT"
           v-model="satuSehatId"
@@ -484,6 +496,14 @@ watch(
         <CustomInfoRow
           label="Alamat"
           :value="payload.address.fullAddress ?? '-'"
+        />
+        <CustomInfoRow
+          label="Part Of Id"
+          :value="payload.address.partOf ?? '-'"
+        />
+        <CustomInfoRow
+          label="Part Of Name"
+          :value="payload.address.partOfName ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"

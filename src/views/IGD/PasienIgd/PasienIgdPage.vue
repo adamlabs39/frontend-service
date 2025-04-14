@@ -219,7 +219,7 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
         date: formatDate(new Date(), true),
         pelayanan: "igd",
         // FIXME Statis UUID
-        lokasiUuid: "0194f3e1-1b65-709e-8b57-e7eecb4c2a10",
+        lokasiUuid: "0196323f-9f5f-7642-a94e-2e074a02b344",
         noPelayanan: openedPatientData.value.noPelayanan,
         paymentMethod: openedPatientData.value.paymentMethod,
       });
