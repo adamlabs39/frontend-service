@@ -90,9 +90,13 @@ const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string().nullable().notRequired(),
-      sip: yup.string().default("").nullable(),
-      str: yup.string().default("").nullable(),
+      codeBpjs: yup.string().when("isDoctor", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Kode BPJS harus diisi"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      sip: yup.string().nullable(),
+      str: yup.string().nullable(),
       isDoctor: yup.boolean().required("Tipe Praktisi harus diisi"),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
@@ -137,8 +141,6 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const { push: pushPractitionerPoli } = useFieldArray("poliPelayanan");
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  console.log("🚀 ~ handlePenjaminUpdate ~ selectedValues:", selectedValues)
-  console.log("🚀 ~ handlePenjaminUpdate ~ tempPoli.value:", tempPoli.value)
   poliPelayanan.value = tempPoli.value.map(
     (item: { lokasiUuid: string; uuid: string }) => {
       if (!selectedValues.includes(item.lokasiUuid)) {
@@ -179,18 +181,15 @@ const onSubmit = handleSubmit(async (values: any) => {
     } else if (values.str === "") {
       values.str = null;
     }
-    
+
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("data delete", values);
       const response = await praktisiStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
       const response = await praktisiStore.postApi(values);
       emit("data-updated");
     }
@@ -243,6 +242,7 @@ watch(
         setValues({
           ...props.payload,
           practitionerPoliSelected: poliPayload,
+          pegawaiUuid: props.payload?.pegawai?.uuid,
         });
         tempPoli.value = tempPoliObject;
       }

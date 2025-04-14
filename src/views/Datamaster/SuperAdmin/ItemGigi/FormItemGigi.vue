@@ -54,16 +54,18 @@ onMounted(() => {
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    kategoriGigiUuid: yup.string().required("Kategori Gigi harus dipilih"),
-    system: yup.string().required("Referensi sistem SATUSEHAT harus diisi"),
-    code: yup.string().required("Kode SATUSEHAT harus diisi"),
-    display: yup.string().required("Display SATUSEHAT harus diisi"),
-    name: yup.string().required("Nama Gigi harus diisi"),
-    image: yup.string(),
-    catatan: yup.string().notRequired(),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      kategoriGigiUuid: yup.string().required("Kategori Gigi harus dipilih"),
+      system: yup.string().required("Referensi sistem SATUSEHAT harus diisi"),
+      code: yup.string().required("Kode SATUSEHAT harus diisi"),
+      display: yup.string().required("Display SATUSEHAT harus diisi"),
+      name: yup.string().required("Nama Gigi harus diisi"),
+      image: yup.string(),
+      catatan: yup.string().notRequired(),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -105,9 +107,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -118,7 +120,6 @@ const handleEdit = () => {
   method.value = "edit";
   title.value = "Edit Data";
 };
-
 
 const closeDialog = () => {
   emit("update:isDialogVisible", false);
@@ -145,13 +146,11 @@ watch(
 
 const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
 const clearItemGigiPreview = () => {
-  image.value = ""; 
+  image.value = "";
   if (itemGigiUpload.value) {
-    itemGigiUpload.value.clearFile(); 
+    itemGigiUpload.value.clearFile();
   }
 };
-
-
 </script>
 
 <template>
@@ -261,14 +260,14 @@ const clearItemGigiPreview = () => {
           </div>
         </div>
         <hr class="col-span-2 border-gray-200" />
-        <CustomSwitch
+        <!-- <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
           class="col-span-2"
-        />
+        /> -->
       </div>
 
       <!-- Kondisi untuk 'preview' -->
@@ -300,9 +299,12 @@ const clearItemGigiPreview = () => {
         <CustomInfoRow label="Code SATUSEHAT" :value="payload.code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
-        <CustomInfoRow label="Catatan" :value="payload.catatan ==='' ? '-': '-'" />
+        <CustomInfoRow
+          label="Catatan"
+          :value="payload.catatan === '' ? '-' : '-'"
+        />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status" :value="payload.status">
+        <!-- <CustomInfoRow label="Status" :value="payload.status">
           <template #value>
             <CustomChip
               :label="payload.status ? 'AKTIF' : 'NON-AKTIF'"
@@ -313,7 +315,7 @@ const clearItemGigiPreview = () => {
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
           </template>
-        </CustomInfoRow>
+        </CustomInfoRow> -->
         <CustomInfoRow label="Preview Gigi">
           <template #value>
             <div
@@ -339,10 +341,7 @@ const clearItemGigiPreview = () => {
           label="Reset"
           @click="resetForm()"
         ></CustomButton>
-        <CustomButton
-          label="Simpan"
-          @click="onSubmit"
-        ></CustomButton>
+        <CustomButton label="Simpan" @click="onSubmit"></CustomButton>
         <CustomButton
           v-if="method === 'detail'"
           label="Edit"

@@ -36,6 +36,12 @@ export const useUserStore = defineStore({
     async putApi(uuid: string, payload = {}) {
       return apiDatamasterPut(`/datamaster/user/${uuid}`, payload);
     },
+    async importApi(payload = {}) {
+      return apiDatamasterPost("/datamaster/user/import", payload);
+    },
+    async exportApi(payload = {}) {
+      return apiDatamasterGet("/datamaster/user/-/export", payload);
+    },
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/user/${uuid}`, payload);
     },
