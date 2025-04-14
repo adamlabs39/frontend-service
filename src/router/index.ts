@@ -201,7 +201,6 @@ import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -424,13 +423,13 @@ const router = createRouter({
     {
       path: "/datamaster/praktisi",
       name: "datamaster-paktisi",
-      meta: { layout: SidebarLayout, page: PraktisiPage },
+      meta: { layout: SidebarLayout, page: PraktisiPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
       path: "/datamaster/pegawai",
       name: "datamaster-pegawai",
-      meta: { layout: SidebarLayout, page: PegawaiPage },
+      meta: { layout: SidebarLayout, page: PegawaiPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
@@ -820,7 +819,11 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/item-pemeriksaan",
       name: "laboratorium-datamaster/item-pemeriksaan",
-      meta: { layout: SidebarLayout, page: ItemPemeriksaanLabPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ItemPemeriksaanLabPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
@@ -1359,10 +1362,11 @@ const router = createRouter({
     {
       path: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
       name: "inventory-pengadaan-barang-retur-penggantian-barang-supplier",
-      meta: { 
-        layout: SidebarLayout, 
-        page: SupplierReturnsPage, 
-        requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: SupplierReturnsPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {

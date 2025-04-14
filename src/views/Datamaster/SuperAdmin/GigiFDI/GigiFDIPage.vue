@@ -138,7 +138,7 @@ const downloadExportExcel = async () => {
       Code: "Code SATUSEHAT",
       Gigi: "Gigi",
       Display: "Display SATUSEHAT",
-      Status: "Status",
+      // Status: "Status",
     });
 
     // Data Rows
@@ -148,7 +148,7 @@ const downloadExportExcel = async () => {
         Code: rows[i].code,
         Gigi: rows[i].name,
         Display: rows[i].display,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        // Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -339,7 +339,7 @@ const handleFileUpload = async (file: File) => {
           class="w-full"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
+        <!-- <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
         >
@@ -362,7 +362,7 @@ const handleFileUpload = async (file: File) => {
               />
             </div>
           </template>
-        </Column>
+        </Column> -->
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div

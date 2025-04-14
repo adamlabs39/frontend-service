@@ -33,11 +33,9 @@ const fetchLokasiData = async () => {
       lokasiProperties.value.page_size,
       searchQuery.value
     );
-    console.log("API Response:", response);
 
     if (response && response.payload) {
-      console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
+      lokasiProperties.value.total = response.properties.totalItem;
       lokasiPayload.value = response.payload;
     } else {
       lokasiPayload.value = [];

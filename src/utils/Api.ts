@@ -128,8 +128,6 @@ const settingInstance = axios.create({
 });
 
 settingInstance.interceptors.request.use((config) => {
-  console.log(import.meta.env.VITE_URL_SETTING);
-
   const token = localStorage.getItem("access_token");
 
   if (!token) {

@@ -226,7 +226,6 @@ const apiDatamasterPost = async (url: string, data: object) => {
       summary: response.data.message,
       life: 3000,
     });
-    console.log("response", response);
     return response;
   } catch (error) {
     errorApiHandler(error);
