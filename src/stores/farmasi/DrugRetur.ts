@@ -28,10 +28,10 @@ export const useDrugReturStore = defineStore({
       );
     },
     async getApiDetailObat(obatUuid: string, payload = {}) {
-      return apiFarmasiGet(`farmasi/retur/detail?item_type=obat&prescription_uuid=${obatUuid}`, payload);
+      return apiFarmasiGet(`/farmasi/retur/detail?item_type=obat&prescription_uuid=${obatUuid}`, payload);
     },
     async getApiDetailAlkes(alkesUuid: string, payload = {}) {
-      return apiFarmasiGet(`farmasi/retur/detail?item_type=alkes&order_alkes_uuid=${alkesUuid}`, payload);
+      return apiFarmasiGet(`/farmasi/retur/detail?item_type=alkes&order_alkes_uuid=${alkesUuid}`, payload);
     },
     async createApi(payload = {}) {
       return apiFarmasiPost("/farmasi/retur", payload);
