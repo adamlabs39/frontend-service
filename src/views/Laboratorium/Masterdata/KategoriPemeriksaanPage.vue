@@ -16,7 +16,7 @@ import DialogDelete from "@/views/Laboratorium/Layout/DialogDelete.vue";
 const storeUtils = utilsStore();
 const kategoriPemeriksaanPayload = ref<any[]>([]);
 const addKategoriDialog = ref(false);
-const status = ref(false);
+const status = ref(true);
 const kategoriPemeriksaanStore = useKategoriPemeriksaanStore();
 const kodeKategoriPemeriksaan = ref("");
 const namaKategoriPemeriksaan = ref("");
@@ -74,7 +74,7 @@ const submitKategoriPemeriksaan = async () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       searchQuery.value = "";
       addKategoriDialog.value = false;
-      await fetchKategoriPemeriksaan();
+      fetchKategoriPemeriksaan();
       resetForm();
     }
   } catch (error) {
@@ -109,6 +109,7 @@ const updateKategoriPemeriksaan = async () => {
     await kategoriPemeriksaanStore.putApi(selectedKategori.value.uuid, payload);
     editKategoriDialog.value = false;
     await fetchKategoriPemeriksaan();
+    resetForm();
   } catch (error) {
     console.error("Error updating data", error);
   } finally {
