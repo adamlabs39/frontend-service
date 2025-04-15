@@ -95,9 +95,9 @@ const confirmDelete = () => {
     <Column field="pelayanan" header="Pelayanan" headerClass="bg-adameds-50">
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2 text-nowrap">
-          <div v-for="items in slotProps.data.pelayanan" :key="items">
+          <div v-for="items in slotProps.data.tagUnitPelayanan" :key="items">
             <CustomChip
-              :label="items.unitPelayananName"
+              :label="items.unitPelayanan"
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
@@ -114,7 +114,7 @@ const confirmDelete = () => {
     >
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2 text-nowrap">
-          <div v-for="items in slotProps.data.penjamin" :key="items">
+          <div v-for="items in slotProps.data.tagPenjamin" :key="items">
             <CustomChip
               :label="items.penjaminName"
               :showCheckedIcon="false"

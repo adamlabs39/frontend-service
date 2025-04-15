@@ -213,6 +213,83 @@ const downloadExportExcel = async () => {
     console.error("Error while exporting Excel", error);
   }
 };
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Role*",
+      Nama: "Nama Role*",
+      Permission: "Permission*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      Kode: "A01",
+      Nama: "superadmin",
+      Permission: "dashboard, antrian, admisi, rawat jalan, rawat inap, IGD, farmasi, laboratorium, fisioterapi, training, pembayaran, stok, inventory, datamaster, laporan, setting",
+    });
+    data.push({
+      No: "2",
+      Kode: "A02",
+      Nama: "admin",
+      Permission: "dashboard, antrian, admisi, rawat jalan, rawat inap, IGD, farmasi, laboratorium, fisioterapi, training, pembayaran, stok, inventory, datamaster, laporan, setting",
+    });
+    data.push({
+      No: "3",
+      Kode: "A03",
+      Nama: "admisi",
+      Permission: "dashboard, admisi, profile saya",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Role"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Role.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await roleStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchRoleData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -382,6 +459,8 @@ const downloadExportExcel = async () => {
         :totalRecords="roleProperties.total"
         @page="handlePage"
         @export="downloadExportExcel"
+        @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

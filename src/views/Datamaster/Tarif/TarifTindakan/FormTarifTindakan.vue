@@ -56,9 +56,9 @@ interface ListKomponenTarif {
 
 interface Tindakan {
   tindakanUuid: string;
-  listKomponenTarif: Array<ListKomponenTarif>;
-  isPresentase: boolean;
-  total: number;
+  komponenTarif: Array<ListKomponenTarif>;
+  presentase: boolean;
+  totalHarga: number;
 }
 
 interface LabEntry {
@@ -135,17 +135,17 @@ const schema = toTypedSchema(
       code: yup.string().required("Kode Tarif harus diisi"),
       name: yup.string().required("Nama Tarif harus diisi"),
       // grandTotal: yup.number(),
-      grandTotal: yup.number().when("isPersentasi", {
+      grandTotal: yup.number().when("presentase", {
         is: (value: boolean) => value === true,
         then: (schema) => schema.required("Grand TOtal harus diisi"),
         otherwise: (schema) => schema.notRequired(),
       }),
-      mode: yup.string(),
+      modePilihanTarif: yup.string(),
       status: yup.bool().default(true),
       isMcu: yup.bool().default(false),
       unitPelayanan: yup.array().of(
         yup.object({
-          unitPelayanan: yup.number(),
+          unitPelayanan: yup.string(),
         })
       ),
       penjamin: yup.array().of(
@@ -153,10 +153,10 @@ const schema = toTypedSchema(
           penjaminUuid: yup.string(),
         })
       ),
-      tindakanPoli: yup.array().of(
+      tindakan: yup.array().of(
         yup.object({
           tindakanUuid: yup.string().required("Tindakan harus dipilih"),
-          listKomponenTarif: yup.array().of(
+          komponenTarif: yup.array().of(
             yup.object({
               tarifKomponenUuid: yup
                 .string()
@@ -165,8 +165,8 @@ const schema = toTypedSchema(
               persentase: yup.number().required("Persentasi harus diisi"),
             })
           ),
-          isPresentase: yup.bool().default(false),
-          total: yup.number().required("Persentasi harus diisi"),
+          presentase: yup.bool().default(false),
+          totalHarga: yup.number().required("Persentasi harus diisi"),
         })
       ),
       tarifLab: yup.array().when("isMcu", {
@@ -183,7 +183,7 @@ const schema = toTypedSchema(
       }),
       unitPelayananSelected: yup
         .array()
-        .of(yup.number().required("Unit Pelayanan harus dipilih"))
+        .of(yup.string().required("Unit Pelayanan harus dipilih"))
         .min(1, "Minimal satu Unit Pelayanan harus dipilih")
         .required("Unit Pelayanan harus dipilih"),
       penjaminSelected: yup
@@ -199,7 +199,7 @@ const schema = toTypedSchema(
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
   validationSchema: schema,
   // initialValues: {
-  //   tindakanPoli: [
+  //   tindakan: [
   //     {
   //       tindakanUuid: "",
   //       listKomponenTarif: [{ tarifKomponenUuid: "", tarifPerKomponen: 0 }],
@@ -213,7 +213,7 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [grandTotal] = defineField("grandTotal");
-const [mode] = defineField("mode");
+const [modePilihanTarif] = defineField("modePilihanTarif");
 const [isMcu] = defineField("isMcu");
 const [unitPelayanan] = defineField("unitPelayanan");
 const [penjamin] = defineField("penjamin");
@@ -225,7 +225,7 @@ const {
   remove: removeTindakan,
   push: pushTindakan,
   fields: fieldsTindakan,
-} = useFieldArray<Tindakan>("tindakanPoli");
+} = useFieldArray<Tindakan>("tindakan");
 
 const { push: pushUnitPelayanan } = useFieldArray("unitPelayanan");
 const { push: pushPenjamin } = useFieldArray("penjamin");
@@ -237,7 +237,7 @@ const {
 
 // Fungsi untuk menambah listKomponenTarif
 const addListKomponenTarif = (index: number) => {
-  fieldsTindakan.value[index].value.listKomponenTarif.push({
+  fieldsTindakan.value[index].value.komponenTarif.push({
     tarifKomponenUuid: "",
     tarifPerKomponen: 0,
     persentase: 0,
@@ -250,7 +250,7 @@ const removeListKomponenTarif = (
 ) => {
   const tindakanToRemove = fieldsTindakan.value[tindakanIndex].value;
   const komponenToRemove =
-    fieldsTindakan.value[tindakanIndex].value.listKomponenTarif[komponenIndex];
+    fieldsTindakan.value[tindakanIndex].value.komponenTarif[komponenIndex];
 
   const tempTindakanToCheck = tempTindakan.value?.find(
     (tempTindakan: Tindakan) =>
@@ -258,7 +258,7 @@ const removeListKomponenTarif = (
   );
 
   if (tempTindakanToCheck) {
-    const tempKomponen = tempTindakanToCheck.listKomponenTarif.find(
+    const tempKomponen = tempTindakanToCheck.komponenTarif.find(
       (tempKomponen: ListKomponenTarif) =>
         tempKomponen.tarifKomponenUuid === komponenToRemove.tarifKomponenUuid
     );
@@ -271,7 +271,7 @@ const removeListKomponenTarif = (
 
       const deletedTindakan = {
         ...tindakanToRemove,
-        listKomponenTarif: tindakanToRemove.listKomponenTarif.map((komponen) =>
+        komponenTarif: tindakanToRemove.komponenTarif.map((komponen) =>
           komponen.tarifKomponenUuid === deletedKomponen.tarifKomponenUuid
             ? deletedKomponen
             : komponen
@@ -289,7 +289,7 @@ const removeListKomponenTarif = (
     }
   }
   console.log("tempDeleteTindakan", tempDeleteTindakan);
-  fieldsTindakan.value[tindakanIndex].value.listKomponenTarif.splice(
+  fieldsTindakan.value[tindakanIndex].value.komponenTarif.splice(
     komponenIndex,
     1
   );
@@ -297,7 +297,7 @@ const removeListKomponenTarif = (
 
 const handleRemoveTindakan = (tindakanIndex: number) => {
   const tindakanToRemove = fieldsTindakan.value[tindakanIndex].value;
-  tindakanToRemove.listKomponenTarif.forEach((komponen: any) => {
+  tindakanToRemove.komponenTarif.forEach((komponen: any) => {
     komponen.isDeleted = true;
   });
   tempDeleteTindakan.value.push(tindakanToRemove);
@@ -349,11 +349,11 @@ const handleRemoveLab = (index: number) => {
 const handlePushTindakan = () => {
   pushTindakan({
     tindakanUuid: "",
-    listKomponenTarif: [
+    komponenTarif: [
       { tarifKomponenUuid: "", tarifPerKomponen: 0, persentase: 0 },
     ],
-    isPresentase: false,
-    total: 0,
+    presentase: false,
+    totalHarga: 0,
   });
 };
 
@@ -426,7 +426,11 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (!values.isPresentase) {
+    values.tagUnitPelayanan = values.unitPelayanan
+    delete values.unitPelayanan
+    values.tagPenjamin = values.penjamin
+    delete values.penjamin
+    if (!values.presentase) {
       values.grandTotal = grandTotalData.value;
       console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
     }
@@ -434,15 +438,15 @@ const onSubmit = handleSubmit(async (values: any) => {
     delete values.penjaminSelected;
 
     tempDeleteTindakan.value.forEach((deletedTindakan) => {
-      const indexToReplace = values.tindakanPoli.findIndex(
+      const indexToReplace = values.tindakan.findIndex(
         (tindakan: Tindakan) =>
           tindakan.tindakanUuid === deletedTindakan.tindakanUuid
       );
 
       if (indexToReplace !== -1) {
-        values.tindakanPoli[indexToReplace] = deletedTindakan;
+        values.tindakan[indexToReplace] = deletedTindakan;
       } else {
-        values.tindakanPoli.push(deletedTindakan);
+        values.tindakan.push(deletedTindakan);
       }
     });
     if (!values.isMcu) {
@@ -540,7 +544,7 @@ watch(
         });
         tempPelayanan.value = tempUnitPelayanan;
         tempPenjamin.value = tempPenjaminObject;
-        tempTindakan.value = props.payload.tindakanPoli;
+        tempTindakan.value = props.payload.tindakan;
         tempTarifLab.value = props.payload.lab;
       }
     } else {
@@ -568,7 +572,7 @@ const grandTotalValues = computed(() => {
   grandTotalData.value = 0;
   const totalDataTindakan = fieldsTindakan.value.reduce(
     (grandTotal, tindakanWrapper) => {
-      return grandTotal + (tindakanWrapper.value.total || 0); // Pastikan total bernilai angka, jika tidak maka gunakan 0
+      return grandTotal + (tindakanWrapper.value.totalHarga || 0); // Pastikan total bernilai angka, jika tidak maka gunakan 0
     },
     0
   );
@@ -590,8 +594,8 @@ const handlePersentase = (
 ) => {
   console.log(komponenIndex);
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
-  const tarifPerKomponen = (inputPersentase / 100) * tindakan.total;
-  tindakan.listKomponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
+  const tarifPerKomponen = (inputPersentase / 100) * tindakan.totalHarga;
+  tindakan.komponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
     tarifPerKomponen.toFixed(2) // Round to 2 decimal places
   );
   // tindakan.listKomponenTarif[komponenIndex].persentase = inputPersentase;
@@ -599,7 +603,7 @@ const handlePersentase = (
 
 const handleTotalKomponen = (tindakanIndex: any) => {
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
-  tindakan.total = tindakan.listKomponenTarif.reduce((sum, komponen) => {
+  tindakan.totalHarga = tindakan.komponenTarif.reduce((sum, komponen) => {
     return sum + (komponen.tarifPerKomponen || 0);
   }, 0);
 };
@@ -615,16 +619,16 @@ const formatCurrency = (value: number): string => {
 const totalTindakan = (tindakanIndex: number): string => {
   const tindakan = fieldsTindakan.value[tindakanIndex];
 
-  if (!tindakan || !Array.isArray(tindakan.value.listKomponenTarif)) {
+  if (!tindakan || !Array.isArray(tindakan.value.komponenTarif)) {
     console.warn(
-      `listKomponenTarif pada tindakanPoli[${tindakanIndex}] tidak valid.`
+      `listKomponenTarif pada tindakan[${tindakanIndex}] tidak valid.`
     );
     return formatCurrency(0);
   }
 
   // Hitung total hanya jika isPresentase adalah false
-  if (!tindakan.value.isPresentase) {
-    const total = tindakan.value.listKomponenTarif.reduce((sum, komponen) => {
+  if (!tindakan.value.presentase) {
+    const total = tindakan.value.komponenTarif.reduce((sum, komponen) => {
       return sum + (komponen.tarifPerKomponen || 0);
     }, 0); // Mulai dengan nilai total 0
 
@@ -676,7 +680,7 @@ const totalTindakan = (tindakanIndex: number): string => {
               </div>
               <CustomRadio
                 v-for="data in ['Single', 'Multiple']"
-                v-model="mode"
+                v-model="modePilihanTarif"
                 :sideLabel="data"
                 :value="data"
               />
@@ -685,7 +689,7 @@ const totalTindakan = (tindakanIndex: number): string => {
               label="Pelayanan"
               v-model="unitPelayananSelected"
               :options="optionsPelayanan"
-              optionValue="value"
+              optionValue="label"
               @update:modelValue="handleUnitPelayananUpdate"
               optionLabel="label"
               placeholder="Pelayanan"
@@ -759,8 +763,8 @@ const totalTindakan = (tindakanIndex: number): string => {
                         option-label="name"
                         option-value="uuid"
                         class="w-full"
-                        :invalid="(errors as any)[`tindakanPoli[${idx}].tindakanUuid`] ? true : false"
-                        :invalidMessage="(errors as any)[`tindakanPoli[${idx}].tindakanUuid`]"
+                        :invalid="(errors as any)[`tindakan[${idx}].tindakanUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`tindakan[${idx}].tindakanUuid`]"
                       />
                       <CustomButton
                         background-color="bg-danger-300"
@@ -772,7 +776,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                     </div>
                     <div class="flex flex-col gap-1.5">
                       <DataTable
-                        :value="fieldTindakan.value.listKomponenTarif"
+                        :value="fieldTindakan.value.komponenTarif"
                         tableStyle="min-width: 50rem"
                         class="overflow-hidden text-xs rounded-lg bg-adameds-50"
                       >
@@ -792,8 +796,8 @@ const totalTindakan = (tindakanIndex: number): string => {
                               :options="komponenTarifPayload"
                               option-label="name"
                               optionValue="uuid"
-                              :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true : false"
-                              :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifKomponenUuid`]"
+                              :invalid="(errors as any)[`tindakan[${idx}].komponenTarif[${slotProps.index}].tarifKomponenUuid`] ? true : false"
+                              :invalidMessage="(errors as any)[`tindakan[${idx}].komponenTarif[${slotProps.index}].tarifKomponenUuid`]"
                             />
                           </template>
                         </Column>
@@ -811,7 +815,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                             <CustomInputNumber
                               v-model="slotProps.data.persentase"
                               label=""
-                              :disabled="!fieldTindakan.value.isPresentase"
+                              :disabled="!fieldTindakan.value.presentase"
                               @update:model-value="
                                 handlePersentase(
                                   slotProps.data.persentase,
@@ -845,9 +849,9 @@ const totalTindakan = (tindakanIndex: number): string => {
                               v-model="slotProps.data.tarifPerKomponen"
                               label=""
                               align-number="text-end"
-                              :disabled="fieldTindakan.value.isPresentase"
-                              :invalid="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`] ? true : false"
-                              :invalidMessage="(errors as any)[`tindakanPoli[${idx}].listKomponenTarif[${slotProps.index}].tarifPerKomponen`]"
+                              :disabled="fieldTindakan.value.presentase"
+                              :invalid="(errors as any)[`tindakan[${idx}].komponenTarif[${slotProps.index}].tarifPerKomponen`] ? true : false"
+                              :invalidMessage="(errors as any)[`tindakan[${idx}].komponenTarif[${slotProps.index}].tarifPerKomponen`]"
                               @update:model-value="handleTotalKomponen(idx)"
                             >
                               <template #prependText>
@@ -897,7 +901,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                     </div>
                     <div class="flex items-center justify-between gap-4">
                       <CustomSwitch
-                        v-model="fieldTindakan.value.isPresentase"
+                        v-model="fieldTindakan.value.presentase"
                         :show-label="false"
                         label=""
                         sideLabel="Persentase"
@@ -914,8 +918,8 @@ const totalTindakan = (tindakanIndex: number): string => {
                           class="min-w-[300px] flex justify-end font-bold text-MD"
                         >
                           <CustomInputNumber
-                            v-if="fieldTindakan.value.isPresentase"
-                            v-model="fieldTindakan.value.total"
+                            v-if="fieldTindakan.value.presentase"
+                            v-model="fieldTindakan.value.totalHarga"
                             label=""
                             align-number="text-end"
                             class="w-[200px]"
@@ -1102,12 +1106,12 @@ const totalTindakan = (tindakanIndex: number): string => {
         <div class="flex flex-col col-span-6">
           <div class="font-semibold underline text-SM">Pelayanan</div>
           <div
-            v-if="payload.pelayanan && payload.pelayanan.length"
+            v-if="payload.tagUnitPelayanan && payload.tagUnitPelayanan.length"
             class="flex flex-wrap w-full h-full gap-1"
           >
             <CustomChip
-              v-for="pelayanan in payload.pelayanan"
-              :label="pelayanan.unitPelayananName"
+              v-for="pelayanan in payload.tagUnitPelayanan"
+              :label="pelayanan.unitPelayanan"
               textColor="text-white"
               bgColor="bg-adameds-300"
               borderColor="border-none"
@@ -1119,11 +1123,11 @@ const totalTindakan = (tindakanIndex: number): string => {
         <div class="flex flex-col col-span-4">
           <div class="font-semibold underline text-SM">Mode Pembayaran</div>
           <div
-            v-if="payload.penjamin && payload.penjamin.length"
+            v-if="payload.tagPenjamin && payload.tagPenjamin.length"
             class="flex flex-wrap w-full h-full gap-1"
           >
             <CustomChip
-              v-for="penjamin in payload.penjamin"
+              v-for="penjamin in payload.tagPenjamin"
               :label="penjamin.penjaminName"
               textColor="text-white"
               bgColor="bg-adameds-300"
@@ -1142,7 +1146,7 @@ const totalTindakan = (tindakanIndex: number): string => {
           <template #header> List Tindakan </template>
           <template #content>
             <div
-              v-for="(tindakanPoli, idx) in payload.tindakanPoli"
+              v-for="(tindakan, idx) in payload.tindakan"
               :key="idx"
               class="mt-5"
             >
@@ -1155,11 +1159,11 @@ const totalTindakan = (tindakanIndex: number): string => {
                     class="w-10 h-10 p-3 rounded"
                   />
                   <div class="font-semibold text-normal">
-                    {{ tindakanPoli.tindakanName }}
+                    {{ tindakan.tindakanName }}
                   </div>
                 </div>
                 <DataTable
-                  :value="tindakanPoli.listKomponenTarif"
+                  :value="tindakan.komponenTarif"
                   tableStyle="min-width: 50rem"
                   class="overflow-hidden text-xs rounded-lg"
                 >

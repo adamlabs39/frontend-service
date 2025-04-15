@@ -77,7 +77,7 @@ const schema = toTypedSchema(
       jenisTarif: yup.string().default("Ruangan"),
       code: yup.string().required("Code Tarif harus diisi"),
       name: yup.string().required("Nama Tarif harus diisi"),
-      unitPelayanan: yup.number().required("Pelayanan harus dipilih"),
+      unitPelayanan: yup.string().required("Pelayanan harus dipilih"),
       ruanganUuid: yup.string().required("Ruangan harus dipilih"),
       tarifPenjamin: yup.array().of(
         yup.object({
@@ -151,16 +151,19 @@ const handleDelete = (index: number) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    values.unitPelayanan = [
+      {
+        unitPelayanan: values.unitPelayanan,
+      },
+    ];
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("edit",values)
       const response = await tarifStore.putApi(uuid, values);
       emit("data-updated");
     } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
       const response = await tarifStore.postApi(values);
       emit("data-updated");
     }
@@ -200,11 +203,11 @@ watch(
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
-          unitPelayanan: props.payload.pelayanan[0].unitPelayanan,
-          ruanganUuid: props.payload.ruangan[0].ruanganUuid,
-          tarifPenjamin: props.payload.penjamin,
+          unitPelayanan: props.payload.tagUnitPelayanan[0].unitPelayanan,
+          ruanganUuid: props.payload.ruanganUuid,
+          tarifPenjamin: props.payload.tagPenjamin,
         });
-        tempPenjamin.value = props.payload.penjamin;
+        tempPenjamin.value = props.payload.tagPenjamin;
       }
     } else {
       resetForm();
@@ -254,8 +257,8 @@ watch(
             class="col-span-6"
             label="Pelayanan"
             :options="optionsPelayanan"
-            optionValue="value"
             optionLabel="label"
+            optionValue="label"
             place-holder="Pelayanan"
             :invalid="!!errors.unitPelayanan"
             :invalidMessage="errors.unitPelayanan"
@@ -294,7 +297,6 @@ watch(
                     :invalid="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`] ? true : false"
                     :invalidMessage="(errors as any)[`tarifPenjamin[${slotProps.index}].penjaminUuid`]"
                   />
-                  
                 </template>
               </Column>
               <Column headerClass="bg-adameds-300 text-white">

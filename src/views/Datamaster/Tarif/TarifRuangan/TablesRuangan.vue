@@ -74,28 +74,26 @@ const confirmDelete = () => {
       </template>
     </Column>
     <Column
-      field="name"
+      field="ruangan.name"
       header="Nama Ruangan"
       header-class="text-black bg-adameds-50"
     ></Column>
-    <Column header="Kategori Ruangan" header-class="text-black bg-adameds-50">
-      <template #body="slotProps">
-        <div v-for="items in slotProps.data.ruangan" :key="items">
-          {{ items.kategoriRuanganName }}
-        </div>
-      </template>
+    <Column
+      field="ruangan.kategori.name"
+      header="Kategori Ruangan"
+      header-class="text-black bg-adameds-50"
+    >
     </Column>
-    <Column header="Kelas" header-class="text-black bg-adameds-50">
-      <template #body="slotProps">
-        <div v-for="items in slotProps.data.ruangan" :key="items">
-          {{ items.kelasRuangan }}
-        </div>
-      </template>
+    <Column
+      field="ruangan.kelasRuangan"
+      header="Kelas"
+      header-class="text-black bg-adameds-50"
+    >
     </Column>
     <Column header="pelayanan" header-class="text-black bg-adameds-50">
       <template #body="slotProps">
-        <div v-for="items in slotProps.data.pelayanan" :key="items">
-          {{ items.unitPelayananName }}
+        <div v-for="items in slotProps.data.tagUnitPelayanan" :key="items">
+          {{ items.unitPelayanan }}
         </div>
       </template>
     </Column>
@@ -106,7 +104,7 @@ const confirmDelete = () => {
     >
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2 text-nowrap">
-          <div v-for="items in slotProps.data.penjamin" :key="items">
+          <div v-for="items in slotProps.data.tagPenjamin" :key="items">
             <CustomChip
               :label="items.penjaminName"
               :showCheckedIcon="false"
@@ -175,7 +173,7 @@ const confirmDelete = () => {
     <template #expansion="slotProps">
       <div class="p-3 -mx-3 -my-1.5 bg-adameds-50">
         <DataTable
-          :value="slotProps.data.penjamin"
+          :value="slotProps.data.tagPenjamin"
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
           <Column

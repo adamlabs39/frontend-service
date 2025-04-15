@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
+import * as XLSX from "xlsx-js-style";
 import { useTarifStore } from "@/stores/datamaster/tarif";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import { utilsStore } from "@/stores/utils";
@@ -77,7 +78,7 @@ const fetchTarifData = async () => {
     );
 
     if (response && response.payload) {
-      tarifProperties.value.total = response.properties.total;
+      tarifProperties.value.total = response.properties.totalItem;
 
       // Simpan payload yang relevan berdasarkan jenis
       if (jenis === "Tindakan") {
@@ -197,6 +198,380 @@ const resetForm = () => {
   tarifProperties.value.page = 1;
   resetFormRef.value.resetForm();
 };
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await tarifStore.exportApi();
+    let rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER TARIF"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({}); 
+    data.push({}); 
+    data.push({
+      No: "No",
+      JenisTarif: "Jenis Tarif",
+      Kode: "Kode Tarif",
+      Nama: "Nama Tarif",
+      GrandTotal: "Grand Total",
+      Status: "Status",
+    });
+    
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        JenisTarif: rows[i].jenisTarif,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        GrandTotal: `Rp ${rows[i].grandTotal ?? 0}`,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    const columnWidths = data.reduce((widths:any, row:any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Tarif");
+    XLSX.writeFile(workbook, `Datamaster Tarif.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      JenisTarif: "Jenis Tarif*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      ModePilihanTarif: "Mode Pilihan Tarif*",
+      Pelayanan: "Pelayanan*",
+      NamaTindakan: "Nama Tindakan*",
+      KomponenTarif: "Komponen Tarif*",
+      Persentase: "Persentase*",
+      HargaPersen: "Harga Tarif (persen)",
+      HargaRupiah: "Harga Tarif (rupiah)",
+      GrandTotal: "Grand Total",
+      IsMCU: "is MCU*",
+      TarifLab: "List Tarif Lab*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "rawat inap",
+      NamaTindakan: "Pemeriksaan dokter",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "2",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "rawat inap",
+      NamaTindakan: "Pemeriksaan dokter",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "20",
+      HargaRupiah: "",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "3",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "rawat jalan",
+      NamaTindakan: "Pemeriksaan dokter",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "10",
+      HargaRupiah: "",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "4",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "rawat jalan",
+      NamaTindakan: "Periksa Poli Umum",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "5",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "Tunai",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "igd",
+      NamaTindakan: "Periksa Poli Umum",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "6",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "Tunai",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "igd",
+      NamaTindakan: "Periksa Poli Umum",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "False",
+      TarifLab: "",
+    });
+    data.push({
+      No: "2",
+      JenisTarif: "Tindakan",
+      MetodePembayaran: "Tunai",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      ModePilihanTarif: "Single",
+      Pelayanan: "icu",
+      NamaTindakan: "Periksa Poli Gigi",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      GrandTotal: "Rp. 1.300.000",
+      IsMCU: "True",
+      TarifLab: "SGOT",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+    
+    worksheet["!merges"] = [
+      { s: { r: 1, c: 0 }, e: { r: 6, c: 0 } },
+      { s: { r: 1, c: 1 }, e: { r: 6, c: 1 } },
+      { s: { r: 1, c: 2 }, e: { r: 4, c: 2 } },
+      { s: { r: 5, c: 2 }, e: { r: 6, c: 2 } },
+      { s: { r: 1, c: 3 }, e: { r: 6, c: 3 } },
+      { s: { r: 1, c: 4 }, e: { r: 6, c: 4 } },
+      { s: { r: 1, c: 5 }, e: { r: 6, c: 5 } },
+      { s: { r: 1, c: 6 }, e: { r: 2, c: 6 } },
+      { s: { r: 3, c: 6 }, e: { r: 4, c: 6 } },
+      { s: { r: 5, c: 6 }, e: { r: 6, c: 6 } },
+      { s: { r: 1, c: 7 }, e: { r: 3, c: 7 } },
+      { s: { r: 4, c: 7 }, e: { r: 6, c: 7 } },
+      { s: { r: 1, c: 9 }, e: { r: 2, c: 9 } },
+      { s: { r: 3, c: 9 }, e: { r: 4, c: 9 } },
+      { s: { r: 5, c: 9 }, e: { r: 6, c: 9 } },
+      { s: { r: 1, c: 12 }, e: { r: 2, c: 12 } },
+      { s: { r: 3, c: 12 }, e: { r: 4, c: 12 } },
+      { s: { r: 5, c: 12 }, e: { r: 6, c: 12 } },
+      { s: { r: 1, c: 13 }, e: { r: 6, c: 13 } },
+    ];
+    
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+    
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    const data2 = [];
+
+    // Header Row
+    data2.push({
+      No: "No",
+      JenisTarif: "Jenis Tarif*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      Pelayanan: "Pelayanan*",
+      Ruangan: "Ruangan",
+      HargaBed: "Harga Bed*",
+    });
+    
+    // Add Empty Rows (4 empty rows to match the example)
+    
+    data2.push({
+      No: "1",
+      JenisTarif: "Ruangan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TW-001",
+      NamaTarif: "Ruangan Mawar",
+      Pelayanan: "Rawat Inap",
+      Ruangan: "Mawar",
+      HargaBed: "Rp. 10.000",
+    });
+    data2.push({
+      No: "2",
+      JenisTarif: "Ruangan",
+      MetodePembayaran: "BPJS",
+      KodeTarif: "TW-002",
+      NamaTarif: "Ruangan Melati",
+      Pelayanan: "Rawat Inap",
+      Ruangan: "Melati",
+      HargaBed: "Rp. 10.000",
+    });
+    
+    const worksheet2 = XLSX.utils.json_to_sheet(data2, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths2 = data2.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+    
+    worksheet2["!cols"] = columnWidths2.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Tindakan"
+    );
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet2,
+      "Ruangan"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster Tarif.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+
+  try {
+    const response = await tarifStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchTarifData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
+  } catch (error) {
+    console.error("Error uploading file:", error); // Log error jika upload gagal
+  }
+};
 </script>
 
 <template>
@@ -243,7 +618,7 @@ const resetForm = () => {
                 <TablesRuangan
                   :payload="ruanganPayload"
                   @deleteItem="handleDeleteItem"
-                   @updated="fetchTarifData()"
+                  @updated="fetchTarifData()"
                 />
               </div>
               <div v-else class="h-full">
@@ -273,6 +648,9 @@ const resetForm = () => {
         :rows="tarifProperties.page_size"
         :totalRecords="tarifProperties.total"
         @page="handlePage"
+        @export="downloadExportExcel"
+        @import="handleFileUpload"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

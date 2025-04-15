@@ -48,7 +48,7 @@ const schema = computed(() =>
         phone: yup
           .string()
           .required("No. Handphone harus diisi")
-          .matches(phoneRegExp, "Format tidak sesuai"),
+          .matches(/^(\+62|62|0)8[1-9][0-9]{6,9}$/, "Format tidak sesuai"),
         email: yup
           .string()
           .required("Email harus diisi")
