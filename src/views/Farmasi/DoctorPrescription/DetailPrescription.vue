@@ -517,7 +517,7 @@ const simpanTelaah = async (uuid: string) => {
 
 const verifikasiPetugas = async (uuid: string) => {
   try {
-    if (payload.value.orderStatus === 1) {
+    if (payload.value.orderStatus === 2 ) {
       const response = await DoctorPrescriptionStore.statusVerifikasi({
         uuid: uuid,
       });
