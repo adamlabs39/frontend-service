@@ -257,6 +257,9 @@ const clearItemGigiPreview = () => {
             >
               <img :src="image" />
             </div>
+            <div v-if="errors.image" class="text-SM text-danger-300">
+              {{ errors.image }}
+            </div>
           </div>
         </div>
         <hr class="col-span-2 border-gray-200" />

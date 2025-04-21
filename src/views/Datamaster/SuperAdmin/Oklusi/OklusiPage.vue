@@ -335,7 +335,7 @@ const handleFileUpload = async (file: File) => {
           </template>
         </Column>
         <Column
-          field="code"
+          field="display"
           header="Display SATUSEHAT"
           headerClass="bg-adameds-50"
         ></Column>
