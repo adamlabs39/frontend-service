@@ -371,7 +371,15 @@ const handleFileUpload = async (file: File) => {
           header="Nama Diagnosis"
           class="w-1/2"
           headerClass="bg-adameds-50"
-        ></Column>
+        >
+          <template #body="{ data }">
+            <div v-for="(name, i) in data.name?.split('~')" :key="name + i">
+              <b v-if="i == 0">{{ name }}</b>
+              <span v-else>{{ name }}</span>
+            </div>
+            <!-- <span v-html="data.name.replace('~', '<br/>')"></span> -->
+          </template>
+        </Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center text-SM">Status</div>
