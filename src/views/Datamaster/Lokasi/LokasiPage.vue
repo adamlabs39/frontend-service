@@ -498,6 +498,7 @@ const handleFileUpload = async (file: File) => {
         @export="downloadExportExcel"
         @import="handleFileUpload"
         @download="downloadFormatExcel"
+        noPagination
       />
     </template>
   </Card>
