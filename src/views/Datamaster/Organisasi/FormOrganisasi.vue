@@ -398,7 +398,7 @@ watch(
         <CustomTextfield
           label="Kode Pos"
           v-model="kodePos"
-          placeholder="Pilih Kode Pos"
+          placeholder="Kode Pos"
           class="col-span-4"
           :invalid="!!errors['address.postalCode']"
           :invalidMessage="errors['address.postalCode']"

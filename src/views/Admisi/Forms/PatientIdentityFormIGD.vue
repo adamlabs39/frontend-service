@@ -742,16 +742,11 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
-          <!-- FIXME Dummy -->
-          <CustomSelect
+          <CustomTextfield
             v-model="addressPostalCode"
             label="Kode Pos"
-            placeHolder="Pilih Kode Pos"
+            placeholder="Kode Pos"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['10110', '40115', '60241']"
             :disabled="isDetail"
             :invalid="!!errors['address.postalCode']"
             :invalidMessage="errors['address.postalCode']"

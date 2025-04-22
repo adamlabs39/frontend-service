@@ -504,7 +504,6 @@ defineExpose({
         </div>
         <hr class="my-[30px]" />
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
             @update:model-value="fetchKabupaten"
@@ -513,12 +512,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...provinsiPayload]"
+            :options="provinsiPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
             @update:model-value="fetchKecamatan"
@@ -527,12 +525,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kabupatenPayload]"
+            :options="kabupatenPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
             @update:model-value="fetchKelurahan"
@@ -541,12 +538,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kecamatanPayload]"
+            :options="kecamatanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressVillage"
             label="Kelurahan / Desa"
@@ -554,7 +550,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kelurahanPayload]"
+            :options="kelurahanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.village']"
             :invalidMessage="errors['address.village']"
@@ -579,16 +575,11 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
-          <!-- FIXME Dummy -->
-          <CustomSelect
+          <CustomTextfield
             v-model="addressPostalCode"
             label="Kode Pos"
-            placeHolder="Pilih Kode Pos"
+            placeholder="Kode Pos"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['10110', '40115', '60241']"
             :disabled="isDetail"
             :invalid="!!errors['address.postalCode']"
             :invalidMessage="errors['address.postalCode']"
