@@ -100,8 +100,12 @@ const onPaymentMethodSelect = (label: string) => {
 
 // const filters = [selectedFilterPoli, selectedPaymentMethod];
 const resetForm = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
@@ -226,7 +230,7 @@ onMounted(() => {
           "
         />
         <!-- disini -->
-        <div class="flex"  v-if="currentRouteName === 'ruangan'">
+        <div class="flex" v-if="currentRouteName === 'ruangan'">
           <CustomDatePicker
             v-model="startDateFilter"
             label="Tanggal"
@@ -299,9 +303,7 @@ onMounted(() => {
 
       <div
         class="font-semibold text-SM text-grey-300"
-        v-if="
-          currentRouteName === 'ruangan' || 'perpindahan-bangsal'
-        "
+        v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
       >
         <div
           class="font-semibold text-SM text-grey-300"

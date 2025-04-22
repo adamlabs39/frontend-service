@@ -19,10 +19,7 @@ export const useAuthStore = defineStore({
       const response = await apiAuthPost("/login", payload);
 
       localStorage.setItem("access_token", `Bearer ${response.payload.token}`);
-      localStorage.setItem(
-        "refresh_token",
-        JSON.stringify(response.payload.refreshToken)
-      );
+      localStorage.setItem("refresh_token", response.payload.refreshToken);
       localStorage.setItem(
         "permission",
         JSON.stringify(response.payload.permissions)
@@ -49,7 +46,7 @@ export const useAuthStore = defineStore({
       try {
         const access_token = localStorage.getItem("access_token");
         const refresh_token = localStorage.getItem("refresh_token");
-        const response = await apiAuthPost("/auth/refresh", {
+        const response = await apiAuthPost("/auth/refresh-token", {
           token: access_token,
           refresh_token,
         });
@@ -59,10 +56,7 @@ export const useAuthStore = defineStore({
           "access_token",
           `Bearer ${response.payload.token}`
         );
-        localStorage.setItem(
-          "refresh_token",
-          JSON.stringify(response.payload.refreshToken)
-        );
+        localStorage.setItem("refresh_token", response.payload.refreshToken);
 
         return response;
       } catch (error) {

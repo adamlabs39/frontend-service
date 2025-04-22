@@ -113,8 +113,12 @@ const onPaymentMethodSelect = (label: string) => {
 };
 
 const resetFilter = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
 
   switch (props.currentRouteName) {
     case "rawat-jalan-poli":
