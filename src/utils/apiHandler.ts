@@ -14,14 +14,19 @@ import {
   baseInstanceInventory,
 } from "./Api";
 import { app } from "@/main";
+import { useAuthStore } from "@/stores/auth";
 
 const cekHost = (baseUrl: unknown, nextUrl: string) => {
   const url = new URL(baseUrl as string);
   let tempUrl = `:${url.port}${url.pathname}`;
   const currentHostUrl = window.location.hostname;
-  const baseLocation = window.location.protocol + "//" + window.location.hostname;
+  const baseLocation =
+    window.location.protocol + "//" + window.location.hostname;
 
-  if (!currentHostUrl.includes("localhost") && !currentHostUrl.includes("adameds")) {
+  if (
+    !currentHostUrl.includes("localhost") &&
+    !currentHostUrl.includes("adameds")
+  ) {
     if (tempUrl.endsWith("/") && nextUrl.startsWith("/")) {
       tempUrl = tempUrl.slice(0, -1);
     }
@@ -34,6 +39,7 @@ const cekHost = (baseUrl: unknown, nextUrl: string) => {
 const errorApiHandler = (error: any) => {
   let tempSummary = ``;
   let tempDetail = ``;
+  const authStore = useAuthStore();
   if (error.response.data.message) {
     if (
       error.response.data.message == "token tidak valid!" ||
@@ -45,11 +51,16 @@ const errorApiHandler = (error: any) => {
           (error.response.data.errors[0].type == "auth" &&
             error.response.data.errors[0].message == "jwt expired")))
     ) {
+      authStore.refreshTokenApi();
+      return;
+    }
+    if (error.response.data.message == "Refresh token telah kadaluarsa" || error.response.data.errors[0].type == "expired") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
       window.location.reload();
+      return;
     }
     tempSummary = error.response.data.message;
     error.response.data.errors?.forEach((errorMsg: any, index: number) => {

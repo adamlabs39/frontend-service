@@ -13,7 +13,7 @@ export const useOrganisasiStore = defineStore({
   actions: {
     async getApi(page: number = 1, limit: number = 10,name:String="", payload = {}) {      
       return apiDatamasterGet(`/datamaster/organization?page=${page}&limit=${limit}&name=${name}`, payload);
-    },
+    },  
     async postApi(payload = {}) {
       return apiDatamasterPost("/datamaster/organization", payload);
     },

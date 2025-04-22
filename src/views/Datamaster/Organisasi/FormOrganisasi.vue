@@ -148,7 +148,7 @@ const schema = toTypedSchema(
         postalCode: yup.string().required("Kode Pos harus diisi"),
         country: yup.string().default("Indonesia"),
       }),
-      satuSehatId: yup.string().required("ID Satusehat harus diisi"),
+      satuSehatId: yup.string().notRequired(),
       organizationIhsNumber: yup
         .string()
         .required("IHS No. Organization harus diisi"),
@@ -183,6 +183,9 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    if (!values.partOf) {
+      delete values.partOf
+    }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
