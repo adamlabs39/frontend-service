@@ -114,6 +114,12 @@ defineExpose({
 
 onMounted(() => {
   fetchPraktisiData();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
 });
 </script>
 
