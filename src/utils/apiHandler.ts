@@ -60,7 +60,6 @@ const errorApiHandler = (error: any) => {
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
       window.location.reload();
-      return;
     }
     tempSummary = error.response.data.message;
     error.response.data.errors?.forEach((errorMsg: any, index: number) => {
