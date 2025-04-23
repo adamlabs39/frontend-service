@@ -10,6 +10,8 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useToast } from "primevue/usetoast";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
@@ -20,7 +22,9 @@ import { formatDate } from "@/utils/Helpers";
 const storeUtils = utilsStore();
 const admisiIGDStore = useAdmisiIGDStore();
 const praktisiStore = usePraktisiStore();
+const lokasiStore = useLokasiStore();
 const rekamMedisStore = useRekamMedisStore();
+const toast = useToast();
 
 const pageType = ref("");
 const route = useRoute();
@@ -213,13 +217,26 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
         rekamMedisUuid: openedPatientData.value.rekamMedisUuid,
       });
     } else {
+      let lokasiUuid = "";
+      const responseLokasi = await lokasiStore.getByCodeApi("IGD");
+      if (responseLokasi && responseLokasi.payload) {
+        lokasiUuid = responseLokasi.payload.uuid;
+      } else {
+        toast.add({
+          severity: "error",
+          summary: "Lokasi IGD tidak ada di datamaster lokasi",
+          detail: "",
+          life: 3000,
+        });
+        return
+      }
+
       response = await rekamMedisStore.createRekamMedis({
         noRm: openedPatientData.value.noRm,
         noReg: openedPatientData.value.noReg,
         date: formatDate(new Date(), true),
         pelayanan: "igd",
-        // FIXME Statis UUID
-        lokasiUuid: "0196323f-9f5f-7642-a94e-2e074a02b344",
+        lokasiUuid: lokasiUuid,
         noPelayanan: openedPatientData.value.noPelayanan,
         paymentMethod: openedPatientData.value.paymentMethod,
       });

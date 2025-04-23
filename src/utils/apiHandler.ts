@@ -40,6 +40,7 @@ const errorApiHandler = (error: any) => {
   let tempSummary = ``;
   let tempDetail = ``;
   const authStore = useAuthStore();
+  // NOTE Belum refresh token
   if (error.response.data.message) {
     if (
       error.response.data.message == "token tidak valid!" ||
@@ -51,16 +52,33 @@ const errorApiHandler = (error: any) => {
           (error.response.data.errors[0].type == "auth" &&
             error.response.data.errors[0].message == "jwt expired")))
     ) {
-      authStore.refreshTokenApi();
-      return;
-    }
-    if (error.response.data.message == "Refresh token telah kadaluarsa" || error.response.data.errors[0].type == "expired") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
       window.location.reload();
     }
+    // NOTE Refresh Token
+    // if (
+    //   error.response.data.message == "token tidak valid!" ||
+    //   ((error.response.data.message == "Authentikasi gagal" ||
+    //     error.response.data.message == "Authorization gagal" ||
+    //     error.response.data.message == "jwt expired") &&
+    //     (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
+    //       error.response.data.errors[0].type == "Invalid signature" ||
+    //       (error.response.data.errors[0].type == "auth" &&
+    //         error.response.data.errors[0].message == "jwt expired")))
+    // ) {
+    //   authStore.refreshTokenApi();
+    //   return;
+    // }
+    // if (error.response.data.message == "Refresh token telah kadaluarsa" || error.response.data.errors[0].type == "expired") {
+    //   localStorage.removeItem("access_token");
+    //   localStorage.removeItem("permission");
+    //   localStorage.removeItem("user");
+    //   localStorage.removeItem("faskes");
+    //   window.location.reload();
+    // }
     tempSummary = error.response.data.message;
     error.response.data.errors?.forEach((errorMsg: any, index: number) => {
       if (error.response.data.errors.length == index + 1) {
