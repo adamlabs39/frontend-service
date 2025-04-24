@@ -35,6 +35,7 @@ export const useAuthStore = defineStore({
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
+      localStorage.removeItem("faskes_profile");
       return response;
     },
 
