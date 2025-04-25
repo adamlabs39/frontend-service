@@ -467,6 +467,7 @@ defineExpose({ showDialogRM });
                   selectedPemeriksaanMata = editedPemeriksaanMata ?? null;
                 }
               "
+              :patientData="patientData"
               :rmUuid="patientData.rekamMedisUuid"
               :rmDate="rmDate"
             />
@@ -705,7 +706,12 @@ defineExpose({ showDialogRM });
               v-if="selectedTab == 'inform-consent'"
               class="overflow-auto mt-[10px]"
             >
-              <FormPersetujuanPasien method="form" initialState="0" />
+              <FormPersetujuanPasien
+                method="form"
+                initialState="0"
+                :rmUuid="patientData.rekamMedisUuid"
+                :patientData="patientData"
+                />
             </div>
 
             <div v-if="selectedTab == 'fpo'" class="overflow-auto mt-[10px]">

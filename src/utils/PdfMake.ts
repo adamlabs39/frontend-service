@@ -1,40 +1,8 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import htmlToPdfmake from "html-to-pdfmake";
 import { customVfs } from "./customVfs";
-import { getDateNow } from "./Helpers";
-import JsBarcode from "jsbarcode";
-import QRCode from "qrcode";
-
-function generateBarcode(barcodeValue: string) {
-  var canvas = document.createElement("canvas");
-
-  JsBarcode(canvas, barcodeValue, {
-    format: "CODE128",
-    displayValue: false,
-  });
-
-  return canvas.toDataURL("image/png");
-}
-
-async function generateQRCode(QRCodeValue: string) {
-  try {
-    const url = await QRCode.toDataURL(QRCodeValue);
-    return url;
-  } catch (err) {
-    throw err;
-  }
-}
-
-type PageSize =
-  | "A4"
-  | "A5"
-  | "A3"
-  | "B4"
-  | "B5"
-  | "LEGAL"
-  | "LETTER"
-  | { width: number; height: number };
-type PageOrientation = "portrait" | "landscape";
+import { generateBarcode, generateQRCode, getDateNow } from "./Helpers";
+import type { PageOrientation, PageSize } from "pdfmake/interfaces";
 
 export function downloadPdf({
   data,

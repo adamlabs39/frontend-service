@@ -1,9 +1,9 @@
-export function formatPrice(price: number){
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR'
+export function formatPrice(price: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
   }).format(price);
-};
+}
 
 export function formatDate(date: Date, reverse: boolean = false) {
   if (date) {
@@ -117,6 +117,41 @@ export function countAge(date: Date) {
   }
 
   return { tahun, bulan, hari };
+}
+
+export async function convertImageToBase64(url: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+import JsBarcode from "jsbarcode";
+import QRCode from "qrcode";
+
+export function generateBarcode(barcodeValue: string) {
+  var canvas = document.createElement("canvas");
+
+  JsBarcode(canvas, barcodeValue, {
+    format: "CODE128",
+    displayValue: false,
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
+export async function generateQRCode(QRCodeValue: string) {
+  try {
+    const url = await QRCode.toDataURL(QRCodeValue);
+    return url;
+  } catch (err) {
+    throw err;
+  }
 }
 
 import type { Module, SubModule, Feature, Allow } from "@/utils/Interface";
