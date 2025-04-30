@@ -142,8 +142,6 @@ const schema = toTypedSchema(
         prov: yup.string().required("Provinsi harus dipilih"),
         city: yup.string().required("Kab/Kota harus dipilih"),
         district: yup.string().required("Kecamatan harus dipilih"),
-        rt: yup.string().required("RT harus diisi"),
-        rw: yup.string().required("RW harus diisi"),
         village: yup.string().required("Kelurahan harus dipilih"),
         postalCode: yup.string().required("Kode Pos harus diisi"),
         country: yup.string().default("Indonesia"),
@@ -174,8 +172,6 @@ const [provinsi] = defineField("address.prov");
 const [kabupaten] = defineField("address.city");
 const [kecamatan] = defineField("address.district");
 const [kelurahan] = defineField("address.village");
-const [rt] = defineField("address.rt");
-const [rw] = defineField("address.rw");
 const [satuSehatId] = defineField("satuSehatId");
 const [organizationIhsNumber] = defineField("organizationIhsNumber");
 
@@ -405,28 +401,10 @@ watch(
           :required="errors['address.postalCode'] ? true : false"
         />
         <CustomTextfield
-          label="RT"
-          v-model="rt"
-          placeholder="RT"
-          class="col-span-4"
-          :invalid="!!errors['address.rt']"
-          :invalidMessage="errors['address.rt']"
-          :required="errors['address.rt'] ? true : false"
-        />
-        <CustomTextfield
-          label="RW"
-          v-model="rw"
-          placeholder="RW"
-          class="col-span-4"
-          :invalid="!!errors['address.rw']"
-          :invalidMessage="errors['address.rw']"
-          :required="errors['address.rw'] ? true : false"
-        />
-        <CustomTextArea
           label="Alamat"
           v-model="alamat"
           placeholder="Alamat"
-          class="col-span-12"
+          class="col-span-8"
           :invalid="!!errors['address.fullAddress']"
           :invalidMessage="errors['address.fullAddress']"
           :required="errors['address.fullAddress'] ? true : false"
@@ -506,7 +484,7 @@ watch(
         />
         <CustomInfoRow
           label="Part Of Name"
-          :value="payload.address.partOfName ?? '-'"
+          :value="payload.partOfName ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"

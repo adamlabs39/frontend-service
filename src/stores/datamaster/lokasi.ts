@@ -18,12 +18,21 @@ export const useLokasiStore = defineStore({
       payload = {}
     ) {
       return apiDatamasterGet(
-        `/datamaster/lokasi?page=${page}&limit=${limit}&name=${name}`,
+        `/datamaster/lokasi?page=${page}&limit=${limit}&search=${name}`,
         payload
       );
     },
-    async getAktifApi(payload = {}) {
-      return apiDatamasterGet(`/datamaster/lokasi/aktif`, payload);
+    async getAktifApi(
+      params: { type: string; isPoli: string | boolean } = {
+        type: "",
+        isPoli: "",
+      },
+      payload = {}
+    ) {
+      return apiDatamasterGet(
+        `/datamaster/lokasi/aktif?type=${params.type}&is_poli=${params.isPoli}`,
+        payload
+      );
     },
     async getByCodeApi(code = "", payload = {}) {
       return apiDatamasterGet(`/datamaster/lokasi/code/${code}`, payload);

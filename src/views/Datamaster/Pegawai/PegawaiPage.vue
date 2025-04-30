@@ -373,12 +373,14 @@ const downloadFormatExcel = async () => {
           <template #body="slotProps">
             <div class="text-pretty">
               {{
-                slotProps.data.firstTitle
+                slotProps.data.firstTitle && slotProps.data.firstTitle != "-"
                   ? slotProps.data.firstTitle + ". "
                   : ""
               }}{{ slotProps.data.name
               }}{{
-                slotProps.data.lastTitle ? ", " + slotProps.data.lastTitle : ""
+                slotProps.data.lastTitle && slotProps.data.lastTitle != "-"
+                  ? ", " + slotProps.data.lastTitle
+                  : ""
               }}
             </div>
           </template></Column
@@ -499,6 +501,7 @@ const downloadFormatExcel = async () => {
         :rows="pegawaiProperties.page_size"
         :totalRecords="pegawaiProperties.total"
         :showImport="false"
+        :show-download="false"
         @page="handlePage"
         @export="downloadExportExcel"
         @download="downloadFormatExcel"

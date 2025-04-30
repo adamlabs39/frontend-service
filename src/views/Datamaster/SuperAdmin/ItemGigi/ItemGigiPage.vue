@@ -365,7 +365,7 @@ const handleFileUpload = async (file: File) => {
           </template>
         </Column>
         <Column
-          field="kategoriGigiName"
+          field="kategoriGigi.name"
           header="Kategori Gigi"
           headerClass="bg-adameds-50"
         ></Column>

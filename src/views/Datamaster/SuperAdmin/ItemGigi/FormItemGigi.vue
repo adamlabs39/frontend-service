@@ -293,7 +293,7 @@ const clearItemGigiPreview = () => {
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow
           label="Kategori Gigi"
-          :value="payload.kategoriGigiName"
+          :value="payload.kategoriGigi.name"
         />
         <CustomInfoRow
           label="Referensi Sistem SATUSEHAT"

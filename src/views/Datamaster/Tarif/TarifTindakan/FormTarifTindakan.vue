@@ -889,7 +889,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                         >
                           <CustomButton
                             icon="PhPlus"
-                            label="Tindakan"
+                            label="Komponen Tarif"
                             borderColor="border-adameds-300"
                             textColor="text-adameds-300"
                             backgroundColor="bg-white"

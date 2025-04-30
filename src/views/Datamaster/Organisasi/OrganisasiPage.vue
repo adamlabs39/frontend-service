@@ -91,7 +91,8 @@ const dialogConfig = ref<any>({
   data: null,
 });
 
-const openDialog = (method: string, title: string, data: any = null) => {
+const openDialog = async (method: string, title: string, data: any = null) => {
+  await fetchOrganisasiData ()
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
