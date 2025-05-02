@@ -116,7 +116,17 @@ export async function createSuratPersetujuanTindakan({
               "Dokter Pelaksana",
               ":",
               {
-                text: data.documentData.DokterUuid + "Dokternya Belum Ada",
+                text: `${
+                  data.documentData.dokterUuid?.pegawai?.firstTitle &&
+                  data.documentData.dokterUuid?.pegawai?.firstTitle != "-"
+                    ? `${data.documentData.dokterUuid?.pegawai?.firstTitle} `
+                    : ""
+                }${data.documentData.dokterUuid?.pegawai?.name} ${
+                  data.documentData.dokterUuid?.pegawai?.lastTitle &&
+                  data.documentData.dokterUuid?.pegawai?.lastTitle != "-"
+                    ? `${data.documentData.dokterUuid?.pegawai?.lastTitle} `
+                    : ""
+                }`,
                 bold: true,
               },
             ],
@@ -380,9 +390,17 @@ export async function createSuratPersetujuanTindakan({
                 image: await generateQRCode(
                   `Dikeluarkan di ${
                     faskesProfile.name
-                  }, Ditandatangani secara elektronik oleh ${
-                    data.documentData.DokterUuid
-                  }, Pada tanggal ${epochToDate(
+                  }, Ditandatangani secara elektronik oleh ${`${
+                    data.documentData.dokterUuid?.pegawai?.firstTitle &&
+                    data.documentData.dokterUuid?.pegawai?.firstTitle != "-"
+                      ? `${data.documentData.dokterUuid?.pegawai?.firstTitle} `
+                      : ""
+                  }${data.documentData.dokterUuid?.pegawai?.name} ${
+                    data.documentData.dokterUuid?.pegawai?.lastTitle &&
+                    data.documentData.dokterUuid?.pegawai?.lastTitle != "-"
+                      ? `${data.documentData.dokterUuid?.pegawai?.lastTitle} `
+                      : ""
+                  }`}, Pada tanggal ${epochToDate(
                     data.documentData.tglPersetujuan,
                     "dateTime"
                   )}`
@@ -415,11 +433,21 @@ export async function createSuratPersetujuanTindakan({
               {
                 stack: [
                   {
-                    text: `${data.documentData.DokterUuid}`,
+                    text: `${
+                      data.documentData.dokterUuid?.pegawai?.firstTitle &&
+                      data.documentData.dokterUuid?.pegawai?.firstTitle != "-"
+                        ? `${data.documentData.dokterUuid?.pegawai?.firstTitle} `
+                        : ""
+                    }${data.documentData.dokterUuid?.pegawai?.name} ${
+                      data.documentData.dokterUuid?.pegawai?.lastTitle &&
+                      data.documentData.dokterUuid?.pegawai?.lastTitle != "-"
+                        ? `${data.documentData.dokterUuid?.pegawai?.lastTitle} `
+                        : ""
+                    }`,
                     decoration: "underline",
                     marginBottom: 1,
                   },
-                  `SIP: ${data.documentData.DokterUuid}`,
+                  `SIP: ${data.documentData.dokterUuid?.sip}`,
                 ],
               },
               "",
