@@ -130,7 +130,14 @@ const schema = toTypedSchema(
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues, validateField } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  validateField,
+} = useForm({
   validationSchema: schema,
 });
 
@@ -148,22 +155,12 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const { push: pushPractitionerPoli } = useFieldArray("poliPelayanan");
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  poliPelayanan.value = tempPoli.value.map(
-    (item: { lokasiUuid: string; uuid: string }) => {
-      if (!selectedValues.includes(item.lokasiUuid)) {
-        return {
-          lokasiUuid: item.lokasiUuid,
-          uuid: item.uuid,
-          isDeleted: true,
-        };
-      } else {
-        return {
-          lokasiUuid: item.uuid,
-          uuid: item.uuid,
-        };
-      }
-    }
-  );
+  poliPelayanan.value = tempPoli.value
+    .filter((item: any) => selectedValues.includes(item.lokasiUuid))
+    .map((item: any) => ({
+      lokasiUuid: item.uuid,
+      uuid: item.uuid,
+    }));
 
   selectedValues.forEach((value) => {
     const existsInTemp = tempPoli.value.some(
@@ -176,7 +173,7 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
       });
     }
   });
-  validateField("practitionerPoliSelected")
+  validateField("practitionerPoliSelected");
 };
 
 const onSubmit = handleSubmit(async (values: any) => {

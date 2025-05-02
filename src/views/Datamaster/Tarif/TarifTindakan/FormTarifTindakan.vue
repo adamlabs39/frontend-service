@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed, nextTick } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -426,10 +426,10 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    values.tagUnitPelayanan = values.unitPelayanan
-    delete values.unitPelayanan
-    values.tagPenjamin = values.penjamin
-    delete values.penjamin
+    values.tagUnitPelayanan = values.unitPelayanan;
+    delete values.unitPelayanan;
+    values.tagPenjamin = values.penjamin;
+    delete values.penjamin;
     if (!values.presentase) {
       values.grandTotal = grandTotalData.value;
       console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
@@ -511,25 +511,26 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
+        const clonedPayload = JSON.parse(JSON.stringify(props.payload));
         const unitPelayananPayload =
-          props.payload.pelayanan?.map(
+          clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) =>
               item.unitPelayanan
           ) || [];
 
         const tempUnitPelayanan =
-          props.payload.pelayanan?.map(
+          clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) => ({
               unitPelayanan: item.unitPelayanan,
               uuid: item.uuid,
             })
           ) || [];
         const penjaminPayload =
-          props.payload.penjamin?.map(
+          clonedPayload.tagPenjamin?.map(
             (item: { penjaminUuid: string }) => item.penjaminUuid
           ) || [];
         const tempPenjaminObject =
-          props.payload.penjamin?.map(
+          clonedPayload.tagPenjamin?.map(
             (item: { penjaminUuid: string; uuid: string }) => ({
               penjaminUuid: item.penjaminUuid,
               uuid: item.uuid,
@@ -537,15 +538,16 @@ watch(
           ) || [];
 
         setValues({
-          ...props.payload,
+          ...clonedPayload,
           unitPelayananSelected: unitPelayananPayload,
           penjaminSelected: penjaminPayload,
-          tarifLab: props.payload.lab,
+          tarifLab: clonedPayload.lab,
+          modePilihanTarif: clonedPayload.mode
         });
         tempPelayanan.value = tempUnitPelayanan;
         tempPenjamin.value = tempPenjaminObject;
-        tempTindakan.value = props.payload.tindakan;
-        tempTarifLab.value = props.payload.lab;
+        tempTindakan.value = clonedPayload.tindakan;
+        tempTarifLab.value = clonedPayload.lab;
       }
     } else {
       resetForm();
@@ -1173,7 +1175,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                     bodyClass="align-top"
                   >
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifPerKomponenName || "-" }}
+                      {{ slotProps.data.tarifKomponenName || "-" }}
                     </template>
                   </Column>
                   <Column

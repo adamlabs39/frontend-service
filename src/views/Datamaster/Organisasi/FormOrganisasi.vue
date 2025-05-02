@@ -112,7 +112,6 @@ const fetchKelurahan = async (kecamatanId: string) => {
   }
 };
 onMounted(() => {
-  fetchOrganisasi();
   fetchProvinsi();
 });
 const phoneRegExp =
@@ -180,7 +179,7 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (!values.partOf) {
-      delete values.partOf
+      delete values.partOf;
     }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -254,6 +253,7 @@ watch(
   async (newValue) => {
     if (newValue) {
       resetDialogMode();
+      fetchOrganisasi();
 
       // Check if we are editing, and if so, set initial values
       if (props.method !== "add" && props.payload) {
@@ -417,7 +417,7 @@ watch(
           :options="organisasiPayload"
           optionValue="uuid"
           optionLabel="name"
-          />
+        />
         <CustomTextfield
           label="ID SATUSEHAT"
           v-model="satuSehatId"
