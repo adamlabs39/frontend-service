@@ -158,6 +158,12 @@ const close = () => {
 };
 
 const showDocument = async (data: any) => {
+  const dataPraktisi = dokterPelaksanas.value.find(
+    (dataDokter) => (dataDokter.uuid = data.dokterUuid)
+  );
+  if (dataPraktisi) {
+    data.dokterUuid = dataPraktisi;
+  }
   await createSuratPersetujuanTindakan({
     data: { documentData: data, patientData: props.patientData },
     type: data.persetujuan ? "Persetujuan" : "Penolakan",
