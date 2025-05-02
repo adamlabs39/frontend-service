@@ -44,6 +44,7 @@ const errorApiHandler = (error: any) => {
   if (error.response.data.message) {
     if (
       error.response.data.message == "token tidak valid!" ||
+      error.response.data.message == "jwt expired" ||
       ((error.response.data.message == "Authentikasi gagal" ||
         error.response.data.message == "Authorization gagal" ||
         error.response.data.message == "jwt expired") &&
@@ -56,6 +57,7 @@ const errorApiHandler = (error: any) => {
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
+      localStorage.removeItem("faskes_profile");
       window.location.reload();
     }
     // NOTE Refresh Token
@@ -77,6 +79,7 @@ const errorApiHandler = (error: any) => {
     //   localStorage.removeItem("permission");
     //   localStorage.removeItem("user");
     //   localStorage.removeItem("faskes");
+    //   localStorage.removeItem("faskes_profile");
     //   window.location.reload();
     // }
     tempSummary = error.response.data.message;

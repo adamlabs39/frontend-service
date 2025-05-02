@@ -9,6 +9,7 @@ import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
+import { useSettingStore } from "@/stores/setting";
 import CustomSelect from "../Base/CustomSelect.vue";
 
 interface userData {
@@ -20,6 +21,8 @@ const authStore = useAuthStore();
 const emit = defineEmits(["selectedFaskes"]);
 const UseUtilsStore = utilsStore();
 const faskesStore = useFaskesStore();
+const settingStore = useSettingStore();
+
 const faskesPayload = ref<any[]>([]);
 const router = useRouter();
 const route = useRoute();
@@ -134,7 +137,6 @@ const logout = async () => {
 
 onBeforeMount(async () => {
   await fetchFaskes();
-  console.log(faskesUuid.value);
   authStore.setFaskesUuid(faskesUuid.value ?? "");
   emit("selectedFaskes");
 });
@@ -176,6 +178,22 @@ const fetchFaskes = async () => {
   }
 };
 
+const fetchSettingProfilFaskesData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await settingStore.getProfilFaskesApi();
+    if (response) {
+      UseUtilsStore.setProfilFaskes(response);
+    } else {
+      console.error("Unexpected response Structure", response);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 const faskesName = ref<string>("");
 const faskesSelected = ref<string>("");
 const faskesUuid = ref<string>("");
@@ -185,6 +203,7 @@ const updateDataFaskes = async (value: string) => {
   localStorage.setItem("access_token", `Bearer ${response.payload.newToken}`);
   localStorage.setItem("faskes", JSON.stringify(response.payload));
   authStore.setFaskesUuid(value);
+  await fetchSettingProfilFaskesData();
   loadFaskesFromLocalStorage();
 };
 
