@@ -146,9 +146,7 @@ const schema = toTypedSchema(
         country: yup.string().default("Indonesia"),
       }),
       satuSehatId: yup.string().notRequired(),
-      organizationIhsNumber: yup
-        .string()
-        .required("IHS No. Organization harus diisi"),
+      organizationIhsNumber: yup.string().notRequired(),
     })
     .noUnknown()
 );
@@ -426,14 +424,14 @@ watch(
           :invalid="!!errors.satuSehatId"
           :invalidMessage="errors.satuSehatId"
         />
-        <CustomTextfield
+        <!-- <CustomTextfield
           label="IHS No. Organization"
           v-model="organizationIhsNumber"
           placeholder="IHS No. Organization"
           class="col-span-12"
           :invalid="!!errors.organizationIhsNumber"
           :invalidMessage="errors.organizationIhsNumber"
-        />
+        /> -->
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"

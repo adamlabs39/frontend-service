@@ -161,8 +161,10 @@ const schema = toTypedSchema(
               tarifKomponenUuid: yup
                 .string()
                 .required("Komponen Tarif harus dipilih"),
-              tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
-              persentase: yup.number().required("Persentasi harus diisi"),
+              tarifPerKomponen: yup
+                .number()
+                .required("Harga komponen tarif harus diisi"),
+              persentase: yup.number().notRequired(),
             })
           ),
           presentase: yup.bool().default(false),
@@ -512,12 +514,12 @@ watch(
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         const clonedPayload = JSON.parse(JSON.stringify(props.payload));
+        unitPelayanan.value = clonedPayload.tagUnitPelayanan;
         const unitPelayananPayload =
           clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) =>
               item.unitPelayanan
           ) || [];
-
         const tempUnitPelayanan =
           clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) => ({
@@ -525,6 +527,8 @@ watch(
               uuid: item.uuid,
             })
           ) || [];
+
+        penjamin.value = clonedPayload.tagPenjamin;
         const penjaminPayload =
           clonedPayload.tagPenjamin?.map(
             (item: { penjaminUuid: string }) => item.penjaminUuid
@@ -542,7 +546,7 @@ watch(
           unitPelayananSelected: unitPelayananPayload,
           penjaminSelected: penjaminPayload,
           tarifLab: clonedPayload.lab,
-          modePilihanTarif: clonedPayload.mode
+          modePilihanTarif: clonedPayload.mode,
         });
         tempPelayanan.value = tempUnitPelayanan;
         tempPenjamin.value = tempPenjaminObject;
@@ -594,7 +598,6 @@ const handlePersentase = (
   tindakanIndex: number,
   komponenIndex: number
 ) => {
-  console.log(komponenIndex);
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
   const tarifPerKomponen = (inputPersentase / 100) * tindakan.totalHarga;
   tindakan.komponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
@@ -608,6 +611,20 @@ const handleTotalKomponen = (tindakanIndex: any) => {
   tindakan.totalHarga = tindakan.komponenTarif.reduce((sum, komponen) => {
     return sum + (komponen.tarifPerKomponen || 0);
   }, 0);
+};
+
+const handleGrandTotal = (
+  isPresentase: boolean,
+  tindakanIndex: number,
+  totalHarga: number
+) => {
+  if (isPresentase) {
+    const tindakan = fieldsTindakan.value[tindakanIndex].value;
+    tindakan.komponenTarif.forEach((dataKomponenTarif) => {
+      dataKomponenTarif.tarifPerKomponen =
+        (dataKomponenTarif.persentase / 100) * totalHarga;
+    });
+  }
 };
 
 const formatCurrency = (value: number): string => {
@@ -927,6 +944,13 @@ const totalTindakan = (tindakanIndex: number): string => {
                             class="w-[200px]"
                             :invalid="!!errors.grandTotal"
                             :invalidMessage="errors.grandTotal"
+                            @update:model-value="
+                              handleGrandTotal(
+                                fieldTindakan.value.presentase,
+                                idx,
+                                fieldTindakan.value.totalHarga
+                              )
+                            "
                           >
                             <template #prependText>
                               <div

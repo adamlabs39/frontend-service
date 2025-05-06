@@ -470,7 +470,7 @@ const downloadFormatExcel = async () => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.nik}-${slotProps.data.name}`,
                     slotProps.data
                   )
                 "

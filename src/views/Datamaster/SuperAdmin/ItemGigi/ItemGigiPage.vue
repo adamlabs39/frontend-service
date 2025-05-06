@@ -35,7 +35,7 @@ const fetchItemGigiData = async () => {
     );
 
     if (response && response.payload) {
-      itemGigiProperties.value.total = response.properties.total;
+      itemGigiProperties.value.total = response.properties.totalItem;
       itemGigiPayload.value = response.payload;
     } else {
       itemGigiPayload.value = [];

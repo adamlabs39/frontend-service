@@ -355,8 +355,8 @@ watch(
           :value="payload.partOfName ?? '-'"
         />
         <CustomInfoRow
-          label="Organization ID"
-          :value="payload.OrganisasiId ?? '-'"
+          label="IHS No. Organization"
+          :value="payload.organizationIhsNumber ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"

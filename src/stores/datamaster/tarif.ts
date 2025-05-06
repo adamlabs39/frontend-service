@@ -21,7 +21,7 @@ export const useTarifStore = defineStore({
       payload = {}
     ) {
       return apiDatamasterGet(
-        `/datamaster/tarif?page=${page}&limit=${limit}&jenis_tarif=${jenis}&name=${name}&unit=${unit}&penjamin=${penjamin}`,
+        `/datamaster/tarif?page=${page}&limit=${limit}&jenis_tarif=${jenis}&name=${name}&unit_pelayanan=${unit}&penjamin=${penjamin}`,
         payload
       );
     },
