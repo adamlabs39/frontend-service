@@ -91,8 +91,8 @@ export async function createSuratPersetujuanTindakan({
               ],
               [
                 {
-                  text: `No. Belum Ada Datanya`,
-                  fillColor: "#9FE2DB",
+                  text: `RM. ${data.patientData.noRm}`,
+                  fillColor: "#EAECEF",
                 },
               ],
             ],
