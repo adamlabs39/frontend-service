@@ -192,6 +192,7 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
+      fetchLokasi();
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         setValues({

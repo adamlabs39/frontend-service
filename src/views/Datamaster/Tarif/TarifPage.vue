@@ -323,8 +323,6 @@ const downloadFormatExcel = async () => {
       Pelayanan: "Pelayanan*",
       NamaTindakan: "Nama Tindakan*",
       KomponenTarif: "Komponen Tarif*",
-      Persentase: "Persentase*",
-      HargaPersen: "Harga Tarif (persen)",
       HargaRupiah: "Harga Tarif (rupiah)",
       GrandTotal: "Grand Total",
       IsMCU: "is MCU*",
