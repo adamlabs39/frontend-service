@@ -35,7 +35,7 @@ const fetchRoleData = async () => {
     );
 
     if (response && response.payload) {
-      roleProperties.value.total = response.properties.total;
+      roleProperties.value.total = response.properties.totalItem;
       rolePayload.value = response.payload;
     } else {
       rolePayload.value = [];

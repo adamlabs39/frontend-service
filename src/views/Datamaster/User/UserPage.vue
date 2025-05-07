@@ -200,7 +200,7 @@ const downloadExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER PEGAWAI"];
+    const title = ["DATAMASTER USER"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)

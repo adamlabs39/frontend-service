@@ -35,7 +35,7 @@ const fetchItemGigiData = async () => {
     );
 
     if (response && response.payload) {
-      itemGigiProperties.value.total = response.properties.total;
+      itemGigiProperties.value.total = response.properties.totalItem;
       itemGigiPayload.value = response.payload;
     } else {
       itemGigiPayload.value = [];
@@ -365,7 +365,7 @@ const handleFileUpload = async (file: File) => {
           </template>
         </Column>
         <Column
-          field="kategoriGigiName"
+          field="kategoriGigi.name"
           header="Kategori Gigi"
           headerClass="bg-adameds-50"
         ></Column>

@@ -193,6 +193,7 @@ const filterData = (event: SelectFilterEvent) => {
         @filter="filterData"
         @blur="emit('blur')"
         @focus="emit('focus')"
+        :virtualScrollerOptions="{ itemSize: 38 }"
       >
         <template v-if="$slots.customValue" #value="{ value, placeholder }">
           <slot

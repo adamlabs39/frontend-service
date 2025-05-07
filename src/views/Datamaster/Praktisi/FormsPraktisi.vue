@@ -44,7 +44,7 @@ const lokasiPayload = ref<any[]>([]);
 
 const fetchPegawai = async () => {
   try {
-    const response = await pegawaiStore.getAktifApi();
+    const response = await pegawaiStore.getAktifApi("1");
     if (response && response.payload) {
       pegawaiPayload.value = response.payload;
     } else {
@@ -57,7 +57,10 @@ const fetchPegawai = async () => {
 };
 const fetchLokasi = async () => {
   try {
-    const response = await lokasiStore.getAktifApi();
+    const response = await lokasiStore.getAktifApi({
+      type: "Ward",
+      isPoli: true,
+    });
     if (response && response.payload) {
       lokasiPayload.value = response.payload;
     } else {
@@ -111,19 +114,30 @@ const schema = toTypedSchema(
       status: yup.bool().default(true),
       practitionerPoliSelected: yup
         .array()
+        .of(yup.string().required("Poli harus dipilih"))
         .when("isDoctor", {
           is: (value: boolean) => value === true,
-          then: (schema) => schema.required("Poli harus dipilih"),
+          then: (schema) =>
+            schema
+              .required("Poli harus dipilih")
+              .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+              .required("Unit Pelayanan harus dipilih"),
           otherwise: (schema) => schema.notRequired(),
-        })
-        .of(yup.string().required("Poli harus dipilih"))
-        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
-        .required("Unit Pelayanan harus dipilih"),
+        }),
+      // .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+      // .required("Unit Pelayanan harus dipilih"),
     })
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  validateField,
+} = useForm({
   validationSchema: schema,
 });
 
@@ -141,22 +155,12 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const { push: pushPractitionerPoli } = useFieldArray("poliPelayanan");
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  poliPelayanan.value = tempPoli.value.map(
-    (item: { lokasiUuid: string; uuid: string }) => {
-      if (!selectedValues.includes(item.lokasiUuid)) {
-        return {
-          lokasiUuid: item.lokasiUuid,
-          uuid: item.uuid,
-          isDeleted: true,
-        };
-      } else {
-        return {
-          lokasiUuid: item.uuid,
-          uuid: item.uuid,
-        };
-      }
-    }
-  );
+  poliPelayanan.value = tempPoli.value
+    .filter((item: any) => selectedValues.includes(item.lokasiUuid))
+    .map((item: any) => ({
+      lokasiUuid: item.uuid,
+      uuid: item.uuid,
+    }));
 
   selectedValues.forEach((value) => {
     const existsInTemp = tempPoli.value.some(
@@ -169,6 +173,7 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
       });
     }
   });
+  validateField("practitionerPoliSelected");
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
@@ -241,6 +246,7 @@ watch(
           ) || [];
         setValues({
           ...props.payload,
+          poliPelayanan: props.payload.poliPelayanan ?? [],
           practitionerPoliSelected: poliPayload,
           pegawaiUuid: props.payload?.pegawai?.uuid,
         });

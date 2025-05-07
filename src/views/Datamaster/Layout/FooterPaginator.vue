@@ -55,7 +55,6 @@ const onError = (event: any) => {
         v-if="showImport"
         mode="basic"
         accept=".xls,.xlsx"
-        :maxFileSize="1000000"
         label="Import"
         chooseLabel="Import"
         auto

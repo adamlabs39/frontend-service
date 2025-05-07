@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed, nextTick } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -161,8 +161,10 @@ const schema = toTypedSchema(
               tarifKomponenUuid: yup
                 .string()
                 .required("Komponen Tarif harus dipilih"),
-              tarifPerKomponen: yup.number().required("Harga bed harus diisi"),
-              persentase: yup.number().required("Persentasi harus diisi"),
+              tarifPerKomponen: yup
+                .number()
+                .required("Harga komponen tarif harus diisi"),
+              persentase: yup.number().notRequired(),
             })
           ),
           presentase: yup.bool().default(false),
@@ -426,10 +428,10 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    values.tagUnitPelayanan = values.unitPelayanan
-    delete values.unitPelayanan
-    values.tagPenjamin = values.penjamin
-    delete values.penjamin
+    values.tagUnitPelayanan = values.unitPelayanan;
+    delete values.unitPelayanan;
+    values.tagPenjamin = values.penjamin;
+    delete values.penjamin;
     if (!values.presentase) {
       values.grandTotal = grandTotalData.value;
       console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
@@ -511,25 +513,28 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
+        const clonedPayload = JSON.parse(JSON.stringify(props.payload));
+        unitPelayanan.value = clonedPayload.tagUnitPelayanan;
         const unitPelayananPayload =
-          props.payload.pelayanan?.map(
+          clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) =>
               item.unitPelayanan
           ) || [];
-
         const tempUnitPelayanan =
-          props.payload.pelayanan?.map(
+          clonedPayload.tagUnitPelayanan?.map(
             (item: { unitPelayanan: number; uuid: string }) => ({
               unitPelayanan: item.unitPelayanan,
               uuid: item.uuid,
             })
           ) || [];
+
+        penjamin.value = clonedPayload.tagPenjamin;
         const penjaminPayload =
-          props.payload.penjamin?.map(
+          clonedPayload.tagPenjamin?.map(
             (item: { penjaminUuid: string }) => item.penjaminUuid
           ) || [];
         const tempPenjaminObject =
-          props.payload.penjamin?.map(
+          clonedPayload.tagPenjamin?.map(
             (item: { penjaminUuid: string; uuid: string }) => ({
               penjaminUuid: item.penjaminUuid,
               uuid: item.uuid,
@@ -537,15 +542,16 @@ watch(
           ) || [];
 
         setValues({
-          ...props.payload,
+          ...clonedPayload,
           unitPelayananSelected: unitPelayananPayload,
           penjaminSelected: penjaminPayload,
-          tarifLab: props.payload.lab,
+          tarifLab: clonedPayload.lab,
+          modePilihanTarif: clonedPayload.mode,
         });
         tempPelayanan.value = tempUnitPelayanan;
         tempPenjamin.value = tempPenjaminObject;
-        tempTindakan.value = props.payload.tindakan;
-        tempTarifLab.value = props.payload.lab;
+        tempTindakan.value = clonedPayload.tindakan;
+        tempTarifLab.value = clonedPayload.lab;
       }
     } else {
       resetForm();
@@ -592,7 +598,6 @@ const handlePersentase = (
   tindakanIndex: number,
   komponenIndex: number
 ) => {
-  console.log(komponenIndex);
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
   const tarifPerKomponen = (inputPersentase / 100) * tindakan.totalHarga;
   tindakan.komponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
@@ -606,6 +611,20 @@ const handleTotalKomponen = (tindakanIndex: any) => {
   tindakan.totalHarga = tindakan.komponenTarif.reduce((sum, komponen) => {
     return sum + (komponen.tarifPerKomponen || 0);
   }, 0);
+};
+
+const handleGrandTotal = (
+  isPresentase: boolean,
+  tindakanIndex: number,
+  totalHarga: number
+) => {
+  if (isPresentase) {
+    const tindakan = fieldsTindakan.value[tindakanIndex].value;
+    tindakan.komponenTarif.forEach((dataKomponenTarif) => {
+      dataKomponenTarif.tarifPerKomponen =
+        (dataKomponenTarif.persentase / 100) * totalHarga;
+    });
+  }
 };
 
 const formatCurrency = (value: number): string => {
@@ -889,7 +908,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                         >
                           <CustomButton
                             icon="PhPlus"
-                            label="Tindakan"
+                            label="Komponen Tarif"
                             borderColor="border-adameds-300"
                             textColor="text-adameds-300"
                             backgroundColor="bg-white"
@@ -925,6 +944,13 @@ const totalTindakan = (tindakanIndex: number): string => {
                             class="w-[200px]"
                             :invalid="!!errors.grandTotal"
                             :invalidMessage="errors.grandTotal"
+                            @update:model-value="
+                              handleGrandTotal(
+                                fieldTindakan.value.presentase,
+                                idx,
+                                fieldTindakan.value.totalHarga
+                              )
+                            "
                           >
                             <template #prependText>
                               <div
@@ -1173,7 +1199,7 @@ const totalTindakan = (tindakanIndex: number): string => {
                     bodyClass="align-top"
                   >
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifPerKomponenName || "-" }}
+                      {{ slotProps.data.tarifKomponenName || "-" }}
                     </template>
                   </Column>
                   <Column

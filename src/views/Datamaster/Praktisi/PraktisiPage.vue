@@ -40,27 +40,23 @@ const onFilterChange = (filters: string[]) => {
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    let isDoctor = false;
-    let isNonDoctor = false;
-
+    let isDoctor: string | boolean = "";
     if (
       selectedFilters.value.includes("dokter") &&
       selectedFilters.value.includes("non-dokter")
     ) {
-      isDoctor = true;
-      isNonDoctor = true;
+      isDoctor = "";
     } else if (selectedFilters.value.includes("dokter")) {
       isDoctor = true;
     } else if (selectedFilters.value.includes("non-dokter")) {
-      isNonDoctor = true;
+      isDoctor = false;
     }
 
     const response = await praktisiStore.getApi({
       page: praktisiProperties.value.page,
       limit: praktisiProperties.value.page_size,
       name: searchQuery.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
+      isDoctor: isDoctor,
     });
 
     if (response && response.payload) {
@@ -330,12 +326,14 @@ const downloadExportExcel = async () => {
           <template #body="slotProps">
             <div>
               {{
-                slotProps.data.pegawai?.firstTitle
+                slotProps.data.pegawai?.firstTitle &&
+                slotProps.data.pegawai?.firstTitle != "-"
                   ? slotProps.data.pegawai?.firstTitle + ". "
                   : ""
               }}{{ slotProps.data.pegawai?.name
               }}{{
-                slotProps.data.pegawai?.lastTitle
+                slotProps.data.pegawai?.lastTitle &&
+                slotProps.data.pegawai?.lastTitle != "-"
                   ? ", " + slotProps.data.pegawai?.lastTitle
                   : ""
               }}

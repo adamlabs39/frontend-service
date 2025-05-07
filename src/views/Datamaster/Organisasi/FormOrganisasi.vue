@@ -112,7 +112,6 @@ const fetchKelurahan = async (kecamatanId: string) => {
   }
 };
 onMounted(() => {
-  fetchOrganisasi();
   fetchProvinsi();
 });
 const phoneRegExp =
@@ -142,16 +141,12 @@ const schema = toTypedSchema(
         prov: yup.string().required("Provinsi harus dipilih"),
         city: yup.string().required("Kab/Kota harus dipilih"),
         district: yup.string().required("Kecamatan harus dipilih"),
-        rt: yup.string().required("RT harus diisi"),
-        rw: yup.string().required("RW harus diisi"),
         village: yup.string().required("Kelurahan harus dipilih"),
         postalCode: yup.string().required("Kode Pos harus diisi"),
         country: yup.string().default("Indonesia"),
       }),
       satuSehatId: yup.string().notRequired(),
-      organizationIhsNumber: yup
-        .string()
-        .required("IHS No. Organization harus diisi"),
+      organizationIhsNumber: yup.string().notRequired(),
     })
     .noUnknown()
 );
@@ -174,8 +169,6 @@ const [provinsi] = defineField("address.prov");
 const [kabupaten] = defineField("address.city");
 const [kecamatan] = defineField("address.district");
 const [kelurahan] = defineField("address.village");
-const [rt] = defineField("address.rt");
-const [rw] = defineField("address.rw");
 const [satuSehatId] = defineField("satuSehatId");
 const [organizationIhsNumber] = defineField("organizationIhsNumber");
 
@@ -184,7 +177,7 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (!values.partOf) {
-      delete values.partOf
+      delete values.partOf;
     }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -258,6 +251,7 @@ watch(
   async (newValue) => {
     if (newValue) {
       resetDialogMode();
+      fetchOrganisasi();
 
       // Check if we are editing, and if so, set initial values
       if (props.method !== "add" && props.payload) {
@@ -398,35 +392,17 @@ watch(
         <CustomTextfield
           label="Kode Pos"
           v-model="kodePos"
-          placeholder="Pilih Kode Pos"
+          placeholder="Kode Pos"
           class="col-span-4"
           :invalid="!!errors['address.postalCode']"
           :invalidMessage="errors['address.postalCode']"
           :required="errors['address.postalCode'] ? true : false"
         />
         <CustomTextfield
-          label="RT"
-          v-model="rt"
-          placeholder="RT"
-          class="col-span-4"
-          :invalid="!!errors['address.rt']"
-          :invalidMessage="errors['address.rt']"
-          :required="errors['address.rt'] ? true : false"
-        />
-        <CustomTextfield
-          label="RW"
-          v-model="rw"
-          placeholder="RW"
-          class="col-span-4"
-          :invalid="!!errors['address.rw']"
-          :invalidMessage="errors['address.rw']"
-          :required="errors['address.rw'] ? true : false"
-        />
-        <CustomTextArea
           label="Alamat"
           v-model="alamat"
           placeholder="Alamat"
-          class="col-span-12"
+          class="col-span-8"
           :invalid="!!errors['address.fullAddress']"
           :invalidMessage="errors['address.fullAddress']"
           :required="errors['address.fullAddress'] ? true : false"
@@ -439,7 +415,7 @@ watch(
           :options="organisasiPayload"
           optionValue="uuid"
           optionLabel="name"
-          />
+        />
         <CustomTextfield
           label="ID SATUSEHAT"
           v-model="satuSehatId"
@@ -448,14 +424,14 @@ watch(
           :invalid="!!errors.satuSehatId"
           :invalidMessage="errors.satuSehatId"
         />
-        <CustomTextfield
+        <!-- <CustomTextfield
           label="IHS No. Organization"
           v-model="organizationIhsNumber"
           placeholder="IHS No. Organization"
           class="col-span-12"
           :invalid="!!errors.organizationIhsNumber"
           :invalidMessage="errors.organizationIhsNumber"
-        />
+        /> -->
         <hr class="col-span-12 border-grey-200" />
         <CustomSwitch
           v-model="status"
@@ -506,7 +482,7 @@ watch(
         />
         <CustomInfoRow
           label="Part Of Name"
-          :value="payload.address.partOfName ?? '-'"
+          :value="payload.partOfName ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"

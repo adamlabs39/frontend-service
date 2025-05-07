@@ -48,11 +48,11 @@ const fetchPraktisi = async () => {
   // FIXME Masih menggunakan api biasa dan filter by FE
   const responseDpjp = await praktisiStore.getApi({
     limit: 9999,
-    non_doctor: false,
+    isDoctor: true,
   });
   if (responseDpjp && responseDpjp.payload) {
     dokterPelaksanas.value = responseDpjp.payload.filter(
-      (praktisi: any) => praktisi.isDoctor && praktisi.status
+      (praktisi: any) => praktisi.status
     );
   }
 };

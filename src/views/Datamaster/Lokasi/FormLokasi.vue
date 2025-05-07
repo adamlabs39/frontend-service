@@ -192,6 +192,7 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
+      fetchLokasi();
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         setValues({
@@ -355,8 +356,8 @@ watch(
           :value="payload.partOfName ?? '-'"
         />
         <CustomInfoRow
-          label="Organization ID"
-          :value="payload.OrganisasiId ?? '-'"
+          label="IHS No. Organization"
+          :value="payload.organizationIhsNumber ?? '-'"
         />
         <CustomInfoRow
           label="ID SATUSEHAT"
