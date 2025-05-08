@@ -210,6 +210,10 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
     if (responseDetailPelayanan && responseDetailPelayanan.payload) {
       openedPatientData.value = responseDetailPelayanan.payload;
       openedPatientData.value.rekamMedisUuid = event.data.rekamMedisUuid;
+      // NOTE Get Praktisi Data
+      openedPatientData.value.practitioner = praktisiPayload.value.find(
+        (praktisi) => praktisi.uuid == openedPatientData.value.practitionerUuid
+      );
     }
     let response: any;
     if (openedPatientData.value.rekamMedisUuid) {
@@ -228,7 +232,7 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
           detail: "",
           life: 3000,
         });
-        return
+        return;
       }
 
       response = await rekamMedisStore.createRekamMedis({
@@ -277,14 +281,12 @@ const fetchPraktisiData = async () => {
   storeUtils.setLoading(true);
   try {
     let isDoctor = true;
-    let isNonDoctor = false;
 
     const response = await praktisiStore.getApi({
       page: praktisiProperties.value.page,
       limit: praktisiProperties.value.page_size,
       name: searchDoctor.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
+      isDoctor: isDoctor,
     });
 
     if (response && response.payload) {
