@@ -1,22 +1,17 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, computed } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import type { PropType } from "vue";
 
-const tandaVital = ref({
-  tekananDarah: "",
-  frekuensiNafas: "",
-  frekuensiNadi: "",
-  suhu: "",
+const props = defineProps({
+  tandaVitalData: {
+    type: Object as PropType<any>,
+    default: () => {},
+  },
 });
 
-onMounted(() => {
-  tandaVital.value = {
-    tekananDarah: "100/80",
-    frekuensiNafas: "20",
-    frekuensiNadi: "80",
-    suhu: "36",
-  };
-});
+const tandaVital = computed(() => props.tandaVitalData);
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -47,24 +42,27 @@ defineExpose({
         <div class="flex flex-col">
           <div class="text-sm font-semibold">Tekanan Darah</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.tekananDarah }} mmHg
+            {{ tandaVital?.tekananDarahSistole }}/{{
+              tandaVital?.tekananDarahDiastole
+            }}
+            mmHg
           </div>
         </div>
         <div class="flex flex-col">
           <div class="text-sm font-semibold underline">Frekuensi Nafas</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.frekuensiNafas }} x/mnt
+            {{ tandaVital?.frekuensiNafas }} x/mnt
           </div>
         </div>
         <div class="flex flex-col">
           <div class="text-sm font-semibold underline">Frekuensi Nadi</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.frekuensiNadi }} x/mnt
+            {{ tandaVital?.frekuensiNadi }} x/mnt
           </div>
         </div>
         <div class="flex flex-col">
           <div class="text-sm font-semibold">Suhu</div>
-          <div class="font-normal text-normal">{{ tandaVital.suhu }} °C</div>
+          <div class="font-normal text-normal">{{ tandaVital?.suhu }} °C</div>
         </div>
       </div>
     </template>

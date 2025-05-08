@@ -842,6 +842,7 @@ defineExpose({ showDialogRM });
                   <TandaVital
                     id="Tanda Vital"
                     :ref="refs.tandaVital"
+                    :tandaVitalData="dataResumeMedis.tandaVitalAwal"
                     method="form"
                     initialState="0"
                     class="mb-[10px]"
@@ -861,11 +862,12 @@ defineExpose({ showDialogRM });
                     method="form"
                     initialState="0"
                     class="mb-[10px]"
-                  />
-                  <KeadaanWaktuPulang
+                    />
+                    <KeadaanWaktuPulang
                     id="Keadaan Waktu Pulang"
                     :ref="refs.keadaanWaktuPulang"
                     v-model="segmentRMKondisi"
+                    :tandaVitalPulangData="dataResumeMedis.tandaVitalPulang"
                     method="form"
                     initialState="0"
                     class="mb-[10px]"

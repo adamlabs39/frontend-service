@@ -1,22 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, type PropType, computed } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-const tandaVital = ref({
-  tekananDarah: "",
-  frekuensiNafas: "",
-  frekuensiNadi: "",
-  suhu: "",
+
+const props = defineProps({
+  tandaVitalPulangData: {
+    type: Object as PropType<any>,
+    default: () => {},
+  },
 });
 
-onMounted(() => {
-  tandaVital.value = {
-    tekananDarah: "100/80",
-    frekuensiNafas: "20",
-    frekuensiNadi: "80",
-    suhu: "36",
-  };
-});
+const tandaVital = computed(() => props.tandaVitalPulangData);
 
 const optionsKondisiPasien = ref([
   { label: "Stabil", value: "359746009" },
@@ -58,24 +52,27 @@ defineExpose({
         <div class="flex flex-col col-span-3">
           <div class="font-semibold text-SM">Tekanan Darah</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.tekananDarah }} mmHg
+            {{ tandaVital?.tekananDarahSistole }}/{{
+              tandaVital?.tekananDarahDiastole
+            }}
+            mmHg
           </div>
         </div>
         <div class="flex flex-col col-span-3">
           <div class="font-semibold underline text-SM">Frekuensi Nafas</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.frekuensiNafas }} x/mnt
+            {{ tandaVital?.frekuensiNafas }} x/mnt
           </div>
         </div>
         <div class="flex flex-col col-span-3">
           <div class="font-semibold underline text-SM">Frekuensi Nadi</div>
           <div class="font-normal text-normal">
-            {{ tandaVital.frekuensiNadi }} x/mnt
+            {{ tandaVital?.frekuensiNadi }} x/mnt
           </div>
         </div>
         <div class="flex flex-col col-span-3">
           <div class="font-semibold text-SM">Suhu</div>
-          <div class="font-normal text-normal">{{ tandaVital.suhu }} °C</div>
+          <div class="font-normal text-normal">{{ tandaVital?.suhu }} °C</div>
         </div>
         <CustomSelect
           v-model="modelValue"

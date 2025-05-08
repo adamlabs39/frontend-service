@@ -5,8 +5,6 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import { dateToEpoch } from "@/utils/Helpers";
 
 const optionsStatusPulang = ref([
   { label: "Pulang Atas Persetujuan Dokter", value: "home" },
