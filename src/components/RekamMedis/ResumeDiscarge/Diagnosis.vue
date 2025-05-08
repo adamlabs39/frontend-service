@@ -1,32 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const diagnosis = ref<any[]>([]);
 
-onMounted(() => {
-  diagnosis.value = [
-    {
-      namaDiagnosis: "Diagnosis Primer",
-      tipeDiagnosis: "Primer",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-  ];
+const props = defineProps({
+  diagnosisData: {
+    type: Array as PropType<any>,
+    default: () => [],
+  },
 });
+
+const diagnosis = computed(() => props.diagnosisData);
+
 const selectedPemeriksaan = ref();
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -47,7 +31,11 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Diagnosis </template>
     <template #content>
       <DataTable
@@ -68,12 +56,12 @@ defineExpose({
           </template>
         </Column>
         <Column
-          field="namaDiagnosis"
+          field="diagnosis"
           header="Nama Diagnosis"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="tipeDiagnosis"
+          field="tipe"
           header="Tipe Diagnosis"
           headerClass="bg-adameds-50"
         >
@@ -94,11 +82,11 @@ defineExpose({
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
   @apply text-white;
 }
 </style>

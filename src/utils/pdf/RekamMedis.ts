@@ -431,33 +431,59 @@ export async function createSuratPersetujuanTindakan({
             ],
             [
               {
-                stack: [
-                  {
-                    text: `${
-                      data.documentData.dokterUuid?.pegawai?.firstTitle &&
-                      data.documentData.dokterUuid?.pegawai?.firstTitle != "-"
-                        ? `${data.documentData.dokterUuid?.pegawai?.firstTitle} `
-                        : ""
-                    }${data.documentData.dokterUuid?.pegawai?.name} ${
-                      data.documentData.dokterUuid?.pegawai?.lastTitle &&
-                      data.documentData.dokterUuid?.pegawai?.lastTitle != "-"
-                        ? `${data.documentData.dokterUuid?.pegawai?.lastTitle} `
-                        : ""
-                    }`,
-                    decoration: "underline",
-                    marginBottom: 1,
-                  },
-                  `SIP: ${data.documentData.dokterUuid?.sip}`,
-                ],
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${
+                          data.documentData.dokterUuid?.pegawai?.firstTitle &&
+                          data.documentData.dokterUuid?.pegawai?.firstTitle !=
+                            "-"
+                            ? `${data.documentData.dokterUuid?.pegawai?.firstTitle} `
+                            : ""
+                        }${data.documentData.dokterUuid?.pegawai?.name} ${
+                          data.documentData.dokterUuid?.pegawai?.lastTitle &&
+                          data.documentData.dokterUuid?.pegawai?.lastTitle !=
+                            "-"
+                            ? `${data.documentData.dokterUuid?.pegawai?.lastTitle} `
+                            : ""
+                        }`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                    [
+                      {
+                        text: `SIP: ${data.documentData.dokterUuid?.sip}`,
+                        border: [false, true, false, false],
+                      },
+                    ],
+                  ],
+                },
               },
               "",
               {
-                text: `${
-                  data.documentData.penerima == "pasien"
-                    ? data.patientData.patient.name
-                    : data.documentData.namaKeluarga
-                }`,
-                decoration: "underline",
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${
+                          data.documentData.penerima == "pasien"
+                            ? data.patientData.patient.name
+                            : data.documentData.namaKeluarga
+                        }`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                  ],
+                },
               },
             ],
           ],
@@ -518,13 +544,37 @@ export async function createSuratPersetujuanTindakan({
             ],
             [
               {
-                text: `${data.documentData.saksi1}`,
-                decoration: "underline",
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${data.documentData.saksi1}`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                  ],
+                },
               },
               "",
               {
-                text: `${data.documentData.saksi2}`,
-                decoration: "underline",
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${data.documentData.saksi2}`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                  ],
+                },
               },
             ],
           ],

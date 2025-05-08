@@ -6,6 +6,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomRadio from "@/components/Base/CustomRadio.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import { dateToEpoch } from "@/utils/Helpers";
 
 const optionsStatusPulang = ref([
   { label: "Pulang Atas Persetujuan Dokter", value: "home" },
@@ -25,25 +26,43 @@ const optionsTujuanRujuk = ref([
 ]);
 const optionsTransportRujuk = ref([
   { label: "Ambulans", value: "AMB" },
-  { label: "oth", value: "Lain-lain" },
+  { label: "Lain-lain", value: "oth" },
 ]);
 const optionsIsInternal = ref([
   { label: "Internal", value: true },
   { label: "Eksternal", value: false },
 ]);
-const statusPulang = ref();
-const pengantarRujukan = ref();
-const dischargeDate = ref<Date>(new Date());
-const statusPulangKeterangan = ref();
-const isInternal = ref();
-const instruksiTindakLanjut = ref();
-const rujukInternal = ref();
-const rujukEksternal = ref();
-const tujuanRujuk=ref()
-const tujuanRujukLainnya=ref()
-const instruksiNoDarurat=ref()
-const transportRujuk=ref()
-const transportRujukLainnya=ref()
+
+const modelValue = defineModel<{
+  statusPulang: string;
+  statusPulangKeterangan: string;
+  dischargeDate: any;
+  isInternal: boolean;
+  rujukInternal: string;
+  rujukEksternal: string;
+  instruksiTindakLanjut: string;
+  tujuanRujuk: string;
+  tujuanRujukLainnya: string;
+  transportRujuk: string;
+  transportRujukLainnya: string;
+  instruksiNoDarurat: string;
+}>("modelValue", {
+  default: () => ({
+    statusPulang: "",
+    statusPulangKeterangan: "",
+    dischargeDate: new Date(),
+    isInternal: true,
+    rujukInternal: "",
+    rujukEksternal: "",
+    instruksiTindakLanjut: "",
+    tujuanRujuk: "",
+    tujuanRujukLainnya: "",
+    transportRujuk: "",
+    transportRujukLainnya: "",
+    instruksiNoDarurat: "",
+  }),
+});
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -62,13 +81,17 @@ defineExpose({
 });
 </script>
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Status Pulang </template>
     <template #content>
       <div class="flex flex-col gap-5 pt-5">
         <div class="flex gap-[30px]">
           <CustomSelect
-            v-model="statusPulang"
+            v-model="modelValue.statusPulang"
             label="Status Pulang"
             place-holder="Pilih Status Pulang"
             :options="optionsStatusPulang"
@@ -77,18 +100,18 @@ defineExpose({
             class="grow"
           />
           <CustomTextfield
-            v-if="statusPulang === 'oth'"
-            v-model="statusPulangKeterangan"
+            v-if="modelValue.statusPulang === 'oth'"
+            v-model="modelValue.statusPulangKeterangan"
             label="Keterangan"
             placeholder="Keterangan"
           />
           <CustomDatePicker
-            v-model="dischargeDate"
+            v-model="modelValue.dischargeDate"
             label="Tanggal Discharge"
             class="col-span-1"
           />
         </div>
-        <div v-if="statusPulang === 'other-hfc'" class="flex flex-col gap-5">
+        <div v-if="modelValue.statusPulang === 'other-hfc'" class="flex flex-col gap-5">
           <hr class="border-grey-200 my-2.5" />
 
           <div class="flex gap-[30px]">
@@ -98,14 +121,14 @@ defineExpose({
               <div class="col-span-2 font-semibold text-normal">Rujukan</div>
               <CustomRadio
                 v-for="data in optionsIsInternal"
-                v-model="isInternal"
+                v-model="modelValue.isInternal"
                 :sideLabel="data.label"
-                :value="`${data.value}`"
+                :value="data.value"
               />
             </div>
             <CustomSelect
-              v-if="isInternal"
-              v-model="rujukInternal"
+              v-if="modelValue.isInternal"
+              v-model="modelValue.rujukInternal"
               :options="optionsRujukInternal"
               option-label=""
               option-value=""
@@ -114,8 +137,8 @@ defineExpose({
               class="grow"
             />
             <CustomSelect
-              v-if="!isInternal"
-              v-model="rujukEksternal"
+              v-else
+              v-model="modelValue.rujukEksternal"
               :options="optionsRujukEksternal"
               option-label=""
               option-value=""
@@ -125,7 +148,7 @@ defineExpose({
             />
             <CustomTextfield
               label="Instruksi Tindak Lanjut"
-              v-model="instruksiTindakLanjut"
+              v-model="modelValue.instruksiTindakLanjut"
               placeholder="Instruksi Tindak Lanjut"
               class="grow"
             />
@@ -133,7 +156,7 @@ defineExpose({
           <div class="flex gap-[30px]">
             <CustomSelect
               label="Tujuan Rujukan"
-              v-model="tujuanRujuk"
+              v-model="modelValue.tujuanRujuk"
               :options="optionsTujuanRujuk"
               option-label="label"
               option-value="value"
@@ -141,22 +164,23 @@ defineExpose({
               class="grow"
             />
             <CustomTextfield
+              v-if="modelValue.tujuanRujuk == 'oth'"
               label="Keterangan"
-              v-model="statusPulangKeterangan"
+              v-model="modelValue.tujuanRujukLainnya"
               placeholder="Keterangan"
               class="grow"
             />
           </div>
           <div class="flex gap-[30px]">
-            <CustomInputNumber
+            <CustomTextfield
               label="No. Darurat"
-              v-model="instruksiNoDarurat"
+              v-model="modelValue.instruksiNoDarurat"
               placeholder="08xxx-xxxx-xxxx"
               class="grow"
             />
             <CustomSelect
               label="Transportasi"
-              v-model="transportRujuk"
+              v-model="modelValue.transportRujuk"
               :options="optionsTransportRujuk"
               option-label="label"
               option-value="value"
@@ -164,8 +188,9 @@ defineExpose({
               class="grow"
             />
             <CustomTextfield
+              v-if="modelValue.transportRujuk == 'oth'"
               label="Transportasi Lainnya"
-              v-model="transportRujukLainnya"
+              v-model="modelValue.transportRujukLainnya"
               placeholder="Transportasi Lainnya"
               class="grow"
             />

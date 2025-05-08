@@ -1,32 +1,25 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const pemeriksaanFisik = ref<any[]>([]);
 
-onMounted(() => {
-  pemeriksaanFisik.value = [
-    {
-      lokasiFisik: "Kepala",
-      hasilPemeriksaan: "-",
-    },
-    {
-      lokasiFisik: "Mata",
-      hasilPemeriksaan: "Mata perih",
-    },
-    {
-      lokasiFisik: "Telinga",
-      hasilPemeriksaan: "-",
-    },
-    {
-      lokasiFisik: "Tenggorokan",
-      hasilPemeriksaan: "-",
-    },
-    {
-      lokasiFisik: "Mulut",
-      hasilPemeriksaan: "-",
-    },
-  ];
+const props = defineProps({
+  pemeriksaanFisikData: {
+    type: Object as PropType<any>,
+    default: () => {},
+  },
 });
+
+const pemeriksaanFisik = computed(() => {
+  if (props.pemeriksaanFisikData) {
+    return Object.entries(props.pemeriksaanFisikData).map(
+      ([organ, keterangan]) => ({
+        organ,
+        keterangan,
+      })
+    );
+  } else return [];
+});
+
 const selectedPemeriksaan = ref();
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -47,7 +40,11 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Pemeriksaan Fisik </template>
     <template #content>
       <DataTable
@@ -58,16 +55,18 @@ defineExpose({
         class="pt-5 text-xs"
       >
         <Column
-          field="lokasiFisik"
+          field="organ"
           header="Lokasi Fisik"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="hasilPemeriksaan"
           header="Hasil Pemeriksaan"
           headerClass="bg-adameds-50"
           class="w-4/6"
         >
+          <template #body="{ data }">
+            {{ data.keterangan == "" ? "-" : data.keterangan }}
+          </template>
         </Column>
         <Column
           body-class="text-center"
@@ -85,11 +84,11 @@ defineExpose({
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
   @apply text-white;
 }
 </style>
