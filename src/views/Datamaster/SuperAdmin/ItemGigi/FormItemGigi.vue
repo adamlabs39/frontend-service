@@ -304,7 +304,9 @@ const clearItemGigiPreview = () => {
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
         <CustomInfoRow
           label="Catatan"
-          :value="payload.catatan === '' ? '-' : '-'"
+          :value="
+            payload.catatan && payload.catatan != '' ? payload.catatan : '-'
+          "
         />
         <hr class="border-grey-200" />
         <!-- <CustomInfoRow label="Status" :value="payload.status">
