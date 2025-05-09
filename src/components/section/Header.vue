@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { watch } from "vue";
 import type { ListMenu, Module } from "@/utils/Interface";
 import { onMounted, ref, onBeforeMount } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
-import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
-import CustomSelect from "../Base/CustomSelect.vue";
 
 interface userData {
   name: string;
@@ -134,7 +131,6 @@ const logout = async () => {
 
 onBeforeMount(async () => {
   await fetchFaskes();
-  console.log(faskesUuid.value);
   authStore.setFaskesUuid(faskesUuid.value ?? "");
   emit("selectedFaskes");
 });
@@ -149,7 +145,7 @@ onMounted(() => {
     const listPermission: Module[] = JSON.parse(listPermissionStr);
     listPermission.forEach((module) => {
       const listMenuFind = templistMenu.value.find(
-        (menu) => menu.title == module.module && menu.title != 'Dashboard'
+        (menu) => menu.title == module.module && menu.title != "Dashboard"
       );
       if (listMenuFind) {
         listMenu.value.push(listMenuFind);
@@ -186,6 +182,7 @@ const updateDataFaskes = async (value: string) => {
   localStorage.setItem("faskes", JSON.stringify(response.payload));
   authStore.setFaskesUuid(value);
   loadFaskesFromLocalStorage();
+  window.location.reload()
 };
 
 const loadFaskesFromLocalStorage = () => {
