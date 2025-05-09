@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useKategoriPemeriksaanStore } from "@/stores/datamasterLaboratorium/kategoriPemeriksaan";
+import * as XLSX from "xlsx-js-style";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -27,9 +28,6 @@ const kategoriPemeriksaanProperties = ref({
   total: 0,
 });
 const searchQuery = ref<string>("");
-const handleSearchQuery = (searchValue: string) => {
-  searchQuery.value = searchValue;
-};
 
 // Fetch Data Kategori Pemeriksaan
 const fetchKategoriPemeriksaan = async () => {
@@ -160,6 +158,180 @@ const handlePage = (event: any) => {
   fetchKategoriPemeriksaan();
 };
 
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchKategoriPemeriksaan();
+  }, 500);
+});
+
+// Import Excel
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await kategoriPemeriksaanStore.importApi(dataUpload);
+    fetchKategoriPemeriksaan();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+// Export Excel
+const ExportExcel = async () => {
+  try {
+    const response = await kategoriPemeriksaanStore.getApi({
+      page: kategoriPemeriksaanProperties.value.page,
+      limit: kategoriPemeriksaanProperties.value.page_size,
+      name: searchQuery.value,
+    });
+    const rows = response.payload.data;
+    console.log("rows", rows);
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER KATEGORI PEMERIKSAAN"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Kode: "Kode Spesimen",
+      Nama: "Nama Spesimen",
+      NoUrut: "No. Urut",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Kode: rows[i].code,
+        Nama: rows[i].name,
+        NoUrut: rows[i].noUrut,
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:E1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        worksheet[cellAddress].s.alignment = {
+          horizontal: "center",
+          vertical: "center",
+        };
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Kategori Pemeriksaan"
+    );
+    XLSX.writeFile(workbook, `Datamaster Kategori Pemeriksaan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+// Download Excel
+const downloadExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Kode: "Kode Kategori Pemeriksaa*",
+      Nama: "Nama Kategori Pemeriksaan*",
+      NoUrut: "No Urut*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+    data.push({ No: "1", Kode: "HMT-001", Nama: "Hematologi", NoUrut: 1 });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:D5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Kategori Pemeriksaan");
+    XLSX.writeFile(workbook, `Format Datamaster Kategori Pemeriksaan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
 onMounted(async () => {
   await fetchKategoriPemeriksaan();
 });
@@ -177,7 +349,11 @@ onMounted(async () => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchKategoriPemeriksaan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -209,7 +385,6 @@ onMounted(async () => {
             <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
-                @input="handleSearchQuery($event.target.value)"
                 label="Cari Kategori Pemeriksaan"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Kategori Pemeriksaan"
@@ -357,13 +532,26 @@ onMounted(async () => {
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
-            </CustomButton>
-            <CustomButton label="Eksport">
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton label="Eksport" @click="ExportExcel">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton label="Eksport" @click="downloadExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>

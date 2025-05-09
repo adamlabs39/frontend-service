@@ -11,6 +11,7 @@ import TambahDataItem from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/Tamb
 import DialogNilaiRujukanAngka from "./DialogNilaiRujukanAngka.vue";
 import DialogRujukanText from "./DialogRujukanText.vue";
 import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
+import * as XLSX from "xlsx-js-style";
 import DialogDelete from "../../Layout/DialogDelete.vue";
 
 const addItemDialog = ref(false);
@@ -25,7 +26,7 @@ const itemPemeriksaanProperties = ref({
   total: 0,
 });
 const itemPemeriksaanPayload = ref(<any>[]);
-const searchQuery = ref("");
+const searchQuery = ref<string>("");
 const handleSearchQuery = (searchValue: string) => {
   searchQuery.value = searchValue;
 };
@@ -65,6 +66,15 @@ const dialogNilaiRujukanAngkaConfig = ref<any>({
 const dialogNilaiRujukanAngka = (method: string, data: any = null) => {
   dialogNilaiRujukanAngkaConfig.value = { method, data };
   nilaiRujukanAngka.value = true;
+};
+
+const dialogNilaiRujukanTextConfig = ref<any>({
+  method: "add",
+  data: null,
+});
+const dialogNilaiRujukanText = (method: string, data: any = null) => {
+  dialogNilaiRujukanTextConfig.value = { method, data };
+  nilaiRujukanText.value = true;
 };
 
 // Add and edit
@@ -154,6 +164,14 @@ const resetForm = () => {
   tambahDataDialogRef.value?.resetForm();
 };
 
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchItemPemeriksaan();
+  }, 500);
+});
+
 // Handle Page
 const handlePage = (event: any) => {
   itemPemeriksaanProperties.value.page = event.page + 1;
@@ -161,6 +179,324 @@ const handlePage = (event: any) => {
   fetchItemPemeriksaan();
 };
 
+// Import Excel
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await itemPemeriksaanStore.importApi(dataUpload);
+    fetchItemPemeriksaan();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export - Item Pemeriksaan Sheet
+    const itemPemeriksaanData = [];
+
+    // Header Row for Item Pemeriksaan
+    itemPemeriksaanData.push({
+      No: "No",
+      "Kode Item Pemeriksaan*": "Kode Item Pemeriksaan*",
+      "Nama Item Pemeriksaan*": "Nama Item Pemeriksaan*",
+      "No Urut*": "No Urut*",
+      "Kategori Pemeriksaan*": "Kategori Pemeriksaan*",
+      Satuan: "Satuan",
+      Metode: "Metode",
+      "Jenis Input*": "Jenis Input*",
+      "Pilihan Hasil": "Pilihan Hasil",
+      "Snomed-CT": "Snomed-CT",
+      "ICD 9 - CM": "ICD 9 - CM",
+      "LOINC*": "LOINC*",
+      "Status Nilai Rujukan*": "Status Nilai Rujukan*",
+    });
+
+    // Example data rows for Item Pemeriksaan
+    itemPemeriksaanData.push({
+      No: "1.0",
+      "Kode Item Pemeriksaan*": "HP-001",
+      "Nama Item Pemeriksaan*": "Hemoglobin Parsial",
+      "No Urut*": "1.0",
+      "Kategori Pemeriksaan*": "HMT-009",
+      Satuan: "g/dl",
+      Metode: "Colorimatic",
+      "Jenis Input*": "angka",
+      "Pilihan Hasil": "",
+      "Snomed-CT": "snomed-007",
+      "ICD 9 - CM": "icd9-006",
+      "LOINC*": "Loinc98-001",
+      "Status Nilai Rujukan*": "true",
+    });
+
+    itemPemeriksaanData.push({
+      No: "2.0",
+      "Kode Item Pemeriksaan*": "HL-009",
+      "Nama Item Pemeriksaan*": "Hemtokrit Lengkap",
+      "No Urut*": "2.0",
+      "Kategori Pemeriksaan*": "KKL-002",
+      Satuan: "%",
+      Metode: "Impedance",
+      "Jenis Input*": "angka",
+      "Pilihan Hasil": "",
+      "Snomed-CT": "",
+      "ICD 9 - CM": "icd9-007",
+      "LOINC*": "Loinc98-002",
+      "Status Nilai Rujukan*": "false",
+    });
+
+    const nilaiRujukanData = [
+      // Main Header Row
+      [
+        "No",
+        "Kode Item Pemeriksaan*",
+        "Jenis Kelamin*",
+        "Umur Bawah*",
+        "",
+        "",
+        "Umur Atas*",
+        "",
+        "",
+        "Nilai Normal Angka",
+        "",
+        "",
+        "Kritis Bawah",
+        "",
+        "Kritis Atas",
+        "",
+        "Nilai Normal Text",
+        "Status",
+      ],
+      // Sub Header Row
+      [
+        "",
+        "",
+        "",
+        "Tahun",
+        "Bulan",
+        "Hari",
+        "Tahun",
+        "Bulan",
+        "Hari",
+        "Batas Bawah",
+        "Operator Nilai Normal",
+        "Batas Atas",
+        "Kritis Bawah",
+        "Operator Kritis Bawah",
+        "Kritis Atas",
+        "Operator Kritis Atas",
+        "",
+        "",
+      ],
+      // Data Rows
+      [
+        "1",
+        "HP-001",
+        "Perempuan",
+        "5",
+        "1",
+        "7",
+        "20",
+        "9",
+        "4",
+        "3",
+        "-",
+        "4",
+        "7",
+        "<",
+        "5",
+        ">",
+        "",
+        "true",
+      ],
+      [
+        "2",
+        "HP-001",
+        "Laki-laki",
+        "6",
+        "5",
+        "5",
+        "12",
+        "2",
+        "2",
+        "5",
+        "-",
+        "6",
+        "8",
+        ">",
+        "6",
+        ">",
+        "",
+        "false",
+      ],
+      [
+        "3",
+        "RR-005",
+        "Perempuan",
+        "7",
+        "2",
+        "2",
+        "3",
+        "3",
+        "3",
+        "",
+        "<",
+        "7",
+        "5",
+        "<",
+        "7",
+        "<",
+        "",
+        "true",
+      ],
+      [
+        "4",
+        "LL-002",
+        "Perempuan",
+        "19",
+        "6",
+        "3",
+        "5",
+        "6",
+        "5",
+        "1",
+        "-",
+        "3",
+        "6",
+        ">",
+        "8",
+        "<",
+        "",
+        "true",
+      ],
+      [
+        "5",
+        "DD-001",
+        "General",
+        "0",
+        "0",
+        "0",
+        "9999",
+        "0",
+        "0",
+        "19",
+        ">",
+        "",
+        "9",
+        "<",
+        "9",
+        ">",
+        "",
+        "true",
+      ],
+      [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Negative,Negatif",
+        "",
+      ],
+    ];
+
+    const nilaiRujukanWS = XLSX.utils.aoa_to_sheet(nilaiRujukanData);
+
+    // Set merged cells exactly as in the example file
+    nilaiRujukanWS["!merges"] = [
+      // Merge Umur Bawah* header (D1:F1)
+      { s: { r: 0, c: 3 }, e: { r: 0, c: 5 } },
+      // Merge Umur Atas* header (G1:I1)
+      { s: { r: 0, c: 6 }, e: { r: 0, c: 8 } },
+      // Merge Nilai Normal Angka header (J1:L1)
+      { s: { r: 0, c: 9 }, e: { r: 0, c: 11 } },
+      // Merge Kritis Bawah header (M1:N1)
+      { s: { r: 0, c: 12 }, e: { r: 0, c: 13 } },
+      // Merge Kritis Atas header (O1:P1)
+      { s: { r: 0, c: 14 }, e: { r: 0, c: 15 } },
+    ];
+
+    // Set column widths for better formatting
+    nilaiRujukanWS["!cols"] = [
+      { wch: 5 }, // No
+      { wch: 20 }, // Kode Item Pemeriksaan*
+      { wch: 15 }, // Jenis Kelamin*
+      { wch: 8 }, // Tahun (Umur Bawah)
+      { wch: 8 }, // Bulan
+      { wch: 8 }, // Hari
+      { wch: 8 }, // Tahun (Umur Atas)
+      { wch: 8 }, // Bulan
+      { wch: 8 }, // Hari
+      { wch: 12 }, // Batas Bawah
+      { wch: 8 }, // Operator Nilai Normal
+      { wch: 10 }, // Batas Atas
+      { wch: 12 }, // Kritis Bawah
+      { wch: 8 }, // Operator Kritis Bawah
+      { wch: 10 }, // Kritis Atas
+      { wch: 8 }, // Operator Kritis Atas
+      { wch: 20 }, // Nilai Normal Text
+      { wch: 8 }, // Status
+    ];
+
+    // Create Workbook and Worksheets
+    const workbook = XLSX.utils.book_new();
+
+    // Add Item Pemeriksaan sheet
+    const itemPemeriksaanSheet = XLSX.utils.json_to_sheet(itemPemeriksaanData, {
+      skipHeader: true,
+    });
+    XLSX.utils.book_append_sheet(
+      workbook,
+      itemPemeriksaanSheet,
+      "Item Pemeriksaan"
+    );
+
+    // Add Nilai Rujukan sheet
+    const nilaiRujukanSheet = XLSX.utils.json_to_sheet(nilaiRujukanData, {
+      skipHeader: true,
+    });
+    XLSX.utils.book_append_sheet(workbook, nilaiRujukanSheet, "Nilai Rujukan");
+
+    // Set column widths
+    const setColumnWidths = (sheet: any, data: any[]) => {
+      const colWidths = data.reduce((widths: any, row: any) => {
+        Object.keys(row).forEach((key, colIdx) => {
+          const cellValue = row[key] ? row[key].toString() : "";
+          widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+        });
+        return widths;
+      }, []);
+
+      sheet["!cols"] = colWidths.map((wch: any) => ({ wch }));
+    };
+
+    setColumnWidths(itemPemeriksaanSheet, itemPemeriksaanData);
+    setColumnWidths(nilaiRujukanSheet, nilaiRujukanData);
+
+    // Save the workbook
+    XLSX.writeFile(workbook, `Format Import Master Item Pemeriksaan.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
 onMounted(async () => {
   await fetchItemPemeriksaan();
 });
@@ -174,62 +510,6 @@ const optionJenisInput = ref([
 ]);
 
 console.log("jenis input", optionJenisInput.value);
-
-const dataNilaiRujukan = ref([
-  {
-    item_pemeriksaan_uuid: "019527ec-2459-77dc-97a7-2552a662e521",
-    jenis_kelamin: "general",
-    umur_bawah_tahun: 1,
-    umur_bawah_bulan: 1,
-    umur_bawah_hari: 1,
-    umur_atas_tahun: 12,
-    umur_atas_hari: 1,
-    umur_atas_bulan: 1,
-    batas_bawah_nilai_normal: 5,
-    batas_atas_nilai_normal: 10,
-    kritis_bawah: 3,
-    kritis_atas: 15,
-    operator_kritis_bawah: "<",
-    operator_kritis_atas: ">",
-    operator_nilai_normal: "-",
-    status: true,
-    tampilan: "gacor",
-    text: [
-      "Negative",
-      "Negative ",
-      "NEGATIVE",
-      "NEGATIVE ",
-      "negative",
-      " negative ",
-      "Negatif",
-      "Negatif ",
-      "NEGATIF",
-      " NEGATIF ",
-      "negatif",
-      "negatif ",
-      "-",
-      "- ",
-      "Neg",
-      "Neg ",
-      "NEG",
-      "NEG ",
-      "neg",
-      "neg",
-      "Negatip",
-      "Negatip ",
-      "NEGATIP",
-      "NEGATIP ",
-      "negatip",
-      "negatip ",
-      "Neg/-",
-      "Neg/- ",
-      "NEG/-",
-      "NEG/- ",
-      "neg/-",
-      "neg/-",
-    ],
-  },
-]);
 </script>
 
 <template>
@@ -244,7 +524,11 @@ const dataNilaiRujukan = ref([
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchItemPemeriksaan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -275,6 +559,7 @@ const dataNilaiRujukan = ref([
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Item Pemeriksaan"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Item Pemeriksaan"
@@ -357,18 +642,6 @@ const dataNilaiRujukan = ref([
           >
             <template #body="slotProps">
               <div class="text-SM">{{ slotProps.data.satuan }}</div>
-            </template>
-          </Column>
-          <Column
-            field="test"
-            header="test kolom"
-            headerClass="bg-adameds-50"
-            class=""
-          >
-            <template #body="slotProps">
-              <div class="text-SM">
-                {{ slotProps.data.uuid }}
-              </div>
             </template>
           </Column>
           <Column
@@ -456,7 +729,7 @@ const dataNilaiRujukan = ref([
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
-                  @click="nilaiRujukanText = true"
+                  @click="dialogNilaiRujukanText('detail', slotProps.data)"
                 />
                 <CustomButton
                   label=""
@@ -480,13 +753,26 @@ const dataNilaiRujukan = ref([
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
-            </CustomButton>
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
             <CustomButton label="Eksport">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton label="Eksport" @click="downloadFormatExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>
@@ -503,13 +789,14 @@ const dataNilaiRujukan = ref([
     <!-- nilaiRujukanAngka Dialog -->
     <DialogNilaiRujukanAngka
       v-model:isDialogVisible="nilaiRujukanAngka"
-          :method="dialogNilaiRujukanAngkaConfig.method"
-          :payload="dialogNilaiRujukanAngkaConfig.data"
+      :method="dialogNilaiRujukanAngkaConfig.method"
+      :payload="dialogNilaiRujukanAngkaConfig.data"
     />
 
     <DialogRujukanText
-      v-model:visible="nilaiRujukanText"
-      :dataNilaiRujukan="dataNilaiRujukan"
+      v-model:isDialogVisible="nilaiRujukanText"
+      :method="dialogNilaiRujukanTextConfig.method"
+      :payload="dialogNilaiRujukanTextConfig.data"
     />
 
     <TambahDataItem

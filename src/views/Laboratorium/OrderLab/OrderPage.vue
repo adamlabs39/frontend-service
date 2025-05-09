@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
@@ -20,6 +21,7 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 
+const stores = utilsStore();
 const pageType = ref("");
 const route = useRoute();
 const rowsPerPage = ref(10);

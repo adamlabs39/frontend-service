@@ -6,6 +6,8 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import PatientIdentityForm from "../Section/DaftarOrderLab/PatientIdentityForm.vue";
 import DoctorVisitForm from "../Section/DaftarOrderLab/DoctorVisitForm.vue";
 import OrderTindakan from "../Section/DaftarOrderLab/OrderTindakan.vue";
+import { useOrderLab } from "@/stores/Laboratorium/orderLab";
+import { utilsStore } from "@/stores/utils";
 
 const props = defineProps({
   pageType: {
@@ -30,7 +32,14 @@ const props = defineProps({
   },
 });
 
+const orderLabStore = useOrderLab();
+const storeUtils = utilsStore();
+const patientIdentityForm = ref<InstanceType<typeof PatientIdentityForm> | null>(null);
+const doctorVisitForm = ref<InstanceType<typeof DoctorVisitForm> | null>(null);
+  const openedPatientData = ref<any>({});
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+
+
 </script>
 
 <template>
@@ -64,14 +73,16 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :formType="formType"
+        :isDetail="isDetail"
+        :patientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <DoctorVisitForm
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :patientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
 
@@ -79,7 +90,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :patientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
     </div>
@@ -98,6 +109,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
             label="Simpan"
             class=""
             backgroundColor="bg-adameds-300"
+            @click=""
           />
         </div>
       </template>
