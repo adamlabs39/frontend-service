@@ -78,7 +78,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  openDialog("detail", "Detail Data Gigi FDI", selectedData.value);
 };
 
 // Dialog Management
@@ -292,7 +292,7 @@ const handleFileUpload = async (file: File) => {
         pageType="gigi-fdi"
         isSuperAdmin
         @update:valueSearch="searchQuery = $event"
-        @tambah-data="openDialog('add', 'Tambah Data')"
+        @tambah-data="openDialog('add', 'Tambah Data Gigi FDI')"
         @reload-data="fetchGigiData()"
       />
     </template>
@@ -377,7 +377,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                @click="openDialog('edit', 'Edit Data Gigi FDI', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>

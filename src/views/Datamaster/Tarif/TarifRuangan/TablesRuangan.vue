@@ -149,7 +149,7 @@ const confirmDelete = () => {
             label=""
             background-color="bg-[#3D84E5] rounded-lg"
             class="h-6 w-[26px] p-0"
-            @click="FormRuanganDialog('edit', 'Edit Data', slotProps.data)"
+            @click="FormRuanganDialog('edit', 'Edit Data Tarif Ruangan', slotProps.data)"
           >
             <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>

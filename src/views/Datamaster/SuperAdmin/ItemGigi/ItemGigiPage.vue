@@ -78,7 +78,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  openDialog("detail", "Detail Data Item Gigi", selectedData.value);
 };
 
 // Dialog Management

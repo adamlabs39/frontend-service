@@ -168,7 +168,7 @@ const clearItemGigiPreview = () => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }}</template>
 
     <!-- BODY CONTENT -->
     <template #body>
@@ -346,7 +346,11 @@ const clearItemGigiPreview = () => {
           label="Reset"
           @click="resetForm()"
         ></CustomButton>
-        <CustomButton label="Simpan" @click="onSubmit"></CustomButton>
+        <CustomButton
+          v-if="method === 'add' || method === 'edit'"
+          label="Simpan"
+          @click="onSubmit"
+        ></CustomButton>
         <CustomButton
           v-if="method === 'detail'"
           label="Edit"
