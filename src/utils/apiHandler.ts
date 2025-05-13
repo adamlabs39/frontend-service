@@ -192,6 +192,7 @@ const apiAuthGet = async (url: string, data: object) => {
   }
 };
 const apiAuthPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_AUTH, url);
   try {
     let response = await authInstance.put(url, data);
     return response.data;
