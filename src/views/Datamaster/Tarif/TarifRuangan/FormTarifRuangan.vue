@@ -226,7 +226,7 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah Tarif</template>
+    <template #header>{{ title }}</template>
     <template #body>
       <!-- Form Input -->
       <div

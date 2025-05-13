@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { watch } from "vue";
 import type { ListMenu, Module } from "@/utils/Interface";
 import { onMounted, ref, onBeforeMount } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
-import CustomDialog from "../Base/CustomDialog.vue";
 import CustomButton from "../Base/CustomButton.vue";
 import { useRoute, useRouter } from "vue-router";
 import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
@@ -151,7 +149,7 @@ onMounted(() => {
     const listPermission: Module[] = JSON.parse(listPermissionStr);
     listPermission.forEach((module) => {
       const listMenuFind = templistMenu.value.find(
-        (menu) => menu.title == module.module && menu.title != 'Dashboard'
+        (menu) => menu.title == module.module && menu.title != "Dashboard"
       );
       if (listMenuFind) {
         listMenu.value.push(listMenuFind);
@@ -205,6 +203,7 @@ const updateDataFaskes = async (value: string) => {
   authStore.setFaskesUuid(value);
   await fetchSettingProfilFaskesData();
   loadFaskesFromLocalStorage();
+  window.location.reload()
 };
 
 const loadFaskesFromLocalStorage = () => {

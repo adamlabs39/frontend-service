@@ -121,7 +121,7 @@ watch(
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>Tambah General Consent</template>
+    <template #header>{{ title }}</template>
     <template #body>
       <!-- Form Input -->
       <div v-if="method !== 'detail'">

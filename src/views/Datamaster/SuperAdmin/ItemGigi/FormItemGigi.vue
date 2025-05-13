@@ -168,7 +168,7 @@ const clearItemGigiPreview = () => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }}</template>
 
     <!-- BODY CONTENT -->
     <template #body>
@@ -304,7 +304,9 @@ const clearItemGigiPreview = () => {
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
         <CustomInfoRow
           label="Catatan"
-          :value="payload.catatan === '' ? '-' : '-'"
+          :value="
+            payload.catatan && payload.catatan != '' ? payload.catatan : '-'
+          "
         />
         <hr class="border-grey-200" />
         <!-- <CustomInfoRow label="Status" :value="payload.status">
@@ -344,7 +346,11 @@ const clearItemGigiPreview = () => {
           label="Reset"
           @click="resetForm()"
         ></CustomButton>
-        <CustomButton label="Simpan" @click="onSubmit"></CustomButton>
+        <CustomButton
+          v-if="method === 'add' || method === 'edit'"
+          label="Simpan"
+          @click="onSubmit"
+        ></CustomButton>
         <CustomButton
           v-if="method === 'detail'"
           label="Edit"

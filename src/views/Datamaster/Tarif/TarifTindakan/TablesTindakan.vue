@@ -18,7 +18,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  FormTindakanDialog("detail", "Detail Data", selectedData.value);
+  FormTindakanDialog("detail", "Detail Data Tarif Tindakan", selectedData.value);
 };
 const isTambahTindakanDialogVisible = ref(false);
 const isDeleteDialogVisible = ref(false);
@@ -164,7 +164,7 @@ const confirmDelete = () => {
             label=""
             background-color="bg-[#3D84E5] rounded-lg"
             class="h-6 w-[26px] p-0"
-            @click="FormTindakanDialog('edit', 'Edit Data', slotProps.data)"
+            @click="FormTindakanDialog('edit', 'Edit Data Tarif Tindakan', slotProps.data)"
           >
             <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>
