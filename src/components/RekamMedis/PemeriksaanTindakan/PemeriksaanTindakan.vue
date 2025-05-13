@@ -79,8 +79,8 @@ const fetchTarif = async () => {
     const response = await tarifStore.getApi(1, 9999, "", "Tindakan");
     if (response && response.payload) {
       const filteredTarif = response.payload.filter((tarifData: any) =>
-        tarifData.pelayanan.some(
-          (pelayananData: any) => pelayananData.unitPelayanan == 1
+        tarifData.tagUnitPelayanan.some(
+          (pelayananData: any) => pelayananData.unitPelayanan == "IGD"
         )
       );
       tarifPayload.value = filteredTarif;

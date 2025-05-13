@@ -13,6 +13,18 @@ export const useRekamMedisPelayananStore = defineStore({
     async getHistory(noRm = "", payload = {}) {
       return apiRekamMedisGet(`/pelayanan/history?no_rm=${noRm}`, payload);
     },
+    async getResumeMedis(
+      params: { rekamMedisUuid: string; pelayanan: string },
+      payload = {}
+    ) {
+      return apiRekamMedisGet(
+        `/pelayanan/resume?rekam_medis_uuid=${params.rekamMedisUuid}&pelayanan=${params.pelayanan}`,
+        payload
+      );
+    },
+    async putResumeMedis(payload = {}) {
+      return apiRekamMedisPut("/pelayanan/resume", payload);
+    },
 
     async getAllFiles(rekamMedisUuid = "", payload = {}) {
       return apiRekamMedisGet(

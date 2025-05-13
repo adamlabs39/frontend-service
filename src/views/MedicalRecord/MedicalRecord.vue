@@ -52,7 +52,7 @@ import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { useRekamMedisPelayananStore } from "@/stores/rekamMedis/rekamMedisPelayanan";
-import { epochToDate, formatDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, formatDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -298,6 +298,36 @@ const changeRecordData = async (selectedRecordDate: string) => {
   }
 };
 
+const submitResumeMedis = async () => {
+  if (segmentRMStatusPulang.value) {
+    segmentRMStatusPulang.value.dischargeDate = dateToEpoch(
+      segmentRMStatusPulang.value?.dischargeDate
+    );
+  }
+  const payload = {
+    rekamMedisUuid: props.patientData.rekamMedisUuid,
+    pelayanan:
+      props.rmType == "rawat-jalan"
+        ? "rj"
+        : props.rmType == "rawat-inap"
+        ? "ri"
+        : props.rmType == "igd"
+        ? "igd"
+        : "fisio",
+    ...segmentRMEdukasi.value,
+    kondisiPasienPulang: segmentRMKondisi ?? "",
+    ...segmentRMStatusPulang.value,
+  };
+  try {
+    storeUtils.setLoading(true);
+    await rekamMedisPelayananStore.putResumeMedis(payload);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 watch(
   () => selectedSessionTab.value,
   async (newSession, oldSession) => {
@@ -328,6 +358,67 @@ watch(
       } finally {
         storeUtils.setLoading(false);
       }
+    }
+  }
+);
+
+const dataResumeMedis = ref<any>({});
+const segmentRMEdukasi = ref<{ edukasi: string; edukasiText: string }>();
+const segmentRMKondisi = ref<string>();
+const segmentRMStatusPulang = ref<{
+  statusPulang: string;
+  statusPulangKeterangan: string;
+  dischargeDate: any;
+  isInternal: boolean;
+  rujukInternal: string;
+  rujukEksternal: string;
+  instruksiTindakLanjut: string;
+  tujuanRujuk: string;
+  tujuanRujukLainnya: string;
+  transportRujuk: string;
+  transportRujukLainnya: string;
+  instruksiNoDarurat: string;
+}>();
+const fetchResumeDischargeData = async () => {
+  const responseResumeMedis = await rekamMedisPelayananStore.getResumeMedis({
+    rekamMedisUuid: props.patientData.rekamMedisUuid,
+    pelayanan:
+      props.rmType == "rawat-jalan"
+        ? "rj"
+        : props.rmType == "rawat-inap"
+        ? "ri"
+        : props.rmType == "igd"
+        ? "igd"
+        : "fisio",
+  });
+  if (responseResumeMedis && responseResumeMedis.payload) {
+    dataResumeMedis.value = responseResumeMedis.payload;
+    segmentRMEdukasi.value = {
+      edukasi: dataResumeMedis.value.edukasi,
+      edukasiText: dataResumeMedis.value.edukasiText,
+    };
+    segmentRMKondisi.value = dataResumeMedis.value.kondisiPasienPulang;
+    segmentRMStatusPulang.value = {
+      statusPulang: dataResumeMedis.value.statusPulang,
+      statusPulangKeterangan: dataResumeMedis.value.statusPulangKeterangan,
+      dischargeDate: epochToDate(dataResumeMedis.value.dischargeDate),
+      isInternal: dataResumeMedis.value.isInternal,
+      rujukInternal: dataResumeMedis.value.rujukInternal,
+      rujukEksternal: dataResumeMedis.value.rujukEksternal,
+      instruksiTindakLanjut: dataResumeMedis.value.instruksiTindakLanjut,
+      tujuanRujuk: dataResumeMedis.value.tujuanRujuk,
+      tujuanRujukLainnya: dataResumeMedis.value.tujuanRujukLainnya,
+      transportRujuk: dataResumeMedis.value.transportRujuk,
+      transportRujukLainnya: dataResumeMedis.value.transportRujukLainnya,
+      instruksiNoDarurat: dataResumeMedis.value.instruksiNoDarurat,
+    };
+  } else dataResumeMedis.value = {};
+};
+watch(
+  () => selectedTab.value,
+  async (newTab, oldTab) => {
+    if (newTab == "resume-discharge") {
+      await fetchResumeDischargeData();
     }
   }
 );
@@ -711,7 +802,7 @@ defineExpose({ showDialogRM });
                 initialState="0"
                 :rmUuid="patientData.rekamMedisUuid"
                 :patientData="patientData"
-                />
+              />
             </div>
 
             <div v-if="selectedTab == 'fpo'" class="overflow-auto mt-[10px]">
@@ -742,87 +833,119 @@ defineExpose({ showDialogRM });
               <FormUnggahBerkas method="form" initialState="0" />
             </div>
 
-            <div
-              v-if="selectedTab == 'resume-discharge'"
-              class="overflow-auto mt-[10px] flex"
-              ref="resumeDischargeScrollContainer"
-            >
-              <div class="overflow-auto grow">
-                <TandaVital
-                  id="Tanda Vital"
-                  :ref="refs.tandaVital"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <AnamnesisDischarge
-                  id="Ringkasan Riwayat Penyakit"
-                  :ref="refs.anamnesis"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <Edukasi
-                  id="Edukasi"
-                  :ref="refs.edukasi"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <KeadaanWaktuPulang
-                  id="Keadaan Waktu Pulang"
-                  :ref="refs.keadaanWaktuPulang"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <StatusPulang
-                  id="Status Pulang"
-                  :ref="refs.statusPulang"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <PemeriksaanFisikDischarge
-                  id="Pemeriksaan Fisik"
-                  :ref="refs.pemeriksaanFisik"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <Diagnosis
-                  id="Diagnosis"
-                  :ref="refs.diagnosisDokter"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <Tindakan
-                  id="Tindakan"
-                  :ref="refs.pemeriksaanTindakan"
-                  method="form"
-                  initialState="0"
-                  class="mb-[10px]"
-                />
-                <Obat
-                  id="Obat"
-                  :ref="refs.orderObat"
-                  method="form"
-                  initialState="0"
-                  class=""
-                />
+            <div v-if="selectedTab == 'resume-discharge'" class="overflow-auto">
+              <div
+                class="overflow-auto mt-[10px] flex"
+                ref="resumeDischargeScrollContainer"
+              >
+                <div class="overflow-auto grow">
+                  <TandaVital
+                    id="Tanda Vital"
+                    :ref="refs.tandaVital"
+                    :tandaVitalData="dataResumeMedis.tandaVitalAwal"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <AnamnesisDischarge
+                    id="Ringkasan Riwayat Penyakit"
+                    :ref="refs.anamnesis"
+                    :anamnesisData="dataResumeMedis.anamnesis"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <Edukasi
+                    id="Edukasi"
+                    :ref="refs.edukasi"
+                    v-model="segmentRMEdukasi"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                    />
+                    <KeadaanWaktuPulang
+                    id="Keadaan Waktu Pulang"
+                    :ref="refs.keadaanWaktuPulang"
+                    v-model="segmentRMKondisi"
+                    :tandaVitalPulangData="dataResumeMedis.tandaVitalPulang"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <StatusPulang
+                    id="Status Pulang"
+                    :ref="refs.statusPulang"
+                    v-model="segmentRMStatusPulang"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <PemeriksaanFisikDischarge
+                    id="Pemeriksaan Fisik"
+                    :ref="refs.pemeriksaanFisik"
+                    :pemeriksaanFisikData="dataResumeMedis.pemeriksaanFisik"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <Diagnosis
+                    id="Diagnosis"
+                    :ref="refs.diagnosisDokter"
+                    :diagnosisData="dataResumeMedis.diagnosaDokter"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <Tindakan
+                    id="Tindakan"
+                    :ref="refs.pemeriksaanTindakan"
+                    :tindakanData="dataResumeMedis.pemeriksaanTindakan"
+                    method="form"
+                    initialState="0"
+                    class="mb-[10px]"
+                  />
+                  <Obat
+                    id="Obat"
+                    :ref="refs.orderObat"
+                    :obatData="dataResumeMedis.obatUuides"
+                    method="form"
+                    initialState="0"
+                    class=""
+                  />
+                </div>
+                <div class="flex flex-col mx-[10px]">
+                  <CustomButton
+                    @click="toggleShowAllDetailMR('hide')"
+                    icon="PhArrowsInLineVertical"
+                    class="mb-[10px]"
+                  />
+                  <CustomButton
+                    @click="toggleShowAllDetailMR('show')"
+                    icon="PhArrowsOutLineVertical"
+                    class=""
+                  />
+                </div>
               </div>
-              <div class="flex flex-col mx-[10px]">
+              <hr class="my-5" />
+              <div class="flex justify-between pr-[60px]">
                 <CustomButton
-                  @click="toggleShowAllDetailMR('hide')"
-                  icon="PhArrowsInLineVertical"
-                  class="mb-[10px]"
+                  @click="() => {}"
+                  disabled
+                  icon="PhPrinter"
+                  label="Cetak Resume Medis"
                 />
-                <CustomButton
-                  @click="toggleShowAllDetailMR('show')"
-                  icon="PhArrowsOutLineVertical"
-                  class=""
-                />
+                <div class="flex">
+                  <CustomButton
+                    @click="submitResumeMedis"
+                    label="Simpan Resume Medis"
+                    class="mr-[10px]"
+                  />
+                  <CustomButton
+                    @click="() => {}"
+                    label="Discharge"
+                    background-color="bg-danger-300"
+                  />
+                </div>
               </div>
             </div>
 

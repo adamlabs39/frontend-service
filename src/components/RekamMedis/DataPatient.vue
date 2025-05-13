@@ -95,12 +95,33 @@ const showPatientData = ref(true);
               <div class="font-semibold underline mb-[5px] leading-5">
                 Dokter
                 <CustomChip
+                  v-if="rmType == 'igd'"
+                  :showCheckedIcon="false"
+                  label="IGD"
+                  customClass="h-5 ml-[5px]"
+                />
+                <CustomChip
+                  v-else
                   :showCheckedIcon="false"
                   label="POLI MATA"
                   customClass="h-5 ml-[5px]"
                 />
               </div>
-              <div class="text-normal">dr. Nama Dokter</div>
+              <div class="text-normal">
+                {{
+                  `${
+                    patientData?.practitioner?.pegawai?.firstTitle &&
+                    patientData?.practitioner?.pegawai?.firstTitle != "-"
+                      ? `${patientData?.practitioner?.pegawai?.firstTitle} `
+                      : ""
+                  }${patientData?.practitioner?.pegawai?.name} ${
+                    patientData?.practitioner?.pegawai?.lastTitle &&
+                    patientData?.practitioner?.pegawai?.lastTitle != "-"
+                      ? `${patientData?.practitioner?.pegawai?.lastTitle} `
+                      : ""
+                  }`
+                }}
+              </div>
             </div>
             <!-- FIXME Belum Ada -->
             <div class="mr-5">

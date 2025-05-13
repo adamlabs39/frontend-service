@@ -1,23 +1,8 @@
 <script lang="ts" setup>
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-
-import DataTable from "primevue/datatable";
-import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
 import { computed, onBeforeMount, ref, watch } from "vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Card from "primevue/card";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import DialogTambahObat from "./DialogTambahObat.vue";
 import { onMounted } from "vue";
-import DialogEdit from "./DialogEdit.vue";
-import DialogObatRacikan from "./DialogObatRacikan.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import DialogDetailObat from "./DialogDetailObat.vue";

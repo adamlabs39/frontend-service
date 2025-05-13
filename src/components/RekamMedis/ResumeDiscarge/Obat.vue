@@ -1,30 +1,61 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const obat = ref<any[]>([]);
+import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
+import { watch } from "vue";
 
-onMounted(() => {
-  obat.value = [
-    {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
-    },
-    {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
-    },
-    {
-      namaObat: "Acarbose",
-      jumlah: "10",
-      aturanPakai: "3 x 1 (Sehari)",
-      caraPakai: "Setelah Makan",
-    },
-  ];
+const props = defineProps({
+  obatData: {
+    type: Array as PropType<any>,
+    default: () => [],
+  },
 });
+
+// NOTE Store
+const doctorPrescriptionStore = useDoctorPrescriptionStore();
+
+const obat = computed(() => props.obatData);
+const listOrder = ref<any[]>([]);
+
+watch(
+  () => obat.value,
+  async (newValue) => {
+    listOrder.value = [];
+    if (newValue.length) {
+      newValue.forEach(async (uuid: "string") => {
+        try {
+          // storeUtils.setLoading(true);
+          const responseDetail = await doctorPrescriptionStore.detailApi(uuid);
+          if (responseDetail && responseDetail.payload) {
+            listOrder.value = [
+              ...listOrder.value,
+              ...responseDetail.payload?.obat,
+            ];
+          }
+        } catch (error) {
+          console.error("Failed to post data", error);
+        } finally {
+          // storeUtils.setLoading(false);
+        }
+      });
+      // try {
+      //   // storeUtils.setLoading(true);
+      //   const responseOrderObat =
+      //     await doctorPrescriptionStore.getSomeOrderPrescription({
+      //       uuides: newValue,
+      //     });
+      //   if (responseOrderObat && responseOrderObat.payload) {
+      //     listOrder.value = responseOrderObat.payload;
+      //   }
+      // } catch (error) {
+      //   console.error("Failed to post data", error);
+      // } finally {
+      //   // storeUtils.setLoading(false);
+      // }
+    }
+  }
+);
+
 const selectedPemeriksaan = ref();
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -45,12 +76,16 @@ defineExpose({
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Obat </template>
     <template #content>
       <DataTable
         v-model:selection="selectedPemeriksaan"
-        :value="obat"
+        :value="listOrder"
         tableStyle="min-width: 50rem"
         stripedRows
         class="pt-5 text-xs"
@@ -66,24 +101,24 @@ defineExpose({
           </template>
         </Column>
         <Column
-          field="namaObat"
+          field="itemMedis.name"
           header="Nama Obat"
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="jumlah"
+          field="medicationQty"
           header="Jumlah"
           headerClass="bg-adameds-50"
         >
         </Column>
         <Column
-          field="aturanPakai"
+          field="aturanPakai.name"
           header="Aturan Pakai"
           headerClass="bg-adameds-50"
         >
         </Column>
         <Column
-          field="caraPakai"
+          field="caraPakai.caraPakai"
           header="Cara Pakai"
           headerClass="bg-adameds-50"
         >
@@ -104,11 +139,11 @@ defineExpose({
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
   @apply text-white;
 }
 </style>

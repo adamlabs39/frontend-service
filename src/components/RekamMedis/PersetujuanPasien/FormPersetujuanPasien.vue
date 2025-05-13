@@ -502,8 +502,10 @@ defineExpose({
             <template #header>
               <div class="w-full font-semibold text-left">Nama Surat</div>
             </template>
-            <template #body="slotProps">
-              <div>Surat Persetujuan</div>
+            <template #body="{ data }">
+              <div>
+                Surat {{ data.persetujuan ? "Persetujuan" : "Penolakan" }}
+              </div>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50" class="w-auto text-center">
@@ -522,15 +524,6 @@ defineExpose({
             </template>
           </Column>
         </DataTable>
-      </div>
-    </template>
-    <template #footer>
-      <div class="flex justify-end gap-3">
-        <CustomButton
-          label="Edit"
-          backgroundColor="bg-adameds-300"
-          @click="onEditClick"
-        />
       </div>
     </template>
   </CustomAccordion>
