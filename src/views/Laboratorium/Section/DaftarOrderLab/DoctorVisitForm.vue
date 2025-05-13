@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, computed, ref, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -9,6 +9,9 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
 
 const props = defineProps({
   pageType: {
@@ -27,6 +30,56 @@ const props = defineProps({
     type: Object as PropType<any>,
     required: true,
   },
+});
+
+const schema = computed(() =>
+  toTypedSchema(
+    yup
+      .object({
+        paymentMethod: yup.string().default("TUNAI"),
+        jadwalDokterUuid:
+          props.pageType == "igd"
+            ? yup.string()
+            : yup.string().required("Jadwal harus dipilih"),
+        maternity: yup.boolean(),
+        complaint: yup.string().default(""),
+        note: yup.string().default(""),
+        insurance: yup
+          .object({
+            penjaminUuid: yup.string().nullable(),
+            accountNumber: yup.string().nullable(),
+            classEntitle: yup.string().nullable(),
+          })
+          .when("paymentMethod", ([paymentMethod], schema) => {
+            return paymentMethod == "TUNAI"
+              ? schema
+              : schema.shape({
+                  penjaminUuid: yup
+                    .string()
+                    .required("Nama Penjamin harus dipilih"),
+                  accountNumber: yup
+                    .string()
+                    .required("No. Penjamin harus diisi"),
+                  classEntitle: yup.string().required("Kelas harus dipilih"),
+                });
+          })
+          .noUnknown(),
+        // NOTE IGD
+        practitionerUuid:
+          props.pageType == "igd"
+            ? yup.string().required("DPJP harus dipilih")
+            : yup.string(),
+      })
+      .noUnknown()
+  )
+);
+
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async (values) => {
+  return values;
 });
 const status = ref(false);
 
@@ -63,6 +116,7 @@ const submitForm = () => {
 
 defineExpose({
   submitForm,
+  onSubmit,
 });
 </script>
 

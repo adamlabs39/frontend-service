@@ -7,12 +7,10 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import FormTarifLab from "../Layout/FormTarifLab.vue";
 import { useTarifPemeriksaanStore } from "@/stores/datamasterLaboratorium/tarifPemeriksaan";
+import * as XLSX from "xlsx-js-style";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
@@ -84,20 +82,239 @@ const dataBedruangan = ref([
 ]);
 
 const isTambahTindakanDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
 const dialogConfig = ref<any>({
-  method: "add",
-  title: "Tambah Data",
-  data: null,
+  method: "",
+  title: "",
+  data: {},
 });
 
-const emit = defineEmits(["deleteItem", "updated"]);
-const FormTindakanDialog = (
-  method: string,
-  title: string,
-  data: any = null
-) => {
+const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahTindakanDialogVisible.value = true;
+  console.log("method", method);
+};
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+const confirmDelete = async (item: any) => {
+  if (item) {
+    utils.setLoading(true);
+    try {
+      await tarifPemeriksaanStore.deleteApi(item.uuid);
+      fetchTarifPemeriksaan();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      utils.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+const emit = defineEmits(["deleteItem", "updated"]);
+
+// Import Excel
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await tarifPemeriksaanStore.importApi(dataUpload);
+    fetchTarifPemeriksaan();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      Pelayanan: "Pelayanan*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Komponen Tarif",
+      Persentase: "Persentase*",
+      HargaPersen: "Harga Tarif (persen)",
+      HargaRupiah: "Harga Tarif (rupiah)",
+      ItemPemeriksaan: "Item Pemeriksaan",
+      KomponenTarifItem: "Komponen Tarif",
+      PersentaseItem: "Persentase",
+      HargaPersenItem: "Harga Tarif (persen)",
+      HargaRupiahItem: "Harga Tarif (rupiah)",
+      GrandTotal: "Grand Total",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "Nentots",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "2",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat inap",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "20",
+      HargaRupiah: "",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "3",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat jalan",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "10",
+      HargaRupiah: "",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "4",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat jalan",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "5",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "igAnjinngd",
+      MetodePembayaran: "Tunai",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // worksheet["!merges"] = [
+    //   { s: { r: 1, c: 0 }, e: { r: 6, c: 0 } },
+    //   { s: { r: 1, c: 1 }, e: { r: 6, c: 1 } },
+    //   { s: { r: 1, c: 2 }, e: { r: 4, c: 2 } },
+    //   { s: { r: 5, c: 2 }, e: { r: 6, c: 2 } },
+    //   { s: { r: 1, c: 3 }, e: { r: 6, c: 3 } },
+    //   { s: { r: 1, c: 4 }, e: { r: 6, c: 4 } },
+    //   { s: { r: 1, c: 5 }, e: { r: 6, c: 5 } },
+    //   { s: { r: 1, c: 6 }, e: { r: 2, c: 6 } },
+    //   { s: { r: 3, c: 6 }, e: { r: 4, c: 6 } },
+    //   { s: { r: 5, c: 6 }, e: { r: 6, c: 6 } },
+    //   { s: { r: 1, c: 7 }, e: { r: 3, c: 7 } },
+    //   { s: { r: 4, c: 7 }, e: { r: 6, c: 7 } },
+    //   { s: { r: 1, c: 9 }, e: { r: 2, c: 9 } },
+    //   { s: { r: 3, c: 9 }, e: { r: 4, c: 9 } },
+    //   { s: { r: 5, c: 9 }, e: { r: 6, c: 9 } },
+    //   { s: { r: 1, c: 12 }, e: { r: 2, c: 12 } },
+    //   { s: { r: 3, c: 12 }, e: { r: 4, c: 12 } },
+    //   { s: { r: 5, c: 12 }, e: { r: 6, c: 12 } },
+    //   { s: { r: 1, c: 13 }, e: { r: 6, c: 13 } },
+    // ];
+
+    worksheet["!merges"] = [
+      // { s: { r: 1, c: 0 }, e: { r: 0, c: 0 } }, // Merge header row for the title
+      { s: { r: 5, c: 0 }, e: { r: 1, c: 0 } }, // "No"
+      { s: { r: 5, c: 1 }, e: { r: 1, c: 1 } }, // "Kode Tarif"
+      { s: { r: 5, c: 2 }, e: { r: 1, c: 2 } }, // "Nama Tarif"
+      { s: { r: 1, c: 3 }, e: { r: 1, c: 3 } }, // "Pelayanan"
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 4 } }, // "Metode Pembayaran"
+      { s: { r: 1, c: 5 }, e: { r: 1, c: 5 } }, // "Kelompok Pemeriksaan"
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 6 } }, // "Komponen Tarif"
+      { s: { r: 1, c: 7 }, e: { r: 1, c: 7 } }, // "Persentase"
+      { s: { r: 1, c: 8 }, e: { r: 1, c: 8 } }, // "Harga Tarif (persen)"
+      { s: { r: 1, c: 9 }, e: { r: 1, c: 9 } }, // "Harga Tarif (rupiah)"
+      { s: { r: 1, c: 10 }, e: { r: 1, c: 10 } }, // "Item Pemeriksaan"
+      { s: { r: 1, c: 11 }, e: { r: 1, c: 11 } }, // "Komponen Tarif Item"
+      { s: { r: 1, c: 12 }, e: { r: 1, c: 12 } }, // "Persentase Item"
+      { s: { r: 1, c: 13 }, e: { r: 1, c: 13 } }, // "Grand Total"
+    ];
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tindakan");
+
+    XLSX.writeFile(workbook, `Format Datamaster Tarif Lab.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
 };
 
 onMounted(() => {
@@ -117,7 +334,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchTarifPemeriksaan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -138,7 +359,7 @@ onMounted(() => {
                 </div>
               </div>
               <CustomButton
-                @click="FormTindakanDialog"
+                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
                 label="Tarif"
                 class="mr-[10px]"
@@ -293,7 +514,10 @@ onMounted(() => {
               <div class="flex flex-wrap gap-2 text-nowrap">
                 <div v-for="items in slotProps.data.tarifLabItem" :key="items">
                   <CustomChip
-                    :label="items.itemPemeriksaan.name"
+                    :label="
+                      items.itemPemeriksaan?.name ||
+                      items.kelompokPemeriksaan?.name
+                    "
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
@@ -342,8 +566,8 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
-                 <CustomChip
-                 :label="
+                <CustomChip
+                  :label="
                     slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
                   "
                   :textColor="
@@ -379,6 +603,7 @@ onMounted(() => {
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -386,6 +611,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -397,13 +629,26 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
-            </CustomButton>
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
             <CustomButton label="Eksport">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton label="Eksport" @click="downloadFormatExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>
@@ -423,7 +668,14 @@ onMounted(() => {
       :title="dialogConfig.title"
       :method="dialogConfig.method"
       :payload="dialogConfig.data"
-      @data-updated="$emit('updated')"
+      @data-updated="fetchTarifPemeriksaan"
+    />
+
+    <DialogDelete
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      :title="dialogConfig.title"
+      :itemToDelete="dialogConfig.data"
+      @delete="confirmDelete"
     />
   </div>
 </template>

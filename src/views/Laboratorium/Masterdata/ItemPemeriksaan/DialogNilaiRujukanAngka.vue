@@ -49,6 +49,7 @@ const fetchNilaiRujukan = async () => {
 
 const tambahNilaiRujukan = ref(false);
 const status = ref(true);
+const uuid = ref("");
 const umurBawahTahun = ref(0);
 const umurBawahBulan = ref(0);
 const umurBawahHari = ref(0);
@@ -94,6 +95,21 @@ const optionOperatorKritisAtas = ref([
   { label: "(≥) Lebih Dari / Sama Dengan", value: ">=" },
 ]);
 
+const tampilan = computed(() => {
+  if (operator.value === "-") {
+    return `${batasBawahNilaiNormal.value} - ${batasAtasNilaiNormal.value}`;
+  } else if (operator.value === "<") {
+    return `< ${batasAtasNilaiNormal.value}`;
+  } else if (operator.value === "<=") {
+    return `≤ ${batasAtasNilaiNormal.value}`;
+  } else if (operator.value === ">") {
+    return `> ${batasBawahNilaiNormal.value}`;
+  } else if (operator.value === ">=") {
+    return `≥ ${batasBawahNilaiNormal.value}`;
+  }
+  return "";
+});
+
 // add Data
 const simpanNilaiRujukan = async () => {
   UseUtilsStore.setLoading(true);
@@ -115,7 +131,8 @@ const simpanNilaiRujukan = async () => {
       operatorKritisAtas: operatorKritisAtas.value,
       operatorNilaiNormal: operator.value,
       status: status.value,
-      tampilan: "gacor",
+      tampilan: tampilan.value,
+      uuid: uuid.value,
     };
 
     const response = await itemPemeriksaanStore.postNilaiRujukanApi(payload);
@@ -134,8 +151,28 @@ const simpanNilaiRujukan = async () => {
 
 // Edit Data
 const editNilaiRujukan = ref(false);
-
-const updateDataNilaiRujukan = async (nilaiRujukanUuid: string) => {
+const selectedNilaiRujukan = ref<any>(null);
+const openEditDialog = (data:any) => {
+  editNilaiRujukan.value = true;
+  selectedNilaiRujukan.value = data;
+  jenisKelamin.value = data.jenisKelamin;
+  umurBawahTahun.value = data.umurBawahTahun;
+  umurBawahBulan.value = data.umurBawahBulan;
+  umurBawahHari.value = data.umurBawahHari;
+  umurAtasTahun.value = data.umurAtasTahun;
+  umurAtasBulan.value = data.umurAtasBulan;
+  umurAtasHari.value = data.umurAtasHari;
+  batasBawahNilaiNormal.value = data.batasBawahNilaiNormal;
+  batasAtasNilaiNormal.value = data.batasAtasNilaiNormal;
+  kritisBawah.value = data.kritisBawah;
+  kritisAtas.value = data.kritisAtas;
+  operatorKritisBawah.value = data.operatorKritisBawah?.trim() || "";
+  operatorKritisAtas.value = data.operatorKritisAtas?.trim() || "";
+  operator.value = data.operatorNilaiNormal?.trim() || "";
+  status.value = data.status;
+  console.log("data", data);
+}
+const updateDataNilaiRujukan = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const payload = {
@@ -155,11 +192,12 @@ const updateDataNilaiRujukan = async (nilaiRujukanUuid: string) => {
       operatorKritisAtas: operatorKritisAtas.value,
       operatorNilaiNormal: operator.value,
       status: status.value,
-      tampilan: "gacor",
+      tampilan: tampilan.value,
+     
     };
 
     const response = await itemPemeriksaanStore.putNilaiRujukanApi(
-      nilaiRujukanUuid,
+      selectedNilaiRujukan.value.uuid,
       payload
     );
     if (response) {
@@ -257,7 +295,6 @@ watch(
             <template #body="slotProps">
               <div class="flex items-center justify-center">
                 {{ slotProps.index + 1 }}
-                {{ slotProps.data.itemPemeriksaanUuid }}
               </div>
             </template>
           </Column>
@@ -328,7 +365,7 @@ watch(
             headerClass="bg-adameds-50"
             class=""
           >
-            <template #body="slotProps"> </template>
+            <template #body="slotProps"> {{ slotProps.data.tampilan }}</template>
           </Column>
 
           <Column
@@ -377,7 +414,7 @@ watch(
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="editNilaiRujukan = true"
+                  @click="openEditDialog (slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -386,11 +423,7 @@ watch(
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
                   @click="
-                    deleteDialog(
-                      'delete',
-                      `${slotProps.data.code}-${slotProps.data.name}`,
-                      slotProps.data
-                    )
+                    deleteDialog('delete', 'Nilai Rujukan', slotProps.data)
                   "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
@@ -548,6 +581,7 @@ watch(
         placeholder="Tampilan"
         class="mt-5"
         :disabled="true"
+        :modelValue="tampilan"
       />
       <hr class="mt-8 border border-slate-200" />
 
@@ -567,6 +601,7 @@ watch(
           textColor="text-grey-300"
           backgroundColor="bg-transparent"
           borderColor="border-2 border-grey-200"
+          @click="resetForm"
         />
         <CustomButton label="Simpan" @click="simpanNilaiRujukan" />
       </div>
@@ -704,6 +739,7 @@ watch(
         placeholder="Tampilan"
         class="mt-5"
         :disabled="true"
+        :modelValue="tampilan"
       />
       <hr class="mt-8 border border-slate-200" />
 

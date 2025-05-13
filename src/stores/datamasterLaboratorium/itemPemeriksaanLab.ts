@@ -57,10 +57,7 @@ export const useItemPemeriksaanStore = defineStore({
       );
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost(
-        "/farmasi/datamaster/kategori-obat/import",
-        payload
-      );
+      return apiLaboratoriumPost("/lab/item-pemeriksaan/import", payload);
     },
   },
 });

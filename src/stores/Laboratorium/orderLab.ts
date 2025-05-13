@@ -6,8 +6,8 @@ import {
   apiLaboratoriumDelete,
 } from "@/utils/apiHandler";
 
-export const useTarifPemeriksaanStore = defineStore({
-  id: "tarif-lab",
+export const useOrderLab = defineStore({
+  id: "order-lab-lab",
   state: () => ({}),
   getters: {},
   actions: {
@@ -21,18 +21,18 @@ export const useTarifPemeriksaanStore = defineStore({
     ) {
       const { page = 1, limit = 10, name = "", payload = {} } = params;
       return apiLaboratoriumGet(
-        `/lab/tarif-lab?page=${page}&limit=${limit}&name=${name}`,
+        `/lab/order-lab?page=${page}&limit=${limit}&name=${name}`,
         payload
       );
     },
     async postApi(payload = {}) {
-      return apiLaboratoriumPost("/lab/tarif-lab", payload);
+      return apiLaboratoriumPost("/lab/order-lab", payload);
     },
     async putApi(uuid: string, payload = {}) {
-      return apiLaboratoriumPut(`/lab/tarif-lab/${uuid}`, payload);
+      return apiLaboratoriumPut(`/lab/order-lab/${uuid}`, payload);
     },
     async deleteApi(uuid: string, payload = {}) {
-      return apiLaboratoriumDelete(`/lab/tarif-lab/${uuid}`, payload);
+      return apiLaboratoriumDelete(`/lab/order-lab/${uuid}`, payload);
     },
     async exportApi(payload = {}) {
       return apiLaboratoriumGet(
@@ -41,7 +41,10 @@ export const useTarifPemeriksaanStore = defineStore({
       );
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost("/lab/tarif-lab/import", payload);
+      return apiLaboratoriumPost(
+        "/farmasi/datamaster/kategori-obat/import",
+        payload
+      );
     },
   },
 });

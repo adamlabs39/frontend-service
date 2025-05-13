@@ -44,10 +44,7 @@ export const useKelompokPemeriksaanStore = defineStore({
       );
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost(
-        "/farmasi/datamaster/kategori-obat/import",
-        payload
-      );
+      return apiLaboratoriumPost("/lab/kelompok-pemeriksaan/import", payload);
     },
   },
 });

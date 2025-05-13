@@ -239,18 +239,50 @@ const setValues = (values: any) => {
   status.value = values.status !== undefined ? values.status : true;
 };
 
+// watch(
+//   () => props.isDialogVisible,
+//   (newValue) => {
+//     if (newValue) {
+//       resetDialogMode();
+//       if (props.method !== "add" && props.payload) {
+//         console.log("props.payload", props.payload);
+//         const selectedItemPemeriksaanUuid =
+//           props.payload.itemPemeriksaan?.map((item: any) => item.uuid) || [];
+
+//         setValues({
+//           ...props.payload,
+//           itemPemeriksaans: selectedItemPemeriksaanUuid,
+//         });
+//       }
+//     } else {
+//       resetForm();
+//       resetDialogMode();
+//     }
+//   }
+// );
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
       resetDialogMode();
-      if (props.method !== "add" && props.payload) {
+      if (props.method === "edit" && props.payload) {
         console.log("props.payload", props.payload);
+
+        // Map itemPemeriksaan UUIDs
         const selectedItemPemeriksaanUuid =
           props.payload.itemPemeriksaan?.map((item: any) => item.uuid) || [];
+
+        // Set values from props.payload
         setValues({
-          ...props.payload,
+          code: props.payload.code,
+          name: props.payload.name,
+          categoryPemeriksaanUuid: props.payload.categoryPemeriksaanUuid,
+          loincUuid: props.payload.loincUuid,
+          icd9Uuid: props.payload.icd9Uuid,
+          snomedCTUuid: props.payload.snomedUuid,
           itemPemeriksaans: selectedItemPemeriksaanUuid,
+          status: props.payload.status,
         });
       }
     } else {
@@ -370,11 +402,28 @@ onMounted(() => {
       <div class="w-full">
         <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
-          <CustomButton
+          <!-- <CustomButton
             label="Reset"
             textColor="text-grey-300"
             backgroundColor="bg-transparent"
             borderColor="border-2 border-grey-200"
+            @click="resetForm"
+          />
+          <CustomButton label="Simpan" @click="onSubmit" /> -->
+          <CustomButton
+            v-if="method === 'edit'"
+            label="Batal"
+            border-color="border-grey-200"
+            background-color="bg-white"
+            text-color="text-grey-300"
+            @click="closeDialog"
+          />
+          <CustomButton
+            v-if="method !== 'edit'"
+            label="Reset"
+            border-color="border-grey-200"
+            background-color="bg-white"
+            text-color="text-grey-300"
             @click="resetForm"
           />
           <CustomButton label="Simpan" @click="onSubmit" />
