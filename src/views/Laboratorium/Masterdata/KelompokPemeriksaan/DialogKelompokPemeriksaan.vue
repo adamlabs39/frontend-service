@@ -350,7 +350,7 @@ onMounted(() => {
         class="mt-5"
         optionLabel="label"
         optionValue="value"
-        :showFilter="false"
+        :showFilter="true"
         :options="snomedCTOptions"
       />
       <CustomSelect

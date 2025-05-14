@@ -754,18 +754,18 @@ onMounted(() => {
   fetchPenjamin();
   fetchItemPemeriksaan();
   fetchKelompokPemeriksaan();
-  if (props.method === "add") {
-    handlePushTindakan();
-    handlePushItemPemeriksaan();
-  } else if (props.method === "edit") {
-    handleEdit();
-  }
+  // if (props.method === "add") {
+  //   handlePushTindakan();
+  //   handlePushItemPemeriksaan();
+  // } else if (props.method === "edit") {
+  //   handleEdit();
+  // }
 });
 </script>
 
 <template>
   <CustomDialog
-    width="850px"
+    :width="method === 'detail' ? '1000px' : '850px'"
     :visible="isDialogVisible"
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
@@ -1320,6 +1320,251 @@ onMounted(() => {
           />
         </div>
       </div>
+
+      <!-- Detail Data -->
+      <div v-if="method === 'detail'" class="grid grid-cols-12 gap-5 mt-5">
+        <div class="flex flex-col col-span-6">
+          <!-- <div>{{ payload }}</div> -->
+
+          <div class="font-semibold underline text-SM">Kode Tarif</div>
+          <div class="font-normal text-normal">
+            {{ payload.code }}
+          </div>
+        </div>
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Nama Tarif Tindakan</div>
+          <div class="font-normal text-normal">
+            {{ payload.name }}
+          </div>
+        </div>
+
+        <div class="flex flex-col col-span-6">
+          <div class="font-semibold underline text-SM">Pelayanan</div>
+          <div class="flex flex-wrap w-full h-full gap-1">
+            <CustomChip
+              v-for="pelayanan in payload.pelayanan"
+              :label="pelayanan.pelayanan"
+              textColor="text-white"
+              bgColor="bg-adameds-300"
+              borderColor="border-none"
+              :showCheckedIcon="false"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col col-span-4">
+          <div class="font-semibold underline text-SM">Mode Pembayaran</div>
+          <div class="flex flex-wrap w-full h-full gap-1">
+            <CustomChip
+              v-for="(item, i) in payload.tarifLabPenjamin"
+              :label="item.penjamin.name"
+              :showCheckedIcon="false"
+              :border-color="
+                item.penjamin.name === 'Tunai' ? 'border-none' : 'border-none'
+              "
+              :bg-color="
+                item.penjamin.name === 'Tunai'
+                  ? 'bg-adameds-300'
+                  : 'bg-warning-300'
+              "
+              :customClass="
+                item.penjamin.name === 'Tunai'
+                  ? 'text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3 '
+                  : 'cursor-auto h-5 bg-warning-300 text-white pr-2 pl-3'
+              "
+            />
+          </div>
+        </div>
+        <CustomAccordion
+          class="col-span-12"
+          initial-state="0"
+          :open-with-header="false"
+          no-border
+        >
+          <template #header> List Kelompok Pemeriksaan </template>
+          <template #content>
+            <div
+              v-for="(tindakan, idx) in payload.tarifLabItem.filter((item: any) => item.kelompokPemeriksaanUuid !== null)"
+              :key="idx"
+              class="mt-5"
+            >
+              <div
+                class="flex flex-col gap-5 p-5 pt-5 mb-5 -mx-4 border border-adameds-300 rounded-xl"
+              >
+                <div class="flex gap-2.5 items-center">
+                  <CustomButton
+                    :label="`${idx + 1}`"
+                    class="w-10 h-10 p-3 rounded"
+                  />
+                  <div class="font-semibold text-normal">
+                    {{ tindakan.kelompokPemeriksaan.name }}
+                  </div>
+                </div>
+                <DataTable
+                  :value="tindakan.komponenTarif"
+                  tableStyle="min-width: 50rem"
+                  class="overflow-hidden text-xs rounded-lg"
+                >
+                  <Column
+                    header="Komponen Tarif"
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifKomponenName || "-" }}
+                    </template>
+                  </Column>
+                  <Column
+                    headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                    class="w-6/12 text-end"
+                    bodyClass="align-top text-end"
+                  >
+                    <template #header>
+                      <div class="w-full text-end">Rupiah (Rp)</div>
+                    </template>
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifPerKomponen || "-" }}
+                    </template>
+                  </Column>
+                </DataTable>
+                <div class="flex items-center justify-end col-span-12 gap-4">
+                  <div
+                    class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD"
+                  >
+                    Total
+                  </div>
+                  <div class="min-w-[300px] text-end font-bold text-MD">
+                    {{ tindakan.totalTarif }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template #collapseIcon>
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+
+          <template #expandIcon>
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+        </CustomAccordion>
+        <CustomAccordion
+          class="col-span-12"
+          initial-state="0"
+          :open-with-header="false"
+          no-border
+        >
+          <template #header> List Item Pemeriksaan </template>
+          <template #content>
+            <div
+              v-for="(tindakan, idx) in payload.tarifLabItem.filter((item: any) => item.itemPemeriksaanUuid !== null)"
+              :key="idx"
+              class="mt-5"
+            >
+              <div
+                class="flex flex-col gap-5 p-5 pt-5 mb-5 -mx-4 border border-adameds-300 rounded-xl"
+              >
+                <div class="flex gap-2.5 items-center">
+                  <CustomButton
+                    :label="`${idx + 1}`"
+                    class="w-10 h-10 p-3 rounded"
+                  />
+                  <div class="font-semibold text-normal">
+                    {{ tindakan.itemPemeriksaan.name }}
+                  </div>
+                </div>
+                <DataTable
+                  :value="tindakan.komponenTarif"
+                  tableStyle="min-width: 50rem"
+                  class="overflow-hidden text-xs rounded-lg"
+                >
+                  <Column
+                    header="Komponen Tarif"
+                    headerClass="bg-adameds-300 text-white"
+                    bodyClass="align-top"
+                  >
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifKomponenName || "-" }}
+                    </template>
+                  </Column>
+                  <Column
+                    headerClass="bg-adameds-300 text-white font-semibold text-SM"
+                    class="w-6/12 text-end"
+                    bodyClass="align-top text-end"
+                  >
+                    <template #header>
+                      <div class="w-full text-end">Rupiah (Rp)</div>
+                    </template>
+                    <template #body="slotProps">
+                      {{ slotProps.data.tarifPerKomponen || "-" }}
+                    </template>
+                  </Column>
+                </DataTable>
+                <div class="flex items-center justify-end col-span-12 gap-4">
+                  <div
+                    class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD"
+                  >
+                    Total
+                  </div>
+                  <div class="min-w-[300px] text-end font-bold text-MD">
+                    {{ tindakan.totalTarif }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template #collapseIcon>
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+
+          <template #expandIcon>
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-transparent"
+              textColor="text-adameds-300"
+            />
+          </template>
+        </CustomAccordion>
+
+        <hr class="col-span-12 border-grey-200" />
+        <div class="flex items-center justify-end col-span-12 gap-4">
+          <div class="pr-4 py-2.5 border-r border-grey-300 font-bold text-MD">
+            Grand Total
+          </div>
+          <div class="min-w-[300px] text-end font-bold text-MD">
+            {{ payload.grandTotal }}
+          </div>
+        </div>
+        <hr class="col-span-12 border-grey-200" />
+        <CustomInfoRow label="Status" class="col-span-12">
+          <template #value>
+            <CustomChip
+              :label="payload.status === true ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="
+                payload.status === true ? 'text-white' : 'text-[#80868d]'
+              "
+              :bgColor="payload.status === true ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="
+                payload.status === true ? 'border-none' : 'border-[#80868d]'
+              "
+              :icon-color="payload.status === true ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex w-fit"
+            />
+          </template>
+        </CustomInfoRow>
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
@@ -1333,14 +1578,23 @@ onMounted(() => {
             @click="closeDialog"
           />
           <CustomButton
-            v-if="method !== 'edit'"
+            v-if="method !== 'edit' && method !== 'detail'"
             label="Reset"
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
             @click="resetForm"
           />
-          <CustomButton label="Simpan" @click="onSubmit" />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

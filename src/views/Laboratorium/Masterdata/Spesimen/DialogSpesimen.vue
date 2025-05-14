@@ -18,7 +18,7 @@ const emit = defineEmits(["submit", "reset"]);
 const resetForm = () => {
   kodeSpesimen.value = "";
   namaSpesimen.value = "";
-  status.value = false;
+  status.value = true;
   editMode.value = false;
   selectedSpesimenId.value = null;
 };
@@ -52,7 +52,11 @@ defineExpose({
 </script>
 
 <template>
-  <CustomDialog v-model:visible="visible"  @update:visible="onDialogClose" :style="{ width: '600px' }">
+  <CustomDialog
+    v-model:visible="visible"
+    @update:visible="onDialogClose"
+    :style="{ width: '600px' }"
+  >
     <template #header>
       <div class="grid grid-cols-1">
         <p>{{ editMode ? "Edit Data Spesimen" : "Tambah Data Spesimen" }}</p>
