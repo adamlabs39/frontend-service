@@ -73,9 +73,15 @@ const close = () => {
   }
 };
 
+const getStatusPulangNama = (value: string) => {
+  const result = optionsStatusPulang.value.find((data) => data.value == value);
+  return result ?? "-";
+};
+
 defineExpose({
   open,
   close,
+  getStatusPulangNama,
 });
 </script>
 <template>
@@ -109,7 +115,10 @@ defineExpose({
             class="col-span-1"
           />
         </div>
-        <div v-if="modelValue.statusPulang === 'other-hfc'" class="flex flex-col gap-5">
+        <div
+          v-if="modelValue.statusPulang === 'other-hfc'"
+          class="flex flex-col gap-5"
+        >
           <hr class="border-grey-200 my-2.5" />
 
           <div class="flex gap-[30px]">

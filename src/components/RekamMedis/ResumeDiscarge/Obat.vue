@@ -27,10 +27,12 @@ watch(
           // storeUtils.setLoading(true);
           const responseDetail = await doctorPrescriptionStore.detailApi(uuid);
           if (responseDetail && responseDetail.payload) {
-            listOrder.value = [
-              ...listOrder.value,
-              ...responseDetail.payload?.obat,
-            ];
+            responseDetail.payload?.obat.forEach((obatData: any) => {
+              listOrder.value.push({
+                ...obatData,
+                isTakeaway: responseDetail.payload.isTakeaway,
+              });
+            });
           }
         } catch (error) {
           console.error("Failed to post data", error);
@@ -56,7 +58,7 @@ watch(
   }
 );
 
-const selectedPemeriksaan = ref();
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -68,10 +70,14 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 

@@ -11,7 +11,7 @@ const props = defineProps({
 
 const tindakan = computed(() => props.tindakanData);
 
-const selectedPemeriksaan = ref();
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -23,10 +23,14 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 
@@ -45,7 +49,7 @@ defineExpose({
         stripedRows
         class="pt-5 text-xs"
       >
-        <Column headerClass="bg-adameds-50" style="width: 50px;">
+        <Column headerClass="bg-adameds-50" style="width: 50px">
           <template #header>
             <div class="w-full font-semibold text-center">No.</div>
           </template>

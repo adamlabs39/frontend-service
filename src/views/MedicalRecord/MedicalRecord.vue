@@ -53,6 +53,7 @@ import { useToast } from "primevue/usetoast";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { useRekamMedisPelayananStore } from "@/stores/rekamMedis/rekamMedisPelayanan";
 import { dateToEpoch, epochToDate, formatDate } from "@/utils/Helpers";
+import { createResumeMedis } from "@/utils/pdf/RekamMedis";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -298,6 +299,40 @@ const changeRecordData = async (selectedRecordDate: string) => {
   }
 };
 
+// NOTE Resume Discharge
+const printResumeMedis = async () => {
+  await createResumeMedis({
+    data: {
+      patientData: {
+        ...props.patientData,
+        jenisPelayanan:
+          props.rmType == "rawat-jalan"
+            ? "Rawat Jalan"
+            : props.rmType == "rawat-inap"
+            ? "Rawat Inap"
+            : props.rmType == "igd"
+            ? "IGD"
+            : "Fisioterapi",
+      },
+      resumeData: {
+        ...dataResumeMedis.value,
+        statusPulangNama: refs.statusPulang.value.getStatusPulangNama(
+          dataResumeMedis.value.statusPulang
+        ),
+        kondisiPasienPulangNama:
+          refs.keadaanWaktuPulang.value.getKondisiPulangNama(
+            dataResumeMedis.value.kondisiPasienPulang
+          ),
+        selectedDiagnosis: refs.diagnosisDokter.value.printSelectedData(),
+        selectedPemeriksaanFisik:
+          refs.pemeriksaanFisik.value.printSelectedData(),
+        selectedObat: refs.orderObat.value.printSelectedData(),
+        selectedTindakan: refs.pemeriksaanTindakan.value.printSelectedData(),
+      },
+    },
+  });
+};
+
 const submitResumeMedis = async () => {
   if (segmentRMStatusPulang.value) {
     segmentRMStatusPulang.value.dischargeDate = dateToEpoch(
@@ -315,12 +350,13 @@ const submitResumeMedis = async () => {
         ? "igd"
         : "fisio",
     ...segmentRMEdukasi.value,
-    kondisiPasienPulang: segmentRMKondisi ?? "",
+    kondisiPasienPulang: segmentRMKondisi.value ?? "",
     ...segmentRMStatusPulang.value,
   };
   try {
     storeUtils.setLoading(true);
     await rekamMedisPelayananStore.putResumeMedis(payload);
+    await fetchResumeDischargeData();
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -862,8 +898,8 @@ defineExpose({ showDialogRM });
                     method="form"
                     initialState="0"
                     class="mb-[10px]"
-                    />
-                    <KeadaanWaktuPulang
+                  />
+                  <KeadaanWaktuPulang
                     id="Keadaan Waktu Pulang"
                     :ref="refs.keadaanWaktuPulang"
                     v-model="segmentRMKondisi"
@@ -929,8 +965,7 @@ defineExpose({ showDialogRM });
               <hr class="my-5" />
               <div class="flex justify-between pr-[60px]">
                 <CustomButton
-                  @click="() => {}"
-                  disabled
+                  @click="printResumeMedis"
                   icon="PhPrinter"
                   label="Cetak Resume Medis"
                 />

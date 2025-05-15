@@ -20,7 +20,7 @@ const pemeriksaanFisik = computed(() => {
   } else return [];
 });
 
-const selectedPemeriksaan = ref();
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -32,10 +32,14 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 

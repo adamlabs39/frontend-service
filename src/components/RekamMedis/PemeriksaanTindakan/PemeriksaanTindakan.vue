@@ -80,7 +80,8 @@ const fetchTarif = async () => {
     if (response && response.payload) {
       const filteredTarif = response.payload.filter((tarifData: any) =>
         tarifData.tagUnitPelayanan.some(
-          (pelayananData: any) => pelayananData.unitPelayanan == "IGD"
+          (pelayananData: any) =>
+            pelayananData.unitPelayanan?.toLowerCase() == "igd"
         )
       );
       tarifPayload.value = filteredTarif;

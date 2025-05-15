@@ -96,6 +96,21 @@ export function setDateToTime(date: Date) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+export function formatStringDate(
+  date: string,
+  format: "dateTime" | "date" | "time" = "date"
+) {
+  const newDate = new Date(date);
+
+  if (format === "dateTime") {
+    return formatDateTime(newDate);
+  } else if (format === "date") {
+    return formatDate(newDate);
+  } else if (format === "time") {
+    return formatTime(newDate);
+  }
+}
+
 export function countAge(date: Date) {
   const now = new Date();
   let tahun = now.getFullYear() - date.getFullYear();

@@ -9,9 +9,14 @@ const props = defineProps({
   },
 });
 
-const diagnosis = computed(() => props.diagnosisData);
+const diagnosis = computed(() => {
+  props.diagnosisData.forEach((diagnosis: any) => {
+    diagnosis.diagnosis = diagnosis.diagnosis.replace("~", `\n`);
+  });
+  return props.diagnosisData;
+});
 
-const selectedPemeriksaan = ref();
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -23,10 +28,14 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 
@@ -55,11 +64,11 @@ defineExpose({
             </div>
           </template>
         </Column>
-        <Column
-          field="diagnosis"
-          header="Nama Diagnosis"
-          headerClass="bg-adameds-50"
-        ></Column>
+        <Column header="Nama Diagnosis" headerClass="bg-adameds-50">
+          <template #body="{ data }">
+            <div v-html="data.diagnosis.replace(/\n/g, '<br>')"></div>
+          </template>
+        </Column>
         <Column
           field="tipe"
           header="Tipe Diagnosis"

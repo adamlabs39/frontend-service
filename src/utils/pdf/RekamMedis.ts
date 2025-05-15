@@ -6,6 +6,7 @@ import type {
 } from "pdfmake/interfaces";
 import { customVfs } from "../customVfs";
 import { convertImageToBase64, epochToDate, generateQRCode } from "../Helpers";
+import { defaultHeader } from "./HeaderPrint";
 
 export async function createSuratPersetujuanTindakan({
   data,
@@ -47,59 +48,13 @@ export async function createSuratPersetujuanTindakan({
       font: "Arial",
       fontSize: 9,
     },
-    header: {
-      margin: [60, 0, 60, 0],
-      stack: [
-        {
-          margin: [30, 20, 30, 0],
-          columns: [
-            {
-              image: faskesLogo,
-              fit: [100, 45],
-            },
-            {
-              alignment: "center",
-              stack: [
-                {
-                  text: faskesProfile.name,
-                  fontSize: 15,
-                  bold: true,
-                  marginBottom: 2,
-                },
-                { text: faskesProfile.address.fullAddress, marginBottom: 2 },
-                { text: `${faskesProfile.phone} - ${faskesProfile.email}` },
-              ],
-              width: "*",
-            },
-          ],
-        },
-        {
-          marginTop: 10.5,
-          alignment: "center",
-          bold: true,
-          layout: "noBorders",
-          table: {
-            widths: ["*"],
-            body: [
-              [
-                {
-                  text: `SURAT ${type.toUpperCase()} TINDAKAN`,
-                  fontSize: 15,
-                  color: "white",
-                  fillColor: "#14B8A6",
-                },
-              ],
-              [
-                {
-                  text: `RM. ${data.patientData.noRm}`,
-                  fillColor: "#EAECEF",
-                },
-              ],
-            ],
-          },
-        },
-      ],
-    },
+    header: defaultHeader(
+      "noRM",
+      `SURAT ${type.toUpperCase()} TINDAKAN`,
+      faskesLogo,
+      faskesProfile,
+      data.patientData
+    ),
     pageMargins: [60, 115, 60, 0],
     content: [
       {
@@ -571,6 +526,910 @@ export async function createSuratPersetujuanTindakan({
                         text: `${data.documentData.saksi2}`,
                         marginBottom: 1,
                         border: [false, false, false, true],
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+          ],
+        },
+      },
+    ],
+  };
+
+  pdfMake.createPdf(docDefinition).open();
+}
+
+export async function createResumeMedis({
+  data,
+  page = "A4",
+  orientation = "portrait",
+}: {
+  data: any;
+  page?: PageSize;
+  orientation?: PageOrientation;
+}) {
+  pdfMake.vfs = customVfs.pdfMake.vfs;
+  pdfMake.fonts = {
+    Arial: {
+      normal: "Arial.ttf",
+      bold: "Arial_Bold.ttf",
+      italics: "Arial_Italic.ttf",
+      bolditalics: "Arial_Bold_Italic.ttf",
+    },
+  };
+
+  const faskesProfile = JSON.parse(
+    localStorage.getItem("faskes_profile") ?? "{}"
+  );
+  let faskesLogo = "";
+  if (faskesProfile.logo) {
+    faskesLogo = faskesProfile.logo;
+  } else {
+    faskesLogo = await convertImageToBase64(
+      "/src/assets/images/adameds-square.png"
+    );
+  }
+  const pemeriksaanFisikData: any[] = [];
+  data.resumeData?.selectedPemeriksaanFisik.forEach(
+    (pemeriksaanFisik: any, index: number) => {
+      pemeriksaanFisikData.push([
+        `${index + 1}`,
+        `${
+          pemeriksaanFisik.keterangan && pemeriksaanFisik.keterangan != ""
+            ? pemeriksaanFisik.keterangan
+            : "-"
+        }`,
+        `${pemeriksaanFisik.organ}`,
+      ]);
+    }
+  );
+
+  const diagnosisData: any[] = [];
+  data.resumeData?.selectedDiagnosis.forEach(
+    (diagnosis: any, index: number) => {
+      diagnosisData.push([
+        `${index + 1}`,
+        `${diagnosis.diagnosis}`,
+        `${diagnosis.tipe}`,
+      ]);
+    }
+  );
+
+  const tindakanData: any[] = [];
+  data.resumeData?.selectedTindakan.forEach((tindakan: any, index: number) => {
+    tindakanData.push([`${index + 1}`, `${tindakan.namaTindakan}`]);
+  });
+
+  const pengobatanData: any[] = [];
+  const pengobatanPulangData: any[] = [];
+  data.resumeData?.selectedObat.forEach((obat: any) => {
+    if (obat.isTakeaway) {
+      pengobatanPulangData.push([
+        `${pengobatanPulangData.length + 1}`,
+        `${obat?.itemMedis?.name}`,
+        `${obat?.medicationQty}`,
+        `${obat?.aturanPakai?.name}`,
+        `${obat?.caraPakai?.caraPakai}`,
+      ]);
+    } else {
+      pengobatanData.push([
+        `${pengobatanData.length + 1}`,
+        `${obat?.itemMedis?.name}`,
+        `${obat?.medicationQty}`,
+        `${obat?.aturanPakai?.name}`,
+        `${obat?.caraPakai?.caraPakai}`,
+      ]);
+    }
+  });
+  console.log("🚀 ~ data.patientData:", data.patientData);
+
+  const docDefinition: TDocumentDefinitions = {
+    pageSize: page,
+    pageOrientation: orientation,
+    defaultStyle: {
+      font: "Arial",
+      fontSize: 9,
+    },
+    header: defaultHeader(
+      "resumeMedis",
+      "RESUME MEDIS",
+      faskesLogo,
+      faskesProfile,
+      data.patientData,
+      data.resumeData
+    ),
+    pageMargins: [60, 220, 60, 20],
+    content: [
+      {
+        margin: [0, 5, 60, 7.5],
+        canvas: [
+          {
+            type: "line",
+            x1: 0,
+            y1: 1,
+            x2: 475,
+            y2: 1,
+            lineWidth: 1,
+            lineColor: "black",
+          },
+        ],
+      },
+      // SECTION DPJP Anamnesis
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["auto", 10, "*"],
+          body: [
+            [
+              {
+                text: "DPJP",
+                fillColor: "#EAECEF",
+                bold: true,
+                margin: [10, 0, 5, 0],
+              },
+              "",
+              {
+                text: `${
+                  data.patientData.practitioner?.pegawai?.firstTitle &&
+                  data.patientData.practitioner?.pegawai?.firstTitle != "-"
+                    ? `${data.patientData.practitioner?.pegawai?.firstTitle} `
+                    : ""
+                }${data.patientData.practitioner?.pegawai?.name} ${
+                  data.patientData.practitioner?.pegawai?.lastTitle &&
+                  data.patientData.practitioner?.pegawai?.lastTitle != "-"
+                    ? `${data.patientData.practitioner?.pegawai?.lastTitle} `
+                    : ""
+                }`,
+                fillColor: "#EAECEF",
+                margin: [10, 0, 0, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        columns: [
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Ringkasan Riwayat Penyakit / Anamnesis",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${data.resumeData?.anamnesis}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Keluhan Utama",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${data.patientData?.complaint}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+        ],
+      },
+      // !SECTION
+      // SECTION Tanda Vital Awal
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "TANDA TANDA VITAL (TTV) - KETIKA MASUK",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        columns: [
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: [{ text: "Tekanan Darah", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalAwal?.tekananDarahSistole}/${data.resumeData?.tandaVitalAwal?.tekananDarahDiastole} mmHg`,
+                  },
+                ],
+                [
+                  {
+                    text: [{ text: "Frek. Nafas", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalAwal?.frekuensiNafas} / menit`,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: [{ text: "Frek. Nadi", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalAwal?.frekuensiNadi} / menit`,
+                  },
+                ],
+                [
+                  {
+                    text: [{ text: "Suhu", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalAwal?.suhu} °C`,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+        ],
+      },
+      // !SECTION
+      // SECTION Tanda Vital Keluar
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "TANDA TANDA VITAL (TTV) - KETIKA KELUAR",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        columns: [
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: [{ text: "Tekanan Darah", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalPulang?.tekananDarahSistole}/${data.resumeData?.tandaVitalPulang?.tekananDarahDiastole} mmHg`,
+                  },
+                ],
+                [
+                  {
+                    text: [{ text: "Frek. Nafas", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalPulang?.frekuensiNafas} / menit`,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: [{ text: "Frek. Nadi", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalPulang?.frekuensiNadi} / menit`,
+                  },
+                ],
+                [
+                  {
+                    text: [{ text: "Suhu", bold: true }],
+                  },
+                  { text: ":" },
+                  {
+                    text: `${data.resumeData?.tandaVitalPulang?.suhu} °C`,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+        ],
+      },
+      // !SECTION
+      // SECTION Pemeriksaan Fisik
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "PEMERIKSAAN FISIK",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        layout: "noBorders",
+        table: {
+          widths: [20, "*", "*"],
+          body: [
+            [
+              {
+                text: "No.",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Hasil Pemeriksaan",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Lokasi Fisik",
+                decoration: "underline",
+                bold: true,
+              },
+            ],
+            ...pemeriksaanFisikData,
+          ],
+        },
+      },
+      // !SECTION
+      // SECTION Diagnosa
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "DIAGNOSA",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        layout: "noBorders",
+        table: {
+          widths: [20, "*", 50],
+          body: [
+            [
+              {
+                text: "No.",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Nama Diagnosa",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Tipe",
+                decoration: "underline",
+                bold: true,
+              },
+            ],
+            ...diagnosisData,
+          ],
+        },
+      },
+      // !SECTION
+      // SECTION Tindakan
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "TINDAKAN",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        layout: "noBorders",
+        table: {
+          widths: [20, "*"],
+          body: [
+            [
+              {
+                text: "No.",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Nama Tindakan",
+                decoration: "underline",
+                bold: true,
+              },
+            ],
+            ...tindakanData,
+          ],
+        },
+      },
+      // !SECTION
+      // SECTION Pengobatan
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "PENGOBATAN",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        layout: "noBorders",
+        table: {
+          widths: [20, "*", "*", "*", "*"],
+          body: [
+            [
+              {
+                text: "No.",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Nama Obat",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Jumlah",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Aturan Pakai",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Cara Pakai",
+                decoration: "underline",
+                bold: true,
+              },
+            ],
+            ...pengobatanData,
+          ],
+        },
+      },
+      // !SECTION
+      // SECTION Cara Pulang
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "CARA PULANG",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        columns: [
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Status Pulang",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${data.resumeData?.statusPulangNama?.label}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Kondisi Saat Pulang",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${data.resumeData?.kondisiPasienPulangNama?.label}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+        ],
+      },
+      // !SECTION
+      // SECTION Pengobatan Pulang
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "PENGOBATAN PULANG",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        layout: "noBorders",
+        table: {
+          widths: [20, "*", "*", "*", "*"],
+          body: [
+            [
+              {
+                text: "No.",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Nama Obat",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Jumlah",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Aturan Pakai",
+                decoration: "underline",
+                bold: true,
+              },
+              {
+                text: "Cara Pakai",
+                decoration: "underline",
+                bold: true,
+              },
+            ],
+            ...pengobatanPulangData,
+          ],
+        },
+      },
+      // !SECTION
+      // SECTION Edukasi
+      {
+        margin: [0, 2, 0, 2],
+        layout: "noBorders",
+        fontSize: 10.5,
+        bold: true,
+        table: {
+          widths: ["*"],
+          body: [
+            [
+              {
+                text: "INSTRUKSI PULANG",
+                fillColor: "#EAECEF",
+                margin: [10, 0, 5, 0],
+              },
+            ],
+          ],
+        },
+      },
+      {
+        margin: [10, 2, 10, 2],
+        columns: [
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Diet",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${"lorem ipsum"}`,
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: "Edukasi",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${"lorem"}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+          {
+            layout: "noBorders",
+            table: {
+              widths: [80, 2, "*"],
+              body: [
+                [
+                  {
+                    text: "Latihan",
+                    bold: true,
+                    decoration: "underline",
+                    colSpan: 3,
+                  },
+                ],
+                [
+                  {
+                    text: `${""}`,
+                    colSpan: 3,
+                  },
+                ],
+              ],
+            },
+            width: "50%",
+          },
+        ],
+      },
+      // !SECTION
+      {
+        layout: "noBorders",
+        marginTop: 45,
+        alignment: "center",
+        table: {
+          widths: ["*", 100, "*"],
+          body: [
+            [
+              "",
+              "",
+              {
+                text: `${faskesProfile?.address?.city}, ${
+                  data.resumeData?.dischargeDate
+                    ? epochToDate(data.resumeData.dischargeDate, "date")
+                    : "-"
+                }`,
+                bold: true,
+              },
+            ],
+            [
+              {
+                text: "Pasien",
+                bold: true,
+              },
+              "",
+              {
+                text: "Dokter Penanggung Jawab",
+                bold: true,
+              },
+            ],
+            [
+              {
+                alignment: "center",
+                image: await generateQRCode(
+                  `Dikeluarkan di ${
+                    faskesProfile.name
+                  }, Ditandatangani secara elektronik oleh ${
+                    data.patientData.patient.name
+                  }, Pada tanggal ${
+                    data.resumeData?.dischargeDate
+                      ? epochToDate(data.resumeData.dischargeDate, "date")
+                      : "-"
+                  }`
+                ),
+                width: 80,
+                height: 80,
+                fit: [80, 80],
+              },
+              "",
+              {
+                alignment: "center",
+                image: await generateQRCode(
+                  `Dikeluarkan di ${
+                    faskesProfile.name
+                  }, Ditandatangani secara elektronik oleh ${`${
+                    data.patientData.practitioner?.pegawai?.firstTitle &&
+                    data.patientData.practitioner?.pegawai?.firstTitle != "-"
+                      ? `${data.patientData.practitioner?.pegawai?.firstTitle} `
+                      : ""
+                  }${data.patientData.practitioner?.pegawai?.name} ${
+                    data.patientData.practitioner?.pegawai?.lastTitle &&
+                    data.patientData.practitioner?.pegawai?.lastTitle != "-"
+                      ? `${data.patientData.practitioner?.pegawai?.lastTitle} `
+                      : ""
+                  }`}, Pada tanggal ${
+                    data.resumeData?.dischargeDate
+                      ? epochToDate(data.resumeData.dischargeDate, "date")
+                      : "-"
+                  }`
+                ),
+                width: 80,
+                height: 80,
+                fit: [80, 80],
+              },
+            ],
+            [
+              {
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${data.patientData.patient.name}`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                  ],
+                },
+              },
+              "",
+              {
+                margin: [20, 0, 20, 0],
+                alignment: "center",
+                table: {
+                  widths: ["*"],
+                  body: [
+                    [
+                      {
+                        text: `${
+                          data.patientData.practitioner?.pegawai?.firstTitle &&
+                          data.patientData.practitioner?.pegawai?.firstTitle !=
+                            "-"
+                            ? `${data.patientData.practitioner?.pegawai?.firstTitle} `
+                            : ""
+                        }${data.patientData.practitioner?.pegawai?.name} ${
+                          data.patientData.practitioner?.pegawai?.lastTitle &&
+                          data.patientData.practitioner?.pegawai?.lastTitle !=
+                            "-"
+                            ? `${data.patientData.practitioner?.pegawai?.lastTitle} `
+                            : ""
+                        }`,
+                        marginBottom: 1,
+                        border: [false, false, false, true],
+                      },
+                    ],
+                    [
+                      {
+                        text: `SIP: ${data.patientData.practitioner?.sip}`,
+                        border: [false, true, false, false],
                       },
                     ],
                   ],
