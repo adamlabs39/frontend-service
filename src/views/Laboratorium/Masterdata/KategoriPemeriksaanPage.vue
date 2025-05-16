@@ -148,7 +148,7 @@ const resetForm = () => {
   kodeKategoriPemeriksaan.value = "";
   namaKategoriPemeriksaan.value = "";
   noUrut.value = 0;
-  status.value = false;
+  status.value = true;
 };
 
 // Handle Pagination

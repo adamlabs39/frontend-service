@@ -63,9 +63,11 @@ const fetchTarifPemeriksaan = async () => {
   }
 };
 
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
+// Handle Page
+const handlePage = (event: any) => {
+  tarifPemeriksaanProperties.value.page = event.page + 1;
+  tarifPemeriksaanProperties.value.page_size = event.rows;
+  fetchTarifPemeriksaan();
 };
 
 const handlePageUpdate = (newPage: number) => {
@@ -88,6 +90,13 @@ const dialogConfig = ref<any>({
   title: "",
   data: {},
 });
+
+const metaKey = ref(true);
+const selectedData = ref();
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
 
 const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
@@ -466,6 +475,9 @@ onMounted(() => {
       <template #content>
         <DataTable
           :value="tarifPemeriksaanPayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -497,11 +509,31 @@ onMounted(() => {
                   v-for="(item, i) in slotProps.data.tarifLabPenjamin"
                   :label="item.penjamin.name"
                   :showCheckedIcon="false"
+                  :border-color="
+                    item.penjamin.name === 'Tunai'
+                      ? 'border-none'
+                      : 'border-none'
+                  "
+                  :bg-color="
+                    item.penjamin.name === 'Tunai'
+                      ? 'bg-adameds-300'
+                      : 'bg-warning-300'
+                  "
+                  :customClass="
+                    item.penjamin.name === 'Tunai'
+                      ? 'text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3 ml-[10px]'
+                      : 'cursor-auto h-5 bg-warning-300 text-white pr-2 pl-3 ml-[10px]'
+                  "
+                />
+                <!-- <CustomChip
+                  v-for="(item, i) in slotProps.data.tarifLabPenjamin"
+                  :label="item.penjamin.name"
+                  :showCheckedIcon="false"
                   selectedColor="bg-warning-300 border-warning-300"
                   border-color="border-none"
                   bg-color="bg-warning-300"
                   customClass=" cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3 ml-[10px]"
-                />
+                /> -->
               </div>
             </template>
           </Column>
@@ -653,11 +685,10 @@ onMounted(() => {
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataBedruangan.length"
+            :rows="tarifPemeriksaanProperties.page_size"
+            :totalRecords="tarifPemeriksaanProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>

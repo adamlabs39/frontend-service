@@ -630,7 +630,7 @@ console.log("jenis input", optionJenisInput.value);
           >
             <template #body="slotProps">
               <div class="text-SM">
-                {{ slotProps.data.categoryPemeriksaan.name }}
+                {{ slotProps.data.categoryPemeriksaan?.name || "N/A" }}
               </div>
             </template>
           </Column>
