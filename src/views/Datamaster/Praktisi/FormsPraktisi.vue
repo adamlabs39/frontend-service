@@ -395,7 +395,7 @@ const tempPoli = ref([]);
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <div class="font-bold text-heading">
-          Data Pegawai -
+          Data Praktisi -
           {{ payload.isDoctor ? "DOKTOR" : "NON-DOKTOR" }}
         </div>
         <hr class="border-grey-200" />
@@ -440,7 +440,6 @@ const tempPoli = ref([]);
               : '-'
           "
         />
-
         <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
             <div
@@ -460,19 +459,61 @@ const tempPoli = ref([]);
             <div v-else>-</div>
           </template>
         </CustomInfoRow>
+        <CustomInfoRow
+          label="ID SATUSEHAT"
+          :value="
+            payload.satuSehatId && payload.satuSehatId.trim() !== ''
+              ? payload.satuSehatId
+              : '-'
+          "
+        />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status">
-          <template #value>
-            <CustomChip
-              :label="status ? 'AKTIF' : 'NON-AKTIF'"
-              :textColor="status ? 'text-white' : 'text-[#80868d]'"
-              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
-              :icon-color="status ? 'white' : '#80868d'"
-              customClass="text-xs font-semibold h-5 flex w-fit"
-            />
-          </template>
-        </CustomInfoRow>
+        <div class="grid grid-cols-2">
+          <CustomInfoRow label="Status">
+            <template #value>
+              <CustomChip
+                :label="status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="status ? 'text-white' : 'text-[#80868d]'"
+                :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+                :icon-color="status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </template>
+          </CustomInfoRow>
+          <CustomInfoRow label="Status SATUSEHAT">
+            <template #value>
+              <CustomChip
+                :label="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'AKTIF'
+                    : 'NON-AKTIF'
+                "
+                :textColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'text-white'
+                    : 'text-[#80868d]'
+                "
+                :bgColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
+                :icon-color="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'white'
+                    : '#80868d'
+                "
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </template>
+          </CustomInfoRow>
+        </div>
       </div>
     </template>
     <template #footer>

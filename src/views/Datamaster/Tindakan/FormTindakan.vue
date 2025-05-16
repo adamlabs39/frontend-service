@@ -221,7 +221,7 @@ watch(
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Kode Tindakan" :value="code" />
-        <CustomInfoRow label="Nama Tindaka" :value="name" />
+        <CustomInfoRow label="Nama Tindakan" :value="name" />
         <CustomInfoRow label="Snomed CT" :value="payload.snomedDetail?.name ?? '-'" />
         <CustomInfoRow label="ICD-9 CM" :value="payload.icd9Detail?.name ?? '-'" />
         <hr class="col-span-12 border-grey-200" />
