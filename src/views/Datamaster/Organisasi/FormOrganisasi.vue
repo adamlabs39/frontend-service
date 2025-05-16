@@ -41,7 +41,7 @@ const kelurahanPayload = ref<any[]>([]);
 
 const fetchOrganisasi = async () => {
   try {
-    const response = await organisasiStore.getApi();
+    const response = await organisasiStore.getApi(1, 9999);
     if (response && response.payload) {
       organisasiPayload.value = response.payload;
     } else {
@@ -471,18 +471,9 @@ watch(
           label="Kelurahan/Desa"
           :value="getName(payload?.villageCode, kelurahanPayload)"
         />
-        <CustomInfoRow
-          label="Kode Pos"
-          :value="payload?.postalCode ?? '-'"
-        />
-        <CustomInfoRow
-          label="Alamat"
-          :value="payload?.fullAddress ?? '-'"
-        />
-        <CustomInfoRow
-          label="Part Of Id"
-          :value="payload?.partOf ?? '-'"
-        />
+        <CustomInfoRow label="Kode Pos" :value="payload?.postalCode ?? '-'" />
+        <CustomInfoRow label="Alamat" :value="payload?.fullAddress ?? '-'" />
+        <CustomInfoRow label="Part Of Id" :value="payload?.partOf ?? '-'" />
         <CustomInfoRow
           label="Part Of Name"
           :value="payload.partOfName ?? '-'"
