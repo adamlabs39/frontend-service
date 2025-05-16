@@ -35,7 +35,7 @@ const fetchOrganisasiData = async () => {
     );
 
     if (response && response.payload) {
-      organisasiProperties.value.total = response.properties.totalItems;
+      organisasiProperties.value.total = Number(response.properties.totalItem);
       organisasiPayload.value = response.payload;
     } else {
       organisasiPayload.value = [];
@@ -476,7 +476,6 @@ const handleFileUpload = async (file: File) => {
         @export="downloadExportExcel"
         @import="handleFileUpload"
         @download="downloadFormatExcel"
-        noPagination
       />
     </template>
   </Card>

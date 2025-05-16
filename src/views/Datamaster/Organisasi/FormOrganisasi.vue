@@ -134,7 +134,7 @@ const schema = toTypedSchema(
         .required("URL harus diisi")
         .matches(/^https:\/\//, "URL harus dimulai dengan https://"),
       partOfName: yup.string().notRequired(),
-      partOf: yup.string().notRequired(),
+      partOfUuid: yup.string().notRequired(),
       status: yup.bool().default(true),
       address: yup.object({
         fullAddress: yup.string().required("Alamat harus diisi"),
@@ -164,7 +164,7 @@ const [status] = defineField("status");
 const [kodePos] = defineField("address.postalCode");
 const [alamat] = defineField("address.fullAddress");
 const [partOfName] = defineField("partOfName");
-const [partOf] = defineField("partOf");
+const [partOfUuid] = defineField("partOfUuid");
 const [provinsi] = defineField("address.prov");
 const [kabupaten] = defineField("address.city");
 const [kecamatan] = defineField("address.district");
@@ -176,8 +176,8 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    if (!values.partOf) {
-      delete values.partOf;
+    if (!values.partOfUuid) {
+      delete values.partOfUuid;
     }
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -258,21 +258,24 @@ watch(
         setValues({
           ...props.payload,
         });
-        if (props.payload.address) {
+        if (props.payload) {
           // Set provinsi
-          provinsi.value = props.payload?.address?.prov as string;
+          provinsi.value = props.payload?.provinceCode as string;
           await fetchKabupaten(provinsi.value);
 
           // Set kabupaten
-          kabupaten.value = props.payload?.address?.city as string;
+          kabupaten.value = props.payload?.cityCode as string;
           await fetchKecamatan(kabupaten.value);
 
           // Set kecamatan
-          kecamatan.value = props.payload?.address?.district as string;
+          kecamatan.value = props.payload?.districtCode as string;
           await fetchKelurahan(kecamatan.value);
 
           // Set kelurahan
-          kelurahan.value = props.payload?.address?.village as string;
+          kelurahan.value = props.payload?.villageCode as string;
+
+          kodePos.value = props.payload?.postalCode as string;
+          alamat.value = props.payload?.fullAddress as string;
         }
       }
     } else {
@@ -409,21 +412,21 @@ watch(
         />
         <CustomSelect
           label="Part Of"
-          v-model="partOf"
+          v-model="partOfUuid"
           place-holder="Pilih Part Of"
           class="col-span-12"
           :options="organisasiPayload"
           optionValue="uuid"
           optionLabel="name"
         />
-        <CustomTextfield
+        <!-- <CustomTextfield
           label="ID SATUSEHAT"
           v-model="satuSehatId"
           placeholder="ID SATUSEHAT"
           class="col-span-12"
           :invalid="!!errors.satuSehatId"
           :invalidMessage="errors.satuSehatId"
-        />
+        /> -->
         <!-- <CustomTextfield
           label="IHS No. Organization"
           v-model="organizationIhsNumber"
@@ -454,31 +457,31 @@ watch(
         <CustomInfoRow label="URL" :value="payload.url" />
         <CustomInfoRow
           label="Provinsi"
-          :value="getName(payload.address.prov, provinsiPayload)"
+          :value="getName(payload?.provinceCode, provinsiPayload)"
         />
         <CustomInfoRow
           label="Kab/Kota"
-          :value="getName(payload.address.city, kabupatenPayload)"
+          :value="getName(payload?.cityCode, kabupatenPayload)"
         />
         <CustomInfoRow
           label="Kecamatan"
-          :value="getName(payload.address.district, kecamatanPayload)"
+          :value="getName(payload?.districtCode, kecamatanPayload)"
         />
         <CustomInfoRow
           label="Kelurahan/Desa"
-          :value="getName(payload.address.village, kelurahanPayload)"
+          :value="getName(payload?.villageCode, kelurahanPayload)"
         />
         <CustomInfoRow
           label="Kode Pos"
-          :value="payload.address.postalCode ?? '-'"
+          :value="payload?.postalCode ?? '-'"
         />
         <CustomInfoRow
           label="Alamat"
-          :value="payload.address.fullAddress ?? '-'"
+          :value="payload?.fullAddress ?? '-'"
         />
         <CustomInfoRow
           label="Part Of Id"
-          :value="payload.address.partOf ?? '-'"
+          :value="payload?.partOf ?? '-'"
         />
         <CustomInfoRow
           label="Part Of Name"
