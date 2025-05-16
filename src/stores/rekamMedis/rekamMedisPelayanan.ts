@@ -50,5 +50,12 @@ export const useRekamMedisPelayananStore = defineStore({
         payload
       );
     },
+    async discharge(payload: {
+      pelayanan: "ri" | "rj" | "igd" | "fisio";
+      rekamMedisUuid: string;
+      lokasiUuid: string;
+    }) {
+      return apiRekamMedisPut(`/pelayanan/discharge`, payload);
+    },
   },
 });
