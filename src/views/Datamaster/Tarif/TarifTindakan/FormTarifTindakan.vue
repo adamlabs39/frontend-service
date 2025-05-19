@@ -164,10 +164,10 @@ const schema = toTypedSchema(
               tarifPerKomponen: yup
                 .number()
                 .required("Harga komponen tarif harus diisi"),
-              persentase: yup.number().notRequired(),
+              persentase: yup.number().notRequired().strip(),
             })
           ),
-          presentase: yup.bool().default(false),
+          presentase: yup.bool().default(false).strip(),
           totalHarga: yup.number().required("Persentasi harus diisi"),
         })
       ),
@@ -290,7 +290,6 @@ const removeListKomponenTarif = (
       }
     }
   }
-  console.log("tempDeleteTindakan", tempDeleteTindakan);
   fieldsTindakan.value[tindakanIndex].value.komponenTarif.splice(
     komponenIndex,
     1
@@ -303,12 +302,7 @@ const handleRemoveTindakan = (tindakanIndex: number) => {
     komponen.isDeleted = true;
   });
   tempDeleteTindakan.value.push(tindakanToRemove);
-  console.log("tempDeleteTindakan hendele tindakan", tempDeleteTindakan);
   removeTindakan(tindakanIndex);
-  console.log(
-    "Removed tindakan and marked komponen as deleted:",
-    tindakanToRemove
-  );
 };
 
 const tempDeletedLab = ref<TempTarifLab[]>([]);
@@ -387,7 +381,6 @@ const handleUnitPelayananUpdate = (selectedValues: number[]) => {
     );
 
     if (!existsInTemp) {
-      console.log("Menambahkan unitPelayanan baru:", value);
       pushUnitPelayanan({
         unitPelayanan: value,
       });
@@ -434,7 +427,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     delete values.penjamin;
     if (!values.presentase) {
       values.grandTotal = grandTotalData.value;
-      console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
     }
     delete values.unitPelayananSelected;
     delete values.penjaminSelected;
@@ -469,11 +461,9 @@ const onSubmit = handleSubmit(async (values: any) => {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("value edit", values);
       const response = await tarifStore.putApi(uuid, values);
       emit("data-updated");
     } else if (method.value === "add") {
-      console.log(values);
       const response = await tarifStore.postApi(values);
       emit("data-updated");
     }
@@ -599,10 +589,10 @@ const handlePersentase = (
   komponenIndex: number
 ) => {
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
-  const tarifPerKomponen = (inputPersentase / 100) * tindakan.totalHarga;
-  tindakan.komponenTarif[komponenIndex].tarifPerKomponen = parseFloat(
-    tarifPerKomponen.toFixed(2) // Round to 2 decimal places
-  );
+  const tarifPerKomponen = ((inputPersentase ?? 0) / 100) * tindakan.totalHarga;
+
+  tindakan.komponenTarif[komponenIndex].tarifPerKomponen =
+    Math.ceil(tarifPerKomponen);
   // tindakan.listKomponenTarif[komponenIndex].persentase = inputPersentase;
 };
 
@@ -621,8 +611,9 @@ const handleGrandTotal = (
   if (isPresentase) {
     const tindakan = fieldsTindakan.value[tindakanIndex].value;
     tindakan.komponenTarif.forEach((dataKomponenTarif) => {
-      dataKomponenTarif.tarifPerKomponen =
-        (dataKomponenTarif.persentase / 100) * totalHarga;
+      dataKomponenTarif.tarifPerKomponen = Math.ceil(
+        ((dataKomponenTarif.persentase ?? 0) / 100) * totalHarga
+      );
     });
   }
 };
