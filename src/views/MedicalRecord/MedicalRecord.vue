@@ -364,6 +364,28 @@ const submitResumeMedis = async () => {
   }
 };
 
+const dischargeData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    await rekamMedisPelayananStore.discharge({
+      pelayanan:
+        props.rmType == "rawat-jalan"
+          ? "rj"
+          : props.rmType == "rawat-inap"
+          ? "ri"
+          : props.rmType == "igd"
+          ? "igd"
+          : "fisio",
+      rekamMedisUuid: props.patientData.rekamMedisUuid,
+      lokasiUuid: rekamMedisStore.openedRekamMedis.meta.lokasiUuid,
+    });
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 watch(
   () => selectedSessionTab.value,
   async (newSession, oldSession) => {
@@ -976,7 +998,7 @@ defineExpose({ showDialogRM });
                     class="mr-[10px]"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="dischargeData"
                     label="Discharge"
                     background-color="bg-danger-300"
                   />
