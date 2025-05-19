@@ -658,51 +658,12 @@ const totalKelompokPemeriksaan = (kelompokIndex: number): string => {
   return formatCurrency(0);
 };
 
-// watch(
-//   () => props.isDialogVisible,
-//   (newValue) => {
-//     if (newValue) {
-//       resetDialogMode();
-//       if (props.method !== "add" && props.payload) {
-//         console.log("🚀 ~ watch ~ props.payload:", props.payload);
-//         const dataPelayanan =
-//           props.payload.pelayanan?.map((item: any) => item.pelayanan) || [];
-//         const dataPenjamin =
-//           props.payload.tarifLabPenjamin?.map(
-//             (item: any) => item.penjamin.uuid
-//           ) || [];
-//         const dataTarifLabItems =
-//           props.payload.tarifLabItem?.map((item: any) => ({
-//             itemPemeriksaanUuid: item.itemPemeriksaanUuid,
-//             total: item.totalTarif,
-//             listKomponenItem: [], // Assuming no komponen data in payload
-//           })) || [];
-//         const grandTotalValue = props.payload.grandTotal;
-
-//         setValues({
-//           ...props.payload,
-//           pelayanans: dataPelayanan,
-//           penjaminSelected: dataPenjamin,
-//           tarifLabItems: dataTarifLabItems,
-//           grandTotal: grandTotalValue,
-//         });
-
-//         tempPelayanan.value = dataPelayanan;
-//         tempPenjamin.value = dataPenjamin;
-//       }
-//     } else {
-//       resetForm();
-//       resetDialogMode();
-//     }
-//   }
-// );
-
 watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
       resetDialogMode();
-      if (props.method === "edit" && props.payload) {
+      if (props.method !== "add" && props.payload) {
         console.log("🚀 ~ watch ~ props.payload:", props.payload);
 
         // Map data dari payload ke form
@@ -1411,7 +1372,7 @@ onMounted(() => {
                     bodyClass="align-top"
                   >
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifKomponenName || "-" }}
+                      {{ slotProps.data.name || "-" }}
                     </template>
                   </Column>
                   <Column
@@ -1423,7 +1384,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifPerKomponen || "-" }}
+                      {{ slotProps.data.tarif || "-" }}
                     </template>
                   </Column>
                 </DataTable>
@@ -1492,7 +1453,7 @@ onMounted(() => {
                     bodyClass="align-top"
                   >
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifKomponenName || "-" }}
+                      {{ slotProps.data.name || "-" }}
                     </template>
                   </Column>
                   <Column
@@ -1504,7 +1465,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarifPerKomponen || "-" }}
+                      {{ slotProps.data.tarif || "-" }}
                     </template>
                   </Column>
                 </DataTable>

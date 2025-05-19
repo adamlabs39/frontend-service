@@ -34,12 +34,36 @@ const props = defineProps({
 
 const orderLabStore = useOrderLab();
 const storeUtils = utilsStore();
-const patientIdentityForm = ref<InstanceType<typeof PatientIdentityForm> | null>(null);
+const patientIdentityForm = ref<InstanceType<
+  typeof PatientIdentityForm
+> | null>(null);
 const doctorVisitForm = ref<InstanceType<typeof DoctorVisitForm> | null>(null);
-  const openedPatientData = ref<any>({});
+const openedPatientData = ref<any>({});
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
+console.log("pageType", props.pageType);
 
+const postRegisterPatient = async () => {
+  let tempPatientData: any;
+  let tempDocterVisitData = await doctorVisitForm.value?.onSubmit();
+  tempPatientData = await patientIdentityForm.value?.onSubmit();
+  let payload: any = { patientData: tempPatientData, ...tempDocterVisitData };
+  storeUtils.setLoading(true);
+  try {
+    let response;
+    if (props.pageType === "order-lab") {
+      payload.noRm = tempPatientData.noRm;
+      payload.pelayanan = "aps";
+      response = await orderLabStore.postApi(payload);
+    } else {
+      response = await orderLabStore.putApi(payload);
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 </script>
 
 <template>
@@ -72,6 +96,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
       <PatientIdentityForm
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
+        ref="patientIdentityForm"
         :pageType="pageType"
         :formType="formType"
         :isDetail="isDetail"
@@ -109,7 +134,7 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
             label="Simpan"
             class=""
             backgroundColor="bg-adameds-300"
-            @click=""
+            @click="postRegisterPatient"
           />
         </div>
       </template>

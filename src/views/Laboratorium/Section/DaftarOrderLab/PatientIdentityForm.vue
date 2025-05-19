@@ -328,7 +328,11 @@ const setSelectedPatientData = async (data: any) => {
     storeUtils.setLoading(true);
     try {
       const response = await masterPasienStore.getDetailMasterPasien(data.uuid);
+
       if (response && response.payload) {
+        console.log("response selected patient", response.payload);
+        response.payload.gender =
+          response.payload.gender === "Male" ? "Laki-laki" : "Perempuan";
         setFormData(response.payload, data.uuid);
       }
     } catch (error) {
