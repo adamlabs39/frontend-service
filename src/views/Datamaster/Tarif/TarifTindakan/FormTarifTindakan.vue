@@ -435,6 +435,8 @@ const onSubmit = handleSubmit(async (values: any) => {
         errorsTotal.value.push(
           "Harga semua komponen tidak sama dengan total harga"
         );
+      } else {
+        errorsTotal.value.push("");
       }
     });
 
@@ -609,7 +611,7 @@ const handlePersentase = (
   tindakanIndex: number,
   komponenIndex: number
 ) => {
-  errorsTotal.value[tindakanIndex] = ""
+  errorsTotal.value[tindakanIndex] = "";
   const tindakan = fieldsTindakan.value[tindakanIndex].value;
   const tarifPerKomponen = ((inputPersentase ?? 0) / 100) * tindakan.totalHarga;
 
@@ -915,7 +917,9 @@ const totalTindakan = (tindakanIndex: number): string => {
                           </template>
                         </Column>
                       </DataTable>
-                      <small class="text-danger-300">{{ errorsTotal[idx] }}</small>
+                      <small class="text-danger-300">{{
+                        errorsTotal[idx]
+                      }}</small>
                       <div class="flex flex-col gap-5 p-5">
                         <div
                           class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
