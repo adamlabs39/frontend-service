@@ -35,8 +35,17 @@ export const useRekamMedisPelayananStore = defineStore({
     async uploadFile(payload: {
       rekamMedisUuid: string;
       file: string;
-      fileType: string;
+      fileType:
+        | "surat_kontrol_rawat_jalan"
+        | "surat_permohonan_rawat_inap"
+        | "surat_keterangan_sakit"
+        | "surat_keterangan_sehat"
+        | "surat_rujuk_keluar_faskes"
+        | "surat_keterangan_meninggal"
+        | "resep_kacamata"
+        | "berkas";
       fileFormat: string;
+      namaFile: string;
       admissionType: string;
     }) {
       return apiRekamMedisPost(`/pelayanan/files`, payload);

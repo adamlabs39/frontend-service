@@ -42,6 +42,7 @@ const imageSrc = ref<string | undefined | null>("");
 
 // untuk PDF
 const fileName = ref<string | null>(null);
+const fileExtension = ref<string | null>(null);
 const errorMessage = ref<string | null>(null);
 
 const browseFile = () => {
@@ -73,7 +74,9 @@ const onFileChange = (event: Event) => {
   }
 };
 
+const isDocument = ref(false);
 const handleFiles = (files: FileList) => {
+  isDocument.value = false;
   const file = files[0];
   if (file) {
     // Validasi tipe file berdasarkan props array
@@ -90,29 +93,20 @@ const handleFiles = (files: FileList) => {
 
     errorMessage.value = null; // Reset error message jika file valid
 
-    // Membaca file sebagai data URL (base64)
-    if (file.type === "application/pdf") {
-      fileName.value = file.name;
-      imageSrc.value = "";
-      emit("update:modelValue", fileName.value);
-      console.log("PDF uploaded:", {
-        imageSrc: imageSrc.value,
-        fileName: fileName.value,
-      });
-    } else {
-      // Membaca file sebagai data URL (base64) untuk gambar
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imageSrc.value = e.target?.result as string;
-        fileName.value = null;
-        emit("update:modelValue", imageSrc.value);
-        console.log("Image uploaded:", {
-          imageSrc: imageSrc.value,
-          fileName: fileName.value,
-        });
-      };
-      reader.readAsDataURL(file);
+    if (file.name.endsWith(".pdf")) {
+      isDocument.value = true;
     }
+
+    fileName.value = file.name;
+    const match = file.name.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
+    fileExtension.value = match ? `.${match[1].toLowerCase()}` : ``;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imageSrc.value = e.target?.result as string;
+      emit("update:modelValue", imageSrc.value);
+    };
+    reader.readAsDataURL(file);
   }
 };
 
@@ -127,13 +121,7 @@ const value = computed({
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (newValue?.endsWith(".pdf")) {
-      fileName.value = newValue;
-      imageSrc.value = "";
-    } else {
-      imageSrc.value = newValue;
-      fileName.value = null;
-    }
+    imageSrc.value = newValue;
   }
 );
 
@@ -142,11 +130,14 @@ watch(
 const clearFile = () => {
   imageSrc.value = "";
   fileName.value = null;
+  fileExtension.value = null;
   emit("update:modelValue", "");
 };
 
 defineExpose({
   clearFile,
+  fileName,
+  fileExtension,
 });
 </script>
 
@@ -185,11 +176,14 @@ defineExpose({
       <p v-if="errorMessage" class="mt-4 text-red-500">{{ errorMessage }}</p>
     </div>
 
-    <div v-else-if="fileName">
-      <p class="font-semibold text-black text-SM">{{ fileName }}</p>
+    <div v-else-if="isDocument">
+      <p @click="clearFile" class="font-semibold text-black text-SM">
+        {{ fileName }}
+      </p>
     </div>
     <div v-else>
       <img
+        @click="clearFile"
         :src="imageSrc as string"
         alt="Uploaded Image"
         class="mx-auto mt-4 rounded-md"
