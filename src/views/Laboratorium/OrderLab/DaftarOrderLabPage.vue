@@ -45,9 +45,12 @@ console.log("pageType", props.pageType);
 
 const postRegisterPatient = async () => {
   let tempPatientData: any;
-  let tempDocterVisitData = await doctorVisitForm.value?.onSubmit();
+  let tempDocterVisitData: any;
+  tempDocterVisitData = await doctorVisitForm.value?.onSubmit();
   tempPatientData = await patientIdentityForm.value?.onSubmit();
   let payload: any = { patientData: tempPatientData, ...tempDocterVisitData };
+  console.log("tempDocterVisitData", tempDocterVisitData);
+  console.log("tempPatientData", tempPatientData);
   storeUtils.setLoading(true);
   try {
     let response;
@@ -105,9 +108,11 @@ const postRegisterPatient = async () => {
       />
       <DoctorVisitForm
         class="mt-2"
+        ref="doctorVisitForm"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
         :patientData="openedPatientData"
+        :isDetail="isDetail"
         @back="dataBreadCrumb.pop()"
       />
 

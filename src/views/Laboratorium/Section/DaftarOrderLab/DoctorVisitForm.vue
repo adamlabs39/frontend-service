@@ -84,26 +84,61 @@ const selectedPaymentMethod = ref<string[]>(["TUNAI"]);
 const onPaymentMethodSelect = (label: string) => {
   selectedPaymentMethod.value[0] = label;
   paymentMethod.value = label;
+
+  if (label === "TUNAI") {
+    accountNumber.value = "";
+    classEntitle.value = "";
+    penjaminUuid.value = "";
+  }
 };
+
+// const schema = computed(() =>
+//   toTypedSchema(
+//     yup
+//       .object({
+//         paymentMethod: yup.string().default("TUNAI"),
+//         pasienMaternitas: yup.boolean().default(false),
+//         keluhanUtama: yup.string().default(""),
+//         catatan: yup.string().default(""),
+//         penjaminUuid: yup.string().required("Nama Penjamin harus dipilih"),
+//         dokterPengirimUuid: yup.string().required("Dokter harus dipilih"),
+//         lokasiUuid: yup.string().required("Unit Asal harus dipilih"),
+//         accountNumber: yup.string().default(""),
+//         classEntitle: yup.string().default(""),
+//       })
+//       .noUnknown()
+//   )
+// );
 
 const schema = computed(() =>
   toTypedSchema(
     yup
       .object({
         paymentMethod: yup.string().default("TUNAI"),
-        pasienMaternitas: yup.boolean(),
+        pasienMaternitas: yup.boolean().default(false),
         keluhanUtama: yup.string().default(""),
         catatan: yup.string().default(""),
-        penjaminUuid: yup.string().required("Nama Penjamin harus dipilih"),
+        penjaminUuid: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Nama Penjamin harus dipilih"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
         dokterPengirimUuid: yup.string().required("Dokter harus dipilih"),
         lokasiUuid: yup.string().required("Unit Asal harus dipilih"),
-        accountNumber: yup.string(),
-        classEntitle: yup.string(),
+        accountNumber: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Nomor Account harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
+        classEntitle: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Class Entitle harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
       })
       .noUnknown()
   )
 );
-
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
@@ -119,7 +154,13 @@ const [accountNumber] = defineField("accountNumber");
 const [classEntitle] = defineField("classEntitle");
 
 const onSubmit = handleSubmit(async (values) => {
-  return values;
+  const modifiedValues = {
+    ...values,
+    paymentMethod: values.paymentMethod === "TUNAI" ? 1 : 2,
+  };
+
+  console.log("modifiedValues", modifiedValues);
+  return modifiedValues;
 });
 
 onMounted(() => {
@@ -130,12 +171,7 @@ onUpdated(() => {
   fetchUtils();
 });
 
-const submitForm = () => {
-  console.log("Submited Doctor Visit Detail Form");
-};
-
 defineExpose({
-  submitForm,
   onSubmit,
 });
 </script>
