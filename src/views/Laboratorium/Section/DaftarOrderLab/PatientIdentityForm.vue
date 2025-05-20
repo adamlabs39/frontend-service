@@ -343,6 +343,8 @@ const setSelectedPatientData = async (data: any) => {
   }
 };
 
+const isDetail = true;
+
 defineExpose({
   onSubmit,
   onResetForm,
@@ -373,7 +375,7 @@ defineExpose({
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
-            :disabled="withoutIdentity || isNewBorn || isDetail"
+            :disabled="withoutIdentity || isNewBorn "
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
           />
@@ -385,6 +387,7 @@ defineExpose({
             label="No. RM"
             class="w-[23.5%]"
             placeholder="No. RM"
+            disabled
           />
         </div>
         <hr class="mt-5 mb-[30px]" />
@@ -406,7 +409,7 @@ defineExpose({
               'An. (Anak)',
               'By. (Bayi)',
             ]"
-            :disabled="isDetail"
+            :disabled="true"
             :invalid="!!errors.title"
             :invalidMessage="errors.title"
           />

@@ -141,6 +141,101 @@ const importExcel = async (file: File) => {
   }
 };
 
+
+const exportToExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      Pelayanan: "Pelayanan*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Komponen Tarif",
+      Persentase: "Persentase*",
+      HargaPersen: "Harga Tarif (persen)",
+      HargaRupiah: "Harga Tarif (rupiah)",
+      ItemPemeriksaan: "Item Pemeriksaan",
+      KomponenTarifItem: "Komponen Tarif",
+      PersentaseItem: "Persentase",
+      HargaPersenItem: "Harga Tarif (persen)",
+      HargaRupiahItem: "Harga Tarif (rupiah)",
+      GrandTotal: "Grand Total",
+    });
+
+    // Process each tarif pemeriksaan
+    tarifPemeriksaanPayload.value.forEach((tarif, index) => {
+      // Process each penjamin (metode pembayaran)
+      tarif.tarifLabPenjamin.forEach((penjamin: any, penjaminIndex: number) => {
+        // Process each pelayanan
+        tarif.pelayanan.forEach((pelayanan: any, pelayananIndex : number) => {
+          // Process each item pemeriksaan
+          tarif.tarifLabItem.forEach((item:any, itemIndex: number) => {
+            // Only add komponen tarif if it exists
+            item.komponenTarif.forEach((komponen:any, komponenIndex: number) => {
+              data.push({
+                No: index + 1,
+                KodeTarif: tarif.code,
+                NamaTarif: tarif.name,
+                Pelayanan: pelayanan.pelayanan,
+                MetodePembayaran: penjamin.penjamin.name,
+                KelompokPemeriksaan: item.kelompokPemeriksaan?.name || "",
+                KomponenTarif: komponen.name,
+                Persentase: komponen.prosentase ? "TRUE" : "FALSE",
+                HargaPersen: komponen.prosentase ? komponen.prosentase : "",
+                HargaRupiah: !komponen.prosentase ? `Rp. ${komponen.tarif.toLocaleString('id-ID')}` : "",
+                ItemPemeriksaan: item.itemPemeriksaan?.name || "",
+                KomponenTarifItem: komponen.name,
+                PersentaseItem: komponen.prosentase ? "TRUE" : "FALSE",
+                HargaPersenItem: komponen.prosentase ? komponen.prosentase : "",
+                HargaRupiahItem: !komponen.prosentase ? `Rp. ${komponen.tarif.toLocaleString('id-ID')}` : "",
+                GrandTotal: `Rp. ${tarif.grandTotal.toLocaleString('id-ID')}`,
+              });
+            });
+          });
+        });
+      });
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = [
+      { wch: 5 },   // No
+      { wch: 15 },  // KodeTarif
+      { wch: 30 },  // NamaTarif
+      { wch: 15 },  // Pelayanan
+      { wch: 20 },  // MetodePembayaran
+      { wch: 25 },  // KelompokPemeriksaan
+      { wch: 20 },  // KomponenTarif
+      { wch: 15 },  // Persentase
+      { wch: 20 },  // HargaPersen
+      { wch: 20 },  // HargaRupiah
+      { wch: 25 },  // ItemPemeriksaan
+      { wch: 20 },  // KomponenTarifItem
+      { wch: 15 },  // PersentaseItem
+      { wch: 20 },  // HargaPersenItem
+      { wch: 20 },  // HargaRupiahItem
+      { wch: 15 },  // GrandTotal
+    ];
+
+    worksheet["!cols"] = columnWidths;
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tarif Pemeriksaan");
+    XLSX.writeFile(workbook, `Data_Tarif_Pemeriksaan_${new Date().toISOString().split('T')[0]}.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+
 const downloadFormatExcel = async () => {
   try {
     // Prepare Data for Export
@@ -677,8 +772,8 @@ onMounted(() => {
                 <img src="@/assets/icons/File Import.svg" alt="" />
               </template>
             </FileUpload>
-            <CustomButton label="Eksport">
-              <img src="@/assets/icons/File Import.svg" alt="" />Eksport
+            <CustomButton label="Eksport" @click="exportToExcel">
+              <img src="@/assets/icons/File Import.svg" alt=""  />Eksport
             </CustomButton>
             <CustomButton label="Eksport" @click="downloadFormatExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download

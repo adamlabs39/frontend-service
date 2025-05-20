@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onMounted, ref, type PropType } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import { useOrderLab } from "@/stores/Laboratorium/orderLab";
+import { utilsStore } from "@/stores/utils";
 
 const props = defineProps({
   pageType: {
@@ -23,32 +22,51 @@ const props = defineProps({
     default: () => [],
   },
 });
-const puasaStatus = ref(false);
-const citoStatus = ref(false);
 
-const dataTindakan = ref<any[]>([]);
-const hematokrit = ref(false);
-const hematologiLengkap = ref(false);
-const jumlahLeukosit = ref(false);
+// Data state
+const categories = ref<any[]>([]);
+const nonCategories = ref<any[]>([]);
+const selectedTarifs = ref<Record<string, boolean>>({});
+const tglPemeriksaan = ref<Date>(new Date());
+const statusPuasa = ref(false);
+const cito = ref(false);
 
-const tesFaalHati = ref(false);
-const tesGulaDarah = ref(false);
-const tesFaalGinjal = ref(false);
-const elektrolit = ref(false);
-const sgot = ref(true);
-const sgpt = ref(true);
+const orderLabStore = useOrderLab();
+const storeUtils = utilsStore();
 
-const urinLengkap = ref(false);
-const glukosaRutin = ref(false);
+const fetchTarif = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const response = await orderLabStore.getActive();
+    if (response.payload) {
+      categories.value = response.payload.category || [];
+      nonCategories.value = response.payload.nonCategory || [];
 
-const mcuWahana = ref(false);
+      categories.value.forEach((category) => {
+        category.tarifLab.forEach((tarif: any) => {
+          selectedTarifs.value[tarif.code] = false;
+        });
+      });
+
+      nonCategories.value.forEach((tarif) => {
+        selectedTarifs.value[tarif.code] = false;
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching tarif:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 onMounted(() => {
-  dataTindakan.value = [];
-  console.log(props.pageType);
+  fetchTarif();
 });
 
-const dateFilter = ref<Date>(new Date());
+// Helper function to group categories by their names
+const groupedCategories = (categoryName: string) => {
+  return categories.value.filter((cat) => cat.name.includes(categoryName));
+};
 </script>
 
 <template>
@@ -66,14 +84,14 @@ const dateFilter = ref<Date>(new Date());
       <div class="pt-5 grid grid-cols-[40%_40%_20%] gap-4">
         <div>
           <CustomDatePicker
-            v-model="dateFilter"
+            v-model="tglPemeriksaan"
             label="Tanggal"
             class="mr-[20px]"
           />
         </div>
         <div>
           <CustomSwitch
-            v-model="citoStatus"
+            v-model="cito"
             :show-label="true"
             label="CITO"
             sideLabel="Tidak"
@@ -83,7 +101,7 @@ const dateFilter = ref<Date>(new Date());
         </div>
         <div>
           <CustomSwitch
-            v-model="puasaStatus"
+            v-model="statusPuasa"
             :show-label="true"
             label="Status Puasa"
             sideLabel="Tidak"
@@ -97,100 +115,31 @@ const dateFilter = ref<Date>(new Date());
       </div>
       <hr class="mt-5 mb-[30px]" />
       <div class="mt-4">
-        <CustomAccordion
-          :openWithHeader="false"
-          header-class="bg-adameds-50"
-          initialState="0"
-        >
-          <template #header>
-            <div class="flex justify-between w-full align-middle text-normal">
-              HEMATOLOGI
-            </div>
-          </template>
-          <template #content>
-            <div class="flex flex-wrap gap-4 pt-5">
-              <CustomCheckbox
-                v-model="hematokrit"
-                title="Hematokrit"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="hematologiLengkap"
-                title="Hematologi Lengkap"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="jumlahLeukosit"
-                title="Jumlah Leukosit"
-                subTitle=""
-              />
-            </div>
-          </template>
-        </CustomAccordion>
-
-        <CustomAccordion
-          :openWithHeader="false"
-          header-class="bg-adameds-50"
-          initialState="0"
-        >
-          <template #header>
-            <div class="flex justify-between w-full align-middle text-normal">
-              KIMIA KLINIK
-            </div>
-          </template>
-          <template #content>
-            <div class="flex flex-wrap gap-4 pt-5">
-              <CustomCheckbox
-                v-model="tesFaalHati"
-                title="TES FAAL HATI"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="tesGulaDarah"
-                title="TES GULA DARAH"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="tesFaalGinjal"
-                title="TES FAAL GINJAL"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="elektrolit"
-                title="ELEKTROLIT"
-                subTitle=""
-              />
-              <CustomCheckbox v-model="sgot" title="SGOT" subTitle="" />
-              <CustomCheckbox v-model="sgpt" title="SGPT" subTitle="" />
-            </div>
-          </template>
-        </CustomAccordion>
-
-        <CustomAccordion
-          :openWithHeader="false"
-          header-class="bg-adameds-50"
-          initialState="0"
-        >
-          <template #header>
-            <div class="flex justify-between w-full align-middle text-normal">
-              URINALISIS
-            </div>
-          </template>
-          <template #content>
-            <div class="flex flex-wrap gap-4 pt-5">
-              <CustomCheckbox
-                v-model="urinLengkap"
-                title="URIN LENGKAP"
-                subTitle=""
-              />
-              <CustomCheckbox
-                v-model="glukosaRutin"
-                title="GLUKOSA RUTIN"
-                subTitle=""
-              />
-            </div>
-          </template>
-        </CustomAccordion>
+        <template v-for="category in categories" :key="category.code">
+          <CustomAccordion
+            v-if="category.tarifLab && category.tarifLab.length > 0"
+            :openWithHeader="false"
+            header-class="bg-adameds-50"
+            initialState="0"
+          >
+            <template #header>
+              <div class="flex justify-between w-full align-middle text-normal">
+                {{ category.name }}
+              </div>
+            </template>
+            <template #content>
+              <div class="flex flex-wrap gap-4 pt-5">
+                <template v-for="tarif in category.tarifLab" :key="tarif.code">
+                  <CustomCheckbox
+                    v-model="selectedTarifs[tarif.code]"
+                    :title="tarif.name"
+                    :subTitle="`Rp ${tarif.grandTotal.toLocaleString()}`"
+                  />
+                </template>
+              </div>
+            </template>
+          </CustomAccordion>
+        </template>
 
         <div class="flex mt-[50px]">
           <span class="font-bold text-md"> Tarif Pemeriksaan - Paket</span>
@@ -198,11 +147,13 @@ const dateFilter = ref<Date>(new Date());
         <hr class="mt-5 mb-[30px]" />
 
         <div class="flex flex-wrap gap-4">
-          <CustomCheckbox
-            v-model="mcuWahana"
-            title="MCU PT. WAHANA"
-            subTitle="Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT"
-          />
+          <template v-for="tarif in nonCategories" :key="tarif.code">
+            <CustomCheckbox
+              v-model="selectedTarifs[tarif.code]"
+              :title="tarif.name"
+              :subTitle="`Rp ${tarif.grandTotal.toLocaleString()}`"
+            />
+          </template>
         </div>
       </div>
     </template>
