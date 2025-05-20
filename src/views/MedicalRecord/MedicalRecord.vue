@@ -888,7 +888,12 @@ defineExpose({ showDialogRM });
               v-if="selectedTab == 'unggah-berkas'"
               class="overflow-auto mt-[10px]"
             >
-              <FormUnggahBerkas method="form" initialState="0" />
+              <FormUnggahBerkas
+                method="form"
+                initialState="0"
+                :rmUuid="patientData.rekamMedisUuid"
+                :rmType="rmType"
+              />
             </div>
 
             <div v-if="selectedTab == 'resume-discharge'" class="overflow-auto">
