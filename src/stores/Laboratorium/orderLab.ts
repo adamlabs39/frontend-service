@@ -46,5 +46,8 @@ export const useOrderLab = defineStore({
         payload
       );
     },
+    async getActive( payload = {}) {
+          return apiLaboratoriumGet(`/lab/tarif-lab/active`, payload);
+        },
   },
 });
