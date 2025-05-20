@@ -440,7 +440,11 @@ const onSubmit = handleSubmit(async (values: any) => {
       }
     });
 
-    if (errorsTotal.value.length) {
+    if (
+      errorsTotal.value.some((error) =>
+        error.includes("Harga semua komponen tidak sama dengan total harga")
+      )
+    ) {
       return;
     }
 
