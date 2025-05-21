@@ -319,6 +319,9 @@ const printResumeMedis = async () => {
         statusPulangNama: refs.statusPulang.value.getStatusPulangNama(
           dataResumeMedis.value.statusPulang
         ),
+        edukasiName: refs.edukasi.value.getKondisiPulangNama(
+          dataResumeMedis.value.edukasi
+        ),
         kondisiPasienPulangNama:
           refs.keadaanWaktuPulang.value.getKondisiPulangNama(
             dataResumeMedis.value.kondisiPasienPulang

@@ -39,9 +39,15 @@ const close = () => {
   }
 };
 
+const getKondisiPulangNama = (value: string) => {
+  const result = optionsEdukasi.value.find((data) => data.value == value);
+  return result ?? "-";
+};
+
 defineExpose({
   open,
   close,
+  getKondisiPulangNama,
 });
 </script>
 
