@@ -623,7 +623,6 @@ export async function createResumeMedis({
       ]);
     }
   });
-  console.log("🚀 ~ data.patientData:", data.patientData);
 
   const docDefinition: TDocumentDefinitions = {
     pageSize: page,
@@ -1234,7 +1233,7 @@ export async function createResumeMedis({
           body: [
             [
               {
-                text: "INSTRUKSI PULANG",
+                text: "EDUKASI",
                 fillColor: "#EAECEF",
                 margin: [10, 0, 5, 0],
               },
@@ -1252,7 +1251,7 @@ export async function createResumeMedis({
               body: [
                 [
                   {
-                    text: "Diet",
+                    text: `${data.resumeData.edukasiName?.label}`,
                     bold: true,
                     decoration: "underline",
                     colSpan: 3,
@@ -1260,50 +1259,13 @@ export async function createResumeMedis({
                 ],
                 [
                   {
-                    text: `${"lorem ipsum"}`,
-                    colSpan: 3,
-                  },
-                ],
-                [
-                  {
-                    text: "Edukasi",
-                    bold: true,
-                    decoration: "underline",
-                    colSpan: 3,
-                  },
-                ],
-                [
-                  {
-                    text: `${"lorem"}`,
+                    text: `${data.resumeData.edukasiText}`,
                     colSpan: 3,
                   },
                 ],
               ],
             },
-            width: "50%",
-          },
-          {
-            layout: "noBorders",
-            table: {
-              widths: [80, 2, "*"],
-              body: [
-                [
-                  {
-                    text: "Latihan",
-                    bold: true,
-                    decoration: "underline",
-                    colSpan: 3,
-                  },
-                ],
-                [
-                  {
-                    text: `${""}`,
-                    colSpan: 3,
-                  },
-                ],
-              ],
-            },
-            width: "50%",
+            width: "100%",
           },
         ],
       },
