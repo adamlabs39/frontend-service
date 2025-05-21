@@ -568,7 +568,7 @@ export async function createResumeMedis({
     faskesLogo = faskesProfile.logo;
   } else {
     faskesLogo = await convertImageToBase64(
-      "/src/assets/images/adameds-square.png"
+      "@/assets/images/adameds-square.png"
     );
   }
   const pemeriksaanFisikData: any[] = [];
