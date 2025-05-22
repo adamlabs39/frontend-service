@@ -7,6 +7,7 @@ import type {
 import { customVfs } from "../customVfs";
 import { convertImageToBase64, epochToDate, generateQRCode } from "../Helpers";
 import { defaultHeader } from "./HeaderPrint";
+import logoUrl from "@/assets/images/adameds-square.png";
 
 export async function createSuratPersetujuanTindakan({
   data,
@@ -36,9 +37,7 @@ export async function createSuratPersetujuanTindakan({
   if (faskesProfile.logo) {
     faskesLogo = faskesProfile.logo;
   } else {
-    faskesLogo = await convertImageToBase64(
-      "/src/assets/images/adameds-square.png"
-    );
+    faskesLogo = await convertImageToBase64(logoUrl);
   }
 
   const docDefinition: TDocumentDefinitions = {
@@ -567,9 +566,7 @@ export async function createResumeMedis({
   if (faskesProfile.logo) {
     faskesLogo = faskesProfile.logo;
   } else {
-    faskesLogo = await convertImageToBase64(
-      "@/assets/images/adameds-square.png"
-    );
+    faskesLogo = await convertImageToBase64(logoUrl);
   }
   const pemeriksaanFisikData: any[] = [];
   data.resumeData?.selectedPemeriksaanFisik.forEach(
