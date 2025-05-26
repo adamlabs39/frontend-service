@@ -12,16 +12,19 @@ export const useOrderLab = defineStore({
   getters: {},
   actions: {
     async getApi(
-      params: {
-        page?: number;
-        limit?: number;
-        name?: string;
-        payload?: object;
-      } = {}
+      {
+        search = "",
+        paymentMethod = "",
+        page = 1,
+        limit = 10,
+        startDate = "",
+        endDate = "",
+        status = "",
+      },
+      payload = {}
     ) {
-      const { page = 1, limit = 10, name = "", payload = {} } = params;
       return apiLaboratoriumGet(
-        `/lab/order-lab?page=${page}&limit=${limit}&name=${name}`,
+        `/lab/order-lab?search=${search}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&status=${status}`,
         payload
       );
     },
@@ -46,8 +49,8 @@ export const useOrderLab = defineStore({
         payload
       );
     },
-    async getActive( payload = {}) {
-          return apiLaboratoriumGet(`/lab/tarif-lab/active`, payload);
-        },
+    async getDetailPasien(uuid = "", payload = {}) {
+      return apiLaboratoriumGet(`/lab/order-lab/${uuid}`, payload);
+    },
   },
 });

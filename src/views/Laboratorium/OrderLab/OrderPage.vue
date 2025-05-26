@@ -20,9 +20,27 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import { useOrderLab } from "@/stores/Laboratorium/orderLab";
+import { epochToDate } from "@/utils/Helpers";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import type { DataTableRowClickEvent } from "primevue/datatable";
 
 const stores = utilsStore();
+const orderLabStore = useOrderLab();
+const praktisiStore = usePraktisiStore();
+const penjaminStore = usePenjaminStore();
+const listDpjp = ref<any[]>([]);
+const listPenjamin = ref<any[]>([]);
 const pageType = ref("");
+const orderLabProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const orderLabPayload = ref<any[]>([]);
+const searchQuery = ref<string>("");
+
 const route = useRoute();
 const rowsPerPage = ref(10);
 const patientData = ref<any>({});
@@ -46,6 +64,54 @@ const urinLengkap = ref(false);
 const glukosaRutin = ref(false);
 
 const mcuWahana = ref(false);
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
+const fetchOrderLab = async () => {
+  stores.setLoading(true);
+  try {
+    const response = await orderLabStore.getApi({
+      page: orderLabProperties.value.page,
+      limit: orderLabProperties.value.page_size,
+      search: searchQuery.value,
+    });
+    if (response && response.payload) {
+      orderLabProperties.value.total = response.payload.pagination.total;
+      orderLabPayload.value = response.payload.data;
+    } else {
+      orderLabPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    stores.setLoading(false);
+  }
+};
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
 const handleRowsUpdate = (rows: number) => {
@@ -81,6 +147,7 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+  fetchOrderLab();
 });
 
 const selectedStatus = ref<any>();
@@ -88,105 +155,6 @@ const itemStatus = ref([
   { name: "Semua", code: "S1" },
   { name: "Belum Lunas", code: "S2" },
   { name: "Batal Order", code: "S3" },
-]);
-
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    no_registrasi: "REG000001",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    new_patient: true,
-    gender: "L",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. M",
-    polyclinic: "POLI MATA",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000002",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "L",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. D",
-    polyclinic: "MAWAR I",
-    bed: "Bed 1",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000003",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. M",
-    polyclinic: "POLI MATA",
-    insurance_account_name: "BPJS",
-    no_SEP: "1999999999999999999",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000004",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    new_patient: true,
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. D",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    polyclinic: "MAWAR I",
-    bed: "Bed 2",
-    insurance_account_name: "BPJS",
-    no_SEP: "1999999999999999999",
-    status: "Batal Order",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000005",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. Pk",
-    polyclinic: "APS",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
 ]);
 
 const showCancelVisit = ref(false);
@@ -205,36 +173,55 @@ const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
 const popupDialog = ref(false);
-
-const selectedRow = (data: any) => {
-  popupDialog.value = true;
-  dialogData.value = data.data;
-  console.log(`Data`, dialogData);
+const dialogData = ref<any>(null);
+const openedPatientData = ref<any>({});
+const showDetailPatient = async (event: DataTableRowClickEvent) => {
+  stores.setLoading(true);
+  try {
+    const responsePatient = await orderLabStore.getDetailPasien(
+      event.data.uuid
+    );
+    if (responsePatient && responsePatient.payload) {
+      openedPatientData.value = responsePatient.payload;
+      console.log("Opened Patient Data:", openedPatientData.value);
+    } else {
+      openedPatientData.value = {};
+    }
+    popupDialog.value = true;
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    stores.setLoading(false);
+  }
 };
 
-interface DialogData {
-  noPendaftaran: string;
-  name: string;
-  address: string;
-  doctor: string;
-  practicHour: string;
-  tanggalDaftar: string;
-  tanggalJadwal: string;
-  no_SEP: string;
-  insuranceAccountName: string;
-  polyclinic: string;
-  gender: string;
-  phone: string;
-  ageYear: number;
-  ageMonth: number;
-  ageDay: number;
-  noMT: string;
-  noREG: string;
-  newPatient: boolean;
-  statusPelayanan: string;
-  statusPembayaran: string;
-}
-const dialogData = ref<DialogData>();
+const handleCancelOrder = async () => {
+  stores.setLoading(true);
+  try {
+    // Update payload untuk order yang dibatalkan
+    const updatedPayload = {
+      ...dialogData.value, // Data order yang dipilih
+      order_status: 0, // Status batal
+      alasan_batal_order: cancelReason.value, // Alasan batal
+    };
+
+    // Kirim permintaan update ke API
+    const response = await orderLabStore.putApi(updatedPayload);
+
+    // if (response && response.success) {
+    //   stores.showToast('success', 'Sukses', 'Order berhasil dibatalkan');
+    //   showCancelVisit.value = false;
+    //   cancelReason.value = '';
+    //   fetchOrderLab(); // Refresh data order
+    // } else {
+    //   throw new Error(response?.message || 'Gagal membatalkan order');
+    // }
+  } catch (error) {
+    console.error("Failed to cancel order:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
 
 const editIdentitas = () => {
   popupDialog.value = false;
@@ -254,6 +241,12 @@ const optionSpesimen = ref([
   { label: "Sputum", value: "4" },
   { label: "Lainnya", value: "Lainnya" },
 ]);
+
+const handlePage = (event: any) => {
+  orderLabProperties.value.page = event.page + 1;
+  orderLabProperties.value.page_size = event.rows;
+  fetchOrderLab();
+};
 </script>
 
 <template>
@@ -265,21 +258,21 @@ const optionSpesimen = ref([
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
+        <CustomAccordion :openWithHeader="false" noBorder initialState="1">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchOrderLab"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Order Lab',
                     home: true,
                   }"
                 />
-                <!-- <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
-                <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Bed Ruangan</p>
-                </div> -->
               </div>
               <CustomButton
                 @click="changeSection('Daftar')"
@@ -417,14 +410,14 @@ const optionSpesimen = ref([
       </template>
       <template #content>
         <DataTable
-          v-if="itemsPasien.length"
+          v-if="orderLabPayload.length"
           v-model:selection="selectedPatient"
-          :value="itemsPasien"
+          :value="orderLabPayload"
           tableStyle="min-width: 50rem"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="selectedRow"
+          @rowClick="showDetailPatient"
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
@@ -432,40 +425,46 @@ const optionSpesimen = ref([
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
-                <div class="text-SM">{{ slotProps.data.no_registrasi }}</div>
-                <div class="text-SM">No.{{ slotProps.data.no_antrian }}</div>
+                <div class="text-SM">{{ slotProps.data.noRm }}</div>
+                <div class="text-SM">{{ slotProps.data.noreg }}</div>
+                <div class="text-SM">{{ slotProps.data.noOrder }}</div>
               </div>
             </template>
           </Column>
           <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <span class="font-semibold">{{ slotProps.data.name }}</span>
+                <!-- {{ slotProps.data.patient?.birthDetail }} -->
+                <span class="font-semibold">{{
+                  slotProps.data.patient?.name
+                }}</span>
                 <span class="text-grey-300">
-                  ({{ slotProps.data.ageYear }}Th
-                  {{ slotProps.data.age_month }}Bln
-                  {{ slotProps.data.age_day }}Hr)
+                  ({{ slotProps.data.patient?.birthDetail?.ageYear }}Th
+                  {{ slotProps.data.ageMonth }}Bln
+                  {{ slotProps.data.ageDay }}Hr)
                 </span>
               </div>
-              <div class="text-XS">{{ slotProps.data.address }}</div>
+              <div class="text-XS">
+                {{ slotProps.data.patientAddress }},
+                {{ slotProps.data.patient?.address?.districtData?.name }},
+                {{ slotProps.data.patient?.address?.cityData?.name }},
+                {{ slotProps.data.patient?.address?.provData?.name }}
+              </div>
               <div class="flex flex-wrap">
-                <PhUserCirclePlus
-                  v-if="slotProps.data.new_patient"
-                  :size="22"
-                  class="text-adameds-300 mt-auto mr-[5px]"
-                  weight="fill"
-                />
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="
-                    slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'Perempuan'
+                      : 'Laki-laki'
                   "
                   :bgColor="
-                    slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'bg-female-75'
+                      : 'bg-male-75'
                   "
                   :textColor="
-                    slotProps.data.gender == 'P'
+                    slotProps.data.patient.gender == 'Female'
                       ? 'text-female-300'
                       : 'text-male-300'
                   "
@@ -473,7 +472,7 @@ const optionSpesimen = ref([
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.phone"
+                  :label="slotProps.data.patient.phone"
                   bgColor="bg-adameds-50"
                   textColor="text-adameds-300"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -487,34 +486,39 @@ const optionSpesimen = ref([
             headerClass="bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.doctor }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.dokterPengirim?.firstTitle }}
+                {{ slotProps.data.dokterPengirim?.name }}
+                {{ slotProps.data.dokterPengirim?.lastTitle }}
+              </div>
               <div class="flex flex-wrap">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinic"
-                  customClass="h-5 pr-[5px] mr-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.bed"
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.bed"
+                  :label="slotProps.data.pelayanan"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.insurance_account_name"
+                  :label="slotProps.data.lokasi?.name"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="
+                    slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                  "
                   :bgColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'bg-adameds-50'
                       : 'bg-warning-50'
                   "
                   :textColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'text-adameds-300'
                       : 'text-warning-300'
                   "
                   :borderColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'border-adameds-300'
                       : 'border-warning-300'
                   "
@@ -549,7 +553,19 @@ const optionSpesimen = ref([
                     class="my-auto mr-5 text-info-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggal_order }}
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "date"
+                    )
+                  }}
+
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "time"
+                    )
+                  }}
                 </div>
                 <div
                   class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
@@ -560,7 +576,12 @@ const optionSpesimen = ref([
                     class="my-auto mr-5 text-sunFlower-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggal_jadwal }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "date")
+                  }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "time")
+                  }}
                 </div>
               </div>
             </template>
@@ -597,7 +618,7 @@ const optionSpesimen = ref([
 
             <CustomButton
               v-if="showCancelVisit"
-              @click="showCancelVisit = true"
+              @click="handleCancelOrder"
               class="my-auto mr-[10px] bg-danger-300 w-[20%]"
               label="Iya, Batalkan"
               :disabled="!cancelReason"
@@ -612,11 +633,10 @@ const optionSpesimen = ref([
             />
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="100"
+            :rows="orderLabProperties.page_size"
+            :totalRecords="orderLabProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
@@ -645,31 +665,47 @@ const optionSpesimen = ref([
             <p>
               Detail Order Lab
               <CustomChip
-                label="Poli"
+                :label="openedPatientData.lokasi?.name"
                 :showCheckedIcon="false"
                 borderColor="border-adameds-300"
                 bgColor="bg-adameds-50"
                 textColor="text-adameds-300"
                 customClass="h-6"
-                class="ml-[5px]"
               />
               <CustomChip
-                label="TUNAI"
                 :showCheckedIcon="false"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-50"
-                textColor="text-adameds-300"
+                :label="
+                  openedPatientData.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                "
+                :bgColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'bg-adameds-50'
+                    : 'bg-warning-50'
+                "
+                :textColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'text-adameds-300'
+                    : 'text-warning-300'
+                "
+                :borderColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'border-adameds-300'
+                    : 'border-warning-300'
+                "
                 customClass="h-6"
-                class="ml-[5px]"
               />
             </p>
           </div>
-          
-          <div class="flex ml-[470px]">
+
+          <div class="flex ml-[200px]">
             <div class="bg-white w-[1px] h-[30px]"></div>
-            <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
+            <p class="text-sm ml-[10px] mt-[3px]">
+              Tgl. Order :
+              {{
+                epochToDate(parseInt(openedPatientData.tglOrder) / 1000, "date")
+              }}
+            </p>
           </div>
-          
         </div>
       </template>
       <template #body>
@@ -677,14 +713,30 @@ const optionSpesimen = ref([
           <div class="pt-5 mb-20">
             <div class="grid grid-cols-3 gap-4 mt-8">
               <div class="basis-1/4">
-                <p class="font-bold text-MD">Nama lengkap pasien</p>
-                <p>REG1231235</p>
-                <CustomButton class="w-24 h-5 text-sm">00-00-00</CustomButton>
+                <p class="font-bold text-MD">
+                  {{ openedPatientData.patient?.name }}
+                </p>
+                <p>{{ openedPatientData.noreg }}</p>
+                <CustomButton class="w-24 h-5 text-sm">{{
+                  openedPatientData.noRm
+                }}</CustomButton>
                 <CustomChip
                   :showCheckedIcon="false"
-                  label="Laki-laki"
-                  bgColor="bg-male-75"
-                  textColor="text-male-300"
+                  :label="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'Perempuan'
+                      : 'Laki-laki'
+                  "
+                  :bgColor="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'bg-female-75'
+                      : 'bg-male-75'
+                  "
+                  :textColor="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'text-female-300'
+                      : 'text-male-300'
+                  "
                   customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
                 />
               </div>
@@ -694,7 +746,13 @@ const optionSpesimen = ref([
                   <p class="text-xs font-bold underline underline-offset-2">
                     Tgl. Lahir
                   </p>
-                  <p class="">10 Januari 2090</p>
+                  <p class="">
+                    {{
+                      formatDate(
+                        openedPatientData.patient?.birthDetail?.birthDate
+                      )
+                    }}
+                  </p>
                 </div>
               </div>
               <div class="mt-[20px] mr-[40px]">
@@ -702,8 +760,9 @@ const optionSpesimen = ref([
                   Umur
                 </p>
                 <p class="">
-                  {{ dialogData?.ageYear }}Th {{ dialogData?.ageMonth }}Bln
-                  {{ dialogData?.ageDay }}Hr
+                  {{ openedPatientData.patient?.birthDetail?.ageYear }}Th
+                  {{ openedPatientData.patient?.birthDetail?.ageMonth }}Bln
+                  {{ openedPatientData.patient?.birthDetail?.ageDay }}Hr
                 </p>
               </div>
             </div>
@@ -729,40 +788,50 @@ const optionSpesimen = ref([
                       <p class="text-xs font-bold underline underline-offset-2">
                         KTP
                       </p>
-                      <p>1666666666666666</p>
+                      <p>{{ openedPatientData.patient?.noIdentity }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Provinsi
                         <span> </span>
                       </p>
-                      <p>Jawa Timur</p>
+                      <p>
+                        {{ openedPatientData.patient?.address?.provData?.name }}
+                      </p>
                       <p
                         class="mt-3 text-xs font-bold underline underline-offset-2"
                       >
                         Kelurahahn / Desa
                       </p>
-                      <p>Keputih</p>
+                      <p>
+                        {{
+                          openedPatientData.patient?.address?.villageData?.name
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Alamat
                         <span> </span>
                       </p>
-                      <p>Jl. Ijo Abang no. 17</p>
+                      <p>
+                        {{ openedPatientData.patient?.address?.fullAddress }}
+                      </p>
                     </div>
 
                     <div>
                       <p class="text-xs font-bold underline underline-offset-2">
                         No. Handphone
                       </p>
-                      <p class="">081234567890</p>
+                      <p class="">{{ openedPatientData.patient.phone }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kabupaten / Kota
                       </p>
-                      <p class="">Surabaya</p>
+                      <p class="">
+                        {{ openedPatientData.patient?.address?.cityData?.name }}
+                      </p>
                       <div class="flex flex-row mt-[10px]">
                         <div class="basis-1/4">
                           <p
@@ -770,7 +839,7 @@ const optionSpesimen = ref([
                           >
                             RT
                           </p>
-                          <p>01</p>
+                          <p>{{ openedPatientData.patient?.address?.rt }}</p>
                         </div>
                         <div class="basis-1/4">
                           <p
@@ -778,7 +847,7 @@ const optionSpesimen = ref([
                           >
                             RW
                           </p>
-                          <p>02</p>
+                          <p>{{ openedPatientData.patient?.address?.rw }}</p>
                         </div>
                       </div>
                     </div>
@@ -786,19 +855,25 @@ const optionSpesimen = ref([
                       <p class="text-xs font-bold underline underline-offset-2">
                         Agama
                       </p>
-                      <p class="">Islam</p>
+                      <p class="">{{ openedPatientData.patient.religion }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kecamatan
                       </p>
-                      <p class="">Sukolilo</p>
+                      <p class="">
+                        {{
+                          openedPatientData.patient?.address?.districtData?.name
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kode Pos
                       </p>
-                      <p class="">12345</p>
+                      <p class="">
+                        {{ openedPatientData.patient?.address?.postalCode }}
+                      </p>
                     </div>
                   </div>
                 </template>

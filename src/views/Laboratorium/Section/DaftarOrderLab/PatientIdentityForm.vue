@@ -259,12 +259,6 @@ const setFormData = async (data: any, uuid: string = "") => {
       tempPatientData.birthDetail.birthDate
     );
 
-    // if (data.isNewBorn && tempPatientData.newBorn) {
-    //   let tempBirthTime = setTimeToDate(tempPatientData.newBorn.birthTimeBaby);
-
-    //   tempPatientData.birthTime = tempBirthTime;
-    // }
-
     if (uuid || data.uuid) {
       tempPatientData.patientUuid = uuid || data.uuid;
     }
@@ -285,8 +279,38 @@ onUpdated(() => {
   fetchProvinsi();
 });
 
+const formatOutputData = (values: any) => {
+  const { birthDetail, address, ...rest } = values;
+  const ageParts = patientAge.value.match(
+    /(\d+) Tahun, (\d+) Bulan, (\d+) Hari/
+  );
+
+  return {
+    ...rest,
+    satuSehatUuid: patientUuid.value || "",
+    noRm: noRm.value || "",
+    birthDate: birthDetail.birthDate.toISOString().split("T")[0],
+    birthPlace: birthDetail.birthPlace,
+    maritalStatus: maritialStatus.value,
+    ageYear: ageParts ? parseInt(ageParts[1]) : 0,
+    ageMonth: ageParts ? parseInt(ageParts[2]) : 0,
+    ageDay: ageParts ? parseInt(ageParts[3]) : 0,
+    fullAddress: address.fullAddress,
+    prov: address.prov,
+    city: address.city,
+    district: address.district,
+    rt: address.rt ? parseInt(address.rt) : 0,
+    rw: address.rw ? parseInt(address.rw) : 0,
+    village: address.village,
+    postalCode: address.postalCode,
+    country: address.country,
+  };
+};
+
 const onSubmit = handleSubmit(async (values) => {
-  return values;
+  const formattedData = formatOutputData(values);
+  console.log("Formatted Output:", formattedData);
+  return formattedData;
 });
 const onResetForm = () => {
   resetForm();
@@ -295,6 +319,7 @@ const onResetForm = () => {
 const getAge = (date: Date) => {
   const { tahun, bulan, hari } = countAge(date);
   patientAge.value = `${tahun} Tahun, ${bulan} Bulan, ${hari} Hari`;
+  console.log("age", patientAge.value);
 };
 
 const timer = ref<any>();
@@ -375,7 +400,7 @@ defineExpose({
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
-            :disabled="withoutIdentity || isNewBorn "
+            :disabled="withoutIdentity || isNewBorn"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
           />
