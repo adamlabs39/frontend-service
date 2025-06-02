@@ -66,9 +66,10 @@ const postRegisterPatient = async () => {
       payload.rekamMedisDate = Date.now().toLocaleString();
       payload.patientUuid = tempPatientData.patientUuid;
       response = await orderLabStore.postApi(payload);
-    } else {
-      response = await orderLabStore.putApi(payload);
     }
+    // else {
+    //   response = await orderLabStore.putApi(payload);
+    // }
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {

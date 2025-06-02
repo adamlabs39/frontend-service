@@ -25,14 +25,20 @@ import { epochToDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import type { DataTableRowClickEvent } from "primevue/datatable";
+import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
+import OrderTindakan from "../Section/DaftarOrderLab/OrderTindakan.vue";
 
 const stores = utilsStore();
 const orderLabStore = useOrderLab();
 const praktisiStore = usePraktisiStore();
 const penjaminStore = usePenjaminStore();
+const spesimenLabStore = useSpesimenLabStore();
 const listDpjp = ref<any[]>([]);
+const listSpesimen = ref<any[]>([]);
+const practitionerUuid = ref();
 const listPenjamin = ref<any[]>([]);
 const pageType = ref("");
+const spesimen = ref<any[]>([]);
 const orderLabProperties = ref({
   page: 1,
   page_size: 10,
@@ -65,6 +71,18 @@ const glukosaRutin = ref(false);
 
 const mcuWahana = ref(false);
 
+const selectedPaymentMethod = ref<string[]>([]);
+const onPaymentMethodSelect = (label: string) => {
+  if (selectedPaymentMethod.value.includes(label)) {
+    selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
+      (item) => item != label
+    );
+  } else {
+    selectedPaymentMethod.value.push(label);
+  }
+  fetchOrderLab();
+};
+
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
 
@@ -94,11 +112,30 @@ const formatDate = (dateString: string) => {
 const fetchOrderLab = async () => {
   stores.setLoading(true);
   try {
-    const response = await orderLabStore.getApi({
+    const params: any = {
       page: orderLabProperties.value.page,
       limit: orderLabProperties.value.page_size,
       search: searchQuery.value,
-    });
+    };
+
+    if (selectedOrderType.value === "Order") {
+      params.orderStatus = 1;
+    } else if (selectedOrderType.value === "Batal") {
+      params.orderStatus = 0;
+    }
+
+    if (selectedPaymentMethod.value !== null) {
+      if (
+        selectedPaymentMethod.value.includes("1") &&
+        selectedPaymentMethod.value.includes("2")
+      ) {
+        params.paymentMethod = [];
+      } else {
+        params.paymentMethod = selectedPaymentMethod.value;
+      }
+    }
+
+    const response = await orderLabStore.getApi(params);
     if (response && response.payload) {
       orderLabProperties.value.total = response.payload.pagination.total;
       orderLabPayload.value = response.payload.data;
@@ -113,13 +150,35 @@ const fetchOrderLab = async () => {
   }
 };
 
+const fetchUtils = async () => {
+  try {
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      // nonDoctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+      console.log("List DPJP:", listDpjp.value);
+    }
+
+    const responseSpesimen = await spesimenLabStore.getApi();
+
+    if (responseSpesimen && responseSpesimen.payload) {
+      listSpesimen.value = responseSpesimen.payload.data;
+      console.log("List Spesimen:", listSpesimen.value);
+    } else {
+      listSpesimen.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
 const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
 
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -148,6 +207,7 @@ onBeforeRouteLeave((to, from) => {
 onMounted(() => {
   updatePageType(route.path);
   fetchOrderLab();
+  fetchUtils();
 });
 
 const selectedStatus = ref<any>();
@@ -166,6 +226,7 @@ const selectedOrderType = ref<string>("Order");
 const onSelectOrderType = (label: string) => {
   selectedOrderType.value = label;
   console.log(selectedOrderType, "selectedOrderType");
+  fetchOrderLab();
 };
 
 const medicalRecord = ref<typeof MedicalRecord>();
@@ -175,6 +236,7 @@ const openDialogRM = () => {
 const popupDialog = ref(false);
 const dialogData = ref<any>(null);
 const openedPatientData = ref<any>({});
+
 const showDetailPatient = async (event: DataTableRowClickEvent) => {
   stores.setLoading(true);
   try {
@@ -183,7 +245,7 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
     );
     if (responsePatient && responsePatient.payload) {
       openedPatientData.value = responsePatient.payload;
-      console.log("Opened Patient Data:", openedPatientData.value);
+      console.log("Opened Patient Data:", openedPatientData.value.uuid);
     } else {
       openedPatientData.value = {};
     }
@@ -198,24 +260,52 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
 const handleCancelOrder = async () => {
   stores.setLoading(true);
   try {
-    // Update payload untuk order yang dibatalkan
+    const tempUuid: any[] = [];
+    selectedPatient.value.forEach((item: any) => {
+      tempUuid.push(item.uuid);
+    });
+
     const updatedPayload = {
-      ...dialogData.value, // Data order yang dipilih
-      order_status: 0, // Status batal
-      alasan_batal_order: cancelReason.value, // Alasan batal
+      orderLabUuids: tempUuid,
+      orderStatus: 0, // Status batal
+      alasanBatalOrder: cancelReason.value, // Alasan batal
     };
 
-    // Kirim permintaan update ke API
-    const response = await orderLabStore.putApi(updatedPayload);
+    const responseCancel = await orderLabStore.putApiBatalOrder(updatedPayload);
+    if (responseCancel && responseCancel.data) {
+      showCancelVisit.value = false;
+      cancelReason.value = "";
+      selectedPatient.value = [];
+      fetchOrderLab();
+    }
+  } catch (error) {
+    console.error("Failed to cancel order:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
 
-    // if (response && response.success) {
-    //   stores.showToast('success', 'Sukses', 'Order berhasil dibatalkan');
-    //   showCancelVisit.value = false;
-    //   cancelReason.value = '';
-    //   fetchOrderLab(); // Refresh data order
-    // } else {
-    //   throw new Error(response?.message || 'Gagal membatalkan order');
-    // }
+const handleValidasi = async () => {
+  stores.setLoading(true);
+  try {
+    const tempUuid: any[] = [];
+    spesimen.value.forEach((item: any) => {
+      tempUuid.push(item.uuid);
+    });
+    const updatedPayload = {
+      spesimenUuids: tempUuid,
+      practitionerUuid: practitionerUuid.value,
+    };
+
+    const responseCancel = await orderLabStore.putApiValidasi(
+      openedPatientData.value.uuid,
+      updatedPayload
+    );
+    if (responseCancel && responseCancel.data) {
+      selectedPatient.value = [];
+      popupDialog.value = false;
+      fetchOrderLab();
+    }
   } catch (error) {
     console.error("Failed to cancel order:", error);
   } finally {
@@ -233,20 +323,22 @@ const handleBack = () => {
 };
 const editOrderDialog = ref(false);
 
-const spesimen = ref();
-const optionSpesimen = ref([
-  { label: "Darah", value: "1" },
-  { label: "Urine", value: "2" },
-  { label: "Feses", value: "3" },
-  { label: "Sputum", value: "4" },
-  { label: "Lainnya", value: "Lainnya" },
-]);
-
 const handlePage = (event: any) => {
   orderLabProperties.value.page = event.page + 1;
   orderLabProperties.value.page_size = event.rows;
   fetchOrderLab();
 };
+
+const totalTagihanLab = computed(() => {
+  if (!openedPatientData.value?.orderLabPemeriksaan) return 0;
+
+  return openedPatientData.value.orderLabPemeriksaan.reduce(
+    (total: number, item: any) => {
+      return total + (item.tarifLab?.grandTotal || 0);
+    },
+    0
+  );
+});
 </script>
 
 <template>
@@ -258,7 +350,7 @@ const handlePage = (event: any) => {
       class="h-full overflow-hidden"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder initialState="1">
+        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
@@ -344,17 +436,17 @@ const handlePage = (event: any) => {
                 full
               />
               <CustomButton
-                @click="onSelectOrderType('Lunas')"
+                @click="onSelectOrderType('Batal')"
                 label="BATAL"
-                :outlined="selectedOrderType != 'Lunas'"
+                :outlined="selectedOrderType != 'Batal'"
                 borderColor="border-adameds-300"
                 :textColor="
-                  selectedOrderType != 'Lunas'
+                  selectedOrderType != 'Batal'
                     ? 'text-adameds-300'
                     : 'text-white'
                 "
                 :backgroundColor="
-                  selectedOrderType != 'Lunas'
+                  selectedOrderType != 'Batal'
                     ? 'bg-transparent'
                     : 'bg-adameds-300'
                 "
@@ -370,6 +462,7 @@ const handlePage = (event: any) => {
                 |
                 <CustomChip
                   label="TUNAI"
+                  value="1"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-50"
                   iconColor="text-adameds-300"
@@ -377,9 +470,12 @@ const handlePage = (event: any) => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  :isSelected="selectedPaymentMethod.includes('1')"
+                  @selected="onPaymentMethodSelect"
                 />
                 <CustomChip
                   label="ASURANSI"
+                  value="2"
                   borderColor="border-warning-300"
                   bgColor="bg-warning-50"
                   iconColor="text-warning-300"
@@ -387,6 +483,8 @@ const handlePage = (event: any) => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-warning-300 border-warning-300"
+                  :isSelected="selectedPaymentMethod.includes('2')"
+                  @selected="onPaymentMethodSelect"
                 />
               </div>
             </div>
@@ -665,7 +763,7 @@ const handlePage = (event: any) => {
             <p>
               Detail Order Lab
               <CustomChip
-                :label="openedPatientData.lokasi?.name"
+                :label="openedPatientData.pelayanan"
                 :showCheckedIcon="false"
                 borderColor="border-adameds-300"
                 bgColor="bg-adameds-50"
@@ -921,21 +1019,25 @@ const handlePage = (event: any) => {
                       <p class="text-xs font-bold underline underline-offset-2">
                         Unit Asal
                       </p>
-                      <p>Laboratorium</p>
+                      <p>{{ openedPatientData.lokasi?.name }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Maternitas
                         <span> </span>
                       </p>
-                      <p>Tidak</p>
+                      <p>
+                        {{
+                          openedPatientData.pasienMaternitas ? "Iya" : "Tidak"
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Catatan
                         <span> </span>
                       </p>
-                      <p>-</p>
+                      <p>{{ openedPatientData.catatan }}</p>
                     </div>
 
                     <div>
@@ -947,17 +1049,25 @@ const handlePage = (event: any) => {
                         </p>
                         <CustomChip
                           :showCheckedIcon="false"
-                          :label="dialogData?.polyclinic"
+                          :label="openedPatientData.pelayanan"
                           customClass="h-5 pr-[5px] mr-[5px]"
                         />
                       </div>
-                      <p class="">dr. Ibab</p>
+                      <p class="">
+                        {{
+                          openedPatientData.dokterPengirim?.pegawai?.firstTitle
+                        }}
+                        {{ openedPatientData.dokterPengirim?.pegawai?.name }}
+                        {{
+                          openedPatientData.dokterPengirim?.pegawai?.lastTitle
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Keluhan Utama
                       </p>
-                      <p class="">Sakit</p>
+                      <p class="">{{ openedPatientData.keluhanUtama }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
@@ -975,7 +1085,7 @@ const handlePage = (event: any) => {
                         >
                           Diagnosa Sekunder
                         </p>
-                        <p class="">H10.9 Conjuctivitis</p>
+                        <p class="">{{ openedPatientData.diagnosis }}</p>
                         <p
                           class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                         >
@@ -1018,19 +1128,25 @@ const handlePage = (event: any) => {
                     <div class="flex mt-2 ml-[300px]">
                       <div class="bg-mediumGrey-300 w-[1px] h-[30px]"></div>
                       <p class="text-xs ml-2 mt-[3px]">
-                        Tgl. Pemeriksaan Lab : 3-10-2024
+                        Tgl. Pemeriksaan Lab :
+                        {{
+                          epochToDate(
+                            parseInt(openedPatientData.tglPemeriksaan),
+                            "date"
+                          )
+                        }}
                       </p>
                     </div>
 
                     <div class="ml-[10px] items-center">
                       <CustomButton
-                        v-if="dialogData?.polyclinic === 'APS'"
+                        v-if="openedPatientData.pelayanan === 'aps'"
                         label="Edit Order"
                         @click="editIdentitas"
                         class="mr-4"
                       />
                       <CustomButton
-                        v-if="dialogData?.polyclinic !== 'APS'"
+                        v-if="openedPatientData.pelayanan !== 'aps'"
                         label="Edit Order"
                         @click="editOrderDialog = true"
                         class="mr-4"
@@ -1041,22 +1157,23 @@ const handlePage = (event: any) => {
                 <template #content>
                   <div class="flex mt-[20px]">
                     <CustomSelect
+                      v-model="practitionerUuid"
                       label="Dokter Pengirim"
                       placeHolder="Pilih dokter Pengirim"
-                      optionLabel=""
-                      optionValue=""
+                      optionLabel="pegawai.name"
+                      optionValue="uuid"
                       :showFilter="false"
-                      :options="['dr. Anji Sp. M']"
+                      :options="listDpjp"
                       class="mr-3 w-[40%]"
                     />
                     <CustomMultiSelect
                       v-model="spesimen"
                       placeholder="Pilih Spesimen"
                       label="Spesimen"
-                      optionLabel="label"
-                      optionValue="value"
+                      optionLabel="name"
+                      optionValue="uuid"
                       :maxSelectedLabels="4"
-                      :options="optionSpesimen"
+                      :options="listSpesimen"
                       class="mr-3 grow"
                     />
                   </div>
@@ -1066,7 +1183,7 @@ const handlePage = (event: any) => {
                         <div class="flex justify-between">
                           <div class="flex">
                             <p class="text-base font-bold text-adameds-300">
-                              LAB1234
+                              {{ openedPatientData.noOrder }}
                             </p>
                             <div
                               class="bg-black w-[2px] h-[15px] ml-2 mt-1"
@@ -1078,6 +1195,7 @@ const handlePage = (event: any) => {
                     </card>
                     <div class="pt-5 mt-[-20px]">
                       <DataTable
+                        :value="openedPatientData.orderLabPemeriksaan"
                         class="overflow-hidden rounded-[10px]"
                         scrollable
                         scrollHeight="flex"
@@ -1091,7 +1209,7 @@ const handlePage = (event: any) => {
                             <div class="flex justify-between">
                               <div>
                                 <p class="text-SM">
-                                  {{ slotProps.data.pemeriksaanName }}
+                                  {{ slotProps.data.tarifLab?.name }}
                                 </p>
                               </div>
                             </div>
@@ -1104,7 +1222,7 @@ const handlePage = (event: any) => {
                           </template>
                           <template #body="slotProps">
                             <div class="text-SM text-end">
-                              {{ slotProps.data.harga }}
+                              {{ slotProps.data.tarifLab?.grandTotal }}
                             </div>
                           </template>
                         </Column>
@@ -1120,7 +1238,33 @@ const handlePage = (event: any) => {
                               >
                                 Dokter Pengirim
                               </p>
-                              <p>dr. Anji Sp. M</p>
+                              <p>
+                                {{
+                                  (listDpjp.find(
+                                    (dokter) => dokter.uuid === practitionerUuid
+                                  )?.pegawai
+                                    ? `${
+                                        listDpjp.find(
+                                          (dokter) =>
+                                            dokter.uuid === practitionerUuid
+                                        ).pegawai.firstTitle || ""
+                                      } 
+         ${
+           listDpjp.find((dokter) => dokter.uuid === practitionerUuid).pegawai
+             .name || ""
+         } 
+         ${
+           listDpjp.find((dokter) => dokter.uuid === practitionerUuid).pegawai
+             .lastTitle
+             ? "-" +
+               listDpjp.find((dokter) => dokter.uuid === practitionerUuid)
+                 .pegawai.lastTitle
+             : ""
+         }`
+                                    : " "
+                                  ).trim()
+                                }}
+                              </p>
                             </div>
                             <div class="flex">
                               <div
@@ -1134,7 +1278,7 @@ const handlePage = (event: any) => {
                               <p
                                 class="flex justify-end mt-1 text-base font-bold"
                               >
-                                RP. 0, 00
+                                RP. {{ totalTagihanLab }}
                               </p>
                             </div>
                           </div>
@@ -1165,6 +1309,7 @@ const handlePage = (event: any) => {
           <template #footer>
             <div class="flex justify-end">
               <CustomButton
+                @click="handleValidasi"
                 label="Validasi Order"
                 backgroundColor="bg-adameds-300"
               />
@@ -1175,7 +1320,7 @@ const handlePage = (event: any) => {
     </CustomDialog>
 
     <!-- Edit Order Dialog -->
-    <CustomDialog
+    <!-- <CustomDialog
       v-model:visible="editOrderDialog"
       class="h-full"
       width="800px"
@@ -1349,6 +1494,39 @@ const handlePage = (event: any) => {
             </div>
           </template>
         </Card>
+      </template>
+    </CustomDialog> -->
+    <!-- In the template part -->
+    <CustomDialog
+      v-model:visible="editOrderDialog"
+      class="h-full"
+      width="1000px"
+    >
+      <template #header>
+        <div class="flex">
+          <p>Edit Order Lab</p>
+        </div>
+      </template>
+      <template #body>
+        <OrderTindakan
+          :pageType="pageType"
+          :dataBreadCrumb="dataBreadCrumb"
+          :initialData="openedPatientData"
+          ref="orderTindakanRef"
+        />
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton
+            label="Batal"
+            class="mr-[10px]"
+            outlined
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+            @click="editOrderDialog = false"
+          />
+          <CustomButton label="Simpan" backgroundColor="bg-adameds-300" />
+        </div>
       </template>
     </CustomDialog>
   </div>
