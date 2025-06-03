@@ -21,12 +21,15 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import { useOrderLab } from "@/stores/Laboratorium/orderLab";
-import { epochToDate } from "@/utils/Helpers";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
 import OrderTindakan from "../Section/DaftarOrderLab/OrderTindakan.vue";
+import { useForm, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
 const stores = utilsStore();
 const orderLabStore = useOrderLab();
@@ -48,28 +51,10 @@ const orderLabPayload = ref<any[]>([]);
 const searchQuery = ref<string>("");
 
 const route = useRoute();
-const rowsPerPage = ref(10);
 const patientData = ref<any>({});
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const dateFilter = ref<Date>(new Date());
-const puasaStatus = ref(false);
-const citoStatus = ref(false);
-const hematokrit = ref(false);
-const hematologiLengkap = ref(false);
-const jumlahLeukosit = ref(false);
-
-const tesFaalHati = ref(false);
-const tesGulaDarah = ref(false);
-const tesFaalGinjal = ref(false);
-const elektrolit = ref(false);
-const sgot = ref(true);
-const sgpt = ref(true);
-
-const urinLengkap = ref(false);
-const glukosaRutin = ref(false);
-
-const mcuWahana = ref(false);
+const orderTindakanRef = ref<InstanceType<typeof OrderTindakan> | null>(null);
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
@@ -116,6 +101,8 @@ const fetchOrderLab = async () => {
       page: orderLabProperties.value.page,
       limit: orderLabProperties.value.page_size,
       search: searchQuery.value,
+      startDate: dateToEpoch(startDateFilter.value),
+      endDate: dateToEpoch(endDateFilter.value),
     };
 
     if (selectedOrderType.value === "Order") {
@@ -285,15 +272,25 @@ const handleCancelOrder = async () => {
   }
 };
 
+const validationSchema = toTypedSchema(
+  yup.object({
+    practitionerUuid: yup.string().required("Dokter harus dipilih"),
+    spesimen: yup.array().nullable(),
+  })
+);
+
+const { handleSubmit, setFieldError } = useForm({
+  validationSchema,
+  initialValues: {
+    spesimen: [],
+  },
+});
+
 const handleValidasi = async () => {
   stores.setLoading(true);
   try {
-    const tempUuid: any[] = [];
-    spesimen.value.forEach((item: any) => {
-      tempUuid.push(item.uuid);
-    });
     const updatedPayload = {
-      spesimenUuids: tempUuid,
+      spesimenUuids: spesimen.value,
       practitionerUuid: practitionerUuid.value,
     };
 
@@ -311,6 +308,47 @@ const handleValidasi = async () => {
   } finally {
     stores.setLoading(false);
   }
+};
+
+const handleEditOrder = async () => {
+  stores.setLoading(true);
+  let tempOrderTindakanData;
+  tempOrderTindakanData = await orderTindakanRef.value?.onSubmit();
+  let payload: any = {
+    ...tempOrderTindakanData,
+  };
+  try {
+    const response = await orderLabStore.putApiEdit(
+      openedPatientData.value.uuid,
+      payload
+    );
+    if (response && response.data) {
+      editOrderDialog.value = false;
+      popupDialog.value = false;
+      fetchOrderLab();
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
+// Filter Search Data
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchOrderLab();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  searchQuery.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  selectedPaymentMethod.value = [];
+  fetchOrderLab();
 };
 
 const editIdentitas = () => {
@@ -377,6 +415,7 @@ const totalTagihanLab = computed(() => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / Alamat / No. RM"
@@ -403,12 +442,14 @@ const totalTagihanLab = computed(() => {
                 class="mt-auto w-[130px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 borderColor="border-adameds-300"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -1139,14 +1180,13 @@ const totalTagihanLab = computed(() => {
                     </div>
 
                     <div class="ml-[10px] items-center">
-                      <CustomButton
+                      <!-- <CustomButton
                         v-if="openedPatientData.pelayanan === 'aps'"
                         label="Edit Order"
                         @click="editIdentitas"
                         class="mr-4"
-                      />
+                      /> -->
                       <CustomButton
-                        v-if="openedPatientData.pelayanan !== 'aps'"
                         label="Edit Order"
                         @click="editOrderDialog = true"
                         class="mr-4"
@@ -1165,6 +1205,12 @@ const totalTagihanLab = computed(() => {
                       :showFilter="false"
                       :options="listDpjp"
                       class="mr-3 w-[40%]"
+                      :invalid="!practitionerUuid"
+                      :errorMessage="
+                        !practitionerUuid
+                          ? 'Dokter Pengirim tidak boleh kosong'
+                          : ''
+                      "
                     />
                     <CustomMultiSelect
                       v-model="spesimen"
@@ -1320,183 +1366,7 @@ const totalTagihanLab = computed(() => {
     </CustomDialog>
 
     <!-- Edit Order Dialog -->
-    <!-- <CustomDialog
-      v-model:visible="editOrderDialog"
-      class="h-full"
-      width="800px"
-    >
-      <template #header>
-        <div class="flex">
-          <p>Edit Order Lab</p>
-        </div>
-      </template>
-      <template #body>
-        <div class="flex justify-between gap-3 pt-5">
-          <CustomDatePicker
-            v-model="dateFilter"
-            label="Tanggal"
-            class="w-[50%]"
-          />
 
-          <CustomSwitch
-            v-model="citoStatus"
-            :show-label="true"
-            label="CITO"
-            sideLabel="Tidak"
-            sideLabelTrue="Iya"
-            class="ml-[20px]"
-          />
-          <CustomSwitch
-            v-model="puasaStatus"
-            :show-label="true"
-            label="Status Puasa"
-            sideLabel="Tidak"
-            sideLabelTrue="Iya"
-            class="mr-[20px]"
-          />
-        </div>
-        <div class="flex mt-[30px]">
-          <span class="font-bold text-md"> Tarif Pemeriksaan </span>
-        </div>
-        <hr class="mt-5 mb-[30px]" />
-        <div class="mt-4">
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                HEMATOLOGI
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="hematokrit"
-                  title="Hematokrit"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="hematologiLengkap"
-                  title="Hematologi Lengkap"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="jumlahLeukosit"
-                  title="Jumlah Leukosit"
-                  subTitle=""
-                />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                KIMIA KLINIK
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="tesFaalHati"
-                  title="TES FAAL HATI"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="tesGulaDarah"
-                  title="TES GULA DARAH"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="tesFaalGinjal"
-                  title="TES FAAL GINJAL"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="elektrolit"
-                  title="ELEKTROLIT"
-                  subTitle=""
-                />
-                <CustomCheckbox v-model="sgot" title="SGOT" subTitle="" />
-                <CustomCheckbox v-model="sgpt" title="SGPT" subTitle="" />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                URINALISIS
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="urinLengkap"
-                  title="URIN LENGKAP"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="glukosaRutin"
-                  title="GLUKOSA RUTIN"
-                  subTitle=""
-                />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <div class="flex mt-[50px]">
-            <span class="font-bold text-md"> Tarif Pemeriksaan - Paket</span>
-          </div>
-          <hr class="mt-5 mb-[30px]" />
-
-          <div class="flex flex-wrap gap-4">
-            <CustomCheckbox
-              v-model="mcuWahana"
-              title="MCU PT. WAHANA"
-              subTitle="Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT"
-            />
-          </div>
-        </div>
-
-        <Card class="inset-x-0 bottom-0">
-          <template #footer>
-            <div class="flex justify-end">
-              <CustomButton
-                label="Reset"
-                class="mr-[10px]"
-                outlined
-                borderColor="border-grey-200"
-                textColor="text-grey-300"
-              />
-              <CustomButton
-                label="Batal Edit"
-                class="mr-[10px]"
-                outlined
-                borderColor="border-adameds-300"
-                textColor="text-adameds-300"
-              />
-              <CustomButton
-                label="Simpan"
-                class=""
-                backgroundColor="bg-adameds-300"
-              />
-            </div>
-          </template>
-        </Card>
-      </template>
-    </CustomDialog> -->
-    <!-- In the template part -->
     <CustomDialog
       v-model:visible="editOrderDialog"
       class="h-full"
@@ -1525,7 +1395,11 @@ const totalTagihanLab = computed(() => {
             textColor="text-grey-300"
             @click="editOrderDialog = false"
           />
-          <CustomButton label="Simpan" backgroundColor="bg-adameds-300" />
+          <CustomButton
+            label="Simpan"
+            backgroundColor="bg-adameds-300"
+            @click="handleEditOrder"
+          />
         </div>
       </template>
     </CustomDialog>
