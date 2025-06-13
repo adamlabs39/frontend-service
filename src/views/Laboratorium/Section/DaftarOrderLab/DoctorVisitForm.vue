@@ -116,8 +116,8 @@ const schema = computed(() =>
       .object({
         paymentMethod: yup.string().default("TUNAI"),
         pasienMaternitas: yup.boolean().default(false),
-        keluhanUtama: yup.string().default(""),
-        catatan: yup.string().default(""),
+        keluhanUtama: yup.string().default("").notRequired(),
+        catatan: yup.string().default("").notRequired(),
         penjaminUuid: yup.string().when("paymentMethod", {
           is: (val: string) => val === "ASURANSI",
           then: (schema) => schema.required("Nama Penjamin harus dipilih"),
@@ -156,6 +156,7 @@ const [classEntitle] = defineField("classEntitle");
 const onSubmit = handleSubmit(async (values) => {
   const modifiedValues = {
     ...values,
+    patitionerUuid: values.dokterPengirimUuid,
     paymentMethod: values.paymentMethod === "TUNAI" ? 1 : 2,
   };
 

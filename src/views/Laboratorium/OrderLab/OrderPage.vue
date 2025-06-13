@@ -20,40 +20,152 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
+import { useOrderLab } from "@/stores/Laboratorium/orderLab";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import type { DataTableRowClickEvent } from "primevue/datatable";
+import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
+import OrderTindakan from "../Section/DaftarOrderLab/OrderTindakan.vue";
+import { useForm, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
 const stores = utilsStore();
+const orderLabStore = useOrderLab();
+const praktisiStore = usePraktisiStore();
+const penjaminStore = usePenjaminStore();
+const spesimenLabStore = useSpesimenLabStore();
+const listDpjp = ref<any[]>([]);
+const listSpesimen = ref<any[]>([]);
+const practitionerUuid = ref();
+const listPenjamin = ref<any[]>([]);
 const pageType = ref("");
+const spesimen = ref<any[]>([]);
+const orderLabProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const orderLabPayload = ref<any[]>([]);
+const searchQuery = ref<string>("");
+
 const route = useRoute();
-const rowsPerPage = ref(10);
 const patientData = ref<any>({});
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const dateFilter = ref<Date>(new Date());
-const puasaStatus = ref(false);
-const citoStatus = ref(false);
-const hematokrit = ref(false);
-const hematologiLengkap = ref(false);
-const jumlahLeukosit = ref(false);
+const orderTindakanRef = ref<InstanceType<typeof OrderTindakan> | null>(null);
 
-const tesFaalHati = ref(false);
-const tesGulaDarah = ref(false);
-const tesFaalGinjal = ref(false);
-const elektrolit = ref(false);
-const sgot = ref(true);
-const sgpt = ref(true);
+const selectedPaymentMethod = ref<string[]>([]);
+const onPaymentMethodSelect = (label: string) => {
+  if (selectedPaymentMethod.value.includes(label)) {
+    selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
+      (item) => item != label
+    );
+  } else {
+    selectedPaymentMethod.value.push(label);
+  }
+  fetchOrderLab();
+};
 
-const urinLengkap = ref(false);
-const glukosaRutin = ref(false);
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
 
-const mcuWahana = ref(false);
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
+const fetchOrderLab = async () => {
+  stores.setLoading(true);
+  try {
+    const params: any = {
+      page: orderLabProperties.value.page,
+      limit: orderLabProperties.value.page_size,
+      search: searchQuery.value,
+      startDate: dateToEpoch(startDateFilter.value),
+      endDate: dateToEpoch(endDateFilter.value),
+    };
+
+    if (selectedOrderType.value === "Order") {
+      params.orderStatus = 1;
+    } else if (selectedOrderType.value === "Batal") {
+      params.orderStatus = 0;
+    }
+
+    if (selectedPaymentMethod.value !== null) {
+      if (
+        selectedPaymentMethod.value.includes("1") &&
+        selectedPaymentMethod.value.includes("2")
+      ) {
+        params.paymentMethod = [];
+      } else {
+        params.paymentMethod = selectedPaymentMethod.value;
+      }
+    }
+
+    const response = await orderLabStore.getApi(params);
+    if (response && response.payload) {
+      orderLabProperties.value.total = response.payload.pagination.total;
+      orderLabPayload.value = response.payload.data;
+    } else {
+      orderLabPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
+const fetchUtils = async () => {
+  try {
+    const responseDpjp = await praktisiStore.getApi({
+      limit: 9999,
+      // nonDoctor: false,
+    });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+      console.log("List DPJP:", listDpjp.value);
+    }
+
+    const responseSpesimen = await spesimenLabStore.getApi();
+
+    if (responseSpesimen && responseSpesimen.payload) {
+      listSpesimen.value = responseSpesimen.payload.data;
+      console.log("List Spesimen:", listSpesimen.value);
+    } else {
+      listSpesimen.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
 
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -81,6 +193,8 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+  fetchOrderLab();
+  fetchUtils();
 });
 
 const selectedStatus = ref<any>();
@@ -88,105 +202,6 @@ const itemStatus = ref([
   { name: "Semua", code: "S1" },
   { name: "Belum Lunas", code: "S2" },
   { name: "Batal Order", code: "S3" },
-]);
-
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    no_registrasi: "REG000001",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    new_patient: true,
-    gender: "L",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. M",
-    polyclinic: "POLI MATA",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000002",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "L",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. D",
-    polyclinic: "MAWAR I",
-    bed: "Bed 1",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000003",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. M",
-    polyclinic: "POLI MATA",
-    insurance_account_name: "BPJS",
-    no_SEP: "1999999999999999999",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000004",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    new_patient: true,
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. D",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    polyclinic: "MAWAR I",
-    bed: "Bed 2",
-    insurance_account_name: "BPJS",
-    no_SEP: "1999999999999999999",
-    status: "Batal Order",
-  },
-  {
-    noRM: "123456",
-    no_registrasi: "REG000005",
-    no_antrian: "000001",
-    name: "Nama Pasien Lengkap",
-    ageYear: 20,
-    age_month: 3,
-    age_day: 5,
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    gender: "P",
-    phone: "081234567890",
-    doctor: "dr. Spesialis Sp. Pk",
-    polyclinic: "APS",
-    insurance_account_name: "TUNAI",
-    tanggal_order: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    status: "Belum Lunas",
-  },
 ]);
 
 const showCancelVisit = ref(false);
@@ -198,6 +213,7 @@ const selectedOrderType = ref<string>("Order");
 const onSelectOrderType = (label: string) => {
   selectedOrderType.value = label;
   console.log(selectedOrderType, "selectedOrderType");
+  fetchOrderLab();
 };
 
 const medicalRecord = ref<typeof MedicalRecord>();
@@ -205,36 +221,135 @@ const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
 const popupDialog = ref(false);
+const dialogData = ref<any>(null);
+const openedPatientData = ref<any>({});
 
-const selectedRow = (data: any) => {
-  popupDialog.value = true;
-  dialogData.value = data.data;
-  console.log(`Data`, dialogData);
+const showDetailPatient = async (event: DataTableRowClickEvent) => {
+  stores.setLoading(true);
+  try {
+    const responsePatient = await orderLabStore.getDetailPasien(
+      event.data.uuid
+    );
+    if (responsePatient && responsePatient.payload) {
+      openedPatientData.value = responsePatient.payload;
+      console.log("Opened Patient Data:", openedPatientData.value.uuid);
+    } else {
+      openedPatientData.value = {};
+    }
+    popupDialog.value = true;
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    stores.setLoading(false);
+  }
 };
 
-interface DialogData {
-  noPendaftaran: string;
-  name: string;
-  address: string;
-  doctor: string;
-  practicHour: string;
-  tanggalDaftar: string;
-  tanggalJadwal: string;
-  no_SEP: string;
-  insuranceAccountName: string;
-  polyclinic: string;
-  gender: string;
-  phone: string;
-  ageYear: number;
-  ageMonth: number;
-  ageDay: number;
-  noMT: string;
-  noREG: string;
-  newPatient: boolean;
-  statusPelayanan: string;
-  statusPembayaran: string;
-}
-const dialogData = ref<DialogData>();
+const handleCancelOrder = async () => {
+  stores.setLoading(true);
+  try {
+    const tempUuid: any[] = [];
+    selectedPatient.value.forEach((item: any) => {
+      tempUuid.push(item.uuid);
+    });
+
+    const updatedPayload = {
+      orderLabUuids: tempUuid,
+      orderStatus: 0, // Status batal
+      alasanBatalOrder: cancelReason.value, // Alasan batal
+    };
+
+    const responseCancel = await orderLabStore.putApiBatalOrder(updatedPayload);
+    if (responseCancel && responseCancel.data) {
+      showCancelVisit.value = false;
+      cancelReason.value = "";
+      selectedPatient.value = [];
+      fetchOrderLab();
+    }
+  } catch (error) {
+    console.error("Failed to cancel order:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
+const validationSchema = toTypedSchema(
+  yup.object({
+    practitionerUuid: yup.string().required("Dokter harus dipilih"),
+    spesimen: yup.array().nullable(),
+  })
+);
+
+const { handleSubmit, setFieldError } = useForm({
+  validationSchema,
+  initialValues: {
+    spesimen: [],
+  },
+});
+
+const handleValidasi = async () => {
+  stores.setLoading(true);
+  try {
+    const updatedPayload = {
+      spesimenUuids: spesimen.value,
+      practitionerUuid: practitionerUuid.value,
+    };
+
+    const responseCancel = await orderLabStore.putApiValidasi(
+      openedPatientData.value.uuid,
+      updatedPayload
+    );
+    if (responseCancel && responseCancel.data) {
+      selectedPatient.value = [];
+      popupDialog.value = false;
+      fetchOrderLab();
+    }
+  } catch (error) {
+    console.error("Failed to cancel order:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
+const handleEditOrder = async () => {
+  stores.setLoading(true);
+  let tempOrderTindakanData;
+  tempOrderTindakanData = await orderTindakanRef.value?.onSubmit();
+  let payload: any = {
+    ...tempOrderTindakanData,
+  };
+  try {
+    const response = await orderLabStore.putApiEdit(
+      openedPatientData.value.uuid,
+      payload
+    );
+    if (response && response.data) {
+      editOrderDialog.value = false;
+      popupDialog.value = false;
+      fetchOrderLab();
+    }
+  } catch (error) {
+    console.error("Failed to process the data:", error);
+  } finally {
+    stores.setLoading(false);
+  }
+};
+
+// Filter Search Data
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchOrderLab();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  searchQuery.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  selectedPaymentMethod.value = [];
+  fetchOrderLab();
+};
 
 const editIdentitas = () => {
   popupDialog.value = false;
@@ -246,14 +361,22 @@ const handleBack = () => {
 };
 const editOrderDialog = ref(false);
 
-const spesimen = ref();
-const optionSpesimen = ref([
-  { label: "Darah", value: "1" },
-  { label: "Urine", value: "2" },
-  { label: "Feses", value: "3" },
-  { label: "Sputum", value: "4" },
-  { label: "Lainnya", value: "Lainnya" },
-]);
+const handlePage = (event: any) => {
+  orderLabProperties.value.page = event.page + 1;
+  orderLabProperties.value.page_size = event.rows;
+  fetchOrderLab();
+};
+
+const totalTagihanLab = computed(() => {
+  if (!openedPatientData.value?.orderLabPemeriksaan) return 0;
+
+  return openedPatientData.value.orderLabPemeriksaan.reduce(
+    (total: number, item: any) => {
+      return total + (item.tarifLab?.grandTotal || 0);
+    },
+    0
+  );
+});
 </script>
 
 <template>
@@ -269,17 +392,17 @@ const optionSpesimen = ref([
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchOrderLab"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Order Lab',
                     home: true,
                   }"
                 />
-                <!-- <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
-                <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Bed Ruangan</p>
-                </div> -->
               </div>
               <CustomButton
                 @click="changeSection('Daftar')"
@@ -292,6 +415,7 @@ const optionSpesimen = ref([
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / Alamat / No. RM"
@@ -318,12 +442,14 @@ const optionSpesimen = ref([
                 class="mt-auto w-[130px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 borderColor="border-adameds-300"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -351,17 +477,17 @@ const optionSpesimen = ref([
                 full
               />
               <CustomButton
-                @click="onSelectOrderType('Lunas')"
+                @click="onSelectOrderType('Batal')"
                 label="BATAL"
-                :outlined="selectedOrderType != 'Lunas'"
+                :outlined="selectedOrderType != 'Batal'"
                 borderColor="border-adameds-300"
                 :textColor="
-                  selectedOrderType != 'Lunas'
+                  selectedOrderType != 'Batal'
                     ? 'text-adameds-300'
                     : 'text-white'
                 "
                 :backgroundColor="
-                  selectedOrderType != 'Lunas'
+                  selectedOrderType != 'Batal'
                     ? 'bg-transparent'
                     : 'bg-adameds-300'
                 "
@@ -377,6 +503,7 @@ const optionSpesimen = ref([
                 |
                 <CustomChip
                   label="TUNAI"
+                  value="1"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-50"
                   iconColor="text-adameds-300"
@@ -384,9 +511,12 @@ const optionSpesimen = ref([
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  :isSelected="selectedPaymentMethod.includes('1')"
+                  @selected="onPaymentMethodSelect"
                 />
                 <CustomChip
                   label="ASURANSI"
+                  value="2"
                   borderColor="border-warning-300"
                   bgColor="bg-warning-50"
                   iconColor="text-warning-300"
@@ -394,6 +524,8 @@ const optionSpesimen = ref([
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-warning-300 border-warning-300"
+                  :isSelected="selectedPaymentMethod.includes('2')"
+                  @selected="onPaymentMethodSelect"
                 />
               </div>
             </div>
@@ -417,14 +549,14 @@ const optionSpesimen = ref([
       </template>
       <template #content>
         <DataTable
-          v-if="itemsPasien.length"
+          v-if="orderLabPayload.length"
           v-model:selection="selectedPatient"
-          :value="itemsPasien"
+          :value="orderLabPayload"
           tableStyle="min-width: 50rem"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
-          @rowClick="selectedRow"
+          @rowClick="showDetailPatient"
         >
           <Column field="nomor" headerClass="bg-adameds-50">
             <template #header>
@@ -432,40 +564,46 @@ const optionSpesimen = ref([
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">RM.{{ slotProps.data.noRM }}</div>
-                <div class="text-SM">{{ slotProps.data.no_registrasi }}</div>
-                <div class="text-SM">No.{{ slotProps.data.no_antrian }}</div>
+                <div class="text-SM">{{ slotProps.data.noRm }}</div>
+                <div class="text-SM">{{ slotProps.data.noreg }}</div>
+                <div class="text-SM">{{ slotProps.data.noOrder }}</div>
               </div>
             </template>
           </Column>
           <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <span class="font-semibold">{{ slotProps.data.name }}</span>
+                <!-- {{ slotProps.data.patient?.birthDetail }} -->
+                <span class="font-semibold">{{
+                  slotProps.data.patient?.name
+                }}</span>
                 <span class="text-grey-300">
-                  ({{ slotProps.data.ageYear }}Th
-                  {{ slotProps.data.age_month }}Bln
-                  {{ slotProps.data.age_day }}Hr)
+                  ({{ slotProps.data.patient?.birthDetail?.ageYear }}Th
+                  {{ slotProps.data.ageMonth }}Bln
+                  {{ slotProps.data.ageDay }}Hr)
                 </span>
               </div>
-              <div class="text-XS">{{ slotProps.data.address }}</div>
+              <div class="text-XS">
+                {{ slotProps.data.patientAddress }},
+                {{ slotProps.data.patient?.address?.districtData?.name }},
+                {{ slotProps.data.patient?.address?.cityData?.name }},
+                {{ slotProps.data.patient?.address?.provData?.name }}
+              </div>
               <div class="flex flex-wrap">
-                <PhUserCirclePlus
-                  v-if="slotProps.data.new_patient"
-                  :size="22"
-                  class="text-adameds-300 mt-auto mr-[5px]"
-                  weight="fill"
-                />
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="
-                    slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'Perempuan'
+                      : 'Laki-laki'
                   "
                   :bgColor="
-                    slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'bg-female-75'
+                      : 'bg-male-75'
                   "
                   :textColor="
-                    slotProps.data.gender == 'P'
+                    slotProps.data.patient.gender == 'Female'
                       ? 'text-female-300'
                       : 'text-male-300'
                   "
@@ -473,7 +611,7 @@ const optionSpesimen = ref([
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.phone"
+                  :label="slotProps.data.patient.phone"
                   bgColor="bg-adameds-50"
                   textColor="text-adameds-300"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -487,34 +625,39 @@ const optionSpesimen = ref([
             headerClass="bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.doctor }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.dokterPengirim?.firstTitle }}
+                {{ slotProps.data.dokterPengirim?.name }}
+                {{ slotProps.data.dokterPengirim?.lastTitle }}
+              </div>
               <div class="flex flex-wrap">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinic"
-                  customClass="h-5 pr-[5px] mr-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.bed"
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.bed"
+                  :label="slotProps.data.pelayanan"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.insurance_account_name"
+                  :label="slotProps.data.lokasi?.name"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="
+                    slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                  "
                   :bgColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'bg-adameds-50'
                       : 'bg-warning-50'
                   "
                   :textColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'text-adameds-300'
                       : 'text-warning-300'
                   "
                   :borderColor="
-                    slotProps.data.insurance_account_name == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'border-adameds-300'
                       : 'border-warning-300'
                   "
@@ -549,7 +692,19 @@ const optionSpesimen = ref([
                     class="my-auto mr-5 text-info-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggal_order }}
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "date"
+                    )
+                  }}
+
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "time"
+                    )
+                  }}
                 </div>
                 <div
                   class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
@@ -560,7 +715,12 @@ const optionSpesimen = ref([
                     class="my-auto mr-5 text-sunFlower-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggal_jadwal }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "date")
+                  }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "time")
+                  }}
                 </div>
               </div>
             </template>
@@ -597,7 +757,7 @@ const optionSpesimen = ref([
 
             <CustomButton
               v-if="showCancelVisit"
-              @click="showCancelVisit = true"
+              @click="handleCancelOrder"
               class="my-auto mr-[10px] bg-danger-300 w-[20%]"
               label="Iya, Batalkan"
               :disabled="!cancelReason"
@@ -612,11 +772,10 @@ const optionSpesimen = ref([
             />
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="100"
+            :rows="orderLabProperties.page_size"
+            :totalRecords="orderLabProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
@@ -645,31 +804,47 @@ const optionSpesimen = ref([
             <p>
               Detail Order Lab
               <CustomChip
-                label="Poli"
+                :label="openedPatientData.pelayanan"
                 :showCheckedIcon="false"
                 borderColor="border-adameds-300"
                 bgColor="bg-adameds-50"
                 textColor="text-adameds-300"
                 customClass="h-6"
-                class="ml-[5px]"
               />
               <CustomChip
-                label="TUNAI"
                 :showCheckedIcon="false"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-50"
-                textColor="text-adameds-300"
+                :label="
+                  openedPatientData.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                "
+                :bgColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'bg-adameds-50'
+                    : 'bg-warning-50'
+                "
+                :textColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'text-adameds-300'
+                    : 'text-warning-300'
+                "
+                :borderColor="
+                  openedPatientData.paymentMethod == 1
+                    ? 'border-adameds-300'
+                    : 'border-warning-300'
+                "
                 customClass="h-6"
-                class="ml-[5px]"
               />
             </p>
           </div>
-          
-          <div class="flex ml-[470px]">
+
+          <div class="flex ml-[200px]">
             <div class="bg-white w-[1px] h-[30px]"></div>
-            <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
+            <p class="text-sm ml-[10px] mt-[3px]">
+              Tgl. Order :
+              {{
+                epochToDate(parseInt(openedPatientData.tglOrder) / 1000, "date")
+              }}
+            </p>
           </div>
-          
         </div>
       </template>
       <template #body>
@@ -677,14 +852,30 @@ const optionSpesimen = ref([
           <div class="pt-5 mb-20">
             <div class="grid grid-cols-3 gap-4 mt-8">
               <div class="basis-1/4">
-                <p class="font-bold text-MD">Nama lengkap pasien</p>
-                <p>REG1231235</p>
-                <CustomButton class="w-24 h-5 text-sm">00-00-00</CustomButton>
+                <p class="font-bold text-MD">
+                  {{ openedPatientData.patient?.name }}
+                </p>
+                <p>{{ openedPatientData.noreg }}</p>
+                <CustomButton class="w-24 h-5 text-sm">{{
+                  openedPatientData.noRm
+                }}</CustomButton>
                 <CustomChip
                   :showCheckedIcon="false"
-                  label="Laki-laki"
-                  bgColor="bg-male-75"
-                  textColor="text-male-300"
+                  :label="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'Perempuan'
+                      : 'Laki-laki'
+                  "
+                  :bgColor="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'bg-female-75'
+                      : 'bg-male-75'
+                  "
+                  :textColor="
+                    openedPatientData.patient.gender == 'Female'
+                      ? 'text-female-300'
+                      : 'text-male-300'
+                  "
                   customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
                 />
               </div>
@@ -694,7 +885,13 @@ const optionSpesimen = ref([
                   <p class="text-xs font-bold underline underline-offset-2">
                     Tgl. Lahir
                   </p>
-                  <p class="">10 Januari 2090</p>
+                  <p class="">
+                    {{
+                      formatDate(
+                        openedPatientData.patient?.birthDetail?.birthDate
+                      )
+                    }}
+                  </p>
                 </div>
               </div>
               <div class="mt-[20px] mr-[40px]">
@@ -702,8 +899,9 @@ const optionSpesimen = ref([
                   Umur
                 </p>
                 <p class="">
-                  {{ dialogData?.ageYear }}Th {{ dialogData?.ageMonth }}Bln
-                  {{ dialogData?.ageDay }}Hr
+                  {{ openedPatientData.patient?.birthDetail?.ageYear }}Th
+                  {{ openedPatientData.patient?.birthDetail?.ageMonth }}Bln
+                  {{ openedPatientData.patient?.birthDetail?.ageDay }}Hr
                 </p>
               </div>
             </div>
@@ -729,40 +927,50 @@ const optionSpesimen = ref([
                       <p class="text-xs font-bold underline underline-offset-2">
                         KTP
                       </p>
-                      <p>1666666666666666</p>
+                      <p>{{ openedPatientData.patient?.noIdentity }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Provinsi
                         <span> </span>
                       </p>
-                      <p>Jawa Timur</p>
+                      <p>
+                        {{ openedPatientData.patient?.address?.provData?.name }}
+                      </p>
                       <p
                         class="mt-3 text-xs font-bold underline underline-offset-2"
                       >
                         Kelurahahn / Desa
                       </p>
-                      <p>Keputih</p>
+                      <p>
+                        {{
+                          openedPatientData.patient?.address?.villageData?.name
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Alamat
                         <span> </span>
                       </p>
-                      <p>Jl. Ijo Abang no. 17</p>
+                      <p>
+                        {{ openedPatientData.patient?.address?.fullAddress }}
+                      </p>
                     </div>
 
                     <div>
                       <p class="text-xs font-bold underline underline-offset-2">
                         No. Handphone
                       </p>
-                      <p class="">081234567890</p>
+                      <p class="">{{ openedPatientData.patient.phone }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kabupaten / Kota
                       </p>
-                      <p class="">Surabaya</p>
+                      <p class="">
+                        {{ openedPatientData.patient?.address?.cityData?.name }}
+                      </p>
                       <div class="flex flex-row mt-[10px]">
                         <div class="basis-1/4">
                           <p
@@ -770,7 +978,7 @@ const optionSpesimen = ref([
                           >
                             RT
                           </p>
-                          <p>01</p>
+                          <p>{{ openedPatientData.patient?.address?.rt }}</p>
                         </div>
                         <div class="basis-1/4">
                           <p
@@ -778,7 +986,7 @@ const optionSpesimen = ref([
                           >
                             RW
                           </p>
-                          <p>02</p>
+                          <p>{{ openedPatientData.patient?.address?.rw }}</p>
                         </div>
                       </div>
                     </div>
@@ -786,19 +994,25 @@ const optionSpesimen = ref([
                       <p class="text-xs font-bold underline underline-offset-2">
                         Agama
                       </p>
-                      <p class="">Islam</p>
+                      <p class="">{{ openedPatientData.patient.religion }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kecamatan
                       </p>
-                      <p class="">Sukolilo</p>
+                      <p class="">
+                        {{
+                          openedPatientData.patient?.address?.districtData?.name
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Kode Pos
                       </p>
-                      <p class="">12345</p>
+                      <p class="">
+                        {{ openedPatientData.patient?.address?.postalCode }}
+                      </p>
                     </div>
                   </div>
                 </template>
@@ -846,21 +1060,25 @@ const optionSpesimen = ref([
                       <p class="text-xs font-bold underline underline-offset-2">
                         Unit Asal
                       </p>
-                      <p>Laboratorium</p>
+                      <p>{{ openedPatientData.lokasi?.name }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Maternitas
                         <span> </span>
                       </p>
-                      <p>Tidak</p>
+                      <p>
+                        {{
+                          openedPatientData.pasienMaternitas ? "Iya" : "Tidak"
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Catatan
                         <span> </span>
                       </p>
-                      <p>-</p>
+                      <p>{{ openedPatientData.catatan }}</p>
                     </div>
 
                     <div>
@@ -872,17 +1090,25 @@ const optionSpesimen = ref([
                         </p>
                         <CustomChip
                           :showCheckedIcon="false"
-                          :label="dialogData?.polyclinic"
+                          :label="openedPatientData.pelayanan"
                           customClass="h-5 pr-[5px] mr-[5px]"
                         />
                       </div>
-                      <p class="">dr. Ibab</p>
+                      <p class="">
+                        {{
+                          openedPatientData.dokterPengirim?.pegawai?.firstTitle
+                        }}
+                        {{ openedPatientData.dokterPengirim?.pegawai?.name }}
+                        {{
+                          openedPatientData.dokterPengirim?.pegawai?.lastTitle
+                        }}
+                      </p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Keluhan Utama
                       </p>
-                      <p class="">Sakit</p>
+                      <p class="">{{ openedPatientData.keluhanUtama }}</p>
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
@@ -900,7 +1126,7 @@ const optionSpesimen = ref([
                         >
                           Diagnosa Sekunder
                         </p>
-                        <p class="">H10.9 Conjuctivitis</p>
+                        <p class="">{{ openedPatientData.diagnosis }}</p>
                         <p
                           class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                         >
@@ -943,19 +1169,24 @@ const optionSpesimen = ref([
                     <div class="flex mt-2 ml-[300px]">
                       <div class="bg-mediumGrey-300 w-[1px] h-[30px]"></div>
                       <p class="text-xs ml-2 mt-[3px]">
-                        Tgl. Pemeriksaan Lab : 3-10-2024
+                        Tgl. Pemeriksaan Lab :
+                        {{
+                          epochToDate(
+                            parseInt(openedPatientData.tglPemeriksaan),
+                            "date"
+                          )
+                        }}
                       </p>
                     </div>
 
                     <div class="ml-[10px] items-center">
-                      <CustomButton
-                        v-if="dialogData?.polyclinic === 'APS'"
+                      <!-- <CustomButton
+                        v-if="openedPatientData.pelayanan === 'aps'"
                         label="Edit Order"
                         @click="editIdentitas"
                         class="mr-4"
-                      />
+                      /> -->
                       <CustomButton
-                        v-if="dialogData?.polyclinic !== 'APS'"
                         label="Edit Order"
                         @click="editOrderDialog = true"
                         class="mr-4"
@@ -966,22 +1197,29 @@ const optionSpesimen = ref([
                 <template #content>
                   <div class="flex mt-[20px]">
                     <CustomSelect
+                      v-model="practitionerUuid"
                       label="Dokter Pengirim"
                       placeHolder="Pilih dokter Pengirim"
-                      optionLabel=""
-                      optionValue=""
+                      optionLabel="pegawai.name"
+                      optionValue="uuid"
                       :showFilter="false"
-                      :options="['dr. Anji Sp. M']"
+                      :options="listDpjp"
                       class="mr-3 w-[40%]"
+                      :invalid="!practitionerUuid"
+                      :errorMessage="
+                        !practitionerUuid
+                          ? 'Dokter Pengirim tidak boleh kosong'
+                          : ''
+                      "
                     />
                     <CustomMultiSelect
                       v-model="spesimen"
                       placeholder="Pilih Spesimen"
                       label="Spesimen"
-                      optionLabel="label"
-                      optionValue="value"
+                      optionLabel="name"
+                      optionValue="uuid"
                       :maxSelectedLabels="4"
-                      :options="optionSpesimen"
+                      :options="listSpesimen"
                       class="mr-3 grow"
                     />
                   </div>
@@ -991,7 +1229,7 @@ const optionSpesimen = ref([
                         <div class="flex justify-between">
                           <div class="flex">
                             <p class="text-base font-bold text-adameds-300">
-                              LAB1234
+                              {{ openedPatientData.noOrder }}
                             </p>
                             <div
                               class="bg-black w-[2px] h-[15px] ml-2 mt-1"
@@ -1003,6 +1241,7 @@ const optionSpesimen = ref([
                     </card>
                     <div class="pt-5 mt-[-20px]">
                       <DataTable
+                        :value="openedPatientData.orderLabPemeriksaan"
                         class="overflow-hidden rounded-[10px]"
                         scrollable
                         scrollHeight="flex"
@@ -1016,7 +1255,7 @@ const optionSpesimen = ref([
                             <div class="flex justify-between">
                               <div>
                                 <p class="text-SM">
-                                  {{ slotProps.data.pemeriksaanName }}
+                                  {{ slotProps.data.tarifLab?.name }}
                                 </p>
                               </div>
                             </div>
@@ -1029,7 +1268,7 @@ const optionSpesimen = ref([
                           </template>
                           <template #body="slotProps">
                             <div class="text-SM text-end">
-                              {{ slotProps.data.harga }}
+                              {{ slotProps.data.tarifLab?.grandTotal }}
                             </div>
                           </template>
                         </Column>
@@ -1045,7 +1284,33 @@ const optionSpesimen = ref([
                               >
                                 Dokter Pengirim
                               </p>
-                              <p>dr. Anji Sp. M</p>
+                              <p>
+                                {{
+                                  (listDpjp.find(
+                                    (dokter) => dokter.uuid === practitionerUuid
+                                  )?.pegawai
+                                    ? `${
+                                        listDpjp.find(
+                                          (dokter) =>
+                                            dokter.uuid === practitionerUuid
+                                        ).pegawai.firstTitle || ""
+                                      } 
+         ${
+           listDpjp.find((dokter) => dokter.uuid === practitionerUuid).pegawai
+             .name || ""
+         } 
+         ${
+           listDpjp.find((dokter) => dokter.uuid === practitionerUuid).pegawai
+             .lastTitle
+             ? "-" +
+               listDpjp.find((dokter) => dokter.uuid === practitionerUuid)
+                 .pegawai.lastTitle
+             : ""
+         }`
+                                    : " "
+                                  ).trim()
+                                }}
+                              </p>
                             </div>
                             <div class="flex">
                               <div
@@ -1059,7 +1324,7 @@ const optionSpesimen = ref([
                               <p
                                 class="flex justify-end mt-1 text-base font-bold"
                               >
-                                RP. 0, 00
+                                RP. {{ totalTagihanLab }}
                               </p>
                             </div>
                           </div>
@@ -1090,6 +1355,7 @@ const optionSpesimen = ref([
           <template #footer>
             <div class="flex justify-end">
               <CustomButton
+                @click="handleValidasi"
                 label="Validasi Order"
                 backgroundColor="bg-adameds-300"
               />
@@ -1100,10 +1366,11 @@ const optionSpesimen = ref([
     </CustomDialog>
 
     <!-- Edit Order Dialog -->
+
     <CustomDialog
       v-model:visible="editOrderDialog"
       class="h-full"
-      width="800px"
+      width="1000px"
     >
       <template #header>
         <div class="flex">
@@ -1111,169 +1378,29 @@ const optionSpesimen = ref([
         </div>
       </template>
       <template #body>
-        <div class="flex justify-between gap-3 pt-5">
-          <CustomDatePicker
-            v-model="dateFilter"
-            label="Tanggal"
-            class="w-[50%]"
+        <OrderTindakan
+          :pageType="pageType"
+          :dataBreadCrumb="dataBreadCrumb"
+          :initialData="openedPatientData"
+          ref="orderTindakanRef"
+        />
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton
+            label="Batal"
+            class="mr-[10px]"
+            outlined
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+            @click="editOrderDialog = false"
           />
-
-          <CustomSwitch
-            v-model="citoStatus"
-            :show-label="true"
-            label="CITO"
-            sideLabel="Tidak"
-            sideLabelTrue="Iya"
-            class="ml-[20px]"
-          />
-          <CustomSwitch
-            v-model="puasaStatus"
-            :show-label="true"
-            label="Status Puasa"
-            sideLabel="Tidak"
-            sideLabelTrue="Iya"
-            class="mr-[20px]"
+          <CustomButton
+            label="Simpan"
+            backgroundColor="bg-adameds-300"
+            @click="handleEditOrder"
           />
         </div>
-        <div class="flex mt-[30px]">
-          <span class="font-bold text-md"> Tarif Pemeriksaan </span>
-        </div>
-        <hr class="mt-5 mb-[30px]" />
-        <div class="mt-4">
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                HEMATOLOGI
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="hematokrit"
-                  title="Hematokrit"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="hematologiLengkap"
-                  title="Hematologi Lengkap"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="jumlahLeukosit"
-                  title="Jumlah Leukosit"
-                  subTitle=""
-                />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                KIMIA KLINIK
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="tesFaalHati"
-                  title="TES FAAL HATI"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="tesGulaDarah"
-                  title="TES GULA DARAH"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="tesFaalGinjal"
-                  title="TES FAAL GINJAL"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="elektrolit"
-                  title="ELEKTROLIT"
-                  subTitle=""
-                />
-                <CustomCheckbox v-model="sgot" title="SGOT" subTitle="" />
-                <CustomCheckbox v-model="sgpt" title="SGPT" subTitle="" />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <CustomAccordion
-            :openWithHeader="false"
-            header-class="bg-adameds-50"
-            initialState="0"
-          >
-            <template #header>
-              <div class="flex justify-between w-full align-middle text-normal">
-                URINALISIS
-              </div>
-            </template>
-            <template #content>
-              <div class="flex flex-wrap gap-4 pt-5">
-                <CustomCheckbox
-                  v-model="urinLengkap"
-                  title="URIN LENGKAP"
-                  subTitle=""
-                />
-                <CustomCheckbox
-                  v-model="glukosaRutin"
-                  title="GLUKOSA RUTIN"
-                  subTitle=""
-                />
-              </div>
-            </template>
-          </CustomAccordion>
-
-          <div class="flex mt-[50px]">
-            <span class="font-bold text-md"> Tarif Pemeriksaan - Paket</span>
-          </div>
-          <hr class="mt-5 mb-[30px]" />
-
-          <div class="flex flex-wrap gap-4">
-            <CustomCheckbox
-              v-model="mcuWahana"
-              title="MCU PT. WAHANA"
-              subTitle="Darah Lengkap, Urine Lengkap, Golongan Darah, SGOT, SGPT"
-            />
-          </div>
-        </div>
-
-        <Card class="inset-x-0 bottom-0">
-          <template #footer>
-            <div class="flex justify-end">
-              <CustomButton
-                label="Reset"
-                class="mr-[10px]"
-                outlined
-                borderColor="border-grey-200"
-                textColor="text-grey-300"
-              />
-              <CustomButton
-                label="Batal Edit"
-                class="mr-[10px]"
-                outlined
-                borderColor="border-adameds-300"
-                textColor="text-adameds-300"
-              />
-              <CustomButton
-                label="Simpan"
-                class=""
-                backgroundColor="bg-adameds-300"
-              />
-            </div>
-          </template>
-        </Card>
       </template>
     </CustomDialog>
   </div>

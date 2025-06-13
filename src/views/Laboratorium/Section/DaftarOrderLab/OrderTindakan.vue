@@ -3,14 +3,16 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import type { MenuItem } from "primevue/menuitem";
-import { onMounted, ref, type PropType } from "vue";
-import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { onMounted, computed, ref, type PropType, watch } from "vue";
+import { useForm, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import { useOrderLab } from "@/stores/Laboratorium/orderLab";
 import { utilsStore } from "@/stores/utils";
+import { epochToDate, getDateNow, dateToEpoch } from "@/utils/Helpers";
+import { Console } from "console";
 
 const props = defineProps({
   pageType: {
@@ -21,18 +23,53 @@ const props = defineProps({
     type: Array as PropType<MenuItem[]>,
     default: () => [],
   },
+  initialData: {
+    type: Object as PropType<any>,
+    default: () => ({}),
+  },
 });
 
 // Data state
 const categories = ref<any[]>([]);
 const nonCategories = ref<any[]>([]);
 const selectedTarifs = ref<Record<string, boolean>>({});
-const tglPemeriksaan = ref<Date>(new Date());
-const statusPuasa = ref(false);
-const cito = ref(false);
+const allTarifsMap = ref<Record<string, any>>({});
 
 const orderLabStore = useOrderLab();
 const storeUtils = utilsStore();
+
+const schema = computed(() =>
+  toTypedSchema(
+    yup
+      .object({
+        tglPemeriksaan: yup
+          .date()
+          .required("Tanggal pemeriksaan harus diisi")
+          .min(new Date(), "Tanggal tidak boleh kurang dari hari ini")
+          .default(new Date()),
+        cito: yup.boolean().default(false),
+        statusPuasa: yup.boolean().default(false),
+        tarifLabUuids: yup
+          .array()
+          .of(yup.string().required())
+          .min(1, "Pilih minimal satu pemeriksaan")
+          .required(),
+        isMcu: yup.boolean().default(false),
+      })
+      .noUnknown()
+  )
+);
+
+const { errors, handleSubmit, defineField, setFieldValue } = useForm({
+  validationSchema: schema,
+});
+
+// Define fields
+const [tglPemeriksaan] = defineField("tglPemeriksaan");
+const [cito] = defineField("cito");
+const [statusPuasa] = defineField("statusPuasa");
+const [tarifLabUuids] = defineField("tarifLabUuids");
+const [isMcu] = defineField("isMcu");
 
 const fetchTarif = async () => {
   storeUtils.setLoading(true);
@@ -41,16 +78,24 @@ const fetchTarif = async () => {
     if (response.payload) {
       categories.value = response.payload.category || [];
       nonCategories.value = response.payload.nonCategory || [];
+      const newAllTarifsMap: Record<string, any> = {};
 
+      // Process categories
       categories.value.forEach((category) => {
         category.tarifLab.forEach((tarif: any) => {
           selectedTarifs.value[tarif.code] = false;
+          newAllTarifsMap[tarif.code] = tarif;
         });
       });
 
+      // Process non-categories
       nonCategories.value.forEach((tarif) => {
         selectedTarifs.value[tarif.code] = false;
+        newAllTarifsMap[tarif.code] = tarif;
       });
+
+      allTarifsMap.value = newAllTarifsMap;
+      setFieldValue("tarifLabUuids", []);
     }
   } catch (error) {
     console.error("Error fetching tarif:", error);
@@ -59,8 +104,114 @@ const fetchTarif = async () => {
   }
 };
 
-onMounted(() => {
-  fetchTarif();
+watch(
+  selectedTarifs,
+  (newVal) => {
+    const selectedUuids = Object.keys(newVal)
+      .filter((code) => newVal[code])
+      .map((code) => allTarifsMap.value[code]?.uuid)
+      .filter(Boolean);
+    console.log("newVal", newVal);
+    console.log("selectedUuids", selectedUuids);
+    console.log("all tarif", allTarifsMap.value);
+    setFieldValue("tarifLabUuids", selectedUuids);
+  },
+  { deep: true }
+);
+
+const setForm = (patientData: any) => {
+  if (patientData.tglPemeriksaan) {
+    setFieldValue(
+      "tglPemeriksaan",
+      new Date(parseInt(patientData.tglPemeriksaan) * 1000)
+    );
+  }
+  setFieldValue("cito", patientData.cito || false);
+  setFieldValue("statusPuasa", patientData.statusPuasa || false);
+  setFieldValue("isMcu", patientData.isMcu || false);
+
+  if (
+    patientData.orderLabPemeriksaan &&
+    patientData.orderLabPemeriksaan.length > 0
+  ) {
+    const codesYangAda = patientData.orderLabPemeriksaan.map(
+      (item: any) => item.tarifLab.code
+    );
+    console.log("selectedTarifs", selectedTarifs.value);
+    const tempSelectedData = JSON.parse(JSON.stringify(selectedTarifs.value));
+    codesYangAda.forEach((code: string) => {
+      console.log(code);
+      console.log(selectedTarifs.value[code]);
+
+      tempSelectedData[code] = true;
+    });
+    console.log("akhir", tempSelectedData);
+
+    selectedTarifs.value = JSON.parse(JSON.stringify(tempSelectedData));
+    console.log("selectedTarifs after setForm:", selectedTarifs.value);
+    // const newSelectedTarifs: Record<string, boolean> = {};
+    // Object.keys(selectedTarifs.value).forEach((code) => {
+    //   newSelectedTarifs[code] = false;
+    // });
+    // patientData.orderLabPemeriksaan.forEach((item: any) => {
+    //   if (item.tarifLab) {
+    //     let found = false;
+    //     for (const category of categories.value) {
+    //       const tarif = category.tarifLab.find(
+    //         (t: any) => t.uuid === item.tarifLab.uuid
+    //       );
+    //       if (tarif) {
+    //         newSelectedTarifs[tarif.code] = true;
+    //         found = true;
+    //         break;
+    //       }
+    //     }
+    //     if (!found) {
+    //       const tarif = nonCategories.value.find(
+    //         (t: any) => t.uuid === item.tarifLab.uuid
+    //       );
+    //       if (tarif) {
+    //         newSelectedTarifs[tarif.code] = true;
+    //       }
+    //     }
+    //   }
+    // });
+    // selectedTarifs.value = newSelectedTarifs;
+  }
+};
+
+// watch(
+//   () => props.initialData,
+//   async (newVal) => {
+//     if (newVal && newVal.uuid) {
+//       await fetchTarif();
+//       console.log("Setting form with initial data:", newVal);
+//       console.log("selectedTarifs before:", selectedTarifs.value);
+//       setForm(newVal);
+//     }
+//   },
+//   { immediate: true }
+// );
+const onSubmit = handleSubmit(async (values) => {
+  const modifiedValues = {
+    ...values,
+    // tglPemeriksaan: dateToEpoch(values.tglPemeriksaan),
+    tglPemeriksaan: String(dateToEpoch(values.tglPemeriksaan)),
+  };
+  return modifiedValues;
+});
+
+onMounted(async () => {
+  await fetchTarif();
+  if (props.initialData && props.initialData.uuid) {
+    await fetchTarif();
+    setForm(props.initialData);
+  }
+});
+
+defineExpose({
+  onSubmit,
+  setForm,
 });
 
 // Helper function to group categories by their names
@@ -87,7 +238,9 @@ const groupedCategories = (categoryName: string) => {
             v-model="tglPemeriksaan"
             label="Tanggal"
             class="mr-[20px]"
+            :error="errors.tglPemeriksaan"
           />
+          <ErrorMessage name="tglPemeriksaan" class="text-sm text-red-500" />
         </div>
         <div>
           <CustomSwitch
@@ -155,6 +308,7 @@ const groupedCategories = (categoryName: string) => {
             />
           </template>
         </div>
+        <ErrorMessage name="tarifLabUuids" class="mt-4 text-sm text-red-500" />
       </div>
     </template>
     <template #collapseIcon>

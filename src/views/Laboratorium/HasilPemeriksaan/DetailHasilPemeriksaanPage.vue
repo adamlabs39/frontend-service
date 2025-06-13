@@ -9,6 +9,7 @@ import ListOrder from "../Section/HasilPemeriksaan/ListOrder.vue";
 import Catatan from "../Section/HasilPemeriksaan/Catatan.vue";
 import CatatanExpertise from "../Section/HasilPemeriksaan/CatatanExpertise.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 
 const props = defineProps({
   pageType: {
@@ -27,7 +28,7 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
-  patientData: {
+  openedPatientData: {
     type: Object as PropType<any>,
     required: true,
   },
@@ -51,7 +52,15 @@ const popupDialog = ref(false);
           <div class="flex">
             <div class="flex mr-[30px] mt-2">
               <div class="bg-adameds-300 w-[1px] h-[30px]"></div>
-              <p class="text-sm ml-[10px] mt-[3px]">Tgl. Order : 3-10-2024</p>
+              <p class="text-sm ml-[10px] mt-[3px]">
+                Tgl. Order :
+                {{
+                  epochToDate(
+                    parseInt(openedPatientData.tglOrder) / 1000,
+                    "date"
+                  )
+                }}
+              </p>
             </div>
             <CustomButton
               @click="emit('back')"
@@ -70,14 +79,14 @@ const popupDialog = ref(false);
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <AsesmenMedis
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
 
@@ -85,21 +94,21 @@ const popupDialog = ref(false);
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <Catatan
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <CatatanExpertise
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
     </div>

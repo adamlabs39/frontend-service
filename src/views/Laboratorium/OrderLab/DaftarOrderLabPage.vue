@@ -8,6 +8,7 @@ import DoctorVisitForm from "../Section/DaftarOrderLab/DoctorVisitForm.vue";
 import OrderTindakan from "../Section/DaftarOrderLab/OrderTindakan.vue";
 import { useOrderLab } from "@/stores/Laboratorium/orderLab";
 import { utilsStore } from "@/stores/utils";
+import { dateToEpoch, epochToDate } from "@/utils/Helpers";
 
 const props = defineProps({
   pageType: {
@@ -38,6 +39,7 @@ const patientIdentityForm = ref<InstanceType<
   typeof PatientIdentityForm
 > | null>(null);
 const doctorVisitForm = ref<InstanceType<typeof DoctorVisitForm> | null>(null);
+const orderTindakanForm = ref<InstanceType<typeof OrderTindakan> | null>(null);
 const openedPatientData = ref<any>({});
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
@@ -46,21 +48,28 @@ console.log("pageType", props.pageType);
 const postRegisterPatient = async () => {
   let tempPatientData: any;
   let tempDocterVisitData: any;
+  let tempOrderTindakanData: any;
   tempDocterVisitData = await doctorVisitForm.value?.onSubmit();
   tempPatientData = await patientIdentityForm.value?.onSubmit();
-  let payload: any = { patientData: tempPatientData, ...tempDocterVisitData };
-  console.log("tempDocterVisitData", tempDocterVisitData);
-  console.log("tempPatientData", tempPatientData);
+  tempOrderTindakanData = await orderTindakanForm.value?.onSubmit();
+  let payload: any = {
+    ...tempDocterVisitData,
+    ...tempOrderTindakanData,
+  };
+  console.log("tempOrderTindakanData", tempOrderTindakanData);
   storeUtils.setLoading(true);
   try {
     let response;
     if (props.pageType === "order-lab") {
       payload.noRm = tempPatientData.noRm;
       payload.pelayanan = "aps";
+      payload.rekamMedisDate = Date.now().toLocaleString();
+      payload.patientUuid = tempPatientData.patientUuid;
       response = await orderLabStore.postApi(payload);
-    } else {
-      response = await orderLabStore.putApi(payload);
     }
+    // else {
+    //   response = await orderLabStore.putApi(payload);
+    // }
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {
@@ -118,6 +127,7 @@ const postRegisterPatient = async () => {
 
       <OrderTindakan
         class="mt-2"
+        ref="orderTindakanForm"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
         :patientData="openedPatientData"
