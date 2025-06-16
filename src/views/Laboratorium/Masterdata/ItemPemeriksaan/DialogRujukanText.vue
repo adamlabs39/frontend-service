@@ -65,8 +65,9 @@ const kritisBawah = ref(0);
 const kritisAtas = ref(0);
 const nilaiNormalText = ref(<any>[]);
 const optionJenisKelamin = ref([
-  { label: "Laki-laki", value: "laki-laki" },
-  { label: "Perempuan", value: "perempuan" },
+  { label: "Laki-laki", value: "Male" },
+  { label: "Perempuan", value: "Female" },
+  { label: "General", value: "General" },
 ]);
 const operator = ref("-");
 const optionOperator = ref([

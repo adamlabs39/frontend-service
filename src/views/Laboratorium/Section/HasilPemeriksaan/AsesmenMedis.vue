@@ -96,7 +96,7 @@ defineExpose({
           <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
             Keluhan Utama
           </p>
-          <p class="">{{ openedPatientData.keluhanUtama }}</p>
+          <p class="">{{ openedPatientData.keluhanUtama || "-" }}</p>
           <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
             Alergi
           </p>
@@ -108,7 +108,7 @@ defineExpose({
             <p class="text-xs font-bold underline underline-offset-2">
               Diagnosa Sekunder
             </p>
-            <p class="">{{ openedPatientData.diagnosis }}</p>
+            <p class="">{{ openedPatientData.diagnosis || "-" }}</p>
             <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
               Diagnosa Sekunder
             </p>

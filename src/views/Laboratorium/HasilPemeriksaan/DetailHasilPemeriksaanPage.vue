@@ -10,6 +10,8 @@ import Catatan from "../Section/HasilPemeriksaan/Catatan.vue";
 import CatatanExpertise from "../Section/HasilPemeriksaan/CatatanExpertise.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import { useHasilPemeriksaanLab } from "@/stores/Laboratorium/hasilPemeriksaan";
+import { utilsStore } from "@/stores/utils";
 
 const props = defineProps({
   pageType: {
@@ -33,8 +35,75 @@ const props = defineProps({
     required: true,
   },
 });
+const storeUtils = utilsStore();
+const hasilPemeriksaanStore = useHasilPemeriksaanLab();
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const listOrderForm = ref<InstanceType<typeof ListOrder> | null>(null);
+const listCatatanForm = ref<InstanceType<typeof Catatan> | null>(null);
+
+const isOrderStatus = computed(() => {
+  return props.openedPatientData?.orderStatus === 3;
+});
+
+const isAllStatusPeriksaTrue = computed(() => {
+  if (!props.openedPatientData?.hasilPemeriksaan?.length) return false;
+  return props.openedPatientData.hasilPemeriksaan.every(
+    (item: any) => item.statusPeriksa === true
+  );
+});
+
+const postSimpanHasil = async () => {
+  storeUtils.setLoading(true);
+  try {
+    if (!listOrderForm.value) {
+      throw new Error("Form reference is missing");
+    }
+    let tempCatatanData: any;
+    let tempListOrderData: any;
+
+    tempCatatanData = listCatatanForm.value
+      ? await listCatatanForm.value.onSubmit()
+      : null;
+    tempListOrderData = await listOrderForm.value.onSubmit();
+    let payload: any = {
+      ...tempCatatanData,
+      ...tempListOrderData,
+    };
+
+    console.log("RESULT:", payload);
+    const response = await hasilPemeriksaanStore.postApi(payload as {});
+  } catch (error) {
+    console.error("Save error:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const selesaiPeriksa = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const patientData = { ...props.openedPatientData };
+    if (patientData.spesimenUuids === null) {
+      patientData.spesimenUuids = [];
+    }
+    patientData.orderStatus = 3;
+    const response = await hasilPemeriksaanStore.putSelesaiPeriksa(
+      props.openedPatientData.uuid,
+      patientData
+    );
+    if (response && response.data) {
+      popupDialog.value = false;
+      emit("back");
+      emit("fetchHasil");
+    }
+  } catch (error) {
+    console.error("Failed to Selesai Periksa:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const emit = defineEmits(["back", "goToDetail", "goToEdit", "fetchHasil"]);
 const popupDialog = ref(false);
 </script>
 
@@ -91,6 +160,7 @@ const popupDialog = ref(false);
       />
 
       <ListOrder
+        ref="listOrderForm"
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
@@ -98,6 +168,7 @@ const popupDialog = ref(false);
         @back="dataBreadCrumb.pop()"
       />
       <Catatan
+        ref="listCatatanForm"
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
@@ -123,18 +194,19 @@ const popupDialog = ref(false);
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
-          <div class="flex gap-3">
+          <div class="flex gap-3" v-if="!isOrderStatus">
             <CustomButton
               label="Simpan Hasil"
               outlined
               borderColor="border-adameds-300"
               textColor="text-adameds-300"
-              @click=""
+              @click="postSimpanHasil()"
             />
             <CustomButton
               label="Selesai"
               class=""
               backgroundColor="bg-adameds-300"
+              :disabled="!isAllStatusPeriksaTrue"
               @click="popupDialog = true"
             />
           </div>
@@ -180,6 +252,7 @@ const popupDialog = ref(false);
                 label="Iya, Selesai"
                 class=""
                 backgroundColor="bg-adameds-300"
+                @click="selesaiPeriksa"
               />
             </div>
           </template>

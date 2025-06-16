@@ -136,15 +136,24 @@ const changeSection = (label: string) => {
 const showDetail = async (event: DataTableRowClickEvent) => {
   stores.setLoading(true);
   try {
-    const responsePatient = await useHasilPemeriksaanLabStore.getDetailPasien(
-      event.data.uuid
-    );
-    if (responsePatient && responsePatient.payload) {
-      openedPatientData.value = responsePatient.payload;
-      console.log("Opened Patient Data:", openedPatientData.value.uuid);
-    } else {
-      openedPatientData.value = {};
-    }
+    // const responsePatient = await useHasilPemeriksaanLabStore.getDetailPasien(
+    //   event.data.uuid
+    // );
+    // if (responsePatient && responsePatient.payload) {
+    //   openedPatientData.value = responsePatient.payload;
+    //   console.log("Opened Patient Data:", openedPatientData.value.uuid);
+    // } else {
+    //   openedPatientData.value = {};
+    // }
+    const [patientResponse, tariffResponse] = await Promise.all([
+      useHasilPemeriksaanLabStore.getDetailPasien(event.data.uuid),
+      useHasilPemeriksaanLabStore.getDetailTarif(event.data.uuid),
+    ]);
+    openedPatientData.value = {
+      ...(patientResponse?.payload || {}),
+      ...(tariffResponse?.payload || {}),
+    };
+    console.log("Opened Patient Data:", openedPatientData.value);
     changeSection("Hasil Pemeriksaan");
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -182,6 +191,7 @@ const handlePage = (event: any) => {
 onMounted(async () => {
   await fetchHasilPemeriksaan();
 });
+
 </script>
 
 <template>
@@ -575,6 +585,7 @@ onMounted(async () => {
       :pageType="pageType"
       :openedPatientData="openedPatientData"
       @back="dataBreadCrumb.pop()"
+      @fetchHasil="fetchHasilPemeriksaan"
     />
   </div>
 </template>

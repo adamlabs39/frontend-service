@@ -150,7 +150,7 @@ const fetchUtils = async () => {
       console.log("List DPJP:", listDpjp.value);
     }
 
-    const responseSpesimen = await spesimenLabStore.getApi();
+    const responseSpesimen = await spesimenLabStore.getApi(1, 9999, "");
 
     if (responseSpesimen && responseSpesimen.payload) {
       listSpesimen.value = responseSpesimen.payload.data;

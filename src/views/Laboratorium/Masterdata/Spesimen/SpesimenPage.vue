@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
 import * as XLSX from "xlsx-js-style";
@@ -15,7 +15,7 @@ import DialogSpesimen from "./DialogSpesimen.vue";
 const spesimenStore = useSpesimenLabStore();
 const storeUtils = utilsStore();
 const spesimenPayload = ref(<any[]>[]);
-const searchQuery = ref("");
+const searchQuery = ref<string>("");
 const spesimenProperties = ref({
   page: 1,
   page_size: 10,
@@ -31,7 +31,8 @@ const fetchSpesimen = async () => {
   try {
     const response = await spesimenStore.getApi(
       spesimenProperties.value.page,
-      spesimenProperties.value.page_size
+      spesimenProperties.value.page_size,
+      searchQuery.value
     );
     if (response && response.payload) {
       spesimenProperties.value.total = response.payload.pagination.total;
@@ -129,6 +130,14 @@ const handlePage = (event: any) => {
   fetchSpesimen();
 };
 
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchSpesimen();
+  }, 500);
+});
+
 const onUpload = (event: any) => {
   const uploadedFiles = event.files[0]; // Ambil file yang diunggah
   importExcel(uploadedFiles);
@@ -152,7 +161,8 @@ const ExportExcel = async () => {
   try {
     const response = await spesimenStore.getApi(
       spesimenProperties.value.page,
-      spesimenProperties.value.page_size
+      spesimenProperties.value.page_size,
+      searchQuery.value
     );
     const rows = response.payload.data;
     console.log("rows", rows);
@@ -308,7 +318,11 @@ onMounted(async () => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchSpesimen"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -339,6 +353,7 @@ onMounted(async () => {
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Spesimen"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Spesimen"
