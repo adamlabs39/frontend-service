@@ -10,7 +10,7 @@ import type { MenuItem } from "primevue/menuitem";
 import { useForm, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { useHasilPemeriksaanLab } from "@/stores/Laboratorium/hasilPemeriksaan";
+
 
 const props = defineProps({
   pageType: {
@@ -129,9 +129,24 @@ defineExpose({
             <p class="mr-2 text-xs font-bold underline underline-offset-2">
               Spesimen
             </p>
-            <div class="flex gap-1 mt-1">
-              <CustomButton class="w-auto h-5 text-xs">Urine</CustomButton>
-              <CustomButton class="w-auto h-5 text-xs">Darah</CustomButton>
+            <div
+              class="flex gap-1 mt-1"
+              v-if="openedPatientData.spesimenUuids?.length"
+            >
+              <div
+                v-for="items in openedPatientData.spesimenUuids"
+                :key="items"
+              >
+                <CustomChip
+                  :label="items.name"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="h-6"
+                  class="mr-[5px]"
+                />
+              </div>
             </div>
           </div>
           <div class="basis-1/4">
@@ -237,7 +252,7 @@ defineExpose({
               <template #body="slotProps">
                 <div>
                   <p class="text-sm">
-                    {{ slotProps.data.diagnosa }}
+                    {{ slotProps.data.itemPemeriksaan.nilaiRujukan || "-" }}
                   </p>
                 </div>
               </template>

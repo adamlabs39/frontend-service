@@ -12,21 +12,30 @@ import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 import ExpertiseDetailPage from "./ExpertiseDetailPage.vue";
+import { useExpertiseLab } from "@/stores/Laboratorium/expertise";
+import { utilsStore } from "@/stores/utils";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
-const patientData = ref<any>({});
-
-const selectedPayType = ref<string>("MenungguPembayaran");
-
-const onSelectPayType = (label: string) => {
-  selectedPayType.value = label;
-  console.log(selectedPayType, "selectedPayType");
-};
-
+const expertiseLabStore = useExpertiseLab();
+const stores = utilsStore();
+const expertiseLabProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const expertisePayload = ref<any[]>([]);
+const searchQuery = ref<string>("");
+const selectedOrderType = ref<string>("Periksa");
+const selectedPatient = ref([]);
 const selectedPaymentMethod = ref<string[]>([]);
-const selectedPayStatus = ref<string>("Semua"); // Default: tampilkan semua
+
+const onSelectOrderType = (label: string) => {
+  selectedOrderType.value = label;
+  fetchExpertiseLab();
+};
 
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -36,130 +45,74 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+  fetchExpertiseLab();
 };
 
-const itemsPasien = ref([
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-01",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "ORDER",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-02",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "DIPERIKSA",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "ORDER",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-04",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "ORDER",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DIBATALKAN",
-  },
-]);
+const fetchExpertiseLab = async () => {
+  stores.setLoading(true);
+  try {
+    const params: any = {
+      page: expertiseLabProperties.value.page,
+      limit: expertiseLabProperties.value.page_size,
+      search: searchQuery.value,
+    };
+
+    if (selectedOrderType.value === "Periksa") {
+      params.orderStatus = 2;
+    } else if (selectedOrderType.value === "Selesai") {
+      params.orderStatus = 3;
+    }
+
+    if (selectedPaymentMethod.value !== null) {
+      if (
+        selectedPaymentMethod.value.includes("1") &&
+        selectedPaymentMethod.value.includes("2")
+      ) {
+        params.paymentMethod = [];
+      } else {
+        params.paymentMethod = selectedPaymentMethod.value;
+      }
+    }
+
+    const response = await expertiseLabStore.getApi(params);
+    if (response && response.payload) {
+      expertiseLabProperties.value.total = response.payload.pagination.total;
+      expertisePayload.value = response.payload.data;
+    } else {
+      expertisePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return [];
+  } finally {
+    stores.setLoading(false);
+  }
+};
 
 const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
+
+const showDetail = async (event: DataTableRowClickEvent) => {
+  stores.setLoading(true);
+  try {
+    const [patientResponse, tariffResponse] = await Promise.all([
+      expertiseLabStore.getDetailPasien(event.data.uuid),
+      expertiseLabStore.getDetailTarif(event.data.uuid),
+    ]);
+    openedPatientData.value = {
+      ...(patientResponse?.payload || {}),
+      ...(tariffResponse?.payload || {}),
+    };
+    console.log("Opened Patient Data:", openedPatientData.value);
+    changeSection("Expertise");
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    stores.setLoading(false);
+  }
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
-
+const openedPatientData = ref<any>({});
 const changeSection = (label: string) => {
   if (dataBreadCrumb.value.length) {
     dataBreadCrumb.value[0] = { label: label };
@@ -168,9 +121,30 @@ const changeSection = (label: string) => {
   }
 };
 
-const showDetail = (event: DataTableRowClickEvent) => {
-  changeSection("Expertise");
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchExpertiseLab();
 };
+
+const resetData = () => {
+  searchQuery.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  selectedPaymentMethod.value = [];
+  fetchExpertiseLab();
+};
+
+const handlePage = (event: any) => {
+  expertiseLabProperties.value.page = event.page + 1;
+  expertiseLabProperties.value.page_size = event.rows;
+  fetchExpertiseLab();
+};
+
+onMounted(async () => {
+  await fetchExpertiseLab();
+});
 </script>
 
 <template>
@@ -230,17 +204,17 @@ const showDetail = (event: DataTableRowClickEvent) => {
             </div>
             <div class="flex mt-[10px]">
               <CustomButton
-                @click="onSelectPayType('MenungguPembayaran')"
+                @click="onSelectOrderType('Periksa')"
                 label="PERIKSA"
-                :outlined="selectedPayType != 'MenungguPembayaran'"
+                :outlined="selectedOrderType != 'Periksa'"
                 borderColor="border-adameds-300"
                 :textColor="
-                  selectedPayType != 'MenungguPembayaran'
+                  selectedOrderType != 'Periksa'
                     ? 'text-adameds-300'
                     : 'text-white'
                 "
                 :backgroundColor="
-                  selectedPayType != 'MenungguPembayaran'
+                  selectedOrderType != 'Periksa'
                     ? 'bg-transparent'
                     : 'bg-adameds-300'
                 "
@@ -248,15 +222,17 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 full
               />
               <CustomButton
-                @click="onSelectPayType('Lunas')"
+                @click="onSelectOrderType('Selesai')"
                 label="SELESAI"
-                :outlined="selectedPayType != 'Lunas'"
+                :outlined="selectedOrderType != 'Selesai'"
                 borderColor="border-adameds-300"
                 :textColor="
-                  selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'
+                  selectedOrderType != 'Selesai'
+                    ? 'text-adameds-300'
+                    : 'text-white'
                 "
                 :backgroundColor="
-                  selectedPayType != 'Lunas'
+                  selectedOrderType != 'Selesai'
                     ? 'bg-transparent'
                     : 'bg-adameds-300'
                 "
@@ -273,27 +249,29 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 |
                 <CustomChip
                   label="TUNAI"
+                  value="1"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-50"
                   iconColor="text-adameds-300"
                   textColor="text-adameds-300"
                   customClass="h-5"
                   class="ml-[10px]"
-                  :isSelected="selectedPaymentMethod.includes('TUNAI')"
-                  @selected="onPaymentMethodSelect"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  :isSelected="selectedPaymentMethod.includes('1')"
+                  @selected="onPaymentMethodSelect"
                 />
                 <CustomChip
                   label="ASURANSI"
+                  value="2"
                   borderColor="border-warning-300"
                   bgColor="bg-warning-50"
                   iconColor="text-warning-300"
                   textColor="text-warning-300"
                   customClass="h-5"
                   class="ml-[10px]"
-                  :isSelected="selectedPaymentMethod.includes('ASURANSI')"
-                  @selected="onPaymentMethodSelect"
                   selectedColor="bg-warning-300 border-warning-300"
+                  :isSelected="selectedPaymentMethod.includes('2')"
+                  @selected="onPaymentMethodSelect"
                 />
               </div>
             </div>
@@ -316,8 +294,9 @@ const showDetail = (event: DataTableRowClickEvent) => {
       </template>
       <template #content>
         <DataTable
-          v-if="itemsPasien.length"
-          :value="itemsPasien"
+          v-if="expertisePayload.length"
+          v-model:selection="selectedPatient"
+          :value="expertisePayload"
           tableStyle="min-width: 50rem"
           scrollable
           scrollHeight="flex"
@@ -330,9 +309,9 @@ const showDetail = (event: DataTableRowClickEvent) => {
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">{{ slotProps.data.noPendaftaran }}</div>
-
-                <div class="mt-3 text-SM">{{ slotProps.data.noREG }}</div>
+                <div class="text-SM">{{ slotProps.data.noRm }}</div>
+                <div class="text-SM">{{ slotProps.data.noreg }}</div>
+                <div class="text-SM">{{ slotProps.data.noOrder }}</div>
               </div>
             </template>
           </Column>
@@ -344,31 +323,36 @@ const showDetail = (event: DataTableRowClickEvent) => {
           >
             <template #body="slotProps">
               <div class="text-SM">
-                <span class="font-semibold">{{ slotProps.data.name }}</span>
+                <span class="font-semibold">{{
+                  slotProps.data.patient?.name
+                }}</span>
                 <span class="text-grey-300">
-                  ({{ slotProps.data.ageYear }}Th
+                  ({{ slotProps.data.patient?.birthDetail?.ageYear }}Th
                   {{ slotProps.data.ageMonth }}Bln
                   {{ slotProps.data.ageDay }}Hr)
                 </span>
               </div>
-              <div class="text-XS">{{ slotProps.data.address }}</div>
+              <div class="text-XS">
+                {{ slotProps.data.patientAddress }},
+                {{ slotProps.data.patient?.address?.districtData?.name }},
+                {{ slotProps.data.patient?.address?.cityData?.name }},
+                {{ slotProps.data.patient?.address?.provData?.name }}
+              </div>
               <div class="flex flex-wrap">
-                <PhUserCirclePlus
-                  v-if="slotProps.data.newPatient"
-                  :size="22"
-                  class="text-adameds-300 mt-auto mr-[5px]"
-                  weight="fill"
-                />
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="
-                    slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'Perempuan'
+                      : 'Laki-laki'
                   "
                   :bgColor="
-                    slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
+                    slotProps.data.patient.gender == 'Female'
+                      ? 'bg-female-75'
+                      : 'bg-male-75'
                   "
                   :textColor="
-                    slotProps.data.gender == 'P'
+                    slotProps.data.patient.gender == 'Female'
                       ? 'text-female-300'
                       : 'text-male-300'
                   "
@@ -376,7 +360,7 @@ const showDetail = (event: DataTableRowClickEvent) => {
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.phone"
+                  :label="slotProps.data.patient.phone"
                   bgColor="bg-adameds-50"
                   textColor="text-adameds-300"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -388,35 +372,41 @@ const showDetail = (event: DataTableRowClickEvent) => {
             field="keperawatan"
             header="Keperawatan"
             headerClass="bg-adameds-50"
-            class="w-[350px]"
           >
             <template #body="slotProps">
-              <div class="flex gap-1.5">
-                <div class="text-SM">{{ slotProps.data.doctor }}</div>
-                <hr class="w-px min-h-5 bg-adameds-300" />
-                <div class="text-SM">{{ slotProps.data.practicHour }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.dokterPengirim?.firstTitle }}
+                {{ slotProps.data.dokterPengirim?.name }}
+                {{ slotProps.data.dokterPengirim?.lastTitle }}
               </div>
-              <div class="flex flex-wrap mt-1">
+              <div class="flex flex-wrap">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinic"
+                  :label="slotProps.data.pelayanan"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.insuranceAccountName"
+                  :label="slotProps.data.lokasi?.name"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="
+                    slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'
+                  "
                   :bgColor="
-                    slotProps.data.insuranceAccountName == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'bg-adameds-50'
                       : 'bg-warning-50'
                   "
                   :textColor="
-                    slotProps.data.insuranceAccountName == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'text-adameds-300'
                       : 'text-warning-300'
                   "
                   :borderColor="
-                    slotProps.data.insuranceAccountName == 'TUNAI'
+                    slotProps.data.paymentMethod == 1
                       ? 'border-adameds-300'
                       : 'border-warning-300'
                   "
@@ -438,20 +428,32 @@ const showDetail = (event: DataTableRowClickEvent) => {
             field="data-kunjungan"
             header="Data Kunjungan"
             headerClass="bg-adameds-50"
-            class=""
+            style="width: 25%"
           >
             <template #body="slotProps">
               <div class="text-SM">
                 <div
                   class="grid content-center grid-cols-[80px_min-content_150px] auto-cols-min"
                 >
-                  Order
+                  Daftar
                   <PhArrowRight
                     :size="18"
-                    class="my-auto mr-5 text-grey-300"
+                    class="my-auto mr-5 text-info-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggalDaftar }}
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "date"
+                    )
+                  }}
+
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "time"
+                    )
+                  }}
                 </div>
                 <div
                   class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
@@ -459,10 +461,15 @@ const showDetail = (event: DataTableRowClickEvent) => {
                   Jadwal
                   <PhArrowRight
                     :size="18"
-                    class="my-auto mr-5 text-blueJeans-300"
+                    class="my-auto mr-5 text-sunFlower-300"
                     weight="bold"
                   />
-                  {{ slotProps.data.tanggalJadwal }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "date")
+                  }}
+                  {{
+                    epochToDate(parseInt(slotProps.data.tglPemeriksaan), "time")
+                  }}
                 </div>
               </div>
             </template>
@@ -473,11 +480,10 @@ const showDetail = (event: DataTableRowClickEvent) => {
       <template #footer>
         <div class="flex justify-end">
           <CustomPaginator
-            :rows="10"
-            :totalRecords="10"
+            :rows="expertiseLabProperties.page_size"
+            :totalRecords="expertiseLabProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
@@ -486,8 +492,9 @@ const showDetail = (event: DataTableRowClickEvent) => {
       v-else-if="dataBreadCrumb[0].label == 'Expertise'"
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
-      :patientData="patientData"
+      :openedPatientData="openedPatientData"
       @back="dataBreadCrumb.pop()"
+      @fetchExpertiseLab="fetchExpertiseLab"
     />
   </div>
 </template>

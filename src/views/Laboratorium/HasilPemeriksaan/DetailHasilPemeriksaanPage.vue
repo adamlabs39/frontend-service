@@ -190,7 +190,7 @@ const popupDialog = ref(false);
           <CustomButton
             @click="() => {}"
             icon="PhPrinter"
-            label="Print Hasil"
+            label="Cetak Label"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />

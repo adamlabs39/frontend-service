@@ -2,12 +2,11 @@
 import { computed, ref, type PropType } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { useForm, ErrorMessage } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomCkEditor from "@/components/Base/CustomCkEditor.vue";
-import { disablePlaceholder } from "ckeditor5";
+
 
 const props = defineProps({
   pageType: {
