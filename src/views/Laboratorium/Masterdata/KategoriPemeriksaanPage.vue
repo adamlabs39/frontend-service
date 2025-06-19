@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
+import { useForm, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
 import { useKategoriPemeriksaanStore } from "@/stores/datamasterLaboratorium/kategoriPemeriksaan";
 import * as XLSX from "xlsx-js-style";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -13,21 +16,65 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import DialogDelete from "@/views/Laboratorium/Layout/DialogDelete.vue";
+import { error } from "console";
 
 const storeUtils = utilsStore();
 const kategoriPemeriksaanPayload = ref<any[]>([]);
 const addKategoriDialog = ref(false);
-const status = ref(true);
 const kategoriPemeriksaanStore = useKategoriPemeriksaanStore();
-const kodeKategoriPemeriksaan = ref("");
-const namaKategoriPemeriksaan = ref("");
-const noUrut = ref<number>();
 const kategoriPemeriksaanProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
 const searchQuery = ref<string>("");
+
+const openDialogData = () => {
+  resetForm();
+  addKategoriDialog.value = true;
+};
+
+const isEditMode = computed(() => editKategoriDialog.value);
+
+const schema = toTypedSchema(
+  yup.object({
+    code: yup
+      .string()
+      .required("Kode harus diisi")
+      .test("is-unique-code", "Kode sudah digunakan", (value) => {
+        if (!value) return true;
+        const duplicate = kategoriPemeriksaanPayload.value.find(
+          (item) =>
+            item.code === value &&
+            (!isEditMode.value || item.uuid !== selectedKategori.value?.uuid)
+        );
+        return !duplicate;
+      }),
+    name: yup.string().required("Nama harus diisi"),
+    noUrut: yup
+      .number()
+      .typeError("No Urut harus angka")
+      .required("No Urut harus diisi")
+      .test("is-unique-nourut", "No Urut sudah digunakan", (value) => {
+        if (value === undefined || value === null) return true;
+        const duplicate = kategoriPemeriksaanPayload.value.find(
+          (item) =>
+            item.noUrut === value &&
+            (!isEditMode.value || item.uuid !== selectedKategori.value?.uuid)
+        );
+        return !duplicate;
+      }),
+    status: yup.boolean().default(true),
+  })
+);
+
+const { handleSubmit, defineField, resetForm, errors } = useForm({
+  validationSchema: schema,
+});
+const [kodeKategoriPemeriksaan] = defineField("code");
+const [namaKategoriPemeriksaan] = defineField("name");
+const [noUrut] = defineField("noUrut");
+const [status] = defineField("status");
 
 // Fetch Data Kategori Pemeriksaan
 const fetchKategoriPemeriksaan = async () => {
@@ -48,6 +95,7 @@ const fetchKategoriPemeriksaan = async () => {
       kategoriPemeriksaanPayload.value = [];
     }
     console.log("Data Kategori Pemeriksaan", kategoriPemeriksaanPayload.value);
+    resetForm();
   } catch (error) {
     console.error("Failed to fetch data", error);
     kategoriPemeriksaanPayload.value = [];
@@ -56,31 +104,28 @@ const fetchKategoriPemeriksaan = async () => {
   }
 };
 
-// Add Data Kategori Pemeriksaan
-const submitKategoriPemeriksaan = async () => {
+const onSubmit = handleSubmit(async (values) => {
   storeUtils.setLoading(true);
   try {
-    const payload = {
-      code: kodeKategoriPemeriksaan.value,
-      name: namaKategoriPemeriksaan.value,
-      noUrut: noUrut.value,
-      status: status.value,
-    };
-    const response = await kategoriPemeriksaanStore.postApi(payload);
-
-    if (response) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      searchQuery.value = "";
-      addKategoriDialog.value = false;
-      fetchKategoriPemeriksaan();
-      resetForm();
+    if (isEditMode.value && selectedKategori.value?.uuid) {
+      await kategoriPemeriksaanStore.putApi(
+        selectedKategori.value.uuid,
+        values
+      );
+    } else {
+      await kategoriPemeriksaanStore.postApi(values);
     }
+
+    editKategoriDialog.value = false;
+    addKategoriDialog.value = false;
+    await fetchKategoriPemeriksaan();
+    resetForm();
   } catch (error) {
-    console.error("Error submitting data", error);
+    console.error("Error submit data", error);
   } finally {
     storeUtils.setLoading(false);
   }
-};
+});
 
 // Edit Data
 const editKategoriDialog = ref(false);
@@ -93,26 +138,6 @@ const openEditDialog = (kategori: any) => {
   noUrut.value = kategori.noUrut;
   status.value = kategori.status;
   editKategoriDialog.value = true;
-};
-
-const updateKategoriPemeriksaan = async () => {
-  storeUtils.setLoading(true);
-  try {
-    const payload = {
-      code: kodeKategoriPemeriksaan.value,
-      name: namaKategoriPemeriksaan.value,
-      noUrut: noUrut.value,
-      status: status.value,
-    };
-    await kategoriPemeriksaanStore.putApi(selectedKategori.value.uuid, payload);
-    editKategoriDialog.value = false;
-    await fetchKategoriPemeriksaan();
-    resetForm();
-  } catch (error) {
-    console.error("Error updating data", error);
-  } finally {
-    storeUtils.setLoading(false);
-  }
 };
 
 // Delete Data
@@ -144,12 +169,12 @@ const confirmDelete = async (item: any) => {
 };
 
 // Reset Data
-const resetForm = () => {
-  kodeKategoriPemeriksaan.value = "";
-  namaKategoriPemeriksaan.value = "";
-  noUrut.value = 0;
-  status.value = true;
-};
+// const resetForm = () => {
+//   kodeKategoriPemeriksaan.value = "";
+//   namaKategoriPemeriksaan.value = "";
+//   noUrut.value = 0;
+//   status.value = true;
+// };
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -374,7 +399,7 @@ onMounted(async () => {
                 </div>
               </div>
               <CustomButton
-                @click="addKategoriDialog = true"
+                @click="openDialogData"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
@@ -583,7 +608,9 @@ onMounted(async () => {
               label="Kode Kategori Pemeriksaan"
               placeholder="Kode Kategori Pemeriksaan"
               class="mr-2"
+              :error="errors.code"
             />
+            <ErrorMessage name="code" class="text-xs text-red-500" />
           </div>
           <div class="mt-[20px]">
             <CustomTextfield
@@ -591,7 +618,9 @@ onMounted(async () => {
               label="Nama Kategori Pemeriksaan"
               placeholder="Nama Kategori Pemeriksaan"
               class="mr-2"
+              :error="errors.name"
             />
+            <ErrorMessage name="name" class="text-xs text-red-500" />
           </div>
           <div class="mt-[20px]">
             <CustomInputNumber
@@ -599,7 +628,9 @@ onMounted(async () => {
               label="No. Urut"
               :show-buttons="false"
               class="text-center"
+              :error="errors.noUrut"
             />
+            <ErrorMessage name="noUrut" class="text-xs text-red-500" />
           </div>
         </div>
 
@@ -627,7 +658,7 @@ onMounted(async () => {
               borderColor="border-2 border-grey-200"
               @click="resetForm"
             />
-            <CustomButton label="Simpan" @click="submitKategoriPemeriksaan" />
+            <CustomButton label="Simpan" @click="onSubmit" />
           </div>
         </div>
       </template>
@@ -651,7 +682,9 @@ onMounted(async () => {
               label="Kode Kategori Pemeriksaan"
               placeholder="Kode Kategori Pemeriksaan"
               class="mr-2"
+              :error="errors.code"
             />
+            <ErrorMessage name="code" class="text-xs text-red-500" />
           </div>
           <div class="mt-[20px]">
             <CustomTextfield
@@ -659,7 +692,9 @@ onMounted(async () => {
               label="Nama Kategori Pemeriksaan"
               placeholder="Nama Kategori Pemeriksaan"
               class="mr-2"
+              :error="errors.name"
             />
+            <ErrorMessage name="name" class="text-xs text-red-500" />
           </div>
           <div class="mt-[20px]">
             <CustomInputNumber
@@ -667,7 +702,9 @@ onMounted(async () => {
               label="No. Urut"
               :show-buttons="false"
               class="text-center"
+              :error="errors.noUrut"
             />
+            <ErrorMessage name="noUrut" class="text-xs text-red-500" />
           </div>
         </div>
 
@@ -694,7 +731,7 @@ onMounted(async () => {
               borderColor="border-2 border-grey-200"
               @click="editKategoriDialog = false"
             />
-            <CustomButton label="Simpan" @click="updateKategoriPemeriksaan" />
+            <CustomButton label="Simpan" @click="onSubmit" />
           </div>
         </div>
       </template>
