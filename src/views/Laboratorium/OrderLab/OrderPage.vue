@@ -150,7 +150,7 @@ const fetchUtils = async () => {
       console.log("List DPJP:", listDpjp.value);
     }
 
-    const responseSpesimen = await spesimenLabStore.getApi();
+    const responseSpesimen = await spesimenLabStore.getApi(1, 9999, "");
 
     if (responseSpesimen && responseSpesimen.payload) {
       listSpesimen.value = responseSpesimen.payload.data;
@@ -931,18 +931,58 @@ const totalTagihanLab = computed(() => {
                       <p
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
-                        Provinsi
+                        Agama
                         <span> </span>
                       </p>
                       <p>
-                        {{ openedPatientData.patient?.address?.provData?.name }}
+                        {{ openedPatientData.patient.religion }}
                       </p>
                       <p
                         class="mt-3 text-xs font-bold underline underline-offset-2"
                       >
-                        Kelurahahn / Desa
+                        Kecamatan
                       </p>
                       <p>
+                        {{
+                          openedPatientData.patient?.address?.districtData?.name
+                        }}
+                      </p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kode Pos
+                        <span> </span>
+                      </p>
+                      <p>
+                        {{ openedPatientData.patient?.address?.postalCode }}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p class="text-xs font-bold underline underline-offset-2">
+                        Tgl. Lahir
+                      </p>
+                      <p class="">
+                        {{
+                          formatDate(
+                            openedPatientData.patient?.birthDetail?.birthDate
+                          )
+                        }}
+                      </p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Provinsi
+                      </p>
+                      <p class="">
+                        {{ openedPatientData.patient?.address?.provData?.name }}
+                      </p>
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
+                        Kelurahahn / Desa
+                      </p>
+                      <p class="">
                         {{
                           openedPatientData.patient?.address?.villageData?.name
                         }}
@@ -951,13 +991,11 @@ const totalTagihanLab = computed(() => {
                         class="text-xs font-bold underline underline-offset-2 mt-[10px]"
                       >
                         Alamat
-                        <span> </span>
                       </p>
-                      <p>
+                      <p class="">
                         {{ openedPatientData.patient?.address?.fullAddress }}
                       </p>
                     </div>
-
                     <div>
                       <p class="text-xs font-bold underline underline-offset-2">
                         No. Handphone
@@ -989,30 +1027,6 @@ const totalTagihanLab = computed(() => {
                           <p>{{ openedPatientData.patient?.address?.rw }}</p>
                         </div>
                       </div>
-                    </div>
-                    <div>
-                      <p class="text-xs font-bold underline underline-offset-2">
-                        Agama
-                      </p>
-                      <p class="">{{ openedPatientData.patient.religion }}</p>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
-                        Kecamatan
-                      </p>
-                      <p class="">
-                        {{
-                          openedPatientData.patient?.address?.districtData?.name
-                        }}
-                      </p>
-                      <p
-                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
-                      >
-                        Kode Pos
-                      </p>
-                      <p class="">
-                        {{ openedPatientData.patient?.address?.postalCode }}
-                      </p>
                     </div>
                   </div>
                 </template>

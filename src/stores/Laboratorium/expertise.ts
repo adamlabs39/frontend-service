@@ -6,8 +6,8 @@ import {
   apiLaboratoriumDelete,
 } from "@/utils/apiHandler";
 
-export const useHasilPemeriksaanLab = defineStore({
-  id: "hasil-pemeriksaan-lab",
+export const useExpertiseLab = defineStore({
+  id: "expertise-lab",
   state: () => ({}),
   getters: {},
   actions: {
@@ -28,6 +28,9 @@ export const useHasilPemeriksaanLab = defineStore({
         `/lab/order-lab?search=${search}&payment_method=${paymentMethod}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}&status=${status}&order_status=${orderStatus}`,
         payload
       );
+    },
+    async postSelesaiExpertise(uuid = "", payload = {}) {
+      return apiLaboratoriumPost(`/lab/expertise/${uuid}`, payload);
     },
     async postApi(payload = {}) {
       return apiLaboratoriumPost("/lab/hasil-pemeriksaan", payload);

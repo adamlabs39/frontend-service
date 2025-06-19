@@ -19,7 +19,6 @@ import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const pageType = ref("");
-const patientData = ref<any>({});
 const useHasilPemeriksaanLabStore = useHasilPemeriksaanLab();
 const stores = utilsStore();
 const hasilPemeriksaanProperties = ref({
@@ -136,15 +135,15 @@ const changeSection = (label: string) => {
 const showDetail = async (event: DataTableRowClickEvent) => {
   stores.setLoading(true);
   try {
-    const responsePatient = await useHasilPemeriksaanLabStore.getDetailPasien(
-      event.data.uuid
-    );
-    if (responsePatient && responsePatient.payload) {
-      openedPatientData.value = responsePatient.payload;
-      console.log("Opened Patient Data:", openedPatientData.value.uuid);
-    } else {
-      openedPatientData.value = {};
-    }
+    const [patientResponse, tariffResponse] = await Promise.all([
+      useHasilPemeriksaanLabStore.getDetailPasien(event.data.uuid),
+      useHasilPemeriksaanLabStore.getDetailTarif(event.data.uuid),
+    ]);
+    openedPatientData.value = {
+      ...(patientResponse?.payload || {}),
+      ...(tariffResponse?.payload || {}),
+    };
+    console.log("Opened Patient Data:", openedPatientData.value);
     changeSection("Hasil Pemeriksaan");
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -362,7 +361,6 @@ onMounted(async () => {
           <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <!-- {{ slotProps.data.patient?.birthDetail }} -->
                 <span class="font-semibold">{{
                   slotProps.data.patient?.name
                 }}</span>
@@ -575,6 +573,7 @@ onMounted(async () => {
       :pageType="pageType"
       :openedPatientData="openedPatientData"
       @back="dataBreadCrumb.pop()"
+      @fetchHasil="fetchHasilPemeriksaan"
     />
   </div>
 </template>

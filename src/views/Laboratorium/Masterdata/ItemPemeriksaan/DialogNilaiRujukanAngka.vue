@@ -62,8 +62,9 @@ const batasAtasNilaiNormal = ref(0);
 const kritisBawah = ref(0);
 const kritisAtas = ref(0);
 const optionJenisKelamin = ref([
-  { label: "Laki-laki", value: "laki-laki" },
-  { label: "Perempuan", value: "perempuan" },
+  { label: "Laki-laki", value: "Male" },
+  { label: "Perempuan", value: "Female" },
+  { label: "General", value: "General" },
 ]);
 
 const operator = ref("-");
@@ -152,7 +153,7 @@ const simpanNilaiRujukan = async () => {
 // Edit Data
 const editNilaiRujukan = ref(false);
 const selectedNilaiRujukan = ref<any>(null);
-const openEditDialog = (data:any) => {
+const openEditDialog = (data: any) => {
   editNilaiRujukan.value = true;
   selectedNilaiRujukan.value = data;
   jenisKelamin.value = data.jenisKelamin;
@@ -171,7 +172,7 @@ const openEditDialog = (data:any) => {
   operator.value = data.operatorNilaiNormal?.trim() || "";
   status.value = data.status;
   console.log("data", data);
-}
+};
 const updateDataNilaiRujukan = async () => {
   UseUtilsStore.setLoading(true);
   try {
@@ -193,7 +194,6 @@ const updateDataNilaiRujukan = async () => {
       operatorNilaiNormal: operator.value,
       status: status.value,
       tampilan: tampilan.value,
-     
     };
 
     const response = await itemPemeriksaanStore.putNilaiRujukanApi(
@@ -365,7 +365,9 @@ watch(
             headerClass="bg-adameds-50"
             class=""
           >
-            <template #body="slotProps"> {{ slotProps.data.tampilan }}</template>
+            <template #body="slotProps">
+              {{ slotProps.data.tampilan }}</template
+            >
           </Column>
 
           <Column
@@ -414,7 +416,7 @@ watch(
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="openEditDialog (slotProps.data)"
+                  @click="openEditDialog(slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>

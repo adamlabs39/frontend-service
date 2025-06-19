@@ -239,28 +239,6 @@ const setValues = (values: any) => {
   status.value = values.status !== undefined ? values.status : true;
 };
 
-// watch(
-//   () => props.isDialogVisible,
-//   (newValue) => {
-//     if (newValue) {
-//       resetDialogMode();
-//       if (props.method !== "add" && props.payload) {
-//         console.log("props.payload", props.payload);
-//         const selectedItemPemeriksaanUuid =
-//           props.payload.itemPemeriksaan?.map((item: any) => item.uuid) || [];
-
-//         setValues({
-//           ...props.payload,
-//           itemPemeriksaans: selectedItemPemeriksaanUuid,
-//         });
-//       }
-//     } else {
-//       resetForm();
-//       resetDialogMode();
-//     }
-//   }
-// );
-
 watch(
   () => props.isDialogVisible,
   (newValue) => {

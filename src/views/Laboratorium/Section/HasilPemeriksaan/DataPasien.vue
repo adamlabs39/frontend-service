@@ -54,13 +54,6 @@ const formatDate = (dateString: string) => {
   return `${day} ${month} ${year}`;
 };
 
-const submitForm = () => {
-  console.log("Submited Patient Identity Form");
-};
-
-defineExpose({
-  submitForm,
-});
 </script>
 
 <template>

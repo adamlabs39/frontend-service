@@ -8,6 +8,9 @@ import AsesmenMedis from "../Section/Expertise/AsesmenMedis.vue";
 import ListOrder from "../Section/Expertise/ListOrder.vue";
 import Catatan from "../Section/Expertise/Catatan.vue";
 import CatatanExpertise from "../Section/Expertise/CatatanExpertise.vue";
+import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import { useExpertiseLab } from "@/stores/Laboratorium/expertise";
+import { utilsStore } from "@/stores/utils";
 
 const props = defineProps({
   pageType: {
@@ -26,13 +29,56 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
-  patientData: {
+  openedPatientData: {
     type: Object as PropType<any>,
     required: true,
   },
 });
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const storeUtils = utilsStore();
+const expertiseLabStore = useExpertiseLab();
+const listCatatanForm = ref<InstanceType<typeof CatatanExpertise> | null>(null);
+
+const isAllStatusPeriksaTrue = computed(() => {
+  if (!props.openedPatientData?.hasilPemeriksaan?.length) return false;
+  return props.openedPatientData.hasilPemeriksaan.every(
+    (item: any) => item.statusPeriksa === true
+  );
+});
+
+const postSimpanHasil = async () => {
+  storeUtils.setLoading(true);
+  try {
+    let tempCatatanData: any;
+    tempCatatanData = listCatatanForm.value
+      ? await listCatatanForm.value.onSubmit()
+      : null;
+    let payload: any = {
+      ...tempCatatanData,
+    };
+
+    console.log("RESULT:", payload);
+    const response = await expertiseLabStore.postSelesaiExpertise(
+      props.openedPatientData.uuid,
+      payload
+    );
+    if (response && response.data) {
+      emit("back");
+      emit("fetchExpertiseLab");
+    }
+  } catch (error) {
+    console.error("Save error:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const emit = defineEmits([
+  "back",
+  "goToDetail",
+  "goToEdit",
+  "fetchExpertiseLab",
+]);
 </script>
 
 <template>
@@ -68,14 +114,14 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         class="mt-2"
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <AsesmenMedis
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
 
@@ -83,21 +129,22 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <Catatan
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
       <CatatanExpertise
+        ref="listCatatanForm"
         class=""
         :dataBreadCrumb="dataBreadCrumb"
         :pageType="pageType"
-        :patientData="patientData"
+        :openedPatientData="openedPatientData"
         @back="dataBreadCrumb.pop()"
       />
     </div>
@@ -120,10 +167,11 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
             @click=""
           /> -->
           <CustomButton
+            :disabled="!isAllStatusPeriksaTrue"
             label="Simpan Expertise"
             class=""
             backgroundColor="bg-adameds-300"
-            disabled
+            @click="postSimpanHasil"
           />
         </div>
       </template>

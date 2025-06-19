@@ -26,9 +26,9 @@ export const useSpesimenLabStore = defineStore({
     //   );
     // },
 
-     async getApi(page: number = 1, limit: number = 10, payload = {}) {
+     async getApi(page: number = 1, limit: number = 10, name: string , payload = {}) {
           return apiLaboratoriumGet(
-            `/lab/spesimen?page=${page}&limit=${limit}`,
+            `/lab/spesimen?page=${page}&limit=${limit}&name=${name}`,
             payload
           );
         },
