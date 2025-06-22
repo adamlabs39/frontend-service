@@ -16,7 +16,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import DialogDelete from "@/views/Laboratorium/Layout/DialogDelete.vue";
-import { error } from "console";
+import NoData from "@/components/section/NoData.vue";
 
 const storeUtils = utilsStore();
 const kategoriPemeriksaanPayload = ref<any[]>([]);
@@ -167,6 +167,11 @@ const confirmDelete = async (item: any) => {
     }
   }
 };
+
+// Check if there is data to display
+const hasData = computed(() => {
+  return kategoriPemeriksaanPayload.value.length > 0;
+});
 
 // Reset Data
 // const resetForm = () => {
@@ -434,6 +439,7 @@ onMounted(async () => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="kategoriPemeriksaanPayload"
           tableStyle="min-width: 50rem"
@@ -448,7 +454,12 @@ onMounted(async () => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+                {{
+                  (kategoriPemeriksaanProperties.page - 1) *
+                    kategoriPemeriksaanProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>

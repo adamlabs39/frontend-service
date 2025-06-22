@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useSpesimenLabStore } from "@/stores/datamasterLaboratorium/spesimenLab";
 import * as XLSX from "xlsx-js-style";
@@ -11,6 +11,7 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import DialogDelete from "../../Layout/DialogDelete.vue";
 import DialogSpesimen from "./DialogSpesimen.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const spesimenStore = useSpesimenLabStore();
 const storeUtils = utilsStore();
@@ -117,6 +118,8 @@ const confirmDelete = async (item: any) => {
     }
   }
 };
+
+const hasData = computed(() => spesimenPayload.value.length > 0);
 
 // Reset Data
 const resetForm = () => {
@@ -378,6 +381,7 @@ onMounted(async () => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData"/>
         <DataTable
           :value="spesimenPayload"
           tableStyle="min-width: 50rem"
