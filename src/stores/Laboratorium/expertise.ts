@@ -68,6 +68,9 @@ export const useExpertiseLab = defineStore({
         payload
       );
     },
+    async putBatalExpertise(uuid = "", payload = {}) {
+      return apiLaboratoriumPut(`/lab/batal-expertise/${uuid}`, payload);
+    },
     async getDetailTarif(uuid = "", payload = {}) {
       return apiLaboratoriumGet(`/lab/hasil-pemeriksaan/${uuid}`, payload);
     },

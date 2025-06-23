@@ -53,6 +53,23 @@ const onSubmit = handleSubmit((values) => {
   return values;
 });
 
+const hasCatatanExpertise = computed(() => {
+  return props.openedPatientData?.catatanExpertise !== null;
+});
+
+const plainCatatanExpertise = computed(() => {
+  const html = props.openedPatientData?.catatanExpertise || "";
+  const tempEl = document.createElement("div");
+
+  const cleanHtml = html.replace(/<br\s*\/?>/gi, "\n");
+  tempEl.innerHTML = cleanHtml;
+
+  return (tempEl.textContent || "")
+    .replace(/\n{2,}/g, "\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+});
+
 defineExpose({
   onSubmit,
 });
@@ -69,13 +86,16 @@ defineExpose({
     </template>
     <template #content>
       <div class="pt-5">
-        <div>
+        <div v-if="!hasCatatanExpertise">
           <CustomCkEditor
             :model-value="openedPatientData.catatanExpertise"
             v-bind="catatanExpertiseAttrs"
             :show-label="false"
             @update:model-value="setFieldValue('catatanExpertise', $event)"
           />
+        </div>
+        <div v-else>
+          {{ plainCatatanExpertise }}
         </div>
       </div>
     </template>

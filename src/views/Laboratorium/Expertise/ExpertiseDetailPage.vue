@@ -11,6 +11,7 @@ import CatatanExpertise from "../Section/Expertise/CatatanExpertise.vue";
 import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
 import { useExpertiseLab } from "@/stores/Laboratorium/expertise";
 import { utilsStore } from "@/stores/utils";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
 
 const props = defineProps({
   pageType: {
@@ -38,12 +39,17 @@ const props = defineProps({
 const storeUtils = utilsStore();
 const expertiseLabStore = useExpertiseLab();
 const listCatatanForm = ref<InstanceType<typeof CatatanExpertise> | null>(null);
+const batalDialog = ref(false);
 
 const isAllStatusPeriksaTrue = computed(() => {
   if (!props.openedPatientData?.hasilPemeriksaan?.length) return false;
   return props.openedPatientData.hasilPemeriksaan.every(
     (item: any) => item.statusPeriksa === true
   );
+});
+
+const hasCatatanExpertise = computed(() => {
+  return props.openedPatientData?.catatanExpertise !== null;
 });
 
 const postSimpanHasil = async () => {
@@ -68,6 +74,26 @@ const postSimpanHasil = async () => {
     }
   } catch (error) {
     console.error("Save error:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const batalExpertise = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const patientData = { ...props.openedPatientData };
+    const response = await expertiseLabStore.putBatalExpertise(
+      props.openedPatientData.uuid,
+      patientData
+    );
+    if (response && response.data) {
+      batalDialog.value = false;
+      emit("back");
+      emit("fetchExpertiseLab");
+    }
+  } catch (error) {
+    console.error("Batal error:", error);
   } finally {
     storeUtils.setLoading(false);
   }
@@ -159,22 +185,62 @@ const emit = defineEmits([
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
-          <!-- <CustomButton
-            label="Simpan Hasil"
-            outlined
-            borderColor="border-adameds-300"
-            textColor="text-adameds-300"
-            @click=""
-          /> -->
-          <CustomButton
-            :disabled="!isAllStatusPeriksaTrue"
-            label="Simpan Expertise"
-            class=""
-            backgroundColor="bg-adameds-300"
-            @click="postSimpanHasil"
-          />
+          <div>
+            <CustomButton
+              v-if="!hasCatatanExpertise"
+              :disabled="!isAllStatusPeriksaTrue"
+              label="Simpan Expertise"
+              class=""
+              backgroundColor="bg-adameds-300"
+              @click="postSimpanHasil"
+            />
+            <CustomButton
+              v-if="hasCatatanExpertise"
+              background-color="bg-danger-300"
+              @click="batalDialog = true"
+              class=""
+              label="Batal Expertise"
+            />
+          </div>
         </div>
       </template>
     </Card>
+    <CustomDialog
+      v-model:visible="batalDialog"
+      width="550px"
+      headerBg="bg-danger-300"
+    >
+      <template #header>Batal Expertise</template>
+      <template #body>
+        <div class="grid grid-cols-1">
+          <div class="mt-[10px]">
+            <p class="text-sm italic text-danger-300">
+              * Apakah Anda yakin ingin membatalkan
+              <span class="font-bold">Expertise</span> ini?
+            </p>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton
+            @click="batalDialog = false"
+            label="Batal"
+            outlined
+            class=""
+            borderColor="border-grey-200"
+            textColor="text-grey-300"
+          />
+          <CustomButton
+            @click="batalExpertise"
+            label="Iya, Batalkan"
+            backgroundColor="bg-danger-300"
+            borderColor="border-danger-300"
+            textColor="text-white"
+            class="ml-[10px]"
+          />
+        </div>
+      </template>
+    </CustomDialog>
   </div>
 </template>

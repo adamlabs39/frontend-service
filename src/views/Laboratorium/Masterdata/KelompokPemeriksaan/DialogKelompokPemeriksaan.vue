@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
-import { useForm } from "vee-validate";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useKelompokPemeriksaanStore } from "@/stores/datamasterLaboratorium/kelompokPemeriksaan";
@@ -13,6 +12,9 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import { useForm } from "vee-validate";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
 
 const props = defineProps({
   isDialogVisible: {
@@ -34,6 +36,31 @@ const props = defineProps({
   },
 });
 
+// Schema validation
+const validationSchema = toTypedSchema(
+  yup.object({
+    code: yup.string().required("Kode Kelompok Pemeriksaan wajib diisi"),
+    name: yup.string().required("Nama Kelompok Pemeriksaan wajib diisi"),
+    kategoriPemeriksaan: yup
+      .string()
+      .required("Kategori Pemeriksaan wajib dipilih"),
+    selectedItemPemeriksaan: yup
+      .array()
+      .min(1, "Minimal 1 Item Pemeriksaan harus dipilih")
+      .required("Item Pemeriksaan wajib dipilih"),
+  })
+);
+
+// Initialize form with validation
+const {
+  handleSubmit,
+  errors,
+  resetForm: resetValidation,
+  setFieldValue,
+} = useForm({
+  validationSchema,
+});
+
 const utils = utilsStore();
 const kelompokPemeriksaanStore = useKelompokPemeriksaanStore();
 
@@ -52,6 +79,8 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
   resetForm();
 };
+
+// Refs for form fields
 const loincStore = useLoincStore();
 const loincPayload = ref(<any>[]);
 const loincOptions = ref<{ label: string; value: string }[]>([]);
@@ -72,6 +101,21 @@ const code = ref("");
 const name = ref("");
 const status = ref(true);
 const selectedItemPemeriksaan = ref<any[]>([]);
+const filteredItemPemeriksaan = ref<any[]>([]);
+
+// Sync form fields with vee-validate
+watch(code, (newVal) => setFieldValue("code", newVal));
+watch(name, (newVal) => setFieldValue("name", newVal));
+watch(kategoriPemeriksaan, (newVal) =>
+  setFieldValue("kategoriPemeriksaan", newVal)
+);
+watch(
+  selectedItemPemeriksaan,
+  (newVal) => {
+    setFieldValue("selectedItemPemeriksaan", newVal);
+  },
+  { deep: true }
+);
 
 // Fetch Data Kategori Pemeriksaan
 const fetchKategoriPemeriksaan = async () => {
@@ -80,7 +124,10 @@ const fetchKategoriPemeriksaan = async () => {
     const response = await kategoriPemeriksaanStore.getApi();
 
     if (response && response.payload) {
-      kategoriPemeriksaanPayload.value = response.payload.data;
+      kategoriPemeriksaanPayload.value = response.payload.data.filter(
+        (item: any) => item.status === true
+      );
+
       kategoriPemeriksaanOptions.value = kategoriPemeriksaanPayload.value.map(
         (item: any) => ({
           label: item.name,
@@ -139,12 +186,12 @@ const fetchIcd9 = async () => {
       }));
     } else {
       icd9Payload.value = [];
-      loincOptions.value = [];
+      icd9Options.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
     icd9Payload.value = [];
-    loincOptions.value = [];
+    icd9Options.value = [];
   } finally {
     utils.setLoading(false);
   }
@@ -164,29 +211,41 @@ const fetchSnomed = async () => {
       }));
     } else {
       snomedCTPayload.value = [];
-      loincOptions.value = [];
+      snomedCTOptions.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
     snomedCTPayload.value = [];
-    loincOptions.value = [];
+    snomedCTOptions.value = [];
   } finally {
     utils.setLoading(false);
   }
 };
 
-const onSubmit = async () => {
+// Filter item pemeriksaan berdasarkan kategori yang dipilih
+watch(kategoriPemeriksaan, (newVal) => {
+  if (newVal && props.dataItemPemeriksaan) {
+    filteredItemPemeriksaan.value = props.dataItemPemeriksaan.filter(
+      (item: any) => item.categoryPemeriksaanUuid === newVal
+    );
+  } else {
+    filteredItemPemeriksaan.value = [...props.dataItemPemeriksaan];
+  }
+});
+
+// Handle form submission with validation
+const onSubmit = handleSubmit(async (values) => {
   try {
     if (method.value === "add") {
       const payload = {
-        code: code.value,
-        name: name.value,
+        code: values.code,
+        name: values.name,
         loincUuid: loinc.value,
-        itemPemeriksaans: selectedItemPemeriksaan.value,
+        itemPemeriksaans: values.selectedItemPemeriksaan,
         icd9Uuid: icd9.value,
         snomedCTUuid: snomedCT.value,
         status: status.value,
-        categoryPemeriksaanUuid: kategoriPemeriksaan.value,
+        categoryPemeriksaanUuid: values.kategoriPemeriksaan,
       };
       await kelompokPemeriksaanStore.postApi(payload);
       emit("data-updated");
@@ -194,14 +253,14 @@ const onSubmit = async () => {
       const uuid = props.payload.uuid;
       const payload = {
         uuid: props.payload.uuid,
-        code: code.value,
-        name: name.value,
+        code: values.code,
+        name: values.name,
         loincUuid: loinc.value,
-        itemPemeriksaans: selectedItemPemeriksaan.value,
+        itemPemeriksaans: values.selectedItemPemeriksaan,
         icd9Uuid: icd9.value,
         snomedCTUuid: snomedCT.value,
         status: status.value,
-        categoryPemeriksaanUuid: kategoriPemeriksaan.value,
+        categoryPemeriksaanUuid: values.kategoriPemeriksaan,
       };
       await kelompokPemeriksaanStore.putApi(uuid, payload);
       emit("data-updated");
@@ -210,7 +269,7 @@ const onSubmit = async () => {
   } catch (error) {
     console.error("Error submitting form:", error);
   }
-};
+});
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -226,6 +285,13 @@ const resetForm = () => {
   snomedCT.value = null;
   selectedItemPemeriksaan.value = [];
   status.value = true;
+
+  // Reset form validation
+  setFieldValue("code", "");
+  setFieldValue("name", "");
+  setFieldValue("kategoriPemeriksaan", "");
+  setFieldValue("selectedItemPemeriksaan", []);
+  resetValidation();
 };
 
 const setValues = (values: any) => {
@@ -237,6 +303,19 @@ const setValues = (values: any) => {
   snomedCT.value = values.snomedCTUuid || null;
   selectedItemPemeriksaan.value = values.itemPemeriksaans || [];
   status.value = values.status !== undefined ? values.status : true;
+
+  // Sync with form values
+  setFieldValue("code", code.value);
+  setFieldValue("name", name.value);
+  setFieldValue("kategoriPemeriksaan", kategoriPemeriksaan.value);
+  setFieldValue("selectedItemPemeriksaan", selectedItemPemeriksaan.value);
+
+  // Filter item pemeriksaan saat set values
+  if (kategoriPemeriksaan.value && props.dataItemPemeriksaan) {
+    filteredItemPemeriksaan.value = props.dataItemPemeriksaan.filter(
+      (item: any) => item.categoryPemeriksaanUuid === kategoriPemeriksaan.value
+    );
+  }
 };
 
 watch(
@@ -245,8 +324,6 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method === "edit" && props.payload) {
-        console.log("props.payload", props.payload);
-
         // Map itemPemeriksaan UUIDs
         const selectedItemPemeriksaanUuid =
           props.payload.itemPemeriksaan?.map((item: any) => item.uuid) || [];
@@ -268,6 +345,24 @@ watch(
       resetDialogMode();
     }
   }
+);
+
+// Initialize filtered items when dataItemPemeriksaan changes
+watch(
+  () => props.dataItemPemeriksaan,
+  (newVal) => {
+    if (newVal && newVal.length > 0) {
+      if (kategoriPemeriksaan.value) {
+        filteredItemPemeriksaan.value = newVal.filter(
+          (item: any) =>
+            item.categoryPemeriksaanUuid === kategoriPemeriksaan.value
+        );
+      } else {
+        filteredItemPemeriksaan.value = [...newVal];
+      }
+    }
+  },
+  { immediate: true }
 );
 
 onMounted(() => {
@@ -300,6 +395,7 @@ onMounted(() => {
             label="Kode Kelompok Pemeriksaan"
             placeholder="Kode Kelompok Pemeriksaan"
             class="mr-2"
+            :error="errors.code"
           />
         </div>
         <div class="mt-[20px] grow">
@@ -308,6 +404,7 @@ onMounted(() => {
             label="Nama Kelompok Pemeriksaan"
             placeholder="Nama Kelompok Pemeriksaan"
             class=""
+            :error="errors.name"
           />
         </div>
       </div>
@@ -320,6 +417,7 @@ onMounted(() => {
         optionLabel="label"
         optionValue="value"
         :showFilter="false"
+        :error="errors.kategoriPemeriksaan"
       />
       <CustomSelect
         v-model="snomedCT"
@@ -351,16 +449,25 @@ onMounted(() => {
         :showFilter="false"
         :options="loincOptions"
       />
-      <CustomMultiSelect
-        v-model="selectedItemPemeriksaan"
-        placeholder="Pilih Item Pemeriksaan"
-        label="Item Pemeriksaan"
-        optionLabel="name"
-        optionValue="uuid"
-        :maxSelectedLabels="4"
-        :options="dataItemPemeriksaan"
-        class="mt-5 mb-5"
-      />
+
+      <div class="mt-5 mb-5">
+        <CustomMultiSelect
+          v-model="selectedItemPemeriksaan"
+          placeholder="Pilih Item Pemeriksaan"
+          label="Item Pemeriksaan"
+          optionLabel="name"
+          optionValue="uuid"
+          :maxSelectedLabels="4"
+          :options="filteredItemPemeriksaan"
+          :class="{ 'error-field': errors.selectedItemPemeriksaan }"
+        />
+        <small
+          v-if="errors.selectedItemPemeriksaan"
+          class="text-xs text-red-500"
+        >
+          {{ errors.selectedItemPemeriksaan }}
+        </small>
+      </div>
 
       <hr class="mt-[40px] border border-slate-200" />
 
@@ -378,16 +485,7 @@ onMounted(() => {
     </template>
     <template #footer>
       <div class="w-full">
-        <!-- <hr class="-mx-5 border-grey-200" /> -->
         <div class="mt-5 flex justify-end gap-2.5">
-          <!-- <CustomButton
-            label="Reset"
-            textColor="text-grey-300"
-            backgroundColor="bg-transparent"
-            borderColor="border-2 border-grey-200"
-            @click="resetForm"
-          />
-          <CustomButton label="Simpan" @click="onSubmit" /> -->
           <CustomButton
             v-if="method === 'edit'"
             label="Batal"
