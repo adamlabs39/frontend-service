@@ -12,7 +12,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import { useForm } from "vee-validate";
+import { useForm, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { toTypedSchema } from "@vee-validate/yup";
 
@@ -48,6 +48,7 @@ const validationSchema = toTypedSchema(
       .array()
       .min(1, "Minimal 1 Item Pemeriksaan harus dipilih")
       .required("Item Pemeriksaan wajib dipilih"),
+    loinc: yup.string().nullable().required("LOINC wajib dipilih"),
   })
 );
 
@@ -121,7 +122,11 @@ watch(
 const fetchKategoriPemeriksaan = async () => {
   utils.setLoading(true);
   try {
-    const response = await kategoriPemeriksaanStore.getApi();
+    const response = await kategoriPemeriksaanStore.getApi({
+      page: 1,
+      limit: 9999,
+      name: "",
+    });
 
     if (response && response.payload) {
       kategoriPemeriksaanPayload.value = response.payload.data.filter(
@@ -223,11 +228,21 @@ const fetchSnomed = async () => {
 };
 
 // Filter item pemeriksaan berdasarkan kategori yang dipilih
-watch(kategoriPemeriksaan, (newVal) => {
+watch(kategoriPemeriksaan, (newVal, oldVal) => {
   if (newVal && props.dataItemPemeriksaan) {
     filteredItemPemeriksaan.value = props.dataItemPemeriksaan.filter(
       (item: any) => item.categoryPemeriksaanUuid === newVal
     );
+    if (oldVal !== undefined && oldVal !== newVal) {
+      const validSelectedItems = selectedItemPemeriksaan.value.filter(
+        (selectedUuid) =>
+          filteredItemPemeriksaan.value.some(
+            (item) => item.uuid === selectedUuid
+          )
+      );
+      selectedItemPemeriksaan.value = validSelectedItems;
+      setFieldValue("selectedItemPemeriksaan", validSelectedItems);
+    }
   } else {
     filteredItemPemeriksaan.value = [...props.dataItemPemeriksaan];
   }
@@ -397,6 +412,7 @@ onMounted(() => {
             class="mr-2"
             :error="errors.code"
           />
+          <ErrorMessage name="code" class="text-xs text-red-500" />
         </div>
         <div class="mt-[20px] grow">
           <CustomTextfield
@@ -406,19 +422,23 @@ onMounted(() => {
             class=""
             :error="errors.name"
           />
+          <ErrorMessage name="name" class="text-xs text-red-500" />
         </div>
       </div>
-      <CustomSelect
-        v-model="kategoriPemeriksaan"
-        :options="kategoriPemeriksaanOptions"
-        label="Kategori Pemeriksaan"
-        placeHolder="Pilih Kategori Pemeriksaan"
-        class="mt-5"
-        optionLabel="label"
-        optionValue="value"
-        :showFilter="false"
-        :error="errors.kategoriPemeriksaan"
-      />
+      <div>
+        <CustomSelect
+          v-model="kategoriPemeriksaan"
+          :options="kategoriPemeriksaanOptions"
+          label="Kategori Pemeriksaan"
+          placeHolder="Pilih Kategori Pemeriksaan"
+          class="mt-5"
+          optionLabel="label"
+          optionValue="value"
+          :showFilter="false"
+          :error="errors.kategoriPemeriksaan"
+        />
+        <ErrorMessage name="kategoriPemeriksaan" class="text-xs text-red-500" />
+      </div>
       <CustomSelect
         v-model="snomedCT"
         label="Snomed - CT"
@@ -439,16 +459,20 @@ onMounted(() => {
         :showFilter="false"
         :options="icd9Options"
       />
-      <CustomSelect
-        v-model="loinc"
-        label="LOINC"
-        placeHolder="Pilih LOINC"
-        class="mt-5"
-        optionLabel="label"
-        optionValue="value"
-        :showFilter="false"
-        :options="loincOptions"
-      />
+      <div>
+        <CustomSelect
+          v-model="loinc"
+          label="LOINC"
+          placeHolder="Pilih LOINC"
+          class="mt-5"
+          optionLabel="label"
+          optionValue="value"
+          :showFilter="false"
+          :options="loincOptions"
+          :error="errors.loinc"
+        />
+        <ErrorMessage name="loinc" class="text-xs text-red-500" />
+      </div>
 
       <div class="mt-5 mb-5">
         <CustomMultiSelect

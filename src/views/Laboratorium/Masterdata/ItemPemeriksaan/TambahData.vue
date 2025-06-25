@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, defineEmits, onMounted } from "vue";
 import { utilsStore } from "@/stores/utils";
+import { useForm, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
