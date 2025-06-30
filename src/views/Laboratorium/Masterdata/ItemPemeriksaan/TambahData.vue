@@ -288,11 +288,7 @@ onMounted(() => {
           optionValue="value"
           :options="kategoriPemeriksaanOptions"
         />
-        <CustomTextfield
-          v-model="satuan"
-          label="Satuan"
-          placeholder="coba Satuan"
-        />
+        <CustomTextfield v-model="satuan" label="Satuan" placeholder="Satuan" />
       </div>
       <div class="grid gap-6 mt-5 grid-cols-[50%,45%]">
         <CustomTextfield v-model="metode" label="Metode" placeholder="Metode" />

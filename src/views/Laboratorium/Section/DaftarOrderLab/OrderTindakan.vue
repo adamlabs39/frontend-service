@@ -149,49 +149,9 @@ const setForm = (patientData: any) => {
 
     selectedTarifs.value = JSON.parse(JSON.stringify(tempSelectedData));
     console.log("selectedTarifs after setForm:", selectedTarifs.value);
-    // const newSelectedTarifs: Record<string, boolean> = {};
-    // Object.keys(selectedTarifs.value).forEach((code) => {
-    //   newSelectedTarifs[code] = false;
-    // });
-    // patientData.orderLabPemeriksaan.forEach((item: any) => {
-    //   if (item.tarifLab) {
-    //     let found = false;
-    //     for (const category of categories.value) {
-    //       const tarif = category.tarifLab.find(
-    //         (t: any) => t.uuid === item.tarifLab.uuid
-    //       );
-    //       if (tarif) {
-    //         newSelectedTarifs[tarif.code] = true;
-    //         found = true;
-    //         break;
-    //       }
-    //     }
-    //     if (!found) {
-    //       const tarif = nonCategories.value.find(
-    //         (t: any) => t.uuid === item.tarifLab.uuid
-    //       );
-    //       if (tarif) {
-    //         newSelectedTarifs[tarif.code] = true;
-    //       }
-    //     }
-    //   }
-    // });
-    // selectedTarifs.value = newSelectedTarifs;
   }
 };
 
-// watch(
-//   () => props.initialData,
-//   async (newVal) => {
-//     if (newVal && newVal.uuid) {
-//       await fetchTarif();
-//       console.log("Setting form with initial data:", newVal);
-//       console.log("selectedTarifs before:", selectedTarifs.value);
-//       setForm(newVal);
-//     }
-//   },
-//   { immediate: true }
-// );
 const onSubmit = handleSubmit(async (values) => {
   const modifiedValues = {
     ...values,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -10,101 +10,121 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { useLaporanTat } from "@/stores/laporanLaboratorium/laporanTAT";
+import { utilsStore } from "@/stores/utils";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const reportData = ref([
-  {
-    noRM: "00-00-00",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI Anak",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-]);
-const expandedRows = ref();
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const jenisPelayanan = ref();
-const optionJenisPelayanan = ref([
-  { label: "Semua", value: "0" },
-  { label: "Rawat Jalan", value: "1" },
-  { label: "Rawat Inap", value: "2" },
-  { label: "IGD", value: "3" },
-  { label: "APS", value: "4" },
-]);
-
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
-
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+const searchQuery = ref<string>("");
+const tatPayload = ref<any[]>([]);
+const UseUtilsStore = utilsStore();
+const laporanTatStore = useLaporanTat();
+const tatProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
+const expandedRows = ref<any[]>([]);
+
+const jenisPelayanan = ref<string>("");
+const optionJenisPelayanan = ref([
+  { label: "Semua", value: "" },
+  { label: "Rawat Jalan", value: "rajal" },
+  { label: "Rawat Inap", value: "ranap" },
+  { label: "IGD", value: "igd" },
+  { label: "APS", value: "aps" },
+]);
+
+const fetchLaporanTat = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params: any = {
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+      jenisPelayanan: jenisPelayanan.value,
+      search: searchQuery.value,
+      page: tatProperties.value.page,
+      pageSize: tatProperties.value.page_size,
+    };
+    const response = await laporanTatStore.getApi(params);
+
+    if (response && response.payload) {
+      tatProperties.value.total = response.payload.pagination.total;
+      tatPayload.value = response.payload.data;
+      console.log("Kunjungan data fetched successfully", tatPayload.value);
+    } else {
+      tatPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    tatPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const hasData = computed(() => tatPayload.value && tatPayload.value.length > 0);
+
+const cloneData = (data: any) => {
+  try {
+    return JSON.parse(JSON.stringify(data));
+  } catch {
+    return {};
+  }
+};
+
+const formatDurationFromEpochMs = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  let result = "";
+  if (hours > 0) result += `${hours} jam `;
+  if (minutes > 0) result += `${minutes} menit `;
+  if (seconds > 0 || (!hours && !minutes)) result += `${seconds} detik`;
+
+  return result.trim();
+};
+
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  jenisPelayanan.value;
+  fetchLaporanTat();
+};
+
+const handlePage = (event: any) => {
+  tatProperties.value.page = event.page + 1;
+  tatProperties.value.page_size = event.rows;
+  fetchLaporanTat();
+};
+
+const resetFilters = () => {
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  searchQuery.value = "";
+  jenisPelayanan.value = "";
+  tatProperties.value.page = 1;
+  tatProperties.value.page_size = 10;
+  fetchLaporanTat();
+};
 
 onMounted(() => {
-  updatePageType(route.path);
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
+  fetchLaporanTat();
 });
 </script>
 
@@ -204,9 +224,11 @@ onMounted(() => {
 
       <template #content>
         <DataTable
-          v-if="reportData.length"
-          v-model:expandedRows="expandedRows"
-          :value="reportData"
+          :value="tatPayload"
+          :key="tatPayload.length"
+          responsiveLayout="scroll"
+          dataKey="id"
+          :expandedRows="expandedRows"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
@@ -219,7 +241,7 @@ onMounted(() => {
           />
           <!-- No -->
           <Column
-            field="no"
+            field="id"
             header="No."
             header-class="text-black bg-adameds-50"
             style="width: 40px"
@@ -238,7 +260,14 @@ onMounted(() => {
           >
             <template #body="slotProps">
               <div class="text-center">
-                <div>{{ slotProps.data.tanggal_daftar.split(" ")[0] }}</div>
+                <div>
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "date"
+                    )
+                  }}
+                </div>
               </div>
             </template>
           </Column>
@@ -246,32 +275,71 @@ onMounted(() => {
             field="noReg"
             header="No. Registrasi"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noreg }}</div>
+              </div>
+            </template>
+          </Column>
           <Column
             field="noRM"
             header="No. RM"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noRm }}</div>
+              </div>
+            </template>
+          </Column>
           <Column
             field="name"
             header="Nama Pasien"
             header-class="text-black bg-adameds-50"
-          ></Column>
+            ><template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.patient.name }}
+              </div>
+            </template>
+          </Column>
           <Column
-            field="polyclinic"
+            field="pelayanan"
             header="Jenis Pelayanan"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.pelayanan || "-" }}
+              </div>
+            </template>
+          </Column>
           <Column
             field="unitAsal"
             header="Unit Asal"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.lokasi.name || "-" }}
+              </div>
+            </template>
+          </Column>
           <Column
             field="waktuPelayanan"
             header="Waktu Pelayanan"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{
+                  slotProps.data.tat
+                    ? formatDurationFromEpochMs(slotProps.data.tat)
+                    : "-"
+                }}
+              </div>
+            </template>
+          </Column>
 
           <template #expansion="slotProps">
             <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
@@ -286,8 +354,12 @@ onMounted(() => {
                   header-class=" bg-adameds-50"
                 >
                   <template #body="slotProps">
-                    <div>
-                      {{ slotProps.data.insurance_account_name }}
+                    <div class="text-SM">
+                      {{
+                        slotProps.data.paymentMethod === 1
+                          ? "Tunai"
+                          : "Asuransi"
+                      }}
                     </div>
                   </template>
                 </Column>
@@ -297,20 +369,41 @@ onMounted(() => {
                   header-class=" bg-adameds-50"
                 >
                   <template #body="slotProps">
-                    <div></div>
+                    <div>
+                      {{
+                        slotProps.data.waktuValidasi
+                          ? epochToDate(
+                              parseInt(slotProps.data.waktuValidasi) / 1000,
+                              "time"
+                            )
+                          : "-"
+                      }}
+                    </div>
                   </template>
                 </Column>
                 <Column
                   field="jamSelesai"
                   header="Jam Selesai"
                   header-class="bg-adameds-50"
-                ></Column>
+                >
+                  <template #body="slotProps">
+                    <div>
+                      {{
+                        slotProps.data.waktuSelsai
+                          ? epochToDate(
+                              parseInt(slotProps.data.waktuSelsai) / 1000,
+                              "time"
+                            )
+                          : "-"
+                      }}
+                    </div>
+                  </template>
+                </Column>
               </DataTable>
             </div>
           </template>
         </DataTable>
-
-        <NoData v-else />
+        <NoData v-if="!hasData" />
       </template>
       <template #footer>
         <div class="flex justify-between">
@@ -322,11 +415,10 @@ onMounted(() => {
             backgroundColor="bg-adameds-300"
           />
           <CustomPaginator
-            :rows="10"
-            :totalRecords="reportData.length"
+            :rows="tatProperties.page_size"
+            :totalRecords="tatProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
