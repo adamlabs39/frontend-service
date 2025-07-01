@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { onMounted, ref, computed, watch } from "vue";
+import * as XLSX from "xlsx-js-style";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -9,200 +8,246 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { useRekapPemeriksaan } from "../../../stores/laporanLaboratorium/laporanRekapPemeriksaan";
+import { useRekapPerTanggal } from "../../../stores/laporanLaboratorium/laporanRekapPerTanggal";
+import { utilsStore } from "@/stores/utils";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
+const UseUtilsStore = utilsStore();
+const searchQuery = ref<string>("");
+const rekapPemeriksaanPayload = ref<any[]>([]);
+const rekapPemeriksaanStore = useRekapPemeriksaan();
+const rekapPerTanggalStore = useRekapPerTanggal();
+const rekapPerTanggalPayload = ref<any[]>([]);
+const selectedOrderType = ref<string>("pemeriksaan");
 
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
+const fetchRekapPemeriksaan = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params: any = {
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+      search: searchQuery.value,
+    };
+    const response = await rekapPemeriksaanStore.getApi(params);
 
-const itemsPasien = ref([
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-]);
-
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
+    if (response && response.payload) {
+      rekapPemeriksaanPayload.value = response.payload.data;
+    } else {
+      rekapPemeriksaanPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    rekapPemeriksaanPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
 
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+const fetchRekapPerTanggal = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params: any = {
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+      search: searchQuery.value,
+    };
+    const response = await rekapPerTanggalStore.getApi(params);
+
+    if (response && response.payload) {
+      rekapPerTanggalPayload.value = response.payload.data;
+    } else {
+      rekapPerTanggalPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    rekapPerTanggalPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const handleSearch = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  fetchData();
+};
+
+const resetFilters = () => {
+  searchQuery.value = "";
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  fetchData();
+};
+
+const fetchData = () => {
+  if (selectedOrderType.value === "pemeriksaan") {
+    fetchRekapPemeriksaan();
+  } else {
+    fetchRekapPerTanggal();
+  }
+};
+
+const onSelectOrderType = (label: string) => {
+  selectedOrderType.value = label;
+  fetchData();
+};
+
+const itemsPasien = computed(() => {
+  if (selectedOrderType.value === "pemeriksaan") {
+    return rekapPemeriksaanPayload.value;
+  }
+  return rekapPerTanggalPayload.value;
 });
 
+const hasData = computed(() => {
+  if (UseUtilsStore.isLoading) return true;
+  return itemsPasien.value.length > 0;
+});
+
+const downloadExcel = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    let data: any[] = [];
+    if (selectedOrderType.value === "pemeriksaan") {
+      await fetchRekapPemeriksaan();
+      data = rekapPemeriksaanPayload.value;
+    } else {
+      await fetchRekapPerTanggal();
+      data = rekapPerTanggalPayload.value;
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet([]);
+
+    // 🏷️ Judul dinamis
+    const judulText =
+      selectedOrderType.value === "pemeriksaan"
+        ? "REKAPITULASI PEMERIKSAAN"
+        : "REKAPITULASI PEMERIKSAAN PER TANGGAL";
+
+    XLSX.utils.sheet_add_aoa(ws, [[judulText]], { origin: "A1" });
+
+    // 🗓️ Periode
+    XLSX.utils.sheet_add_aoa(
+      ws,
+      [
+        [
+          `PERIODE: ${startDateFilter.value.toLocaleDateString()} S/D ${endDateFilter.value.toLocaleDateString()}`,
+        ],
+      ],
+      { origin: "A2" }
+    );
+
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, // Judul A1:D1
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }, // Periode A2:D2
+    ];
+
+    ws["A1"].s = {
+      font: { bold: true, sz: 14 },
+      alignment: { horizontal: "left", vertical: "center" },
+    };
+    ws["A2"].s = {
+      font: { bold: true },
+      alignment: { horizontal: "left", vertical: "center" },
+    };
+
+    // 📊 Header tabel
+    const headers =
+      selectedOrderType.value === "pemeriksaan"
+        ? ["No", "Pemeriksaan", "Total"]
+        : ["No", "Tanggal", "Pemeriksaan", "Total"];
+
+    XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A4" });
+
+    headers.forEach((_, idx) => {
+      const cellRef = XLSX.utils.encode_cell({ c: idx, r: 3 });
+      ws[cellRef].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "31869B" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } },
+        },
+      };
+    });
+
+    // 📑 Data rows
+    const rows = data.map((item, index) => {
+      if (selectedOrderType.value === "pemeriksaan") {
+        return [index + 1, item.namaPemeriksaan, item.jumlahPemeriksaan];
+      } else {
+        return [
+          index + 1,
+          item.tanggal,
+          item.namaPemeriksaan,
+          item.jumlahPemeriksaan,
+        ];
+      }
+    });
+
+    XLSX.utils.sheet_add_aoa(ws, rows, { origin: "A5" });
+
+    rows.forEach((row, rowIdx) => {
+      row.forEach((cell, colIdx) => {
+        const cellRef = XLSX.utils.encode_cell({
+          c: colIdx,
+          r: rowIdx + 4,
+        });
+
+        let alignment: any = { horizontal: "center", vertical: "center" };
+        if (selectedOrderType.value === "pemeriksaan") {
+          if (colIdx === 1) alignment.horizontal = "left";
+          if (colIdx === 2) alignment.horizontal = "right";
+        } else {
+          if (colIdx === 2) alignment.horizontal = "left";
+          if (colIdx === 3) alignment.horizontal = "right";
+        }
+
+        ws[cellRef].s = {
+          font: { color: { rgb: "000000" } },
+          alignment,
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } },
+          },
+        };
+      });
+    });
+    // 🔑 Lebar kolom auto
+    ws["!cols"] = headers.map(() => ({ wch: 20 }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rekapitulasi");
+    XLSX.writeFile(wb, "Rekapitulasi_Jumlah_Pemeriksaan.xlsx");
+  } catch (error) {
+    console.error("Download Excel gagal:", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 onMounted(() => {
-  updatePageType(route.path);
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
+  fetchData();
 });
 </script>
 
@@ -218,7 +263,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchData"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
@@ -243,6 +292,7 @@ onMounted(() => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / No. RM / No. Reg"
@@ -263,6 +313,7 @@ onMounted(() => {
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
+                @click="handleSearch"
               />
               <CustomButton
                 label="Reset"
@@ -270,9 +321,47 @@ onMounted(() => {
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="mt-auto"
+                @click="resetFilters"
               />
             </div>
-            
+            <div class="flex mt-[10px]">
+              <CustomButton
+                @click="onSelectOrderType('pemeriksaan')"
+                label="PEMERIKSAAN"
+                :outlined="selectedOrderType != 'pemeriksaan'"
+                borderColor="border-adameds-300"
+                :textColor="
+                  selectedOrderType != 'pemeriksaan'
+                    ? 'text-adameds-300'
+                    : 'text-white'
+                "
+                :backgroundColor="
+                  selectedOrderType != 'pemeriksaan'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
+                class="mt-auto mr-[5px] font-semibold"
+                full
+              />
+              <CustomButton
+                @click="onSelectOrderType('Tanggal')"
+                label="PEMERIKSAAN & TANGGAL"
+                :outlined="selectedOrderType != 'Tanggal'"
+                borderColor="border-adameds-300"
+                :textColor="
+                  selectedOrderType != 'Tanggal'
+                    ? 'text-adameds-300'
+                    : 'text-white'
+                "
+                :backgroundColor="
+                  selectedOrderType != 'Tanggal'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
+                class="mt-auto ml-[5px] font-semibold"
+                full
+              />
+            </div>
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -292,7 +381,7 @@ onMounted(() => {
       </template>
       <template #content>
         <DataTable
-          v-if="itemsPasien.length"
+          v-if="hasData"
           :value="itemsPasien"
           scrollable
           scrollHeight="flex"
@@ -309,6 +398,7 @@ onMounted(() => {
             </template>
           </Column>
           <Column
+            v-if="selectedOrderType === 'Tanggal'"
             field="tanggal"
             header="Tanggal"
             header-class="text-black bg-adameds-50"
@@ -317,7 +407,7 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-center">
                 <div class="text-left text-SM">
-                  {{ slotProps.data.tanggal_jadwal.split(" ")[0] }}
+                  {{ slotProps.data.tanggal }}
                 </div>
               </div>
             </template>
@@ -328,12 +418,12 @@ onMounted(() => {
             headerClass="bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class="text-SM"></div>
+              <div class="text-SM">{{ slotProps.data.namaPemeriksaan }}</div>
             </template>
           </Column>
           <Column field="total" header="Total" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM"></div>
+              <div class="text-SM">{{ slotProps.data.jumlahPemeriksaan }}</div>
             </template>
           </Column>
         </DataTable>
@@ -342,18 +432,11 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between">
           <CustomButton
-            @click="() => {}"
+            @click="downloadExcel"
             icon="PhPrinter"
             label="Cetak"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
-          />
-          <CustomPaginator
-            :rows="10"
-            :totalRecords="100"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
           />
         </div>
       </template>

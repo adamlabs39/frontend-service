@@ -92,24 +92,6 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
-// const schema = computed(() =>
-//   toTypedSchema(
-//     yup
-//       .object({
-//         paymentMethod: yup.string().default("TUNAI"),
-//         pasienMaternitas: yup.boolean().default(false),
-//         keluhanUtama: yup.string().default(""),
-//         catatan: yup.string().default(""),
-//         penjaminUuid: yup.string().required("Nama Penjamin harus dipilih"),
-//         dokterPengirimUuid: yup.string().required("Dokter harus dipilih"),
-//         lokasiUuid: yup.string().required("Unit Asal harus dipilih"),
-//         accountNumber: yup.string().default(""),
-//         classEntitle: yup.string().default(""),
-//       })
-//       .noUnknown()
-//   )
-// );
-
 const schema = computed(() =>
   toTypedSchema(
     yup

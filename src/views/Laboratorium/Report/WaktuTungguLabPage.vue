@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
-import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import * as XLSX from "xlsx-js-style";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -117,6 +116,171 @@ const resetFilters = () => {
   fetchLaporanTat();
 };
 
+const downloadExcel = () => {
+  const wb = XLSX.utils.book_new();
+
+  // === Judul & Metadata ===
+  const cetakTanggal = epochToDate(Date.now() / 1000, "date"); // adjust format if needed
+  const cetakWaktu = new Date().toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dicetakOleh = `DICETAK OLEH: IKHWAN, ${cetakTanggal} PUKUL ${cetakWaktu}`;
+
+  const title = [
+    ["RSUD MERAH PUTIH", "", "", "", "", "", dicetakOleh], // A1:G1
+    ["Alamat: Jl. Contoh Alamat No.123"], // A2:F2
+    [],
+    [],
+    ["Laporan Waktu Tunggu Pelayanan Laboratorium"], // A5:K5
+    [
+      `Periode: ${epochToDate(
+        dateToEpoch(startDateFilter.value),
+        "date"
+      )} - ${epochToDate(dateToEpoch(endDateFilter.value), "date")}`,
+    ],
+  ];
+
+  const header = [
+    [
+      "No",
+      "Tanggal",
+      "No Registrasi",
+      "No RM",
+      "Nama Pasien",
+      "Pelayanan",
+      "Unit Asal",
+      "Metode Pembayaran",
+      "Jam Validasi",
+      "Jam Selesai",
+      "Waktu Pelayanan",
+    ],
+  ];
+
+  const dataRows = tatPayload.value.map((item, index) => {
+    return [
+      index + 1,
+      epochToDate(parseInt(item.tglOrder) / 1000, "date"),
+      item.noreg || "-",
+      item.noRm || "-",
+      item.patient?.name || "-",
+      item.pelayanan || "-",
+      item.lokasi?.name || "-",
+      item.paymentMethod === 1 ? "Tunai" : "Asuransi",
+      item.waktuValidasi
+        ? epochToDate(parseInt(item.waktuValidasi) / 1000, "time")
+        : "-",
+      item.waktuSelsai
+        ? epochToDate(parseInt(item.waktuSelsai) / 1000, "time")
+        : "-",
+      item.tat ? formatDurationFromEpochMs(item.tat) : "-",
+    ];
+  });
+
+  const fullData = [...title, [], ...header, ...dataRows];
+  const ws = XLSX.utils.aoa_to_sheet(fullData);
+
+  // === Merge Cells ===
+  ws["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // A1:F1 Judul RS
+    { s: { r: 0, c: 6 }, e: { r: 0, c: 10 } }, // G1:K1 Dicetak Oleh
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }, // A2:F2 Alamat
+    { s: { r: 4, c: 0 }, e: { r: 4, c: 10 } }, // A5:K5 Judul Laporan
+    { s: { r: 5, c: 0 }, e: { r: 5, c: 10 } }, // A6:K6 Periode
+  ];
+
+  // === Styling ===
+  const range = XLSX.utils.decode_range(ws["!ref"] || "");
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[cell_address]) continue;
+
+      // RSUD MERAH PUTIH
+      if (R === 0 && C <= 5) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 26, bold: true },
+          alignment: { horizontal: "left", vertical: "center" },
+        };
+      }
+      // Dicetak Oleh
+      else if (R === 0 && C >= 6) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 11 },
+          alignment: { horizontal: "right", vertical: "center" },
+        };
+      }
+      // Alamat
+      else if (R === 1) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 12 },
+          alignment: { horizontal: "left", vertical: "center" },
+        };
+      }
+      // Judul Laporan
+      else if (R === 4) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 20, bold: true },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+      // Periode
+      else if (R === 5) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 13, bold: true },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+      // Header Tabel
+      else if (R === 7) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 14, bold: true },
+          alignment: { horizontal: "center", vertical: "center" },
+          fill: { fgColor: { rgb: "CCCCCC" } },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } },
+          },
+        };
+      }
+      // Data Baris
+      else if (R > 7) {
+        ws[cell_address].s = {
+          font: { name: "Calibri", sz: 14 },
+          alignment: { horizontal: "center", vertical: "center" },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } },
+          },
+        };
+      }
+    }
+  }
+
+  // Lebar kolom sama seperti sebelumnya...
+  ws["!cols"] = [
+    { wch: 7 },
+    { wch: 14 },
+    { wch: 17 },
+    { wch: 12 },
+    { wch: 22 },
+    { wch: 16 },
+    { wch: 20 },
+    { wch: 20 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 18 },
+  ];
+
+  const fileName = `Laporan_TAT_${epochToDate(Date.now() / 1000, "date")}.xlsx`;
+  XLSX.utils.book_append_sheet(wb, ws, "Laporan TAT");
+  XLSX.writeFile(wb, fileName);
+};
+
 onMounted(() => {
   let date = new Date(),
     y = date.getFullYear(),
@@ -140,7 +304,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchLaporanTat"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
@@ -175,6 +343,7 @@ onMounted(() => {
                 v-model="jenisPelayanan"
                 label="Jenis Pelayanan"
                 class="mr-5 w-[250px]"
+                place-holder="Semua"
                 optionLabel="label"
                 optionValue="value"
                 :options="optionJenisPelayanan"
@@ -191,12 +360,14 @@ onMounted(() => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
                 borderColor="border-adameds-300"
               />
               <CustomButton
+                @click="resetFilters"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -408,7 +579,7 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between">
           <CustomButton
-            @click="() => {}"
+            @click="downloadExcel"
             icon="PhPrinter"
             label="Cetak"
             class="mr-[10px]"

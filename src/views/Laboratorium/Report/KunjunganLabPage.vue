@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import * as XLSX from "xlsx-js-style";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -108,6 +108,133 @@ const resetFilters = () => {
   fetchKunjungan();
 };
 
+const downloadExcel = () => {
+  const workbook = XLSX.utils.book_new();
+
+  const title = [["LAPORAN KUNJUNGAN LABORATORIUM"]];
+  const period = [
+    [
+      `PERIODE: ${epochToDate(
+        dateToEpoch(startDateFilter.value),
+        "date"
+      )} S/D ${epochToDate(dateToEpoch(endDateFilter.value), "date")}`,
+    ],
+  ];
+
+  const header = [
+    "No",
+    "Tanggal",
+    "No Registrasi",
+    "No RM",
+    "Nama Pasien",
+    "Dokter",
+    "Petugas",
+    "Pelayanan",
+    "Unit Asal",
+    "Metode Pembayaran",
+    "Pemeriksaan",
+    "Biaya",
+  ];
+
+  const data = kunjunganPayload.value.flatMap((item, index) =>
+    item.orderLabPemeriksaan.map((pemeriksaan: any, i: number) => [
+      i === 0 ? index + 1 : "",
+      i === 0 ? epochToDate(parseInt(item.tglOrder) / 1000, "date") : "",
+      i === 0 ? item.noreg : "",
+      i === 0 ? item.noRm : "",
+      i === 0 ? item.patient?.name ?? "-" : "",
+      i === 0 ? item.dokterPengirim?.pegawai?.name ?? "-" : "",
+      i === 0 ? item.petugasOrder ?? "-" : "",
+      i === 0 ? item.pelayanan ?? "-" : "",
+      i === 0 ? item.lokasi?.name ?? "-" : "",
+      i === 0 ? (item.paymentMethod === 1 ? "Tunai" : "Asuransi") : "",
+      pemeriksaan.tarifLab?.name ?? "-",
+      pemeriksaan.tarifLab?.grandTotal ?? 0,
+    ])
+  );
+
+  const worksheetData = [...title, ...period, [], header, ...data];
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  worksheet["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } },
+  ];
+
+  const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+
+  for (let R = 0; R <= range.e.r; ++R) {
+    for (let C = 0; C <= range.e.c; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = worksheet[cellAddress];
+      if (!cell) continue;
+
+      const isTitle = R === 0;
+      const isPeriod = R === 1;
+      const isHeader = R === 3;
+      const isBody = R >= 4;
+
+      // Default style
+      cell.s = {
+        font: {
+          name: "Calibri",
+          sz: isTitle || isPeriod ? 14 : isHeader ? 12 : 11,
+          bold: isTitle || isPeriod || isHeader,
+        },
+        alignment: {
+          vertical: "center",
+          horizontal:
+            isTitle || isPeriod
+              ? "left"
+              : isHeader
+              ? "center"
+              : C === 11
+              ? "right"
+              : "left",
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "5687F5" } },
+          bottom: { style: "thin", color: { rgb: "5687F5" } },
+          left: { style: "thin", color: { rgb: "5687F5" } },
+          right: { style: "thin", color: { rgb: "5687F5" } },
+        },
+      };
+
+      // Background untuk header
+      if (isHeader) {
+        cell.s.fill = {
+          fgColor: { rgb: "CCCCCC" },
+          patternType: "solid",
+        };
+      }
+
+      // Alignment untuk kolom Biaya
+      if (isBody && C === 11) {
+        cell.s.alignment = { horizontal: "right", vertical: "center" };
+        cell.z = "#,##0";
+      }
+    }
+  }
+
+  worksheet["!cols"] = [
+    { wch: 5 }, // No
+    { wch: 15 }, // Tanggal
+    { wch: 20 }, // No Registrasi
+    { wch: 10 }, // No RM
+    { wch: 25 }, // Nama Pasien
+    { wch: 25 }, // Dokter
+    { wch: 25 }, // Petugas
+    { wch: 15 }, // Pelayanan
+    { wch: 20 }, // Unit Asal
+    { wch: 20 }, // Metode Pembayaran
+    { wch: 30 }, // Pemeriksaan
+    { wch: 15 }, // Biaya
+  ];
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Kunjungan");
+  XLSX.writeFile(workbook, "LAPORAN KUNJUNGAN LABORATORIUM.xlsx");
+};
+
 onMounted(() => {
   let date = new Date(),
     y = date.getFullYear(),
@@ -170,6 +297,7 @@ onMounted(() => {
               <CustomSelect
                 v-model="jenisPelayanan"
                 label="Jenis Pelayanan"
+                place-holder="Semua"
                 class="mr-5 w-[250px]"
                 optionLabel="label"
                 optionValue="value"
@@ -275,7 +403,7 @@ onMounted(() => {
             header-class="text-black bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class=" text-SM">
+              <div class="text-SM">
                 <div>{{ slotProps.data.noreg }}</div>
               </div>
             </template>
@@ -286,7 +414,7 @@ onMounted(() => {
             header-class="text-black bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class=" text-SM">
+              <div class="text-SM">
                 <div>{{ slotProps.data.noRm }}</div>
               </div>
             </template>
@@ -390,7 +518,9 @@ onMounted(() => {
                         :key="index"
                         class="text-SM"
                       >
-                       <span class="mt-2">{{ item.tarifLab?.name || "-" }}</span>
+                        <span class="mt-2">{{
+                          item.tarifLab?.name || "-"
+                        }}</span>
                       </div>
                     </div>
                     <div v-else>-</div>
@@ -427,7 +557,7 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-between">
           <CustomButton
-            @click="() => {}"
+            @click="downloadExcel"
             icon="PhPrinter"
             label="Cetak"
             class="mr-[10px]"
