@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, defineEmits, onMounted } from "vue";
 import { utilsStore } from "@/stores/utils";
+import { useForm, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
@@ -285,11 +288,7 @@ onMounted(() => {
           optionValue="value"
           :options="kategoriPemeriksaanOptions"
         />
-        <CustomTextfield
-          v-model="satuan"
-          label="Satuan"
-          placeholder="coba Satuan"
-        />
+        <CustomTextfield v-model="satuan" label="Satuan" placeholder="Satuan" />
       </div>
       <div class="grid gap-6 mt-5 grid-cols-[50%,45%]">
         <CustomTextfield v-model="metode" label="Metode" placeholder="Metode" />

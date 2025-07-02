@@ -474,6 +474,23 @@ onMounted(async () => {
               </div>
             </template>
           </Column>
+          <Column field="expertise">
+            <template #header>
+              <div class="font-bold text-center">Expertise</div>
+            </template>
+            <template #body="slotProps">
+              <CustomChip
+                v-if="slotProps.data.expertise === 'true'"
+                label="Expertise"
+                borderColor="border-adameds-300"
+                bgColor="bg-male-75"
+                iconColor="text-adameds-300"
+                textColor="text-adameds-300"
+                customClass="h-5 border-none items-center justify-center"
+              />
+              <div v-else >-</div>
+            </template>
+          </Column>
         </DataTable>
         <NoData v-else />
       </template>

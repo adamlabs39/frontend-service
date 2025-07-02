@@ -21,7 +21,12 @@ import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import { useOrderLab } from "@/stores/Laboratorium/orderLab";
-import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import type { DataTableRowClickEvent } from "primevue/datatable";
@@ -101,8 +106,8 @@ const fetchOrderLab = async () => {
       page: orderLabProperties.value.page,
       limit: orderLabProperties.value.page_size,
       search: searchQuery.value,
-      startDate: dateToEpoch(startDateFilter.value),
-      endDate: dateToEpoch(endDateFilter.value),
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
     };
 
     if (selectedOrderType.value === "Order") {
@@ -193,6 +198,12 @@ onBeforeRouteLeave((to, from) => {
 });
 onMounted(() => {
   updatePageType(route.path);
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   fetchOrderLab();
   fetchUtils();
 });
