@@ -345,6 +345,13 @@ const handleEditOrder = async () => {
   }
 };
 
+const onPopupDialogClose = (isVisible: boolean) => {
+  if (!isVisible) {
+    practitionerUuid.value = null;
+    spesimen.value = [];
+  }
+};
+
 // Filter Search Data
 const searchData = () => {
   searchQuery.value;
@@ -808,7 +815,11 @@ const totalTagihanLab = computed(() => {
     />
 
     <!-- Pop Up Dialog -->
-    <CustomDialog v-model:visible="popupDialog" width="1000px">
+    <CustomDialog
+      v-model:visible="popupDialog"
+      width="1000px"
+      @update:visible="onPopupDialogClose"
+    >
       <template #header>
         <div class="flex justify-between">
           <div class="flex">

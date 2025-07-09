@@ -70,34 +70,11 @@ const optionJenisKelamin = ref([
   { label: "General", value: "General" },
 ]);
 const operator = ref("-");
-const optionOperator = ref([
-  { label: "(-) Sampai", value: "-" },
-  { label: "(<) Kurang Dari", value: "<" },
-  { label: "(≤) Kurang Dari / Sama Dengan", value: "<=" },
-  { label: "(>) Lebih Dari", value: ">" },
-  { label: "(≥) Lebih Dari / Sama Dengan", value: ">=" },
-]);
-const showBatasAtas = computed(
-  () =>
-    operator.value === "<" || operator.value === "<=" || operator.value === "-"
-);
-const showBatasBawah = computed(
-  () =>
-    operator.value === ">" || operator.value === ">=" || operator.value === "-"
-);
 const operatorKritisBawah = ref("<");
 const operatorKritisAtas = ref(">");
 const tampilan = computed(() => {
-  if (operator.value === "-") {
-    return `${batasBawahNilaiNormal.value} - ${batasAtasNilaiNormal.value}`;
-  } else if (operator.value === "<") {
-    return `< ${batasAtasNilaiNormal.value}`;
-  } else if (operator.value === "<=") {
-    return `≤ ${batasAtasNilaiNormal.value}`;
-  } else if (operator.value === ">") {
-    return `> ${batasBawahNilaiNormal.value}`;
-  } else if (operator.value === ">=") {
-    return `≥ ${batasBawahNilaiNormal.value}`;
+  if (nilaiNormalText.value && nilaiNormalText.value.length > 0 ) {
+    return nilaiNormalText.value.join(", ");
   }
   return "";
 });

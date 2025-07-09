@@ -26,10 +26,7 @@ const itemPemeriksaanProperties = ref({
   total: 0,
 });
 const itemPemeriksaanPayload = ref(<any>[]);
-const searchQuery = ref<string>("");
-const handleSearchQuery = (searchValue: string) => {
-  searchQuery.value = searchValue;
-};
+const searchQuery = ref("");
 
 // Fetch Data Item Pemeriksaan
 const fetchItemPemeriksaan = async () => {
@@ -83,45 +80,54 @@ const tambahDataDialogRef = ref();
 // Fungsi untuk membuka dialog tambah data
 const openAddDialog = () => {
   tambahDataDialogRef.value.resetForm(); // Reset form sebelum membuka dialog
+  tambahDataDialogRef.value.editMode = false;
   tambahDataDialogRef.value.visible = true; // Buka dialog
 };
 
 // Fungsi untuk membuka dialog edit data
 const editDialog = (item: any) => {
+  console.log("Data item yang akan diedit:", item);
+  tambahDataDialogRef.value.setValues({
+    id: item.uuid,
+    code: item.code,
+    name: item.name,
+    noUrut: item.noUrut,
+    categoryPemeriksaanUuid: item.categoryPemeriksaan?.uuid,
+    satuan: item.satuan,
+    metode: item.metode,
+    jenisInput: item.jenisInput,
+    loinc: item.loincUuid,
+    icd9: item.icd9Uuid,
+    snomedCT: item.snomedUuid,
+    status: item.status,
+    statusNilaiRujukan: item.statusNilaiRujukan,
+    pilihanHasilItemPemeriksaans: item.pilihanHasilItemPemeriksaan?.pilihanHasil || [],
+  });
   tambahDataDialogRef.value.editMode = true;
-  tambahDataDialogRef.value.selectedItemId = item.uuid;
-  tambahDataDialogRef.value.kategoriPemeriksaan = item.categoryPemeriksaanUuid;
-  tambahDataDialogRef.value.satuan = item.satuan;
-  tambahDataDialogRef.value.metode = item.metode;
-  tambahDataDialogRef.value.noUrut = item.noUrut;
-  tambahDataDialogRef.value.jenisInput = item.jenisInput;
-  tambahDataDialogRef.value.nilaiRujukan = item.nilaiRujukan;
-  tambahDataDialogRef.value.pilihanHasilItemPemeriksaans =
-    item.pilihanHasilItemPemeriksaans;
-  tambahDataDialogRef.value.loinc = item.loincUuid;
-  tambahDataDialogRef.value.code = item.code;
-  tambahDataDialogRef.value.name = item.name;
-  tambahDataDialogRef.value.status = item.status;
-  tambahDataDialogRef.value.statusNilaiRujukan = item.statusNilaiRujukan;
   tambahDataDialogRef.value.visible = true;
-  tambahDataDialogRef.value.icd9 = item.icd9Uuid;
-  tambahDataDialogRef.value.snomedCT = item.snomedUuid;
 };
+
 const submitData = async (payload: any) => {
   UseUtilsStore.setLoading(true);
   try {
+    const formattedPayload = {
+      ...payload,
+      categoryPemeriksaanUuid: payload.kategoriPemeriksaan,
+      loincUuid: payload.loinc,
+      icd9Uuid: payload.icd9,
+      snomedUuid: payload.snomedCT,
+      pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || []
+    };
+
     let response;
     if (payload.id) {
-      response = await itemPemeriksaanStore.putApi(payload.id, payload);
+      response = await itemPemeriksaanStore.putApi(payload.id, formattedPayload);
     } else {
-      response = await itemPemeriksaanStore.postApi(payload);
+      response = await itemPemeriksaanStore.postApi(formattedPayload);
     }
 
     if (response) {
-      // await new Promise((resolve) => setTimeout(resolve, 500));
-      searchQuery.value = "";
       await fetchItemPemeriksaan();
-      resetForm();
       tambahDataDialogRef.value.visible = false;
     }
   } catch (error) {
@@ -130,6 +136,7 @@ const submitData = async (payload: any) => {
     UseUtilsStore.setLoading(false);
   }
 };
+
 
 // Delete Data
 const isDeleteDialogVisible = ref(false);
@@ -718,18 +725,45 @@ console.log("jenis input", optionJenisInput.value);
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
                 <CustomButton
-                  v-if="slotProps.data.jenisInput === 'angka'"
+                  v-if="
+                    slotProps.data.jenisInput === 'angka' &&
+                    slotProps.data.statusNilaiRujukan
+                  "
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
                   @click="dialogNilaiRujukanAngka('detail', slotProps.data)"
                 />
                 <CustomButton
-                  v-if="slotProps.data.jenisInput !== 'angka'"
+                  v-if="
+                    slotProps.data.jenisInput === 'angka' &&
+                    !slotProps.data.statusNilaiRujukan
+                  "
+                  icon="PhListNumbers"
+                  class="h-6 w-[26px] p-0"
+                  background-color="rounded-lg bg-gray-300"
+                  disabled
+                />
+
+                <CustomButton
+                  v-if="
+                    slotProps.data.jenisInput !== 'angka' &&
+                    slotProps.data.statusNilaiRujukan
+                  "
                   icon="PhListNumbers"
                   class="h-6 w-[26px] p-0"
                   background-color="rounded-lg bg-adameds-300"
                   @click="dialogNilaiRujukanText('detail', slotProps.data)"
+                />
+                <CustomButton
+                  v-if="
+                    slotProps.data.jenisInput !== 'angka' &&
+                    !slotProps.data.statusNilaiRujukan
+                  "
+                  icon="PhListNumbers"
+                  class="h-6 w-[26px] p-0"
+                  background-color="rounded-lg bg-gray-300"
+                  disabled
                 />
                 <CustomButton
                   label=""
