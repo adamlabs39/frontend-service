@@ -474,11 +474,11 @@ onMounted(async () => {
               </div>
             </template>
           </Column>
-          <Column field="expertise">
-            <template #header>
-              <div class="font-bold text-center">Expertise</div>
-            </template>
-            <template #body="slotProps">
+          <Column field="expertise"
+            header="Expertise"
+            headerClass="bg-adameds-50"
+          >
+           <template #body="slotProps">
               <CustomChip
                 v-if="slotProps.data.expertise === 'true'"
                 label="Expertise"

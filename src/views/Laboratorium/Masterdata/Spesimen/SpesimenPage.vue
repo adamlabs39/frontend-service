@@ -60,11 +60,12 @@ const openAddDialog = () => {
 
 // Fungsi untuk membuka dialog edit data
 const editDialog = (item: any) => {
-  spesimenDialogRef.value.editMode = true;
-  spesimenDialogRef.value.selectedSpesimenId = item.uuid;
-  spesimenDialogRef.value.kodeSpesimen = item.code;
-  spesimenDialogRef.value.namaSpesimen = item.name;
-  spesimenDialogRef.value.status = item.status;
+  spesimenDialogRef.value.fillForm({
+    code: item.code,
+    name: item.name,
+    status: item.status,
+    id: item.uuid
+  });
   spesimenDialogRef.value.visible = true;
 };
 const submitSpesimen = async (payload: any) => {
@@ -381,7 +382,7 @@ onMounted(async () => {
         </CustomAccordion>
       </template>
       <template #content>
-        <NoData v-if="!hasData"/>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="spesimenPayload"
           tableStyle="min-width: 50rem"
@@ -396,7 +397,11 @@ onMounted(async () => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+                {{
+                  (spesimenProperties.page - 1) * spesimenProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>

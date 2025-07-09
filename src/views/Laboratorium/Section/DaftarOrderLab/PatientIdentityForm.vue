@@ -403,7 +403,11 @@ defineExpose({
             :disabled="withoutIdentity || isNewBorn"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
-          />
+          >
+          <template #customOptions="{ option }">
+              {{ option.name }} ~ {{ option.noRm }}
+            </template>
+          </CustomSelect>
           <div
             class="bg-gray-400 w-[1px] h-[60px] mr-10 text-center mt-2"
           ></div>

@@ -45,10 +45,14 @@ const isOrderStatus = computed(() => {
   return props.openedPatientData?.orderStatus === 3;
 });
 
+const isDataSaved = ref(false);
 const isAllStatusPeriksaTrue = computed(() => {
-  if (!props.openedPatientData?.hasilPemeriksaan?.length) return false;
-  return props.openedPatientData.hasilPemeriksaan.every(
-    (item: any) => item.statusPeriksa === true
+  return (
+    isDataSaved.value ||
+    (props.openedPatientData?.hasilPemeriksaan?.length &&
+      props.openedPatientData.hasilPemeriksaan.every(
+        (item: any) => item.statusPeriksa === true
+      ))
   );
 });
 
@@ -72,8 +76,13 @@ const postSimpanHasil = async () => {
 
     console.log("RESULT:", payload);
     const response = await hasilPemeriksaanStore.postApi(payload as {});
+    if (response && response.data) {
+      isDataSaved.value = true;
+      emit("fetchHasil");
+    }
   } catch (error) {
     console.error("Save error:", error);
+    isDataSaved.value = false;
   } finally {
     storeUtils.setLoading(false);
   }
