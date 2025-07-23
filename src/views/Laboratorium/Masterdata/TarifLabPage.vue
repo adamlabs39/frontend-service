@@ -112,7 +112,8 @@ const confirmDelete = async (item: any) => {
     utils.setLoading(true);
     try {
       await tarifPemeriksaanStore.deleteApi(item.uuid);
-      fetchTarifPemeriksaan();
+      tarifPemeriksaanPayload.value = [];
+      await fetchTarifPemeriksaan();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
@@ -491,7 +492,7 @@ onMounted(() => {
             <div
               class="flex my-[10px] mt-5 font-semibold text-SM text-grey-300"
             >
-              <div class="w-[15%]">Filter Pembayaran</div>
+              <div class="w-[15%]">Filter Pelayanan</div>
               <div class="flex">
                 |
                 <CustomChip
