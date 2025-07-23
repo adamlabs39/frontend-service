@@ -48,7 +48,7 @@ const validationSchema = toTypedSchema(
       .array()
       .min(1, "Minimal 1 Item Pemeriksaan harus dipilih")
       .required("Item Pemeriksaan wajib dipilih"),
-    loinc: yup.string().nullable().required("LOINC wajib dipilih"),
+    loinc: yup.string().required("LOINC wajib dipilih"),
   })
 );
 
@@ -57,6 +57,7 @@ const {
   handleSubmit,
   errors,
   resetForm: resetValidation,
+  defineField,
   setFieldValue,
 } = useForm({
   validationSchema,
@@ -85,7 +86,7 @@ const closeDialog = () => {
 const loincStore = useLoincStore();
 const loincPayload = ref(<any>[]);
 const loincOptions = ref<{ label: string; value: string }[]>([]);
-const loinc = ref();
+const [loinc, loincAttrs] = defineField("loinc");
 const icd9Store = useIcd9Store();
 const icd9Payload = ref(<any>[]);
 const icd9Options = ref<{ label: string; value: string }[]>([]);
@@ -295,7 +296,7 @@ const resetForm = () => {
   code.value = "";
   name.value = "";
   kategoriPemeriksaan.value = null;
-  loinc.value = null;
+  loinc.value = "";
   icd9.value = null;
   snomedCT.value = null;
   selectedItemPemeriksaan.value = [];
@@ -310,6 +311,7 @@ const resetForm = () => {
 };
 
 const setValues = (values: any) => {
+  console.log("Setting values:", values);
   code.value = values.code || "";
   name.value = values.name || "";
   kategoriPemeriksaan.value = values.categoryPemeriksaanUuid || null;
@@ -343,6 +345,7 @@ watch(
         const selectedItemPemeriksaanUuid =
           props.payload.itemPemeriksaan?.map((item: any) => item.uuid) || [];
 
+        console.log(props.payload);
         // Set values from props.payload
         setValues({
           code: props.payload.code,
@@ -462,6 +465,7 @@ onMounted(() => {
       <div>
         <CustomSelect
           v-model="loinc"
+          v-bind="loincAttrs"
           label="LOINC"
           placeHolder="Pilih LOINC"
           class="mt-5"

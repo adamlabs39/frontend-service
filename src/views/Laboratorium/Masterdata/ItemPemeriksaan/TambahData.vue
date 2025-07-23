@@ -155,7 +155,7 @@ const fetchIcd9 = async () => {
 const fetchSnomed = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await snomedCTStore.getApi(1, 9999, "");
+    const response = await snomedCTStore.getAktifApi();
     if (response?.payload) {
       snomedCTOptions.value = response.payload.map((item: any) => ({
         label: item.name,
