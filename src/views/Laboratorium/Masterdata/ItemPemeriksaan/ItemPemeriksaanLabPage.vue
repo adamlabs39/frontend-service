@@ -101,7 +101,8 @@ const editDialog = (item: any) => {
     snomedCT: item.snomedUuid,
     status: item.status,
     statusNilaiRujukan: item.statusNilaiRujukan,
-    pilihanHasilItemPemeriksaans: item.pilihanHasilItemPemeriksaan?.pilihanHasil || [],
+    pilihanHasilItemPemeriksaans:
+      item.pilihanHasilItemPemeriksaan?.pilihanHasil || [],
   });
   tambahDataDialogRef.value.editMode = true;
   tambahDataDialogRef.value.visible = true;
@@ -116,12 +117,15 @@ const submitData = async (payload: any) => {
       loincUuid: payload.loinc,
       icd9Uuid: payload.icd9,
       snomedUuid: payload.snomedCT,
-      pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || []
+      pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || [],
     };
 
     let response;
     if (payload.id) {
-      response = await itemPemeriksaanStore.putApi(payload.id, formattedPayload);
+      response = await itemPemeriksaanStore.putApi(
+        payload.id,
+        formattedPayload
+      );
     } else {
       response = await itemPemeriksaanStore.postApi(formattedPayload);
     }
@@ -136,7 +140,6 @@ const submitData = async (payload: any) => {
     UseUtilsStore.setLoading(false);
   }
 };
-
 
 // Delete Data
 const isDeleteDialogVisible = ref(false);
@@ -605,7 +608,12 @@ console.log("jenis input", optionJenisInput.value);
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+                {{
+                  (itemPemeriksaanProperties.page - 1) *
+                    itemPemeriksaanProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
