@@ -394,7 +394,11 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+               {{
+                  (kelompokPemeriksaanProperties.page - 1) * kelompokPemeriksaanProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
