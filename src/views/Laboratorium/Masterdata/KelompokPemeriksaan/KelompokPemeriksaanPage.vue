@@ -51,7 +51,7 @@ const fetchKelompokPemeriksaan = async () => {
 
 const fetchItemPemeriksaan = async () => {
   try {
-    const response = await itemPemeriksaanStore.getApi();
+    const response = await itemPemeriksaanStore.getActive();
     if (response && response.payload) {
       itemPemeriksaanPayload.value = response.payload.data;
     } else {
@@ -135,7 +135,7 @@ const ExportExcel = async () => {
     }
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ITEM MEDIS"];
+    const title = ["DATAMASTER KELOMPOK PEMERIKSAAN"];
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
@@ -394,8 +394,9 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-               {{
-                  (kelompokPemeriksaanProperties.page - 1) * kelompokPemeriksaanProperties.page_size +
+                {{
+                  (kelompokPemeriksaanProperties.page - 1) *
+                    kelompokPemeriksaanProperties.page_size +
                   slotProps.index +
                   1
                 }}
