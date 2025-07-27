@@ -101,9 +101,9 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex items-center w-full gap-5 mr-2.5">
+      <div class="flex gap-5 items-center mr-2.5 w-full">
         <CustomButton label="" icon="PhArrowClockwise" />
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
           >
@@ -133,7 +133,7 @@ defineExpose({
             :options="itemDokter"
             optionValue="code"
             optionLabel="name"
-            class="w-1/4 mr-[10px]"
+            class="w-1/4 mr-[10px] flex-grow"
             :is-loading="false"
             prependIcon="PhMagnifyingGlass"
             label="Cari Dokter"
@@ -144,27 +144,16 @@ defineExpose({
             :options="itemPoli"
             optionValue="code"
             optionLabel="name"
-            class="w-1/4 mr-[20px]"
+            class="w-1/4 mr-[20px] flex-grow"
             :is-loading="false"
             prependIcon="PhMagnifyingGlass"
             label="Cari Poli"
             place-holder="Cari Poli"
           />
-          <CustomDatePicker
-            v-model="startDateFilter"
-            label="Tanggal"
-            class="w-[200px]"
-          />
-          <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-          <CustomDatePicker
-            v-model="endDateFilter"
-            :showLabel="false"
-            class="mt-auto w-[200px]"
-          />
           <CustomButton
             icon="PhMagnifyingGlass"
             label="Cari"
-            class="ml-5 mr-[10px] mt-auto w-[95px]"
+            class="mr-[10px] mt-auto w-[95px]"
           />
           <CustomButton
             @click="resetFilter"

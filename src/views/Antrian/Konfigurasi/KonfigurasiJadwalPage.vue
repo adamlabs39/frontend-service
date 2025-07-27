@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import HeaderFilter from "../Layout/KonfigurasiJadwalHeader.vue";
+import KonfigurasiJadwalHeader from "../Layout/KonfigurasiJadwalHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
@@ -12,7 +12,7 @@ import NoData from "@/components/section/NoData.vue";
 const pageType = ref("");
 const route = useRoute();
 
-const headerFilterRef = ref<typeof HeaderFilter>();
+const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
 };
@@ -61,7 +61,6 @@ const itemsLayar = ref([
     jumlah_jadwal: "3 Jadwal",
     spesialis: "-",
     poli: "Poli Umum",
-    status: "AKTIF",
     orders: [
       {
         no: "1",
@@ -70,6 +69,8 @@ const itemsLayar = ref([
         durasi_pasien: "20 Menit",
         kuota_non_jkn: "5 Slot",
         kuota_jkn: " 5 Slot",
+        total_kuota: "10 Slot",
+        status: "AKTIF",
       },
       {
         no: "2",
@@ -78,6 +79,8 @@ const itemsLayar = ref([
         durasi_pasien: "20 Menit",
         kuota_non_jkn: "5 Slot",
         kuota_jkn: " 5 Slot",
+        total_kuota: "10 Slot",
+        status: "AKTIF",
       },
       {
         no: "3",
@@ -86,6 +89,8 @@ const itemsLayar = ref([
         durasi_pasien: "20 Menit",
         kuota_non_jkn: "5 Slot",
         kuota_jkn: " 5 Slot",
+        total_kuota: "10 Slot",
+        status: "AKTIF",
       },
     ],
   },
@@ -95,7 +100,6 @@ const itemsLayar = ref([
     jumlah_jadwal: "2 Jadwal",
     spesialis: "Anak (Sp. A)",
     poli: "Poli Anak",
-    status: "AKTIF",
     orders: [
       {
         no: "1",
@@ -104,6 +108,8 @@ const itemsLayar = ref([
         durasi_pasien: "20 Menit",
         kuota_non_jkn: "5 Slot",
         kuota_jkn: " 5 Slot",
+        total_kuota: "10 Slot",
+        status: "AKTIF",
       },
       {
         no: "2",
@@ -112,6 +118,8 @@ const itemsLayar = ref([
         durasi_pasien: "20 Menit",
         kuota_non_jkn: "5 Slot",
         kuota_jkn: " 5 Slot",
+        total_kuota: "10 Slot",
+        status: "AKTIF",
       },
     ],
   },
@@ -167,16 +175,12 @@ function handleClose() {
 <template>
   <Card
     v-if="dataBreadCrumb.length == 0"
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
+    pt:body:class="overflow-auto pt-0 h-full"
+    pt:content:class="overflow-auto h-full"
     class=""
   >
     <template #header>
-      <HeaderFilter
-        ref="headerFilterRef"
-        :pageType="pageType"
-        @daftar="changeSection('Daftar')"
-      />
+      <konfigurasi-jadwal-header ref="headerFilterRef" :pageType="pageType" />
     </template>
     <template #content>
       <DataTable
@@ -199,7 +203,7 @@ function handleClose() {
         />
         <Column header="No." header-class="text-black bg-adameds-50">
           <template #body="slotProps">
-            <div class="flex items-center justify-center">
+            <div class="">
               {{ slotProps.index + 1 }}
             </div>
           </template>
@@ -217,50 +221,11 @@ function handleClose() {
           class="text-sm"
         ></Column>
         <Column
-          field="spesialis"
-          header="Spesialis"
-          header-class="text-black bg-adameds-50"
-          class="text-sm"
-        ></Column>
-        <Column
           field="poli"
           header="Poli"
           header-class="text-black bg-adameds-50"
           class="text-sm"
         ></Column>
-        <Column
-          field="status"
-          header="Status"
-          headerClass="bg-adameds-50 items-center justify-center"
-          class="text-sm"
-        >
-          <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
-              <CustomChip
-                :label="slotProps.data.status"
-                :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
-                "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
-                :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
-                "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
-                customClass="text-xs font-semibold h-6 flex"
-              />
-            </div>
-          </template>
-        </Column>
         <Column
           field="Action"
           header="Action"
@@ -268,7 +233,7 @@ function handleClose() {
           class="text-sm"
         >
           <template #body="slotProps">
-            <div class="flex items-center gap-2.5 justify-center">
+            <div class="flex gap-2.5 justify-center items-center">
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
@@ -295,7 +260,7 @@ function handleClose() {
                 field="no"
                 header="No."
                 header-class="text-black bg-adameds-50"
-                class="flex items-center justify-center text-sm"
+                class="flex justify-center items-center text-sm"
               ></Column>
               <Column
                 field="hari"
@@ -305,28 +270,117 @@ function handleClose() {
               ></Column>
               <Column
                 field="jam_praktek"
-                header="Jam Praktek"
                 header-class="text-black bg-adameds-50"
                 class="text-sm"
-              ></Column>
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Jam Praktek</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.jam_praktek }}
+                  </div>
+                </template>
+              </Column>
               <Column
                 field="durasi_pasien"
-                header="Durasi Per-Pasien"
                 header-class="text-black bg-adameds-50"
                 class="text-sm"
-              ></Column>
-              <Column
-                field="kuota_non_jkn"
-                header="Kuota Non-JKN"
-                header-class="text-center text-black bg-adameds-50"
-                class="text-sm"
-              ></Column>
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Durasi Per-Pasien</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.durasi_pasien }}
+                  </div>
+                </template>
+              </Column>
               <Column
                 field="kuota_jkn"
-                header="Kuota JKN"
                 header-class="text-center text-black bg-adameds-50"
                 class="text-sm"
-              ></Column>
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Kuota JKN</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.kuota_jkn }}
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="kuota_non_jkn"
+                header-class="text-center text-black bg-adameds-50"
+                class="text-sm"
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Kuota Non-JKN</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.kuota_non_jkn }}
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="total_kuota"
+                headerClass="text-center text-black bg-adameds-50 "
+                class="text-sm"
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Total Kuota</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.total_kuota }}
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="status"
+                header="Status"
+                headerClass="bg-adameds-50 flex items-center justify-center"
+                class="flex justify-center items-center text-sm"
+              >
+                <template #body="slotProps">
+                  <div class="min-w-MD">
+                    <CustomChip
+                      :label="slotProps.data.status"
+                      :textColor="
+                        slotProps.data.status === 'AKTIF'
+                          ? 'text-white'
+                          : 'text-[#80868d]'
+                      "
+                      :bgColor="
+                        slotProps.data.status === 'AKTIF'
+                          ? 'bg-adameds-300'
+                          : 'bg-white'
+                      "
+                      :borderColor="
+                        slotProps.data.status === 'AKTIF'
+                          ? 'border-none'
+                          : 'border-[#80868d]'
+                      "
+                      :icon-color="
+                        slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                      "
+                      customClass="text-xs font-semibold h-6 flex"
+                    />
+                  </div>
+                </template>
+              </Column>
             </DataTable>
           </div>
         </template>
