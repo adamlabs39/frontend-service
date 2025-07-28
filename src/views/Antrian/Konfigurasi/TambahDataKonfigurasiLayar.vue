@@ -39,6 +39,18 @@ const itemsPoli = ref([
   { name: "Poli Dalam", code: "POLI-D" },
 ]);
 
+const itemsAdmisi = ref([
+  { name: "Admisi IGD", code: "ADM-IGD" },
+  { name: "Admisi Rawat Jalan", code: "ADM-RJ" },
+  { name: "Admisi Rawat Inap", code: "ADM-RI" },
+]);
+
+const itemsFarmasi = ref([
+  { name: "Farmasi Umum", code: "FARM-UMUM" },
+  { name: "Farmasi Rawat Jalan", code: "FARM-RJ" },
+  { name: "Farmasi Rawat Inap", code: "FARM-RI" },
+]);
+
 const itemsFlash = ref([
   { name: "Flash Text 1", code: "FT-1" },
   { name: "Flash Text 2", code: "FT-2" },
@@ -185,6 +197,16 @@ function handleReset() {
                 sideLabelTrue="Aktif"
               />
             </div>
+            <CustomMultiSelect
+              label="Pilih Admisi"
+              placeholder="Pilih Admisi"
+              v-model="poliModel"
+              :options="itemsAdmisi"
+              optionValue="name"
+              optionLabel="name"
+              class="mt-4 mr-5 w-full text-black multiselect-wrap"
+              v-show="admisiStatus"
+            />
             <div class="flex gap-2.5 items-end mt-4 text-black">
               <CustomSwitch
                 v-model="poliStatus"
@@ -211,6 +233,16 @@ function handleReset() {
                 sideLabelTrue="Aktif"
               />
             </div>
+            <CustomMultiSelect
+              label="Pilih Farmasi"
+              placeholder="Pilih Farmasi"
+              v-model="poliModel"
+              :options="itemsFarmasi"
+              optionValue="name"
+              optionLabel="name"
+              class="mt-4 mr-5 w-full text-black multiselect-wrap"
+              v-show="farmasiStatus"
+            />
             <CustomMultiSelect
               label="Flash Text"
               placeholder="Flash Text"
