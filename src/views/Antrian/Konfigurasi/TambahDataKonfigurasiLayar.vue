@@ -172,10 +172,7 @@ function handleReset() {
         </div>
 
         <!-- Conditional rendering based on layarModel -->
-        <div
-          v-if="layarModel === 'L-1' || layarModel === 'L-2'"
-          class="grid grid-cols-3 gap-x-4 gap-y-6"
-        >
+        <div class="grid grid-cols-3 gap-x-4 gap-y-6">
           <div class="col-span-1">
             <div class="text-xl font-bold text-black">
               {{ layarTitle }}
@@ -243,73 +240,12 @@ function handleReset() {
               class="mt-4 mr-5 w-full text-black multiselect-wrap"
               v-show="farmasiStatus"
             />
-            <CustomMultiSelect
-              label="Flash Text"
-              placeholder="Flash Text"
-              v-model="flashModel"
-              :options="itemsFlash"
-              optionValue="name"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            />
-          </div>
-          <div class="col-span-2">
-            <div class="text-xl font-bold text-black">Preview Layar</div>
-            <hr class="mt-4" />
-          </div>
-        </div>
-
-        <div
-          v-if="
-            layarModel === 'L-3' || layarModel === 'L-4' || layarModel === 'L-5'
-          "
-          class="grid grid-cols-3 gap-x-4 gap-y-6"
-        >
-          <div class="col-span-1">
-            <div class="text-xl font-bold text-black">
-              {{ layarTitle }}
-            </div>
-            <hr class="mt-4" />
             <CustomTextfield
-              label="Teks Judul"
-              placeholder="Teks Judul"
-              optionValue="code"
-              optionLabel="name"
+              label="Youtube"
+              placeholder="URL Youtube"
               class="mt-4 mr-5 w-full text-black"
-              v-model="textFieldValue"
+              v-show="layarModel === 'L-5'"
             />
-            <CustomSelect
-              label="Lokasi Pelayanan & Panggilan 1"
-              place-holder="Pilih Lokasi Pelayanan & Panggilan 1"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            />
-            <CustomSelect
-              v-if="layarModel === 'L-3' || layarModel === 'L-4'"
-              label="Lokasi Pelayanan & Panggilan 2"
-              place-holder="Pilih Lokasi Pelayanan & Panggilan 2"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            />
-            <CustomSelect
-              v-if="layarModel === 'L-3'"
-              label="Lokasi Pelayanan & Panggilan 3"
-              place-holder="Pilih Lokasi Pelayanan & Panggilan 3"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            />
-            123
-            <!-- <CustomUpload
-              v-if="layarModel === 'L-5'"
-              label="Gambar"
-              place-holder="File JPG / PNG"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            /> -->
             <CustomMultiSelect
               label="Flash Text"
               placeholder="Flash Text"
@@ -323,27 +259,25 @@ function handleReset() {
           <div class="col-span-2">
             <div class="text-xl font-bold text-black">Preview Layar</div>
             <hr class="mt-4" />
+            <div>Halo</div>
           </div>
         </div>
 
         <hr />
-        <div
-          v-if="
+        <CustomSwitch
+          class="text-black"
+          v-model="status"
+          label="Status"
+          sideLabel="Non-Aktif"
+          sideLabelTrue="Aktif"
+          v-show="
             layarModel === 'L-1' ||
             layarModel === 'L-2' ||
             layarModel === 'L-3' ||
             layarModel === 'L-4' ||
             layarModel === 'L-5'
           "
-          class="flex gap-2.5 items-end text-black"
-        >
-          <CustomSwitch
-            v-model="status"
-            label="Status"
-            sideLabel="Non-Aktif"
-            sideLabelTrue="Aktif"
-          />
-        </div>
+        />
       </div>
     </template>
     <template #footer>
