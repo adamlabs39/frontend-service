@@ -59,15 +59,6 @@ const defaultData = [
   },
 ];
 
-// Set specific hours for each item
-defaultData[0].startDateFilter.setHours(8, 0, 0, 0); // 08:00
-defaultData[1].startDateFilter.setHours(14, 0, 0, 0); // 14:00
-defaultData[2].startDateFilter.setHours(20, 0, 0, 0); // 20:00
-// Set specific hours for each item
-defaultData[0].endDateFilter.setHours(12, 0, 0, 0); // 08:00
-defaultData[1].endDateFilter.setHours(18, 0, 0, 0); // 14:00
-defaultData[2].endDateFilter.setHours(23, 0, 0, 0); // 20:00
-
 // Initialize data with default values
 const data = ref([...defaultData]);
 
@@ -234,6 +225,7 @@ const selectedPatient = ref([]);
 </script>
 <template>
   <CustomDialog
+    :fullScreen="true"
     width="1000px"
     :visible="isDialogVisible"
     @update:visible="updateVisibility"
@@ -243,14 +235,14 @@ const selectedPatient = ref([]);
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
         <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="text-lg font-bold text-black"
-          >
-            {{ item.namaDokter }}
-          </div>
+          v-for="item in itemsKeterangan"
+          :key="item.kodeHFIS"
+          class="text-lg font-bold text-black"
+        >
+          {{ item.namaDokter }}
+        </div>
         <hr />
-        <div class="grid grid-cols-4 ml-2 text-xs gap-x-4 gap-y-0">
+        <div class="grid grid-cols-4 gap-y-0 gap-x-4 ml-2 text-xs">
           <div class="font-bold text-black underline">Poliklinik</div>
           <div class="font-bold text-black underline">Spesialis</div>
           <div class="font-bold text-black underline">Kode Antrian Poli</div>
@@ -285,8 +277,8 @@ const selectedPatient = ref([]);
           </div>
         </div>
 
-        <hr>
-        <div class="relative overflow-y-auto" style="max-height: 190px">
+        <hr />
+        <div class="overflow-y-auto relative">
           <DataTable
             v-if="itemsJadwal.length"
             v-model:selection="selectedPatient"
@@ -295,7 +287,7 @@ const selectedPatient = ref([]);
             class="text-black"
             stripedRows
             scrollable
-            :scrollHeight="'flex'"
+            scrollHeight="500px"
             :pt="{ headerRow: 'text-SM' }"
           >
             <Column field="No." headerClass="bg-adameds-50">
@@ -325,6 +317,7 @@ const selectedPatient = ref([]);
               field="jam praktek"
               header="Jam Praktek"
               headerClass="bg-adameds-50"
+              class="max-w-60"
             >
               <template #body="slotProps">
                 <div class="flex items-center space-x-2">
@@ -333,7 +326,7 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.startDateFilter"
                     label=""
-                    class="w-[90px] text-grey-400 text-xs"
+                    class="w-[120px] text-grey-400 text-xs"
                   />
                   <PhMinus class="mx-[5px] text-black" />
                   <CustomDatePicker
@@ -341,83 +334,153 @@ const selectedPatient = ref([]);
                     timeOnly
                     v-model="slotProps.data.endDateFilter"
                     label=""
-                    class="w-[90px] text-grey-400 text-sm"
+                    class="w-[120px] text-grey-400 text-sm"
                   />
                 </div>
               </template>
             </Column>
             <Column
               field="durasi per-pasien"
-              header="Durasi Per-pasien"
               headerClass="bg-adameds-50 whitespace-nowrap"
             >
-              <template #body="slotProps">
-                <CustomInputNumber
-                  placeholder="0"
-                  v-model:modelValue="slotProps.data.durasi"
-                  type="number"
-                  :showLabel="false"
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
                 >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">mnt</div>
-                  </template>
-                </CustomInputNumber>
+                  Durasi Per-pasien
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div class="flex justify-center items-center">
+                  <CustomInputNumber
+                    class="w-[120px] h-[40px]"
+                    placeholder="0"
+                    v-model:modelValue="slotProps.data.durasi"
+                    type="number"
+                    :showLabel="false"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">mnt</div>
+                    </template>
+                  </CustomInputNumber>
+                </div>
               </template>
             </Column>
-            <Column
-              field="slot jkn"
-              header="Slot JKN"
-              headerClass="bg-adameds-50"
-            >
-              <template #body="slotProps">
-                <CustomInputNumber
-                  placeholder="0"
-                  v-model:modelValue="slotProps.data.slot_jkn"
-                  type="number"
-                  :showLabel="false"
+            <Column field="slot jkn" headerClass="bg-adameds-50">
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
                 >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">Slot</div>
-                  </template>
-                </CustomInputNumber>
+                  Slot JKN
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div class="flex justify-center items-center">
+                  <CustomInputNumber
+                    class="w-[120px] h-[40px]"
+                    placeholder="0"
+                    v-model:modelValue="slotProps.data.slot_jkn"
+                    type="number"
+                    :showLabel="false"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">Slot</div>
+                    </template>
+                  </CustomInputNumber>
+                </div>
               </template>
             </Column>
 
-            <Column
-              field="slot non-jkn"
-              header="Slot Non-JKN"
-              headerClass="bg-adameds-50"
-            >
-              <template #body="slotProps">
-                <CustomInputNumber
-                  placeholder="0"
-                  v-model:modelValue="slotProps.data.slot_non_jkn"
-                  type="number"
-                  :showLabel="false"
+            <Column field="slot non-jkn" headerClass="bg-adameds-50">
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
                 >
-                  <template #appendText>
-                    <div class="flex items-center mr-2">Slot</div>
-                  </template>
-                </CustomInputNumber>
+                  Slot Non-JKN
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div class="flex justify-center items-center">
+                  <CustomInputNumber
+                    class="w-[120px] h-[40px]"
+                    placeholder="0"
+                    v-model:modelValue="slotProps.data.slot_non_jkn"
+                    type="number"
+                    :showLabel="false"
+                  >
+                    <template #appendText>
+                      <div class="flex items-center mr-2">Slot</div>
+                    </template>
+                  </CustomInputNumber>
+                </div>
               </template>
             </Column>
             <Column
               field="total_kuota"
-              header="Total Kuota"
               headerClass="bg-adameds-50 whitespace-nowrap"
             >
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Total Kuota
+                </div>
+              </template>
               <template #body="slotProps">
-                <div class="text-SM whitespace-nowrap">
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
                   {{ slotProps.data.kuota }} Pasien
+                </div>
+              </template>
+            </Column>
+            <Column field="" headerClass="bg-adameds-50 whitespace-nowrap">
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Status
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div class="flex justify-center items-center w-full">
+                  <CustomSwitch
+                    v-model="slotProps.data.status"
+                    :showLabel="false"
+                    sideLabelTrue="Aktif"
+                    sideLabel="Non - Aktif"
+                  />
+                </div>
+              </template>
+            </Column>
+            <Column
+              field="action"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Action
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div class="flex justify-center items-center">
+                  <CustomButton
+                    icon="PhTrash"
+                    textColor="text-white"
+                    backgroundColor="bg-red-500"
+                  />
                 </div>
               </template>
             </Column>
           </DataTable>
         </div>
-        <!-- <div
-          class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
+        <div
+          class="flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300"
         >
           <CustomButton
+            class=""
             icon="PhPlus"
             label="Jadwal Hari"
             borderColor="border-adameds-300"
@@ -425,23 +488,12 @@ const selectedPatient = ref([]);
             backgroundColor="bg-white"
             @click="addRow"
           />
-        </div> -->
-        <hr />
-        <div
-          class="flex items-end gap-2.5 text-black"
-          v-for="item in itemsKeterangan"
-          :key="item.kodeHFIS"
-        >
-          <!-- Bind v-model to item.status -->
-          <CustomSwitch v-model="item.status" label="Status" />
-          <!-- Show the status text based on the value of item.status -->
-          <div>{{ item.status ? "Aktif" : "Non-Aktif" }}</div>
         </div>
       </div>
     </template>
     <template #footer>
       <div class="w-full">
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             label="Reset"
             border-color="border-grey-200"
