@@ -146,7 +146,7 @@ function handleReset() {
             v-model="textFieldLayar"
             optionValue="code"
             optionLabel="name"
-            class="w-1/2 mr-5 text-black"
+            class="mr-5 w-1/2 text-black"
           />
           <CustomSelect
             label="Tipe Layar"
@@ -174,16 +174,24 @@ function handleReset() {
               placeholder="Teks Judul"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
               v-model="textFieldValue"
             />
-            <div class="flex items-end gap-2.5 text-black mt-4">
-              <CustomSwitch v-model="admisiStatus" label="Admisi" />
-              <div>{{ admisiStatus ? "Aktif" : "Non-Aktif" }}</div>
+            <div class="flex gap-2.5 items-end mt-4 text-black">
+              <CustomSwitch
+                v-model="admisiStatus"
+                label="Admisi"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
             </div>
-            <div class="flex items-end gap-2.5 text-black mt-4">
-              <CustomSwitch v-model="poliStatus" label="Poli" />
-              <div>{{ poliStatus ? "Aktif" : "Non-Aktif" }}</div>
+            <div class="flex gap-2.5 items-end mt-4 text-black">
+              <CustomSwitch
+                v-model="poliStatus"
+                label="Poli"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
             </div>
             <CustomMultiSelect
               label="Pilih Poli"
@@ -192,11 +200,16 @@ function handleReset() {
               :options="itemsPoli"
               optionValue="name"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black multiselect-wrap"
+              v-show="poliStatus"
             />
-            <div class="flex items-end gap-2.5 text-black mt-4">
-              <CustomSwitch v-model="farmasiStatus" label="Farmasi" />
-              <div>{{ farmasiStatus ? "Aktif" : "Non-Aktif" }}</div>
+            <div class="flex gap-2.5 items-end mt-4 text-black">
+              <CustomSwitch
+                v-model="farmasiStatus"
+                label="Farmasi"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
             </div>
             <CustomMultiSelect
               label="Flash Text"
@@ -205,7 +218,7 @@ function handleReset() {
               :options="itemsFlash"
               optionValue="name"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             />
           </div>
           <div class="col-span-2">
@@ -230,7 +243,7 @@ function handleReset() {
               placeholder="Teks Judul"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
               v-model="textFieldValue"
             />
             <CustomSelect
@@ -238,7 +251,7 @@ function handleReset() {
               place-holder="Pilih Lokasi Pelayanan & Panggilan 1"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             />
             <CustomSelect
               v-if="layarModel === 'L-3' || layarModel === 'L-4'"
@@ -246,7 +259,7 @@ function handleReset() {
               place-holder="Pilih Lokasi Pelayanan & Panggilan 2"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             />
             <CustomSelect
               v-if="layarModel === 'L-3'"
@@ -254,7 +267,7 @@ function handleReset() {
               place-holder="Pilih Lokasi Pelayanan & Panggilan 3"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             />
             123
             <!-- <CustomUpload
@@ -263,7 +276,7 @@ function handleReset() {
               place-holder="File JPG / PNG"
               optionValue="code"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             /> -->
             <CustomMultiSelect
               label="Flash Text"
@@ -272,7 +285,7 @@ function handleReset() {
               :options="itemsFlash"
               optionValue="name"
               optionLabel="name"
-              class="w-full mt-4 mr-5 text-black"
+              class="mt-4 mr-5 w-full text-black"
             />
           </div>
           <div class="col-span-2">
@@ -290,17 +303,21 @@ function handleReset() {
             layarModel === 'L-4' ||
             layarModel === 'L-5'
           "
-          class="flex items-end gap-2.5 text-black"
+          class="flex gap-2.5 items-end text-black"
         >
-          <CustomSwitch v-model="status" label="Status" />
-          <div>{{ status ? "Aktif" : "Non-Aktif" }}</div>
+          <CustomSwitch
+            v-model="status"
+            label="Status"
+            sideLabel="Non-Aktif"
+            sideLabelTrue="Aktif"
+          />
         </div>
       </div>
     </template>
     <template #footer>
       <div class="w-full">
         <hr class="-mx-5 border-grey-200" />
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             label="Reset"
             border-color="border-grey-200"
@@ -315,3 +332,25 @@ function handleReset() {
     </template>
   </CustomDialog>
 </template>
+
+<style scoped>
+.multiselect-wrap :deep(.p-multiselect-label-container) {
+  @apply flex-wrap content-start min-h-10 h-auto px-2 py-1;
+}
+
+.multiselect-wrap :deep(.p-multiselect-chip) {
+  @apply mb-1 mr-1;
+}
+
+.multiselect-wrap :deep(.p-multiselect) {
+  @apply h-auto min-h-10;
+}
+
+.multiselect-wrap :deep(.p-multiselect .p-multiselect-label) {
+  @apply flex flex-wrap items-start py-1 min-h-6 h-auto;
+}
+
+.multiselect-wrap :deep(.p-multiselect-token) {
+  @apply mb-1 mr-1;
+}
+</style>
