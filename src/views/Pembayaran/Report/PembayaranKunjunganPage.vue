@@ -19,10 +19,10 @@ const reportType = ref("");
 const reportData = ref([1]);
 const expandedRows = ref();
 const searchQuery = ref<string>("");
-const shiftType = ref("0");
+const shiftType = ref("1");
 
 const optionShiftItem = ref([
-  { label: "Semua", value: "0" },
+  // { label: "Semua", value: "0" },
   { label: "Pagi", value: "1" },
   { label: "Siang", value: "2" },
   { label: "Malam", value: "3" },
@@ -98,7 +98,7 @@ const searchData = () => {
 const resetData = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
-  shiftType.value = "0";
+  shiftType.value = "1";
   fetchPembayaranKunjungan();
 };
 
