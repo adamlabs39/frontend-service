@@ -125,6 +125,57 @@ const layarTitle = computed(() => {
   return selectedLayar ? selectedLayar.name : "Layar Antrian";
 });
 
+const gridItemCount = computed(() => {
+  switch (layarModel.value) {
+    case "L-1": // Layar 3 x 3 Panggilan
+      return 3;
+    case "L-2": // Layar 3 x 2 Panggilan
+      return 2;
+    case "L-3": // Layar 3 List & 3 Panggilan
+      return 3;
+    case "L-4": // Layar 2 List & 2 Panggilan
+      return 2;
+    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
+      return 1;
+    default:
+      return 3;
+  }
+});
+
+const gridAspectRatio = computed(() => {
+  switch (layarModel.value) {
+    case "L-1": // Layar 3 x 3 Panggilan
+      return "aspect-[3/1]";
+    case "L-2": // Layar 3 x 2 Panggilan (2 item dengan tinggi sama seperti 3/1)
+      return "aspect-[2/1]"; // Lebih tinggi untuk 2 baris agar total tinggi sama dengan 3 baris
+    case "L-3": // Layar 3 List & 3 Panggilan
+      return "aspect-[3/1]";
+    case "L-4": // Layar 2 List & 2 Panggilan
+      return "aspect-[4.5/1]";
+    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
+      return "aspect-[9/1]"; // Sangat lebar untuk 1 item
+    default:
+      return "aspect-[3/1]";
+  }
+});
+
+const gridRowsClass = computed(() => {
+  switch (layarModel.value) {
+    case "L-1": // Layar 3 x 3 Panggilan
+      return "grid-rows-3";
+    case "L-2": // Layar 3 x 2 Panggilan
+      return "grid-rows-2";
+    case "L-3": // Layar 3 List & 3 Panggilan
+      return "grid-rows-3";
+    case "L-4": // Layar 2 List & 2 Panggilan
+      return "grid-rows-2";
+    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
+      return "grid-rows-1";
+    default:
+      return "grid-rows-3";
+  }
+});
+
 function handleReset() {
   const currentLayarModel = layarModel.value;
 
@@ -259,7 +310,90 @@ function handleReset() {
           <div class="col-span-2">
             <div class="text-xl font-bold text-black">Preview Layar</div>
             <hr class="mt-4" />
-            <div>Halo</div>
+            <div
+              class="mt-4 w-full bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
+            >
+              <!-- Navbar Preview Layar -->
+              <div
+                class="flex gap-4 items-center font-semibold text-white rounded-lg bg-adameds-300 text-subHeading"
+              >
+                <div
+                  class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg"
+                >
+                  <img
+                    loading="lazy"
+                    src="../../../../assets/images/adameds-logo.png"
+                    class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-[50px]"
+                  />
+                  <div
+                    class="bg-adameds-300 w-[3px] h-[50px] my-auto rounded-md"
+                  ></div>
+                  <img
+                    loading="lazy"
+                    src="../../../../assets/images/adameds.png"
+                    class="self-stretch object-cover w-[106px] my-auto shrink-0"
+                  />
+                </div>
+                <div class="">Klinik Adameds</div>
+                <div class="mr-3 ml-auto font-semibold text-right">
+                  <div class="text-subHeading">09:00 AM</div>
+                  <div class="text-XS">Senin, 01 Jan 2024</div>
+                </div>
+              </div>
+              <!-- Blok Konten -->
+              <div class="px-1 my-1 space-y-1 w-full">
+                <div
+                  class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300"
+                >
+                  <div>
+                    <PhMegaphone
+                      :size="18"
+                      class="scale-x-[-1]"
+                      weight="fill"
+                    />
+                  </div>
+                  <div>Panggilan</div>
+                </div>
+                <div class="flex gap-2">
+                  <div
+                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
+                  >
+                    <div
+                      v-for="item in gridItemCount"
+                      :key="item"
+                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
+                    >
+                      test 1
+                    </div>
+                  </div>
+                  <div
+                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
+                  >
+                    <div
+                      v-for="item in gridItemCount"
+                      :key="item"
+                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
+                    >
+                      test 2
+                    </div>
+                  </div>
+                  <div
+                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
+                  >
+                    <div
+                      v-for="item in gridItemCount"
+                      :key="item"
+                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
+                    >
+                      test 3
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="py-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+                Testing
+              </div>
+            </div>
           </div>
         </div>
 
@@ -270,19 +404,11 @@ function handleReset() {
           label="Status"
           sideLabel="Non-Aktif"
           sideLabelTrue="Aktif"
-          v-show="
-            layarModel === 'L-1' ||
-            layarModel === 'L-2' ||
-            layarModel === 'L-3' ||
-            layarModel === 'L-4' ||
-            layarModel === 'L-5'
-          "
         />
       </div>
     </template>
     <template #footer>
       <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
         <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             label="Reset"

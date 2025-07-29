@@ -430,7 +430,7 @@ const selectedPatient = ref([]);
                 </div>
               </template>
               <template #body="slotProps">
-                <div class="flex justify-center items-center w-36">
+                <div class="flex justify-center items-center w-full">
                   <CustomSwitch
                     v-model="slotProps.data.status"
                     :showLabel="false"

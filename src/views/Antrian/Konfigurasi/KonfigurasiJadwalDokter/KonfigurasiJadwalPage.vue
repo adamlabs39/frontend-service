@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import KonfigurasiJadwalHeader from "../Layout/KonfigurasiJadwalHeader.vue";
+import KonfigurasiJadwalHeader from "../../Layout/KonfigurasiJadwalHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
-import AntrianFooter from "../Layout/AntrianFooter.vue";
+import AntrianFooter from "../../Layout/AntrianFooter.vue";
 import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
 

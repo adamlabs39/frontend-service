@@ -6,7 +6,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiLayar from "../Konfigurasi/TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/TambahDataKonfigurasiLayar.vue";
 
 const props = defineProps({
   title: {
@@ -87,9 +87,9 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex items-center w-full gap-5 mr-2.5">
+      <div class="flex gap-5 items-center mr-2.5 w-full">
         <CustomButton label="" icon="PhArrowClockwise" />
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
           >
@@ -119,7 +119,7 @@ defineExpose({
             :label="`Cari Layar`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
-            class="w-1/2 mr-5"
+            class="mr-5 w-1/2"
           >
           </CustomTextfield>
           <CustomSelect
