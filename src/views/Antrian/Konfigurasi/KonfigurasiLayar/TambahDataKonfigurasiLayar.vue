@@ -10,6 +10,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 // import CustomUpload from "@/components/Base/CustomUpload.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
+import GridPanggilanPreview from "./GridPanggilanPreview.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -342,53 +343,11 @@ function handleReset() {
               </div>
               <!-- Blok Konten -->
               <div class="px-1 my-1 space-y-1 w-full">
-                <div
-                  class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300"
-                >
-                  <div>
-                    <PhMegaphone
-                      :size="18"
-                      class="scale-x-[-1]"
-                      weight="fill"
-                    />
-                  </div>
-                  <div>Panggilan</div>
-                </div>
-                <div class="flex gap-2">
-                  <div
-                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
-                  >
-                    <div
-                      v-for="item in gridItemCount"
-                      :key="item"
-                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
-                    >
-                      test 1
-                    </div>
-                  </div>
-                  <div
-                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
-                  >
-                    <div
-                      v-for="item in gridItemCount"
-                      :key="item"
-                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
-                    >
-                      test 2
-                    </div>
-                  </div>
-                  <div
-                    :class="`grid ${gridRowsClass} grid-flow-col gap-2 w-full`"
-                  >
-                    <div
-                      v-for="item in gridItemCount"
-                      :key="item"
-                      :class="`bg-red-500 rounded-lg ${gridAspectRatio}`"
-                    >
-                      test 3
-                    </div>
-                  </div>
-                </div>
+                <grid-panggilan-preview
+                  :gridRowsClass="gridRowsClass"
+                  :gridAspectRatio="gridAspectRatio"
+                  :gridItemCount="gridItemCount"
+                />
               </div>
               <div class="py-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
                 Testing
