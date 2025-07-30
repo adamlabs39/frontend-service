@@ -8,6 +8,8 @@ import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
 import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
 
 const pageType = ref("");
 const route = useRoute();
@@ -17,141 +19,37 @@ const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
 };
 
-const dataBreadCrumb = ref<MenuItem[]>([]);
+const jadwalDokterStore = useJadwalDokterStore();
+const UseUtilsStore = utilsStore();
 
-const changeSection = (label: string) => {
-  if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
-  } else {
-    dataBreadCrumb.value.push({ label: label });
+const jadwalDokterPayload = ref<any[]>([]);
+const jadwalDokterProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+const fetchJadwalDokter = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApi(
+      jadwalDokterProperties.value.page,
+      jadwalDokterProperties.value.page_size
+    );
+    console.log(response);
+    if (response && response.payload) {
+      jadwalDokterPayload.value = response.payload;
+      jadwalDokterProperties.value.total = response.properties.total;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    jadwalDokterPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
   }
 };
-
-const updatePageType = (path: string) => {
-  resetFilter();
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[2] ?? "";
-};
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
-});
-onMounted(() => {
-  updatePageType(route.path);
-});
 
 const expandedRows = ref();
-
-const onRowToggle = (event: { data: any; originalEvent: Event }) => {
-  const rowData = event.data;
-  // Check if the row is already expanded, then collapse it; otherwise, expand it
-  if (expandedRows.value?.includes(rowData)) {
-    expandedRows.value = expandedRows.value.filter(
-      (row: number) => row !== rowData
-    );
-  } else {
-    expandedRows.value.push(rowData);
-  }
-};
-
-const itemsLayar = ref([
-  {
-    noJadwal: "1",
-    nama_dokter: "dr. Umum",
-    jumlah_jadwal: "3 Jadwal",
-    spesialis: "-",
-    poli: "Poli Umum",
-    orders: [
-      {
-        no: "1",
-        hari: "Senin",
-        jam_praktek: "08.00 - 12.00",
-        durasi_pasien: "20 Menit",
-        kuota_non_jkn: "5 Slot",
-        kuota_jkn: " 5 Slot",
-        total_kuota: "10 Slot",
-        status: "AKTIF",
-      },
-      {
-        no: "2",
-        hari: "Selasa",
-        jam_praktek: "08.00 - 12.00",
-        durasi_pasien: "20 Menit",
-        kuota_non_jkn: "5 Slot",
-        kuota_jkn: " 5 Slot",
-        total_kuota: "10 Slot",
-        status: "AKTIF",
-      },
-      {
-        no: "3",
-        hari: "Rabu",
-        jam_praktek: "08.00 - 12.00",
-        durasi_pasien: "20 Menit",
-        kuota_non_jkn: "5 Slot",
-        kuota_jkn: " 5 Slot",
-        total_kuota: "10 Slot",
-        status: "AKTIF",
-      },
-    ],
-  },
-  {
-    noJadwal: "2",
-    nama_dokter: "dr. Spesialis Sp. A",
-    jumlah_jadwal: "2 Jadwal",
-    spesialis: "Anak (Sp. A)",
-    poli: "Poli Anak",
-    orders: [
-      {
-        no: "1",
-        hari: "Kamis",
-        jam_praktek: "08.00 - 12.00",
-        durasi_pasien: "20 Menit",
-        kuota_non_jkn: "5 Slot",
-        kuota_jkn: " 5 Slot",
-        total_kuota: "10 Slot",
-        status: "AKTIF",
-      },
-      {
-        no: "2",
-        hari: "Jumat",
-        jam_praktek: "08.00 - 12.00",
-        durasi_pasien: "20 Menit",
-        kuota_non_jkn: "5 Slot",
-        kuota_jkn: " 5 Slot",
-        total_kuota: "10 Slot",
-        status: "AKTIF",
-      },
-    ],
-  },
-  {
-    noJadwal: "3",
-    nama_dokter: "dr. Spesialis Sp. M",
-    jumlah_jadwal: "2 Jadwal",
-    spesialis: "Mata (Sp. M)",
-    poli: "Poli Mata",
-    status: "AKTIF",
-  },
-  {
-    noJadwal: "4",
-    nama_dokter: "dr. Spesialis Sp. Og",
-    jumlah_jadwal: "2 Jadwal",
-    spesialis: "Obgyn (Sp.Og)",
-    poli: "Poli Kandungan",
-    status: "AKTIF",
-  },
-  {
-    noJadwal: "5",
-    nama_dokter: "dr. Spesialis Sp. D",
-    jumlah_jadwal: "2 Jadwal",
-    spesialis: "Penyakit Dalam (Sp.D)",
-    poli: "Poli Dalam",
-    status: "AKTIF",
-  },
-]);
-
-const totalItems = computed(() => itemsLayar.value.length);
-
-const selectedPatient = ref([]);
 
 const dialogData = ref({
   isVisible: false,
@@ -170,11 +68,14 @@ function handleEdit() {
 function handleClose() {
   dialogData.value.isVisible = false;
 }
+
+onMounted(() => {
+  fetchJadwalDokter();
+});
 </script>
 
 <template>
   <Card
-    v-if="dataBreadCrumb.length == 0"
     pt:body:class="overflow-auto pt-0 h-full"
     pt:content:class="overflow-auto h-full"
     class=""
@@ -185,16 +86,13 @@ function handleClose() {
     <template #content>
       <DataTable
         v-model:expandedRows="expandedRows"
-        v-if="itemsLayar.length"
-        v-model:selection="selectedPatient"
-        :value="itemsLayar"
+        v-if="jadwalDokterPayload.length"
+        :value="jadwalDokterPayload"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
-        dataKey="noJadwal"
-        v-on:row-toggle="onRowToggle"
       >
         <Column
           expander
@@ -209,23 +107,36 @@ function handleClose() {
           </template>
         </Column>
         <Column
-          field="nama_dokter"
           header="Nama Dokter"
           header-class="text-black bg-adameds-50"
           class="text-sm"
-        ></Column>
+        >
+          <template #body="slotProps">
+            <div class="text-sm">{{ slotProps.data.doctor.name }}</div>
+          </template>
+        </Column>
         <Column
-          field="jumlah_jadwal"
           header="Jumlah Jadwal"
           header-class="text-black bg-adameds-50"
           class="text-sm"
-        ></Column>
+        >
+          <template #body="slotProps">
+            <div class="text-sm">
+              {{ slotProps.data.jadwalDokter.length }} Jadwal
+            </div>
+          </template>
+        </Column>
         <Column
-          field="poli"
           header="Poli"
           header-class="text-black bg-adameds-50"
           class="text-sm"
-        ></Column>
+        >
+          <template #body="slotProps">
+            <div class="text-sm">
+              {{ slotProps.data.poli.name }}
+            </div>
+          </template>
+        </Column>
         <Column
           field="Action"
           header="Action"
@@ -253,21 +164,27 @@ function handleClose() {
         <template #expansion="slotProps">
           <div class="p-3 -mx-3 -my-1.5 bg-adameds-100">
             <DataTable
-              :value="slotProps.data.orders"
+              :value="slotProps.data.jadwalDokter"
               class="overflow-hidden text-sm rounded-lg bg-adameds-50"
             >
               <Column
-                field="no"
                 header="No."
                 header-class="text-black bg-adameds-50"
                 class="flex justify-center items-center text-sm"
-              ></Column>
+              >
+                <template #body="slotProps">
+                  {{ slotProps.index + 1 }}
+                </template>
+              </Column>
               <Column
-                field="hari"
                 header="Hari"
                 header-class="text-black bg-adameds-50"
                 class="text-sm"
-              ></Column>
+              >
+                <template #body="slotProps">
+                  {{ slotProps.data.day }}
+                </template>
+              </Column>
               <Column
                 field="jam_praktek"
                 header-class="text-black bg-adameds-50"
@@ -280,7 +197,8 @@ function handleClose() {
                 </template>
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
-                    {{ slotProps.data.jam_praktek }}
+                    {{ slotProps.data.startTime }} -
+                    {{ slotProps.data.endTime }}
                   </div>
                 </template>
               </Column>
@@ -296,7 +214,7 @@ function handleClose() {
                 </template>
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
-                    {{ slotProps.data.durasi_pasien }}
+                    {{ slotProps.data.durasiPelayanan }} Menit
                   </div>
                 </template>
               </Column>
@@ -312,7 +230,7 @@ function handleClose() {
                 </template>
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
-                    {{ slotProps.data.kuota_jkn }}
+                    {{ slotProps.data.kuotaJkn }} Slot
                   </div>
                 </template>
               </Column>
@@ -328,7 +246,7 @@ function handleClose() {
                 </template>
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
-                    {{ slotProps.data.kuota_non_jkn }}
+                    {{ slotProps.data.kuotaNonJkn }} Slot
                   </div>
                 </template>
               </Column>
@@ -344,7 +262,7 @@ function handleClose() {
                 </template>
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
-                    {{ slotProps.data.total_kuota }}
+                    {{ slotProps.data.kuota }} Slot
                   </div>
                 </template>
               </Column>
@@ -359,22 +277,22 @@ function handleClose() {
                     <CustomChip
                       :label="slotProps.data.status"
                       :textColor="
-                        slotProps.data.status === 'AKTIF'
+                        slotProps.data.status === 'aktif'
                           ? 'text-white'
                           : 'text-[#80868d]'
                       "
                       :bgColor="
-                        slotProps.data.status === 'AKTIF'
+                        slotProps.data.status === 'aktif'
                           ? 'bg-adameds-300'
                           : 'bg-white'
                       "
                       :borderColor="
-                        slotProps.data.status === 'AKTIF'
+                        slotProps.data.status === 'aktif'
                           ? 'border-none'
                           : 'border-[#80868d]'
                       "
                       :icon-color="
-                        slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                        slotProps.data.status === 'aktif' ? 'white' : '#80868d'
                       "
                       customClass="text-xs font-semibold h-6 flex"
                     />
