@@ -126,6 +126,10 @@ const layarTitle = computed(() => {
   return selectedLayar ? selectedLayar.name : "Layar Antrian";
 });
 
+const isListAndCallLayout = computed(() => {
+  return layarModel.value === "L-3"; // Layar 3 List & 3 Panggilan
+});
+
 const gridItemCount = computed(() => {
   switch (layarModel.value) {
     case "L-1": // Layar 3 x 3 Panggilan
@@ -318,6 +322,7 @@ function handleReset() {
               <div
                 class="flex gap-4 items-center font-semibold text-white rounded-lg bg-adameds-300 text-subHeading"
               >
+                <!-- Logo -->
                 <div
                   class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg"
                 >
@@ -335,6 +340,7 @@ function handleReset() {
                     class="self-stretch object-cover w-[106px] my-auto shrink-0"
                   />
                 </div>
+                <!-- Komponen di sebelah Logo -->
                 <div class="">Klinik Adameds</div>
                 <div class="mr-3 ml-auto font-semibold text-right">
                   <div class="text-subHeading">09:00 AM</div>
@@ -343,11 +349,56 @@ function handleReset() {
               </div>
               <!-- Blok Konten -->
               <div class="px-1 my-1 space-y-1 w-full">
-                <grid-panggilan-preview
-                  :gridRowsClass="gridRowsClass"
-                  :gridAspectRatio="gridAspectRatio"
-                  :gridItemCount="gridItemCount"
-                />
+                <template v-if="isListAndCallLayout">
+                  <div class="flex">
+                    <!-- Tab konten Informasi antrian -->
+                    <div class="flex-[2.5]">
+                      <!-- Tab header Informasi antrian-->
+                      <div
+                        class="flex gap-2 justify-center items-center py-1 text-white rounded-lg bg-adameds-300"
+                      >
+                        <div><PhUsers :size="18" weight="fill" /></div>
+                        <div>Informasi Antrian</div>
+                      </div>
+
+                      <!-- Tab body Informasi antrian-->
+                      <div class="grid grid-cols-3">
+                        <div class="flex flex-col items-center">
+                          <div>Hai</div>
+                          <div>Hai 1</div>
+                        </div>
+                        <div>Halo 2</div>
+                        <div>Halo 3</div>
+                      </div>
+                    </div>
+
+                    <!-- Tab konten Panggilan-->
+                    <div class="flex-1">
+                      <!-- Tab header Panggilan-->
+                      <div
+                        class="flex gap-2 justify-center items-center py-1 text-white rounded-lg bg-adameds-300"
+                      >
+                        <div>
+                          <PhMegaphone
+                            :size="18"
+                            class="scale-x-[-1]"
+                            weight="fill"
+                          />
+                        </div>
+                        <div>Panggilan</div>
+                      </div>
+                      <!-- Tab body Panggilan-->
+                      <div>Test</div>
+                    </div>
+                  </div>
+                </template>
+                <template v-else>
+                  <grid-panggilan-preview
+                    :gridRowsClass="gridRowsClass"
+                    :gridAspectRatio="gridAspectRatio"
+                    :gridItemCount="gridItemCount"
+                  />
+                </template>
               </div>
               <div class="py-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
                 Testing
