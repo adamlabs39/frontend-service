@@ -12,6 +12,7 @@ import {
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
   baseInstanceInventory,
+  baseInstanceAntrian,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
@@ -728,6 +729,16 @@ const apiInventoryDelete = async (url: string, data: object) => {
   }
 };
 
+//Antrian
+const apiAntrianGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,

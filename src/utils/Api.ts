@@ -616,4 +616,5 @@ export {
   baseInstanceFarmasi,
   baseInstanceRekamMedis,
   baseInstanceInventory,
+  baseInstanceAntrian,
 };
