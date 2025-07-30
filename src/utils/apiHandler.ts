@@ -790,4 +790,5 @@ export {
   apiInventoryPut,
   apiInventoryDelete,
   apiRekamMedisDelete,
+  apiAntrianGet,
 };

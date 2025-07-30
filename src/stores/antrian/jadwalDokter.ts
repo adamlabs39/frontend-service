@@ -1,8 +1,21 @@
 import { defineStore } from "pinia";
+import { apiAntrianGet } from "@/utils/apiHandler";
 
 export const useJadwalDokterStore = defineStore({
   id: "jadwalDokter",
   state: () => ({}),
   getters: {},
-  actions: {},
+  actions: {
+    async getApi(
+      page: number = 1,
+      limit: number = 10,
+
+      payload = {}
+    ) {
+      return apiAntrianGet(
+        `/antrian/jadwal-dokter?page=${page}&limit=${limit}`,
+        payload
+      );
+    },
+  },
 });
