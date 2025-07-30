@@ -4,15 +4,11 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import KonfigurasiJadwalHeader from "../../Layout/KonfigurasiJadwalHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
-import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
 import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
-
-const pageType = ref("");
-const route = useRoute();
 
 const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {
@@ -81,7 +77,7 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <konfigurasi-jadwal-header ref="headerFilterRef" :pageType="pageType" />
+      <konfigurasi-jadwal-header ref="headerFilterRef" />
     </template>
     <template #content>
       <DataTable
