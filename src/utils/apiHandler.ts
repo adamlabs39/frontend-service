@@ -753,6 +753,15 @@ const apiAntrianDelete = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAntrianPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -806,4 +815,5 @@ export {
   apiRekamMedisDelete,
   apiAntrianGet,
   apiAntrianDelete,
+  apiAntrianPost,
 };

@@ -1,5 +1,9 @@
 import { defineStore } from "pinia";
-import { apiAntrianGet, apiAntrianDelete } from "@/utils/apiHandler";
+import {
+  apiAntrianGet,
+  apiAntrianDelete,
+  apiAntrianPost,
+} from "@/utils/apiHandler";
 
 export const useJadwalDokterStore = defineStore({
   id: "jadwalDokter",
@@ -22,6 +26,13 @@ export const useJadwalDokterStore = defineStore({
         `/antrian/jadwal-dokter/${doctorUuid}/${poliUuid}`,
         {}
       );
+    },
+    async tambahJadwalDoctor(payload: {
+      doctorUuid: string;
+      poliUuid: string;
+      jadwal: string;
+    }) {
+      return apiAntrianPost(`/antrian/jadwal-dokter`, payload);
     },
   },
 });
