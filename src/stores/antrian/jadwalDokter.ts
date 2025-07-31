@@ -27,7 +27,7 @@ export const useJadwalDokterStore = defineStore({
         {}
       );
     },
-    async tambahJadwalDoctor(payload: {
+    async addJadwalDoctor(payload: {
       doctorUuid: string;
       poliUuid: string;
       jadwal: string;
