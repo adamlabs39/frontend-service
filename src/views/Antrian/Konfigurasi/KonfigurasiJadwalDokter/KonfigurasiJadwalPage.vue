@@ -65,6 +65,19 @@ function handleClose() {
   dialogData.value.isVisible = false;
 }
 
+// untuk handle perubahan rows per page
+const handleRowsUpdate = (newRows: number) => {
+  jadwalDokterProperties.value.page_size = newRows;
+  jadwalDokterProperties.value.page = 1; // Reset ke halaman pertama
+  fetchJadwalDokter(); // Refresh data
+};
+
+// untuk handle perubahan halaman
+const handlePageUpdate = (newPage: number) => {
+  jadwalDokterProperties.value.page = newPage;
+  fetchJadwalDokter(); // Refresh data
+};
+
 onMounted(() => {
   fetchJadwalDokter();
 });
@@ -308,7 +321,13 @@ onMounted(() => {
       />
     </template>
     <template #footer>
-      <AntrianFooter />
+      <AntrianFooter
+        :rows="jadwalDokterProperties.page_size"
+        :totalRecords="jadwalDokterProperties.total"
+        :rowsPerPageOptions="[10, 20, 30]"
+        @update:rows="handleRowsUpdate"
+        @update:current-page="handlePageUpdate"
+      />
     </template>
   </Card>
 </template>
