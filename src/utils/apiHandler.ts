@@ -739,6 +739,20 @@ const apiAntrianGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAntrianDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -791,4 +805,5 @@ export {
   apiInventoryDelete,
   apiRekamMedisDelete,
   apiAntrianGet,
+  apiAntrianDelete,
 };

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { apiAntrianGet } from "@/utils/apiHandler";
+import { apiAntrianGet, apiAntrianDelete } from "@/utils/apiHandler";
 
 export const useJadwalDokterStore = defineStore({
   id: "jadwalDokter",
@@ -15,6 +15,12 @@ export const useJadwalDokterStore = defineStore({
       return apiAntrianGet(
         `/antrian/jadwal-dokter?page=${page}&limit=${limit}`,
         payload
+      );
+    },
+    async deleteDoctor(doctorUuid: string, poliUuid: string) {
+      return apiAntrianDelete(
+        `/antrian/jadwal-dokter/${doctorUuid}/${poliUuid}`,
+        {}
       );
     },
   },

@@ -45,6 +45,18 @@ const fetchJadwalDokter = async () => {
   }
 };
 
+const deleteDoctor = async (doctorUuid: string, poliUuid: string) => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.deleteDoctor(doctorUuid, poliUuid);
+    await fetchJadwalDokter();
+  } catch (error) {
+    console.error("Failed to delete doctor", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 const expandedRows = ref();
 
 const dialogData = ref({
@@ -164,6 +176,12 @@ onMounted(() => {
               <CustomButton
                 label=""
                 background-color="bg-danger-300 rounded-lg"
+                @click="
+                  deleteDoctor(
+                    slotProps.data.doctor.uuid,
+                    slotProps.data.poli.uuid
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" width="15px" />
               </CustomButton>
