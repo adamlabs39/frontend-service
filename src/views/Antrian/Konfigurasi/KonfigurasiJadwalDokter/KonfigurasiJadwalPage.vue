@@ -63,19 +63,21 @@ const dialogData = ref({
   isVisible: false,
   method: "add",
   title: "Tambah",
+  editData: {},
 });
 
-function handleEdit() {
+const handleEdit = (data: any) => {
   dialogData.value = {
     isVisible: true,
     method: "edit",
     title: "Edit",
+    editData: data,
   };
-}
+};
 
-function handleClose() {
+const handleClose = () => {
   dialogData.value.isVisible = false;
-}
+};
 
 // untuk handle perubahan rows per page
 const handleRowsUpdate = (newRows: number) => {
@@ -169,7 +171,7 @@ onMounted(() => {
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit"
+                @click="handleEdit(slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
@@ -335,6 +337,7 @@ onMounted(() => {
         v-model:isDialogVisible="dialogData.isVisible"
         :title="dialogData.title"
         :method="dialogData.method"
+        :editData="dialogData.editData"
         @close="handleClose"
       />
     </template>

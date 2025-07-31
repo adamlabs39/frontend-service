@@ -3,6 +3,7 @@ import {
   apiAntrianGet,
   apiAntrianDelete,
   apiAntrianPost,
+  apiAntrianPut,
 } from "@/utils/apiHandler";
 
 export const useJadwalDokterStore = defineStore({
@@ -33,6 +34,12 @@ export const useJadwalDokterStore = defineStore({
       jadwal: string;
     }) {
       return apiAntrianPost(`/antrian/jadwal-dokter`, payload);
+    },
+    async updateJadwalDoctor(doctorUuid: string, poliUuid: string) {
+      return apiAntrianPut(
+        `/antrian/jadwal-dokter/${doctorUuid}/${poliUuid}`,
+        {}
+      );
     },
   },
 });

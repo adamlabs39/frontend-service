@@ -762,6 +762,15 @@ const apiAntrianPost = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAntrianPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -816,4 +825,5 @@ export {
   apiAntrianGet,
   apiAntrianDelete,
   apiAntrianPost,
+  apiAntrianPut,
 };

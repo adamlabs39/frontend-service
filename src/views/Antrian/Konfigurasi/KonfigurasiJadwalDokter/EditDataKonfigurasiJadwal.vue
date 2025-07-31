@@ -21,6 +21,10 @@ const props = defineProps({
   method: {
     type: String,
   },
+  editData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const defaultData = [
@@ -81,13 +85,6 @@ const addRow = () => {
   });
 };
 
-const itemsDokter = ref([
-  { name: "dr. Umum", code: "DR-U" },
-  { name: "dr. Spesialis Sp. A", code: "DR-A" },
-  { name: "dr. Spesialis Sp. M", code: "DR-M" },
-  { name: "dr. Spesialis Sp. Og", code: "DR-OG" },
-  { name: "dr. Spesialis Sp. D", code: "DR-D" },
-]);
 const itemsPoli = ref([
   { name: "Poli Umum", code: "POLI-U" },
   { name: "Poli Anak", code: "POLI-A" },
@@ -96,13 +93,11 @@ const itemsPoli = ref([
   { name: "Poli Dalam", code: "POLI-D" },
 ]);
 const itemsHari = ref([
-  { name: "Senin", code: "H1" },
-  { name: "Selasa", code: "H2" },
-  { name: "Rabu", code: "H3" },
-  { name: "Kamis", code: "H4" },
-  { name: "Jumat", code: "H5" },
-  { name: "Sabtu", code: "H6" },
-  { name: "Minggu", code: "H7" },
+  { name: "Senin", code: "Senin" },
+  { name: "Selasa", code: "Selasa" },
+  { name: "Rabu", code: "Rabu" },
+  { name: "Kamis", code: "Kamis" },
+  { name: "Jumat", code: "Jumat" },
 ]);
 
 const schema = toTypedSchema(
@@ -180,6 +175,30 @@ onMounted(() => {
   handleReset();
 });
 
+// Tambahkan reactive data untuk mapped jadwal
+const mappedJadwalData = ref([]);
+
+watch(
+  () => props.editData,
+  (newData) => {
+    console.log("Data yang diterima dari parent:", newData);
+
+    // Map data dari parent ke format yang sesuai dengan komponen
+    if (newData && newData.jadwalDokter) {
+      mappedJadwalData.value = newData.jadwalDokter.map((item) => ({
+        ...item,
+        // Konversi status dari string ke boolean
+        status: item.status === "aktif",
+        // day sudah sesuai format string, tidak perlu mapping
+        day: item.day,
+        // Mapping properti lainnya sesuai kebutuhan
+        kuota: item.kuotaJkn + item.kuotaNonJkn,
+      }));
+    }
+  },
+  { immediate: true, deep: true }
+);
+
 watch(
   () => props.isDialogVisible,
   (newValue) => {
@@ -234,46 +253,18 @@ const selectedPatient = ref([]);
     <template #header>{{ title }} Jadwal</template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
-        <div
-          v-for="item in itemsKeterangan"
-          :key="item.kodeHFIS"
-          class="text-lg font-bold text-black"
-        >
-          {{ item.namaDokter }}
+        <div class="text-lg font-bold text-black">
+          {{ editData.doctor.name }}
         </div>
         <hr />
-        <div class="grid grid-cols-4 gap-y-0 gap-x-4 ml-2 text-xs">
+        <div class="grid grid-cols-3 gap-y-0 gap-x-4 ml-2 text-xs text-center">
           <div class="font-bold text-black underline">Poliklinik</div>
-          <div class="font-bold text-black underline">Spesialis</div>
           <div class="font-bold text-black underline">Kode Antrian Poli</div>
           <div class="font-bold text-black underline">Kode Antrian Dokter</div>
-          <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="text-sm text-black"
-          >
-            {{ item.poli }}
-          </div>
-          <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="text-sm text-black"
-          >
-            {{ item.spesialis }}
-          </div>
-          <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="text-sm text-black"
-          >
-            {{ item.antrianPoli }}
-          </div>
-          <div
-            v-for="item in itemsKeterangan"
-            :key="item.kodeHFIS"
-            class="text-sm text-black"
-          >
-            {{ item.antrianDokter }}
+          <div class="text-sm text-black">{{ editData.poli.name }}</div>
+          <div class="text-sm text-black">{{ editData.poli.kodeAntrian }}</div>
+          <div class="text-sm text-black">
+            {{ editData.doctor.kodeAntrian }}
           </div>
         </div>
 
@@ -282,7 +273,7 @@ const selectedPatient = ref([]);
           <DataTable
             v-if="itemsJadwal.length"
             v-model:selection="selectedPatient"
-            :value="data"
+            :value="mappedJadwalData"
             tableStyle="min-width: 50rem"
             class="text-black"
             stripedRows
@@ -296,7 +287,7 @@ const selectedPatient = ref([]);
               </template>
               <template #body="slotProps">
                 <div class="text-center">
-                  <div class="text-sm">{{ slotProps.data.noJadwal }}</div>
+                  <div class="text-sm">{{ slotProps.index + 1 }}</div>
                 </div>
               </template>
             </Column>
@@ -304,7 +295,7 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <CustomSelect
                   place-holder="Pilih Hari"
-                  v-model="slotProps.data.hariModel"
+                  v-model="slotProps.data.day"
                   :options="itemsHari"
                   optionValue="code"
                   optionLabel="name"
@@ -324,7 +315,7 @@ const selectedPatient = ref([]);
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.startDateFilter"
+                    v-model="slotProps.data.startTime"
                     label=""
                     class="w-[120px] text-grey-400 text-xs"
                   />
@@ -332,7 +323,7 @@ const selectedPatient = ref([]);
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.endDateFilter"
+                    v-model="slotProps.data.endTime"
                     label=""
                     class="w-[120px] text-grey-400 text-sm"
                   />
@@ -355,7 +346,7 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.durasi"
+                    v-model:modelValue="slotProps.data.durasiPelayanan"
                     type="number"
                     :showLabel="false"
                   >
@@ -379,7 +370,7 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.slot_jkn"
+                    v-model:modelValue="slotProps.data.kuotaJkn"
                     type="number"
                     :showLabel="false"
                   >
@@ -404,7 +395,7 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.slot_non_jkn"
+                    v-model:modelValue="slotProps.data.kuotaNonJkn"
                     type="number"
                     :showLabel="false"
                   >
