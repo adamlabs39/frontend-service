@@ -193,19 +193,18 @@ const loadBedNameOptions = async (partOfUuid: string) => {
 
 const showBedForm = async (data: any) => {
   try {
-    const partOfUuid = data.uuid; // atau data.part_of_uuid tergantung struktur
+    const partOfUuid = data.uuid; 
     console.log("Data clicked on row (ruangan):", data);
-    console.log(" partOfUuid untuk bedNameOptions:", partOfUuid); // ✅ CEK UUID YANG DIKIRIM
+    console.log(" partOfUuid untuk bedNameOptions:", partOfUuid); 
 
     const bedResponse = await lokasiStore.getByPartOfApi(partOfUuid);
-    // console.log(" Respons getByPartOfApi:", bedResponse); // ✅ CEK RESPONSE MENTAH
 
     bedNameOptions.value = bedResponse?.payload?.map((bed: any) => ({
       label: bed.name,
       value: bed.uuid,
     })) || [];
 
-    console.log(" bedNameOptions yang dimasukkan:", bedNameOptions.value); // ✅ CEK OPSI YANG MASUK
+    console.log(" bedNameOptions yang dimasukkan:", bedNameOptions.value); 
 
     const fetchedData = await fetchBedData(data);
     console.log("fetchedData:", fetchedData);
