@@ -334,7 +334,7 @@ defineExpose({
             v-model="complaint"
             label="Keluhan Utama"
             class="col-span-2"
-            placeholder="Keluhan Utamaaa"
+            placeholder="Keluhan Utama"
             :disabled="isDetail"
           />
           <CustomTextArea

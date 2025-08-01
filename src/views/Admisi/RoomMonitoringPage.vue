@@ -62,14 +62,10 @@ const fetchData = async () => {
 
   try {
     const response = await monitoringKamarStore.getMonitoringKamar(filter);
-    console.log("API response:", response);
-
     if (response && response.payload) {
       properties.value.total = response.properties?.totalData ?? 0;
       itemsRoom.value = response.payload;
-      console.log("Status Operasional Setiap Ruangan:");
       itemsRoom.value.forEach((room) => {
-        console.log(`${room.name} - ${room.statusOperasionalRuangan}`);
       });
     } else {
       itemsRoom.value = [];
@@ -127,7 +123,6 @@ const fetchBedData = async (data: any) => {
     const response = await monitoringKamarStore.getDetailMonitoringKamar(
       data.uuid
     );
-    console.log("API response", response)
     if (response && response.payload) {
       return response.payload;
     } else return [];
@@ -146,11 +141,6 @@ const showBedList = async (data: DataTableRowClickEvent) => {
   itemsBed.value = Array.isArray(fetched)
   ? fetched.map((bed: any, idx: number) => {
       const status = bed.patient ? "Penuh" : "Tersedia";
-      console.log(`Bed[${idx}]`, {
-        bedName: bed.locationName,
-        hasPatient: !!bed.patient,
-        statusOperasionalRuangan: status
-      });
 
       return {
         uuid: bed.uuid ?? null,
@@ -180,12 +170,10 @@ const bedDropdownOptions = computed(() => [
 const loadBedNameOptions = async (partOfUuid: string) => {
   try {
     const res = await lokasiStore.getByPartOfApi(partOfUuid); 
-    console.log("📦 Respons getByPartOfApi:", res);
     bedNameOptions.value = res?.payload?.map((item: any) => ({
       label: item.name ?? item.locationName,
       value: item.uuid,
     })) || [];
-    console.log(" Bed Name Options Loaded:", bedNameOptions.value);
   } catch (error) {
     console.error(" Failed to load bed name options", error);
   }
@@ -194,8 +182,6 @@ const loadBedNameOptions = async (partOfUuid: string) => {
 const showBedForm = async (data: any) => {
   try {
     const partOfUuid = data.uuid; 
-    console.log("Data clicked on row (ruangan):", data);
-    console.log(" partOfUuid untuk bedNameOptions:", partOfUuid); 
 
     const bedResponse = await lokasiStore.getByPartOfApi(partOfUuid);
 
@@ -204,11 +190,8 @@ const showBedForm = async (data: any) => {
       value: bed.uuid,
     })) || [];
 
-    console.log(" bedNameOptions yang dimasukkan:", bedNameOptions.value); 
 
     const fetchedData = await fetchBedData(data);
-    console.log("fetchedData:", fetchedData);
-    console.log("Clicked row data:", data);
 
     if (Array.isArray(fetchedData)) {
       itemsBedSetting.value = fetchedData.length > 0 ? fetchedData : [{}];
@@ -224,14 +207,7 @@ const showBedForm = async (data: any) => {
         bed.location_uuid ??
         bed.locationUuid ??
         bed.uuid;
-
-      console.log(`🛏️ Bed ${index + 1}:`, {
-        lokasi_uuid: lokasi,
-        bed_uuid: bed.uuid,
-        lokasi_uuid_raw: bed.lokasi_uuid ?? bed.lokasiUuid,
-        bedName: bed.locationName ?? bed.name ?? "-",
-      });
-
+      
       const status = bed?.patient ? "Penuh" : "Tersedia";
       return {
         uuid: bed.uuid ?? "",
@@ -258,7 +234,6 @@ const schema = toTypedSchema(
       bedData: yup.array().of(
         yup.object({
           uuid: yup.string().nullable(),
-          bedName: yup.string().nullable(),
           noBed: yup.number().required("Nomor Bed harus diisi"),
           bedType: yup.string().required("Tipe Bed harus diisi"),
           statusOperasionalRuangan: yup.string().nullable(),
@@ -274,7 +249,6 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 });
 
 const onSubmit = handleSubmit(async (values) => {
-  console.log("🟢 onSubmit dipanggil");
   storeUtils.setLoading(true);
   try {
     const payload = (values.bedData ?? []).map((bed) => {
@@ -287,7 +261,6 @@ const onSubmit = handleSubmit(async (values) => {
       };
     });
 
-    console.log("Payload being sent to API:", payload);
     await monitoringKamarStore.updateBed(
       openedRoomData.value.uuid,
       { beds: payload } 
@@ -700,7 +673,7 @@ function getByPartOfApi(partOfUuid: string) {
             class="border-2 h-20 border-adameds-75 m-5 rounded-[10px] border-dashed flex"
           >
             <CustomButton
-              @click="push({ bedName: '', noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null })"
+              @click="push({ noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null })"
               icon="PhPlus"
               label="Bed"
               outlined
@@ -718,7 +691,7 @@ function getByPartOfApi(partOfUuid: string) {
       <template #footer>
         <div class="flex justify-end">
           <CustomButton
-            @click="setValues({ bedData: [{ bedName: '', noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null}] })"
+            @click="setValues({ bedData: [{ noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null}] })"
             label="Reset"
             outlined
             class="mr-[10px]"

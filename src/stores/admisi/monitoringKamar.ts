@@ -34,8 +34,6 @@ export const useMonitoringKamarStore = defineStore({
       return response;
     },
     async updateBed(uuid = "", payload = {}) {
-      console.log("PATCHing to:", `/monitoring-rooms/${uuid}`);
-      console.log("Payload:", JSON.stringify(payload, null, 2));
       return apiAdmisiPatch(`/monitoring-rooms/${uuid}`, payload);
     },
 

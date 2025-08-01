@@ -137,7 +137,6 @@ const fetchListRoomData = async () => {
     });
     if (response && response.payload) {
       listRuangan.value = response.payload;
-      console.log(listRuangan.value)
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -161,32 +160,25 @@ const fetchListBedData = async (uuid: string) => {
   try {
     storeUtils.setLoading(true);
     const response = await monitoringKamarStore.getDetailMonitoringKamar(uuid);
-    console.log("Response dari getDetailMonitoringKamar:", response); // <- log 1
 
     if (response && response.payload) {
       listBed.value = [];
       listBedCadangan.value = [];
       listBoxBayi.value = [];
 
-      // Ganti pengecekan agar langsung pakai response.payload
       const beds = Array.isArray(response.payload.detail)
         ? response.payload.detail
         : Array.isArray(response.payload)
         ? response.payload
         : [];
 
-      console.log("Detail beds:", beds); // <- log 2
-
       beds.forEach((bed: any, idx: number) => {
-        console.log(`Bed[${idx}]`, bed); // <- log 3
         if (bed.type == "Bed") {
           listBed.value.push(bed);
         } else if (bed.type == "Bed Cadangan") {
           listBedCadangan.value.push(bed);
         } else if (bed.type == "Box Bayi") {
           listBoxBayi.value.push(bed);
-        } else {
-          console.warn(`Bed[${idx}] tidak cocok dengan kondisi manapun:`, bed.bedType); // <- log 4
         }
       });
     } else {
@@ -201,48 +193,6 @@ const fetchListBedData = async (uuid: string) => {
   }
 };
 
-// const fetchListBedData = async (uuid: string) => {
-//   try {
-//     storeUtils.setLoading(true);
-//     const response = await monitoringKamarStore.getDetailMonitoringKamar(uuid);
-//     console.log("Response dari getDetailMonitoringKamar:", response); // <- log 1
-
-//     if (response && response.payload) {
-//       listBed.value = [];
-//       listBedCadangan.value = [];
-//       listBoxBayi.value = [];
-
-//       const beds = Array.isArray(response.payload.detail)
-//         ? response.payload.detail
-//         : Array.isArray(response.payload)
-//         ? response.payload
-//         : [];
-
-//       console.log("Detail beds:", beds); // <- log 2
-
-//       beds.forEach((bed: any, idx: number) => {
-//         console.log(`Bed[${idx}]`, bed); // <- log 3
-//         if (bed.type == "Bed") {
-//           listBed.value.push(bed);
-//         } else if (bed.type == "Bed Cadangan") {
-//           listBedCadangan.value.push(bed);
-//         } else if (bed.type == "Box Bayi") {
-//           listBoxBayi.value.push(bed);
-//         } else {
-//           console.warn(`Bed[${idx}] tidak cocok dengan kondisi manapun:`, bed.bedType); // <- log 4
-//         }
-//       });
-//     } else {
-//       listBed.value = [];
-//       listBedCadangan.value = [];
-//       listBoxBayi.value = [];
-//     }
-//   } catch (error) {
-//     console.error("Failed to fetch data", error);
-//   } finally {
-//     storeUtils.setLoading(false);
-//   }
-// };
 
 onMounted(() => {
   if (props.formType == "Daftar Bayi Baru Lahir") {
@@ -568,7 +518,6 @@ defineExpose({
               :showFilter="false"
               :options="[
                 ...listKategoriRuangan,
-                { name: 'VIP', uuid: '0191690f-1cb3-7884-afeb-6ad62f0e0a1a' },
               ]"
               :disabled="isDetail"
             />
