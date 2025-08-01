@@ -155,23 +155,44 @@ const getRoomName = () => {
   } else return "-";
 };
 
+
+
 const fetchListBedData = async (uuid: string) => {
   try {
     storeUtils.setLoading(true);
     const response = await monitoringKamarStore.getDetailMonitoringKamar(uuid);
+    console.log("Response dari getDetailMonitoringKamar:", response); // <- log 1
+
     if (response && response.payload) {
       listBed.value = [];
       listBedCadangan.value = [];
       listBoxBayi.value = [];
-      response.payload.detail.forEach((bed: any) => {
-        if (bed.bedName == "Bed") {
+
+      // Ganti pengecekan agar langsung pakai response.payload
+      const beds = Array.isArray(response.payload.detail)
+        ? response.payload.detail
+        : Array.isArray(response.payload)
+        ? response.payload
+        : [];
+
+      console.log("Detail beds:", beds); // <- log 2
+
+      beds.forEach((bed: any, idx: number) => {
+        console.log(`Bed[${idx}]`, bed); // <- log 3
+        if (bed.type == "Bed") {
           listBed.value.push(bed);
-        } else if (bed.bedName == "Bed Cadangan") {
+        } else if (bed.type == "Bed Cadangan") {
           listBedCadangan.value.push(bed);
-        } else if (bed.bedName == "Box Bayi") {
+        } else if (bed.type == "Box Bayi") {
           listBoxBayi.value.push(bed);
+        } else {
+          console.warn(`Bed[${idx}] tidak cocok dengan kondisi manapun:`, bed.bedType); // <- log 4
         }
       });
+    } else {
+      listBed.value = [];
+      listBedCadangan.value = [];
+      listBoxBayi.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -179,6 +200,49 @@ const fetchListBedData = async (uuid: string) => {
     storeUtils.setLoading(false);
   }
 };
+
+// const fetchListBedData = async (uuid: string) => {
+//   try {
+//     storeUtils.setLoading(true);
+//     const response = await monitoringKamarStore.getDetailMonitoringKamar(uuid);
+//     console.log("Response dari getDetailMonitoringKamar:", response); // <- log 1
+
+//     if (response && response.payload) {
+//       listBed.value = [];
+//       listBedCadangan.value = [];
+//       listBoxBayi.value = [];
+
+//       const beds = Array.isArray(response.payload.detail)
+//         ? response.payload.detail
+//         : Array.isArray(response.payload)
+//         ? response.payload
+//         : [];
+
+//       console.log("Detail beds:", beds); // <- log 2
+
+//       beds.forEach((bed: any, idx: number) => {
+//         console.log(`Bed[${idx}]`, bed); // <- log 3
+//         if (bed.type == "Bed") {
+//           listBed.value.push(bed);
+//         } else if (bed.type == "Bed Cadangan") {
+//           listBedCadangan.value.push(bed);
+//         } else if (bed.type == "Box Bayi") {
+//           listBoxBayi.value.push(bed);
+//         } else {
+//           console.warn(`Bed[${idx}] tidak cocok dengan kondisi manapun:`, bed.bedType); // <- log 4
+//         }
+//       });
+//     } else {
+//       listBed.value = [];
+//       listBedCadangan.value = [];
+//       listBoxBayi.value = [];
+//     }
+//   } catch (error) {
+//     console.error("Failed to fetch data", error);
+//   } finally {
+//     storeUtils.setLoading(false);
+//   }
+// };
 
 onMounted(() => {
   if (props.formType == "Daftar Bayi Baru Lahir") {
@@ -489,9 +553,9 @@ defineExpose({
             <CustomTextfield
               label="SPRI"
               class=""
-              placeholder="SPRI"
+              placeholder="SPRI" 
               readOnly
-            />
+            /> 
             <!-- FIXME Dummy Data -->
             <CustomSelect
               v-model="selectedRoomCategory"
@@ -552,12 +616,12 @@ defineExpose({
                     v-for="(data, index) in listBed"
                     v-model="selectedBed"
                     @update:model-value="setSelectedBed"
-                    :title="data.patientUuid ? data.patient.name : '-'"
+                    :title="data.patient ? data.patient.name : '-'"
                     :subTitle="'Bed ' + data.noBed"
                     :endText="
                       selectedBed[0] == data.uuid
                         ? 'Terpilih'
-                        : data.patientUuid
+                        : data.patient
                         ? 'Terisi'
                         : 'Kosong'
                     "
@@ -566,7 +630,7 @@ defineExpose({
                     :value="`${data.uuid}`"
                     :multiple="false"
                     :disabled="
-                      !!data.patientUuid ||
+                      !!data.patient ||
                       isDetail ||
                       formType == 'Daftar Bayi Baru Lahir' ||
                       doctorVisitData.statusRi == 3
@@ -577,19 +641,19 @@ defineExpose({
               <div v-if="spareBed">
                 <div class="font-semibold text-normal">
                   <span class="text-adameds-300">{{ getRoomName() }}</span> >
-                  Pilih Bed
+                  Pilih Bed - Cadangan
                 </div>
                 <div class="grid grid-cols-2 gap-[10px] mr-[15px]">
                   <CustomCheckbox
                     v-for="(data, index) in listBedCadangan"
                     v-model="selectedBed"
                     @update:model-value="setSelectedBed"
-                    :title="data.patientUuid ? data.patient.name : '-'"
+                    :title="data.patient ? data.patient.name : '-'"
                     :subTitle="'Bed ' + data.noBed"
                     :endText="
                       selectedBed[0] == data.uuid
                         ? 'Terpilih'
-                        : data.patientUuid
+                        : data.patient
                         ? 'Terisi'
                         : 'Kosong'
                     "
@@ -598,7 +662,7 @@ defineExpose({
                     :value="`${data.uuid}`"
                     :multiple="false"
                     :disabled="
-                      !!data.patientUuid ||
+                      !!data.patient ||
                       isDetail ||
                       formType == 'Daftar Bayi Baru Lahir' ||
                       doctorVisitData.statusRi == 3
@@ -616,12 +680,12 @@ defineExpose({
                     v-for="(data, index) in listBoxBayi"
                     v-model="selectedBed"
                     @update:model-value="setSelectedBed"
-                    :title="data.patientUuid ? data.patient.name : '-'"
+                    :title="data.patient ? data.patient.name : '-'"
                     :subTitle="'Box ' + data.noBed"
                     :endText="
                       selectedBed[0] == data.uuid
                         ? 'Terpilih'
-                        : data.patientUuid
+                        : data.patient
                         ? 'Terisi'
                         : 'Kosong'
                     "
@@ -630,7 +694,7 @@ defineExpose({
                     :value="`${data.uuid}`"
                     :multiple="false"
                     :disabled="
-                      !!data.patientUuid ||
+                      !!data.patient ||
                       isDetail ||
                       doctorVisitData.statusRi == 3
                     "

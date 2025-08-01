@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -16,11 +16,14 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const monitoringKamarStore = useMonitoringKamarStore();
 const kategoriRuanganStore = useKategoriRuanganStore();
+const lokasiStore = useLokasiStore();
+const bedData = ref<any[]>([]);
 const filterRoomCategoryList = ref<any[]>([]);
 const selectedFilterRoomCategory = ref<string[]>([]);
 const onRoomCategorySelect = (uuid: string) => {
@@ -49,16 +52,29 @@ interface Filter {
 }
 const fetchData = async () => {
   storeUtils.setLoading(true);
-  let filter = {} as Filter;
-  filter.q = search.value;
-  filter.filterKategori = selectedFilterRoomCategory.value;
+  const filter = {
+    page: properties.value.page ?? 1,
+    limit: properties.value.pageSize ?? 10,
+    q: search.value ?? "",
+    filterKelas: "", 
+    filterKategori: selectedFilterRoomCategory.value ?? [],
+  };
 
   try {
     const response = await monitoringKamarStore.getMonitoringKamar(filter);
+    console.log("API response:", response);
+
     if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
+      properties.value.total = response.properties?.totalData ?? 0;
       itemsRoom.value = response.payload;
-    } else itemsRoom.value = [];
+      console.log("Status Operasional Setiap Ruangan:");
+      itemsRoom.value.forEach((room) => {
+        console.log(`${room.name} - ${room.statusOperasionalRuangan}`);
+      });
+    } else {
+      itemsRoom.value = [];
+      properties.value.total = 0;
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -78,6 +94,14 @@ const fetchUtils = async () => {
     storeUtils.setLoading(false);
   }
 };
+const { values } = useForm();
+
+const ruangStatus = computed(() => {
+  const beds = values.bedData ?? [];
+  const adaKosong = beds.some((bed: any) => bed.statusOperasionalRuangan !== 'Penuh');
+  return adaKosong ? 'Tersedia' : 'Penuh';
+});
+
 
 const timer = ref<any>();
 const searchData = () => {
@@ -103,8 +127,9 @@ const fetchBedData = async (data: any) => {
     const response = await monitoringKamarStore.getDetailMonitoringKamar(
       data.uuid
     );
+    console.log("API response", response)
     if (response && response.payload) {
-      return response.payload.detail;
+      return response.payload;
     } else return [];
   } catch (error) {
     throw new Error(error as string);
@@ -113,17 +138,112 @@ const fetchBedData = async (data: any) => {
   }
 };
 
+
 const showBedList = async (data: DataTableRowClickEvent) => {
-  itemsBed.value = await fetchBedData(data.data);
+  const fetched = await fetchBedData(data.data);
+
+
+  itemsBed.value = Array.isArray(fetched)
+  ? fetched.map((bed: any, idx: number) => {
+      const status = bed.patient ? "Penuh" : "Tersedia";
+      console.log(`Bed[${idx}]`, {
+        bedName: bed.locationName,
+        hasPatient: !!bed.patient,
+        statusOperasionalRuangan: status
+      });
+
+      return {
+        uuid: bed.uuid ?? null,
+        bedName: bed.locationName ?? "",
+        noBed: Number(bed.noBed ?? 0),
+        type: bed.type ?? "",
+        statusOperasionalRuangan: status,
+        isAvailable: !bed.patient,
+        patient: bed.patient ?? null,
+        locationName: bed.locationName ?? "",
+        lokasi_uuid: bed.lokasi_uuid ?? null,
+      };
+    })
+  : [];
+  replace(itemsBed.value);
+};
+
+const lokasiList = ref<any[]>([]);
+
+const bedNameOptions = ref<any[]>([]); 
+
+const bedDropdownOptions = computed(() => [
+  { label: "Pilih Bed", value: "" },
+  ...bedNameOptions.value,
+]);
+
+const loadBedNameOptions = async (partOfUuid: string) => {
+  try {
+    const res = await lokasiStore.getByPartOfApi(partOfUuid); 
+    console.log("📦 Respons getByPartOfApi:", res);
+    bedNameOptions.value = res?.payload?.map((item: any) => ({
+      label: item.name ?? item.locationName,
+      value: item.uuid,
+    })) || [];
+    console.log(" Bed Name Options Loaded:", bedNameOptions.value);
+  } catch (error) {
+    console.error(" Failed to load bed name options", error);
+  }
 };
 
 const showBedForm = async (data: any) => {
   try {
+    const partOfUuid = data.uuid; // atau data.part_of_uuid tergantung struktur
+    console.log("Data clicked on row (ruangan):", data);
+    console.log(" partOfUuid untuk bedNameOptions:", partOfUuid); // ✅ CEK UUID YANG DIKIRIM
+
+    const bedResponse = await lokasiStore.getByPartOfApi(partOfUuid);
+    // console.log(" Respons getByPartOfApi:", bedResponse); // ✅ CEK RESPONSE MENTAH
+
+    bedNameOptions.value = bedResponse?.payload?.map((bed: any) => ({
+      label: bed.name,
+      value: bed.uuid,
+    })) || [];
+
+    console.log(" bedNameOptions yang dimasukkan:", bedNameOptions.value); // ✅ CEK OPSI YANG MASUK
+
     const fetchedData = await fetchBedData(data);
-    itemsBedSetting.value = fetchedData.length ? fetchedData : [{}];
-    itemsBedSetting.value.forEach((bed: any) => {
-      bed.noBed = Number(bed.noBed);
+    console.log("fetchedData:", fetchedData);
+    console.log("Clicked row data:", data);
+
+    if (Array.isArray(fetchedData)) {
+      itemsBedSetting.value = fetchedData.length > 0 ? fetchedData : [{}];
+    } else {
+      itemsBedSetting.value = [{}];
+    }
+
+    // Petakan data bed
+    itemsBedSetting.value = fetchedData.map((bed: any, index: number) => {
+      const lokasi =
+        bed.lokasi_uuid ??
+        bed.lokasiUuid ??
+        bed.location_uuid ??
+        bed.locationUuid ??
+        bed.uuid;
+
+      console.log(`🛏️ Bed ${index + 1}:`, {
+        lokasi_uuid: lokasi,
+        bed_uuid: bed.uuid,
+        lokasi_uuid_raw: bed.lokasi_uuid ?? bed.lokasiUuid,
+        bedName: bed.locationName ?? bed.name ?? "-",
+      });
+
+      const status = bed?.patient ? "Penuh" : "Tersedia";
+      return {
+        uuid: bed.uuid ?? "",
+        bedName: bed.locationName ?? bed.name ?? bed.location_code ?? "-",
+        noBed: bed.noBed ?? "",
+        bedType: bed.type ?? bed.bedType ?? "-",
+        lokasi_uuid: lokasi,
+        statusOperasionalRuangan: status,
+      };
     });
+
     setValues({ bedData: [...itemsBedSetting.value] as any });
     roomSettingDialog.value = true;
   } catch (error) {
@@ -131,14 +251,19 @@ const showBedForm = async (data: any) => {
   }
 };
 
+
+
 const schema = toTypedSchema(
   yup
     .object({
       bedData: yup.array().of(
         yup.object({
           uuid: yup.string().nullable(),
-          bedName: yup.string().required("Jenis Bed harus diisi"),
+          bedName: yup.string().nullable(),
           noBed: yup.number().required("Nomor Bed harus diisi"),
+          bedType: yup.string().required("Tipe Bed harus diisi"),
+          statusOperasionalRuangan: yup.string().nullable(),
+          lokasi_uuid: yup.string().required("Nama Bed harus diisi"),
         })
       ),
     })
@@ -150,16 +275,25 @@ const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
 });
 
 const onSubmit = handleSubmit(async (values) => {
+  console.log("🟢 onSubmit dipanggil");
   storeUtils.setLoading(true);
   try {
-    values.bedData?.forEach((bed) => {
-      bed.noBed = `${bed.noBed}` as unknown as number;
-      bed.uuid = bed.uuid ?? null;
+    const payload = (values.bedData ?? []).map((bed) => {
+      return {
+        uuid: bed.uuid ?? null, 
+        no_bed: String(bed.noBed),   
+        type: bed.bedType,
+        status_operasional: bed.statusOperasionalRuangan || "Penuh",
+        lokasi_uuid: bed.lokasi_uuid || undefined,
+      };
     });
+
+    console.log("Payload being sent to API:", payload);
     await monitoringKamarStore.updateBed(
       openedRoomData.value.uuid,
-      values.bedData
+      { beds: payload } 
     );
+    await monitoringKamarStore.getMonitoringKamar({});
     roomSettingDialog.value = false;
     resetForm();
   } catch (error) {
@@ -169,12 +303,19 @@ const onSubmit = handleSubmit(async (values) => {
   }
 });
 
-const { remove, push, fields } = useFieldArray("bedData");
+const { remove, push, replace, fields } = useFieldArray("bedData");
 
 onMounted(() => {
   fetchUtils();
   fetchData();
+  loadBedNameOptions(""); 
 });
+
+
+
+function getByPartOfApi(partOfUuid: string) {
+  throw new Error("Function not implemented.");
+}
 </script>
 
 <template>
@@ -310,7 +451,7 @@ onMounted(() => {
                     />
                     <CustomChip
                       :showCheckedIcon="false"
-                      :label="data.kelasRuangan"
+                      :label="data.className"
                       bgColor="bg-adameds-300"
                       textColor="text-white"
                       customClass="h-5 border-none"
@@ -320,29 +461,28 @@ onMounted(() => {
                 </template>
               </Column>
               <Column
-                field="status"
-                headerClass="bg-adameds-50"
-                bodyClass="text-SM"
-                style="width: 100px"
-              >
-                <template #header>
-                  <div class="w-full font-semibold text-center">Status</div>
-                </template>
-                <template #body="{ data }">
-                  <div class="flex">
-                    <CustomChip
-                      :showCheckedIcon="false"
-                      :label="data.available == 0 ? 'PENUH' : 'TERSEDIA'"
-                      :bgColor="
-                        data.available == 0 ? 'bg-danger-300' : 'bg-success-300'
-                      "
-                      textColor="text-white"
-                      customClass="h-5 pr-[6px] border-none"
-                      class="mx-auto"
-                    />
-                  </div>
-                </template>
-              </Column>
+                    field="status"
+                    headerClass="bg-adameds-50"
+                    bodyClass="text-SM align-top"
+                  >
+                    <template #header>
+                      <div class="w-full font-semibold text-center">Status</div>
+                    </template>
+                    <template #body="{ data }">
+                      <div class="flex">
+                        <CustomChip
+                          :showCheckedIcon="false"
+                          :label="(data.statusOperasionalRuangan ?? 'Penuh').toUpperCase()"
+                          :bgColor="((data.statusOperasionalRuangan ?? 'Penuh').toLowerCase() === 'penuh'
+                            ? 'bg-danger-300'
+                            : 'bg-success-300')"
+                          textColor="text-white"
+                          customClass="h-5 pr-[6px] border-none"
+                          class="mx-auto"
+                        />
+                      </div>
+                    </template>
+                  </Column>
               <Column
                 field="action"
                 headerClass="bg-adameds-50"
@@ -378,14 +518,14 @@ onMounted(() => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="openedRoomData.kategoriRuangan.name"
-                bgColor="bg-grey-300"
+                bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 border-none"
                 class="mr-1"
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="openedRoomData.kelasRuangan"
+                :label="openedRoomData.className" 
                 bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 border-none"
@@ -425,9 +565,9 @@ onMounted(() => {
     <CustomDialog v-model:visible="roomSettingDialog" width="600px">
       <template #header> Setting Kamar </template>
       <template #body>
-        <div class="mt-5">
+        <div class="mt-5"> 
           <DataTable
-            :value="fields"
+            :value="fields" 
             class="overflow-hidden rounded-[10px]"
             stripedRows
             scrollable
@@ -455,7 +595,7 @@ onMounted(() => {
             >
               <template #body="{ data, index }">
                 <CustomSelect
-                  v-model="data.value.bedName"
+                  v-model="data.value.bedType"
                   :showLabel="false"
                   placeHolder="Pilih Jenis Bed"
                   class=""
@@ -463,10 +603,33 @@ onMounted(() => {
                   optionValue=""
                   :showFilter="false"
                   :options="['Bed', 'Bed Cadangan', 'Box Bayi']"
-                  :invalid="!!(errors as any)[`bedData[${index}].bedName`]"
-                  :invalidMessage="(errors as any)[`bedData[${index}].bedName`]"
+                  :invalid="!!(errors as any)[`bedData[${index}].bedType`]"
+                  :invalidMessage="(errors as any)[`bedData[${index}].bedType`]"
                 />
               </template>
+            </Column>
+            <Column
+              field="bedName"
+              header="Nama Bed"
+              headerClass="bg-adameds-300 text-white"
+              bodyClass="text-SM align-top"
+            >
+            <template #body="{ data, index }">
+              <div>
+                <CustomSelect
+                  v-model="data.value.lokasi_uuid"
+                  :showLabel="false"
+                  placeHolder="Pilih Nama Bed"
+                  :options="bedDropdownOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :showFilter="false"
+                  :invalid="!!(errors as any)[`bedData[${index}].lokasi_uuid`]"
+                  :invalidMessage="(errors as any)[`bedData[${index}].lokasi_uuid`]"
+                  @update:modelValue="(val) =>{ const selected = bedDropdownOptions.find(opt => opt.value === val); data.value.bedName = selected?.label ?? ''; }"
+                />
+              </div>
+            </template> 
             </Column>
             <Column
               field="noBed"
@@ -488,6 +651,30 @@ onMounted(() => {
                 />
               </template>
             </Column>
+              <Column
+                field="status"
+                header="Status Operasional"
+                headerClass="bg-adameds-300 text-white"
+                bodyClass="text-SM align-top"
+              >
+                <template #body="{ data }">
+                  <!-- <pre>{{ JSON.stringify(data, null, 2) }}</pre> -->
+                  <div class="flex">
+                    <CustomChip
+                      :showCheckedIcon="false"
+                      :label="data.value.statusOperasionalRuangan?.toUpperCase()"
+                      :bgColor="
+                        data.value.statusOperasionalRuangan === 'Penuh'
+                          ? 'bg-danger-300'
+                          : 'bg-success-300'
+                      "
+                      textColor="text-white"
+                      customClass="h-5 pr-[6px] border-none"
+                      class="mx-auto"
+                    />
+                  </div>
+                  </template>
+              </Column> 
             <Column
               field="action"
               headerClass="bg-adameds-300 text-white"
@@ -514,7 +701,7 @@ onMounted(() => {
             class="border-2 h-20 border-adameds-75 m-5 rounded-[10px] border-dashed flex"
           >
             <CustomButton
-              @click="push({ noBed: 0 })"
+              @click="push({ bedName: '', noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null })"
               icon="PhPlus"
               label="Bed"
               outlined
@@ -532,7 +719,7 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-end">
           <CustomButton
-            @click="setValues({ bedData: [{ bedName: '', noBed: 0 }] })"
+            @click="setValues({ bedData: [{ bedName: '', noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null}] })"
             label="Reset"
             outlined
             class="mr-[10px]"

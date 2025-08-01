@@ -477,6 +477,25 @@ defineExpose({
                       header="Jenis ID"
                       header-class="text-black bg-adameds-50"
                     ></Column>
+                      <Column
+                      field="noPenjamin.name"
+                      header="Penjamin"
+                      header-class="text-black bg-adameds-50"
+                      >
+                      <template #body="{ data }">
+                        {{ data.noPenjamin?.name ?? "-" }}
+                      </template>
+                    </Column>
+                    <Column
+                      field="noPenjamin.accountNumber"
+                      header="No. Penjamin"
+                      header-class="text-black bg-adameds-50"
+                      >
+                      <template #body="{ data }">
+                        <!-- <pre>{{ data }}</pre> -->
+                        {{ data.noPenjamin?.accountNumber ?? "-" }}
+                      </template>
+                    </Column>
                     <Column
                       field="patient.noIdentity"
                       header="No. Identitas"
