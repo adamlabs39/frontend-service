@@ -6,6 +6,23 @@ import {
   apiAntrianPut,
 } from "@/utils/apiHandler";
 
+interface JadwalItem {
+  jadwalDokterUuid?: string;
+  day?: number;
+  startTime?: string;
+  endTime?: string;
+  kuotaJkn?: number;
+  kuotaNonJkn?: number;
+  durasiPelayanan?: number;
+  aktif?: boolean;
+}
+
+interface JadwalPayload {
+  deleted: string[];
+  updated: JadwalItem[];
+  added: JadwalItem[];
+}
+
 export const useJadwalDokterStore = defineStore({
   id: "jadwalDokter",
   state: () => ({}),
@@ -35,10 +52,14 @@ export const useJadwalDokterStore = defineStore({
     }) {
       return apiAntrianPost(`/antrian/jadwal-dokter`, payload);
     },
-    async updateJadwalDoctor(doctorUuid: string, poliUuid: string) {
+    async updateJadwalDoctor(
+      doctorUuid: string,
+      poliUuid: string,
+      payload: JadwalPayload
+    ) {
       return apiAntrianPut(
         `/antrian/jadwal-dokter/${doctorUuid}/${poliUuid}`,
-        {}
+        payload
       );
     },
   },
