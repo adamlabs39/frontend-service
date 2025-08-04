@@ -40,6 +40,19 @@ const itemsHari = ref([
   { name: "Jumat", code: 5 },
 ]);
 
+const dayNameToCode = (dayName: string) => {
+  const mapping: Record<string, number> = {
+    Senin: 1,
+    Selasa: 2,
+    Rabu: 3,
+    Kamis: 4,
+    Jumat: 5,
+    Sabtu: 6,
+    Minggu: 7,
+  };
+  return mapping[dayName] ?? null; // null jika nama tak dikenali
+};
+
 // Schema validasi untuk array jadwal
 const schema = toTypedSchema(
   yup.object({
@@ -180,7 +193,10 @@ watch(
       // Map data dari parent ke format yang dibutuhkan form
       const mappedData = newData.jadwalDokter.map((jadwal: any) => ({
         jadwalDokterUuid: jadwal.jadwalDokterUuid || null,
-        day: jadwal.day || "",
+        day:
+          typeof jadwal.day === "string"
+            ? dayNameToCode(jadwal.day)
+            : Number(jadwal.day) || "",
         startTime: parseTimeString(jadwal.startTime),
         endTime: parseTimeString(jadwal.endTime),
         durasiPelayanan: Number(jadwal.durasiPelayanan) || 30,
@@ -306,7 +322,10 @@ const handleReset = () => {
     // Reset ke data original
     const mappedData = props.editData.jadwalDokter.map((jadwal: any) => ({
       jadwalDokterUuid: jadwal.jadwalDokterUuid || null,
-      day: Number(jadwal.day) || "",
+      day:
+        typeof jadwal.day === "string"
+          ? dayNameToCode(jadwal.day)
+          : Number(jadwal.day) || "",
       startTime: parseTimeString(jadwal.startTime),
       endTime: parseTimeString(jadwal.endTime),
       durasiPelayanan: Number(jadwal.durasiPelayanan) || 30,
