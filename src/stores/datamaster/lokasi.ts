@@ -22,6 +22,12 @@ export const useLokasiStore = defineStore({
         payload
       );
     },
+    async getByPartOfApi(
+      partOfUuid: string,
+      payload = {}
+    ) {
+      return apiDatamasterGet(`/datamaster/lokasi/part_of/${partOfUuid}`, payload);
+    },
     async getAktifApi(
       params: { type: string; isPoli: string | boolean } = {
         type: "",

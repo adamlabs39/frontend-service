@@ -3,10 +3,10 @@ import { apiAdmisiGet, apiAdmisiPatch } from "@/utils/apiHandler";
 
 export const useMonitoringKamarStore = defineStore({
   id: "monitoringKamar",
-  state: () => ({}),
+  state: () => ({rooms: [] as any []}),
   getters: {},
   actions: {
-    async getMonitoringKamar(
+        async getMonitoringKamar(
       {
         page = 1,
         limit = 10,
@@ -23,12 +23,16 @@ export const useMonitoringKamarStore = defineStore({
           tempFilterKategori += ",";
         }
       });
-      return apiAdmisiGet(
+
+      const response = await apiAdmisiGet(
         `/monitoring-rooms?page=${page}&limit=${limit}&q=${q}&filter_kelas=${filterKelas}&filter_kategori=${tempFilterKategori}`,
         payload
       );
-    },
 
+      this.rooms = response.payload;
+
+      return response;
+    },
     async updateBed(uuid = "", payload = {}) {
       return apiAdmisiPatch(`/monitoring-rooms/${uuid}`, payload);
     },

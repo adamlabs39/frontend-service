@@ -367,6 +367,9 @@ const handlePage = (event: any) => {
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
+            <!-- {{ slotProps.data.monitoringRoom?.room }} -->
+            <!-- name: {{ slotProps.data.monitoringRoom?.room?.name }} <br />
+            className: {{ slotProps.data.monitoringRoom?.room?.className }} -->
             <div class="flex mb-[5px] text-SM">
               <div>
                 {{ slotProps.data.practitioner.title }}
@@ -383,15 +386,15 @@ const handlePage = (event: any) => {
             </div>
             <div class="flex flex-wrap">
               <CustomChip
-                v-if="pageType != 'igd'"
-                :showCheckedIcon="false"
-                :label="
-                  pageType == 'rawat-jalan'
-                    ? slotProps.data.polyclinic.name
-                    : slotProps.data.monitoringRoom.room
-                "
-                customClass="h-5 pr-[5px] mr-[5px]"
-              />
+                  v-if="pageType != 'igd' && slotProps.data.monitoringRoom?.room"
+                  :showCheckedIcon="false"
+                  :label="
+                    pageType == 'rawat-jalan'
+                      ? slotProps.data.monitoringRoom.room.name
+                      : slotProps.data.monitoringRoom.room.name
+                  "
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
               <CustomChip
                 v-else
                 :showCheckedIcon="false"
@@ -405,7 +408,7 @@ const handlePage = (event: any) => {
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
-                :label="`${slotProps.data.monitoringRoom.bedName} ${slotProps.data.monitoringRoom.noBed}`"
+                :label="`${slotProps.data.monitoringRoom.bedLokasi.name}`"
                 customClass="h-5 pr-[5px] mr-[5px]"
               />
               <CustomChip
