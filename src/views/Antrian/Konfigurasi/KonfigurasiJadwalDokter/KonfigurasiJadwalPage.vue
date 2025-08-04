@@ -86,6 +86,11 @@ const handleRowsUpdate = (newRows: number) => {
   fetchJadwalDokter(); // Refresh data
 };
 
+const handleRefresh = () => {
+  dialogData.value.isVisible = false; // tutup dialog
+  fetchJadwalDokter(); // muat ulang data tabel utama
+};
+
 // untuk handle perubahan halaman
 const handlePageUpdate = (newPage: number) => {
   jadwalDokterProperties.value.page = newPage;
@@ -339,6 +344,7 @@ onMounted(() => {
         :method="dialogData.method"
         :editData="dialogData.editData"
         @close="handleClose"
+        @refresh="handleRefresh"
       />
     </template>
     <template #footer>
