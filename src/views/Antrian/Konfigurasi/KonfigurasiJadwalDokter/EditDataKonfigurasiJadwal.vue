@@ -236,6 +236,25 @@ watch(
           },
         ],
       });
+    } else if (newValue && props.method === "edit") {
+      // Selalu remap data asli setiap kali dialog edit dibuka kembali
+      const mappedData = (props.editData.jadwalDokter || []).map(
+        (jadwal: any) => ({
+          jadwalDokterUuid: jadwal.jadwalDokterUuid || null,
+          day:
+            typeof jadwal.day === "string"
+              ? dayNameToCode(jadwal.day)
+              : Number(jadwal.day) || "",
+          startTime: parseTimeString(jadwal.startTime),
+          endTime: parseTimeString(jadwal.endTime),
+          durasiPelayanan: Number(jadwal.durasiPelayanan) || 30,
+          kuotaJkn: Number(jadwal.kuotaJkn) || 0,
+          kuotaNonJkn: Number(jadwal.kuotaNonJkn) || 0,
+          kuota: Number(jadwal.kuota) || 0,
+          status: jadwal.status === "aktif" || jadwal.status === true,
+        })
+      );
+      setValues({ jadwalData: mappedData });
     }
   }
 );
