@@ -22,6 +22,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  excludedDoctorUuids: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
 });
 
 const selectedDokter = ref<any>();
@@ -96,6 +100,12 @@ const resetFilter = () => {
 defineExpose({
   resetFilter,
 });
+
+const emit = defineEmits(["refresh"]);
+
+function handleRefresh() {
+  emit("refresh");
+}
 </script>
 
 <template>
@@ -166,28 +176,30 @@ defineExpose({
         </div>
         <div class="font-semibold text-SM text-grey-300">
           <div class="flex mb-[10px] mt-5">
-            <div class="w-[15%]">Filter Status</div>
-            <div class="flex">
-              |
-              <CustomChip
-                label="AKTIF"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-50"
-                iconColor="text-adameds-300"
-                textColor="text-adameds-300"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('AKTIF')"
-                @selected="onPaymentMethodSelect"
-                selectedColor="bg-adameds-300 border-adameds-300"
-              />
-              <CustomChip
-                label="NON-AKTIF"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('NON-AKTIF')"
-                @selected="onPaymentMethodSelect"
-              />
+            <div class="flex gap-5">
+              <div class="">Filter Status</div>
+              <div class="flex">
+                |
+                <CustomChip
+                  label="AKTIF"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('AKTIF')"
+                  @selected="onPaymentMethodSelect"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                />
+                <CustomChip
+                  label="NON-AKTIF"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('NON-AKTIF')"
+                  @selected="onPaymentMethodSelect"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -211,8 +223,10 @@ defineExpose({
   </CustomAccordion>
   <TambahDataKonfigurasiJadwal
     v-model:isDialogVisible="dialogData.isVisible"
+    :excludedDokterUuids="props.excludedDoctorUuids"
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
+    @refresh="handleRefresh"
   />
 </template>

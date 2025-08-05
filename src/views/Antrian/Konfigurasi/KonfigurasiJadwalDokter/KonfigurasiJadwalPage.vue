@@ -66,6 +66,10 @@ const dialogData = ref({
   editData: {},
 });
 
+const existingDoctorUuids = computed(() =>
+  jadwalDokterPayload.value.map((item) => item.doctor.uuid)
+);
+
 const handleEdit = (data: any) => {
   dialogData.value = {
     isVisible: true,
@@ -109,7 +113,11 @@ onMounted(() => {
     class=""
   >
     <template #header>
-      <konfigurasi-jadwal-header ref="headerFilterRef" />
+      <konfigurasi-jadwal-header
+        @refresh="fetchJadwalDokter"
+        ref="headerFilterRef"
+        :excludedDoctorUuids="existingDoctorUuids"
+      />
     </template>
     <template #content>
       <DataTable

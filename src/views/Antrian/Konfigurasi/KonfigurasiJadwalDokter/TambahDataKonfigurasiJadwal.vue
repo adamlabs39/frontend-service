@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted } from "vue";
-import { useForm } from "vee-validate";
+import { ref, watch, onMounted, computed, type PropType } from "vue";
+import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -10,6 +10,11 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
+import { useToast } from "primevue/usetoast";
+
+const toast = useToast();
 
 const props = defineProps({
   isDialogVisible: {
@@ -21,35 +26,92 @@ const props = defineProps({
   method: {
     type: String,
   },
+  excludedDokterUuids: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
 });
+
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+
+const jadwalPoliPayload = ref<any[]>([]);
+const jadwalPoliProperties = ref({
+  name: "",
+});
+
+const jadwalDokterPayload = ref<any[]>([]);
+const jadwalDokterProperties = ref({
+  poliUuid: "",
+  name: "",
+});
+
+// Computed property untuk mendapatkan kode antrian dokter yang dipilih
+const selectedDokterCode = computed(() => {
+  if (!dokterUuid.value) return "";
+  const selectedDokter = jadwalDokterPayload.value.find(
+    (dokter) => dokter.uuid === dokterUuid.value
+  );
+  return selectedDokter?.codeAntrianDokter || "";
+});
+
+const fetchGetPoli = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiPoli(
+      jadwalPoliProperties.value.name
+    );
+    console.log("Hasil dari response:", response);
+    if (response && response.payload) {
+      jadwalPoliPayload.value = response.payload;
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalPoliPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const fetchGetDokter = async (poliUuid: string) => {
+  if (!poliUuid) {
+    jadwalDokterPayload.value = [];
+    return;
+  }
+
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiListDokter(
+      poliUuid,
+      jadwalDokterProperties.value.name
+    );
+    if (response && response.payload) {
+      jadwalDokterPayload.value = response.payload.filter(
+        (dokter: any) => !props.excludedDokterUuids.includes(dokter.uuid)
+      );
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalDokterPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
 
 const defaultData = [
   {
-    noJadwal: 1,
-    hariModel: undefined,
-    startDateFilter: new Date(),
-    endDateFilter: new Date(),
-    kuota: "20",
-    durasi: "0",
-    slot_jkn: "0",
-    slot_non_jkn: "0",
-    status: true,
-  },
-  {
-    noJadwal: 2,
-    hariModel: undefined,
-    startDateFilter: new Date(),
-    endDateFilter: new Date(),
-    kuota: "20",
-    durasi: "0",
-    slot_jkn: "0",
-    slot_non_jkn: "0",
-    status: true,
+    day: undefined,
+    startTime: new Date(),
+    endTime: new Date(),
+    kuotaJkn: "0",
+    kuotaNonJkn: "0",
+    durasiPelayanan: "0",
+    aktif: true,
   },
 ];
 
-defaultData.forEach((item) => item.startDateFilter.setHours(0, 0, 0, 0));
-defaultData.forEach((item) => item.endDateFilter.setHours(0, 0, 0, 0));
+defaultData.forEach((item) => item.startTime.setHours(0, 0, 0, 0));
+defaultData.forEach((item) => item.endTime.setHours(0, 0, 0, 0));
 
 // Initialize data with default values
 const data = ref([...defaultData]);
@@ -61,99 +123,172 @@ endDateFilter.value.setHours(0, 0, 0, 0);
 
 const addRow = () => {
   data.value.push({
-    noJadwal: data.value.length + 1,
-    hariModel: undefined,
-    startDateFilter: new Date(startDateFilter.value),
-    endDateFilter: new Date(endDateFilter.value),
-    kuota: "20",
-    durasi: "0",
-    slot_jkn: "0", // Corrected from slot_jkn to slotJkn
-    slot_non_jkn: "0", // Added missing slotNonJkn for consistency
-    status: true,
+    day: undefined,
+    startTime: new Date(startDateFilter.value),
+    endTime: new Date(endDateFilter.value),
+    kuotaJkn: "0",
+    kuotaNonJkn: "0",
+    durasiPelayanan: "0",
+    aktif: true,
   });
 };
 
-const itemsDokter = ref([
-  { name: "dr. Umum", code: "DR-U" },
-  { name: "dr. Spesialis Sp. A", code: "DR-A" },
-  { name: "dr. Spesialis Sp. M", code: "DR-M" },
-  { name: "dr. Spesialis Sp. Og", code: "DR-OG" },
-  { name: "dr. Spesialis Sp. D", code: "DR-D" },
-]);
-const itemsPoli = ref([
-  { name: "Poli Umum", code: "POLI-U" },
-  { name: "Poli Anak", code: "POLI-A" },
-  { name: "Poli Mata", code: "POLI-M" },
-  { name: "Poli Kandungan", code: "POLI-K" },
-  { name: "Poli Dalam", code: "POLI-D" },
-]);
 const itemsHari = ref([
-  { name: "Senin", code: "H1" },
-  { name: "Selasa", code: "H2" },
-  { name: "Rabu", code: "H3" },
-  { name: "Kamis", code: "H4" },
-  { name: "Jumat", code: "H5" },
-  { name: "Sabtu", code: "H6" },
-  { name: "Minggu", code: "H7" },
+  { name: "Senin", code: "1" },
+  { name: "Selasa", code: "2" },
+  { name: "Rabu", code: "3" },
+  { name: "Kamis", code: "4" },
+  { name: "Jumat", code: "5" },
 ]);
 
-const frekuensiNadi = ref<number | undefined>(undefined);
+const dayNameToCode = (dayName: string) => {
+  const mapping: Record<string, number> = {
+    Senin: 1,
+    Selasa: 2,
+    Rabu: 3,
+    Kamis: 4,
+    Jumat: 5,
+    Sabtu: 6,
+    Minggu: 7,
+  };
+  return mapping[dayName] ?? null; // null jika nama tak dikenali
+};
 
+// Helper format Jam -> "HH:mm"
+const formatTime = (date: Date) => {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
+// Schema validasi yang diperbaiki
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama tindakan harus diisi"),
-    dokterModel: yup.string(),
-    poliModel: yup.string(),
-    hariModel: yup.string(),
-    status: yup.bool(),
+    poliUuid: yup.string().required("Poliklinik harus dipilih"),
+    dokterUuid: yup.string().required("Dokter harus dipilih"),
+    jadwalData: yup
+      .array()
+      .of(
+        yup.object({
+          day: yup.number().required("Hari harus dipilih"),
+          startTime: yup.date().required("Jam mulai harus diisi"),
+          endTime: yup.date().required("Jam selesai harus diisi"),
+          durasiPelayanan: yup.string().required("Durasi harus diisi"),
+          kuotaJkn: yup.string().required("Kuota JKN harus diisi"),
+          kuotaNonJkn: yup.string().required("Kuota Non-JKN harus diisi"),
+          aktif: yup.boolean().required("Status harus dipilih"),
+        })
+      )
+      .min(1, "Minimal harus ada 1 jadwal"),
   })
 );
 
-const itemsJadwal = ref([
-  {
-    noJadwal: "1",
-    kuota: "20",
-    durasi: "20",
-    slot_booking: "5",
-    slot_jkn: "5",
-  },
-  {
-    noJadwal: "2",
-    kuota: "20",
-    durasi: "20",
-    slot_booking: "5",
-    slot_jkn: "5",
-  },
-]);
-
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    // Logic to save edited data
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    // Logic to add new data
-    console.log("Adding new data:", values);
-  }
-  closeDialog();
+const [poliUuid] = defineField("poliUuid");
+const [dokterUuid] = defineField("dokterUuid");
+
+// Computed property untuk menentukan apakah dropdown dokter disabled
+const isDokterDisabled = computed(() => {
+  return !poliUuid.value || poliUuid.value === "";
 });
 
-const [code] = defineField("code");
-const [name] = defineField("name");
-const [dokterModel] = defineField("dokterModel");
-const [poliModel] = defineField("poliModel");
-const [hariModel] = defineField("hariModel");
-const [status] = defineField("status");
+// Computed property untuk mendapatkan kode antrian poli yang dipilih
+const selectedPoliCode = computed(() => {
+  if (!poliUuid.value) return "";
+  const selectedPoli = jadwalPoliPayload.value.find(
+    (poli) => poli.uuid === poliUuid.value
+  );
+  return selectedPoli?.codeAntrianPoli || "";
+});
 
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+// Watch untuk poliModel - ketika poli berubah, fetch dokter dan reset dokter selection
+watch(
+  () => poliUuid.value,
+  (newPoliValue) => {
+    dokterUuid.value = undefined;
+    jadwalDokterPayload.value = [];
+
+    if (newPoliValue) {
+      // Langsung gunakan newPoliValue sebagai UUID
+      fetchGetDokter(newPoliValue);
+    }
+  }
+);
+
+// Field array untuk mengelola data jadwal
+const { remove, push, replace, fields } = useFieldArray("jadwalData");
+
+const onSubmit = handleSubmit(async (values: any) => {
+  const hasEmptyFields = data.value.some((item) => {
+    return (
+      !item.day ||
+      !item.startTime ||
+      !item.endTime ||
+      !item.durasiPelayanan ||
+      item.durasiPelayanan === "0" ||
+      !item.kuotaJkn ||
+      item.kuotaJkn === "0" ||
+      !item.kuotaNonJkn ||
+      item.kuotaNonJkn === "0"
+    );
+  });
+  if (hasEmptyFields) {
+    toast.add({
+      severity: "error",
+      summary: "Validasi Error",
+      detail: "Semua field jadwal harus diisi dengan benar",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Bangun payload - poliUuid.value sudah berupa UUID
+  const payload = {
+    dokter_uuid: dokterUuid.value,
+    poliklinik_uuid: poliUuid.value, // sudah UUID
+    jadwal: data.value.map((item) => ({
+      day: Number(item.day), // pastikan number
+      start_time: formatTime(item.startTime),
+      end_time: formatTime(item.endTime),
+      kuota_jkn: parseInt(item.kuotaJkn),
+      kuota_non_jkn: parseInt(item.kuotaNonJkn),
+      durasi_pelayanan: parseInt(item.durasiPelayanan),
+      aktif: item.aktif ?? true,
+    })),
+  };
+
+  try {
+    useUtilsStore.setLoading(true);
+    await jadwalDokterStore.addJadwalDoctor(payload);
+    toast.add({
+      severity: "success",
+      summary: "Sukses",
+      detail: "Jadwal dokter berhasil disimpan",
+      life: 3000,
+    });
+    emit("refresh");
+    closeDialog();
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Gagal",
+      detail: "Gagal menyimpan jadwal dokter",
+      life: 3000,
+    });
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+});
+
+const emit = defineEmits(["update:isDialogVisible", "close", "refresh"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
 }
+
 function closeDialog() {
   emit("close");
 }
@@ -161,6 +296,9 @@ function closeDialog() {
 // to trigger handleReset at the start
 onMounted(() => {
   handleReset();
+  fetchGetPoli();
+  // Set initial data untuk field array
+  replace(defaultData);
 });
 
 watch(
@@ -168,50 +306,50 @@ watch(
   (newValue) => {
     if (!newValue) {
       resetForm();
-      // Reset the DataTable data to the initial default state
       data.value = [...defaultData];
+      replace(defaultData);
     }
   }
 );
 
 function handleReset() {
-  // Reset form fields
   resetForm();
 
-  // Clear selections and date filters
-  dokterModel.value = undefined;
-  poliModel.value = undefined;
-  hariModel.value = undefined;
-  status.value = false; // or default value if required
+  // Clear selections
+  poliUuid.value = undefined;
+  dokterUuid.value = undefined;
+  jadwalDokterPayload.value = [];
 
-  // Clear date picker value
+  // Reset date filters
   startDateFilter.value = new Date();
   startDateFilter.value.setHours(0, 0, 0, 0);
   endDateFilter.value = new Date();
   endDateFilter.value.setHours(0, 0, 0, 0);
 
-  // Reset the DataTable to its default values
+  // Reset DataTable data
   data.value = [...defaultData];
+  replace(defaultData);
 
-  // Ensure that CustomSelect, CustomDatePicker, and CustomInputNumber are reset properly
   data.value.forEach((item) => {
-    // Reset select and date pickers
-    item.hariModel = undefined;
-    item.startDateFilter = new Date();
-    item.startDateFilter.setHours(0, 0, 0, 0);
-    item.endDateFilter = new Date();
-    item.endDateFilter.setHours(0, 0, 0, 0);
-
-    // Reset input number fields
-    item.kuota = "20"; // or default value
-    item.durasi = "0"; // or default value
-    item.slot_jkn = "0"; // or default value
-    item.slot_non_jkn = "0"; // or default value
+    item.day = undefined;
+    item.startTime = new Date();
+    item.startTime.setHours(0, 0, 0, 0);
+    item.endTime = new Date();
+    item.endTime.setHours(0, 0, 0, 0);
+    item.kuotaJkn = "0";
+    item.kuotaNonJkn = "0";
+    item.durasiPelayanan = "0";
   });
 }
 
+// Function untuk menghapus row
+const removeRow = (index: number) => {
+  remove(index);
+};
+
 const selectedPatient = ref([]);
 </script>
+
 <template>
   <CustomDialog
     :fullScreen="true"
@@ -227,17 +365,17 @@ const selectedPatient = ref([]);
           <CustomSelect
             label="Poliklinik"
             place-holder="Pilih Poliklinik"
-            v-model="poliModel"
-            :options="itemsPoli"
-            optionValue="code"
+            v-model="poliUuid"
+            :options="jadwalPoliPayload"
+            optionValue="uuid"
             optionLabel="name"
             class="mr-5 w-3/4 text-black"
+            :invalid="!!errors.poliUuid"
+            :invalidMessage="errors.poliUuid"
           />
           <CustomTextfield
             label="Kode Antrian Poli"
-            v-model="poliModel"
-            :options="itemsPoli"
-            Value="code"
+            v-model="selectedPoliCode"
             placeholder="Kode Antrian Poli"
             class="w-1/4"
             disabled
@@ -248,17 +386,18 @@ const selectedPatient = ref([]);
             label="Nama Dokter"
             place-holder="Cari & Pilih Nama Dokter"
             prependIcon="PhMagnifyingGlass"
-            v-model="dokterModel"
-            :options="itemsDokter"
-            optionValue="code"
-            optionLabel="name"
+            v-model="dokterUuid"
+            :options="jadwalDokterPayload"
+            optionValue="uuid"
+            optionLabel="pegawai.name"
             class="mr-5 w-3/4 text-black"
+            :disabled="isDokterDisabled"
+            :invalid="!!errors.dokterUuid"
+            :invalidMessage="errors.dokterUuid"
           />
           <CustomTextfield
             label="Kode Antrian Dokter"
-            v-model="dokterModel"
-            :options="itemsDokter"
-            Value="code"
+            v-model="selectedDokterCode"
             placeholder="Kode Antrian Dokter"
             class="w-1/4"
             disabled
@@ -267,10 +406,9 @@ const selectedPatient = ref([]);
         <hr />
         <div class="overflow-y-auto relative">
           <DataTable
-            v-if="itemsJadwal.length"
             v-model:selection="selectedPatient"
             :value="data"
-            tableStyle="min-width: 50rem "
+            tableStyle="min-width: 50rem"
             class="text-black"
             stripedRows
             scrollable
@@ -283,7 +421,7 @@ const selectedPatient = ref([]);
               </template>
               <template #body="slotProps">
                 <div class="text-center">
-                  <div class="text-sm">{{ slotProps.data.noJadwal }}</div>
+                  <div class="text-sm">{{ slotProps.index + 1 }}</div>
                 </div>
               </template>
             </Column>
@@ -291,12 +429,14 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <CustomSelect
                   place-holder="Pilih Hari"
-                  v-model="slotProps.data.hariModel"
+                  v-model="slotProps.data.day"
                   :options="itemsHari"
                   optionValue="code"
                   optionLabel="name"
                   class="text-sm text-black"
                   label=""
+                  :invalid="!slotProps.data.day"
+                  invalidMessage="Hari harus dipilih"
                 />
               </template>
             </Column>
@@ -311,17 +451,19 @@ const selectedPatient = ref([]);
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.startDateFilter"
+                    v-model="slotProps.data.startTime"
                     label=""
                     class="w-[120px] text-xs text-grey-400"
+                    :invalid="!slotProps.data.startTime"
                   />
                   <PhMinus class="mx-[5px] text-black" />
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.endDateFilter"
+                    v-model="slotProps.data.endTime"
                     label=""
                     class="w-[120px] text-grey-400 text-sm"
+                    :invalid="!slotProps.data.endTime"
                   />
                 </div>
               </template>
@@ -342,9 +484,13 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.durasi"
+                    v-model:modelValue="slotProps.data.durasiPelayanan"
                     type="number"
                     :showLabel="false"
+                    :invalid="
+                      !slotProps.data.durasiPelayanan ||
+                      slotProps.data.durasiPelayanan === '0'
+                    "
                   >
                     <template #appendText>
                       <div class="flex items-center mr-2">mnt</div>
@@ -366,9 +512,13 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.slot_jkn"
+                    v-model:modelValue="slotProps.data.kuotaJkn"
                     type="number"
                     :showLabel="false"
+                    :invalid="
+                      !slotProps.data.kuotaJkn ||
+                      slotProps.data.kuotaJkn === '0'
+                    "
                   >
                     <template #appendText>
                       <div class="flex items-center mr-2">Slot</div>
@@ -377,7 +527,6 @@ const selectedPatient = ref([]);
                 </div>
               </template>
             </Column>
-
             <Column field="slot non-jkn" headerClass="bg-adameds-50">
               <template #header>
                 <div
@@ -391,9 +540,13 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.slot_non_jkn"
+                    v-model:modelValue="slotProps.data.kuotaNonJkn"
                     type="number"
                     :showLabel="false"
+                    :invalid="
+                      !slotProps.data.kuotaNonJkn ||
+                      slotProps.data.kuotaNonJkn === '0'
+                    "
                   >
                     <template #appendText>
                       <div class="flex items-center mr-2">Slot</div>
@@ -417,7 +570,11 @@ const selectedPatient = ref([]);
                 <div
                   class="flex justify-center items-center whitespace-nowrap text-SM"
                 >
-                  {{ slotProps.data.kuota }} Pasien
+                  {{
+                    (parseInt(slotProps.data.kuotaJkn) || 0) +
+                    (parseInt(slotProps.data.kuotaNonJkn) || 0)
+                  }}
+                  Pasien
                 </div>
               </template>
             </Column>
@@ -432,7 +589,7 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <div class="flex justify-center items-center w-full">
                   <CustomSwitch
-                    v-model="slotProps.data.status"
+                    v-model="slotProps.data.aktif"
                     :showLabel="false"
                     sideLabelTrue="Aktif"
                     sideLabel="Non - Aktif"
@@ -457,6 +614,7 @@ const selectedPatient = ref([]);
                     icon="PhTrash"
                     textColor="text-white"
                     backgroundColor="bg-red-500"
+                    @click="removeRow(slotProps.index)"
                   />
                 </div>
               </template>
@@ -487,9 +645,8 @@ const selectedPatient = ref([]);
             background-color="bg-white"
             text-color="text-grey-300"
             @click="handleReset"
-          >
-          </CustomButton>
-          <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+          />
+          <CustomButton label="Simpan" @click="onSubmit" />
         </div>
       </div>
     </template>
