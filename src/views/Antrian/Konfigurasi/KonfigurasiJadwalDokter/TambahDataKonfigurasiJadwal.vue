@@ -161,6 +161,15 @@ const formatTime = (date: Date) => {
   return `${hours}:${minutes}`;
 };
 
+const toMinutes = (t: any) => {
+  if (typeof t === "string" && /^\d{2}:\d{2}$/.test(t)) {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  }
+  const d = t instanceof Date ? t : typeof t === "string" ? new Date(t) : null;
+  return d && !isNaN(d.getTime()) ? d.getHours() * 60 + d.getMinutes() : 0;
+};
+
 // Schema validasi yang diperbaiki
 const schema = toTypedSchema(
   yup.object({
@@ -172,7 +181,38 @@ const schema = toTypedSchema(
         yup.object({
           day: yup.number().required("Hari harus dipilih"),
           startTime: yup.date().required("Jam mulai harus diisi"),
-          endTime: yup.date().required("Jam selesai harus diisi"),
+          endTime: yup
+            .date()
+            .required("Jam selesai harus diisi")
+            .test(
+              "is-greater",
+              "Jam selesai harus lebih besar dari jam mulai",
+              function (value) {
+                const { startTime } = this.parent;
+                // Lewati jika salah satu belum diisi
+                if (!startTime || !value) return true;
+
+                // Helper untuk konversi Date/string → menit
+                const toMinutes = (t: any) => {
+                  if (typeof t === "string" && /^\d{2}:\d{2}$/.test(t)) {
+                    const [h, m] = t.split(":").map(Number);
+                    return h * 60 + m;
+                  }
+                  const dateObj =
+                    t instanceof Date
+                      ? t
+                      : typeof t === "string"
+                      ? new Date(t)
+                      : null;
+                  if (dateObj && !isNaN(dateObj.getTime())) {
+                    return dateObj.getHours() * 60 + dateObj.getMinutes();
+                  }
+                  return 0;
+                };
+
+                return toMinutes(value) > toMinutes(startTime);
+              }
+            ),
           durasiPelayanan: yup.string().required("Durasi harus diisi"),
           kuotaJkn: yup.string().required("Kuota JKN harus diisi"),
           kuotaNonJkn: yup.string().required("Kuota Non-JKN harus diisi"),
@@ -182,6 +222,11 @@ const schema = toTypedSchema(
       .min(1, "Minimal harus ada 1 jadwal"),
   })
 );
+
+const isEndTimeInvalid = (row: any) => {
+  if (!row.startTime || !row.endTime) return !row.endTime;
+  return toMinutes(row.endTime) <= toMinutes(row.startTime);
+};
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -193,6 +238,10 @@ const [dokterUuid] = defineField("dokterUuid");
 // Computed property untuk menentukan apakah dropdown dokter disabled
 const isDokterDisabled = computed(() => {
   return !poliUuid.value || poliUuid.value === "";
+});
+
+const isCodeDoctorDisabled = computed(() => {
+  return !dokterUuid.value || dokterUuid.value === "";
 });
 
 // Computed property untuk mendapatkan kode antrian poli yang dipilih
@@ -305,9 +354,7 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (!newValue) {
-      resetForm();
-      data.value = [...defaultData];
-      replace(defaultData);
+      handleReset();
     }
   }
 );
@@ -344,7 +391,8 @@ function handleReset() {
 
 // Function untuk menghapus row
 const removeRow = (index: number) => {
-  remove(index);
+  remove(index); // hapus di field array vee-validate
+  data.value.splice(index, 1); // hapus di sumber DataTable
 };
 
 const selectedPatient = ref([]);
@@ -378,7 +426,8 @@ const selectedPatient = ref([]);
             v-model="selectedPoliCode"
             placeholder="Kode Antrian Poli"
             class="w-1/4"
-            disabled
+            :disabled="isDokterDisabled"
+            :readOnly="true"
           />
         </div>
         <div class="flex gap-2.5 w-full">
@@ -400,7 +449,8 @@ const selectedPatient = ref([]);
             v-model="selectedDokterCode"
             placeholder="Kode Antrian Dokter"
             class="w-1/4"
-            disabled
+            :disabled="isCodeDoctorDisabled"
+            :readOnly="true"
           />
         </div>
         <hr />
@@ -463,7 +513,8 @@ const selectedPatient = ref([]);
                     v-model="slotProps.data.endTime"
                     label=""
                     class="w-[120px] text-grey-400 text-sm"
-                    :invalid="!slotProps.data.endTime"
+                    :invalid="isEndTimeInvalid(slotProps.data)"
+                    invalidMessage="Jam selesai harus lebih besar dari jam mulai"
                   />
                 </div>
               </template>
