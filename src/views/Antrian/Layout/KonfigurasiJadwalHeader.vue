@@ -47,11 +47,6 @@ const selectedDokter = ref<any>();
 
 const selectedPoli = ref<any>();
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
-
-// !SECTION
-
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -76,14 +71,6 @@ function handleAdd() {
     isVisible: true,
     method: "add",
     title: "Tambah",
-  };
-}
-
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit",
   };
 }
 
