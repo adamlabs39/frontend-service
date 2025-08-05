@@ -70,6 +70,25 @@ const existingDoctorUuids = computed(() =>
   jadwalDokterPayload.value.map((item) => item.doctor.uuid)
 );
 
+const dokterOptions = computed(() => {
+  const map = new Map();
+  jadwalDokterPayload.value.forEach((item) => {
+    map.set(item.doctor.uuid, {
+      uuid: item.doctor.uuid,
+      name: item.doctor.name,
+    });
+  });
+  return Array.from(map.values());
+});
+
+const poliOptions = computed(() => {
+  const map = new Map();
+  jadwalDokterPayload.value.forEach((item) => {
+    map.set(item.poli.uuid, { uuid: item.poli.uuid, name: item.poli.name });
+  });
+  return Array.from(map.values());
+});
+
 const handleEdit = (data: any) => {
   dialogData.value = {
     isVisible: true,
@@ -101,6 +120,20 @@ const handlePageUpdate = (newPage: number) => {
   fetchJadwalDokter(); // Refresh data
 };
 
+const filterCriteria = ref({ dokterUuid: "", poliUuid: "" });
+
+const displayedJadwalDokter = computed(() => {
+  return jadwalDokterPayload.value.filter((item) => {
+    const doctorOk =
+      !filterCriteria.value.dokterUuid ||
+      item.doctor.uuid === filterCriteria.value.dokterUuid;
+    const poliOk =
+      !filterCriteria.value.poliUuid ||
+      item.poli.uuid === filterCriteria.value.poliUuid;
+    return doctorOk && poliOk;
+  });
+});
+
 onMounted(() => {
   fetchJadwalDokter();
 });
@@ -117,13 +150,16 @@ onMounted(() => {
         @refresh="fetchJadwalDokter"
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
+        @search="filterCriteria = $event"
+        :dokterOptions="dokterOptions"
+        :poliOptions="poliOptions"
       />
     </template>
     <template #content>
       <DataTable
         v-model:expandedRows="expandedRows"
-        v-if="jadwalDokterPayload.length"
-        :value="jadwalDokterPayload"
+        v-if="displayedJadwalDokter.length"
+        :value="displayedJadwalDokter"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable

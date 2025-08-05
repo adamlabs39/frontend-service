@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { computed, ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -26,25 +26,26 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => [],
   },
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+  dokterOptions: {
+    type: Array as PropType<Array<{ uuid: string; name: string }>>,
+    default: () => [],
+  },
+  poliOptions: {
+    type: Array as PropType<Array<{ uuid: string; name: string }>>,
+    default: () => [],
+  },
 });
 
+const dokterDropdown = computed(() => props.dokterOptions);
+const poliDropdown = computed(() => props.poliOptions);
+
 const selectedDokter = ref<any>();
-const itemDokter = ref([
-  { name: "dr. Umum", code: "DR1" },
-  { name: "dr. Spesialis Sp. A", code: "DR2" },
-  { name: "dr. Spesialis Sp. M", code: "DR3" },
-  { name: "dr. Spesialis Sp. Og", code: "DR4" },
-  { name: "dr. Spesialis Sp. D", code: "DR5" },
-]);
 
 const selectedPoli = ref<any>();
-const itemPoli = ref([
-  { name: "Poli Umum", code: "P1" },
-  { name: "Poli Anak", code: "P2" },
-  { name: "Poli Mata", code: "P3" },
-  { name: "Poli Kandungan", code: "P4" },
-  { name: "Poli Dalam", code: "P5" },
-]);
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -101,10 +102,26 @@ defineExpose({
   resetFilter,
 });
 
-const emit = defineEmits(["refresh"]);
+const emit = defineEmits(["refresh", "search"]);
 
 function handleRefresh() {
   emit("refresh");
+}
+
+function handleSearch() {
+  emit("search", {
+    dokterUuid: selectedDokter.value ?? "",
+    poliUuid: selectedPoli.value ?? "",
+  });
+}
+
+function handleReset() {
+  resetFilter(); // bersihkan pilihan lokal
+  emit("search", {
+    // hilangkan filter di parent
+    dokterUuid: "",
+    poliUuid: "",
+  });
 }
 </script>
 
@@ -140,8 +157,8 @@ function handleRefresh() {
         <div class="flex mt-[10px]">
           <CustomSelect
             v-model="selectedDokter"
-            :options="itemDokter"
-            optionValue="code"
+            :options="dokterDropdown"
+            optionValue="uuid"
             optionLabel="name"
             class="w-1/4 mr-[10px] flex-grow"
             :is-loading="false"
@@ -151,8 +168,8 @@ function handleRefresh() {
           />
           <CustomSelect
             v-model="selectedPoli"
-            :options="itemPoli"
-            optionValue="code"
+            :options="poliDropdown"
+            optionValue="uuid"
             optionLabel="name"
             class="w-1/4 mr-[20px] flex-grow"
             :is-loading="false"
@@ -164,9 +181,10 @@ function handleRefresh() {
             icon="PhMagnifyingGlass"
             label="Cari"
             class="mr-[10px] mt-auto w-[95px]"
+            @click="handleSearch"
           />
           <CustomButton
-            @click="resetFilter"
+            @click="handleReset"
             label="Reset"
             outlined
             borderColor="border-adameds-300"
