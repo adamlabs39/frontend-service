@@ -4,6 +4,7 @@ import {
   apiAntrianDelete,
   apiAntrianPost,
   apiAntrianPut,
+  apiAntrianGetDatamaster,
 } from "@/utils/apiHandler";
 
 interface JadwalItem {
@@ -46,9 +47,17 @@ export const useJadwalDokterStore = defineStore({
       );
     },
     async addJadwalDoctor(payload: {
-      doctorUuid: string;
-      poliUuid: string;
-      jadwal: string;
+      dokter_uuid: string;
+      poliklinik_uuid: string;
+      jadwal: Array<{
+        day: number;
+        startTime: string;
+        endTime: string;
+        kuotaJkn: number;
+        kuotaNonJkn: number;
+        durasiPelayanan: number;
+        aktif: boolean;
+      }>;
     }) {
       return apiAntrianPost(`/antrian/jadwal-dokter`, payload);
     },
@@ -59,6 +68,18 @@ export const useJadwalDokterStore = defineStore({
     ) {
       return apiAntrianPut(
         `/antrian/jadwal-dokter/${doctorUuid}/${poliUuid}`,
+        payload
+      );
+    },
+    async getApiPoli(name: string, payload = {}) {
+      return apiAntrianGetDatamaster(
+        `/datamaster/lokasi/poli/aktif?name=${name}`,
+        payload
+      );
+    },
+    async getApiListDokter(poliUuid: string, name: string, payload = {}) {
+      return apiAntrianGetDatamaster(
+        `/datamaster/practitioner/poli/aktif?poli_uuid=${poliUuid}&name=${name}`,
         payload
       );
     },

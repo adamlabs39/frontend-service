@@ -771,6 +771,15 @@ const apiAntrianPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAntrianGetDatamaster = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
+  try {
+    let response = await baseInstanceDatamaster.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -826,4 +835,5 @@ export {
   apiAntrianDelete,
   apiAntrianPost,
   apiAntrianPut,
+  apiAntrianGetDatamaster,
 };
