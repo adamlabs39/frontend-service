@@ -367,9 +367,6 @@ const handlePage = (event: any) => {
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <!-- {{ slotProps.data.monitoringRoom?.room }} -->
-            <!-- name: {{ slotProps.data.monitoringRoom?.room?.name }} <br />
-            className: {{ slotProps.data.monitoringRoom?.room?.className }} -->
             <div class="flex mb-[5px] text-SM">
               <div>
                 {{ slotProps.data.practitioner.title }}
@@ -390,7 +387,7 @@ const handlePage = (event: any) => {
                   :showCheckedIcon="false"
                   :label="
                     pageType == 'rawat-jalan'
-                      ? slotProps.data.monitoringRoom.room.name
+                      ? slotProps.data.monitoringRoom.room.className
                       : slotProps.data.monitoringRoom.room.name
                   "
                   customClass="h-5 pr-[5px] mr-[5px]"

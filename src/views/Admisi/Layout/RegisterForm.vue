@@ -272,6 +272,8 @@ const postRegisterPatient = async () => {
   }
 };
 
+const selectedIsiSurat = ref<string>("");
+
 const registPatient = async (type: string) => {
   if (type == "lewati") {
     await postRegisterPatient();
@@ -332,44 +334,125 @@ const [familyDataGender] = defineField("familyData.gender");
 const [familyDataRelationship] = defineField("familyData.relationship");
 const [name] = defineField("name");
 
+
+// const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
+//   storeUtils.setLoading(true);
+//   try {
+//     if (props.formType == "add") {
+//       await postRegisterPatient();
+//     }
+
+//     values.familyData = Object.keys(values.familyData).length
+//       ? values.familyData
+//       : (null as any);
+//     const tempGeneralConsentData = createGeneralConsentPdf({
+//       data: selectedIsiSurat.value.isiSurat,
+//       patientData: openedPatientData.value,
+//       familyData: values.familyData,
+//     });
+//     values.generalConsent = await new Promise((resolve, reject) => {
+//       tempGeneralConsentData.getBase64((base64) => {
+//         if (base64) {
+//           resolve(base64);
+//         } else {
+//           reject("Gagal mendapatkan Base64 dari dokumen PDF.");
+//         }
+//       });
+//     });
+//     values.name = selectedDataGeneralConsent.value.name;
+//     await admisiGeneralConsentStore.createGeneralConsent(
+//       openedPatientData.value.uuid,
+//       values
+//     );
+//     inputGeneralConsentDialog.value = false;
+//   } catch (error) {
+//     console.error("Failed to post data", error);
+//   } finally {
+//     storeUtils.setLoading(false);
+//   }
+// });
+
+// const listDatamasterGeneralConsent = ref([]);
+// const fetchListGeneralConsent = async () => {
+//   try {
+//     storeUtils.setLoading(true);
+//     // FIXME Masih API biasa filter dari FE
+//     const response = await generalConsentStore.getApi(1, 9999);
+//     if (response && response.payload) {
+//       listDatamasterGeneralConsent.value = response.payload.filter(
+//         (generalConsent: any) => generalConsent.status
+//       );
+//     } else listDatamasterGeneralConsent.value = [];
+//   } catch (error) {
+//     console.error("Failed to post data", error);
+//   } finally {
+//     storeUtils.setLoading(false);
+//   }
+// };
+
+// const selectedDataGeneralConsent = ref();
+// const setSelectedGeneralConsent = (uuid: string) => {
+//   const found = listDatamasterGeneralConsent.value.find(
+//     (gc: any) => gc.uuid == uuid
+//   );
+//   selectedDataGeneralConsent.value = found;
+//   selectedIsiSurat.value = found?.isiSurat || "";
+// };
+
+
 const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
   storeUtils.setLoading(true);
-  try {
-    if (props.formType == "add") {
-      await postRegisterPatient();
-    }
+try {
 
-    values.familyData = Object.keys(values.familyData).length
-      ? values.familyData
-      : (null as any);
-    const tempGeneralConsentData = createGeneralConsentPdf({
-      data: selectedDataGeneralConsent.value.isiSurat,
-      patientData: openedPatientData.value,
-      familyData: values.familyData,
-    });
-    values.generalConsent = await new Promise((resolve, reject) => {
-      tempGeneralConsentData.getBase64((base64) => {
-        if (base64) {
-          resolve(base64);
-        } else {
-          reject("Gagal mendapatkan Base64 dari dokumen PDF.");
-        }
-      });
-    });
-    values.name = selectedDataGeneralConsent.value.name;
-    await admisiGeneralConsentStore.createGeneralConsent(
-      openedPatientData.value.uuid,
-      values
-    );
-    inputGeneralConsentDialog.value = false;
-  } catch (error) {
-    console.error("Failed to post data", error);
-  } finally {
-    storeUtils.setLoading(false);
+  if (props.formType == "add") {
+    await postRegisterPatient();
   }
+
+  values.familyData = Object.keys(values.familyData).length
+    ? values.familyData
+    : (null as any);
+
+  const tempGeneralConsentData = createGeneralConsentPdf({
+    data: selectedIsiSurat.value,
+    patientData: openedPatientData.value,
+    familyData: values.familyData,
+  });
+
+  values.generalConsent = await new Promise((resolve, reject) => {
+    tempGeneralConsentData.getBase64((base64) => {
+      if (base64) {
+        resolve(base64);
+      } else {
+        reject("Gagal mendapatkan Base64 dari dokumen PDF.");
+      }
+    });
+  });
+
+  values.name = selectedDataGeneralConsent.value?.name || "";
+
+  await admisiGeneralConsentStore.createGeneralConsent(
+    openedPatientData.value.uuid,
+    values
+  );
+
+
+  inputGeneralConsentDialog.value = false;
+} catch (error) {
+  console.error("❌ Gagal saat proses general consent:", error);
+} finally {
+  storeUtils.setLoading(false);
+}
 });
 
-const listDatamasterGeneralConsent = ref([]);
+
+interface GeneralConsentItem {
+  uuid: string;
+  name: string;
+  isiSurat: string;
+  status: boolean;
+}
+// const listDatamasterGeneralConsent = ref([]);
+const listDatamasterGeneralConsent = ref<GeneralConsentItem[]>([]);
 const fetchListGeneralConsent = async () => {
   try {
     storeUtils.setLoading(true);
@@ -387,11 +470,16 @@ const fetchListGeneralConsent = async () => {
   }
 };
 
-const selectedDataGeneralConsent = ref();
+const selectedDataGeneralConsent = ref<GeneralConsentItem | undefined>();
+// const selectedDataGeneralConsent = ref();
 const setSelectedGeneralConsent = (uuid: string) => {
-  selectedDataGeneralConsent.value = listDatamasterGeneralConsent.value.find(
+  const found = listDatamasterGeneralConsent.value.find(
     (gc: any) => gc.uuid == uuid
   );
+  selectedDataGeneralConsent.value = found;
+
+  // ✅ Simpan langsung isiSurat ke ref terpisah
+  selectedIsiSurat.value = found?.isiSurat || "";
 };
 
 const listOpenedPatientGeneralConsent = ref<any[]>([]);
@@ -614,6 +702,7 @@ const deleteGeneralConsent = async () => {
             backgroundColor="bg-adameds-300"
           />
         </div>
+        <!-- general consent -->
         <div v-else class="flex justify-end">
           <CustomButton
             label="Reset"

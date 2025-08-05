@@ -483,7 +483,7 @@ defineExpose({
                       header-class="text-black bg-adameds-50"
                       >
                       <template #body="{ data }">
-                        {{ data.noPenjamin?.name ?? "-" }}
+                        {{ data.patient.insurance?.[0]?.name ?? "-" }}
                       </template>
                     </Column>
                     <Column
@@ -493,7 +493,7 @@ defineExpose({
                       >
                       <template #body="{ data }">
                         <!-- <pre>{{ data }}</pre> -->
-                        {{ data.noPenjamin?.accountNumber ?? "-" }}
+                        {{ data.patient.insurance?.[0]?.accountNumber ?? "-" }}
                       </template>
                     </Column>
                     <Column
@@ -688,10 +688,13 @@ defineExpose({
                 </template>
               </Column>
               <Column
-                field="cancelBy"
                 header="Petugas"
                 header-class="text-black bg-adameds-50"
-              ></Column>
+              >
+                <template #body="{ data }">
+                  {{ data.practitioner?.nama ?? '-' }}
+                </template>
+              </Column>
               <template #expansion="slotProps">
                 <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
                   <DataTable
