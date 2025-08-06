@@ -130,57 +130,6 @@ const isListAndCallLayout = computed(() => {
   return layarModel.value === "L-3"; // Layar 3 List & 3 Panggilan
 });
 
-const gridItemCount = computed(() => {
-  switch (layarModel.value) {
-    case "L-1": // Layar 3 x 3 Panggilan
-      return 3;
-    case "L-2": // Layar 3 x 2 Panggilan
-      return 2;
-    case "L-3": // Layar 3 List & 3 Panggilan
-      return 3;
-    case "L-4": // Layar 2 List & 2 Panggilan
-      return 2;
-    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
-      return 1;
-    default:
-      return 3;
-  }
-});
-
-const gridAspectRatio = computed(() => {
-  switch (layarModel.value) {
-    case "L-1": // Layar 3 x 3 Panggilan
-      return "aspect-[3/1]";
-    case "L-2": // Layar 3 x 2 Panggilan (2 item dengan tinggi sama seperti 3/1)
-      return "aspect-[2/1]"; // Lebih tinggi untuk 2 baris agar total tinggi sama dengan 3 baris
-    case "L-3": // Layar 3 List & 3 Panggilan
-      return "aspect-[3/1]";
-    case "L-4": // Layar 2 List & 2 Panggilan
-      return "aspect-[4.5/1]";
-    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
-      return "aspect-[9/1]"; // Sangat lebar untuk 1 item
-    default:
-      return "aspect-[3/1]";
-  }
-});
-
-const gridRowsClass = computed(() => {
-  switch (layarModel.value) {
-    case "L-1": // Layar 3 x 3 Panggilan
-      return "grid-rows-3";
-    case "L-2": // Layar 3 x 2 Panggilan
-      return "grid-rows-2";
-    case "L-3": // Layar 3 List & 3 Panggilan
-      return "grid-rows-3";
-    case "L-4": // Layar 2 List & 2 Panggilan
-      return "grid-rows-2";
-    case "L-5": // Layar 1 List, 1 Panggilan, 1 Gambar
-      return "grid-rows-1";
-    default:
-      return "grid-rows-3";
-  }
-});
-
 function handleReset() {
   const currentLayarModel = layarModel.value;
 
@@ -228,8 +177,8 @@ function handleReset() {
         </div>
 
         <!-- Conditional rendering based on layarModel -->
-        <div class="grid grid-cols-3 gap-x-4 gap-y-6">
-          <div class="col-span-1">
+        <div class="flex gap-x-4 gap-y-6">
+          <div class="flex-1">
             <div class="text-xl font-bold text-black">
               {{ layarTitle }}
             </div>
@@ -312,11 +261,11 @@ function handleReset() {
               class="mt-4 mr-5 w-full text-black"
             />
           </div>
-          <div class="col-span-2">
+          <div class="flex-[2] flex flex-col">
             <div class="text-xl font-bold text-black">Preview Layar</div>
             <hr class="mt-4" />
             <div
-              class="mt-4 w-full bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
+              class="mt-4 w-full flex-1 flex flex-col bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
             >
               <!-- Navbar Preview Layar -->
               <div
@@ -348,60 +297,11 @@ function handleReset() {
                 </div>
               </div>
               <!-- Blok Konten -->
-              <div class="px-1 my-1 space-y-1 w-full">
-                <template v-if="isListAndCallLayout">
-                  <div class="flex">
-                    <!-- Tab konten Informasi antrian -->
-                    <div class="flex-[2.5]">
-                      <!-- Tab header Informasi antrian-->
-                      <div
-                        class="flex gap-2 justify-center items-center py-1 text-white rounded-lg bg-adameds-300"
-                      >
-                        <div><PhUsers :size="18" weight="fill" /></div>
-                        <div>Informasi Antrian</div>
-                      </div>
-
-                      <!-- Tab body Informasi antrian-->
-                      <div class="grid grid-cols-3">
-                        <div class="flex flex-col items-center">
-                          <div>Hai</div>
-                          <div>Hai 1</div>
-                        </div>
-                        <div>Halo 2</div>
-                        <div>Halo 3</div>
-                      </div>
-                    </div>
-
-                    <!-- Tab konten Panggilan-->
-                    <div class="flex-1">
-                      <!-- Tab header Panggilan-->
-                      <div
-                        class="flex gap-2 justify-center items-center py-1 text-white rounded-lg bg-adameds-300"
-                      >
-                        <div>
-                          <PhMegaphone
-                            :size="18"
-                            class="scale-x-[-1]"
-                            weight="fill"
-                          />
-                        </div>
-                        <div>Panggilan</div>
-                      </div>
-                      <!-- Tab body Panggilan-->
-                      <div>Test</div>
-                    </div>
-                  </div>
-                </template>
-                <template v-else>
-                  <grid-panggilan-preview
-                    :gridRowsClass="gridRowsClass"
-                    :gridAspectRatio="gridAspectRatio"
-                    :gridItemCount="gridItemCount"
-                  />
-                </template>
+              <div class="flex-1 min-h-[500px] px-1" id="wrapper-antrian">
+                <grid-panggilan-preview />
               </div>
-              <div class="py-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
-                Testing
+              <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+                <div>Testing</div>
               </div>
             </div>
           </div>
