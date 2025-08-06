@@ -30,7 +30,8 @@ const fetchJadwalDokter = async () => {
   try {
     const response = await jadwalDokterStore.getApi(
       jadwalDokterProperties.value.page,
-      jadwalDokterProperties.value.page_size
+      jadwalDokterProperties.value.page_size,
+      filterCriteria.value.aktif
     );
     console.log(response);
     if (response && response.payload) {
@@ -150,7 +151,10 @@ onMounted(() => {
         @refresh="fetchJadwalDokter"
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
-        @search="filterCriteria = $event"
+        @search="
+          filterCriteria = $event;
+          fetchJadwalDokter();
+        "
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"
       />

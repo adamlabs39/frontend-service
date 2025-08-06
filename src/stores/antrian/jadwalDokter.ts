@@ -32,11 +32,13 @@ export const useJadwalDokterStore = defineStore({
     async getApi(
       page: number = 1,
       limit: number = 10,
+      aktif?: boolean,
 
       payload = {}
     ) {
+      const statusQuery = aktif === undefined ? "" : `&aktif=${aktif}`;
       return apiAntrianGet(
-        `/antrian/jadwal-dokter?page=${page}&limit=${limit}`,
+        `/antrian/jadwal-dokter?page=${page}&limit=${limit}${statusQuery}`,
         payload
       );
     },
