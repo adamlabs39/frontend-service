@@ -99,6 +99,10 @@ function handleSearch() {
   emit("search", {
     dokterUuid: selectedDokter.value ?? "",
     poliUuid: selectedPoli.value ?? "",
+    aktif:
+      selectedPaymentMethod.value.length === 1
+        ? selectedPaymentMethod.value[0] === "AKTIF"
+        : undefined,
   });
 }
 
