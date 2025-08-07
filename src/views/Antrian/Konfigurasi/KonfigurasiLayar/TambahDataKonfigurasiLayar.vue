@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -10,7 +10,20 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 // import CustomUpload from "@/components/Base/CustomUpload.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import GridPanggilanPreview from "./GridPanggilanPreview.vue";
+import Layout3x2Panggilan from "./Layout3x2Panggilan.vue";
+import Layout3x3Panggilan from "./GridPanggilanPreview.vue";
+import LayoutList3Panggilan3 from "./LayoutList3Panggilan3.vue";
+import Layout2List2Panggilan from "./Layout2List2Panggilan.vue";
+import Layout1List1Panggilan from "./Layout1List1Panggilan.vue";
+import { utilsStore } from "@/stores/utils";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
+import { useToast } from "primevue/usetoast";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import Chips from "primevue/chips";
+import { Vue3Marquee } from "vue3-marquee";
+
+const toast = useToast();
 
 const props = defineProps({
   isDialogVisible: {
@@ -24,32 +37,42 @@ const props = defineProps({
   },
 });
 
+const values = ref<string[]>(["Selamat Datang di Klinik Adameds"]);
+
+const configLayarStore = useConfigLayarAntrianStore();
+
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+
+const jadwalPoliPayload = ref<any[]>([]);
+const jadwalPoliProperties = ref({
+  name: "",
+});
+
+const fetchGetPoli = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiPoli(
+      jadwalPoliProperties.value.name
+    );
+    console.log("Hasil get response:", response);
+    if (response && response.payload) {
+      jadwalPoliPayload.value = response.payload;
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalPoliPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
 const itemsLayar = ref([
-  { name: "Layar 3 x 3 Panggilan", code: "L-1" },
-  { name: "Layar 3 x 2 Panggilan", code: "L-2" },
-  { name: "Layar 3 List & 3 Panggilan", code: "L-3" },
-  { name: "Layar 2 List & 2 Panggilan", code: "L-4" },
-  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: "L-5" },
-]);
-
-const itemsPoli = ref([
-  { name: "Poli Umum", code: "POLI-U" },
-  { name: "Poli Anak", code: "POLI-A" },
-  { name: "Poli Mata", code: "POLI-M" },
-  { name: "Poli Kandungan", code: "POLI-K" },
-  { name: "Poli Dalam", code: "POLI-D" },
-]);
-
-const itemsAdmisi = ref([
-  { name: "Admisi IGD", code: "ADM-IGD" },
-  { name: "Admisi Rawat Jalan", code: "ADM-RJ" },
-  { name: "Admisi Rawat Inap", code: "ADM-RI" },
-]);
-
-const itemsFarmasi = ref([
-  { name: "Farmasi Umum", code: "FARM-UMUM" },
-  { name: "Farmasi Rawat Jalan", code: "FARM-RJ" },
-  { name: "Farmasi Rawat Inap", code: "FARM-RI" },
+  { name: "Layar 3 x 3 Panggilan", code: 1 },
+  { name: "Layar 3 x 2 Panggilan", code: 2 },
+  { name: "Layar 3 List & 3 Panggilan", code: 3 },
+  { name: "Layar 2 List & 2 Panggilan", code: 4 },
+  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: 5 },
 ]);
 
 const itemsFlash = ref([
@@ -61,9 +84,9 @@ const itemsFlash = ref([
 const defaultValues = {
   poliModel: [],
   flashModel: [],
-  admisiStatus: false,
+  admisiStatus: true,
   poliStatus: false,
-  farmasiStatus: false,
+  farmasiStatus: true,
   status: false,
   textFieldLayar: undefined,
   textFieldValue: "Klinik Adameds",
@@ -71,36 +94,64 @@ const defaultValues = {
 
 const schema = toTypedSchema(
   yup.object({
-    code: yup.string().required("Kode harus diisi"),
-    name: yup.string().required("Nama tindakan harus diisi"),
-    layarModel: yup.string(),
-    poliModel: yup.array().required(),
-    flashModel: yup.array().required(),
-    admisiStatus: yup.bool(),
-    poliStatus: yup.bool(),
-    farmasiStatus: yup.bool(),
-    status: yup.bool(),
+    namaLayar: yup.string().required("Nama layar harus diisi"),
+    tipeLayar: yup.number().required("Tipe layar harus diisi"),
+    judul: yup.string().required("Judul harus diisi"),
+    isAdmisi: yup.boolean(),
+    isPoli: yup.boolean(),
+    isFarmasi: yup.boolean(),
+    flashText: yup
+      .array()
+      .of(yup.string())
+      .default(["Selamat Datang di Klinik Adameds"]),
+    media: yup.string(),
+    aktif: yup.boolean(),
+    poli_uuids: yup.array().of(yup.string()),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, validate } = useForm({
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  if (props.method === "edit") {
-    console.log("Editing data:", values);
-  } else if (props.method === "add") {
-    console.log("Adding new data:", values);
-  }
-  closeDialog();
-});
+const [namaLayar] = defineField("namaLayar");
+const [tipeLayar] = defineField("tipeLayar");
+const [judul] = defineField("judul");
+const [isAdmisi] = defineField("isAdmisi");
+const [isPoli] = defineField("isPoli");
+const [isFarmasi] = defineField("isFarmasi");
+const [flashText] = defineField("flashText");
+const [media] = defineField("media");
+const [aktif] = defineField("aktif");
+const [poli_uuids] = defineField("poli_uuids");
 
-const [code] = defineField("code");
-const [name] = defineField("name");
-const [layarModel] = defineField("layarModel");
-const [poliModel] = defineField("poliModel");
-const [flashModel] = defineField("flashModel");
+const onSubmit = handleSubmit(async (values: any) => {
+  const payload = {
+    namaLayar: namaLayar.value,
+    tipeLayar: tipeLayar.value,
+    judul: judul.value,
+    isAdmisi: true,
+    isPoli: isPoli.value,
+    isFarmasi: true,
+    flashText: flashText.value,
+    media: media.value,
+    aktif: aktif.value,
+    poli_uuids: poli_uuids.value,
+  };
+  console.log(payload);
+
+  try {
+    await configLayarStore.createLayarAntrian(payload);
+    toast.add({
+      severity: "success",
+      summary: "Data berhasil disimpan",
+      life: 3000,
+    });
+    closeDialog();
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 const admisiStatus = ref(defaultValues.admisiStatus);
 const poliStatus = ref(defaultValues.poliStatus);
@@ -121,29 +172,32 @@ function closeDialog() {
 
 const layarTitle = computed(() => {
   const selectedLayar = itemsLayar.value.find(
-    (item) => item.code === layarModel.value
+    (item) => item.code === tipeLayar.value // Perbaikan: gunakan tipeLayar bukan namaLayar
   );
   return selectedLayar ? selectedLayar.name : "Layar Antrian";
 });
 
+const isLayarSelected = computed(() => !!tipeLayar.value);
+
 const isListAndCallLayout = computed(() => {
-  return layarModel.value === "L-3"; // Layar 3 List & 3 Panggilan
+  return namaLayar.value === "L-3"; // Layar 3 List & 3 Panggilan
 });
 
 function handleReset() {
-  const currentLayarModel = layarModel.value;
-
   resetForm();
-  poliModel.value = defaultValues.poliModel;
-  flashModel.value = defaultValues.flashModel;
-  admisiStatus.value = defaultValues.admisiStatus;
-  poliStatus.value = defaultValues.poliStatus;
-  farmasiStatus.value = defaultValues.farmasiStatus;
-  status.value = defaultValues.status;
-  textFieldValue.value = defaultValues.textFieldValue;
-  textFieldLayar.value = defaultValues.textFieldLayar;
-  layarModel.value = currentLayarModel;
 }
+
+onMounted(() => {
+  fetchGetPoli();
+});
+
+watch(
+  flashText,
+  async () => {
+    await validate();
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -160,7 +214,7 @@ function handleReset() {
           <CustomTextfield
             label="Nama Layar"
             placeholder="Nama Layar"
-            v-model="textFieldLayar"
+            v-model="namaLayar"
             optionValue="code"
             optionLabel="name"
             class="mr-5 w-1/2 text-black"
@@ -168,7 +222,7 @@ function handleReset() {
           <CustomSelect
             label="Tipe Layar"
             place-holder="Pilih Tipe Layar"
-            v-model="layarModel"
+            v-model="tipeLayar"
             :options="itemsLayar"
             optionValue="code"
             optionLabel="name"
@@ -178,40 +232,22 @@ function handleReset() {
 
         <!-- Conditional rendering based on layarModel -->
         <div class="flex gap-x-4 gap-y-6">
-          <div class="flex-1">
+          <div class="flex-1 max-w-[600px]" v-show="isLayarSelected">
             <div class="text-xl font-bold text-black">
               {{ layarTitle }}
             </div>
             <hr class="mt-4" />
             <CustomTextfield
               label="Teks Judul"
+              v-model="judul"
               placeholder="Teks Judul"
               optionValue="code"
               optionLabel="name"
               class="mt-4 mr-5 w-full text-black"
-              v-model="textFieldValue"
             />
             <div class="flex gap-2.5 items-end mt-4 text-black">
               <CustomSwitch
-                v-model="admisiStatus"
-                label="Admisi"
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-              />
-            </div>
-            <CustomMultiSelect
-              label="Pilih Admisi"
-              placeholder="Pilih Admisi"
-              v-model="poliModel"
-              :options="itemsAdmisi"
-              optionValue="name"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="admisiStatus"
-            />
-            <div class="flex gap-2.5 items-end mt-4 text-black">
-              <CustomSwitch
-                v-model="poliStatus"
+                v-model="isPoli"
                 label="Poli"
                 sideLabel="Non-Aktif"
                 sideLabelTrue="Aktif"
@@ -220,48 +256,34 @@ function handleReset() {
             <CustomMultiSelect
               label="Pilih Poli"
               placeholder="Pilih Poli"
-              v-model="poliModel"
-              :options="itemsPoli"
-              optionValue="name"
+              v-model="poli_uuids"
+              :options="jadwalPoliPayload"
+              optionValue="uuid"
               optionLabel="name"
               class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="poliStatus"
-            />
-            <div class="flex gap-2.5 items-end mt-4 text-black">
-              <CustomSwitch
-                v-model="farmasiStatus"
-                label="Farmasi"
-                sideLabel="Non-Aktif"
-                sideLabelTrue="Aktif"
-              />
-            </div>
-            <CustomMultiSelect
-              label="Pilih Farmasi"
-              placeholder="Pilih Farmasi"
-              v-model="poliModel"
-              :options="itemsFarmasi"
-              optionValue="name"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="farmasiStatus"
+              v-show="isPoli"
             />
             <CustomTextfield
               label="Youtube"
+              v-model="media"
               placeholder="URL Youtube"
               class="mt-4 mr-5 w-full text-black"
-              v-show="layarModel === 'L-5'"
+              v-show="tipeLayar === 5"
             />
-            <CustomMultiSelect
-              label="Flash Text"
-              placeholder="Flash Text"
-              v-model="flashModel"
-              :options="itemsFlash"
-              optionValue="name"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-            />
+            <div>
+              <div class="mt-4 block font-semibold mb-[5px] text-normal">
+                Flash Text
+              </div>
+              <Chips v-model="flashText" class="w-full" />
+              <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
+                {{ errors.flashText }}
+              </p>
+            </div>
           </div>
-          <div class="flex-[2] flex flex-col">
+          <div
+            class="flex-[2] flex flex-col max-w-[1200px]"
+            v-show="isLayarSelected"
+          >
             <div class="text-xl font-bold text-black">Preview Layar</div>
             <hr class="mt-4" />
             <div
@@ -298,10 +320,28 @@ function handleReset() {
               </div>
               <!-- Blok Konten -->
               <div class="flex-1 min-h-[500px] px-1" id="wrapper-antrian">
-                <grid-panggilan-preview />
+                <template v-if="tipeLayar === 1">
+                  <layout-3x3-panggilan />
+                </template>
+                <template v-else-if="tipeLayar === 2">
+                  <layout-3x2-panggilan />
+                </template>
+                <template v-else-if="tipeLayar === 3">
+                  <layout-list-3-panggilan-3 />
+                </template>
+                <template v-else-if="tipeLayar === 4">
+                  <layout-2-list-2-panggilan />
+                </template>
+                <template v-else-if="tipeLayar === 5">
+                  <layout-1-list-1-panggilan />
+                </template>
               </div>
               <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
-                <div>Testing</div>
+                <Vue3Marquee>
+                  <span v-for="item in flashText" :key="item" class="mx-2">{{
+                    item
+                  }}</span>
+                </Vue3Marquee>
               </div>
             </div>
           </div>
@@ -310,7 +350,7 @@ function handleReset() {
         <hr />
         <CustomSwitch
           class="text-black"
-          v-model="status"
+          v-model="aktif"
           label="Status"
           sideLabel="Non-Aktif"
           sideLabelTrue="Aktif"
