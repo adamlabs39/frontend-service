@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, shallowRef } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -11,7 +11,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 // import CustomUpload from "@/components/Base/CustomUpload.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import Layout3x2Panggilan from "./Layout3x2Panggilan.vue";
-import Layout3x3Panggilan from "./GridPanggilanPreview.vue";
+import Layout3x3Panggilan from "./Layout3x3Panggilan.vue";
 import LayoutList3Panggilan3 from "./LayoutList3Panggilan3.vue";
 import Layout2List2Panggilan from "./Layout2List2Panggilan.vue";
 import Layout1List1Panggilan from "./Layout1List1Panggilan.vue";
@@ -19,7 +19,6 @@ import { utilsStore } from "@/stores/utils";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { useToast } from "primevue/usetoast";
-import CustomChip from "@/components/Base/CustomChip.vue";
 import Chips from "primevue/chips";
 import { Vue3Marquee } from "vue3-marquee";
 
@@ -36,8 +35,6 @@ const props = defineProps({
     type: String,
   },
 });
-
-const values = ref<string[]>(["Selamat Datang di Klinik Adameds"]);
 
 const configLayarStore = useConfigLayarAntrianStore();
 
@@ -75,23 +72,6 @@ const itemsLayar = ref([
   { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: 5 },
 ]);
 
-const itemsFlash = ref([
-  { name: "Flash Text 1", code: "FT-1" },
-  { name: "Flash Text 2", code: "FT-2" },
-  { name: "Flash Text 3", code: "FT-3" },
-]);
-
-const defaultValues = {
-  poliModel: [],
-  flashModel: [],
-  admisiStatus: true,
-  poliStatus: false,
-  farmasiStatus: true,
-  status: false,
-  textFieldLayar: undefined,
-  textFieldValue: "Klinik Adameds",
-};
-
 const schema = toTypedSchema(
   yup.object({
     namaLayar: yup.string().required("Nama layar harus diisi"),
@@ -125,18 +105,19 @@ const [media] = defineField("media");
 const [aktif] = defineField("aktif");
 const [poli_uuids] = defineField("poli_uuids");
 
+const generateForm = () => schema.cast({});
+
+const form = shallowRef(generateForm());
+
+const emit = defineEmits(["update:isDialogVisible", "close", "refresh"]);
+
 const onSubmit = handleSubmit(async (values: any) => {
   const payload = {
-    namaLayar: namaLayar.value,
-    tipeLayar: tipeLayar.value,
-    judul: judul.value,
-    isAdmisi: true,
-    isPoli: isPoli.value,
-    isFarmasi: true,
-    flashText: flashText.value,
-    media: media.value,
-    aktif: aktif.value,
-    poli_uuids: poli_uuids.value,
+    ...values, // salin semua field yang sudah ada
+    isAdmisi: true, // atau nilai sesuai kebutuhan
+    isFarmasi: true, // idem
+    poli_uuids: values.poli_uuids ?? [], // pastikan array
+    aktif: values.aktif ?? false, //
   };
   console.log(payload);
 
@@ -147,20 +128,13 @@ const onSubmit = handleSubmit(async (values: any) => {
       summary: "Data berhasil disimpan",
       life: 3000,
     });
+    emit("refresh");
+
     closeDialog();
   } catch (error) {
     console.error(error);
   }
 });
-
-const admisiStatus = ref(defaultValues.admisiStatus);
-const poliStatus = ref(defaultValues.poliStatus);
-const farmasiStatus = ref(defaultValues.farmasiStatus);
-const status = ref(defaultValues.status);
-const textFieldValue = ref(defaultValues.textFieldValue);
-const textFieldLayar = ref(defaultValues.textFieldLayar);
-
-const emit = defineEmits(["update:isDialogVisible", "close"]);
 
 function updateVisibility(value: any) {
   emit("update:isDialogVisible", value);
@@ -183,21 +157,13 @@ const isListAndCallLayout = computed(() => {
   return namaLayar.value === "L-3"; // Layar 3 List & 3 Panggilan
 });
 
-function handleReset() {
+const onReset = () => {
   resetForm();
-}
+};
 
 onMounted(() => {
   fetchGetPoli();
 });
-
-watch(
-  flashText,
-  async () => {
-    await validate();
-  },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -218,6 +184,8 @@ watch(
             optionValue="code"
             optionLabel="name"
             class="mr-5 w-1/2 text-black"
+            :invalid="!!errors.namaLayar"
+            :invalid-message="errors.namaLayar"
           />
           <CustomSelect
             label="Tipe Layar"
@@ -227,6 +195,8 @@ watch(
             optionValue="code"
             optionLabel="name"
             class="w-1/2 text-black"
+            :invalid="!!errors.tipeLayar"
+            :invalid-message="errors.tipeLayar"
           />
         </div>
 
@@ -244,6 +214,8 @@ watch(
               optionValue="code"
               optionLabel="name"
               class="mt-4 mr-5 w-full text-black"
+              :invalid="!!errors.judul"
+              :invalid-message="errors.judul"
             />
             <div class="flex gap-2.5 items-end mt-4 text-black">
               <CustomSwitch
@@ -365,7 +337,7 @@ watch(
             border-color="border-grey-200"
             background-color="bg-white"
             text-color="text-grey-300"
-            @click="handleReset"
+            @click="onReset"
           >
           </CustomButton>
           <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
