@@ -21,16 +21,16 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  availableTipeLayar: {
+    type: Array,
+    default: () => [],
+  },
 });
 
+const emit = defineEmits(["search", "reset", "daftar"]);
+
+const searchQuery = ref("");
 const selectedLayar = ref<any>();
-const itemLayar = ref([
-  { name: "Layar 3 x 3 Panggilan", code: "L-1" },
-  { name: "Layar 3 x 2 Panggilan", code: "L-2" },
-  { name: "Layar 3 List & 3 Panggilan", code: "L-3" },
-  { name: "Layar 2 List & 2 Panggilan", code: "L-4" },
-  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: "L-5" },
-]);
 
 const dialogData = ref({
   isVisible: false,
@@ -58,8 +58,6 @@ function handleClose() {
   dialogData.value.isVisible = false;
 }
 
-// !SECTION
-
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -71,14 +69,27 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
+// Handle search button click
+const handleSearchClick = () => {
+  emit(
+    "search",
+    searchQuery.value,
+    selectedLayar.value,
+    selectedPaymentMethod.value
+  );
+};
+
 const filters = [selectedPaymentMethod];
 
 const resetFilter = () => {
   filters.forEach((filter) => {
     filter.value = [];
-    selectedLayar.value = null;
   });
+  selectedLayar.value = null;
+  searchQuery.value = "";
+  emit("reset");
 };
+
 defineExpose({
   resetFilter,
 });
@@ -116,6 +127,7 @@ defineExpose({
         <div class="flex mt-[10px]">
           <CustomTextfield
             v-if="search"
+            v-model="searchQuery"
             :label="`Cari Layar`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
@@ -124,9 +136,9 @@ defineExpose({
           </CustomTextfield>
           <CustomSelect
             v-model="selectedLayar"
-            :options="itemLayar"
+            :options="availableTipeLayar"
             optionValue="code"
-            optionLabel="name"
+            optionLabel="tipe_layar"
             class="w-1/2"
             :is-loading="false"
             label="Tipe Layar"
@@ -136,6 +148,7 @@ defineExpose({
             icon="PhMagnifyingGlass"
             label="Cari"
             class="ml-5 mr-[10px] mt-auto w-[95px]"
+            @click="handleSearchClick"
           />
           <CustomButton
             @click="resetFilter"

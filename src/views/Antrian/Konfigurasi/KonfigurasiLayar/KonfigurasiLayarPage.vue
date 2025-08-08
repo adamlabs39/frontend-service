@@ -18,11 +18,17 @@ const configLayarAntrianStore = useConfigLayarAntrianStore();
 const useUtilsStore = utilsStore();
 
 const jadwalAntrianPayload = ref<any[]>();
+const originalJadwalAntrianPayload = ref<any[]>(); // Store original data
 const jadwalLayarAntrianProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
+
+// Search and filter states
+const searchQuery = ref("");
+const selectedTipeLayar = ref(null);
+const selectedStatus = ref<string[]>([]);
 
 const fetchJadwalAntrian = async () => {
   useUtilsStore.setLoading(true);
@@ -33,7 +39,8 @@ const fetchJadwalAntrian = async () => {
     );
     console.log("Respon layar antrian get:", response.payload);
     if (response && response.payload) {
-      jadwalAntrianPayload.value = response.payload;
+      originalJadwalAntrianPayload.value = response.payload;
+      applyFilters(); // Apply current filters
       jadwalLayarAntrianProperties.value.total = response.payload.length;
     }
   } catch (error) {
@@ -42,6 +49,75 @@ const fetchJadwalAntrian = async () => {
     useUtilsStore.setLoading(false);
   }
 };
+
+// Get unique tipe layar from database
+const availableTipeLayar = computed(() => {
+  if (!originalJadwalAntrianPayload.value) return [];
+
+  const uniqueTipeLayar = [
+    ...new Set(
+      originalJadwalAntrianPayload.value.map((item) => item.tipeLayar)
+    ),
+  ];
+
+  return itemsLayar.value.filter((layar) =>
+    uniqueTipeLayar.includes(parseInt(layar.code))
+  );
+});
+
+// Apply search and filters
+const applyFilters = () => {
+  if (!originalJadwalAntrianPayload.value) return;
+
+  let filteredData = [...originalJadwalAntrianPayload.value];
+
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    filteredData = filteredData.filter((item) =>
+      item.namaLayar?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+
+  // Apply tipe layar filter
+  if (selectedTipeLayar.value) {
+    filteredData = filteredData.filter(
+      (item) => item.tipeLayar === parseInt(selectedTipeLayar.value)
+    );
+  }
+
+  // Apply status filter
+  if (selectedStatus.value.length > 0) {
+    filteredData = filteredData.filter((item) => {
+      const status = item.status ? "AKTIF" : "NON-AKTIF";
+      return selectedStatus.value.includes(status);
+    });
+  }
+
+  jadwalAntrianPayload.value = filteredData;
+  jadwalLayarAntrianProperties.value.total = filteredData.length;
+};
+
+// Handle search from header
+const handleSearch = (
+  query: string,
+  tipeLayar: any,
+  statusFilters: string[]
+) => {
+  searchQuery.value = query;
+  selectedTipeLayar.value = tipeLayar;
+  selectedStatus.value = statusFilters;
+  applyFilters();
+};
+
+// Handle reset filters
+const handleResetFilters = () => {
+  searchQuery.value = "";
+  selectedTipeLayar.value = null;
+  selectedStatus.value = [];
+  applyFilters();
+};
+
+// ... existing code ...
 
 const deleteLayarAntrian = async (layarAntrianUuid: string) => {
   useUtilsStore.setLoading(true);
@@ -60,6 +136,7 @@ const deleteLayarAntrian = async (layarAntrianUuid: string) => {
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
   headerFilterRef.value?.resetFilter();
+  handleResetFilters();
 };
 
 const handleRowsUpdate = (rows: number) => {
@@ -88,9 +165,11 @@ const updatePageType = (path: string) => {
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[2] ?? "";
 };
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
+
 onMounted(() => {
   updatePageType(route.path);
   fetchJadwalAntrian();
@@ -149,6 +228,10 @@ function handleEdit() {
   };
 }
 
+function handleRefreshFromChild() {
+  fetchJadwalAntrian();
+}
+
 function handleClose() {
   dialogData.value.isVisible = false;
 }
@@ -169,6 +252,9 @@ const selectedPatient = ref([]);
       <HeaderFilter
         ref="headerFilterRef"
         :pageType="pageType"
+        :availableTipeLayar="availableTipeLayar"
+        @search="handleSearch"
+        @reset="handleResetFilters"
         @daftar="changeSection('Daftar')"
       />
     </template>
@@ -225,7 +311,7 @@ const selectedPatient = ref([]);
                   Array.isArray(slotProps.data.lokasi) &&
                   slotProps.data.lokasi.length > 0
                 "
-                class="flex justify-center items-center"
+                class=""
               >
                 <CustomChip
                   v-for="(konten, index) in slotProps.data.lokasi"
@@ -274,9 +360,11 @@ const selectedPatient = ref([]);
         </Column>
         <Column
           field="status"
-          header="Status"
           headerClass="bg-adameds-50 items-center justify-center"
         >
+          <template #header>
+            <div class="w-full font-semibold text-center">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
@@ -327,6 +415,7 @@ const selectedPatient = ref([]);
         :title="dialogData.title"
         :method="dialogData.method"
         @close="handleClose"
+        @refresh="handleRefreshFromChild"
       />
     </template>
     <template #footer>
