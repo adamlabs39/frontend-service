@@ -17,12 +17,15 @@ export const useTagihanStore = defineStore({
       payload = {}
     ) {
       return apiPembayaranGet(
-        `/payment?search=${search == "" ? "00-00" : search}`,
-        payload
-      );
+      `/payment?search=${search}`,
+      payload
+    );
     },
     async getDetailBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}`, payload);
+    },
+    async getCloseDayConfirmation(payload = {}) {
+      return apiPembayaranGet(`/cashier/close-day/check`, payload);
     },
     async getItemBill(uuid: string, payload = {}) {
       return apiPembayaranGet(`/payment/${uuid}/items`, payload);
@@ -51,7 +54,6 @@ export const useTagihanStore = defineStore({
     async postPayment(uuid: string, payload = {}) {
       return apiPembayaranPost(`/payment/${uuid}/payment`, payload);
     },
-
     async putApi(uuid: string, payload = {}) {
       return apiPembayaranPut(`/datamaster/role/${uuid}`, payload);
     },
