@@ -2,6 +2,7 @@ import {
   apiAntrianDelete,
   apiAntrianGet,
   apiAntrianPost,
+  apiAntrianPut,
 } from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
@@ -12,31 +13,23 @@ export const useConfigLayarAntrianStore = defineStore({
   actions: {
     async getApi(
       page: number = 1,
-      limit: number = 10,
+      page_size: number = 10,
 
       payload = {}
     ) {
       return apiAntrianGet(
-        `/antrian/layar-antrian?page=${page}&limit=${limit}`,
+        `/antrian/layar-antrian?page=${page}&page_size=${page_size}`,
         payload
       );
     },
     async deleteLayarAntrian(layarAntrianUuid: string) {
       return apiAntrianDelete(`/antrian/layar-antrian/${layarAntrianUuid}`, {});
     },
-    async createLayarAntrian(payload: {
-      namaLayar: string;
-      tipeLayar: string;
-      judul: string;
-      isAdmisi: boolean;
-      isPoli: boolean;
-      isFarmasi: boolean;
-      flashText: string[];
-      media: string;
-      aktif: boolean;
-      poli_uuids: string[];
-    }) {
+    async createLayarAntrian(payload: {}) {
       return apiAntrianPost(`/antrian/layar-antrian`, payload);
+    },
+    async updateLayarAntrian(uuid: string, payload: {}) {
+      return apiAntrianPut(`/antrian/layar-antrian/${uuid}`, payload);
     },
   },
 });
