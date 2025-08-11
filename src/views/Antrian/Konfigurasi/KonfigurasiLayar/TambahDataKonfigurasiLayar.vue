@@ -85,7 +85,7 @@ const schema = toTypedSchema(
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
     media: yup.string(),
-    aktif: yup.boolean(),
+    aktif: yup.boolean().default(true),
     poli_uuids: yup.array().of(yup.string()),
   })
 );
@@ -118,6 +118,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     isFarmasi: true, // idem
     poli_uuids: values.poli_uuids ?? [], // pastikan array
     aktif: values.aktif ?? false, //
+    status: values.aktif ?? false,
   };
   console.log(payload);
 
