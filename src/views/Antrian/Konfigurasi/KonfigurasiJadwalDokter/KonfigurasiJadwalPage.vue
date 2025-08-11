@@ -9,6 +9,7 @@ import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {
@@ -119,6 +120,12 @@ const handleRefresh = () => {
 const handlePageUpdate = (newPage: number) => {
   jadwalDokterProperties.value.page = newPage;
   fetchJadwalDokter(); // Refresh data
+};
+
+const handlePage = (event: any) => {
+  jadwalDokterProperties.value.page = event.page + 1;
+  jadwalDokterProperties.value.page_size = event.rows;
+  fetchJadwalDokter();
 };
 
 const filterCriteria = ref({ dokterUuid: "", poliUuid: "" });
@@ -396,13 +403,15 @@ onMounted(() => {
       />
     </template>
     <template #footer>
-      <AntrianFooter
-        :rows="jadwalDokterProperties.page_size"
-        :totalRecords="jadwalDokterProperties.total"
-        :rowsPerPageOptions="[10, 20, 30]"
-        @update:rows="handleRowsUpdate"
-        @update:current-page="handlePageUpdate"
-      />
+      <div class="flex justify-between px-5 py-2.5">
+        <CustomPaginator
+          class="ml-auto"
+          :rows="jadwalDokterProperties.page_size"
+          :totalRecords="jadwalDokterProperties.total"
+          :rowsPerPageOptions="[10, 20, 30]"
+          @page="handlePage"
+        />
+      </div>
     </template>
   </Card>
 </template>
