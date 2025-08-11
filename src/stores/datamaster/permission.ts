@@ -138,7 +138,7 @@ export const usePermissionStore = defineStore('permission', () => {
               allows: ["READ", "CETAK LAPORAN"],
             },
             {
-              name: "Rekap Jumlah Pasien BPJS",
+              name: "Rekap Kunjungan",
               allows: ["READ", "CETAK LAPORAN"],
             },
           ],

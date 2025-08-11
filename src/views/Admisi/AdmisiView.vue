@@ -121,7 +121,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             name: "Rekap Kunjungan",
             icon: "Rekap Kunjungan",
             type: linkType.LINK,
-            url: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
+            url: "/admisi/laporan/rekap-kunjungan",
           },
         ],
       },

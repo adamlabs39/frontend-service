@@ -18,8 +18,10 @@ import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
+
 // NOTE Store
 const storeUtils = utilsStore();
+const emit = defineEmits(["search"]);
 const monitoringKamarStore = useMonitoringKamarStore();
 const kategoriRuanganStore = useKategoriRuanganStore();
 const lokasiStore = useLokasiStore();
@@ -98,6 +100,9 @@ const ruangStatus = computed(() => {
   return adaKosong ? 'Tersedia' : 'Penuh';
 });
 
+const resetFilter = () => {
+  search.value = "";
+};
 
 const timer = ref<any>();
 const searchData = () => {
@@ -124,14 +129,19 @@ const fetchBedData = async (data: any) => {
       data.uuid
     );
     if (response && response.payload) {
+      bedData.value = response.payload; 
       return response.payload;
-    } else return [];
+    } else {
+      bedData.value = []; 
+      return [];
+    }
   } catch (error) {
     throw new Error(error as string);
   } finally {
     storeUtils.setLoading(false);
   }
 };
+
 
 
 const showBedList = async (data: DataTableRowClickEvent) => {
@@ -145,7 +155,7 @@ const showBedList = async (data: DataTableRowClickEvent) => {
       return {
         uuid: bed.uuid ?? null,
         bedName: bed.locationName ?? "",
-        noBed: Number(bed.noBed ?? 0),
+        noBed: bed.noBed ?? "",
         type: bed.type ?? "",
         statusOperasionalRuangan: status,
         isAvailable: !bed.patient,
@@ -168,19 +178,6 @@ const bedDropdownOptions = computed(() => [
 ]);
 
 
-// const loadBedNameOptions = async (partOfUuid: string) => {
-//   try {
-//     const res = await lokasiStore.getByPartOfApi(partOfUuid); 
-//     bedNameOptions.value = res?.payload?.map((item: any) => ({
-//       label: `${item.name ?? item.locationName}${item.patient ? ' (Penuh)' : ''}`, 
-//       value: item.uuid,
-//       disabled: !!item.patient, 
-//     })) || [];
-//   } catch (error) {
-//     console.error(" Failed to load bed name options", error);
-//   }
-// };
-
 const loadBedNameOptions = async (partOfUuid: string) => {
   try {
     const res = await lokasiStore.getByPartOfApi(partOfUuid); 
@@ -192,6 +189,7 @@ const loadBedNameOptions = async (partOfUuid: string) => {
     console.error(" Failed to load bed name options", error);
   }
 };
+
 
 const showBedForm = async (data: any) => {
   try {
@@ -213,7 +211,6 @@ const showBedForm = async (data: any) => {
       itemsBedSetting.value = [{}];
     }
 
-    // Petakan data bed
     itemsBedSetting.value = fetchedData.map((bed: any, index: number) => {
       const lokasi =
         bed.lokasi_uuid ??
@@ -248,7 +245,7 @@ const schema = toTypedSchema(
       bedData: yup.array().of(
         yup.object({
           uuid: yup.string().nullable(),
-          noBed: yup.number().required("Nomor Bed harus diisi"),
+          noBed: yup.string().required("Nomor Bed harus diisi"),
           bedType: yup.string().required("Tipe Bed harus diisi"),
           statusOperasionalRuangan: yup.string().nullable(),
           lokasi_uuid: yup.string().required("Nama Bed harus diisi"),
@@ -257,6 +254,29 @@ const schema = toTypedSchema(
     })
     .noUnknown()
 );
+
+type BedData = {
+  noBed: number;
+  bedType: string;
+  lokasi_uuid: string;
+  bedName: string;
+  statusOperasionalRuangan: string;
+  uuid: string | null;
+};
+
+
+const onReset = () => {
+  fields.value.forEach((item) => {
+    const bed = item.value as BedData;
+
+    bed.bedType = '';
+    bed.lokasi_uuid = '';
+    bed.bedName = '';
+    bed.noBed = 1;
+  });
+
+  resetForm();
+};
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
   validationSchema: schema,
@@ -279,6 +299,8 @@ const onSubmit = handleSubmit(async (values) => {
       openedRoomData.value.uuid,
       { beds: payload } 
     );
+    const updatedBeds = await fetchBedData(openedRoomData.value);
+    itemsBed.value = updatedBeds;
     await monitoringKamarStore.getMonitoringKamar({});
     roomSettingDialog.value = false;
     resetForm();
@@ -328,14 +350,30 @@ function getByPartOfApi(partOfUuid: string) {
             </div>
           </template>
           <template #content>
+          <div class="flex mt-[10px]">
             <CustomTextfield
               v-model="search"
               @update:model-value="searchData"
               :showLabel="false"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Ruangan / Kamar"
-              class="mt-[10px]"
+              class="mt-[10px] flex-1"
             />
+            <CustomButton
+              @click="emit('search')"
+              icon="PhMagnifyingGlass"
+              label="Cari"
+              class="ml-5 mr-[10px] mt-auto"
+            />
+            <CustomButton
+              @click="resetFilter"
+              label="Reset"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              class="mt-auto"
+            />
+          </div>
             <div class="font-semibold text-SM text-grey-300">
               <div>
                 <div class="flex mb-[10px] mt-5">
@@ -519,7 +557,7 @@ function getByPartOfApi(partOfUuid: string) {
               />
             </div>
             <div
-              class="absolute inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px] h-fit"
+              class="inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px] max-h-[300px]"
             >
               <div v-for="(bed, index) in itemsBed" class="h-fit">
                 <EmptyMonitoringBedCard
@@ -631,7 +669,7 @@ function getByPartOfApi(partOfUuid: string) {
             <div class="w-full font-semibold text-center text-nowrap">No. Bed</div>
           </template>
           <template #body="{ data, index }">
-            <CustomInputNumber
+            <CustomTextfield
               v-model="data.value.noBed"
               :showLabel="false"
               class="w-full mr-[30px]"
@@ -693,7 +731,7 @@ function getByPartOfApi(partOfUuid: string) {
               class="border-2 h-20 border-adameds-75 m-5 rounded-[10px] border-dashed flex"
             >
               <CustomButton
-                @click="push({ noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null })"
+                @click="push({ noBed: 1, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null })"
                 icon="PhPlus"
                 label="Bed"
                 outlined
@@ -711,7 +749,7 @@ function getByPartOfApi(partOfUuid: string) {
         <template #footer>
           <div class="flex justify-end">
             <CustomButton
-              @click="setValues({ bedData: [{ noBed: 0, bedType: '', lokasi_uuid: '', statusOperasionalRuangan: 'Tersedia', uuid: null}] })"
+              @click="onReset"
               label="Reset"
               outlined
               class="mr-[10px]"

@@ -244,6 +244,8 @@ const handlePage = (event: any) => {
   properties.value.pageSize = event.rows;
   getPatientList();
 };
+
+
 </script>
 
 <template>
