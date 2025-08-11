@@ -28,7 +28,8 @@ import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 // NOTE Pembayaran
 import CashierPage from "@/views/Pembayaran/CashierPage.vue";
 import Cashier2Page from "@/views/Pembayaran/Cashier2Page.vue";
-import TransactionPage from "@/views/Pembayaran/TransactionPage.vue";
+import TransactionPage from "@/views/Pembayaran/Transaction/Pelayanan.vue";
+import APSOTC from "@/views/Pembayaran/Transaction/APS&OTC.vue";
 import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
 import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjunganPage.vue";
 import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
@@ -200,6 +201,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+// import APSOTC from "@/views/Pembayaran/Transaction/APS&OTC.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -882,12 +884,32 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: CashierPage, requiresAuth: true },
       component: PaymentView,
     },
+    // {
+    //   path: "/pembayaran/transaksi",
+    //   name: "pembayaran-transaksi",
+    //   meta: {
+    //     layout: SidebarLayout,
+    //     page: TransactionPage,
+    //     requiresAuth: true,
+    //   },
+    //   component: PaymentView,
+    // },
     {
-      path: "/pembayaran/transaksi",
-      name: "pembayaran-transaksi",
+      path: "/pembayaran/transaksi/pelayanan",
+      name: "pembayaran-transaksi-pelayanan",
       meta: {
         layout: SidebarLayout,
         page: TransactionPage,
+        requiresAuth: true,
+      },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/transaksi/APSOTC",
+      name: "pembayaran-transaksi-APSOTC",
+      meta: {
+        layout: SidebarLayout,
+        page: APSOTC,
         requiresAuth: true,
       },
       component: PaymentView,
