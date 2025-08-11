@@ -27,6 +27,16 @@ const rekapPemeriksaanStore = useRekapPemeriksaan();
 const rekapPerTanggalStore = useRekapPerTanggal();
 const rekapPerTanggalPayload = ref<any[]>([]);
 const selectedOrderType = ref<string>("pemeriksaan");
+const rekapPemeriksaanProperties = ref({
+  page: 1 as number,
+  page_size: 10 as number,
+  total: 0 as number,
+});
+const rekapPerTanggalProperties = ref({
+  page: 1 as number,
+  page_size: 10 as number,
+  total: 0 as number,
+});
 
 const fetchRekapPemeriksaan = async () => {
   UseUtilsStore.setLoading(true);
@@ -35,10 +45,14 @@ const fetchRekapPemeriksaan = async () => {
       startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
       endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
       search: searchQuery.value,
+      // page: Number(rekapPemeriksaanProperties.value.page),
+      // pageSize: Number(rekapPemeriksaanProperties.value.page_size),
     };
     const response = await rekapPemeriksaanStore.getApi(params);
 
     if (response && response.payload) {
+      // rekapPemeriksaanProperties.value.total =
+      //   response.payload.pagination.total;
       rekapPemeriksaanPayload.value = response.payload.data;
     } else {
       rekapPemeriksaanPayload.value = [];
@@ -58,10 +72,13 @@ const fetchRekapPerTanggal = async () => {
       startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
       endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
       search: searchQuery.value,
+      // page: Number(rekapPerTanggalProperties.value.page),
+      // pageSize: Number(rekapPerTanggalProperties.value.page_size),
     };
     const response = await rekapPerTanggalStore.getApi(params);
 
     if (response && response.payload) {
+      // rekapPerTanggalProperties.value.total = response.payload.pagination.total;
       rekapPerTanggalPayload.value = response.payload.data;
     } else {
       rekapPerTanggalPayload.value = [];
@@ -94,6 +111,18 @@ const fetchData = () => {
   } else {
     fetchRekapPerTanggal();
   }
+};
+
+const handlePagePemriksaan = (event: any) => {
+  rekapPemeriksaanProperties.value.page = Number(event.page + 1);
+  rekapPemeriksaanProperties.value.page_size = Number(event.rows);
+  fetchRekapPemeriksaan();
+};
+
+const handlePagePerTanggal = (event: any) => {
+  rekapPerTanggalProperties.value.page = Number(event.page + 1);
+  rekapPerTanggalProperties.value.page_size = Number(event.rows);
+  fetchRekapPerTanggal();
 };
 
 const onSelectOrderType = (label: string) => {
@@ -172,7 +201,7 @@ const downloadExcel = async () => {
       const cellRef = XLSX.utils.encode_cell({ c: idx, r: 3 });
       ws[cellRef].s = {
         font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "31869B" } },
+        fill: { fgColor: { rgb: "000000" } },
         alignment: { horizontal: "center", vertical: "center" },
         border: {
           top: { style: "thin", color: { rgb: "000000" } },
@@ -438,6 +467,20 @@ onMounted(() => {
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
+          <!-- <CustomPaginator
+            v-if="selectedOrderType === 'pemeriksaan'"
+            :rows="rekapPemeriksaanProperties.page_size"
+            :totalRecords="rekapPemeriksaanProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePagePemriksaan"
+          />
+          <CustomPaginator
+            v-if="selectedOrderType != 'pemeriksaan'"
+            :rows="rekapPerTanggalProperties.page_size"
+            :totalRecords="rekapPerTanggalProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePagePerTanggal"
+          /> -->
         </div>
       </template>
     </Card>

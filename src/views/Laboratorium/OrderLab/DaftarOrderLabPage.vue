@@ -41,7 +41,7 @@ const patientIdentityForm = ref<InstanceType<
 const doctorVisitForm = ref<InstanceType<typeof DoctorVisitForm> | null>(null);
 const orderTindakanForm = ref<InstanceType<typeof OrderTindakan> | null>(null);
 const openedPatientData = ref<any>({});
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const emit = defineEmits(["back", "goToDetail", "goToEdit", "fetchOrderLab"]);
 
 console.log("pageType", props.pageType);
 
@@ -66,6 +66,8 @@ const postRegisterPatient = async () => {
       payload.rekamMedisDate = Date.now().toLocaleString();
       payload.patientUuid = tempPatientData.patientUuid;
       response = await orderLabStore.postApi(payload);
+      emit("back");
+      emit("fetchOrderLab");
     }
     // else {
     //   response = await orderLabStore.putApi(payload);
