@@ -141,19 +141,6 @@ const itemsHari = ref([
   { name: "Jumat", code: "5" },
 ]);
 
-const dayNameToCode = (dayName: string) => {
-  const mapping: Record<string, number> = {
-    Senin: 1,
-    Selasa: 2,
-    Rabu: 3,
-    Kamis: 4,
-    Jumat: 5,
-    Sabtu: 6,
-    Minggu: 7,
-  };
-  return mapping[dayName] ?? null; // null jika nama tak dikenali
-};
-
 // Helper format Jam -> "HH:mm"
 const formatTime = (date: Date) => {
   const hours = date.getHours().toString().padStart(2, "0");
@@ -168,6 +155,49 @@ const toMinutes = (t: any) => {
   }
   const d = t instanceof Date ? t : typeof t === "string" ? new Date(t) : null;
   return d && !isNaN(d.getTime()) ? d.getHours() * 60 + d.getMinutes() : 0;
+};
+
+// Helper class untuk konversi waktu
+class TimeConverter {
+  /**
+   * Mengubah format waktu "HH:mm" menjadi total menit dari tengah malam.
+   * @param {string|Date} time - Contoh: "09:30" atau Date object
+   * @returns {number} - Contoh: 570
+   */
+  static toMinutes(time) {
+    if (!time) return 0;
+
+    // Jika input adalah Date object
+    if (time instanceof Date) {
+      return time.getHours() * 60 + time.getMinutes();
+    }
+
+    // Jika input adalah string format "HH:mm"
+    if (typeof time === "string" && time.includes(":")) {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours * 60 + minutes;
+    }
+
+    return 0;
+  }
+}
+
+// Function untuk menghitung durasi pelayanan otomatis
+const calculateDurasiPelayanan = (
+  startTime,
+  endTime,
+  kuotaJkn,
+  kuotaNonJkn
+) => {
+  const totalKuota = (parseInt(kuotaJkn) || 0) + (parseInt(kuotaNonJkn) || 0);
+
+  if (totalKuota > 0 && startTime && endTime) {
+    const totalMenit =
+      TimeConverter.toMinutes(endTime) - TimeConverter.toMinutes(startTime);
+    return Math.floor(totalMenit / totalKuota).toString();
+  }
+
+  return "0";
 };
 
 // Schema validasi yang diperbaiki
@@ -213,9 +243,9 @@ const schema = toTypedSchema(
                 return toMinutes(value) > toMinutes(startTime);
               }
             ),
-          durasiPelayanan: yup.string().required("Durasi harus diisi"),
-          kuotaJkn: yup.string().required("Kuota JKN harus diisi"),
-          kuotaNonJkn: yup.string().required("Kuota Non-JKN harus diisi"),
+          durasiPelayanan: yup.string().required(" harus diisi"),
+          kuotaJkn: yup.string().required("harus diisi"),
+          kuotaNonJkn: yup.string().required("harus diisi"),
           aktif: yup.boolean().required("Status harus dipilih"),
         })
       )
@@ -304,7 +334,6 @@ const onSubmit = handleSubmit(async (values: any) => {
       end_time: formatTime(item.endTime),
       kuota_jkn: parseInt(item.kuotaJkn),
       kuota_non_jkn: parseInt(item.kuotaNonJkn),
-      durasi_pelayanan: parseInt(item.durasiPelayanan),
       aktif: item.aktif ?? true,
     })),
   };
@@ -357,6 +386,33 @@ watch(
       handleReset();
     }
   }
+);
+
+// Watcher untuk auto-calculate durasi pelayanan
+watch(
+  () => data.value,
+  (newData) => {
+    newData.forEach((item) => {
+      if (
+        item.startTime &&
+        item.endTime &&
+        (item.kuotaJkn || item.kuotaNonJkn)
+      ) {
+        const calculatedDurasi = calculateDurasiPelayanan(
+          item.startTime,
+          item.endTime,
+          item.kuotaJkn,
+          item.kuotaNonJkn
+        );
+
+        // Update durasi hanya jika berbeda untuk menghindari infinite loop
+        if (item.durasiPelayanan !== calculatedDurasi) {
+          item.durasiPelayanan = calculatedDurasi;
+        }
+      }
+    });
+  },
+  { deep: true }
 );
 
 function handleReset() {
@@ -528,25 +584,16 @@ const selectedPatient = ref([]);
                   class="flex justify-center items-center w-full h-full font-bold"
                 >
                   Durasi Per-pasien
+                  <small class="block ml-1 text-xs font-normal text-gray-500"
+                    >(Auto)</small
+                  >
                 </div>
               </template>
               <template #body="slotProps">
-                <div class="flex justify-center items-center">
-                  <CustomInputNumber
-                    class="w-[120px] h-[40px]"
-                    placeholder="0"
-                    v-model:modelValue="slotProps.data.durasiPelayanan"
-                    type="number"
-                    :showLabel="false"
-                    :invalid="
-                      !slotProps.data.durasiPelayanan ||
-                      slotProps.data.durasiPelayanan === '0'
-                    "
-                  >
-                    <template #appendText>
-                      <div class="flex items-center mr-2">mnt</div>
-                    </template>
-                  </CustomInputNumber>
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
+                  {{ slotProps.data.durasiPelayanan }} menit
                 </div>
               </template>
             </Column>
