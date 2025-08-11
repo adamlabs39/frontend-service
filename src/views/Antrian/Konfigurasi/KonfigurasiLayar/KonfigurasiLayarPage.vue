@@ -162,19 +162,7 @@ const changeSection = (label: string) => {
   }
 };
 
-const updatePageType = (path: string) => {
-  resetFilter();
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[2] ?? "";
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
-});
-
 onMounted(() => {
-  updatePageType(route.path);
   fetchJadwalAntrian();
 });
 
@@ -268,6 +256,7 @@ const selectedPatient = ref([]);
         @search="handleSearch"
         @reset="handleResetFilters"
         @daftar="changeSection('Daftar')"
+        @refresh="fetchJadwalAntrian"
       />
     </template>
     <template #content>

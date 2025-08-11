@@ -27,7 +27,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["search", "reset", "daftar"]);
+const emit = defineEmits(["search", "reset", "daftar", "refresh"]);
+
+function handleRefresh() {
+  emit("refresh");
+}
 
 const searchQuery = ref("");
 const selectedLayar = ref<any>();
@@ -210,5 +214,6 @@ defineExpose({
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
+    @refresh="handleRefresh"
   />
 </template>
