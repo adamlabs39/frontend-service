@@ -10,6 +10,8 @@ import TambahDataKonfigurasiLayar from "./TambahDataKonfigurasiLayar.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { utilsStore } from "@/stores/utils";
+import EditDataKonfigurasiLayar from "./EditDataKonfigurasiLayar.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -41,7 +43,8 @@ const fetchJadwalAntrian = async () => {
     if (response && response.payload) {
       originalJadwalAntrianPayload.value = response.payload;
       applyFilters(); // Apply current filters
-      jadwalLayarAntrianProperties.value.total = response.payload.length;
+      jadwalLayarAntrianProperties.value.total =
+        response.properties?.total || response.payload.length;
     }
   } catch (error) {
     console.log(error);
@@ -210,6 +213,7 @@ const dialogData = ref({
   isVisible: false,
   method: "add",
   title: "Tambah",
+  payload: {},
 });
 
 function handleAdd() {
@@ -217,18 +221,27 @@ function handleAdd() {
     isVisible: true,
     method: "add",
     title: "Tambah",
+    payload: {},
   };
 }
 
-function handleEdit() {
+function handleEdit(rowData: any) {
   dialogData.value = {
     isVisible: true,
     method: "edit",
     title: "Edit",
+    payload: { ...rowData },
   };
 }
 
-function handleRefreshFromChild() {
+const handlePage = (event: any) => {
+  jadwalLayarAntrianProperties.value.page = event.page + 1;
+  jadwalLayarAntrianProperties.value.page_size = event.rows;
+  fetchJadwalAntrian();
+};
+
+function handleRefresh() {
+  dialogData.value.isVisible = false;
   fetchJadwalAntrian();
 }
 
@@ -243,7 +256,6 @@ const selectedPatient = ref([]);
 
 <template>
   <Card
-    v-if="dataBreadCrumb.length == 0"
     pt:body:class="overflow-auto pt-0 h-full"
     pt:content:class="overflow-auto h-full"
     class=""
@@ -392,7 +404,7 @@ const selectedPatient = ref([]);
               <CustomButton
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleAdd"
+                @click="handleEdit(slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" width="15px" />
               </CustomButton>
@@ -415,17 +427,28 @@ const selectedPatient = ref([]);
         :title="dialogData.title"
         :method="dialogData.method"
         @close="handleClose"
-        @refresh="handleRefreshFromChild"
+        @refresh="handleRefresh"
+      />
+      <EditDataKonfigurasiLayar
+        :full-screen="true"
+        v-model:isDialogVisible="dialogData.isVisible"
+        :title="dialogData.title"
+        :method="dialogData.method"
+        @close="handleClose"
+        @refresh="handleRefresh"
+        :payload="dialogData.payload"
       />
     </template>
     <template #footer>
-      <AntrianFooter
-        :rows="jadwalLayarAntrianProperties.page_size"
-        :totalRecords="jadwalLayarAntrianProperties.total"
-        :rowsPerPageOptions="[10, 20, 30]"
-        @update:rows="handleRowsUpdate"
-        @update:current-page="handlePageUpdate"
-      />
+      <div class="flex justify-between px-5 py-2.5">
+        <CustomPaginator
+          class="ml-auto"
+          :rows="jadwalLayarAntrianProperties.page_size"
+          :totalRecords="jadwalLayarAntrianProperties.total"
+          :rowsPerPageOptions="[10, 20, 30]"
+          @page="handlePage"
+        />
+      </div>
     </template>
   </Card>
 </template>
