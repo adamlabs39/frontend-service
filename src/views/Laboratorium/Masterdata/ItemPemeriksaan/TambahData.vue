@@ -94,14 +94,10 @@ const [statusNilaiRujukan, statusNilaiRujukanAttrs] =
 const fetchKategoriPemeriksaan = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await kategoriPemeriksaanStore.getApi({
-      page: 1,
-      limit: 9999,
-      name: "",
-    });
+    const response = await kategoriPemeriksaanStore.getActive();
 
-    if (response?.payload?.data) {
-      kategoriPemeriksaanOptions.value = response.payload.data
+    if (response?.payload) {
+      kategoriPemeriksaanOptions.value = response.payload
         .filter((item: any) => item.status === true)
         .map((item: any) => ({
           label: item.name,

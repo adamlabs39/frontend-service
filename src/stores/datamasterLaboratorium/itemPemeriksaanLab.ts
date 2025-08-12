@@ -60,7 +60,7 @@ export const useItemPemeriksaanStore = defineStore({
       return apiLaboratoriumPost("/lab/item-pemeriksaan/import", payload);
     },
     async getActive(payload = {}) {
-      return apiLaboratoriumGet(`/item-pemeriksaan/active`, payload);
+      return apiLaboratoriumGet(`/lab/item-pemeriksaan/active`, payload);
     },
   },
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useKelompokPemeriksaanStore } from "@/stores/datamasterLaboratorium/kelompokPemeriksaan";
 import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
@@ -12,6 +12,7 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import DialogKelompokPemeriksaan from "./DialogKelompokPemeriksaan.vue";
 import DialogDelete from "@/views/Laboratorium/Layout/DialogDelete.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const addKelompokDialog = ref(false);
 const utils = utilsStore();
@@ -49,11 +50,13 @@ const fetchKelompokPemeriksaan = async () => {
   }
 };
 
+const hasData = computed(() => kelompokPemeriksaanPayload.value.length > 0);
+
 const fetchItemPemeriksaan = async () => {
   try {
     const response = await itemPemeriksaanStore.getActive();
     if (response && response.payload) {
-      itemPemeriksaanPayload.value = response.payload.data;
+      itemPemeriksaanPayload.value = response.payload;
     } else {
       itemPemeriksaanPayload.value = [];
     }
@@ -380,6 +383,7 @@ onMounted(() => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="kelompokPemeriksaanPayload"
           tableStyle="min-width: 50rem"

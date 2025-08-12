@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -13,6 +13,7 @@ import DialogRujukanText from "./DialogRujukanText.vue";
 import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
 import * as XLSX from "xlsx-js-style";
 import DialogDelete from "../../Layout/DialogDelete.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const addItemDialog = ref(false);
 
@@ -53,6 +54,10 @@ const fetchItemPemeriksaan = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+const hasData = computed(() => {
+  return itemPemeriksaanPayload.value.length > 0;
+});
 
 //  dialog rujukan angka
 const nilaiRujukanAngka = ref(false);
@@ -594,6 +599,7 @@ console.log("jenis input", optionJenisInput.value);
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="itemPemeriksaanPayload"
           tableStyle="min-width: 50rem"
