@@ -100,7 +100,7 @@ import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPag
 
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
-import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
+import DataAntrianPage from "@/views/Antrian/DataAntrian/AntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
 import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/KonfigurasiLayarPage.vue";
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalDokter/KonfigurasiJadwalPage.vue";
