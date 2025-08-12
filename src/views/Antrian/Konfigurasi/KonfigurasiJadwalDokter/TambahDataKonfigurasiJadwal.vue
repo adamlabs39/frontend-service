@@ -148,52 +148,47 @@ const formatTime = (date: Date) => {
   return `${hours}:${minutes}`;
 };
 
-const toMinutes = (t: any) => {
-  if (typeof t === "string" && /^\d{2}:\d{2}$/.test(t)) {
-    const [h, m] = t.split(":").map(Number);
-    return h * 60 + m;
+/**
+ * Converts time format "HH:mm" or Date object to total minutes from midnight
+ * @param {string|Date} time - Example: "09:30" or Date object
+ * @returns {number} - Example: 570
+ */
+const toMinutes = (time: any): number => {
+  if (!time) return 0;
+
+  // Handle Date object input
+  if (time instanceof Date) {
+    return time.getHours() * 60 + time.getMinutes();
   }
-  const d = t instanceof Date ? t : typeof t === "string" ? new Date(t) : null;
-  return d && !isNaN(d.getTime()) ? d.getHours() * 60 + d.getMinutes() : 0;
+
+  // Handle "HH:mm" string format
+  if (typeof time === "string" && /^\d{2}:\d{2}$/.test(time)) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  // Handle string that can be converted to Date
+  if (typeof time === "string") {
+    const dateObj = new Date(time);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.getHours() * 60 + dateObj.getMinutes();
+    }
+  }
+
+  return 0;
 };
-
-// Helper class untuk konversi waktu
-class TimeConverter {
-  /**
-   * Mengubah format waktu "HH:mm" menjadi total menit dari tengah malam.
-   * @param {string|Date} time - Contoh: "09:30" atau Date object
-   * @returns {number} - Contoh: 570
-   */
-  static toMinutes(time) {
-    if (!time) return 0;
-
-    // Jika input adalah Date object
-    if (time instanceof Date) {
-      return time.getHours() * 60 + time.getMinutes();
-    }
-
-    // Jika input adalah string format "HH:mm"
-    if (typeof time === "string" && time.includes(":")) {
-      const [hours, minutes] = time.split(":").map(Number);
-      return hours * 60 + minutes;
-    }
-
-    return 0;
-  }
-}
 
 // Function untuk menghitung durasi pelayanan otomatis
 const calculateDurasiPelayanan = (
-  startTime,
-  endTime,
-  kuotaJkn,
-  kuotaNonJkn
+  startTime: any,
+  endTime: any,
+  kuotaJkn: any,
+  kuotaNonJkn: any
 ) => {
   const totalKuota = (parseInt(kuotaJkn) || 0) + (parseInt(kuotaNonJkn) || 0);
 
   if (totalKuota > 0 && startTime && endTime) {
-    const totalMenit =
-      TimeConverter.toMinutes(endTime) - TimeConverter.toMinutes(startTime);
+    const totalMenit = toMinutes(endTime) - toMinutes(startTime);
     return Math.floor(totalMenit / totalKuota).toString();
   }
 
