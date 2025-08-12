@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed, watchEffect } from "vue";
 import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -51,6 +51,53 @@ const dayNameToCode = (dayName: string) => {
     Minggu: 7,
   };
   return mapping[dayName] ?? null; // null jika nama tak dikenali
+};
+
+/**
+ * Converts time format "HH:mm" or Date object to total minutes from midnight
+ * @param {string|Date} time - Example: "09:30" or Date object
+ * @returns {number} - Example: 570
+ */
+const toMinutes = (time: any): number => {
+  if (!time) return 0;
+
+  // Handle Date object input
+  if (time instanceof Date) {
+    return time.getHours() * 60 + time.getMinutes();
+  }
+
+  // Handle "HH:mm" string format
+  if (typeof time === "string" && /^\d{2}:\d{2}$/.test(time)) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  // Handle string that can be converted to Date
+  if (typeof time === "string") {
+    const dateObj = new Date(time);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.getHours() * 60 + dateObj.getMinutes();
+    }
+  }
+
+  return 0;
+};
+
+// Function untuk menghitung durasi pelayanan otomatis
+const calculateDurasiPelayanan = (
+  startTime: any,
+  endTime: any,
+  kuotaJkn: any,
+  kuotaNonJkn: any
+) => {
+  const totalKuota = (parseInt(kuotaJkn) || 0) + (parseInt(kuotaNonJkn) || 0);
+
+  if (totalKuota > 0 && startTime && endTime) {
+    const totalMenit = toMinutes(endTime) - toMinutes(startTime);
+    return Math.floor(totalMenit / totalKuota).toString();
+  }
+
+  return "0";
 };
 
 // Schema validasi untuk array jadwal
@@ -259,6 +306,31 @@ watch(
   }
 );
 
+watchEffect(() => {
+  if (fields.value && Array.isArray(fields.value)) {
+    fields.value.forEach((field: any, index: number) => {
+      const jadwal = field.value;
+      if (
+        jadwal.startTime &&
+        jadwal.endTime &&
+        (Number(jadwal.kuotaJkn) > 0 || Number(jadwal.kuotaNonJkn) > 0)
+      ) {
+        const calculatedDurasi = calculateDurasiPelayanan(
+          jadwal.startTime,
+          jadwal.endTime,
+          jadwal.kuotaJkn,
+          jadwal.kuotaNonJkn
+        );
+
+        // Update durasi jika berbeda
+        if (jadwal.durasiPelayanan !== Number(calculatedDurasi)) {
+          jadwal.durasiPelayanan = Number(calculatedDurasi);
+        }
+      }
+    });
+  }
+});
+
 // Submit handler
 const onSubmit = handleSubmit(async (formValues: any) => {
   UseUtilsStore.setLoading(true);
@@ -299,7 +371,6 @@ const onSubmit = handleSubmit(async (formValues: any) => {
         end_time: formatTimeToString(jadwal.endTime),
         kuota_jkn: Number(jadwal.kuotaJkn),
         kuota_non_jkn: Number(jadwal.kuotaNonJkn),
-        durasi_pelayanan: Number(jadwal.durasiPelayanan),
         aktif: jadwal.status,
       };
 
@@ -465,23 +536,16 @@ const selectedPatient = ref([]);
                   class="flex justify-center items-center w-full h-full font-bold"
                 >
                   Durasi Per-pasien
+                  <small class="block ml-1 text-xs font-normal text-gray-500"
+                    >(Auto)</small
+                  >
                 </div>
               </template>
               <template #body="slotProps">
-                <div class="flex justify-center items-center">
-                  <CustomInputNumber
-                    class="w-[120px] h-[40px]"
-                    placeholder="0"
-                    v-model:modelValue="slotProps.data.value.durasiPelayanan"
-                    type="number"
-                    :showLabel="false"
-                    :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].durasiPelayanan`]"
-                    :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].durasiPelayanan`]"
-                  >
-                    <template #appendText>
-                      <div class="flex items-center mr-2">mnt</div>
-                    </template>
-                  </CustomInputNumber>
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
+                  {{ slotProps.data.value.durasiPelayanan }} menit
                 </div>
               </template>
             </Column>
