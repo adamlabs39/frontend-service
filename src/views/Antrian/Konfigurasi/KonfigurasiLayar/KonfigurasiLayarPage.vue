@@ -6,11 +6,11 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
-import TambahDataKonfigurasiLayar from "./TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "./SectionTambahKonfigurasiLayar.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { utilsStore } from "@/stores/utils";
-import EditDataKonfigurasiLayar from "./EditDataKonfigurasiLayar.vue";
+import EditDataKonfigurasiLayar from "./SectionEditKonfigurasiLayar.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const pageType = ref("");

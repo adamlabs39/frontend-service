@@ -7,7 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiJadwal from "../Konfigurasi/KonfigurasiJadwalDokter/TambahDataKonfigurasiJadwal.vue";
+import TambahDataKonfigurasiJadwal from "../Konfigurasi/KonfigurasiJadwalDokter/SectionTambahKonfigurasiJadwal.vue";
 
 const props = defineProps({
   title: {

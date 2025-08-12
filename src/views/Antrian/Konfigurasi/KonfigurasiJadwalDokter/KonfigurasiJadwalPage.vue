@@ -5,7 +5,7 @@ import KonfigurasiJadwalHeader from "../../Layout/KonfigurasiJadwalHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
-import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
+import EditDataKonfigurasiJadwal from "./SectionEditKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";

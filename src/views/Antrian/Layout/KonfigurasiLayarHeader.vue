@@ -6,7 +6,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/SectionTambahKonfigurasiLayar.vue";
 
 const props = defineProps({
   title: {
