@@ -54,8 +54,14 @@ const admisiRIStore = useAdmisiRIStore();
 const admisiIGDStore = useAdmisiIGDStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
+const isEditing = ref(false);
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const emit = defineEmits(["back", "goToDetail", "goToEdit", "cancelEdit" , "closeForm"]);
+
+const goToEdit = () => {
+  isEditing.value = true
+  emit ('goToEdit')
+}
 
 const confirmSaveDialog = ref(false);
 const inputGeneralConsentDialog = ref(false);
@@ -272,6 +278,8 @@ const postRegisterPatient = async () => {
   }
 };
 
+const selectedIsiSurat = ref<string>("");
+
 const registPatient = async (type: string) => {
   if (type == "lewati") {
     await postRegisterPatient();
@@ -332,44 +340,59 @@ const [familyDataGender] = defineField("familyData.gender");
 const [familyDataRelationship] = defineField("familyData.relationship");
 const [name] = defineField("name");
 
+
 const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
   storeUtils.setLoading(true);
-  try {
-    if (props.formType == "add") {
-      await postRegisterPatient();
-    }
+try {
 
-    values.familyData = Object.keys(values.familyData).length
-      ? values.familyData
-      : (null as any);
-    const tempGeneralConsentData = createGeneralConsentPdf({
-      data: selectedDataGeneralConsent.value.isiSurat,
-      patientData: openedPatientData.value,
-      familyData: values.familyData,
-    });
-    values.generalConsent = await new Promise((resolve, reject) => {
-      tempGeneralConsentData.getBase64((base64) => {
-        if (base64) {
-          resolve(base64);
-        } else {
-          reject("Gagal mendapatkan Base64 dari dokumen PDF.");
-        }
-      });
-    });
-    values.name = selectedDataGeneralConsent.value.name;
-    await admisiGeneralConsentStore.createGeneralConsent(
-      openedPatientData.value.uuid,
-      values
-    );
-    inputGeneralConsentDialog.value = false;
-  } catch (error) {
-    console.error("Failed to post data", error);
-  } finally {
-    storeUtils.setLoading(false);
+  if (props.formType == "add") {
+    await postRegisterPatient();
   }
+
+  values.familyData = Object.keys(values.familyData).length
+    ? values.familyData
+    : (null as any);
+
+  const tempGeneralConsentData = createGeneralConsentPdf({
+    data: selectedIsiSurat.value,
+    patientData: openedPatientData.value,
+    familyData: values.familyData,
+  });
+
+  values.generalConsent = await new Promise((resolve, reject) => {
+    tempGeneralConsentData.getBase64((base64) => {
+      if (base64) {
+        resolve(base64);
+      } else {
+        reject("Gagal mendapatkan Base64 dari dokumen PDF.");
+      }
+    });
+  });
+
+  values.name = selectedDataGeneralConsent.value?.name || "";
+
+  await admisiGeneralConsentStore.createGeneralConsent(
+    openedPatientData.value.uuid,
+    values
+  );
+
+
+  inputGeneralConsentDialog.value = false;
+} catch (error) {
+  console.error("❌ Gagal saat proses general consent:", error);
+} finally {
+  storeUtils.setLoading(false);
+}
 });
 
-const listDatamasterGeneralConsent = ref([]);
+
+interface GeneralConsentItem {
+  uuid: string;
+  name: string;
+  isiSurat: string;
+  status: boolean;
+}
+const listDatamasterGeneralConsent = ref<GeneralConsentItem[]>([]);
 const fetchListGeneralConsent = async () => {
   try {
     storeUtils.setLoading(true);
@@ -387,11 +410,13 @@ const fetchListGeneralConsent = async () => {
   }
 };
 
-const selectedDataGeneralConsent = ref();
+const selectedDataGeneralConsent = ref<GeneralConsentItem | undefined>();
 const setSelectedGeneralConsent = (uuid: string) => {
-  selectedDataGeneralConsent.value = listDatamasterGeneralConsent.value.find(
+  const found = listDatamasterGeneralConsent.value.find(
     (gc: any) => gc.uuid == uuid
   );
+  selectedDataGeneralConsent.value = found;
+  selectedIsiSurat.value = found?.isiSurat || "";
 };
 
 const listOpenedPatientGeneralConsent = ref<any[]>([]);
@@ -515,11 +540,12 @@ const deleteGeneralConsent = async () => {
               </div>
             </template>
           </CustomBreadCrumb>
+          <!-- batal edit -->
           <div class="flex">
             <CustomButton
               @click="closeRegisterForm"
-              icon="PhCaretLeft"
-              label="Kembali"
+              :icon="isEditing ? undefined : 'PhCaretLeft'"
+              :label="isEditing ? 'Batal Edit' : 'Kembali'"
               class="mr-[10px]"
               outlined
               borderColor="border-adameds-300"
@@ -527,7 +553,7 @@ const deleteGeneralConsent = async () => {
             />
             <CustomButton
               v-if="isDetail()"
-              @click="emit('goToEdit')"
+              @click="goToEdit"
               label="Edit"
               class="mr-[10px]"
               backgroundColor="bg-adameds-300"
@@ -614,9 +640,11 @@ const deleteGeneralConsent = async () => {
             backgroundColor="bg-adameds-300"
           />
         </div>
+        <!-- general consent -->
         <div v-else class="flex justify-end">
           <CustomButton
-            label="Reset"
+            @click="() => resetForm()"
+            label="Reseta"
             class="mr-[10px]"
             outlined
             borderColor="border-grey-200"

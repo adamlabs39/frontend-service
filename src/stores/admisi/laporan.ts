@@ -165,7 +165,7 @@ export const useAdmisiIGDStore = defineStore({
       payload = {}
     ) {
       return apiAdmisiGet(
-        `/report/penunjang?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+        `/report/penjamin?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
         payload
       );
     },

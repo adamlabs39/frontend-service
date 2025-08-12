@@ -76,7 +76,15 @@ export function createGeneralConsentPdf({
     },
   };
 
-  const localFaskes = JSON.parse(localStorage.getItem("faskes") ?? "");
+  // const localFaskes = JSON.parse(localStorage.getItem("faskes") ?? "");
+  let localFaskes = null;
+try {
+  const raw = localStorage.getItem("faskes");
+  localFaskes = raw ? JSON.parse(raw) : null;
+} catch (e) {
+  console.warn("⚠️ Gagal parse localStorage faskes:", e);
+  localFaskes = null;
+}
   const clinicName = localFaskes ? localFaskes.faskesName : "Klinik ADAMEDS";
 
   const docDefinition: any = {

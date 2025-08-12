@@ -36,7 +36,16 @@ export const useMonitoringKamarStore = defineStore({
     async updateBed(uuid = "", payload = {}) {
       return apiAdmisiPatch(`/monitoring-rooms/${uuid}`, payload);
     },
+    async getAktifRuangan(payload = {}) {
+      const response = await apiAdmisiGet("/monitoring-rooms", payload);
 
+      if (response && response.payload) {
+        const filtered = response.payload.filter((room: any) => !!room.name);
+        return { ...response, payload: filtered };
+      }
+
+      return response;
+    },
     async getDetailMonitoringKamar(uuid = "", payload = {}) {
       return apiAdmisiGet(`/monitoring-rooms/${uuid}`, payload);
     },

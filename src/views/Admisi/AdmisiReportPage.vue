@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, nextTick, defineEmits } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -15,13 +15,14 @@ import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar } from "@/utils/exportexceladmisi";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const admisiLaporanStore = useAdmisiIGDStore();
 const praktisiStore = usePraktisiStore();
 const ruanganStore = useRuanganStore();
-
+const emit = defineEmits(["search"]);
 const pageType = ref("");
 const route = useRoute();
 
@@ -114,7 +115,7 @@ const updatePageType = async (path: string) => {
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
-onMounted(() => {
+onMounted(async () => {
   updatePageType(route.path);
 });
 
@@ -137,6 +138,7 @@ const resetFilter = () => {
   ruanganFilter.value = "Semua";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  searchData();
 };
 
 interface Filter {
@@ -184,7 +186,7 @@ filter.endDate = `${dateToEpoch(
   } else if (
     pageType.value == "batal-kunjungan" ||
     pageType.value == "bayi-baru-lahir" ||
-    pageType.value == "rekap-jumlah-pasien-bpjs"
+    pageType.value == "rekap-kunjungan"
   ) {
     filter.jenisKunjungan =
       visitTypeFilter.value == "Semua" || !visitTypeFilter.value
@@ -215,6 +217,22 @@ const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.pageSize = event.rows;
   searchData();
+};
+
+const handleExport = () => {
+  switch (route.path) {
+    case "/admisi/laporan/kunjungan":
+      downloadExportExcelKunjungan(reportData.value, epochToDate);
+      break;
+    case "/admisi/laporan/batal-kunjungan":
+      downloadExportExcelBatalKunjungan(reportData.value, epochToDate);
+      break;
+    case "/admisi/laporan/status-kamar":
+      downloadExportExcelStatusKamar(reportData.value);
+      break;
+    default:
+      console.warn("Fungsi export belum diatur untuk halaman ini.");
+  }
 };
 
 defineExpose({
@@ -328,15 +346,16 @@ defineExpose({
             </div>
             <CustomDatePicker
               v-model="startDateFilter"
+              :maxDate="endDateFilter"
               label="Tanggal"
               class="w-[150px]"
             />
             <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
             <CustomDatePicker
               v-model="endDateFilter"
+              :minDate="startDateFilter"
               :showLabel="false"
               class="mt-auto w-[150px]"
-              :minDate="startDateFilter"
             />
             <CustomButton
               @click="searchData"
@@ -483,7 +502,7 @@ defineExpose({
                       header-class="text-black bg-adameds-50"
                       >
                       <template #body="{ data }">
-                        {{ data.noPenjamin?.name ?? "-" }}
+                        {{ data.patient.insurance?.[0]?.name ?? "-" }}
                       </template>
                     </Column>
                     <Column
@@ -493,7 +512,7 @@ defineExpose({
                       >
                       <template #body="{ data }">
                         <!-- <pre>{{ data }}</pre> -->
-                        {{ data.noPenjamin?.accountNumber ?? "-" }}
+                        {{ data.patient.insurance?.[0]?.accountNumber ?? "-" }}
                       </template>
                     </Column>
                     <Column
@@ -506,7 +525,7 @@ defineExpose({
               </template>
             </DataTable>
           </TabPanel>
-          <TabPanel value="penjamin">
+          <!-- <TabPanel value="penjamin">
             <DataTable
               v-model:expandedRows="expandedRows"
               :value="reportData"
@@ -626,7 +645,7 @@ defineExpose({
                 </div>
               </template>
             </DataTable>
-          </TabPanel>
+          </TabPanel> -->
           <TabPanel value="batal-kunjungan">
             <DataTable
               v-model:expandedRows="expandedRows"
@@ -688,10 +707,13 @@ defineExpose({
                 </template>
               </Column>
               <Column
-                field="cancelBy"
                 header="Petugas"
                 header-class="text-black bg-adameds-50"
-              ></Column>
+              >
+                <template #body="{ data }">
+                  {{ data.practitioner?.nama ?? '-' }}
+                </template>
+              </Column>
               <template #expansion="slotProps">
                 <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
                   <DataTable
@@ -739,17 +761,29 @@ defineExpose({
                 field="roomClass"
                 header="Kelas"
                 header-class="text-black bg-adameds-50"
-              ></Column>
+              >
+                <template #body="{ data }">
+                  {{ data.room?.className ?? '-' }}
+                </template>
+              </Column>
               <Column
                 field="room"
                 header="Room"
                 header-class="text-black bg-adameds-50"
-              ></Column>
+              >
+                <template #body="{ data }">
+                  {{ data.room?.name ?? '-' }}
+                </template>
+              </Column>
               <Column
                 field="totalPatients"
                 header="Jumlah Pasien"
                 header-class="text-black bg-adameds-50"
-              ></Column>
+              >
+                <template #body="{ data }">
+                  {{ data.jumlahPasien ?? '-' }}
+                </template>
+              </Column>
             </DataTable>
           </TabPanel>
           <TabPanel value="keperawatan-inap-pasien">
@@ -1017,7 +1051,7 @@ defineExpose({
     <template #footer>
       <div class="flex justify-between">
         <CustomButton
-          @click="() => {}"
+          @click="handleExport"
           icon="PhPrinter"
           label="Cetak"
           class="mr-[10px]"

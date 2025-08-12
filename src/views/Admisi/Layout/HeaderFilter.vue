@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, ref, type PropType, computed, } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -15,12 +15,13 @@ import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const praktisiStore = usePraktisiStore();
 const lokasiStore = useLokasiStore();
-const ruanganStore = useRuanganStore();
+const monitoringStore = useMonitoringKamarStore();
 
 const props = defineProps({
   pageType: {
@@ -47,6 +48,8 @@ const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
 const searchDPJPFilter = ref<string | undefined>("Semua");
+const selectedRoomName = ref<string | null>(null);
+
 
 const listDpjp = ref<any[]>([]);
 
@@ -77,8 +80,10 @@ const onRegisterMethodSelect = (label: string) => {
 // !SECTION
 
 // SECTION Rawat Inap
+const payload = ref<any[]>([]); 
 const filterRoomList = ref<any[]>([]);
 const selectedFilterRoom = ref<string[]>([]);
+
 const onFilterRoomSelect = (label: string) => {
   if (selectedFilterRoom.value.includes(label)) {
     selectedFilterRoom.value = selectedFilterRoom.value.filter(
@@ -156,6 +161,7 @@ const resetFilter = () => {
   endDateFilter.value = new Date();
   searchPatientFilter.value = "";
   searchDPJPFilter.value = "Semua";
+  emit('search');
 };
 
 const setFilter = (dataFilter: FilterAdmisi) => {
@@ -202,12 +208,21 @@ const fetchUtils = async () => {
         );
       } else filterPoliList.value = [];
     }
-    if (props.pageType == "rawat-inap") {
-      const responseRoom = await ruanganStore.getAktifApi();
-      if (responseRoom && responseRoom.payload) {
-        filterRoomList.value = responseRoom.payload;
-      } else filterRoomList.value = [];
-    }
+    if (props.pageType == "rawat-inap" || props.pageType == "rawat-jalan") {
+    const responseRoom = await monitoringStore.getAktifRuangan();
+    if (responseRoom && responseRoom.payload) {
+      filterRoomList.value = responseRoom.payload.map((room: any) => ({
+        ...room,
+        label:
+          props.pageType === "rawat-jalan"
+            ? room.className
+            : room.name,
+      }));
+  } else { 
+    filterRoomList.value = [];
+    console.log("No room data found.");
+  }
+}
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -443,7 +458,7 @@ defineExpose({
             <div class="w-[15%]">Filter Ruangan</div>
             <div class="flex">
               <div class="h-5 my-auto border border-grey-300"></div>
-              <CustomChip
+              <!-- <CustomChip
                 v-for="(room, index) in [
                   { uuid: '123', name: '102' },
                   ...filterRoomList,
@@ -453,7 +468,15 @@ defineExpose({
                 class="ml-[10px]"
                 :isSelected="selectedFilterRoom.includes(room.name)"
                 @selected="onFilterRoomSelect"
-              />
+              /> -->
+              <CustomChip
+                  v-for="(room, index) in filterRoomList"
+                  :key="room.uuid + index"
+                  :label="room.label"
+                  class="ml-[10px]"
+                  :isSelected="selectedFilterRoom.includes(room.label)"
+                  @selected="onFilterRoomSelect"
+                />
             </div>
           </div>
           <!-- <div class="flex my-[10px]">

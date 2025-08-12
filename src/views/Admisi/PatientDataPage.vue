@@ -976,7 +976,14 @@ onMounted(() => {
           <template #header>Data Lengkap Pasien</template>
           <template #content>
             <div class="grid grid-cols-2 gap-y-[10px] mt-5">
-              <CustomInfoRow label="No. RM" :value="openedPatientData.noRm" />
+              <CustomInfoRow 
+                label="No. identitas" 
+                :value="openedPatientData.noIdentity"
+              />
+              <CustomInfoRow 
+                label="No. RM"
+                :value="openedPatientData.noRm"
+              />
               <CustomInfoRow
                 label="Nama Lengkap"
                 :value="openedPatientData.name"
@@ -987,7 +994,7 @@ onMounted(() => {
               />
               <CustomInfoRow
                 label="Tanggal lahir"
-                :value="openedPatientData.birthDetail.birthDate"
+                :value="openedPatientData.birthDetail.birthDate?.split('T')[0] ?? '-'"
               />
               <CustomInfoRow
                 label="Umur"
@@ -1022,6 +1029,13 @@ onMounted(() => {
               <CustomInfoRow
                 label="Alamat"
                 :value="openedPatientData.address.fullAddress"
+              />
+            </div>
+            <hr style="margin-top: 20px;"/>
+            <div class="grid grid-cols-2 gap-y-[10px] mt-5">
+              <CustomInfoRow
+                label="ID SATUSEHAT"
+                :value="openedPatientData.satuSehatId"
               />
             </div>
           </template>
