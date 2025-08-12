@@ -103,8 +103,8 @@ import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPag
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
 import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
-import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
-import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/KonfigurasiLayarPage.vue";
+import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalDokter/KonfigurasiJadwalPage.vue";
 import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
 import PasienDataPage from "@/views/Antrian/APM/ApmPasienJKN/PasienDataPage.vue";
 import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";

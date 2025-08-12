@@ -12,6 +12,7 @@ import {
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
   baseInstanceInventory,
+  baseInstanceAntrian,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
@@ -728,6 +729,57 @@ const apiInventoryDelete = async (url: string, data: object) => {
   }
 };
 
+//Antrian
+const apiAntrianGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianGetDatamaster = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
+  try {
+    let response = await baseInstanceDatamaster.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -779,4 +831,9 @@ export {
   apiInventoryPut,
   apiInventoryDelete,
   apiRekamMedisDelete,
+  apiAntrianGet,
+  apiAntrianDelete,
+  apiAntrianPost,
+  apiAntrianPut,
+  apiAntrianGetDatamaster,
 };

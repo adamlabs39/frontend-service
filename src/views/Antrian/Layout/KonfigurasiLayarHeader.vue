@@ -6,7 +6,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiLayar from "../Konfigurasi/TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/TambahDataKonfigurasiLayar.vue";
 
 const props = defineProps({
   title: {
@@ -21,16 +21,20 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  availableTipeLayar: {
+    type: Array,
+    default: () => [],
+  },
 });
 
+const emit = defineEmits(["search", "reset", "daftar", "refresh"]);
+
+function handleRefresh() {
+  emit("refresh");
+}
+
+const searchQuery = ref("");
 const selectedLayar = ref<any>();
-const itemLayar = ref([
-  { name: "Layar 3 x 3 Panggilan", code: "L-1" },
-  { name: "Layar 3 x 2 Panggilan", code: "L-2" },
-  { name: "Layar 3 List & 3 Panggilan", code: "L-3" },
-  { name: "Layar 2 List & 2 Panggilan", code: "L-4" },
-  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: "L-5" },
-]);
 
 const dialogData = ref({
   isVisible: false,
@@ -58,8 +62,6 @@ function handleClose() {
   dialogData.value.isVisible = false;
 }
 
-// !SECTION
-
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -71,14 +73,27 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
+// Handle search button click
+const handleSearchClick = () => {
+  emit(
+    "search",
+    searchQuery.value,
+    selectedLayar.value,
+    selectedPaymentMethod.value
+  );
+};
+
 const filters = [selectedPaymentMethod];
 
 const resetFilter = () => {
   filters.forEach((filter) => {
     filter.value = [];
-    selectedLayar.value = null;
   });
+  selectedLayar.value = null;
+  searchQuery.value = "";
+  emit("reset");
 };
+
 defineExpose({
   resetFilter,
 });
@@ -87,9 +102,9 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex items-center w-full gap-5 mr-2.5">
+      <div class="flex gap-5 items-center mr-2.5 w-full">
         <CustomButton label="" icon="PhArrowClockwise" />
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
           >
@@ -116,17 +131,18 @@ defineExpose({
         <div class="flex mt-[10px]">
           <CustomTextfield
             v-if="search"
+            v-model="searchQuery"
             :label="`Cari Layar`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
-            class="w-1/2 mr-5"
+            class="mr-5 w-1/2"
           >
           </CustomTextfield>
           <CustomSelect
             v-model="selectedLayar"
-            :options="itemLayar"
+            :options="availableTipeLayar"
             optionValue="code"
-            optionLabel="name"
+            optionLabel="tipe_layar"
             class="w-1/2"
             :is-loading="false"
             label="Tipe Layar"
@@ -136,6 +152,7 @@ defineExpose({
             icon="PhMagnifyingGlass"
             label="Cari"
             class="ml-5 mr-[10px] mt-auto w-[95px]"
+            @click="handleSearchClick"
           />
           <CustomButton
             @click="resetFilter"
@@ -197,5 +214,6 @@ defineExpose({
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
+    @refresh="handleRefresh"
   />
 </template>

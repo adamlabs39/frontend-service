@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { computed, ref, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -7,7 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiJadwal from "../Konfigurasi/TambahDataKonfigurasiJadwal.vue";
+import TambahDataKonfigurasiJadwal from "../Konfigurasi/KonfigurasiJadwalDokter/TambahDataKonfigurasiJadwal.vue";
 
 const props = defineProps({
   title: {
@@ -22,30 +22,30 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  excludedDoctorUuids: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+  dokterOptions: {
+    type: Array as PropType<Array<{ uuid: string; name: string }>>,
+    default: () => [],
+  },
+  poliOptions: {
+    type: Array as PropType<Array<{ uuid: string; name: string }>>,
+    default: () => [],
+  },
 });
 
+const dokterDropdown = computed(() => props.dokterOptions);
+const poliDropdown = computed(() => props.poliOptions);
+
 const selectedDokter = ref<any>();
-const itemDokter = ref([
-  { name: "dr. Umum", code: "DR1" },
-  { name: "dr. Spesialis Sp. A", code: "DR2" },
-  { name: "dr. Spesialis Sp. M", code: "DR3" },
-  { name: "dr. Spesialis Sp. Og", code: "DR4" },
-  { name: "dr. Spesialis Sp. D", code: "DR5" },
-]);
 
 const selectedPoli = ref<any>();
-const itemPoli = ref([
-  { name: "Poli Umum", code: "P1" },
-  { name: "Poli Anak", code: "P2" },
-  { name: "Poli Mata", code: "P3" },
-  { name: "Poli Kandungan", code: "P4" },
-  { name: "Poli Dalam", code: "P5" },
-]);
-
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
-
-// !SECTION
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
@@ -74,14 +74,6 @@ function handleAdd() {
   };
 }
 
-function handleEdit() {
-  dialogData.value = {
-    isVisible: true,
-    method: "edit",
-    title: "Edit",
-  };
-}
-
 function handleClose() {
   dialogData.value.isVisible = false;
 }
@@ -96,14 +88,40 @@ const resetFilter = () => {
 defineExpose({
   resetFilter,
 });
+
+const emit = defineEmits(["refresh", "search"]);
+
+function handleRefresh() {
+  emit("refresh");
+}
+
+function handleSearch() {
+  emit("search", {
+    dokterUuid: selectedDokter.value ?? "",
+    poliUuid: selectedPoli.value ?? "",
+    aktif:
+      selectedPaymentMethod.value.length === 1
+        ? selectedPaymentMethod.value[0] === "AKTIF"
+        : undefined,
+  });
+}
+
+function handleReset() {
+  resetFilter(); // bersihkan pilihan lokal
+  emit("search", {
+    // hilangkan filter di parent
+    dokterUuid: "",
+    poliUuid: "",
+  });
+}
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex items-center w-full gap-5 mr-2.5">
+      <div class="flex gap-5 items-center mr-2.5 w-full">
         <CustomButton label="" icon="PhArrowClockwise" />
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
           >
@@ -130,10 +148,10 @@ defineExpose({
         <div class="flex mt-[10px]">
           <CustomSelect
             v-model="selectedDokter"
-            :options="itemDokter"
-            optionValue="code"
+            :options="dokterDropdown"
+            optionValue="uuid"
             optionLabel="name"
-            class="w-1/4 mr-[10px]"
+            class="w-1/4 mr-[10px] flex-grow"
             :is-loading="false"
             prependIcon="PhMagnifyingGlass"
             label="Cari Dokter"
@@ -141,33 +159,23 @@ defineExpose({
           />
           <CustomSelect
             v-model="selectedPoli"
-            :options="itemPoli"
-            optionValue="code"
+            :options="poliDropdown"
+            optionValue="uuid"
             optionLabel="name"
-            class="w-1/4 mr-[20px]"
+            class="w-1/4 mr-[20px] flex-grow"
             :is-loading="false"
             prependIcon="PhMagnifyingGlass"
             label="Cari Poli"
             place-holder="Cari Poli"
           />
-          <CustomDatePicker
-            v-model="startDateFilter"
-            label="Tanggal"
-            class="w-[200px]"
-          />
-          <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
-          <CustomDatePicker
-            v-model="endDateFilter"
-            :showLabel="false"
-            class="mt-auto w-[200px]"
-          />
           <CustomButton
             icon="PhMagnifyingGlass"
             label="Cari"
-            class="ml-5 mr-[10px] mt-auto w-[95px]"
+            class="mr-[10px] mt-auto w-[95px]"
+            @click="handleSearch"
           />
           <CustomButton
-            @click="resetFilter"
+            @click="handleReset"
             label="Reset"
             outlined
             borderColor="border-adameds-300"
@@ -177,28 +185,30 @@ defineExpose({
         </div>
         <div class="font-semibold text-SM text-grey-300">
           <div class="flex mb-[10px] mt-5">
-            <div class="w-[15%]">Filter Status</div>
-            <div class="flex">
-              |
-              <CustomChip
-                label="AKTIF"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-50"
-                iconColor="text-adameds-300"
-                textColor="text-adameds-300"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('AKTIF')"
-                @selected="onPaymentMethodSelect"
-                selectedColor="bg-adameds-300 border-adameds-300"
-              />
-              <CustomChip
-                label="NON-AKTIF"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('NON-AKTIF')"
-                @selected="onPaymentMethodSelect"
-              />
+            <div class="flex gap-5">
+              <div class="">Filter Status</div>
+              <div class="flex">
+                |
+                <CustomChip
+                  label="AKTIF"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('AKTIF')"
+                  @selected="onPaymentMethodSelect"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                />
+                <CustomChip
+                  label="NON-AKTIF"
+                  customClass="h-5"
+                  class="ml-[10px]"
+                  :isSelected="selectedPaymentMethod.includes('NON-AKTIF')"
+                  @selected="onPaymentMethodSelect"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -222,8 +232,10 @@ defineExpose({
   </CustomAccordion>
   <TambahDataKonfigurasiJadwal
     v-model:isDialogVisible="dialogData.isVisible"
+    :excludedDokterUuids="props.excludedDoctorUuids"
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
+    @refresh="handleRefresh"
   />
 </template>
