@@ -109,7 +109,7 @@ const schema = toTypedSchema(
         day: yup
           .number()
           .transform((value) => (isNaN(value) ? undefined : value))
-          .nullable(),
+          .required("Hari wajib diisi"),
         startTime: yup.string().required("Jam mulai harus diisi"),
         endTime: yup
           .string()
