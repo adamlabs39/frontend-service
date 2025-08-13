@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, type PropType } from "vue";
+import { computed, ref, type PropType, watch } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -38,14 +38,49 @@ const props = defineProps({
     type: Array as PropType<Array<{ uuid: string; name: string }>>,
     default: () => [],
   },
+  jadwalDokterData: {
+    type: Array as PropType<any[]>,
+    default: () => [],
+  },
 });
 
-const dokterDropdown = computed(() => props.dokterOptions);
+// Computed untuk dropdown poli
 const poliDropdown = computed(() => props.poliOptions);
 
-const selectedDokter = ref<any>();
+// Computed untuk dropdown dokter yang difilter berdasarkan poli yang dipilih
+const dokterDropdown = computed(() => {
+  if (!selectedPoli.value) {
+    return [];
+  }
 
+  // Filter dokter berdasarkan poli yang dipilih dari data jadwal dokter
+  const dokterInPoli = props.jadwalDokterData
+    .filter((item) => item.poli.uuid === selectedPoli.value)
+    .map((item) => ({
+      uuid: item.doctor.uuid,
+      name: item.doctor.name,
+    }));
+
+  // Remove duplicates berdasarkan uuid
+  const uniqueDokter = dokterInPoli.filter(
+    (dokter, index, self) =>
+      index === self.findIndex((d) => d.uuid === dokter.uuid)
+  );
+
+  return uniqueDokter;
+});
+
+// Computed untuk menentukan apakah dropdown dokter disabled
+const isDokterDisabled = computed(() => !selectedPoli.value);
+
+const selectedDokter = ref<any>();
 const selectedPoli = ref<any>();
+
+// Watcher untuk selectedPoli - reset pilihan dokter ketika poli berubah
+watch(selectedPoli, (newPoliUuid) => {
+  // Reset pilihan dokter ketika poli berubah
+  selectedDokter.value = null;
+});
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
@@ -153,9 +188,12 @@ function handleReset() {
             optionLabel="name"
             class="w-1/4 mr-[10px] flex-grow"
             :is-loading="false"
+            :disabled="isDokterDisabled"
             prependIcon="PhMagnifyingGlass"
             label="Cari Dokter"
-            place-holder="Cari Dokter"
+            :place-holder="
+              isDokterDisabled ? 'Pilih poli terlebih dahulu' : 'Cari Dokter'
+            "
           />
           <CustomSelect
             v-model="selectedPoli"

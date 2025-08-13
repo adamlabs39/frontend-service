@@ -164,6 +164,7 @@ onMounted(() => {
         "
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"
+        :jadwalDokterData="jadwalDokterPayload"
       />
     </template>
     <template #content>
