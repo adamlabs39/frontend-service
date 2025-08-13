@@ -229,25 +229,29 @@ onMounted(() => {
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
-              <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit(slotProps.data)"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                @click="
-                  deleteDoctor(
-                    slotProps.data.doctor.uuid,
-                    slotProps.data.poli.uuid
-                  )
-                "
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
-              </CustomButton>
+              <div title="Edit">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  @click="handleEdit(slotProps.data)"
+                >
+                  <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                </CustomButton>
+              </div>
+              <div title="Hapus">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="
+                    deleteDoctor(
+                      slotProps.data.doctor.uuid,
+                      slotProps.data.poli.uuid
+                    )
+                  "
+                >
+                  <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                </CustomButton>
+              </div>
             </div>
           </template>
         </Column>
