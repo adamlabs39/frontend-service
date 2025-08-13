@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/AntrianHeader.vue";
+import AntrianHeader from "../Layout/AntrianHeader.vue";
 import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
 import SectionAntrianRawatJalan from "./SectionAntrianRawatJalan.vue";
 import SectionAntrianFarmasi from "./SectionAntrianFarmasi.vue";
@@ -16,7 +16,7 @@ const value = ref("0");
     pt:content:class="overflow-auto h-full"
   >
     <template #header>
-      <Header
+      <AntrianHeader
         :activeTab="value"
         title="Data Antrian"
         :filter="false"
@@ -59,7 +59,7 @@ const value = ref("0");
             />
           </div>
         </template>
-      </Header>
+      </AntrianHeader>
     </template>
     <template #content>
       <Tabs v-model:value="value">
