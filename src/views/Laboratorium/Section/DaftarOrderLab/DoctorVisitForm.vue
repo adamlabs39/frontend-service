@@ -46,10 +46,7 @@ const listLokasi = ref<any[]>([]);
 
 const fetchUtils = async () => {
   try {
-    const responseDpjp = await praktisiStore.getApi({
-      limit: 9999,
-      // nonDoctor: false,
-    });
+    const responseDpjp = await praktisiStore.getAktifApi();
     if (responseDpjp && responseDpjp.payload) {
       listDpjp.value = responseDpjp.payload.filter(
         (praktisi: any) => praktisi.isDoctor && praktisi.status
@@ -65,7 +62,7 @@ const fetchUtils = async () => {
       listPenjamin.value = [];
     }
 
-    const lokasiresponse = await lokasiStore.getApi();
+    const lokasiresponse = await lokasiStore.getApi(99999,9999);
 
     if (lokasiresponse && lokasiresponse.payload) {
       listLokasi.value = lokasiresponse.payload;

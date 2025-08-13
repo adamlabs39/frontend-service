@@ -123,14 +123,10 @@ watch(
 const fetchKategoriPemeriksaan = async () => {
   utils.setLoading(true);
   try {
-    const response = await kategoriPemeriksaanStore.getApi({
-      page: 1,
-      limit: 9999,
-      name: "",
-    });
+    const response = await kategoriPemeriksaanStore.getActive();
 
     if (response && response.payload) {
-      kategoriPemeriksaanPayload.value = response.payload.data.filter(
+      kategoriPemeriksaanPayload.value = response.payload.filter(
         (item: any) => item.status === true
       );
 
@@ -231,6 +227,10 @@ const fetchSnomed = async () => {
 // Filter item pemeriksaan berdasarkan kategori yang dipilih
 watch(kategoriPemeriksaan, (newVal, oldVal) => {
   if (newVal && props.dataItemPemeriksaan) {
+    console.log(
+      "Filtering item pemeriksaan for category:",
+      JSON.stringify(props.dataItemPemeriksaan)
+    );
     filteredItemPemeriksaan.value = props.dataItemPemeriksaan.filter(
       (item: any) => item.categoryPemeriksaanUuid === newVal
     );
@@ -278,6 +278,7 @@ const onSubmit = handleSubmit(async (values) => {
         status: status.value,
         categoryPemeriksaanUuid: values.kategoriPemeriksaan,
       };
+      console.log("Submitting edit payload:", payload);
       await kelompokPemeriksaanStore.putApi(uuid, payload);
       emit("data-updated");
     }
