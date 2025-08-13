@@ -2,53 +2,53 @@
 import { ref, onMounted } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 
-const data = ref();
+const data = ref([
+  {
+    id: "1",
+    tanggal_daftar: "2023-10-10 09:00",
+    tanggal_jadwal: "2023-10-20 10:00",
+    nomor_book: "BK.123456",
+    nomor_antrian: "PD-01-02",
+    nama_pasien: "Nama Lengkap Pasien",
+    no_rm: "RM.123456",
+    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
+    nama_poli: "poli umum",
+    metode_bayar: "tunai",
+    status: "antri",
+  },
+  {
+    id: "2",
+    tanggal_daftar: "2023-10-10 09:00",
+    tanggal_jadwal: "2023-10-20 10:00",
+    nomor_book: "BK.123456",
+    nomor_antrian: "PD-01-02",
+    nama_pasien: "Nama Lengkap Pasien",
+    no_rm: "RM.123456",
+    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
+    nama_poli: "poli umum",
+    metode_bayar: "tunai",
+    status: "proses",
+  },
+  {
+    id: "3",
+    tanggal_daftar: "2023-10-10 09:00",
+    tanggal_jadwal: "2023-10-20 10:00",
+    nomor_book: "BK.123456",
+    nomor_antrian: "PD-01-02",
+    nama_pasien: "Nama Lengkap Pasien",
+    no_rm: "RM.123456",
+    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
+    nama_poli: "poli umum",
+    metode_bayar: "tunai",
+    status: "selesai",
+  },
+]);
 const expandedRows = ref();
 onMounted(() => {
-  data.value = [
-    {
-      id: "1",
-      tanggal_daftar: "2023-10-10 09:00",
-      tanggal_jadwal: "2023-10-20 10:00",
-      nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
-      nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
-      doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-      nama_poli: "poli umum",
-      metode_bayar: "tunai",
-      status: "antri",
-    },
-    {
-      id: "2",
-      tanggal_daftar: "2023-10-10 09:00",
-      tanggal_jadwal: "2023-10-20 10:00",
-      nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
-      nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
-      doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-      nama_poli: "poli umum",
-      metode_bayar: "tunai",
-      status: "proses",
-    },
-    {
-      id: "3",
-      tanggal_daftar: "2023-10-10 09:00",
-      tanggal_jadwal: "2023-10-20 10:00",
-      nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
-      nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
-      doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-      nama_poli: "poli umum",
-      metode_bayar: "tunai",
-      status: "selesai",
-    },
-  ];
+  data.value;
 });
 
-const getChipBgColor = (status:string) => {
+const getChipBgColor = (status: string) => {
   switch (status) {
     case "antri":
       return "bg-blue-50";
@@ -61,7 +61,7 @@ const getChipBgColor = (status:string) => {
   }
 };
 
-const getChipTextColor = (status:string) => {
+const getChipTextColor = (status: string) => {
   switch (status) {
     case "antri":
       return "text-blue-500";
@@ -74,7 +74,7 @@ const getChipTextColor = (status:string) => {
   }
 };
 
-const getChipBorderColor = (status:string) => {
+const getChipBorderColor = (status: string) => {
   switch (status) {
     case "antri":
       return "border-blue-400";
@@ -87,7 +87,7 @@ const getChipBorderColor = (status:string) => {
   }
 };
 
-const getChipCustomClass = (status:string) => {
+const getChipCustomClass = (status: string) => {
   switch (status) {
     case "antri":
       return "h-5 ml-[10px]";
@@ -115,7 +115,7 @@ const getChipCustomClass = (status:string) => {
   >
     <Column header="No." header-class="text-black bg-adameds-50">
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex justify-center items-center">
           {{ slotProps.index + 1 }}
         </div>
       </template>
@@ -237,11 +237,11 @@ const getChipCustomClass = (status:string) => {
     <Column
       field="status"
       header="Status"
-      header-class="flex items-center justify-center text-black bg-adameds-50"
+      header-class="flex justify-center items-center text-black bg-adameds-50"
       class="text-center"
     >
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
             :bgColor="getChipBgColor(slotProps.data.status)"
