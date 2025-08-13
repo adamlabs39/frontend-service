@@ -75,6 +75,7 @@ const isDokterDisabled = computed(() => !selectedPoli.value);
 
 const selectedDokter = ref<any>();
 const selectedPoli = ref<any>();
+const resetKey = ref(0);
 
 // Watcher untuk selectedPoli - reset pilihan dokter ketika poli berubah
 watch(selectedPoli, (newPoliUuid) => {
@@ -119,6 +120,7 @@ const resetFilter = () => {
     selectedDokter.value = null;
     selectedPoli.value = null;
   });
+  resetKey.value++;
 };
 defineExpose({
   resetFilter,
@@ -182,6 +184,7 @@ function handleReset() {
       <div class="flex flex-col gap-2.5">
         <div class="flex mt-[10px]">
           <CustomSelect
+            :key="`poli-${resetKey}`"
             v-model="selectedPoli"
             :options="poliDropdown"
             optionValue="uuid"
@@ -193,6 +196,7 @@ function handleReset() {
             place-holder="Cari Poli"
           />
           <CustomSelect
+            :key="`dokter-${resetKey}`"
             v-model="selectedDokter"
             :options="dokterDropdown"
             optionValue="uuid"
