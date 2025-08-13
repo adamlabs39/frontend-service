@@ -182,6 +182,17 @@ function handleReset() {
       <div class="flex flex-col gap-2.5">
         <div class="flex mt-[10px]">
           <CustomSelect
+            v-model="selectedPoli"
+            :options="poliDropdown"
+            optionValue="uuid"
+            optionLabel="name"
+            class="w-1/4 mr-[20px] flex-grow"
+            :is-loading="false"
+            prependIcon="PhMagnifyingGlass"
+            label="Cari Poli"
+            place-holder="Cari Poli"
+          />
+          <CustomSelect
             v-model="selectedDokter"
             :options="dokterDropdown"
             optionValue="uuid"
@@ -194,17 +205,6 @@ function handleReset() {
             :place-holder="
               isDokterDisabled ? 'Pilih poli terlebih dahulu' : 'Cari Dokter'
             "
-          />
-          <CustomSelect
-            v-model="selectedPoli"
-            :options="poliDropdown"
-            optionValue="uuid"
-            optionLabel="name"
-            class="w-1/4 mr-[20px] flex-grow"
-            :is-loading="false"
-            prependIcon="PhMagnifyingGlass"
-            label="Cari Poli"
-            place-holder="Cari Poli"
           />
           <CustomButton
             icon="PhMagnifyingGlass"
