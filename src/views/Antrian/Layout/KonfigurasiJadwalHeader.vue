@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type PropType, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -81,9 +82,38 @@ const resetKey = ref(0);
 watch(selectedPoli, (newPoliUuid) => {
   // Reset pilihan dokter ketika poli berubah
   selectedDokter.value = null;
+
+  // Trigger auto-search dengan debounce ketika poli berubah
+  if (newPoliUuid) {
+    debouncedSearch();
+  }
+});
+
+// Watcher untuk selectedDokter - trigger auto-search ketika dokter berubah
+watch(selectedDokter, (newDokterUuid) => {
+  // Trigger auto-search dengan debounce ketika dokter berubah
+  if (newDokterUuid) {
+    debouncedSearch();
+  }
 });
 
 const selectedPaymentMethod = ref<string[]>([]);
+
+// Fungsi untuk melakukan pencarian
+const performSearch = () => {
+  emit("search", {
+    dokterUuid: selectedDokter.value ?? "",
+    poliUuid: selectedPoli.value ?? "",
+    aktif:
+      selectedPaymentMethod.value.length === 1
+        ? selectedPaymentMethod.value[0] === "AKTIF"
+        : undefined,
+  });
+};
+
+// Debounced search function dengan delay 500ms
+const debouncedSearch = useDebounceFn(performSearch, 500);
+
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
     selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
@@ -92,6 +122,9 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
 };
 
 const filters = [selectedPaymentMethod];
@@ -133,18 +166,16 @@ function handleRefresh() {
 }
 
 function handleSearch() {
-  emit("search", {
-    dokterUuid: selectedDokter.value ?? "",
-    poliUuid: selectedPoli.value ?? "",
-    aktif:
-      selectedPaymentMethod.value.length === 1
-        ? selectedPaymentMethod.value[0] === "AKTIF"
-        : undefined,
-  });
+  // Batalkan debounced search yang sedang pending dan langsung jalankan search
+  debouncedSearch.flush();
 }
 
 function handleReset() {
   resetFilter(); // bersihkan pilihan lokal
+
+  // Batalkan debounced search yang sedang pending
+  debouncedSearch.cancel();
+
   emit("search", {
     // hilangkan filter di parent
     dokterUuid: "",
