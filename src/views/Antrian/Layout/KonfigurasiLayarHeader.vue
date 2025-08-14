@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { ref, watch, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -7,6 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/SectionTambahKonfigurasiLayar.vue";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps({
   title: {
@@ -35,6 +36,19 @@ function handleRefresh() {
 
 const searchQuery = ref("");
 const selectedLayar = ref<any>();
+
+// Fungsi untuk melakukan pencarian
+const performSearch = () => {
+  emit(
+    "search",
+    searchQuery.value,
+    selectedLayar.value,
+    selectedPaymentMethod.value
+  );
+};
+
+// Debounced search function dengan delay 500ms
+const debouncedSearch = useDebounceFn(performSearch, 500);
 
 const dialogData = ref({
   isVisible: false,
@@ -71,16 +85,15 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
 };
 
 // Handle search button click
 const handleSearchClick = () => {
-  emit(
-    "search",
-    searchQuery.value,
-    selectedLayar.value,
-    selectedPaymentMethod.value
-  );
+  // Langsung jalankan performSearch tanpa debounce untuk tombol cari
+  performSearch();
 };
 
 const filters = [selectedPaymentMethod];
@@ -91,6 +104,10 @@ const resetFilter = () => {
   });
   selectedLayar.value = null;
   searchQuery.value = "";
+
+  // Emit refresh untuk memuat ulang data ke keadaan semula
+  emit("refresh");
+
   emit("reset");
 };
 
@@ -103,7 +120,12 @@ defineExpose({
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="resetFilter"
+          title="refresh"
+        />
         <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"

@@ -78,23 +78,9 @@ const selectedDokter = ref<any>();
 const selectedPoli = ref<any>();
 const resetKey = ref(0);
 
-// Watcher untuk selectedPoli - reset pilihan dokter ketika poli berubah
 watch(selectedPoli, (newPoliUuid) => {
   // Reset pilihan dokter ketika poli berubah
   selectedDokter.value = null;
-
-  // Trigger auto-search dengan debounce ketika poli berubah
-  if (newPoliUuid) {
-    debouncedSearch();
-  }
-});
-
-// Watcher untuk selectedDokter - trigger auto-search ketika dokter berubah
-watch(selectedDokter, (newDokterUuid) => {
-  // Trigger auto-search dengan debounce ketika dokter berubah
-  if (newDokterUuid) {
-    debouncedSearch();
-  }
 });
 
 const selectedPaymentMethod = ref<string[]>([]);
@@ -166,21 +152,17 @@ function handleRefresh() {
 }
 
 function handleSearch() {
-  // Batalkan debounced search yang sedang pending dan langsung jalankan search
-  debouncedSearch.flush();
+  // Langsung jalankan performSearch tanpa debounce untuk tombol cari
+  performSearch();
 }
 
 function handleReset() {
   resetFilter(); // bersihkan pilihan lokal
 
-  // Batalkan debounced search yang sedang pending
-  debouncedSearch.cancel();
+  emit("search", { dokterUuid: "", poliUuid: "", aktif: undefined });
 
-  emit("search", {
-    // hilangkan filter di parent
-    dokterUuid: "",
-    poliUuid: "",
-  });
+  // emit refresh untuk memuat ulang data dari server
+  emit("refresh");
 }
 </script>
 
@@ -188,7 +170,12 @@ function handleReset() {
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" @click="handleReset" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="handleReset"
+          title="refresh"
+        />
         <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
