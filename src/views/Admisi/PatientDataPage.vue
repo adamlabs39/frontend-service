@@ -1005,7 +1005,7 @@ onMounted(() => {
               />
               <CustomInfoRow
                 label="Umur"
-                :value="`${openedPatientData.birthDetail.ageYear} Tahun, ${openedPatientData.birthDetail.ageMonth} Bulan, ${openedPatientData.birthDetail.ageDay} Hari`"
+                :value="`${openedPatientData.birthDetail.ageYear} Tahun`"
               />
               <CustomInfoRow
                 label="Jenis kelamin"

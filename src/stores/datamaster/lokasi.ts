@@ -59,7 +59,7 @@ export const useLokasiStore = defineStore({
       return apiDatamasterPost("/datamaster/lokasi/import", payload);
     },
     async getLokasiApi(payload = {}) {
-      return apiDatamasterGet("http://192.168.1.77:5000/api/v3/datamaster/lokasi?limit=100",payload);
+      return apiDatamasterGet("/datamaster/lokasi?limit=100",payload);
     },
   }
 });

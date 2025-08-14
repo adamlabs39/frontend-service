@@ -64,41 +64,6 @@ const listJadwalDokter = ref<any[]>([]);
 const selectedJadwalPoli = ref("");
 const selectedPoliUuid = ref("");
 
-// const fetchUtils = async () => {
-//   try {
-//     // FIXME Masih menggunakan api biasa dan filter by FE
-//     const responseDpjp = await praktisiStore.getApi({
-//       limit: 9999,
-//       non_doctor: false,
-//     });
-//     if (responseDpjp && responseDpjp.payload) {
-//       listDpjp.value = responseDpjp.payload.filter(
-//         (praktisi: any) => praktisi.isDoctor && praktisi.status
-//       );
-//     }
-
-//     const responsePenjamin = await penjaminStore.getAktifApi();
-
-//     if (responsePenjamin && responsePenjamin.payload) {
-//       listPenjamin.value = responsePenjamin.payload
-//     } else {
-//       listPenjamin.value = [];
-//     }
-
-//     const responseJadwalDokter = await admisiRJStore.getListJadwalDokter();
-
-//     if (responseJadwalDokter && responseJadwalDokter.payload) {
-//       listJadwalDokter.value = responseJadwalDokter.payload
-//     } else {
-//       listJadwalDokter.value = [];
-//     }
-//   } catch (error) {
-//     console.error("Failed to fetch data", error);
-//   } finally {
-//     storeUtils.setLoading(false);
-//   }
-// };
-
 const listJadwalDokterFiltered = computed(() => {
   const currentUuid = practitionerUuid.value;
 
@@ -130,9 +95,6 @@ const listJadwalDokterFiltered = computed(() => {
 
   return mapped;
 });
-
-
-
 
 
 const fetchUtils = async () => {
@@ -269,21 +231,6 @@ onUpdated(() => {
 });
 
 const selectedJadwalDpjp = ref("");
-// const setPoliDpjpJadwal = (uuid: any) => {
-//   if (uuid) {
-//     let tempDataJadwal = listJadwalDokter.value.find(
-//       (data) => data.uuid == uuid
-//     );
-//     if (tempDataJadwal) {
-//       selectedJadwalPoli.value = tempDataJadwal.poli;
-//       selectedJadwalDpjp.value = tempDataJadwal.name;
-//     } else {
-//       selectedJadwalPoli.value = "";
-//       selectedJadwalDpjp.value = "";
-//     }
-//   }
-// };
-
 const setPoliDpjpJadwal = (jadwalDokterUuid: string) => {
   if (jadwalDokterUuid) {
     // Cari jadwal dari listJadwalDokter berdasarkan jadwal_dokter_uuid
@@ -445,31 +392,34 @@ defineExpose({
               :disabled="isDetail"
             />
             <CustomSelect
-              v-model="practitionerUuid"
-              label="DPJP"
-              placeHolder="Pilih DPJP"
-              :class="{ 'col-span-2': pageType == 'igd' }"
-              optionLabel="pegawai.name"
-              optionValue="uuid"
-              :options="
-                selectedPoli
-                  ? listDpjp.filter((dpjp: any) =>
-                      dpjp.poliPelayanan?.some(
-                        (p: any) =>
-                          String(p.lokasiUuid).toLowerCase() ===
-                          String(selectedPoli).toLowerCase()
-                      )
-                    )
-                  : []
-              "
-              :showFilter="false"
-              :disabled="isDetail || !selectedPoli"
-              :invalid="!!errors.practitionerUuid"
-              :invalidMessage="errors.practitionerUuid"
-            />
+                v-model="practitionerUuid"
+                label="DPJP"
+                placeHolder="Pilih DPJP"
+                :class="{ 'col-span-2': pageType == 'igd' }"
+                optionLabel="pegawai.name"
+                optionValue="uuid"
+                :options="
+                  pageType === 'igd'
+                    ? listDpjp
+                    : selectedPoli
+                      ? listDpjp.filter((dpjp: any) =>
+                          dpjp.poliPelayanan?.some(
+                            (p: any) =>
+                              String(p.lokasiUuid).toLowerCase() ===
+                              String(selectedPoli).toLowerCase()
+                          )
+                        )
+                      : []
+                "
+                :showFilter="false"
+                :disabled="isDetail || (pageType !== 'igd' && !selectedPoli)"
+                :invalid="!!errors.practitionerUuid"
+                :invalidMessage="errors.practitionerUuid"
+              />
             <!-- FIXME Dummy data -->
             <!-- NOTE Harus ada api baru untuk menampilkan data jadwal dengan filter dokter poli dan jam saat ini -->
             <CustomSelect
+                v-if="pageType == 'rawat-jalan'"
                 v-model="jadwalDokterUuid"
                 :options="listJadwalDokterFiltered"
                 optionValue="uuid"

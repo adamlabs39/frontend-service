@@ -25,19 +25,6 @@ const ruanganStore = useRuanganStore();
 const emit = defineEmits(["search"]);
 const route = useRoute();
 const pageType = ref("");
-// const pageType = computed<string>(() => {
-//   const segments = route.path.split('/')
-//   return segments[segments.length - 1] || ''
-// })
-// const pageType = ref(route.meta.pageType || '')
-
-// watch(
-//   () => route.meta.pageType,
-//   (newVal) => {
-//     pageType.value = newVal || ''
-//   }
-// )
-// console.log('Nilai awal pageType:', pageType.value);
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const properties = ref({
   page: 1,
@@ -150,8 +137,6 @@ const updatePageType = async (path: string) => {
   filter.practitionerUuid =
     filter.practitionerUuid == "Semua" ? "" : filter.practitionerUuid;
   filter.ruangan = filter.ruangan == "Semua" ? "" : filter.ruangan;
-
-
 
   const generateDummyData = (name: string): RekapRow => {
   const row: RekapRow = { name, total: 0 };
@@ -507,6 +492,7 @@ defineExpose({
       <div v-if="reportType === 'rekap-kunjungan'">
         <!-- <div class="rekap-kunjungan-container"> -->
             <CustomAccordion
+              class="max-w-[1000px] mx-auto"
               :openWithHeader="true"
               initialState="0"
               headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
@@ -553,6 +539,7 @@ defineExpose({
                       header-class="text-black bg-adameds-50"
                       style="width: 150px"
                       frozen
+                      align-frozen="left"
                     >
                       <template #footer>
                         <span style="font-weight: bold;">Total Harian:</span>
@@ -580,6 +567,8 @@ defineExpose({
                       header="Total"
                       header-class="text-black bg-adameds-50"
                       style="width: 60px; font-weight: bold; text-align: center"
+                      frozen
+                      align-frozen="right"
                     >
                       <template #footer>
                         <span style="font-weight: bold; text-align: center; display: block;">
@@ -728,127 +717,6 @@ defineExpose({
               </template>
             </DataTable>
           </TabPanel>
-          <!-- <TabPanel value="penjamin">
-            <DataTable
-              v-model:expandedRows="expandedRows"
-              :value="reportData"
-              tableStyle="min-width: 50rem"
-              scrollable
-              scrollHeight="flex"
-              :pt="{ headerRow: 'text-SM' }"
-            >
-              <Column
-                expander
-                style="width: 40px"
-                header-class="text-black bg-adameds-50"
-              />
-              <Column
-                field="no"
-                header="No."
-                header-class="text-black bg-adameds-50"
-                style="width: 40px"
-              >
-                <template #body="{ index }">{{ index + 1 }}</template>
-              </Column>
-              <Column
-                field="tglRegistrasi"
-                header="Tgl. Registrasi"
-                header-class="text-black bg-adameds-50"
-              >
-                <template #body="{ data }">
-                  {{ epochToDate(data.tglRegistrasi, "dateTime") }}
-                </template>
-              </Column>
-              <Column
-                field="noreg"
-                header="No. Registrasi"
-                header-class="text-black bg-adameds-50"
-              ></Column>
-              <Column
-                field="jenisKunjungan"
-                header="Jenis Kunjungan"
-                header-class="text-black bg-adameds-50"
-              ></Column>
-              <Column
-                field="patient.noRm"
-                header="No. RM"
-                header-class="text-black bg-adameds-50"
-              ></Column>
-              <Column
-                field="patient.name"
-                header="Nama Pasien"
-                header-class="text-black bg-adameds-50"
-              ></Column>
-              <Column
-                field="noPenjamin.name"
-                header="Penjamin"
-                header-class="text-black bg-adameds-50"
-              >
-                <template #body="{ data }">
-                  {{ data?.noPenjamin?.name ?? "-" }}
-                </template>
-              </Column>
-              <Column
-                field="noPenjamin.accountNumber"
-                header="No. Penjamin"
-                header-class="text-black bg-adameds-50"
-              >
-                <template #body="{ data }">
-                  {{ data?.noPenjamin?.accountNumber ?? "-" }}
-                </template>
-              </Column>
-              <template #expansion="slotProps">
-                <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
-                  <DataTable
-                    :value="[slotProps.data]"
-                    class="overflow-hidden rounded-lg bg-adameds-50"
-                    :pt="{ headerRow: 'text-SM' }"
-                  >
-                    <Column
-                      field="gender"
-                      header="Jenis Kelamin"
-                      header-class="text-black bg-adameds-50"
-                    >
-                      <template #body="{ data }">
-                        {{ data.patient.gender == "Male" ? "L" : "P" }}
-                      </template>
-                    </Column>
-                    <Column
-                      field="patient.birthDetail.birthDate"
-                      header="Tgl. Lahir"
-                      header-class="text-black bg-adameds-50"
-                    ></Column>
-                    <Column
-                      field="patient.birthDetail.birthDate"
-                      header="Umur"
-                      header-class="text-black bg-adameds-50"
-                    >
-                      <template #body="{ data }">
-                        {{
-                          `${data.patient.birthDetail.ageYear} Tahun ${data.patient.birthDetail.ageMonth} Bulan ${data.patient.birthDetail.ageDay} Hari`
-                        }}
-                      </template>
-                    </Column>
-                    <Column
-                      field="patient.address.fullAddress"
-                      header="Alamat"
-                      header-class="text-black bg-adameds-50"
-                    />
-                    <Column
-                      field="patient.identity"
-                      header="Jenis ID"
-                      header-class="text-black bg-adameds-50"
-                    ></Column>
-                    <Column
-                      field="patient.noIdentity"
-                      header="No. Identitas"
-                      header-class="text-black bg-adameds-50"
-                    ></Column>
-                  </DataTable>
-                </div>
-              </template>
-            </DataTable>
-          </TabPanel> -->
           <TabPanel value="batal-kunjungan">
             <DataTable
               v-model:expandedRows="expandedRows"
@@ -1247,49 +1115,6 @@ defineExpose({
               </template>
             </DataTable>
           </TabPanel>
-          <TabPanel value="rekap-kunjungan">
-            <div v-if="pageType === 'rekap-kunjungan'">
-              <DataTable
-                :value="rekapData"
-                tableStyle="min-width: 50rem"
-                scrollable
-                scrollHeight="flex"
-                :pt="{ headerRow: 'text-SM' }"
-                showGridlines
-              >
-                <Column
-                  field="name"
-                  header="Nama"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 150px"
-                  frozen
-                />
-                <Column
-                  v-for="day in daysInMonth"
-                  :key="day"
-                  :field="day.toString().padStart(2, '0')"
-                  :header="day.toString().padStart(2, '0')"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 40px; text-align: center"
-                  :body="(row: any) => row[day.toString().padStart(2, '0')] || 0"
-                />
-                <Column
-                  field="total"
-                  header="Total"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 60px; font-weight: bold; text-align: center"
-                />
-              </DataTable>
-
-              <div class="mt-2 font-bold text-right" style="padding-right: 4.5rem;">
-                <span class="inline-block" style="width: 150px; text-align: left;">Total Harian:</span>
-                <span v-for="day in daysInMonth" :key="'total-'+day" class="inline-block w-10 text-center" style="width: 40px;">
-                  {{ totalPerDay[day.toString().padStart(2, '0')] || 0 }}
-                </span>
-                <span class="inline-block font-bold text-center" style="width: 60px; margin-left: -2px;">{{ grandTotal }}</span>
-              </div>
-            </div>
-            </TabPanel>
         </TabPanels>
       </Tabs>
       <NoData v-else />

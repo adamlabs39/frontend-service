@@ -74,10 +74,13 @@ const search = async () => {
 const getPatientList = async () => {
   if (pageType.value == "rawat-jalan") {
     patientData.value = await fetchRJPatient();
+    console.log("Data rawat jalan:", patientData.value);
   } else if (pageType.value == "rawat-inap") {
     patientDataRI.value = await fetchRIPatient();
+    console.log("Data rawat inap:", patientDataRI.value);
   } else if (pageType.value == "igd") {
     patientDataIGD.value = await fetchIGDPatient();
+    console.log("Data IGD:", patientDataIGD.value);
   }
 };
 const fetchRJPatient = async () => {
@@ -140,6 +143,7 @@ const updatePageType = async (path: string) => {
 
   await getPatientList();
 };
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
@@ -300,20 +304,20 @@ const handlePage = (event: any) => {
             </div>
           </template>
         </Column>
-        <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
+        <Column field="patient" header="Pasien" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">
               <span class="font-semibold">{{
-                slotProps.data.patient.name
+                slotProps.data?.patient?.name
               }}</span>
               <span class="text-grey-300">
-                ({{ slotProps.data.birthDetail.ageYear }}Th
-                {{ slotProps.data.birthDetail.ageMonth }}Bln
-                {{ slotProps.data.birthDetail.ageDay }}Hr)
+                ({{ slotProps.data?.birthDetail?.ageYear }}Th
+                {{ slotProps.data?.birthDetail?.ageMonth }}Bln
+                {{ slotProps.data?.birthDetail?.ageDay }}Hr)
               </span>
             </div>
             <div class="text-XS">
-              {{ slotProps.data.patient.address.full_address }}
+              {{ slotProps.data?.patient?.address?.fullAddress }}
             </div>
             <div class="flex flex-wrap">
               <!-- <PhUserCirclePlus
@@ -325,11 +329,11 @@ const handlePage = (event: any) => {
               <CustomChip
                 v-if="
                   pageType == 'rawat-jalan' &&
-                  slotProps.data.platform != 'ADMISI' &&
-                  slotProps.data.platform
+                  slotProps.data?.platform != 'ADMISI' &&
+                  slotProps.data?.platform
                 "
                 :showCheckedIcon="false"
-                :label="slotProps.data.platform"
+                :label="slotProps.data?.platform"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -337,17 +341,17 @@ const handlePage = (event: any) => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'Perempuan'
                     : 'Laki-laki'
                 "
                 :bgColor="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'bg-female-75'
                     : 'bg-male-75'
                 "
                 :textColor="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
@@ -355,7 +359,7 @@ const handlePage = (event: any) => {
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.patient.phone ?? '-'"
+                :label="slotProps.data?.patient?.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
                 customClass="h-5 pr-[8px] border-none mr-[5px]"

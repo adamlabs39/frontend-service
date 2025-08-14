@@ -40,6 +40,7 @@ const props = defineProps({
   },
 });
 
+
 const fetchProvinsi = async () => {
   try {
     const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
@@ -322,116 +323,6 @@ const schema = toTypedSchema(
     })
     .noUnknown()
 );
-
-// const schema = toTypedSchema(
-//   yup
-//     .object({
-//       patientUuid: yup.string(),
-//       isNewBorn: yup.boolean().default(false),
-//       multipleBirth: yup.boolean().default(false),
-//       withoutIdentity: yup.boolean().default(false),
-//       noRm: yup.string(),
-//       title: yup
-//         .string()
-//         .when(
-//           ["withoutIdentity", "isNewBorn"],
-//           ([withoutIdentity, isNewBorn], schema) =>
-//             withoutIdentity || isNewBorn
-//               ? schema.nullable()
-//               : schema.required("Awalan/Gelar harus dipilih")
-//         ),
-//       name: yup.string().required("Nama lengkap harus diisi"),
-//       identity: yup.string().required("Identitas harus dipilih"),
-//       noIdentity: yup.string().required("No identitas harus diisi"),
-//       birthDetail: yup
-//         .object({
-//           birthPlace: yup.string().required("Tempat lahir harus diisi"),
-//           birthDate: yup.date().required("Tanggal lahir harus dipilih"),
-//         })
-//         .noUnknown(),
-//       birthTime: yup
-//         .date()
-//         .when("isNewBorn", ([isNewBorn], schema) =>
-//           isNewBorn
-//             ? schema.required("Jam lahir harus dipilih")
-//             : schema.nullable()
-//         ),
-//       gender: yup.string().required("Jenis kelamin harus dipilih"),
-//       phone: yup
-//         .string()
-//         .when("isNewBorn", ([isNewBorn], schema) =>
-//           isNewBorn
-//             ? schema.nullable().default(null)
-//             : schema.required("No. Handphone harus diisi")
-//         ),
-//       religion: yup
-//         .string()
-//         .when(
-//           ["withoutIdentity", "isNewBorn"],
-//           ([withoutIdentity, isNewBorn], schema) =>
-//             withoutIdentity || isNewBorn
-//               ? schema.nullable().default(null)
-//               : schema.required("Agama harus dipilih")
-//         ),
-//       language: yup
-//         .string()
-//         .when(
-//           ["withoutIdentity", "isNewBorn"],
-//           ([withoutIdentity, isNewBorn], schema) =>
-//             withoutIdentity || isNewBorn
-//               ? schema.nullable().default(null)
-//               : schema.required("Bahasa yang dikuasai harus dipilih")
-//         ),
-//       maritialStatus: yup
-//         .string()
-//         .when(
-//           ["withoutIdentity", "isNewBorn"],
-//           ([withoutIdentity, isNewBorn], schema) =>
-//             withoutIdentity || isNewBorn
-//               ? schema.nullable().default(null)
-//               : schema.required("Status pernikahan harus dipilih")
-//         ),
-//       motherName: yup
-//         .string()
-//         .when("withoutIdentity", ([withoutIdentity], schema) =>
-//           withoutIdentity
-//             ? schema.nullable()
-//             : schema.required("Nama ibu kandung harus diisi")
-//         ),
-//       address: yup
-//         .object()
-//         .shape({
-//           prov: yup.string().nullable(),
-//           city: yup.string().nullable(),
-//           district: yup.string().nullable(),
-//           rt: yup.string().nullable(),
-//           rw: yup.string().nullable(),
-//           fullAddress: yup.string().nullable(),
-//           country: yup.string().nullable(),
-//           village: yup.string().nullable(),
-//           postalCode: yup.string().nullable(),
-//         })
-//         .when("withoutIdentity", ([withoutIdentity], schema) => {
-//           return withoutIdentity
-//             ? schema
-//             : schema.shape({
-//                 prov: yup.string().required("Provinsi harus dipilih"),
-//                 city: yup.string().required("Kabupaten / Kota harus dipilih"),
-//                 district: yup.string().required("Kecamatan harus dipilih"),
-//                 rt: yup.string().required("RT harus diisi"),
-//                 rw: yup.string().required("RW harus diisi"),
-//                 fullAddress: yup.string().required("Alamat harus diisi"),
-//                 country: yup.string().required("Negara harus diisi"),
-//                 village: yup
-//                   .string()
-//                   .required("Kelurahan / Desa harus dipilih"),
-//                 postalCode: yup.string().required("Kode Pos harus dipilih"),
-//               });
-//         })
-//         .noUnknown(),
-//     })
-//     .noUnknown()
-// );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -811,7 +702,7 @@ defineExpose({
             placeHolder="Pilih Provinsi"
             class=""
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             :options="provinsiPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
@@ -824,7 +715,7 @@ defineExpose({
             placeHolder="Pilih Kabupaten / Kota"
             class=""
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             :options="kabupatenPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
@@ -837,7 +728,7 @@ defineExpose({
             placeHolder="Pilih Kecamatan"
             class=""
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             :options="kecamatanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
@@ -849,7 +740,7 @@ defineExpose({
             placeHolder="Pilih Kelurahan / Desa"
             class=""
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             :options="kelurahanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.village']"
