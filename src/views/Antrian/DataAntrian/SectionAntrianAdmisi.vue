@@ -135,10 +135,10 @@ const getStatusStyle = (status: string) => {
     <Column
       header="Data kunjungan"
       header-class="text-black bg-adameds-50"
-      class="p-0 w-auto"
+      class="p-0 py-2 w-auto"
     >
       <template #body="slotProps">
-        <div class="py-1.5 space-y-1 text-SM">
+        <div class="space-y-2 text-SM">
           <div class="flex gap-2">
             <div>Daftar</div>
             <img
@@ -164,44 +164,54 @@ const getStatusStyle = (status: string) => {
         </div>
       </template>
     </Column>
-    <Column header="Nomor" header-class="text-black bg-adameds-50" class="p-0">
+    <Column
+      header="Nomor"
+      header-class="text-black bg-adameds-50"
+      class="p-0 py-2"
+    >
       <template #body="slotProps">
-        <div class="py-1.5 text-SM">
-          <div
-            class="grid content-center grid-cols-[60px_min-content_70px] auto-cols-min"
-          >
-            Book
-            <img
-              src="@/assets/icons/solar_arrow-left-broken.svg"
-              alt="Arrow Icon"
-              class="my-auto mr-8"
-            />
-            {{ slotProps.data.nomor_book }}
+        <div class="text-SM max-w-[190px] space-y-2">
+          <div class="grid grid-cols-3">
+            <div>Book</div>
+            <div class="flex gap-5">
+              <img
+                src="@/assets/icons/solar_arrow-left-broken.svg"
+                alt="Arrow Icon"
+                class=""
+              />
+              <div>
+                {{ slotProps.data.nomor_book }}
+              </div>
+            </div>
           </div>
-          <div class="grid content-center grid-cols-[60px_min-content_70px]">
-            Antrian
-            <img
-              src="@/assets/icons/solar_arrow-left-broken (1).svg"
-              alt="Arrow Icon"
-              class="my-auto mr-8"
-            />
-            {{ slotProps.data.nomor_antrian }}
+          <div class="grid grid-cols-3">
+            <div>Antrian</div>
+            <div class="flex gap-5">
+              <img
+                src="@/assets/icons/solar_arrow-left-broken (1).svg"
+                alt="Arrow Icon"
+                class=""
+              />
+              <div>
+                {{ slotProps.data.nomor_antrian }}
+              </div>
+            </div>
           </div>
         </div>
-      </template></Column
-    >
+      </template>
+    </Column>
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0"
       ><template #body="slotProps">
         <div class="items-center py-1.5 space-y-0.5">
-          <div class="flex items-center">
+          <div class="flex items-center font-semibold">
             {{ slotProps.data.nama_pasien }}
           </div>
           <div class="flex items-center">
             <CustomChip
               :showCheckedIcon="false"
               :label="slotProps.data.no_rm"
-              bgColor="bg-adameds-50"
-              textColor="text-adameds-300"
+              bgColor="bg-adameds-300"
+              textColor="text-white"
               border-color="border-adameds-300"
               customClass="h-5 "
             />
