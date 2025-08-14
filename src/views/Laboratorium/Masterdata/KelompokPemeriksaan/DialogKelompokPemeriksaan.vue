@@ -259,7 +259,7 @@ const onSubmit = handleSubmit(async (values) => {
         loincUuid: loinc.value,
         itemPemeriksaans: values.selectedItemPemeriksaan,
         icd9Uuid: icd9.value,
-        snomedCTUuid: snomedCT.value,
+        snomedctUuid: snomedCT.value,
         status: status.value,
         categoryPemeriksaanUuid: values.kategoriPemeriksaan,
       };
@@ -274,7 +274,7 @@ const onSubmit = handleSubmit(async (values) => {
         loincUuid: loinc.value,
         itemPemeriksaans: values.selectedItemPemeriksaan,
         icd9Uuid: icd9.value,
-        snomedCTUuid: snomedCT.value,
+        snomedctUuid: snomedCT.value,
         status: status.value,
         categoryPemeriksaanUuid: values.kategoriPemeriksaan,
       };
