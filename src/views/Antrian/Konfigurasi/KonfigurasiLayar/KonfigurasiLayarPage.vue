@@ -117,10 +117,13 @@ const handleResetFilters = () => {
   searchQuery.value = "";
   selectedTipeLayar.value = null;
   selectedStatus.value = [];
-  applyFilters();
-};
 
-// ... existing code ...
+  // Reset pagination ke halaman pertama
+  jadwalLayarAntrianProperties.value.page = 1;
+
+  // Fetch data fresh dari server
+  fetchJadwalAntrian();
+};
 
 const deleteLayarAntrian = async (layarAntrianUuid: string) => {
   useUtilsStore.setLoading(true);
@@ -390,20 +393,24 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
-              <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit(slotProps.data)"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                @click="deleteLayarAntrian(slotProps.data.uuid)"
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
-              </CustomButton>
+              <div title="Edit">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  @click="handleEdit(slotProps.data)"
+                >
+                  <PhPencilSimple :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
+              <div title="Hapus">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="deleteLayarAntrian(slotProps.data.uuid)"
+                >
+                  <PhTrash :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
             </div>
           </template>
         </Column>

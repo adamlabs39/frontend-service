@@ -235,7 +235,7 @@ onMounted(() => {
                   background-color="bg-[#3D84E5] rounded-lg"
                   @click="handleEdit(slotProps.data)"
                 >
-                  <img src="@/assets/icons/edit.svg" alt="" width="15px" />
+                  <PhPencilSimple :size="18" color="#ffffff" weight="fill" />
                 </CustomButton>
               </div>
               <div title="Hapus">
@@ -249,7 +249,7 @@ onMounted(() => {
                     )
                   "
                 >
-                  <img src="@/assets/icons/delete.svg" alt="" width="15px" />
+                  <PhTrash :size="18" color="#ffffff" weight="fill" />
                 </CustomButton>
               </div>
             </div>
