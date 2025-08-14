@@ -119,9 +119,9 @@ const submitData = async (payload: any) => {
     const formattedPayload = {
       ...payload,
       categoryPemeriksaanUuid: payload.kategoriPemeriksaan,
-      loincUuid: payload.loinc,
-      icd9Uuid: payload.icd9,
-      snomedUuid: payload.snomedCT,
+      loincUuid: payload.loinc || null,
+      icd9Uuid: payload.icd9 || null,
+      snomedUuid: payload.snomedCT || null,
       pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || [],
     };
 

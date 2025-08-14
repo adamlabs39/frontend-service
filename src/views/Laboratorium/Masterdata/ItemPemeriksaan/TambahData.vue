@@ -57,7 +57,7 @@ const validationSchema = toTypedSchema(
     metode: yup.string().required("Metode wajib diisi"),
     jenisInput: yup.string().required("Jenis Input wajib dipilih"),
     loinc: yup.string().required("LOINC wajib dipilih"),
-    icd9: yup.string().required("ICD 9-CM wajib dipilih"),
+    icd9: yup.string().nullable(),
     snomedCT: yup.string().nullable(),
     status: yup.boolean().default(true),
     statusNilaiRujukan: yup.boolean().default(false),
