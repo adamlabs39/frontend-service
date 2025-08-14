@@ -31,8 +31,8 @@ const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
-
 const dataBreadCrumb = ref<MenuItem[]>([]);
+ const handleExport = () => {};
 
 const changeSection = (label: string) => {
   if (dataBreadCrumb.value.length) {
@@ -566,7 +566,7 @@ onMounted(() => {
                       ? 'text-female-300'
                       : 'text-male-300'
                   "
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 pr-[9px] border-none mr-[5px]"
                 />
                 <!-- FIXME Belum Ada -->
                 <CustomChip
@@ -574,7 +574,7 @@ onMounted(() => {
                   :label="data.phone"
                   bgColor="bg-adameds-75"
                   textColor="text-adameds-300"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 pr-[8px] border-none mr-[5px]"
                 />
               </div>
             </template>
@@ -608,11 +608,18 @@ onMounted(() => {
               @select="onUpload"
               custom-upload
               name="dems[]"
-            >
+              >
               <template #chooseicon>
                 <FileImportIcon />
               </template>
             </FileUpload>
+            <CustomButton style=" margin-left: 11px; margin-top: 3px; margin-right: -4px;"
+                @click="handleExport"
+                icon="PhDownload"
+                label="Download"
+                class="mr-[10px]"
+                backgroundColor="bg-adameds-300"
+            />
             <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
             <CustomButton
               v-if="!showDeletePasien"
@@ -803,7 +810,7 @@ onMounted(() => {
                           ? 'border-adameds-300'
                           : 'border-warning-300'
                       "
-                      customClass="h-5 pr-[6px] mr-[5px]"
+                      customClass="h-5 pr-[9px] mr-[5px]"
                     />
                     <!-- NOTE Belum Ada BPJS -->
                     <CustomChip
@@ -1031,8 +1038,8 @@ onMounted(() => {
                 :value="openedPatientData.address.fullAddress"
               />
             </div>
-            <hr style="margin-top: 20px;"/>
-            <div class="grid grid-cols-2 gap-y-[10px] mt-5">
+            <hr class ="hidden" style="margin-top: 20px;"/>
+            <div class="grid grid-cols-2 gap-y-[10px] mt-5 hidden">
               <CustomInfoRow
                 label="ID SATUSEHAT"
                 :value="openedPatientData.satuSehatId"
@@ -1045,7 +1052,7 @@ onMounted(() => {
         <div class="flex justify-between w-full">
           <div class="flex">
             <CustomButton
-              @click="createPatientCard({ data: '' })"
+              @click="createPatientCard({ data: openedPatientData })"
               icon="PhPrinter"
               label="Cetak Kartu Pasien"
               class=""

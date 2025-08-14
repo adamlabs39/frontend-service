@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, nextTick, defineEmits } from "vue";
+import { onMounted, ref, watch, nextTick, defineEmits, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
@@ -15,7 +15,7 @@ import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar } from "@/utils/exportexceladmisi";
+import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar, downloadExportExcelKeperawatanInapPasien, downloadExportExcelBayiBaruLahir } from "@/utils/exportexceladmisi";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -23,9 +23,21 @@ const admisiLaporanStore = useAdmisiIGDStore();
 const praktisiStore = usePraktisiStore();
 const ruanganStore = useRuanganStore();
 const emit = defineEmits(["search"]);
-const pageType = ref("");
 const route = useRoute();
+const pageType = ref("");
+// const pageType = computed<string>(() => {
+//   const segments = route.path.split('/')
+//   return segments[segments.length - 1] || ''
+// })
+// const pageType = ref(route.meta.pageType || '')
 
+// watch(
+//   () => route.meta.pageType,
+//   (newVal) => {
+//     pageType.value = newVal || ''
+//   }
+// )
+// console.log('Nilai awal pageType:', pageType.value);
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const properties = ref({
   page: 1,
@@ -33,10 +45,43 @@ const properties = ref({
   total: 0,
 });
 
+  type RekapRow = {
+    name: string;
+    total: number;
+  } & { [key: string]: number | string };
+
 const reportType = ref("");
-const reportData = ref<any[]>([]);
+// const reportData = ref<any[]>([]);
+const reportData = ref<RekapRow[]>([]);
 const expandedRows = ref();
 const expandedRowsBayi = ref();
+
+// Variabel ini khusus untuk halaman 'rekap-kunjungan'.
+const rekapData = ref<any[]>([]);
+const daysInMonth = ref(31);
+
+// --- KOREKSI 1: Menyederhanakan Computed Properties ---
+// Karena tujuannya hanya menampilkan kerangka kosong, kita bisa sederhanakan logikanya
+// agar lebih jelas dan efisien.
+const totalPerDay = computed(() => {
+  const totals: { [key: string]: number } = {};
+  for (let day = 1; day <= 31; day++) {
+    const key = day.toString().padStart(2, "0");
+    totals[key] = rekapData.value.reduce(
+      (sum, row) => sum + (Number(row[key]) || 0),
+      0
+    );
+  }
+  return totals;
+});
+
+const grandTotal = computed(() => {
+  return rekapData.value.reduce(
+    (sum, row) => sum + (row.total || 0),
+    0
+  );
+});
+// --- AKHIR KOREKSI 1 ---
 
 const fetchReportData = async (filter: Filter = {}) => {
   storeUtils.setLoading(true);
@@ -55,10 +100,6 @@ const fetchReportData = async (filter: Filter = {}) => {
     } else if (pageType.value == "bayi-baru-lahir") {
       response = await admisiLaporanStore.getBayiBaruLahirReport(filter);
     }
-    // else if (pageType.value == "rekap-jumlah-pasien-BPJS") {
-    //   response = await admisiLaporanStore.getJumlahBPJSReport({})
-    //   response = {};
-    // }
 
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
@@ -75,7 +116,6 @@ const fetchReportData = async (filter: Filter = {}) => {
 const updatePageType = async (path: string) => {
   resetFilter();
   try {
-    // FIXME Masih menggunakan api biasa dan filter by FE
     const responseDpjp = await praktisiStore.getApi({
       limit: 9999,
       non_doctor: false,
@@ -110,13 +150,52 @@ const updatePageType = async (path: string) => {
   filter.practitionerUuid =
     filter.practitionerUuid == "Semua" ? "" : filter.practitionerUuid;
   filter.ruangan = filter.ruangan == "Semua" ? "" : filter.ruangan;
+
+
+
+  const generateDummyData = (name: string): RekapRow => {
+  const row: RekapRow = { name, total: 0 };
+  let total = 0;
+  for (let day = 1; day <= 31; day++) {
+    const key = day.toString().padStart(2, '0');
+    const value = Math.floor(Math.random() * 11);
+    row[key] = value;
+    total += value;
+  }
+  row.total = total;
+  return row;
+};
+  if (pageType.value === "rekap-kunjungan") {
+    reportData.value = [];
+    rekapData.value = [
+      generateDummyData("Rawat Jalan"),
+      generateDummyData("Rawat Inap"),
+      generateDummyData("IGD"),
+    ];
+    // Hitung totalPerDay dan grandTotal agar footer tabel bisa pakai
+    totalPerDay.value = {};
+    for (let day = 1; day <= 31; day++) {
+      const key = day.toString().padStart(2, "0");
+      totalPerDay.value[key] = rekapData.value.reduce(
+        (sum, row) => sum + (Number(row[key]) || 0),
+        0
+      );
+    }
+    grandTotal.value = rekapData.value.reduce(
+      (sum, row) => sum + (row.total || 0),
+      0
+    );
+    return;
+  }
   reportData.value = await fetchReportData(filter);
 };
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(async () => {
   updatePageType(route.path);
+  // console.log('Nilai pageType saat mounted:', pageType.value);
 });
 
 const search = ref("");
@@ -129,6 +208,15 @@ const endDateFilter = ref<Date>(new Date());
 
 const listDpjp = ref<any[]>([]);
 const listRuangan = ref<any[]>([]);
+
+// Watcher untuk header dinamis (Sudah Benar)
+watch(startDateFilter, (newDate) => {
+    if (newDate) {
+        const year = newDate.getFullYear();
+        const month = newDate.getMonth();
+        daysInMonth.value = new Date(year, month + 1, 0).getDate();
+    }
+}, { immediate: true });
 
 const resetFilter = () => {
   search.value = "";
@@ -210,6 +298,12 @@ const searchData = async () => {
   filter.practitionerUuid =
     filter.practitionerUuid == "Semua" ? "" : filter.practitionerUuid;
 
+  // Logika penghalang untuk 'rekap-kunjungan' (Sudah Benar)
+  if (pageType.value === 'rekap-kunjungan') {
+    reportData.value = [];
+    rekapData.value = []; 
+    return;
+  }
   reportData.value = await fetchReportData(filter);
 };
 
@@ -222,18 +316,25 @@ const handlePage = (event: any) => {
 const handleExport = () => {
   switch (route.path) {
     case "/admisi/laporan/kunjungan":
-      downloadExportExcelKunjungan(reportData.value, epochToDate);
+      downloadExportExcelKunjungan(reportData.value);
       break;
     case "/admisi/laporan/batal-kunjungan":
-      downloadExportExcelBatalKunjungan(reportData.value, epochToDate);
+      downloadExportExcelBatalKunjungan(reportData.value);
       break;
     case "/admisi/laporan/status-kamar":
       downloadExportExcelStatusKamar(reportData.value);
+      break;
+    case "/admisi/laporan/keperawatan-inap-pasien":
+      downloadExportExcelKeperawatanInapPasien(reportData.value);
+      break;
+    case "/admisi/laporan/bayi-baru-lahir":
+      downloadExportExcelBayiBaruLahir(reportData.value);
       break;
     default:
       console.warn("Fungsi export belum diatur untuk halaman ini.");
   }
 };
+
 
 defineExpose({
   resetFilter,
@@ -269,7 +370,7 @@ defineExpose({
         </template>
         <template #content>
           <div
-            v-if="pageType == 'kunjungan' || pageType == 'penjamin'"
+            v-if="pageType == 'kunjungan'"
             class="grid grid-cols-2 mt-[10px] gap-5"
           >
             <CustomTextfield
@@ -312,7 +413,7 @@ defineExpose({
                 ]"
               />
               <CustomTextfield
-                v-if="pageType != 'kunjungan' && pageType != 'penjamin'"
+                v-if="pageType != 'kunjungan' && pageType != 'penjamin' && pageType != 'status-kamar'"
                 v-model="search"
                 label="Cari Pasien"
                 placeholder="Cari Nama / Alamat / No. RM"
@@ -333,9 +434,22 @@ defineExpose({
                   { name: 'Semua' },
                   ...listRuangan,
                 ]"
-              />
+              />              
               <CustomSelect
                 v-else-if="pageType != 'bayi-baru-lahir'"
+                v-model="penjaminFilter"
+                label="Penjamin"
+                class="mr-5 grow"
+                optionLabel="name"
+                optionValue="uuid"
+                :options="[
+                  { uuid: '0', name: 'Semua' },
+                  { uuid: '1', name: 'TUNAI' },
+                  { uuid: '2', name: 'ASURANSI' },
+                ]"
+              />
+              <CustomSelect
+                v-if="pageType != 'status-kamar'"
                 v-model="visitTypeFilter"
                 label="Jenis Kunjungan"
                 class="mr-5 grow"
@@ -390,7 +504,96 @@ defineExpose({
       </CustomAccordion>
     </template>
     <template #content>
-      <Tabs v-if="reportData.length" v-model:value="reportType">
+      <div v-if="reportType === 'rekap-kunjungan'">
+        <!-- <div class="rekap-kunjungan-container"> -->
+            <CustomAccordion
+              :openWithHeader="true"
+              initialState="0"
+              headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
+            >
+              <template #header>
+                <span class="font-semibold text-white">Rekap Kunjungan</span>
+              </template>
+
+              <template #collapseIcon>
+                <CustomButton
+                  icon="PhCaretUp"
+                  backgroundColor="bg-transparent"
+                  textColor="text-white"
+                />
+              </template>
+              <template #expandIcon>
+                <CustomButton
+                  icon="PhCaretDown"
+                  backgroundColor="bg-transparent"
+                  textColor="text-white"
+                />
+              </template>
+              <template #content>
+                <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+                  <div class="flex items-center p-4 bg-adameds-50">
+                    <label class="w-40 font-semibold">Jenis Kunjungan</label>
+                    <CustomSelect
+                      :showLabel="false"
+                      v-model="visitTypeFilter"
+                      class="w-full md:w-1/4"
+                    />
+                  </div>
+                  <DataTable
+                    :value="rekapData"
+                    tableStyle="min-width: 50rem"
+                    scrollable
+                    scrollHeight="flex"
+                    :pt="{ headerRow: 'text-SM' }"
+                    showGridlines
+                  >
+                    <Column
+                      field="name"
+                      header="Nama"
+                      header-class="text-black bg-adameds-50"
+                      style="width: 150px"
+                      frozen
+                    >
+                      <template #footer>
+                        <span style="font-weight: bold;">Total Harian:</span>
+                      </template>
+                    </Column>
+
+                    <Column
+                      v-for="day in daysInMonth"
+                      :key="day"
+                      :field="day.toString().padStart(2, '0')"
+                      :header="day.toString().padStart(2, '0')"
+                      header-class="text-black bg-adameds-50"
+                      style="width: 40px; text-align: center"
+                      :body="(row: any) => row[day.toString().padStart(2, '0')] || 0"
+                    >
+                      <template #footer>
+                        <span style="font-weight: bold; text-align: center; display: block;">
+                          {{ (totalPerDay[day.toString().padStart(2, '0')] || 0).toString() }}
+                        </span>
+                      </template>
+                    </Column>
+
+                    <Column
+                      field="total"
+                      header="Total"
+                      header-class="text-black bg-adameds-50"
+                      style="width: 60px; font-weight: bold; text-align: center"
+                    >
+                      <template #footer>
+                        <span style="font-weight: bold; text-align: center; display: block;">
+                          {{ grandTotal.toString() }}
+                        </span>
+                      </template>
+                    </Column>
+                  </DataTable>
+                </div>
+              </template> 
+            </CustomAccordion>
+          <!-- </div>  -->
+      </div>
+      <Tabs v-else-if="reportData.length" v-model:value="reportType">
         <TabPanels class="p-0">
           <TabPanel value="kunjungan">
             <DataTable
@@ -808,12 +1011,12 @@ defineExpose({
                 header-class="text-black bg-adameds-50"
               ></Column>
               <Column
-                field="monitoringRoom.room"
+                field="monitoringRoom.bedLokasi.name"
                 header="Ruangan"
                 header-class="text-black bg-adameds-50"
               ></Column>
               <Column
-                field="monitoringRoom.roomClass"
+                field="monitoringRoom.bedLokasi.className"
                 header="Kelas"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -878,7 +1081,7 @@ defineExpose({
                 header-class="text-black bg-adameds-50"
               >
                 <template #body="{ data }">
-                  {{ data.tanggalDaftar }}
+                  {{ data.tanggalDaftar && reportType === 'bayi-baru-lahir' ? data.tanggalDaftar.split('T')[0] : '' }}
                 </template>
               </Column>
               <Column
@@ -1044,6 +1247,49 @@ defineExpose({
               </template>
             </DataTable>
           </TabPanel>
+          <TabPanel value="rekap-kunjungan">
+            <div v-if="pageType === 'rekap-kunjungan'">
+              <DataTable
+                :value="rekapData"
+                tableStyle="min-width: 50rem"
+                scrollable
+                scrollHeight="flex"
+                :pt="{ headerRow: 'text-SM' }"
+                showGridlines
+              >
+                <Column
+                  field="name"
+                  header="Nama"
+                  header-class="text-black bg-adameds-50"
+                  style="width: 150px"
+                  frozen
+                />
+                <Column
+                  v-for="day in daysInMonth"
+                  :key="day"
+                  :field="day.toString().padStart(2, '0')"
+                  :header="day.toString().padStart(2, '0')"
+                  header-class="text-black bg-adameds-50"
+                  style="width: 40px; text-align: center"
+                  :body="(row: any) => row[day.toString().padStart(2, '0')] || 0"
+                />
+                <Column
+                  field="total"
+                  header="Total"
+                  header-class="text-black bg-adameds-50"
+                  style="width: 60px; font-weight: bold; text-align: center"
+                />
+              </DataTable>
+
+              <div class="mt-2 font-bold text-right" style="padding-right: 4.5rem;">
+                <span class="inline-block" style="width: 150px; text-align: left;">Total Harian:</span>
+                <span v-for="day in daysInMonth" :key="'total-'+day" class="inline-block w-10 text-center" style="width: 40px;">
+                  {{ totalPerDay[day.toString().padStart(2, '0')] || 0 }}
+                </span>
+                <span class="inline-block font-bold text-center" style="width: 60px; margin-left: -2px;">{{ grandTotal }}</span>
+              </div>
+            </div>
+            </TabPanel>
         </TabPanels>
       </Tabs>
       <NoData v-else />

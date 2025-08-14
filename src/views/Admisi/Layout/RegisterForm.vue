@@ -640,10 +640,9 @@ const deleteGeneralConsent = async () => {
             backgroundColor="bg-adameds-300"
           />
         </div>
-        <!-- general consent -->
         <div v-else class="flex justify-end">
           <CustomButton
-            @click="() => resetForm()"
+            @click="resetForm()"
             label="Reseta"
             class="mr-[10px]"
             outlined

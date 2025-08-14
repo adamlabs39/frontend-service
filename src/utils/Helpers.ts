@@ -51,8 +51,8 @@ export function dateToEpoch(dateString: Date) {
 
 export function epochToDate(
   epochTime: number,
-  format?: "none" | "dateTime" | "date" | "time"
-): string | Date {
+  format: "none" | "dateTime" | "date" | "time" = "none"
+) {
   const date = new Date(epochTime * 1000);
 
   if (format === "dateTime") {

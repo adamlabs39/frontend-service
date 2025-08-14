@@ -189,7 +189,29 @@ const schema = toTypedSchema(
       title: yup.string().required("Awalan/Gelar harus dipilih"),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -218,6 +240,44 @@ const schema = toTypedSchema(
     })
     .noUnknown()
 );
+
+// const schema = toTypedSchema(
+//   yup
+//     .object({
+//       patientUuid: yup.string(),
+//       noRm: yup.string(),
+//       title: yup.string().required("Awalan/Gelar harus dipilih"),
+//       name: yup.string().required("Nama lengkap harus diisi"),
+//       identity: yup.string().required("Identitas harus dipilih"),
+//       noIdentity: yup.string().required("No identitas harus diisi"),
+//       birthDetail: yup
+//         .object({
+//           birthPlace: yup.string().required("Tempat lahir harus diisi"),
+//           birthDate: yup.date().required("Tanggal lahir harus dipilih"),
+//         })
+//         .noUnknown(),
+//       gender: yup.string().required("Jenis kelamin harus dipilih"),
+//       phone: yup.string().required("No. Handphone harus diisi"),
+//       religion: yup.string().required("Agama harus dipilih"),
+//       language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
+//       maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
+//       motherName: yup.string().required("Nama ibu kandung harus diisi"),
+//       address: yup
+//         .object({
+//           prov: yup.string().required("Provinsi harus dipilih"),
+//           city: yup.string().required("Kabupaten / Kota harus dipilih"),
+//           district: yup.string().required("Kecamatan harus dipilih"),
+//           rt: yup.string().required("RT harus diisi"),
+//           rw: yup.string().required("RW harus diisi"),
+//           fullAddress: yup.string().required("Alamat harus diisi"),
+//           country: yup.string().required("Negara harus diisi"),
+//           village: yup.string().required("Kelurahan / Desa harus dipilih"),
+//           postalCode: yup.string().required("Kode Pos harus dipilih"),
+//         })
+//         .noUnknown(),
+//     })
+//     .noUnknown()
+// );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,

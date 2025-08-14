@@ -574,6 +574,7 @@ const router = createRouter({
       path: "/admisi/laporan/kunjungan",
       name: "admisi-laporan-kunjungan",
       meta: {
+        pageType: "kunjungan",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -584,6 +585,7 @@ const router = createRouter({
       path: "/admisi/laporan/penjamin",
       name: "admisi-laporan-penjamin",
       meta: {
+        pageType: "penjamin",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -594,6 +596,7 @@ const router = createRouter({
       path: "/admisi/laporan/batal-kunjungan",
       name: "admisi-laporan-batal-kunjungan",
       meta: {
+        pageType: "batal-kunjungan",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -604,6 +607,7 @@ const router = createRouter({
       path: "/admisi/laporan/status-kamar",
       name: "admisi-laporan-status-kamar",
       meta: {
+        pageType: "status-kamar",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -614,6 +618,7 @@ const router = createRouter({
       path: "/admisi/laporan/keperawatan-inap-pasien",
       name: "admisi-laporan-keperawatan-inap-pasien",
       meta: {
+        pageType: "keperawatan-inap-pasien",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -624,6 +629,7 @@ const router = createRouter({
       path: "/admisi/laporan/bayi-baru-lahir",
       name: "admisi-laporan-bayi-baru-lahir",
       meta: {
+        pageType: "bayi-baru-lahir",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,

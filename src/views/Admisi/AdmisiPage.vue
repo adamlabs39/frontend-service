@@ -351,14 +351,14 @@ const handlePage = (event: any) => {
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 pr-[9px] border-none mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.patient.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 pr-[8px] border-none mr-[5px]"
               />
             </div>
           </template>
@@ -392,7 +392,7 @@ const handlePage = (event: any) => {
                       ? slotProps.data.monitoringRoom.room.className
                       : slotProps.data.monitoringRoom.room.name
                   "
-                  customClass="h-5 pr-[5px] mr-[5px]"
+                  customClass="h-5 pr-[7px] mr-[5px]"
                 />
               <CustomChip
                 v-else
@@ -402,13 +402,13 @@ const handlePage = (event: any) => {
                     ? 'DATA TIDAK TIDAK LENGKAP'
                     : 'DATA LENGKAP'
                 "
-                customClass="h-5 pr-[5px] mr-[5px]"
+                customClass="h-5 pr-[7px] mr-[5px]"
               />
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
                 :label="`${slotProps.data.monitoringRoom.bedLokasi.name}`"
-                customClass="h-5 pr-[5px] mr-[5px]"
+                customClass="h-5 pr-[7px] mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
@@ -430,7 +430,7 @@ const handlePage = (event: any) => {
                     ? 'border-adameds-300'
                     : 'border-warning-300'
                 "
-                customClass="h-5 pr-[6px] mr-[5px]"
+                customClass="h-5 pr-[9px] mr-[5px]"
               />
               <!-- NOTE Belum Ada BPJS -->
               <CustomChip

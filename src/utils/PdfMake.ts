@@ -313,6 +313,24 @@ export function createPatientCard({ data }: { data: any }) {
     },
   };
 
+  // Format tanggal lahir (ambil tanggal saja, tanpa waktu)
+  const birthDateFormatted = data.birthDetail?.birthDate
+    ? data.birthDetail.birthDate.split("T")[0]
+    : "-";
+
+  // Format umur
+  const umurFormatted = data.birthDetail
+    ? `${data.birthDetail.ageYear ?? 0} Tahun, ${data.birthDetail.ageMonth ?? 0} Bulan, ${data.birthDetail.ageDay ?? 0} Hari`
+    : "-";
+
+  // Jenis kelamin
+  const genderText =
+    data.gender === "Male"
+      ? "Laki-laki"
+      : data.gender === "Female"
+      ? "Perempuan"
+      : "-";
+
   const docDefinition: any = {
     pageSize: { width: 240.75, height: 141.82 },
     pageMargins: [7.5, 6.75],
@@ -363,96 +381,48 @@ export function createPatientCard({ data }: { data: any }) {
         alignment: "center",
         margin: [0, 0, 0, 6.25],
       },
+      // No. RM
       {
         columns: [
-          {
-            width: "25%",
-            text: "No. RM",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "123456",
-            bold: true,
-          },
+          { width: "35%", text: "No. RM" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: data.noRm ?? "-", bold: true },
         ],
         margin: [0, 0, 0, 5],
       },
+      // Nama Lengkap
       {
         columns: [
-          {
-            width: "25%",
-            text: "Nama Pasien",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Nama Lengkap Pasien Jika Panjang",
-            bold: true,
-          },
+          { width: "35%", text: "Nama Lengkap" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: data.name ?? "-", bold: true },
         ],
         margin: [0, 0, 0, 5],
       },
+      // Tanggal lahir
       {
         columns: [
-          {
-            width: "25%",
-            text: "Tgl. Lahir",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "01 Januari 2000 (24 Thn 1 Bln 1 Hri)",
-            bold: true,
-          },
+          { width: "35%", text: "Tanggal lahir" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: birthDateFormatted, bold: true },
         ],
         margin: [0, 0, 0, 5],
       },
+      // Jenis kelamin
       {
         columns: [
-          {
-            width: "25%",
-            text: "Jenis Kelamin",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Laki-laki",
-          },
+          { width: "35%", text: "Jenis kelamin" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: genderText },
         ],
         margin: [0, 0, 0, 5],
       },
+      // Alamat Lengkap
       {
         columns: [
-          {
-            width: "25%",
-            text: "Alamat",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Alamat Lengkap",
-          },
+          { width: "35%", text: "Alamat" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: data.address?.fullAddress ?? "-" },
         ],
         margin: [0, 0, 0, 5],
       },
@@ -461,6 +431,167 @@ export function createPatientCard({ data }: { data: any }) {
 
   pdfMake.createPdf(docDefinition).open();
 }
+
+// export function createPatientCard({ data }: { data: any }) {
+//   pdfMake.vfs = customVfs.pdfMake.vfs;
+
+//   pdfMake.fonts = {
+//     Arial: {
+//       normal: "Arial.ttf",
+//       bold: "Arial_Bold.ttf",
+//       italics: "Arial_Italic.ttf",
+//       bolditalics: "Arial_Bold_Italic.ttf",
+//     },
+//   };
+
+//   const docDefinition: any = {
+//     pageSize: { width: 240.75, height: 141.82 },
+//     pageMargins: [7.5, 6.75],
+//     defaultStyle: {
+//       font: "Arial",
+//       fontSize: 6,
+//     },
+//     content: [
+//       {
+//         alignment: "center",
+//         columns: [
+//           {
+//             image: dummyLogo(),
+//             fit: [54, 30.375],
+//             width: "auto",
+//             height: "auto",
+//           },
+//           {
+//             stack: [
+//               { text: "Nama Klinik", bold: true, fontSize: "10.5" },
+//               { text: "Alamat Klinik", fontSize: "4.5" },
+//               { text: "022 (123456789)", fontSize: "4.5" },
+//               { text: "klinik@gmail.com", fontSize: "4.5" },
+//             ],
+//             margin: [0, 0, 0, 0],
+//             width: "*",
+//           },
+//         ],
+//       },
+//       {
+//         margin: [0, 4.125, 0, 6],
+//         canvas: [
+//           {
+//             type: "line",
+//             x1: 0,
+//             y1: 1,
+//             x2: 225.75,
+//             y2: 1,
+//             lineWidth: 1,
+//             lineColor: "black",
+//           },
+//         ],
+//       },
+//       {
+//         text: "Kartu Pasien",
+//         bold: true,
+//         fontSize: "10.5",
+//         alignment: "center",
+//         margin: [0, 0, 0, 6.25],
+//       },
+//       {
+//         columns: [
+//           {
+//             width: "25%",
+//             text: "No. RM",
+//           },
+//           {
+//             width: "auto",
+//             text: ":",
+//             margin: [0, 0, 3, 0],
+//           },
+//           {
+//             width: "auto",
+//             text: "123456",
+//             bold: true,
+//           },
+//         ],
+//         margin: [0, 0, 0, 5],
+//       },
+//       {
+//         columns: [
+//           {
+//             width: "25%",
+//             text: "Nama Pasien",
+//           },
+//           {
+//             width: "auto",
+//             text: ":",
+//             margin: [0, 0, 3, 0],
+//           },
+//           {
+//             width: "auto",
+//             text: "Nama Lengkap Pasien Jika Panjang",
+//             bold: true,
+//           },
+//         ],
+//         margin: [0, 0, 0, 5],
+//       },
+//       {
+//         columns: [
+//           {
+//             width: "25%",
+//             text: "Tgl. Lahir",
+//           },
+//           {
+//             width: "auto",
+//             text: ":",
+//             margin: [0, 0, 3, 0],
+//           },
+//           {
+//             width: "auto",
+//             text: "01 Januari 2000 (24 Thn 1 Bln 1 Hri)",
+//             bold: true,
+//           },
+//         ],
+//         margin: [0, 0, 0, 5],
+//       },
+//       {
+//         columns: [
+//           {
+//             width: "25%",
+//             text: "Jenis Kelamin",
+//           },
+//           {
+//             width: "auto",
+//             text: ":",
+//             margin: [0, 0, 3, 0],
+//           },
+//           {
+//             width: "auto",
+//             text: "Laki-laki",
+//           },
+//         ],
+//         margin: [0, 0, 0, 5],
+//       },
+//       {
+//         columns: [
+//           {
+//             width: "25%",
+//             text: "Alamat",
+//           },
+//           {
+//             width: "auto",
+//             text: ":",
+//             margin: [0, 0, 3, 0],
+//           },
+//           {
+//             width: "auto",
+//             text: "Alamat Lengkap",
+//           },
+//         ],
+//         margin: [0, 0, 0, 5],
+//       },
+//     ],
+//   };
+
+//   pdfMake.createPdf(docDefinition).open();
+// }
 
 export async function createPatientVisit({ data }: { data: any }) {
   pdfMake.vfs = customVfs.pdfMake.vfs;
