@@ -189,7 +189,29 @@ const schema = toTypedSchema(
       title: yup.string().required("Awalan/Gelar harus dipilih"),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -218,6 +240,7 @@ const schema = toTypedSchema(
     })
     .noUnknown()
 );
+
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,

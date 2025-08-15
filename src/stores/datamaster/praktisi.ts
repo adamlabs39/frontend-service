@@ -50,5 +50,8 @@ export const usePraktisiStore = defineStore({
     async importApi(payload: any) {
       return apiDatamasterPost("/datamaster/practitioner/import", payload);
     },
+    async getPractitionerApi(payload = {}) {
+      return apiDatamasterGet("/datamaster/practitioner/poli/aktif",payload);
+    }
   },
 });

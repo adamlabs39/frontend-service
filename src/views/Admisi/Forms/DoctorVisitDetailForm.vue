@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -14,12 +14,25 @@ import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const praktisiStore = usePraktisiStore();
 const penjaminStore = usePenjaminStore();
 const admisiRJStore = useAdmisiRJStore();
+const lokasiStore = useLokasiStore();
+const selectedPoli = ref(""); // UUID poli yang dipilih
+
+// DPJP yang sudah difilter sesuai poli terpilih
+const filteredDpjp = computed(() => {
+  if (!selectedPoli.value) return [];
+  return listDpjp.value.filter(
+    (dpjp: any) =>
+      String(dpjp.poliUuid).toLowerCase() ===
+      String(selectedPoli.value).toLowerCase()
+  );
+});
 
 const props = defineProps({
   pageType: {
@@ -48,6 +61,41 @@ const filterPoliList = ref([]);
 const listDpjp = ref<any[]>([]);
 const listPenjamin = ref<any[]>([]);
 const listJadwalDokter = ref<any[]>([]);
+const selectedJadwalPoli = ref("");
+const selectedPoliUuid = ref("");
+
+const listJadwalDokterFiltered = computed(() => {
+  const currentUuid = practitionerUuid.value;
+
+  if (!currentUuid) {
+    return [];
+  }
+
+  const doctorSchedule = listJadwalDokter.value.find((item) => {
+    const isMatch = item.doctor.uuid === currentUuid;
+    return isMatch;
+  });
+
+  if (!doctorSchedule) {
+    return [];
+  }
+
+  const filtered = doctorSchedule.jadwalDokter.filter((jadwal: any) => {
+    const aktif = jadwal.status === "aktif";
+    return aktif;
+  });
+
+  const mapped = filtered.map((jadwal: any) => ({
+    uuid: jadwal.jadwalDokterUuid,
+    day: jadwal.day,
+    startTime: jadwal.startTime,
+    endTime: jadwal.endTime,
+    label: `${jadwal.day} | ${jadwal.startTime} - ${jadwal.endTime}`,
+  }));
+
+  return mapped;
+});
+
 
 const fetchUtils = async () => {
   try {
@@ -77,12 +125,78 @@ const fetchUtils = async () => {
     } else {
       listJadwalDokter.value = [];
     }
+
+    // ✅ Tambahan: Fetch data lokasi untuk CustomSelect Poli
+    const responseLokasi = await lokasiStore.getApi(1,9999);
+    if (responseLokasi && responseLokasi.payload) {
+      // console.log("📡 Payload Lokasi (raw):", responseLokasi.payload);
+
+      filterPoliList.value = responseLokasi.payload
+      .filter((lokasi: any) => {
+        // console.log("🔍 Cek locationType:", lokasi.locationType, "is_poli:", lokasi.isPoli);
+        return (
+          lokasi.locationType?.toLowerCase() === "ward" &&
+          Boolean(lokasi.isPoli) === true
+        );
+      })
+      .map((lokasi: any) => ({
+        name: lokasi.name,
+        uuid: lokasi.uuid
+      }));
+
+
+      // console.log("📌 Data filterPoliList:", filterPoliList.value);
+    } else {
+      filterPoliList.value = [];
+    }
+
+    // ✅ Fetch DPJP per poli aktif
+    const responseDpjpPoli = await praktisiStore.getPractitionerApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjpPoli && responseDpjpPoli.payload) {
+      // filter berdasarkan poli yang dipilih
+      watch(selectedPoliUuid, (uuidPoli) => {
+        if (!uuidPoli) {
+          listDpjp.value = [];
+          return;
+        }
+        listDpjp.value = responseDpjpPoli.payload.filter(
+          (praktisi: any) =>
+            praktisi.is_doctor &&
+            praktisi.status &&
+            praktisi.poli_pelayanan?.some(
+              (poli: any) => poli.lokasi_uuid === uuidPoli
+            )
+        );
+      });
+    }
+
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
   }
 };
+
+
+// 🔄 Watcher untuk update DPJP ketika poli dipilih
+watch(selectedJadwalPoli, async (poliUuid) => {
+  if (!poliUuid) {
+    listDpjp.value = [];
+    return;
+  }
+
+  try {
+    const responseDpjp = await praktisiStore.getPractitionerApi({ poli_uuid: poliUuid });
+    listDpjp.value = responseDpjp?.payload || [];
+  } catch (error) {
+    console.error("Gagal mengambil data DPJP", error);
+    listDpjp.value = [];
+  }
+});
+
 
 const setFormData = () => {
   if (Object.keys(props.doctorVisitData).length) {
@@ -116,20 +230,23 @@ onUpdated(() => {
   setFormData();
 });
 
-const selectedJadwalPoli = ref("");
 const selectedJadwalDpjp = ref("");
-const setPoliDpjpJadwal = (uuid: any) => {
-  if (uuid) {
-    let tempDataJadwal = listJadwalDokter.value.find(
-      (data) => data.uuid == uuid
+const setPoliDpjpJadwal = (jadwalDokterUuid: string) => {
+  if (jadwalDokterUuid) {
+    // Cari jadwal dari listJadwalDokter berdasarkan jadwal_dokter_uuid
+    const tempDataJadwal = listJadwalDokter.value.find(
+      (data) => data.uuid === jadwalDokterUuid
     );
     if (tempDataJadwal) {
-      selectedJadwalPoli.value = tempDataJadwal.poli;
-      selectedJadwalDpjp.value = tempDataJadwal.name;
+      selectedJadwalPoli.value = tempDataJadwal.poliName;
+      selectedJadwalDpjp.value = tempDataJadwal.doctorName;
     } else {
       selectedJadwalPoli.value = "";
       selectedJadwalDpjp.value = "";
     }
+  } else {
+    selectedJadwalPoli.value = "";
+    selectedJadwalDpjp.value = "";
   }
 };
 
@@ -265,10 +382,9 @@ defineExpose({
           >
             <CustomSelect
               v-if="pageType == 'rawat-jalan'"
-              v-model="selectedJadwalPoli"
+              v-model="selectedPoli"
               label="Poli"
               placeHolder="Pilih Poli"
-              class=""
               optionLabel="name"
               optionValue="uuid"
               :showFilter="false"
@@ -276,42 +392,47 @@ defineExpose({
               :disabled="isDetail"
             />
             <CustomSelect
-              v-model="practitionerUuid"
-              label="DPJP"
-              placeHolder="Pilih DPJP"
-              :class="{
-                'col-span-2': pageType == 'igd',
-              }"
-              optionLabel="pegawai.name"
-              optionValue="uuid"
-              :options="listDpjp"
-              :showFilter="false"
-              :disabled="isDetail"
-              :invalid="!!errors.practitionerUuid"
-              :invalidMessage="errors.practitionerUuid"
-            />
+                v-model="practitionerUuid"
+                label="DPJP"
+                placeHolder="Pilih DPJP"
+                :class="{ 'col-span-2': pageType == 'igd' }"
+                optionLabel="pegawai.name"
+                optionValue="uuid"
+                :options="
+                  pageType === 'igd'
+                    ? listDpjp
+                    : selectedPoli
+                      ? listDpjp.filter((dpjp: any) =>
+                          dpjp.poliPelayanan?.some(
+                            (p: any) =>
+                              String(p.lokasiUuid).toLowerCase() ===
+                              String(selectedPoli).toLowerCase()
+                          )
+                        )
+                      : []
+                "
+                :showFilter="false"
+                :disabled="isDetail || (pageType !== 'igd' && !selectedPoli)"
+                :invalid="!!errors.practitionerUuid"
+                :invalidMessage="errors.practitionerUuid"
+              />
             <!-- FIXME Dummy data -->
             <!-- NOTE Harus ada api baru untuk menampilkan data jadwal dengan filter dokter poli dan jam saat ini -->
             <CustomSelect
-              v-if="pageType == 'rawat-jalan'"
-              v-model="jadwalDokterUuid"
-              @update:model-value="setPoliDpjpJadwal"
-              label="Jadwal"
-              placeHolder="Pilih Jadwal"
-              class=""
-              optionLabel="practitioner.pegawai.nama"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="listJadwalDokter"
-              :disabled="isDetail"
-              :invalid="!!errors.jadwalDokterUuid"
-              :invalidMessage="errors.jadwalDokterUuid"
-            >
-              <template #customOptions="{ option }">
-                {{ option.lokasi.name }} ({{ option.practitioner.pegawai.nama }}) | {{ option.day }} -
-                {{ option.startTime }}
-              </template>
-            </CustomSelect>
+                v-if="pageType == 'rawat-jalan'"
+                v-model="jadwalDokterUuid"
+                :options="listJadwalDokterFiltered"
+                optionValue="uuid"
+                optionLabel="label"
+                label="Jadwal"
+                placeHolder="Pilih Jadwal"
+                :disabled="isDetail"
+                :showFilter="false"
+              >
+                <template #customOptions="{ option }">
+                  {{ option.day }} | {{ option.startTime }} - {{ option.endTime }}
+                </template>
+              </CustomSelect>
             <CustomTextfield
               v-if="pageType == 'igd'"
               v-model="complaint"

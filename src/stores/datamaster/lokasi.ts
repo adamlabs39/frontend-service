@@ -58,5 +58,5 @@ export const useLokasiStore = defineStore({
     async importApi(payload = {}) {
       return apiDatamasterPost("/datamaster/lokasi/import", payload);
     },
-  },
+  }
 });
