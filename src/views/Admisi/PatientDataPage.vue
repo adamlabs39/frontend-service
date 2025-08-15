@@ -25,6 +25,8 @@ import Qrcode from "qrcode.vue";
 import { useGeneralConsentStore } from "@/stores/datamaster/generalConsent";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import { createPatientCard } from "@/utils/PdfMake";
+import axios from "axios";
+import { useDistrictStore } from "@/stores/datamaster/district";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -83,6 +85,12 @@ const propertiesHistory = ref({
 });
 const search = ref("");
 
+const patientUuid = ref<string>("");
+
+const onSelectPatient = (patient: any) => {
+  patientUuid.value = patient.uuid;
+};
+
 const fetchData = async () => {
   storeUtils.setLoading(true);
   try {
@@ -103,19 +111,80 @@ const fetchData = async () => {
   }
 };
 
+const districtStore = useDistrictStore();
+
 const openedPatientData = ref<any>({});
 const listHistoryPatient = ref<any[]>([]);
+
 const showDetailPatient = async (event: DataTableRowClickEvent) => {
   storeUtils.setLoading(true);
   try {
-    const responsePatient = await masterPasienStore.getDetailMasterPasien(
-      event.data.uuid
-    );
+    const responsePatient = await masterPasienStore.getDetailMasterPasien(event.data.uuid);
+
     if (responsePatient && responsePatient.payload) {
-      openedPatientData.value = responsePatient.payload;
+      const pasien = responsePatient.payload;
+      const address = pasien.address || {};
+
+      const provCache = new Map<string, string>();
+      const kabCache = new Map<string, string>();
+      const kecCache = new Map<string, string>();
+      const kelCache = new Map<string, string>();
+
+      let provName: string = '';
+      let cityName: string = '';
+      let districtName: string = '';
+      let villageName: string = '';
+
+      if (address.prov) {
+        provName = provCache.get(address.prov) || '';
+        if (!provName) {
+          const provRes = await districtStore.getProvinsiApi();
+          provName = provRes.payload.find((p: any) => p.code === address.prov)?.name || address.prov || '';
+          provCache.set(address.prov, provName);
+        }
+      }
+
+      if (address.city) {
+        cityName = kabCache.get(address.city) || '';
+        if (!cityName) {
+          const kabRes = await districtStore.getKabupatenApi(address.prov);
+          cityName = kabRes.payload.find((c: any) => c.code === address.city)?.name || address.city || '';
+          kabCache.set(address.city, cityName);
+        }
+      }
+
+      if (address.district) {
+        districtName = kecCache.get(address.district) || '';
+        if (!districtName) {
+          const kecRes = await districtStore.getKecamatanApi(address.city);
+          districtName = kecRes.payload.find((d: any) => d.code === address.district)?.name || address.district || '';
+          kecCache.set(address.district, districtName);
+        }
+      }
+
+      if (address.village) {
+        villageName = kelCache.get(address.village) || '';
+        if (!villageName) {
+          const kelRes = await districtStore.getKelurahanApi(address.district);
+          villageName = kelRes.payload.find((k: any) => k.code === address.village)?.name || address.village || '';
+          kelCache.set(address.village, villageName);
+        }
+      }
+
+      openedPatientData.value = {
+        ...pasien,
+        address: {
+          ...address,
+          provName,
+          cityName,
+          districtName,
+          villageName,
+        },
+      };
     } else {
       openedPatientData.value = {};
     }
+
     const responseHistory = await masterPasienStore.getPatientHistory(
       event.data.uuid,
       {
@@ -123,19 +192,23 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
         limit: propertiesHistory.value.pageSize,
       }
     );
+
     if (responseHistory && responseHistory.payload) {
       propertiesHistory.value.total = responseHistory.properties.totalData;
       listHistoryPatient.value = responseHistory.payload;
     } else {
       listHistoryPatient.value = [];
     }
+
     detailPatientDialog.value = true;
+
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
   }
 };
+
 
 const patientIdentityForm = ref<InstanceType<
   typeof PatientIdentityForm
@@ -206,6 +279,41 @@ const handlePageHistory = (event: any) => {
   propertiesHistory.value.page = event.page + 1;
   propertiesHistory.value.pageSize = event.rows;
   fetchData();
+};
+
+const files = ref<File[]>([]); // ini sesuai sama slot props
+const token = localStorage.getItem("token");
+const customUploadCallback = async (files: File[], uuid: string) => {
+  if (!files[0]) {
+    console.error("Tidak ada file yang dipilih");
+    return;
+  }
+
+  const file = files[0];
+
+  // Validasi PDF
+  if (file.type !== "application/pdf") {
+    alert("File harus bertipe PDF");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axios.put(`http://192.168.1.77:8083/api/v3/admisi/patient/file/${uuid}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+         Authorization: `Bearer ${token}`
+      },
+    });
+
+    console.log("Upload sukses:", response.data);
+    alert("Upload berhasil");
+  } catch (error) {
+    console.error("Upload gagal:", error);
+    alert("Upload gagal");
+  }
 };
 
 const onUpload = async (event: any) => {
@@ -963,7 +1071,7 @@ onMounted(() => {
                       textColor="text-adameds-300"
                     />
                     <CustomButton
-                      @click="uploadCallback()"
+                      @click="customUploadCallback(files, patientUuid)"
                       label="Upload"
                       class=""
                       :disabled="!files[0]"
@@ -987,25 +1095,21 @@ onMounted(() => {
                 label="No. identitas" 
                 :value="openedPatientData.noIdentity"
               />
-              <CustomInfoRow 
-                label="No. RM"
-                :value="openedPatientData.noRm"
-              />
               <CustomInfoRow
                 label="Nama Lengkap"
                 :value="openedPatientData.name"
               />
-              <CustomInfoRow
-                label="Tempat Lahir"
-                :value="openedPatientData.birthDetail.birthPlace"
+              <CustomInfoRow 
+                label="No. RM"
+                :value="openedPatientData.noRm"
               />
               <CustomInfoRow
                 label="Tanggal lahir"
                 :value="openedPatientData.birthDetail.birthDate?.split('T')[0] ?? '-'"
               />
               <CustomInfoRow
-                label="Umur"
-                :value="`${openedPatientData.birthDetail.ageYear} Tahun`"
+                label="Tempat Lahir"
+                :value="openedPatientData.birthDetail.birthPlace"
               />
               <CustomInfoRow
                 label="Jenis kelamin"
@@ -1014,28 +1118,32 @@ onMounted(() => {
                 "
               />
               <CustomInfoRow
-                label="No. Handphone"
-                :value="openedPatientData.phone"
+                label="Umur"
+                :value="`${openedPatientData.birthDetail.ageYear} Tahun`"
               />
               <CustomInfoRow
                 label="Agama"
                 :value="openedPatientData.religion"
               />
               <CustomInfoRow
-                label="Provinsi"
-                :value="openedPatientData.address.prov"
+                label="No. Handphone"
+                :value="openedPatientData.phone"
               />
-              <CustomInfoRow
+              <CustomInfoRow 
                 label="Kabupaten/Kota"
-                :value="openedPatientData.address.city"
+                :value="openedPatientData.address.cityName"
               />
               <CustomInfoRow
-                label="Kecamatan"
-                :value="openedPatientData.address.district"
+                label="Provinsi"
+                :value="openedPatientData.address.provName"
               />
               <CustomInfoRow
                 label="Alamat"
                 :value="openedPatientData.address.fullAddress"
+              />
+              <CustomInfoRow
+                label="Kecamatan"
+                :value="openedPatientData.address.districtName"
               />
             </div>
             <hr class ="hidden" style="margin-top: 20px;"/>

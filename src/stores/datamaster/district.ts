@@ -16,19 +16,19 @@ export const useDistrictStore = defineStore({
     },
     async getKabupatenApi(code: string = "", payload = {}) {
       return apiDatamasterGet(
-        `/datamaster/kabupaten?provinsi_name=${name}`,
+        `/datamaster/kabupaten?provinsi_code=${code}`,
         payload
       );
     },
     async getKecamatanApi(code: string = "", payload = {}) {
       return apiDatamasterGet(
-        `/datamaster/kecamatan?kabupaten_name=${name}`,
+        `/datamaster/kecamatan?kabupaten_code=${code}`,
         payload
       );
     },
     async getKelurahanApi(code: string = "", payload = {}) {
       return apiDatamasterGet(
-        `/datamaster/kelurahan?kecamatan_name=${name}`,
+        `/datamaster/kelurahan?kecamatan_code=${code}`,
         payload
       );
     },

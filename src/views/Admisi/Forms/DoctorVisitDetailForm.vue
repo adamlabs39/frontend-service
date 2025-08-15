@@ -127,7 +127,7 @@ const fetchUtils = async () => {
     }
 
     // ✅ Tambahan: Fetch data lokasi untuk CustomSelect Poli
-    const responseLokasi = await lokasiStore.getLokasiApi();
+    const responseLokasi = await lokasiStore.getApi(1,9999);
     if (responseLokasi && responseLokasi.payload) {
       // console.log("📡 Payload Lokasi (raw):", responseLokasi.payload);
 
