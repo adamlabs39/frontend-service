@@ -12,6 +12,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -192,11 +193,6 @@ const addRow = () => {
     kuota: 0,
     status: true,
   });
-};
-
-// Function untuk menghapus row
-const removeRow = (index: number) => {
-  remove(index);
 };
 
 // Function untuk format waktu dari string ke Date object
@@ -429,6 +425,33 @@ const handleReset = () => {
 };
 
 const selectedPatient = ref([]);
+
+const deleteModalData = ref({
+  isVisible: false,
+  indexToDelete: -1,
+});
+
+// Function untuk menampilkan modal konfirmasi delete
+const showDeleteModal = (index: number) => {
+  deleteModalData.value = {
+    isVisible: true,
+    indexToDelete: index,
+  };
+};
+
+// Function untuk menutup modal delete
+const closeDeleteModal = () => {
+  deleteModalData.value.isVisible = false;
+  deleteModalData.value.indexToDelete = -1;
+};
+
+// Function untuk konfirmasi penghapusan
+const confirmDeleteRow = () => {
+  if (deleteModalData.value.indexToDelete >= 0) {
+    remove(deleteModalData.value.indexToDelete);
+  }
+  closeDeleteModal();
+};
 </script>
 
 <template>
@@ -661,7 +684,7 @@ const selectedPatient = ref([]);
                     icon="PhTrash"
                     textColor="text-white"
                     backgroundColor="bg-red-500"
-                    @click="removeRow(slotProps.index)"
+                    @click="showDeleteModal(slotProps.index)"
                   />
                 </div>
               </template>
@@ -695,6 +718,12 @@ const selectedPatient = ref([]);
           >
           </CustomButton>
           <CustomButton label="Simpan" @click="onSubmit"> </CustomButton>
+          <DeleteModalComponent
+            :isVisible="deleteModalData.isVisible"
+            entityName="Jadwal Dokter"
+            @close="closeDeleteModal"
+            @confirm="confirmDeleteRow"
+          />
         </div>
       </div>
     </template>
