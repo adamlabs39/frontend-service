@@ -20,6 +20,10 @@ const jadwalDokterStore = useJadwalDokterStore();
 const UseUtilsStore = utilsStore();
 
 const jadwalDokterPayload = ref<any[]>([]);
+const allPoliData = ref<any[]>([]);
+const allDokterData = ref<
+  Array<{ uuid: string; name: string; poliUuids: string[] }>
+>([]);
 const jadwalDokterProperties = ref({
   page: 1,
   page_size: 10,
@@ -38,6 +42,44 @@ const fetchJadwalDokter = async () => {
     if (response && response.payload) {
       jadwalDokterPayload.value = response.payload;
       jadwalDokterProperties.value.total = response.properties.total;
+
+      // Simpan data poli dari response ini jika belum ada
+      if (allPoliData.value.length === 0) {
+        const poliMap = new Map();
+        response.payload.forEach((item: any) => {
+          poliMap.set(item.poli.uuid, {
+            uuid: item.poli.uuid,
+            name: item.poli.name,
+          });
+        });
+        allPoliData.value = Array.from(poliMap.values());
+      }
+
+      // Isi allDokterData hanya jika masih kosong (fallback awal dari response saat ini)
+      if (allDokterData.value.length === 0) {
+        const dokterMap = new Map<
+          string,
+          { uuid: string; name: string; poliUuids: Set<string> }
+        >();
+        response.payload.forEach((item: any) => {
+          const doctorUuid = item.doctor.uuid;
+          const doctorName = item.doctor.name;
+          const poliUuid = item.poli.uuid;
+          if (!dokterMap.has(doctorUuid)) {
+            dokterMap.set(doctorUuid, {
+              uuid: doctorUuid,
+              name: doctorName,
+              poliUuids: new Set<string>(),
+            });
+          }
+          dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
+        });
+        allDokterData.value = Array.from(dokterMap.values()).map((d) => ({
+          uuid: d.uuid,
+          name: d.name,
+          poliUuids: Array.from(d.poliUuids),
+        }));
+      }
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -73,23 +115,96 @@ const existingDoctorUuids = computed(() =>
 );
 
 const dokterOptions = computed(() => {
-  const map = new Map();
-  jadwalDokterPayload.value.forEach((item) => {
-    map.set(item.doctor.uuid, {
-      uuid: item.doctor.uuid,
-      name: item.doctor.name,
+  if (allDokterData.value.length === 0) {
+    // Fallback jika allDokterData belum terisi: bangun dari payload yang ada
+    const dokterMap = new Map<
+      string,
+      { uuid: string; name: string; poliUuids: Set<string> }
+    >();
+    jadwalDokterPayload.value.forEach((item) => {
+      const doctorUuid = item.doctor.uuid;
+      const doctorName = item.doctor.name;
+      const poliUuid = item.poli.uuid;
+      if (!dokterMap.has(doctorUuid)) {
+        dokterMap.set(doctorUuid, {
+          uuid: doctorUuid,
+          name: doctorName,
+          poliUuids: new Set<string>(),
+        });
+      }
+      dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
     });
-  });
-  return Array.from(map.values());
+    return Array.from(dokterMap.values()).map((d) => ({
+      uuid: d.uuid,
+      name: d.name,
+      poliUuids: Array.from(d.poliUuids),
+    }));
+  }
+  return allDokterData.value;
 });
 
 const poliOptions = computed(() => {
-  const map = new Map();
-  jadwalDokterPayload.value.forEach((item) => {
-    map.set(item.poli.uuid, { uuid: item.poli.uuid, name: item.poli.name });
-  });
-  return Array.from(map.values());
+  // Jika allPoliData kosong, fallback ke data dari jadwalDokterPayload
+  if (allPoliData.value.length === 0) {
+    const map = new Map();
+    jadwalDokterPayload.value.forEach((item) => {
+      map.set(item.poli.uuid, { uuid: item.poli.uuid, name: item.poli.name });
+    });
+    return Array.from(map.values());
+  }
+  return allPoliData.value;
 });
+
+const fetchAllPoliData = async () => {
+  try {
+    // Fetch data tanpa filter aktif untuk mendapatkan semua poli
+    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
+    if (response && response.payload) {
+      const poliMap = new Map();
+      response.payload.forEach((item: any) => {
+        poliMap.set(item.poli.uuid, {
+          uuid: item.poli.uuid,
+          name: item.poli.name,
+        });
+      });
+      allPoliData.value = Array.from(poliMap.values());
+    }
+  } catch (error) {
+    console.error("Failed to fetch all poli data", error);
+  }
+};
+
+const fetchAllDokterData = async () => {
+  try {
+    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
+    if (response && response.payload) {
+      const dokterMap = new Map<
+        string,
+        { uuid: string; name: string; poliUuids: Set<string> }
+      >();
+      response.payload.forEach((item: any) => {
+        const doctorUuid = item.doctor.uuid;
+        const doctorName = item.doctor.name;
+        const poliUuid = item.poli.uuid;
+        if (!dokterMap.has(doctorUuid)) {
+          dokterMap.set(doctorUuid, {
+            uuid: doctorUuid,
+            name: doctorName,
+            poliUuids: new Set<string>(),
+          });
+        }
+        dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
+      });
+      allDokterData.value = Array.from(dokterMap.values()).map((d) => ({
+        uuid: d.uuid,
+        name: d.name,
+        poliUuids: Array.from(d.poliUuids),
+      }));
+    }
+  } catch (error) {
+    console.error("Failed to fetch all dokter data", error);
+  }
+};
 
 const handleEdit = (data: any) => {
   dialogData.value = {
@@ -143,6 +258,8 @@ const displayedJadwalDokter = computed(() => {
 });
 
 onMounted(() => {
+  fetchAllPoliData();
+  fetchAllDokterData();
   fetchJadwalDokter();
 });
 </script>

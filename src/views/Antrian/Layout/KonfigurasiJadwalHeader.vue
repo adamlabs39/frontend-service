@@ -54,13 +54,15 @@ const dokterDropdown = computed(() => {
     return [];
   }
 
-  // Filter dokter berdasarkan poli yang dipilih dari data jadwal dokter
-  const dokterInPoli = props.jadwalDokterData
-    .filter((item) => item.poli.uuid === selectedPoli.value)
-    .map((item) => ({
-      uuid: item.doctor.uuid,
-      name: item.doctor.name,
-    }));
+  // Gunakan data dokterOptions (tidak terpengaruh filter status) dan
+  // filter berdasarkan poli yang dipilih melalui atribut poliUuids
+  const dokterInPoli = (
+    props.dokterOptions as Array<{
+      uuid: string;
+      name: string;
+      poliUuids?: string[];
+    }>
+  ).filter((dokter) => dokter.poliUuids?.includes(selectedPoli.value));
 
   // Remove duplicates berdasarkan uuid
   const uniqueDokter = dokterInPoli.filter(
