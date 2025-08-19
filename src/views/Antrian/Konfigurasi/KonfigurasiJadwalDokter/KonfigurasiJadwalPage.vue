@@ -10,6 +10,7 @@ import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {
@@ -112,18 +113,6 @@ const fetchJadwalDokter = async () => {
   }
 };
 
-const deleteDoctor = async (doctorUuid: string, poliUuid: string) => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const response = await jadwalDokterStore.deleteDoctor(doctorUuid, poliUuid);
-    await fetchJadwalDokter();
-  } catch (error) {
-    console.error("Failed to delete doctor", error);
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
-
 const expandedRows = ref();
 
 const dialogData = ref({
@@ -132,6 +121,48 @@ const dialogData = ref({
   title: "Tambah",
   editData: {},
 });
+
+const deleteModalData = ref({
+  isVisible: false,
+  doctorUuid: "",
+  poliUuid: "",
+  doctorName: "",
+});
+
+// Fungsi untuk menampilkan modal konfirmasi
+const showDeleteModal = (
+  doctorUuid: string,
+  poliUuid: string,
+  doctorName: string
+) => {
+  deleteModalData.value = {
+    isVisible: true,
+    doctorUuid,
+    poliUuid,
+    doctorName,
+  };
+};
+
+// Fungsi untuk menutup modal
+const closeDeleteModal = () => {
+  deleteModalData.value.isVisible = false;
+};
+
+// Fungsi untuk konfirmasi penghapusan
+const confirmDelete = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.deleteDoctor(
+      deleteModalData.value.doctorUuid,
+      deleteModalData.value.poliUuid
+    );
+    await fetchJadwalDokter();
+  } catch (error) {
+    console.error("Failed to delete doctor", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
 
 const existingDoctorUuids = computed(() =>
   jadwalDokterPayload.value.map((item) => item.doctor.uuid)
@@ -315,9 +346,10 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   @click="
-                    deleteDoctor(
+                    showDeleteModal(
                       slotProps.data.doctor.uuid,
-                      slotProps.data.poli.uuid
+                      slotProps.data.poli.uuid,
+                      slotProps.data.doctor.name
                     )
                   "
                 >
@@ -477,6 +509,12 @@ onMounted(() => {
         :editData="dialogData.editData"
         @close="handleClose"
         @refresh="handleRefresh"
+      />
+      <DeleteModalComponent
+        :isVisible="deleteModalData.isVisible"
+        :entityName="deleteModalData.doctorName"
+        @close="closeDeleteModal"
+        @confirm="confirmDelete"
       />
     </template>
     <template #footer>
