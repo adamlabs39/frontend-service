@@ -165,6 +165,23 @@ const onReset = () => {
 onMounted(() => {
   fetchGetPoli();
 });
+
+watch(
+  () => props.isDialogVisible,
+  (newValue) => {
+    if (newValue) {
+      // Reset form ketika dialog dibuka
+      resetForm();
+
+      // Set nilai default untuk field tertentu
+      setTimeout(() => {
+        aktif.value = true; // Default status aktif
+        flashText.value = ["Selamat Datang di Klinik Adameds"]; // Default flash text
+      }, 0);
+    }
+  },
+  { immediate: false }
+);
 </script>
 
 <template>
