@@ -153,14 +153,26 @@ const searchPatientFilter = ref<string>("");
               <CustomChip
                 :showCheckedIcon="false"
                 :bgColor="
-                  isChipSelected('SELESAI') ? 'bg-[#48CFAD]' : 'bg-[#EDFAF7]'
+                  isChipSelected(
+                    activeTab === '2' ? 'PENYERAHAN_OBAT' : 'SELESAI'
+                  )
+                    ? 'bg-[#48CFAD]'
+                    : 'bg-[#EDFAF7]'
                 "
                 :textColor="
-                  isChipSelected('SELESAI') ? 'text-white' : 'text-[#48CFAD]'
+                  isChipSelected(
+                    activeTab === '2' ? 'PENYERAHAN_OBAT' : 'SELESAI'
+                  )
+                    ? 'text-white'
+                    : 'text-[#48CFAD]'
                 "
                 borderColor="border-[#48CFAD]"
-                label="SELESAI"
-                @selected="handleChipSelect('SELESAI')"
+                :label="activeTab === '2' ? 'PENYERAHAN OBAT' : 'SELESAI'"
+                @selected="
+                  handleChipSelect(
+                    activeTab === '2' ? 'PENYERAHAN_OBAT' : 'SELESAI'
+                  )
+                "
               />
             </div>
           </div>
