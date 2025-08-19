@@ -36,6 +36,7 @@ function handleRefresh() {
 
 const searchQuery = ref("");
 const selectedLayar = ref<any>();
+const resetKey = ref(0);
 
 // Fungsi untuk melakukan pencarian
 const performSearch = () => {
@@ -104,6 +105,7 @@ const resetFilter = () => {
   });
   selectedLayar.value = null;
   searchQuery.value = "";
+  resetKey.value++;
 
   // Emit refresh untuk memuat ulang data ke keadaan semula
   emit("refresh");
@@ -161,6 +163,7 @@ defineExpose({
           >
           </CustomTextfield>
           <CustomSelect
+            :key="resetKey"
             v-model="selectedLayar"
             :options="availableTipeLayar"
             optionValue="code"
