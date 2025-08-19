@@ -202,8 +202,11 @@ onMounted(() => {
         </div>
 
         <!-- Conditional rendering based on layarModel -->
-        <div class="flex gap-x-4 gap-y-6">
-          <div class="flex-1 max-w-[600px]" v-show="isLayarSelected">
+        <div class="flex gap-x-4 gap-y-6 min-h-0">
+          <div
+            class="w-1/2 min-w-[420px] max-w-[520px] flex-shrink-0"
+            v-show="isLayarSelected"
+          >
             <div class="text-xl font-bold text-black">
               {{ layarTitle }}
             </div>
@@ -254,7 +257,7 @@ onMounted(() => {
             </div>
           </div>
           <div
-            class="flex-[2] flex flex-col max-w-[1200px]"
+            class="flex flex-col flex-1 w-full min-w-0"
             v-show="isLayarSelected"
           >
             <div class="text-xl font-bold text-black">Preview Layar</div>
