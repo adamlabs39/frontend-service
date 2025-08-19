@@ -36,6 +36,12 @@ const shiftTypeMap: { [key: string]: string } = {
   "3": "Malam",
 };
 
+//Jenis tipe kasir
+const jenisKasirMap: { [key: string]: string } = {
+  'DAYS': 'Closing Harian',
+  'SHIFT': 'Closing Kasir'
+};
+
 // State Management
 const reportCloseCashier = useReportCloseCashierStore();
 const UseUtilsStore = utilsStore();
@@ -125,14 +131,23 @@ const searchData = () => {
   dateToEpoch(startDateFilter.value),
     dateToEpoch(endDateFilter.value),
     type.value;
+    closeCashierProperties.value.page = 1;
   fetchCloseCashier();
 };
 
 // Filter Reset Data
 const resetData = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  const todayReset = new Date();
+  const sevenDaysAgoReset = new Date();
+  sevenDaysAgoReset.setDate(todayReset.getDate() - 7);
+
+  sevenDaysAgoReset.setHours(0, 0, 0, 0); 
+  todayReset.setHours(23, 59, 59, 999);
+  
+  startDateFilter.value = sevenDaysAgoReset;
+  endDateFilter.value = todayReset;
   type.value = "ALL";
+  closeCashierProperties.value.page = 1;
   fetchCloseCashier();
 };
 
@@ -228,12 +243,15 @@ onMounted(() => {
                 v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                :maxDate="endDateFilter" 
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
                 v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                :minDate="startDateFilter"
+                :maxDate="today"
               />
               <CustomButton
                 @click="searchData"
@@ -285,14 +303,14 @@ onMounted(() => {
           </Column>
           <Column header="Jenis Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.type }}</div>
+              <div class="text-SM">{{ jenisKasirMap[slotProps.data.type] }}</div>
             </template>
           </Column>
           <Column header="Tgl. Buka Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
-                  {{ epochToDate(slotProps.data.shiftTimeOpen, "date") }}
+                  {{ slotProps.data.shiftTimeOpen ? epochToDate(slotProps.data.shiftTimeOpen, "date") : '-' }}
                 </div>
               </div>
             </template>
@@ -301,7 +319,7 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
-                  {{ epochToDate(slotProps.data.shiftTimeClosed, "date") }}
+                  {{ slotProps.data.shiftTimeClosed ? epochToDate(slotProps.data.shiftTimeClosed, "date") : '-' }}
                 </div>
               </div>
             </template>
@@ -316,7 +334,7 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
-                  {{ epochToDate(slotProps.data.daysTimeClosed, "date") }}
+                  {{ slotProps.data.daysTimeClosed ? epochToDate(slotProps.data.daysTimeClosed, "date") : '-' }}
                 </div>
               </div>
             </template>

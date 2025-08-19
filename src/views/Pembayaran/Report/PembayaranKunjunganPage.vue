@@ -146,6 +146,17 @@ const handleExport = async () => {
   }
 };
 
+//optionlabel
+const dynamicOptionLabelKey = computed(() => {
+  const query = searchQuery.value;
+  const isRmPattern = /^\d{2}-/.test(query);
+
+  if (isRmPattern) {
+    return 'noRm'; 
+  }
+  return 'patientName';
+});
+
 // Handle Patient Selection
 const handlePatientSelection = (uuid: string) => {
   if (!uuid) return;
@@ -191,6 +202,8 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null;
 const findTransactionsForDropdown = async (filter: string) => {
   if (searchTimer) clearTimeout(searchTimer);
   
+  searchQuery.value = filter || "";
+
   if (!filter) {
     searchResults.value = [];
     return;
@@ -267,10 +280,10 @@ onMounted(() => {
                 v-model="selectedPatientUuid"
                 label="Pencarian Transaksi"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / No. RM"
+                place-holder="Cari Nama / No. RM"
                 class="mr-5 grow"
                 :options="searchResults"
-                optionLabel="patientName"
+                :optionLabel="dynamicOptionLabelKey"
                 optionValue="uuid"
                 :loading="loadingSearch"
                 @filter="findTransactionsForDropdown"
@@ -288,12 +301,15 @@ onMounted(() => {
                 v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                :maxDate="endDateFilter" 
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
                 v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                :minDate="startDateFilter"
+                :maxDate="today"
               />
               <CustomButton
                 @click="searchData"
@@ -364,7 +380,7 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
-                  {{ epochToDate(slotProps.data.paymentDate, "dateTime") }}
+                  {{ epochToDate(slotProps.data.paymentDate, "date") }} {{ epochToDate(slotProps.data.paymentDate, "time") }}
                 </div>
               </div>
             </template>
@@ -376,7 +392,7 @@ onMounted(() => {
           </Column>
           <Column header="Total Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.amount }}</div>
+              <div class="text-SM">Rp {{ slotProps.data.amount }}</div>
             </template>
           </Column>
           <Column header="Kasir" headerClass="bg-adameds-50">

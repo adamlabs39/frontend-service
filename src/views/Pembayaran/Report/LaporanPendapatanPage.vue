@@ -128,14 +128,17 @@ watch([startDateFilter, endDateFilter], () => {
         <div class="flex items-start">
           <CustomDatePicker
             v-model="startDateFilter"
-            label=""
+            label="Tanggal"
             class="w-[150px]"
+            :maxDate="endDateFilter" 
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
             v-model="endDateFilter"
             :showLabel="false"
             class="mt-auto w-[150px]"
+            :minDate="startDateFilter"
+            :maxDate="today"
           />
         </div>
       </div>
