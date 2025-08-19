@@ -360,7 +360,9 @@ watch(
                   <layout-1-list-1-panggilan />
                 </template>
               </div>
-              <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+              <div
+                class="mt-1 text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
+              >
                 <Vue3Marquee>
                   <span v-for="item in flashText" :key="item" class="mx-2">{{
                     item
