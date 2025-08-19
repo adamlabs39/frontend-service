@@ -579,9 +579,6 @@ const selectedPatient = ref([]);
                   class="flex justify-center items-center w-full h-full font-bold"
                 >
                   Durasi Per-pasien
-                  <small class="block ml-1 text-xs font-normal text-gray-500"
-                    >(Auto)</small
-                  >
                 </div>
               </template>
               <template #body="slotProps">
