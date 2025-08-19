@@ -30,6 +30,60 @@ const jadwalDokterProperties = ref({
   total: 0,
 });
 
+// Utilities: builder untuk menghindari duplikasi mapping
+const buildPoliOptionsFromPayload = (payload: any[]) => {
+  const poliMap = new Map<string, { uuid: string; name: string }>();
+  payload.forEach((item: any) => {
+    const p = item.poli;
+    if (p?.uuid) {
+      poliMap.set(p.uuid, { uuid: p.uuid, name: p.name });
+    }
+  });
+  return Array.from(poliMap.values());
+};
+
+const buildDokterOptionsFromPayload = (
+  payload: any[]
+): Array<{ uuid: string; name: string; poliUuids: string[] }> => {
+  const dokterMap = new Map<
+    string,
+    { uuid: string; name: string; poliUuids: Set<string> }
+  >();
+  payload.forEach((item: any) => {
+    const d = item.doctor;
+    const poliUuid = item.poli?.uuid;
+    if (!d?.uuid) return;
+    if (!dokterMap.has(d.uuid)) {
+      dokterMap.set(d.uuid, {
+        uuid: d.uuid,
+        name: d.name,
+        poliUuids: new Set<string>(),
+      });
+    }
+    if (poliUuid) {
+      dokterMap.get(d.uuid)!.poliUuids.add(poliUuid);
+    }
+  });
+  return Array.from(dokterMap.values()).map((d) => ({
+    uuid: d.uuid,
+    name: d.name,
+    poliUuids: Array.from(d.poliUuids),
+  }));
+};
+
+// Konsolidasi fetch referensi poli & dokter ke satu fungsi
+const fetchAllReferenceData = async () => {
+  try {
+    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
+    if (response?.payload) {
+      allPoliData.value = buildPoliOptionsFromPayload(response.payload);
+      allDokterData.value = buildDokterOptionsFromPayload(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to fetch all reference data", error);
+  }
+};
+
 const fetchJadwalDokter = async () => {
   UseUtilsStore.setLoading(true);
   try {
@@ -38,47 +92,16 @@ const fetchJadwalDokter = async () => {
       jadwalDokterProperties.value.page_size,
       filterCriteria.value.aktif
     );
-    console.log(response);
     if (response && response.payload) {
       jadwalDokterPayload.value = response.payload;
       jadwalDokterProperties.value.total = response.properties.total;
 
-      // Simpan data poli dari response ini jika belum ada
+      // Isi referensi poli/dokter hanya jika belum ada, gunakan builder utilities
       if (allPoliData.value.length === 0) {
-        const poliMap = new Map();
-        response.payload.forEach((item: any) => {
-          poliMap.set(item.poli.uuid, {
-            uuid: item.poli.uuid,
-            name: item.poli.name,
-          });
-        });
-        allPoliData.value = Array.from(poliMap.values());
+        allPoliData.value = buildPoliOptionsFromPayload(response.payload);
       }
-
-      // Isi allDokterData hanya jika masih kosong (fallback awal dari response saat ini)
       if (allDokterData.value.length === 0) {
-        const dokterMap = new Map<
-          string,
-          { uuid: string; name: string; poliUuids: Set<string> }
-        >();
-        response.payload.forEach((item: any) => {
-          const doctorUuid = item.doctor.uuid;
-          const doctorName = item.doctor.name;
-          const poliUuid = item.poli.uuid;
-          if (!dokterMap.has(doctorUuid)) {
-            dokterMap.set(doctorUuid, {
-              uuid: doctorUuid,
-              name: doctorName,
-              poliUuids: new Set<string>(),
-            });
-          }
-          dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
-        });
-        allDokterData.value = Array.from(dokterMap.values()).map((d) => ({
-          uuid: d.uuid,
-          name: d.name,
-          poliUuids: Array.from(d.poliUuids),
-        }));
+        allDokterData.value = buildDokterOptionsFromPayload(response.payload);
       }
     }
   } catch (error) {
@@ -115,95 +138,27 @@ const existingDoctorUuids = computed(() =>
 );
 
 const dokterOptions = computed(() => {
-  if (allDokterData.value.length === 0) {
-    // Fallback jika allDokterData belum terisi: bangun dari payload yang ada
-    const dokterMap = new Map<
-      string,
-      { uuid: string; name: string; poliUuids: Set<string> }
-    >();
-    jadwalDokterPayload.value.forEach((item) => {
-      const doctorUuid = item.doctor.uuid;
-      const doctorName = item.doctor.name;
-      const poliUuid = item.poli.uuid;
-      if (!dokterMap.has(doctorUuid)) {
-        dokterMap.set(doctorUuid, {
-          uuid: doctorUuid,
-          name: doctorName,
-          poliUuids: new Set<string>(),
-        });
-      }
-      dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
-    });
-    return Array.from(dokterMap.values()).map((d) => ({
-      uuid: d.uuid,
-      name: d.name,
-      poliUuids: Array.from(d.poliUuids),
-    }));
-  }
-  return allDokterData.value;
+  // Utamakan referensi global; fallback ke payload tabel bila referensi belum siap
+  return allDokterData.value.length
+    ? allDokterData.value
+    : buildDokterOptionsFromPayload(jadwalDokterPayload.value);
 });
 
 const poliOptions = computed(() => {
-  // Jika allPoliData kosong, fallback ke data dari jadwalDokterPayload
-  if (allPoliData.value.length === 0) {
-    const map = new Map();
-    jadwalDokterPayload.value.forEach((item) => {
-      map.set(item.poli.uuid, { uuid: item.poli.uuid, name: item.poli.name });
-    });
-    return Array.from(map.values());
-  }
-  return allPoliData.value;
+  // Utamakan referensi global; fallback ke payload tabel bila referensi belum siap
+  return allPoliData.value.length
+    ? allPoliData.value
+    : buildPoliOptionsFromPayload(jadwalDokterPayload.value);
 });
 
 const fetchAllPoliData = async () => {
-  try {
-    // Fetch data tanpa filter aktif untuk mendapatkan semua poli
-    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
-    if (response && response.payload) {
-      const poliMap = new Map();
-      response.payload.forEach((item: any) => {
-        poliMap.set(item.poli.uuid, {
-          uuid: item.poli.uuid,
-          name: item.poli.name,
-        });
-      });
-      allPoliData.value = Array.from(poliMap.values());
-    }
-  } catch (error) {
-    console.error("Failed to fetch all poli data", error);
-  }
+  // Konsolidasikan melalui fetchAllReferenceData untuk menghindari duplikasi request/logika
+  await fetchAllReferenceData();
 };
 
 const fetchAllDokterData = async () => {
-  try {
-    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
-    if (response && response.payload) {
-      const dokterMap = new Map<
-        string,
-        { uuid: string; name: string; poliUuids: Set<string> }
-      >();
-      response.payload.forEach((item: any) => {
-        const doctorUuid = item.doctor.uuid;
-        const doctorName = item.doctor.name;
-        const poliUuid = item.poli.uuid;
-        if (!dokterMap.has(doctorUuid)) {
-          dokterMap.set(doctorUuid, {
-            uuid: doctorUuid,
-            name: doctorName,
-            poliUuids: new Set<string>(),
-          });
-        }
-        dokterMap.get(doctorUuid)!.poliUuids.add(poliUuid);
-      });
-      allDokterData.value = Array.from(dokterMap.values()).map((d) => ({
-        uuid: d.uuid,
-        name: d.name,
-        poliUuids: Array.from(d.poliUuids),
-      }));
-    }
-  } catch (error) {
-    console.error("Failed to fetch all dokter data", error);
-  }
+  // Konsolidasikan melalui fetchAllReferenceData untuk menghindari duplikasi request/logika
+  await fetchAllReferenceData();
 };
 
 const handleEdit = (data: any) => {
