@@ -65,21 +65,6 @@ onMounted(() => {
   ];
 });
 
-const getChipBgColor = (status: string) => {
-  switch (status) {
-    case "antri":
-      return "bg-blue-50";
-    case "verifikasi":
-      return "bg-cyan-50";
-    case "proses":
-      return "bg-warning-50";
-    case "selesai":
-      return "bg-adameds-50";
-    default:
-      return "bg-blue-50";
-  }
-};
-
 // Fungsi untuk mendapatkan style metode bayar
 const getMetodeBayarStyle = (metodeBayar: string) => {
   const method = metodeBayar.toLowerCase();
@@ -125,12 +110,6 @@ const statusStyles = {
     borderColor: "border-[#007AFF]",
     label: "VERIFIKASI",
   },
-  // penyerahan_obat: {
-  //   bgColor: "bg-[#EDFAF7]",
-  //   textColor: "text-[#48CFAD]",
-  //   borderColor: "border-[#48CFAD]",
-  //   label: "PENYERAHAN OBAT",
-  // },
   penyerahan_obat: {
     bgColor: "bg-adameds-50",
     textColor: "text-adameds-300",
