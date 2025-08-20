@@ -11,12 +11,13 @@ onMounted(() => {
       tanggal_daftar: "2023-10-10 09:00",
       tanggal_jadwal: "2023-10-20 10:00",
       nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
+      nomor_antrian: "NR001",
       nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
+      no_rm: "00-00-00",
       doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
       nama_poli: "poli umum",
-      metode_bayar: "tunai",
+      jenis_obat: "obat non-racikan",
+      metode_bayar: "BPJS",
       status: "antri",
     },
     {
@@ -24,80 +25,111 @@ onMounted(() => {
       tanggal_daftar: "2023-10-10 09:00",
       tanggal_jadwal: "2023-10-20 10:00",
       nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
+      nomor_antrian: "R001",
       nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
+      no_rm: "00-00-00",
       doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
       nama_poli: "poli umum",
+      jenis_obat: "obat racikan",
       metode_bayar: "tunai",
-      status: "proses",
+      status: "verifikasi",
     },
     {
       id: "3",
       tanggal_daftar: "2023-10-10 09:00",
       tanggal_jadwal: "2023-10-20 10:00",
       nomor_book: "BK.123456",
-      nomor_antrian: "PD-01-02",
+      nomor_antrian: "NR002",
       nama_pasien: "Nama Lengkap Pasien",
-      no_rm: "RM.123456",
+      no_rm: "00-00-00",
       doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
       nama_poli: "poli umum",
+      jenis_obat: "obat non-racikan",
       metode_bayar: "tunai",
-      status: "selesai",
+      status: "penyerahan_obat",
+    },
+    {
+      id: "4",
+      tanggal_daftar: "2023-10-10 09:00",
+      tanggal_jadwal: "2023-10-20 10:00",
+      nomor_book: "BK.123456",
+      nomor_antrian: "R002",
+      nama_pasien: "Nama Lengkap Pasien",
+      no_rm: "00-00-00",
+      doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
+      nama_poli: "poli umum",
+      jenis_obat: "obat racikan",
+      metode_bayar: "tunai",
+      status: "penyerahan_obat",
     },
   ];
 });
 
-const getChipBgColor = (status:string) => {
-  switch (status) {
-    case "antri":
-      return "bg-blue-50";
-    case "proses":
-      return "bg-warning-50";
-    case "selesai":
-      return "bg-adameds-50";
-    default:
-      return "bg-blue-50";
+// Fungsi untuk mendapatkan style metode bayar
+const getMetodeBayarStyle = (metodeBayar: string) => {
+  const method = metodeBayar.toLowerCase();
+
+  if (method === "tunai") {
+    return {
+      bgColor: "bg-adameds-50",
+      textColor: "text-adameds-300",
+      borderColor: "border-adameds-300",
+    };
+  } else if (method === "bpjs") {
+    return {
+      bgColor: "bg-warning-50",
+      textColor: "text-warning-300",
+      borderColor: "border-warning-300",
+    };
+  } else {
+    return {
+      bgColor: "bg-gray-50",
+      textColor: "text-gray-500",
+      borderColor: "border-gray-300",
+    };
   }
 };
 
-const getChipTextColor = (status:string) => {
-  switch (status) {
-    case "antri":
-      return "text-blue-500";
-    case "proses":
-      return "text-warning-300";
-    case "selesai":
-      return "text-adameds-300";
-    default:
-      return "text-blue-300";
-  }
-};
+// Mapping style untuk status
+const statusStyles = {
+  antri: {
+    bgColor: "bg-grey-50",
+    textColor: "text-grey-300",
+    borderColor: "border-grey-300",
+    label: "ANTRI",
+  },
+  proses: {
+    bgColor: "bg-warning-50",
+    textColor: "text-warning-300",
+    borderColor: "border-warning-300",
+    label: "PROSES",
+  },
+  verifikasi: {
+    bgColor: "bg-[#EFF5FD]",
+    textColor: "text-[#007AFF]",
+    borderColor: "border-[#007AFF]",
+    label: "VERIFIKASI",
+  },
+  penyerahan_obat: {
+    bgColor: "bg-adameds-50",
+    textColor: "text-adameds-300",
+    borderColor: "border-adameds-300",
+    label: "PENYERAHAN OBAT",
+  },
+  default: {
+    bgColor: "bg-gray-50",
+    textColor: "text-gray-500",
+    borderColor: "border-gray-300",
+    label: "UNKNOWN",
+  },
+} as const;
 
-const getChipBorderColor = (status:string) => {
-  switch (status) {
-    case "antri":
-      return "border-blue-400";
-    case "proses":
-      return "border-warning-300";
-    case "selesai":
-      return "border-adameds-300";
-    default:
-      return "border-blue-400";
-  }
-};
-
-const getChipCustomClass = (status:string) => {
-  switch (status) {
-    case "antri":
-      return "h-5 ml-[10px]";
-    case "proses":
-      return "h-5 ml-[10px]";
-    case "selesai":
-      return "h-5 ml-[10px]";
-    default:
-      return "h-5 ml-[10px]";
-  }
+const getStatusStyle = (status: string) => {
+  const normalizedStatus = status.toLowerCase();
+  return (
+    statusStyles[normalizedStatus as keyof typeof statusStyles] ||
+    statusStyles.default
+  );
 };
 </script>
 
@@ -115,39 +147,39 @@ const getChipCustomClass = (status:string) => {
   >
     <Column header="No." header-class="text-black bg-adameds-50">
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex justify-center items-center">
           {{ slotProps.index + 1 }}
         </div>
       </template>
     </Column>
     <Column
-      field="data_kunjungan"
-      header="Data Kunjungan"
+      header="Data kunjungan"
       header-class="text-black bg-adameds-50"
+      class="p-0 w-auto"
     >
       <template #body="slotProps">
-        <div class="text-SM">
-          <div
-            class="grid content-center grid-cols-[60px_min-content_110px] auto-cols-min"
-          >
-            Daftar
+        <div class="space-y-2 text-SM">
+          <div class="flex gap-2">
+            <div>Daftar</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken.svg"
               alt="Arrow Icon"
-              class="my-auto mr-8"
+              class=""
             />
-            {{ slotProps.data.tanggal_daftar }}
+            <div>
+              {{ slotProps.data.tanggal_daftar }}
+            </div>
           </div>
-          <div
-            class="grid content-center grid-cols-[60px_min-content_110px] mt-[5px]"
-          >
-            Jadwal
+          <div class="flex gap-2">
+            <div>Jadwal</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken (1).svg"
               alt="Arrow Icon"
-              class="my-auto mr-8"
+              class=""
             />
-            {{ slotProps.data.tanggal_jadwal }}
+            <div>
+              {{ slotProps.data.tanggal_jadwal }}
+            </div>
           </div>
         </div>
       </template>
@@ -190,17 +222,17 @@ const getChipCustomClass = (status:string) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex items-center">
+        <div class="flex items-center font-semibold">
           {{ slotProps.data.nama_pasien }}
         </div>
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
             :label="slotProps.data.no_rm"
-            bgColor="bg-adameds-50"
-            textColor="text-adameds-300"
+            bgColor="bg-adameds-300"
+            textColor="text-white"
             border-color="border-adameds-300"
-            customClass="h-5 pr-[6px] my-[2px] mr-[5px]"
+            customClass="h-5 "
           />
         </div>
       </template>
@@ -219,17 +251,29 @@ const getChipCustomClass = (status:string) => {
             :showCheckedIcon="false"
             :label="slotProps.data.nama_poli"
             bgColor="bg-grey-50"
-            textColor="text-grey-200"
-            border-color="border-grey-200"
-            customClass="h-5 pr-[6px] my-[2px] mr-[5px] uppercase"
+            textColor="text-grey-300"
+            border-color="border-grey-300"
+            customClass="h-5 my-[2px] mr-[5px] uppercase"
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.metode_bayar"
-            bgColor="bg-adameds-50"
-            textColor="text-adameds-300"
-            border-color="border-adameds-300"
-            customClass="h-5 pr-[6px] my-[2px] mr-[5px] uppercase"
+            :label="slotProps.data.jenis_obat"
+            bgColor="bg-grey-50"
+            textColor="text-grey-300"
+            border-color="border-grey-300"
+            customClass="h-5 my-[2px] mr-[5px] uppercase"
+          />
+          <CustomChip
+            :showCheckedIcon="false"
+            :bgColor="getMetodeBayarStyle(slotProps.data.metode_bayar).bgColor"
+            :textColor="
+              getMetodeBayarStyle(slotProps.data.metode_bayar).textColor
+            "
+            :border-color="
+              getMetodeBayarStyle(slotProps.data.metode_bayar).borderColor
+            "
+            customClass="h-5"
+            :label="slotProps.data.metode_bayar.toUpperCase()"
           />
         </div>
       </template>
@@ -237,24 +281,15 @@ const getChipCustomClass = (status:string) => {
     <Column
       field="status"
       header="Status"
-      header-class="flex items-center justify-center text-black bg-adameds-50"
+      header-class="flex justify-center items-center text-black bg-adameds-50"
       class="text-center"
     >
       <template #body="slotProps">
-        <div class="flex items-center justify-center">
+        <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getChipBgColor(slotProps.data.status)"
-            :textColor="getChipTextColor(slotProps.data.status)"
-            :border-color="getChipBorderColor(slotProps.data.status)"
-            :customClass="getChipCustomClass(slotProps.data.status)"
-            :label="
-              slotProps.data.status === 'antri'
-                ? 'ANTRI'
-                : slotProps.data.status === 'proses'
-                ? 'PROSES'
-                : 'SELESAI'
-            "
+            v-bind="getStatusStyle(slotProps.data.status)"
+            customClass="h-5"
           />
         </div>
       </template>

@@ -13,6 +13,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const toast = useToast();
 
@@ -131,6 +132,31 @@ const addRow = () => {
     durasiPelayanan: "0",
     aktif: true,
   });
+};
+
+const deleteModal = ref({
+  isVisible: false,
+  entityName: "",
+  rowIndex: -1,
+});
+
+const showDeleteConfirmation = (index: number) => {
+  deleteModal.value = {
+    isVisible: true,
+    entityName: "",
+    rowIndex: index,
+  };
+};
+
+const handleDeleteConfirm = () => {
+  if (deleteModal.value.rowIndex >= 0) {
+    removeRow(deleteModal.value.rowIndex);
+  }
+  deleteModal.value.isVisible = false;
+};
+
+const handleDeleteClose = () => {
+  deleteModal.value.isVisible = false;
 };
 
 const itemsHari = ref([
@@ -295,6 +321,47 @@ watch(
 // Field array untuk mengelola data jadwal
 const { remove, push, replace, fields } = useFieldArray("jadwalData");
 
+// Function untuk mengecek duplikasi jam praktek
+const checkDuplicateSchedule = (schedules: any[]) => {
+  const duplicates: string[] = [];
+
+  for (let i = 0; i < schedules.length; i++) {
+    for (let j = i + 1; j < schedules.length; j++) {
+      const schedule1 = schedules[i];
+      const schedule2 = schedules[j];
+
+      // Cek jika hari sama
+      if (schedule1.day === schedule2.day) {
+        const start1 = toMinutes(schedule1.startTime);
+        const end1 = toMinutes(schedule1.endTime);
+        const start2 = toMinutes(schedule2.startTime);
+        const end2 = toMinutes(schedule2.endTime);
+
+        // Cek jika ada overlap waktu
+        const hasOverlap =
+          (start1 >= start2 && start1 < end2) || // start1 di dalam range schedule2
+          (end1 > start2 && end1 <= end2) || // end1 di dalam range schedule2
+          (start1 <= start2 && end1 >= end2); // schedule1 mencakup schedule2
+
+        if (hasOverlap) {
+          const dayName =
+            itemsHari.value.find((h) => h.code === schedule1.day.toString())
+              ?.name || "Hari tidak diketahui";
+          const timeRange1 = `${formatTime(schedule1.startTime)}-${formatTime(
+            schedule1.endTime
+          )}`;
+          const timeRange2 = `${formatTime(schedule2.startTime)}-${formatTime(
+            schedule2.endTime
+          )}`;
+          duplicates.push(`${dayName}: ${timeRange1} dengan ${timeRange2}`);
+        }
+      }
+    }
+  }
+
+  return duplicates;
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
   const hasEmptyFields = data.value.some((item) => {
     return (
@@ -319,12 +386,24 @@ const onSubmit = handleSubmit(async (values: any) => {
     return;
   }
 
-  // Bangun payload - poliUuid.value sudah berupa UUID
+  // Validasi duplikasi jam praktek
+  const duplicates = checkDuplicateSchedule(data.value);
+  if (duplicates.length > 0) {
+    toast.add({
+      severity: "error",
+      summary: "Validasi Error",
+      detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
+      life: 5000,
+    });
+    return;
+  }
+
+  // membangun payload
   const payload = {
     dokter_uuid: dokterUuid.value,
-    poliklinik_uuid: poliUuid.value, // sudah UUID
+    poliklinik_uuid: poliUuid.value,
     jadwal: data.value.map((item) => ({
-      day: Number(item.day), // pastikan number
+      day: Number(item.day), //  number
       start_time: formatTime(item.startTime),
       end_time: formatTime(item.endTime),
       kuota_jkn: parseInt(item.kuotaJkn),
@@ -579,9 +658,6 @@ const selectedPatient = ref([]);
                   class="flex justify-center items-center w-full h-full font-bold"
                 >
                   Durasi Per-pasien
-                  <small class="block ml-1 text-xs font-normal text-gray-500"
-                    >(Auto)</small
-                  >
                 </div>
               </template>
               <template #body="slotProps">
@@ -704,11 +780,13 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <div class="flex justify-center items-center">
                   <CustomButton
-                    icon="PhTrash"
-                    textColor="text-white"
-                    backgroundColor="bg-red-500"
-                    @click="removeRow(slotProps.index)"
-                  />
+                    label=""
+                    background-color="bg-danger-300 rounded-lg"
+                    @click="showDeleteConfirmation(slotProps.index)"
+                    title="Hapus"
+                  >
+                    <PhTrash :size="18" color="#ffffff" weight="fill" />
+                  </CustomButton>
                 </div>
               </template>
             </Column>
@@ -728,6 +806,12 @@ const selectedPatient = ref([]);
           />
         </div>
       </div>
+      <DeleteModalComponent
+        :isVisible="deleteModal.isVisible"
+        :entityName="deleteModal.entityName"
+        @close="handleDeleteClose"
+        @confirm="handleDeleteConfirm"
+      />
     </template>
     <template #footer>
       <div class="w-full">

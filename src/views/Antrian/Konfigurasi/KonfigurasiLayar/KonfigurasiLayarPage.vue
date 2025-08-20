@@ -6,12 +6,13 @@ import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
-import TambahDataKonfigurasiLayar from "./TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "./SectionTambahKonfigurasiLayar.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { utilsStore } from "@/stores/utils";
-import EditDataKonfigurasiLayar from "./EditDataKonfigurasiLayar.vue";
+import EditDataKonfigurasiLayar from "./SectionEditKonfigurasiLayar.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -117,10 +118,13 @@ const handleResetFilters = () => {
   searchQuery.value = "";
   selectedTipeLayar.value = null;
   selectedStatus.value = [];
-  applyFilters();
-};
 
-// ... existing code ...
+  // Reset pagination ke halaman pertama
+  jadwalLayarAntrianProperties.value.page = 1;
+
+  // Fetch data fresh dari server
+  fetchJadwalAntrian();
+};
 
 const deleteLayarAntrian = async (layarAntrianUuid: string) => {
   useUtilsStore.setLoading(true);
@@ -142,14 +146,28 @@ const resetFilter = () => {
   handleResetFilters();
 };
 
-const handleRowsUpdate = (rows: number) => {
-  jadwalLayarAntrianProperties.value.page_size = rows;
-  fetchJadwalAntrian();
+const deleteModal = ref({
+  isVisible: false,
+  entityName: "",
+  layarAntrianUuid: "",
+});
+
+const showDeleteConfirmation = (rowData: any) => {
+  deleteModal.value = {
+    isVisible: true,
+    entityName: rowData.namaLayar,
+    layarAntrianUuid: rowData.uuid,
+  };
 };
 
-const handlePageUpdate = (page: number) => {
-  jadwalLayarAntrianProperties.value.page = page;
-  fetchJadwalAntrian();
+const handleDeleteConfirm = async () => {
+  await deleteLayarAntrian(deleteModal.value.layarAntrianUuid);
+  deleteModal.value.isVisible = false;
+};
+
+// Handle delete modal close
+const handleDeleteClose = () => {
+  deleteModal.value.isVisible = false;
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -236,8 +254,6 @@ function handleRefresh() {
 function handleClose() {
   dialogData.value.isVisible = false;
 }
-
-const totalItems = computed(() => itemsLayar.value.length);
 
 const selectedPatient = ref([]);
 </script>
@@ -390,20 +406,24 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
-              <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit(slotProps.data)"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                @click="deleteLayarAntrian(slotProps.data.uuid)"
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
-              </CustomButton>
+              <div title="Edit">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  @click="handleEdit(slotProps.data)"
+                >
+                  <PhPencilSimple :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
+              <div title="Hapus">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="showDeleteConfirmation(slotProps.data)"
+                >
+                  <PhTrash :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
             </div>
           </template>
         </Column>
@@ -426,6 +446,12 @@ const selectedPatient = ref([]);
         @close="handleClose"
         @refresh="handleRefresh"
         :payload="dialogData.payload"
+      />
+      <DeleteModalComponent
+        :isVisible="deleteModal.isVisible"
+        :entityName="deleteModal.entityName"
+        @close="handleDeleteClose"
+        @confirm="handleDeleteConfirm"
       />
     </template>
     <template #footer>

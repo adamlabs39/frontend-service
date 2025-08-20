@@ -5,11 +5,12 @@ import KonfigurasiJadwalHeader from "../../Layout/KonfigurasiJadwalHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import AntrianFooter from "../../Layout/AntrianFooter.vue";
-import EditDataKonfigurasiJadwal from "./EditDataKonfigurasiJadwal.vue";
+import EditDataKonfigurasiJadwal from "./SectionEditKonfigurasiJadwal.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {
@@ -20,11 +21,69 @@ const jadwalDokterStore = useJadwalDokterStore();
 const UseUtilsStore = utilsStore();
 
 const jadwalDokterPayload = ref<any[]>([]);
+const allPoliData = ref<any[]>([]);
+const allDokterData = ref<
+  Array<{ uuid: string; name: string; poliUuids: string[] }>
+>([]);
 const jadwalDokterProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
+
+// Utilities: builder untuk menghindari duplikasi mapping
+const buildPoliOptionsFromPayload = (payload: any[]) => {
+  const poliMap = new Map<string, { uuid: string; name: string }>();
+  payload.forEach((item: any) => {
+    const p = item.poli;
+    if (p?.uuid) {
+      poliMap.set(p.uuid, { uuid: p.uuid, name: p.name });
+    }
+  });
+  return Array.from(poliMap.values());
+};
+
+const buildDokterOptionsFromPayload = (
+  payload: any[]
+): Array<{ uuid: string; name: string; poliUuids: string[] }> => {
+  const dokterMap = new Map<
+    string,
+    { uuid: string; name: string; poliUuids: Set<string> }
+  >();
+  payload.forEach((item: any) => {
+    const d = item.doctor;
+    const poliUuid = item.poli?.uuid;
+    if (!d?.uuid) return;
+    if (!dokterMap.has(d.uuid)) {
+      dokterMap.set(d.uuid, {
+        uuid: d.uuid,
+        name: d.name,
+        poliUuids: new Set<string>(),
+      });
+    }
+    if (poliUuid) {
+      dokterMap.get(d.uuid)!.poliUuids.add(poliUuid);
+    }
+  });
+  return Array.from(dokterMap.values()).map((d) => ({
+    uuid: d.uuid,
+    name: d.name,
+    poliUuids: Array.from(d.poliUuids),
+  }));
+};
+
+// Konsolidasi fetch referensi poli & dokter ke satu fungsi
+const fetchAllReferenceData = async () => {
+  try {
+    const response = await jadwalDokterStore.getApi(1, 1000, undefined);
+    if (response?.payload) {
+      allPoliData.value = buildPoliOptionsFromPayload(response.payload);
+      allDokterData.value = buildDokterOptionsFromPayload(response.payload);
+    }
+  } catch (error) {
+    console.error("Failed to fetch all reference data", error);
+  }
+};
 
 const fetchJadwalDokter = async () => {
   UseUtilsStore.setLoading(true);
@@ -34,26 +93,21 @@ const fetchJadwalDokter = async () => {
       jadwalDokterProperties.value.page_size,
       filterCriteria.value.aktif
     );
-    console.log(response);
     if (response && response.payload) {
       jadwalDokterPayload.value = response.payload;
       jadwalDokterProperties.value.total = response.properties.total;
+
+      // Isi referensi poli/dokter hanya jika belum ada, gunakan builder utilities
+      if (allPoliData.value.length === 0) {
+        allPoliData.value = buildPoliOptionsFromPayload(response.payload);
+      }
+      if (allDokterData.value.length === 0) {
+        allDokterData.value = buildDokterOptionsFromPayload(response.payload);
+      }
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
     jadwalDokterPayload.value = [];
-  } finally {
-    UseUtilsStore.setLoading(false);
-  }
-};
-
-const deleteDoctor = async (doctorUuid: string, poliUuid: string) => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const response = await jadwalDokterStore.deleteDoctor(doctorUuid, poliUuid);
-    await fetchJadwalDokter();
-  } catch (error) {
-    console.error("Failed to delete doctor", error);
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -68,28 +122,75 @@ const dialogData = ref({
   editData: {},
 });
 
+const deleteModalData = ref({
+  isVisible: false,
+  doctorUuid: "",
+  poliUuid: "",
+  doctorName: "",
+});
+
+// Fungsi untuk menampilkan modal konfirmasi
+const showDeleteModal = (
+  doctorUuid: string,
+  poliUuid: string,
+  doctorName: string
+) => {
+  deleteModalData.value = {
+    isVisible: true,
+    doctorUuid,
+    poliUuid,
+    doctorName,
+  };
+};
+
+// Fungsi untuk menutup modal
+const closeDeleteModal = () => {
+  deleteModalData.value.isVisible = false;
+};
+
+// Fungsi untuk konfirmasi penghapusan
+const confirmDelete = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.deleteDoctor(
+      deleteModalData.value.doctorUuid,
+      deleteModalData.value.poliUuid
+    );
+    await fetchJadwalDokter();
+  } catch (error) {
+    console.error("Failed to delete doctor", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
 const existingDoctorUuids = computed(() =>
   jadwalDokterPayload.value.map((item) => item.doctor.uuid)
 );
 
 const dokterOptions = computed(() => {
-  const map = new Map();
-  jadwalDokterPayload.value.forEach((item) => {
-    map.set(item.doctor.uuid, {
-      uuid: item.doctor.uuid,
-      name: item.doctor.name,
-    });
-  });
-  return Array.from(map.values());
+  // Utamakan referensi global; fallback ke payload tabel bila referensi belum siap
+  return allDokterData.value.length
+    ? allDokterData.value
+    : buildDokterOptionsFromPayload(jadwalDokterPayload.value);
 });
 
 const poliOptions = computed(() => {
-  const map = new Map();
-  jadwalDokterPayload.value.forEach((item) => {
-    map.set(item.poli.uuid, { uuid: item.poli.uuid, name: item.poli.name });
-  });
-  return Array.from(map.values());
+  // Utamakan referensi global; fallback ke payload tabel bila referensi belum siap
+  return allPoliData.value.length
+    ? allPoliData.value
+    : buildPoliOptionsFromPayload(jadwalDokterPayload.value);
 });
+
+const fetchAllPoliData = async () => {
+  // Konsolidasikan melalui fetchAllReferenceData untuk menghindari duplikasi request/logika
+  await fetchAllReferenceData();
+};
+
+const fetchAllDokterData = async () => {
+  // Konsolidasikan melalui fetchAllReferenceData untuk menghindari duplikasi request/logika
+  await fetchAllReferenceData();
+};
 
 const handleEdit = (data: any) => {
   dialogData.value = {
@@ -143,6 +244,8 @@ const displayedJadwalDokter = computed(() => {
 });
 
 onMounted(() => {
+  fetchAllPoliData();
+  fetchAllDokterData();
   fetchJadwalDokter();
 });
 </script>
@@ -164,6 +267,7 @@ onMounted(() => {
         "
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"
+        :jadwalDokterData="jadwalDokterPayload"
       />
     </template>
     <template #content>
@@ -228,25 +332,30 @@ onMounted(() => {
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
-              <CustomButton
-                label=""
-                background-color="bg-[#3D84E5] rounded-lg"
-                @click="handleEdit(slotProps.data)"
-              >
-                <img src="@/assets/icons/edit.svg" alt="" width="15px" />
-              </CustomButton>
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                @click="
-                  deleteDoctor(
-                    slotProps.data.doctor.uuid,
-                    slotProps.data.poli.uuid
-                  )
-                "
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="15px" />
-              </CustomButton>
+              <div title="Edit">
+                <CustomButton
+                  label=""
+                  background-color="bg-[#3D84E5] rounded-lg"
+                  @click="handleEdit(slotProps.data)"
+                >
+                  <PhPencilSimple :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
+              <div title="Hapus">
+                <CustomButton
+                  label=""
+                  background-color="bg-danger-300 rounded-lg"
+                  @click="
+                    showDeleteModal(
+                      slotProps.data.doctor.uuid,
+                      slotProps.data.poli.uuid,
+                      slotProps.data.doctor.name
+                    )
+                  "
+                >
+                  <PhTrash :size="18" color="#ffffff" weight="fill" />
+                </CustomButton>
+              </div>
             </div>
           </template>
         </Column>
@@ -400,6 +509,12 @@ onMounted(() => {
         :editData="dialogData.editData"
         @close="handleClose"
         @refresh="handleRefresh"
+      />
+      <DeleteModalComponent
+        :isVisible="deleteModalData.isVisible"
+        :entityName="deleteModalData.doctorName"
+        @close="closeDeleteModal"
+        @confirm="confirmDelete"
       />
     </template>
     <template #footer>

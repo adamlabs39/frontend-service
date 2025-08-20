@@ -1,26 +1,36 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import Header from "../Layout/DataHeader.vue";
-import Admisi from "./DataAntrianAdmisi.vue";
-import RawatJalan from "./DataAntrianRawatJalan.vue";
-import Farmasi from "./DataAntrianFarmasi.vue";
+import AntrianHeader from "../Layout/AntrianHeader.vue";
+import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
+import SectionAntrianRawatJalan from "./SectionAntrianRawatJalan.vue";
+import SectionAntrianFarmasi from "./SectionAntrianFarmasi.vue";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
 
 const value = ref("0");
 </script>
 
 <template>
-  <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-auto">
+  <Card
+    pt:body:class="overflow-auto pt-0 h-full"
+    pt:content:class="overflow-auto h-full"
+  >
     <template #header>
-      <Header :activeTab="value" title="Data Antrian" :filter="false" :search="false">
+      <AntrianHeader
+        :activeTab="value"
+        title="Data Antrian"
+        :filter="false"
+        :search="false"
+      >
         <template #header>
-          <div class="flex flex-row items-center justify-end gap-2">
+          <div class="flex flex-row gap-2 justify-end items-center">
             <CustomButton
               label="ADMISI"
               class="w-[200px]"
               :text-color="value === '0' ? 'text-white' : 'text-adameds-300'"
-              :border-color="value === '0' ? 'border-none' : 'border-adameds-300'"
+              :border-color="
+                value === '0' ? 'border-none' : 'border-adameds-300'
+              "
               :class="value === '0' ? 'bg-adameds-300' : 'bg-white'"
               @click="value = '0'"
               :outlined="value !== '0'"
@@ -29,7 +39,9 @@ const value = ref("0");
               label="RAWAT JALAN"
               class="w-[200px]"
               :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
-              :border-color="value === '1' ? 'border-none' : 'border-adameds-300'"
+              :border-color="
+                value === '1' ? 'border-none' : 'border-adameds-300'
+              "
               :class="value === '1' ? 'bg-adameds-300' : 'bg-white'"
               @click="value = '1'"
               :outlined="value !== '1'"
@@ -38,26 +50,28 @@ const value = ref("0");
               label="FARMASI"
               class="w-[200px]"
               :text-color="value === '2' ? 'text-white' : 'text-adameds-300'"
-              :border-color="value === '2' ? 'border-none' : 'border-adameds-300'"
+              :border-color="
+                value === '2' ? 'border-none' : 'border-adameds-300'
+              "
               :class="value === '2' ? 'bg-adameds-300' : 'bg-white'"
               @click="value = '2'"
               :outlined="value !== '2'"
             />
           </div>
         </template>
-      </Header>
+      </AntrianHeader>
     </template>
     <template #content>
       <Tabs v-model:value="value">
         <TabPanels>
           <TabPanel value="0">
-            <Admisi />
+            <SectionAntrianAdmisi />
           </TabPanel>
           <TabPanel value="1">
-            <RawatJalan />
+            <SectionAntrianRawatJalan />
           </TabPanel>
           <TabPanel value="2">
-            <Farmasi />
+            <SectionAntrianFarmasi />
           </TabPanel>
         </TabPanels>
       </Tabs>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, type PropType } from "vue";
+import { computed, ref, type PropType, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -7,7 +8,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiJadwal from "../Konfigurasi/KonfigurasiJadwalDokter/TambahDataKonfigurasiJadwal.vue";
+import TambahDataKonfigurasiJadwal from "../Konfigurasi/KonfigurasiJadwalDokter/SectionTambahKonfigurasiJadwal.vue";
 
 const props = defineProps({
   title: {
@@ -38,16 +39,69 @@ const props = defineProps({
     type: Array as PropType<Array<{ uuid: string; name: string }>>,
     default: () => [],
   },
+  jadwalDokterData: {
+    type: Array as PropType<any[]>,
+    default: () => [],
+  },
 });
 
-const dokterDropdown = computed(() => props.dokterOptions);
+// Computed untuk dropdown poli
 const poliDropdown = computed(() => props.poliOptions);
 
-const selectedDokter = ref<any>();
+// Computed untuk dropdown dokter yang difilter berdasarkan poli yang dipilih
+const dokterDropdown = computed(() => {
+  if (!selectedPoli.value) {
+    return [];
+  }
 
+  // Gunakan data dokterOptions (tidak terpengaruh filter status) dan
+  // filter berdasarkan poli yang dipilih melalui atribut poliUuids
+  const dokterInPoli = (
+    props.dokterOptions as Array<{
+      uuid: string;
+      name: string;
+      poliUuids?: string[];
+    }>
+  ).filter((dokter) => dokter.poliUuids?.includes(selectedPoli.value));
+
+  // Remove duplicates berdasarkan uuid
+  const uniqueDokter = dokterInPoli.filter(
+    (dokter, index, self) =>
+      index === self.findIndex((d) => d.uuid === dokter.uuid)
+  );
+
+  return uniqueDokter;
+});
+
+// Computed untuk menentukan apakah dropdown dokter disabled
+const isDokterDisabled = computed(() => !selectedPoli.value);
+
+const selectedDokter = ref<any>();
 const selectedPoli = ref<any>();
+const resetKey = ref(0);
+
+watch(selectedPoli, (newPoliUuid) => {
+  // Reset pilihan dokter ketika poli berubah
+  selectedDokter.value = null;
+});
 
 const selectedPaymentMethod = ref<string[]>([]);
+
+// Fungsi untuk melakukan pencarian
+const performSearch = () => {
+  emit("search", {
+    dokterUuid: selectedDokter.value ?? "",
+    poliUuid: selectedPoli.value ?? "",
+    aktif:
+      selectedPaymentMethod.value.length === 1
+        ? selectedPaymentMethod.value[0] === "AKTIF"
+        : undefined,
+  });
+};
+
+// Debounced search function dengan delay 500ms
+const debouncedSearch = useDebounceFn(performSearch, 500);
+
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
     selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
@@ -56,6 +110,9 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
 };
 
 const filters = [selectedPaymentMethod];
@@ -84,6 +141,7 @@ const resetFilter = () => {
     selectedDokter.value = null;
     selectedPoli.value = null;
   });
+  resetKey.value++;
 };
 defineExpose({
   resetFilter,
@@ -96,23 +154,17 @@ function handleRefresh() {
 }
 
 function handleSearch() {
-  emit("search", {
-    dokterUuid: selectedDokter.value ?? "",
-    poliUuid: selectedPoli.value ?? "",
-    aktif:
-      selectedPaymentMethod.value.length === 1
-        ? selectedPaymentMethod.value[0] === "AKTIF"
-        : undefined,
-  });
+  // Langsung jalankan performSearch tanpa debounce untuk tombol cari
+  performSearch();
 }
 
 function handleReset() {
   resetFilter(); // bersihkan pilihan lokal
-  emit("search", {
-    // hilangkan filter di parent
-    dokterUuid: "",
-    poliUuid: "",
-  });
+
+  emit("search", { dokterUuid: "", poliUuid: "", aktif: undefined });
+
+  // emit refresh untuk memuat ulang data dari server
+  emit("refresh");
 }
 </script>
 
@@ -120,7 +172,12 @@ function handleReset() {
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="handleReset"
+          title="refresh"
+        />
         <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
@@ -147,17 +204,7 @@ function handleReset() {
       <div class="flex flex-col gap-2.5">
         <div class="flex mt-[10px]">
           <CustomSelect
-            v-model="selectedDokter"
-            :options="dokterDropdown"
-            optionValue="uuid"
-            optionLabel="name"
-            class="w-1/4 mr-[10px] flex-grow"
-            :is-loading="false"
-            prependIcon="PhMagnifyingGlass"
-            label="Cari Dokter"
-            place-holder="Cari Dokter"
-          />
-          <CustomSelect
+            :key="`poli-${resetKey}`"
             v-model="selectedPoli"
             :options="poliDropdown"
             optionValue="uuid"
@@ -167,6 +214,21 @@ function handleReset() {
             prependIcon="PhMagnifyingGlass"
             label="Cari Poli"
             place-holder="Cari Poli"
+          />
+          <CustomSelect
+            :key="`dokter-${resetKey}`"
+            v-model="selectedDokter"
+            :options="dokterDropdown"
+            optionValue="uuid"
+            optionLabel="name"
+            class="w-1/4 mr-[10px] flex-grow"
+            :is-loading="false"
+            :disabled="isDokterDisabled"
+            prependIcon="PhMagnifyingGlass"
+            label="Cari Dokter"
+            :place-holder="
+              isDokterDisabled ? 'Pilih poli terlebih dahulu' : 'Cari Dokter'
+            "
           />
           <CustomButton
             icon="PhMagnifyingGlass"

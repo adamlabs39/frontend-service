@@ -10,11 +10,11 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 // import CustomUpload from "@/components/Base/CustomUpload.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
-import Layout3x2Panggilan from "./Layout3x2Panggilan.vue";
-import Layout3x3Panggilan from "./Layout3x3Panggilan.vue";
-import LayoutList3Panggilan3 from "./LayoutList3Panggilan3.vue";
-import Layout2List2Panggilan from "./Layout2List2Panggilan.vue";
-import Layout1List1Panggilan from "./Layout1List1Panggilan.vue";
+import Layout3x2Panggilan from "./PreviewLayar/Layout3x2Panggilan.vue";
+import Layout3x3Panggilan from "./PreviewLayar/Layout3x3Panggilan.vue";
+import LayoutList3Panggilan3 from "./PreviewLayar/LayoutList3Panggilan3.vue";
+import Layout2List2Panggilan from "./PreviewLayar/Layout2List2Panggilan.vue";
+import Layout1List1Panggilan from "./PreviewLayar/Layout1List1Panggilan.vue";
 import { utilsStore } from "@/stores/utils";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
@@ -34,13 +34,10 @@ const props = defineProps({
   method: {
     type: String,
   },
-  payload: {
-    type: Object,
-    default: () => {},
-  },
 });
 
 const configLayarStore = useConfigLayarAntrianStore();
+
 const jadwalDokterStore = useJadwalDokterStore();
 const useUtilsStore = utilsStore();
 
@@ -88,15 +85,14 @@ const schema = toTypedSchema(
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
     media: yup.string(),
-    aktif: yup.boolean(),
+    aktif: yup.boolean().default(true),
     poli_uuids: yup.array().of(yup.string()),
   })
 );
 
-const { errors, handleSubmit, defineField, resetForm, values, setValues } =
-  useForm({
-    validationSchema: schema,
-  });
+const { errors, handleSubmit, defineField, resetForm, validate } = useForm({
+  validationSchema: schema,
+});
 
 const [namaLayar] = defineField("namaLayar");
 const [tipeLayar] = defineField("tipeLayar");
@@ -117,25 +113,17 @@ const emit = defineEmits(["update:isDialogVisible", "close", "refresh"]);
 
 const onSubmit = handleSubmit(async (values: any) => {
   const payload = {
-    nama_layar: values.namaLayar,
-    tipe_layar: values.tipeLayar,
-    judul: values.judul,
-    is_admisi: true,
-    is_poli: values.isPoli,
-    is_farmasi: true,
-    flash_text: values.flashText,
-    aktif: values.aktif,
-    poli_uuids: values.poli_uuids ?? [],
+    ...values, // salin semua field yang sudah ada
+    isAdmisi: true, // atau nilai sesuai kebutuhan
+    isFarmasi: true, // idem
+    poli_uuids: values.poli_uuids ?? [], // pastikan array
+    aktif: values.aktif ?? false, //
+    status: values.aktif ?? false,
   };
-  console.log("Payload yang dikirim:", payload);
-  if (values.media && values.media.trim() !== "") {
-    payload.media = values.media;
-  }
+  console.log(payload);
 
   try {
-    const uuid = props.payload.uuid;
-
-    await configLayarStore.updateLayarAntrian(uuid, payload);
+    await configLayarStore.createLayarAntrian(payload);
     toast.add({
       severity: "success",
       summary: "Data berhasil disimpan",
@@ -179,39 +167,20 @@ onMounted(() => {
 });
 
 watch(
-  () => props.payload,
-  (newData) => {
-    console.log("Data dari layar page:", newData);
-    if (newData) {
-      setValues({
-        namaLayar: newData.namaLayar || "",
-        tipeLayar: newData.tipeLayar || null,
-        judul: newData.judul || "",
-        isAdmisi: newData.isAdmisi ?? true,
-        isPoli: newData.isPoli ?? false,
-        isFarmasi: newData.isFarmasi ?? true,
-        flashText: Array.isArray(newData.flashText)
-          ? newData.flashText
-          : ["Selamat Datang di Klinik Adameds"],
-        media: newData.media || "",
-        aktif: newData.status ?? false,
-        poli_uuids: Array.isArray(newData.lokasi)
-          ? newData.lokasi.map((l: any) => l.uuid)
-          : [],
-      });
-      // --- pastikan opsi poli tersedia agar label tidak Unknown
-      if (Array.isArray(newData.lokasi)) {
-        const existing = new Set(jadwalPoliPayload.value.map((p) => p.uuid));
-        const tambahan = newData.lokasi.filter(
-          (l: any) => !existing.has(l.uuid)
-        );
-        if (tambahan.length) {
-          jadwalPoliPayload.value = [...jadwalPoliPayload.value, ...tambahan];
-        }
-      }
+  () => props.isDialogVisible,
+  (newValue) => {
+    if (newValue) {
+      // Reset form ketika dialog dibuka
+      resetForm();
+
+      // Set nilai default untuk field tertentu
+      setTimeout(() => {
+        aktif.value = true; // Default status aktif
+        flashText.value = ["Selamat Datang di Klinik Adameds"]; // Default flash text
+      }, 0);
     }
   },
-  { immediate: true, deep: true }
+  { immediate: false }
 );
 </script>
 
@@ -250,8 +219,11 @@ watch(
         </div>
 
         <!-- Conditional rendering based on layarModel -->
-        <div class="flex gap-x-4 gap-y-6">
-          <div class="flex-1 max-w-[600px]" v-show="isLayarSelected">
+        <div class="flex gap-x-4 gap-y-6 min-h-0">
+          <div
+            class="w-1/2 min-w-[420px] max-w-[520px] flex-shrink-0"
+            v-show="isLayarSelected"
+          >
             <div class="text-xl font-bold text-black">
               {{ layarTitle }}
             </div>
@@ -302,7 +274,7 @@ watch(
             </div>
           </div>
           <div
-            class="flex-[2] flex flex-col max-w-[1200px]"
+            class="flex flex-col flex-1 w-full min-w-0"
             v-show="isLayarSelected"
           >
             <div class="text-xl font-bold text-black">Preview Layar</div>
