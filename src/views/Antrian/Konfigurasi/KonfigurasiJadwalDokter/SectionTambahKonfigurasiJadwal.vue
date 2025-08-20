@@ -295,6 +295,47 @@ watch(
 // Field array untuk mengelola data jadwal
 const { remove, push, replace, fields } = useFieldArray("jadwalData");
 
+// Function untuk mengecek duplikasi jam praktek
+const checkDuplicateSchedule = (schedules: any[]) => {
+  const duplicates: string[] = [];
+
+  for (let i = 0; i < schedules.length; i++) {
+    for (let j = i + 1; j < schedules.length; j++) {
+      const schedule1 = schedules[i];
+      const schedule2 = schedules[j];
+
+      // Cek jika hari sama
+      if (schedule1.day === schedule2.day) {
+        const start1 = toMinutes(schedule1.startTime);
+        const end1 = toMinutes(schedule1.endTime);
+        const start2 = toMinutes(schedule2.startTime);
+        const end2 = toMinutes(schedule2.endTime);
+
+        // Cek jika ada overlap waktu
+        const hasOverlap =
+          (start1 >= start2 && start1 < end2) || // start1 di dalam range schedule2
+          (end1 > start2 && end1 <= end2) || // end1 di dalam range schedule2
+          (start1 <= start2 && end1 >= end2); // schedule1 mencakup schedule2
+
+        if (hasOverlap) {
+          const dayName =
+            itemsHari.value.find((h) => h.code === schedule1.day.toString())
+              ?.name || "Hari tidak diketahui";
+          const timeRange1 = `${formatTime(schedule1.startTime)}-${formatTime(
+            schedule1.endTime
+          )}`;
+          const timeRange2 = `${formatTime(schedule2.startTime)}-${formatTime(
+            schedule2.endTime
+          )}`;
+          duplicates.push(`${dayName}: ${timeRange1} dengan ${timeRange2}`);
+        }
+      }
+    }
+  }
+
+  return duplicates;
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
   const hasEmptyFields = data.value.some((item) => {
     return (
@@ -315,6 +356,18 @@ const onSubmit = handleSubmit(async (values: any) => {
       summary: "Validasi Error",
       detail: "Semua field jadwal harus diisi dengan benar",
       life: 3000,
+    });
+    return;
+  }
+
+  // Validasi duplikasi jam praktek
+  const duplicates = checkDuplicateSchedule(data.value);
+  if (duplicates.length > 0) {
+    toast.add({
+      severity: "error",
+      summary: "Validasi Error",
+      detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
+      life: 5000,
     });
     return;
   }
