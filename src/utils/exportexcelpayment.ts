@@ -199,7 +199,7 @@ export const downloadExportExcelPembayaranKunjungan = async (
         });
 
         worksheet["!cols"] = [
-            { wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 25 },
+            { wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 25 },
             { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 30 }
         ];
 

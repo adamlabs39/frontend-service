@@ -17,7 +17,7 @@ export const useTagihanStore = defineStore({
       payload = {}
     ) {
       return apiPembayaranGet(
-      `/payment?search=${search}`,
+      `/payment?search=${search} `,
       payload
     );
     },
