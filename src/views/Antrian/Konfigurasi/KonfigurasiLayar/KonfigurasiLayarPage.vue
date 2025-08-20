@@ -12,6 +12,7 @@ import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian"
 import { utilsStore } from "@/stores/utils";
 import EditDataKonfigurasiLayar from "./SectionEditKonfigurasiLayar.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -145,14 +146,28 @@ const resetFilter = () => {
   handleResetFilters();
 };
 
-const handleRowsUpdate = (rows: number) => {
-  jadwalLayarAntrianProperties.value.page_size = rows;
-  fetchJadwalAntrian();
+const deleteModal = ref({
+  isVisible: false,
+  entityName: "",
+  layarAntrianUuid: "",
+});
+
+const showDeleteConfirmation = (rowData: any) => {
+  deleteModal.value = {
+    isVisible: true,
+    entityName: rowData.namaLayar,
+    layarAntrianUuid: rowData.uuid,
+  };
 };
 
-const handlePageUpdate = (page: number) => {
-  jadwalLayarAntrianProperties.value.page = page;
-  fetchJadwalAntrian();
+const handleDeleteConfirm = async () => {
+  await deleteLayarAntrian(deleteModal.value.layarAntrianUuid);
+  deleteModal.value.isVisible = false;
+};
+
+// Handle delete modal close
+const handleDeleteClose = () => {
+  deleteModal.value.isVisible = false;
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -239,8 +254,6 @@ function handleRefresh() {
 function handleClose() {
   dialogData.value.isVisible = false;
 }
-
-const totalItems = computed(() => itemsLayar.value.length);
 
 const selectedPatient = ref([]);
 </script>
@@ -406,7 +419,7 @@ const selectedPatient = ref([]);
                 <CustomButton
                   label=""
                   background-color="bg-danger-300 rounded-lg"
-                  @click="deleteLayarAntrian(slotProps.data.uuid)"
+                  @click="showDeleteConfirmation(slotProps.data)"
                 >
                   <PhTrash :size="18" color="#ffffff" weight="fill" />
                 </CustomButton>
@@ -433,6 +446,12 @@ const selectedPatient = ref([]);
         @close="handleClose"
         @refresh="handleRefresh"
         :payload="dialogData.payload"
+      />
+      <DeleteModalComponent
+        :isVisible="deleteModal.isVisible"
+        :entityName="deleteModal.entityName"
+        @close="handleDeleteClose"
+        @confirm="handleDeleteConfirm"
       />
     </template>
     <template #footer>
