@@ -398,12 +398,12 @@ const onSubmit = handleSubmit(async (values: any) => {
     return;
   }
 
-  // Bangun payload - poliUuid.value sudah berupa UUID
+  // membangun payload
   const payload = {
     dokter_uuid: dokterUuid.value,
-    poliklinik_uuid: poliUuid.value, // sudah UUID
+    poliklinik_uuid: poliUuid.value,
     jadwal: data.value.map((item) => ({
-      day: Number(item.day), // pastikan number
+      day: Number(item.day), //  number
       start_time: formatTime(item.startTime),
       end_time: formatTime(item.endTime),
       kuota_jkn: parseInt(item.kuotaJkn),
