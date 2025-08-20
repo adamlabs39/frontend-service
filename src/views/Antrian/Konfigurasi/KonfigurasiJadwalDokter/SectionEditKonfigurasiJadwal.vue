@@ -13,6 +13,9 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import { useToast } from "primevue/usetoast";
+
+const toast = useToast();
 
 const props = defineProps({
   isDialogVisible: {
@@ -327,6 +330,47 @@ watchEffect(() => {
   }
 });
 
+// Function untuk mengecek duplikasi jam praktek
+const checkDuplicateSchedule = (schedules: any[]) => {
+  const duplicates: string[] = [];
+
+  for (let i = 0; i < schedules.length; i++) {
+    for (let j = i + 1; j < schedules.length; j++) {
+      const schedule1 = schedules[i];
+      const schedule2 = schedules[j];
+
+      // Cek jika hari sama
+      if (schedule1.day === schedule2.day) {
+        const start1 = toMinutes(schedule1.startTime);
+        const end1 = toMinutes(schedule1.endTime);
+        const start2 = toMinutes(schedule2.startTime);
+        const end2 = toMinutes(schedule2.endTime);
+
+        // Cek jika ada overlap waktu
+        const hasOverlap =
+          (start1 >= start2 && start1 < end2) || // start1 di dalam range schedule2
+          (end1 > start2 && end1 <= end2) || // end1 di dalam range schedule2
+          (start1 <= start2 && end1 >= end2); // schedule1 mencakup schedule2
+
+        if (hasOverlap) {
+          const dayName =
+            itemsHari.value.find((h) => h.code === schedule1.day.toString())
+              ?.name || "Hari tidak diketahui";
+          const timeRange1 = `${formatTimeToString(
+            schedule1.startTime
+          )}-${formatTimeToString(schedule1.endTime)}`;
+          const timeRange2 = `${formatTimeToString(
+            schedule2.startTime
+          )}-${formatTimeToString(schedule2.endTime)}`;
+          duplicates.push(`${dayName}: ${timeRange1} dengan ${timeRange2}`);
+        }
+      }
+    }
+  }
+
+  return duplicates;
+};
+
 // Submit handler
 const onSubmit = handleSubmit(async (formValues: any) => {
   UseUtilsStore.setLoading(true);
@@ -341,6 +385,18 @@ const onSubmit = handleSubmit(async (formValues: any) => {
     // Prepare payload berdasarkan format yang dibutuhkan API
     const existingJadwal = props.editData.jadwalDokter || [];
     const newJadwalData = formValues.jadwalData || [];
+
+    // Validasi duplikasi jam praktek
+    const duplicates = checkDuplicateSchedule(newJadwalData);
+    if (duplicates.length > 0) {
+      toast.add({
+        severity: "error",
+        summary: "Validasi Error",
+        detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
+        life: 5000,
+      });
+      return;
+    }
 
     const payload = {
       deleted: [] as string[],
