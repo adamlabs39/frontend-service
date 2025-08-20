@@ -13,6 +13,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
+import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const toast = useToast();
 
@@ -131,6 +132,31 @@ const addRow = () => {
     durasiPelayanan: "0",
     aktif: true,
   });
+};
+
+const deleteModal = ref({
+  isVisible: false,
+  entityName: "",
+  rowIndex: -1,
+});
+
+const showDeleteConfirmation = (index: number) => {
+  deleteModal.value = {
+    isVisible: true,
+    entityName: "",
+    rowIndex: index,
+  };
+};
+
+const handleDeleteConfirm = () => {
+  if (deleteModal.value.rowIndex >= 0) {
+    removeRow(deleteModal.value.rowIndex);
+  }
+  deleteModal.value.isVisible = false;
+};
+
+const handleDeleteClose = () => {
+  deleteModal.value.isVisible = false;
 };
 
 const itemsHari = ref([
@@ -754,11 +780,13 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <div class="flex justify-center items-center">
                   <CustomButton
-                    icon="PhTrash"
-                    textColor="text-white"
-                    backgroundColor="bg-red-500"
-                    @click="removeRow(slotProps.index)"
-                  />
+                    label=""
+                    background-color="bg-danger-300 rounded-lg"
+                    @click="showDeleteConfirmation(slotProps.index)"
+                    title="Hapus"
+                  >
+                    <PhTrash :size="18" color="#ffffff" weight="fill" />
+                  </CustomButton>
                 </div>
               </template>
             </Column>
@@ -778,6 +806,12 @@ const selectedPatient = ref([]);
           />
         </div>
       </div>
+      <DeleteModalComponent
+        :isVisible="deleteModal.isVisible"
+        :entityName="deleteModal.entityName"
+        @close="handleDeleteClose"
+        @confirm="handleDeleteConfirm"
+      />
     </template>
     <template #footer>
       <div class="w-full">
