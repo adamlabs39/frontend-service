@@ -1,13 +1,35 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import AntrianHeader from "../Layout/AntrianHeader.vue";
 import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
 import SectionAntrianRawatJalan from "./SectionAntrianRawatJalan.vue";
 import SectionAntrianFarmasi from "./SectionAntrianFarmasi.vue";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const value = ref("0");
+
+const dataAntrianRjProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+});
+
+// Handler untuk pagination rawat jalan
+const handlePage = (event: any) => {
+  dataAntrianRjProperties.value.page = event.page + 1;
+  dataAntrianRjProperties.value.limit = event.rows;
+  // Panggil fungsi fetch data sesuai tab yang aktif
+  if (value.value === "1") {
+    // Fetch data rawat jalan
+    // fetchDataAntrianRj();
+  }
+};
+
+const handleUpdateTotalData = (totalData: number) => {
+  dataAntrianRjProperties.value.totalData = totalData;
+};
 </script>
 
 <template>
@@ -68,7 +90,10 @@ const value = ref("0");
             <SectionAntrianAdmisi />
           </TabPanel>
           <TabPanel value="1">
-            <SectionAntrianRawatJalan />
+            <SectionAntrianRawatJalan
+              :paginationProperties="dataAntrianRjProperties"
+              @updateTotalData="handleUpdateTotalData"
+            />
           </TabPanel>
           <TabPanel value="2">
             <SectionAntrianFarmasi />
@@ -77,7 +102,13 @@ const value = ref("0");
       </Tabs>
     </template>
     <template #footer>
-      <AntrianFooter />
+      <CustomPaginator
+        class="ml-auto"
+        :rows="dataAntrianRjProperties.limit"
+        :totalRecords="dataAntrianRjProperties.totalData"
+        :rowsPerPageOptions="[10, 20, 30]"
+        @page="handlePage"
+      />
     </template>
   </Card>
 </template>

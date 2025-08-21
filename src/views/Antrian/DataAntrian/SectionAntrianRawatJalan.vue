@@ -4,15 +4,22 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 
+const props = defineProps<{
+  paginationProperties: {
+    page: number;
+    limit: number;
+    totalData: number;
+  };
+}>();
+
+const emit = defineEmits<{
+  updateTotalData: [totalData: number];
+}>();
+
 const dataAntrianStore = useDataAntrianStore();
 const useUtilsStore = utilsStore();
 
 const dataAntrianRjPayload = ref([]);
-const dataAntrianRjProperties = ref({
-  page: 1,
-  pageSize: 10,
-  totalData: 0,
-});
 
 const convertPaymentMethod = (paymentMethod: number | string): string => {
   const method = Number(paymentMethod);
@@ -27,29 +34,42 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
   }
 };
 
+// watch(
+//   () => dataAntrianRjPayload.value,
+//   (newValue) => {
+//     console.log("Data Antrian RJ Payload:", newValue);
+//   },
+//   { deep: true }
+// );
+
 watch(
-  () => dataAntrianRjPayload.value,
-  (newValue) => {
-    console.log("Data Antrian RJ Payload:", newValue);
+  () => props.paginationProperties,
+  () => {
+    fetchGetDataAntrianRj();
   },
   { deep: true }
 );
 
 const fetchGetDataAntrianRj = async () => {
+  useUtilsStore.setLoading(true);
   try {
     const response = await dataAntrianStore.getAntrianRJ(
       1128557830,
       1999999999,
-      dataAntrianRjProperties.value.page,
-      dataAntrianRjProperties.value.pageSize,
-      dataAntrianRjProperties.value.totalData
+      props.paginationProperties.page,
+      props.paginationProperties.limit,
+      props.paginationProperties.totalData
     );
     console.log("Ini adalah data antrian rawat jalan", response);
     if (response) {
       dataAntrianRjPayload.value = response.payload;
-      dataAntrianRjProperties.value.totalData = response.properties.totalData;
+      emit("updateTotalData", response.properties.totalData);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error fetching data antrian rawat jalan:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 
 const dateFormat = (date: string) => {
@@ -60,51 +80,10 @@ const dateFormat = (date: string) => {
   return `${day}-${month}-${year}`;
 };
 
-onMounted(async () => {
+onMounted(() => {
   fetchGetDataAntrianRj();
 });
 
-const data = ref([
-  {
-    id: "1",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "tunai",
-    status: "antri",
-  },
-  {
-    id: "2",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "tunai",
-    status: "proses",
-  },
-  {
-    id: "3",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "BPJS",
-    status: "selesai",
-  },
-]);
 const expandedRows = ref();
 
 // Fungsi untuk mendapatkan style metode bayar
@@ -204,7 +183,12 @@ const getStatusStyle = (status: string | undefined) => {
     <Column header="No." header-class="text-black bg-adameds-50">
       <template #body="slotProps">
         <div class="flex justify-center items-center">
-          {{ slotProps.index + 1 }}
+          {{
+            (props.paginationProperties.page - 1) *
+              props.paginationProperties.limit +
+            slotProps.index +
+            1
+          }}
         </div>
       </template>
     </Column>
@@ -297,7 +281,7 @@ const getStatusStyle = (status: string | undefined) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex items-center gap-1">
+        <div class="flex gap-1 items-center">
           <div>
             {{ slotProps.data.practitioner.nama }}
           </div>
