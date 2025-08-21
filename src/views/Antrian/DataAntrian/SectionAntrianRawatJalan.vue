@@ -6,6 +6,8 @@ import { utilsStore } from "@/stores/utils";
 
 const props = defineProps<{
   paginationProperties: {
+    start_date: number | undefined;
+    end_date: number | undefined;
     page: number;
     limit: number;
     totalData: number;
@@ -54,9 +56,12 @@ watch(
 const fetchGetDataAntrianRj = async () => {
   useUtilsStore.setLoading(true);
   try {
+    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
+    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+
     const response = await dataAntrianStore.getAntrianRJ(
-      1128557830,
-      1999999999,
+      startEpoch,
+      endEpoch,
       props.paginationProperties.page,
       props.paginationProperties.limit,
       props.paginationProperties.totalData,

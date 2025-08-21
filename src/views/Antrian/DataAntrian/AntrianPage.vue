@@ -15,6 +15,8 @@ const dataAntrianRjProperties = ref({
   limit: 10,
   totalData: 0,
   q: "",
+  start_date: undefined as number | undefined,
+  end_date: undefined as number | undefined,
 });
 
 const dataAntrianAdmisiProperties = ref({
@@ -78,14 +80,37 @@ const handleHeaderSearch = (q: string) => {
   }
 };
 
+// Event dari header untuk rentang tanggal (epoch seconds)
+const handleHeaderDateRange = (start?: number | null, end?: number | null) => {
+  if (value.value === "1") {
+    dataAntrianRjProperties.value.start_date = start ?? undefined;
+    dataAntrianRjProperties.value.end_date = end ?? undefined;
+    dataAntrianRjProperties.value.page = 1;
+  }
+};
+
+// Default epoch untuk rawat jalan
+const DEFAULT_START = 1128557830;
+const DEFAULT_END = 1999999999;
+
 // Reset q ketika berpindah tab ke selain Rawat Jalan
 watch(
   () => value.value,
   (newVal) => {
-    if (newVal !== "1") {
+    if (newVal === "1") {
+      // Saat masuk tab Rawat Jalan: set default jika belum ada
+      dataAntrianRjProperties.value.start_date =
+        dataAntrianRjProperties.value.start_date ?? DEFAULT_START;
+      dataAntrianRjProperties.value.end_date =
+        dataAntrianRjProperties.value.end_date ?? DEFAULT_END;
+    } else {
+      // Selain Rawat Jalan: kosongkan agar tidak ditampilkan di header
+      dataAntrianRjProperties.value.start_date = undefined;
+      dataAntrianRjProperties.value.end_date = undefined;
       dataAntrianRjProperties.value.q = "";
     }
-  }
+  },
+  { immediate: true }
 );
 </script>
 
@@ -100,7 +125,10 @@ watch(
         title="Data Antrian"
         :filter="false"
         :search="false"
+        :startDateEpoch="dataAntrianRjProperties.start_date"
+        :endDateEpoch="dataAntrianRjProperties.end_date"
         @search="handleHeaderSearch"
+        @dateRange="handleHeaderDateRange"
       >
         <template #header>
           <div class="flex flex-row gap-2 justify-end items-center">

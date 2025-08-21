@@ -24,6 +24,14 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  startDateEpoch: {
+    type: Number,
+    default: undefined,
+  },
+  endDateEpoch: {
+    type: Number,
+    default: undefined,
+  },
 });
 
 const chipValues = ref(["SEMUA"]);
@@ -61,22 +69,72 @@ const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
 
-// Tambah emit untuk kebutuhan pencarian
+// emit event pencarian dan rentang tanggal
 const emit = defineEmits<{
   search: [q: string];
+  dateRange: [start_date?: number | null, end_date?: number | null];
 }>();
+
+// Helper konversi epoch seconds <-> Date
+const epochToDate = (epoch?: number | null): Date | null => {
+  if (epoch === undefined || epoch === null) return null;
+  return new Date(epoch * 1000);
+};
+const dateToEpoch = (date?: Date | null): number | null => {
+  if (!date) return null;
+  return Math.floor(date.getTime() / 1000);
+};
+
+// Default epoch untuk tab Rawat Jalan
+const DEFAULT_START = 1128557830;
+const DEFAULT_END = 1999999999;
+
+const syncDatepickerWithProps = () => {
+  if (props.activeTab === "1") {
+    // Tab Rawat Jalan aktif
+    const start = props.startDateEpoch ?? DEFAULT_START;
+    const end = props.endDateEpoch ?? DEFAULT_END;
+    startDateFilter.value = epochToDate(start);
+    endDateFilter.value = epochToDate(end);
+  } else {
+    // Tab lain: kosongkan tampilan datepicker
+    startDateFilter.value = null;
+    endDateFilter.value = null;
+  }
+};
+
+watch(
+  () => [props.activeTab, props.startDateEpoch, props.endDateEpoch],
+  () => syncDatepickerWithProps(),
+  { immediate: true }
+);
 
 // Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
 const onClickSearch = () => {
   if (props.activeTab === "1") {
     emit("search", searchPatientFilter.value.trim());
+    emit(
+      "dateRange",
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
+    );
   }
 };
 
 // Reset input dan kirim empty query agar hasil pencarian direset
 const onClickReset = () => {
   searchPatientFilter.value = "";
-  emit("search", "");
+  if (props.activeTab === "1") {
+    startDateFilter.value = epochToDate(DEFAULT_START);
+    endDateFilter.value = epochToDate(DEFAULT_END);
+    emit("search", "");
+    emit("dateRange", DEFAULT_START, DEFAULT_END);
+  } else {
+    startDateFilter.value = null;
+    endDateFilter.value = null;
+    emit("search", "");
+    emit("dateRange", null, null);
+  }
 };
 
 // Reset otomatis ketika pindah tab ke selain Rawat Jalan
