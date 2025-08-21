@@ -1,6 +1,68 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
+import { utilsStore } from "@/stores/utils";
+
+const dataAntrianStore = useDataAntrianStore();
+const useUtilsStore = utilsStore();
+
+const dataAntrianRjPayload = ref([]);
+const dataAntrianRjProperties = ref({
+  page: 1,
+  pageSize: 10,
+  totalData: 0,
+});
+
+const convertPaymentMethod = (paymentMethod: number | string): string => {
+  const method = Number(paymentMethod);
+
+  switch (method) {
+    case 1:
+      return "Tunai";
+    case 2:
+      return "Asuransi";
+    default:
+      return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
+  }
+};
+
+watch(
+  () => dataAntrianRjPayload.value,
+  (newValue) => {
+    console.log("Data Antrian RJ Payload:", newValue);
+  },
+  { deep: true }
+);
+
+const fetchGetDataAntrianRj = async () => {
+  try {
+    const response = await dataAntrianStore.getAntrianRJ(
+      1128557830,
+      1999999999,
+      dataAntrianRjProperties.value.page,
+      dataAntrianRjProperties.value.pageSize,
+      dataAntrianRjProperties.value.totalData
+    );
+    console.log("Ini adalah data antrian rawat jalan", response);
+    if (response) {
+      dataAntrianRjPayload.value = response.payload;
+      dataAntrianRjProperties.value.totalData = response.properties.totalData;
+    }
+  } catch (error) {}
+};
+
+const dateFormat = (date: string) => {
+  const newDate = new Date(date);
+  const day = newDate.getDate();
+  const month = newDate.getMonth() + 1;
+  const year = newDate.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+onMounted(async () => {
+  fetchGetDataAntrianRj();
+});
 
 const data = ref([
   {
@@ -44,21 +106,18 @@ const data = ref([
   },
 ]);
 const expandedRows = ref();
-onMounted(() => {
-  data.value;
-});
 
 // Fungsi untuk mendapatkan style metode bayar
-const getMetodeBayarStyle = (metodeBayar: string) => {
-  const method = metodeBayar.toLowerCase();
+const getMetodeBayarStyle = (paymentMethod: number) => {
+  const convertedMethod = convertPaymentMethod(paymentMethod).toLowerCase();
 
-  if (method === "tunai") {
+  if (convertedMethod === "tunai") {
     return {
       bgColor: "bg-adameds-50",
       textColor: "text-adameds-300",
       borderColor: "border-adameds-300",
     };
-  } else if (method === "bpjs") {
+  } else if (convertedMethod === "asuransi") {
     return {
       bgColor: "bg-warning-50",
       textColor: "text-warning-300",
@@ -101,7 +160,27 @@ const statusStyles = {
   },
 } as const;
 
-const getStatusStyle = (status: string) => {
+const convertStatusRj = (statusRj: number): string => {
+  switch (statusRj) {
+    case 1:
+      return "antri";
+    case 2:
+      return "antri";
+    case 3:
+      return "antri";
+    case 4:
+      return "proses";
+    case 5:
+      return "selesai";
+    default:
+      return "unknown";
+  }
+};
+
+const getStatusStyle = (status: string | undefined) => {
+  if (!status) {
+    return statusStyles.default;
+  }
   const normalizedStatus = status.toLowerCase();
   return (
     statusStyles[normalizedStatus as keyof typeof statusStyles] ||
@@ -113,7 +192,7 @@ const getStatusStyle = (status: string) => {
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
-    :value="data"
+    :value="dataAntrianRjPayload"
     tableStyle="min-width: 50rem"
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
     class="text-xs"
@@ -144,7 +223,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_daftar }}
+              {{ dateFormat(slotProps.data.tanggalDaftar) }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -155,7 +234,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_jadwal }}
+              {{ slotProps.data.schedule.endTime }}
             </div>
           </div>
         </div>
@@ -173,7 +252,7 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_book }}
+                {{ slotProps.data.kodeBooking ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -186,7 +265,7 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_antrian }}
+                {{ slotProps.data.noAntrianPoli ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -197,12 +276,12 @@ const getStatusStyle = (status: string) => {
       <template #body="slotProps">
         <div class="items-center space-y-0.5">
           <div class="flex items-center font-semibold">
-            {{ slotProps.data.nama_pasien }}
+            {{ slotProps.data.patient?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
             <CustomChip
               :showCheckedIcon="false"
-              :label="slotProps.data.no_rm"
+              :label="slotProps.data.noRm"
               bgColor="bg-adameds-300"
               textColor="text-white"
               border-color="border-adameds-300"
@@ -218,13 +297,20 @@ const getStatusStyle = (status: string) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex items-center">
-          {{ slotProps.data.doktor_keperawatan }}
+        <div class="flex items-center gap-1">
+          <div>
+            {{ slotProps.data.practitioner.nama }}
+          </div>
+          <div>|</div>
+          <div>
+            {{ slotProps.data.schedule.startTime }} -
+            {{ slotProps.data.schedule.endTime }}
+          </div>
         </div>
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.nama_poli"
+            :label="slotProps.data.polyclinic.name"
             bgColor="bg-grey-50"
             textColor="text-grey-300"
             border-color="border-grey-300"
@@ -232,15 +318,17 @@ const getStatusStyle = (status: string) => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.metode_bayar).bgColor"
+            :bgColor="getMetodeBayarStyle(slotProps.data.paymentMethod).bgColor"
             :textColor="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).textColor
+              getMetodeBayarStyle(slotProps.data.paymentMethod).textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).borderColor
+              getMetodeBayarStyle(slotProps.data.paymentMethod).borderColor
             "
             customClass="h-5"
-            :label="slotProps.data.metode_bayar.toUpperCase()"
+            :label="
+              convertPaymentMethod(slotProps.data.paymentMethod).toUpperCase()
+            "
           />
         </div>
       </template>
@@ -255,7 +343,7 @@ const getStatusStyle = (status: string) => {
         <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
-            v-bind="getStatusStyle(slotProps.data.status)"
+            v-bind="getStatusStyle(convertStatusRj(slotProps.data.statusRj))"
             customClass="h-5"
           />
         </div>
