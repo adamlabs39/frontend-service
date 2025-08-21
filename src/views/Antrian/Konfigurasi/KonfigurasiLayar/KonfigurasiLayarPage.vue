@@ -292,7 +292,14 @@ const selectedPatient = ref([]);
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-sm">{{ slotProps.index + 1 }}</div>
+              <div class="text-sm">
+                {{
+                  (jadwalLayarAntrianProperties.page - 1) *
+                    jadwalLayarAntrianProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
+              </div>
             </div>
           </template>
         </Column>

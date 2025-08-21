@@ -276,7 +276,12 @@ onMounted(() => {
         <Column header="No." header-class="text-black bg-adameds-50">
           <template #body="slotProps">
             <div class="">
-              {{ slotProps.index + 1 }}
+              {{
+                (jadwalDokterProperties.page - 1) *
+                  jadwalDokterProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
