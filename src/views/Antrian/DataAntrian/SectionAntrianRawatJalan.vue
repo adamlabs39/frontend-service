@@ -9,6 +9,7 @@ const props = defineProps<{
     page: number;
     limit: number;
     totalData: number;
+    q: string;
   };
 }>();
 
@@ -58,7 +59,8 @@ const fetchGetDataAntrianRj = async () => {
       1999999999,
       props.paginationProperties.page,
       props.paginationProperties.limit,
-      props.paginationProperties.totalData
+      props.paginationProperties.totalData,
+      props.paginationProperties.q
     );
     console.log("Ini adalah data antrian rawat jalan", response);
     if (response) {

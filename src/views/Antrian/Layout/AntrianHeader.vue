@@ -60,6 +60,35 @@ const isChipSelected = (value: string) => {
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
+
+// Tambah emit untuk kebutuhan pencarian
+const emit = defineEmits<{
+  search: [q: string];
+}>();
+
+// Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
+const onClickSearch = () => {
+  if (props.activeTab === "1") {
+    emit("search", searchPatientFilter.value.trim());
+  }
+};
+
+// Reset input dan kirim empty query agar hasil pencarian direset
+const onClickReset = () => {
+  searchPatientFilter.value = "";
+  emit("search", "");
+};
+
+// Reset otomatis ketika pindah tab ke selain Rawat Jalan
+watch(
+  () => props.activeTab,
+  (newVal) => {
+    if (newVal !== "1") {
+      searchPatientFilter.value = "";
+      emit("search", "");
+    }
+  }
+);
 </script>
 
 <template>
@@ -99,6 +128,7 @@ const searchPatientFilter = ref<string>("");
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
+          @click="onClickSearch"
         />
         <CustomButton
           label="Reset"
@@ -106,6 +136,7 @@ const searchPatientFilter = ref<string>("");
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           class="mt-auto w-[70px]"
+          @click="onClickReset"
         />
       </div>
       <div class="font-semibold text-SM text-grey-300">

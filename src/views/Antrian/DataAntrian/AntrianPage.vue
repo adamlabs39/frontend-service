@@ -14,6 +14,7 @@ const dataAntrianRjProperties = ref({
   page: 1,
   limit: 10,
   totalData: 0,
+  q: "",
 });
 
 const dataAntrianAdmisiProperties = ref({
@@ -68,6 +69,24 @@ const handlePage = (event: any) => {
 const handleUpdateTotalData = (totalData: number) => {
   dataAntrianRjProperties.value.totalData = totalData;
 };
+
+// Tangkap event search dari header: hanya berlaku saat tab Rawat Jalan aktif
+const handleHeaderSearch = (q: string) => {
+  if (value.value === "1") {
+    dataAntrianRjProperties.value.q = q;
+    dataAntrianRjProperties.value.page = 1; // reset ke page 1 saat pencarian
+  }
+};
+
+// Reset q ketika berpindah tab ke selain Rawat Jalan
+watch(
+  () => value.value,
+  (newVal) => {
+    if (newVal !== "1") {
+      dataAntrianRjProperties.value.q = "";
+    }
+  }
+);
 </script>
 
 <template>
@@ -81,6 +100,7 @@ const handleUpdateTotalData = (totalData: number) => {
         title="Data Antrian"
         :filter="false"
         :search="false"
+        @search="handleHeaderSearch"
       >
         <template #header>
           <div class="flex flex-row gap-2 justify-end items-center">
