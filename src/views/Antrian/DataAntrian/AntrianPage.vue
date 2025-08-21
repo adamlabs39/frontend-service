@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import AntrianHeader from "../Layout/AntrianHeader.vue";
 import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
@@ -16,14 +16,52 @@ const dataAntrianRjProperties = ref({
   totalData: 0,
 });
 
+const dataAntrianAdmisiProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+});
+
+const dataAntrianFarmasiProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+});
+
+const currentPaginationProperties = computed(() => {
+  switch (value.value) {
+    case "0":
+      return dataAntrianAdmisiProperties.value;
+    case "1":
+      return dataAntrianRjProperties.value;
+    case "2":
+      return dataAntrianFarmasiProperties.value;
+    default:
+      return dataAntrianAdmisiProperties.value;
+  }
+});
+
 // Handler untuk pagination rawat jalan
 const handlePage = (event: any) => {
-  dataAntrianRjProperties.value.page = event.page + 1;
-  dataAntrianRjProperties.value.limit = event.rows;
-  // Panggil fungsi fetch data sesuai tab yang aktif
-  if (value.value === "1") {
-    // Fetch data rawat jalan
-    // fetchDataAntrianRj();
+  const newPage = event.page + 1;
+  const newLimit = event.rows;
+
+  switch (value.value) {
+    case "0":
+      // Admisi
+      dataAntrianAdmisiProperties.value.page = newPage;
+      dataAntrianAdmisiProperties.value.limit = newLimit;
+      break;
+    case "1":
+      // Rawat Jalan
+      dataAntrianRjProperties.value.page = newPage;
+      dataAntrianRjProperties.value.limit = newLimit;
+      break;
+    case "2":
+      // Farmasi
+      dataAntrianFarmasiProperties.value.page = newPage;
+      dataAntrianFarmasiProperties.value.limit = newLimit;
+      break;
   }
 };
 
@@ -104,8 +142,8 @@ const handleUpdateTotalData = (totalData: number) => {
     <template #footer>
       <CustomPaginator
         class="ml-auto"
-        :rows="dataAntrianRjProperties.limit"
-        :totalRecords="dataAntrianRjProperties.totalData"
+        :rows="currentPaginationProperties.limit"
+        :totalRecords="currentPaginationProperties.totalData"
         :rowsPerPageOptions="[10, 20, 30]"
         @page="handlePage"
       />
