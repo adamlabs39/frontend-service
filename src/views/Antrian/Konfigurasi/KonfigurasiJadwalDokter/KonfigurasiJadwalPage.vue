@@ -205,22 +205,9 @@ const handleClose = () => {
   dialogData.value.isVisible = false;
 };
 
-// untuk handle perubahan rows per page
-const handleRowsUpdate = (newRows: number) => {
-  jadwalDokterProperties.value.page_size = newRows;
-  jadwalDokterProperties.value.page = 1; // Reset ke halaman pertama
-  fetchJadwalDokter(); // Refresh data
-};
-
 const handleRefresh = () => {
   dialogData.value.isVisible = false; // tutup dialog
   fetchJadwalDokter(); // muat ulang data tabel utama
-};
-
-// untuk handle perubahan halaman
-const handlePageUpdate = (newPage: number) => {
-  jadwalDokterProperties.value.page = newPage;
-  fetchJadwalDokter(); // Refresh data
 };
 
 const handlePage = (event: any) => {
