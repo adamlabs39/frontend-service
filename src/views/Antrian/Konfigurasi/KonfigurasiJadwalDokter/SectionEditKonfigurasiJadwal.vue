@@ -114,7 +114,7 @@ const schema = toTypedSchema(
           .number()
           .transform((value) => (isNaN(value) ? undefined : value))
           .required("Hari wajib diisi"),
-        startTime: yup.string().required("Jam mulai harus diisi"),
+        startTime: yup.string(),
         endTime: yup
           .string()
           .required("Jam selesai harus diisi")
