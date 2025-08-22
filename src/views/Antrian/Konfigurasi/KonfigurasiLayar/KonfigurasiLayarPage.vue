@@ -406,11 +406,10 @@ const selectedPatient = ref([]);
             </div>
           </template>
         </Column>
-        <Column
-          field="Action"
-          header="Action"
-          headerClass="bg-adameds-50 flex items-center justify-center"
-        >
+        <Column field="Action" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Action</div>
+          </template>
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
               <div title="Edit">
