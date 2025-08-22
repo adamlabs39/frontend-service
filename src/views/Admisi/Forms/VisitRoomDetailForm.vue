@@ -132,8 +132,8 @@ const fetchListRoomData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await monitoringKamarStore.getMonitoringKamar({
-      filterKelas: selectedRoomClass.value,
-      filterKategori: [selectedRoomCategory.value],
+      filterKelas: selectedRoomClass.value ?? "",
+      filterKategori: [selectedRoomCategory.value ?? ""],
     });
     if (response && response.payload) {
       listRuangan.value = response.payload;
@@ -208,21 +208,19 @@ onUpdated(() => {
 });
 
 const listKelasRuangan = ref([
-  { label: "kelas 1", value: "1" },
-  { label: "kelas 2", value: "2" },
-  { label: "kelas 3", value: "3" },
-  { label: "VIP", value: "4" },
-  { label: "VVIP", value: "5" },
+  { label: "kelas 1", value: "Kelas 1" },
+  { label: "kelas 2", value: "Kelas 2" },
+  { label: "kelas 3", value: "Kelas 3" },
+  { label: "VIP", value: "VIP" },
+  { label: "VVIP", value: "VVIP" },
 ]);
+
 const listRuangan = ref<any[]>([]);
 const listBed = ref<any[]>([]);
 const listBedCadangan = ref<any[]>([]);
 const listBoxBayi = ref<any[]>([]);
 
 const noSpri = ref("");
-const selectedRoomCategory = ref();
-const selectedRoomClass = ref();
-const selectedRoom = ref();
 const selectedBed = ref<string[]>([]);
 
 const selectedPaymentMethod = ref<string>("TUNAI");
@@ -269,6 +267,9 @@ const schema = computed(() =>
                 });
           })
           .noUnknown(),
+          selectedRoomCategory: yup.string().required("Kategori Ruangan harus dipilih"),
+          selectedRoomClass: yup.string().required("Kelas harus dipilih"),
+          selectedRoom: yup.string().required("Ruangan harus dipilih"),
         practitionerUuid: yup.string().required("DPJP harus dipilih"),
         monitoringRoomUuid: yup
           .string()
@@ -280,7 +281,7 @@ const schema = computed(() =>
   )
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues, validate } = useForm({
   validationSchema: schema,
 });
 
@@ -298,6 +299,9 @@ const [insuranceClass] = defineField("insurance.classEntitle");
 const [monitoringRoomUuid] = defineField("monitoringRoomUuid");
 const [spareBed] = defineField("spareBed");
 const [boxBaby] = defineField("boxBaby");
+const [selectedRoomCategory, selectedRoomCategoryAttrs] = defineField('selectedRoomCategory');
+const [selectedRoomClass, selectedRoomClassAttrs] = defineField('selectedRoomClass');
+const [selectedRoom, selectedRoomAttrs] = defineField('selectedRoom');
 
 const onSubmit = handleSubmit(async (values) => {
   return values;
@@ -390,13 +394,13 @@ defineExpose({
               :disabled="isDetail"
             />
           </div>
-          <CustomSwitch
-            v-if="patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir'"
-            v-model="familyBill"
-            :disabled="isDetail"
-            label="Tagihan Keluarga"
-            sideLabel="Iya"
-          />
+       <CustomSwitch
+          v-if="patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir'"
+          v-model="familyBill"
+          :disabled="isDetail"
+          label="Tagihan Keluarga"
+          :sideLabel="familyBill ? 'Iya' : 'Tidak'"
+        />
         </div>
         <div
           v-if="!patientData.isNewBorn && formType != 'Daftar Bayi Baru Lahir'"
@@ -507,43 +511,49 @@ defineExpose({
               readOnly
             /> 
             <!-- FIXME Dummy Data -->
-            <CustomSelect
-              v-model="selectedRoomCategory"
-              @update:model-value="fetchListRoomData"
-              label="Kategori Ruangan"
-              placeHolder="Pilih Kategori Ruangan"
-              class="col-span-2"
-              optionLabel="name"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="[
-                ...listKategoriRuangan,
-              ]"
+            <CustomSelect 
+              v-model="selectedRoomCategory" 
+              @update:model-value="fetchListRoomData" 
+              label="Kategori Ruangan" 
+              placeHolder="Pilih Kategori Ruangan" 
+              class="col-span-2" 
+              optionLabel="name" 
+              optionValue="uuid" 
+              :showFilter="false" 
+              :options="[ 
+                ...listKategoriRuangan, 
+              ]" 
               :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoomClass"
-              @update:model-value="fetchListRoomData"
-              label="Kelas"
-              placeHolder="Pilih Kelas"
-              class=""
-              optionLabel="label"
-              optionValue="value"
-              :showFilter="false"
-              :options="listKelasRuangan"
-              :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoom"
-              @update:model-value="fetchListBedData"
-              label="Ruangan"
-              placeHolder="Pilih Ruangan"
-              class="col-span-2"
-              optionLabel="name"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="listRuangan"
-              :disabled="isDetail"
+              :invalid="!!errors.selectedRoomCategory"
+              :invalidMessage="errors.selectedRoomCategory"
+            /> 
+            <CustomSelect 
+              v-model="selectedRoomClass" 
+              @update:model-value="fetchListRoomData" 
+              label="Kelas" 
+              placeHolder="Pilih Kelas" 
+              class="" 
+              optionLabel="label" 
+              optionValue="value" 
+              :showFilter="false" 
+              :options="listKelasRuangan" 
+              :disabled="isDetail" 
+              :invalid="!!errors.selectedRoomClass"
+              :invalidMessage="errors.selectedRoomClass"
+            /> 
+            <CustomSelect 
+              v-model="selectedRoom" 
+              @update:model-value="fetchListBedData" 
+              label="Ruangan" 
+              placeHolder="Pilih Ruangan" 
+              class="col-span-2" 
+              optionLabel="name" 
+              optionValue="uuid" 
+              :showFilter="false" 
+              :options="listRuangan" 
+              :disabled="isDetail" 
+              :invalid="!!errors.selectedRoom"
+              :invalidMessage="errors.selectedRoom"
             />
           </div>
           <div v-if="selectedRoom" class="grid grid-cols-3 mt-[30px]">
