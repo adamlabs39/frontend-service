@@ -79,8 +79,14 @@ const fetchGetDataAntrianRj = async () => {
   }
 };
 
-const dateFormat = (date: string) => {
-  const newDate = new Date(date);
+const dateFormat = (timestamp: number | string) => {
+  // Konversi timestamp dari detik ke milliseconds
+  const timestampMs =
+    typeof timestamp === "string"
+      ? parseInt(timestamp) * 1000
+      : timestamp * 1000;
+
+  const newDate = new Date(timestampMs);
   const day = newDate.getDate();
   const month = newDate.getMonth() + 1;
   const year = newDate.getFullYear();
@@ -324,12 +330,10 @@ const getStatusStyle = (status: string | undefined) => {
         </div>
       </template>
     </Column>
-    <Column
-      field="status"
-      header="Status"
-      header-class="flex justify-center items-center text-black bg-adameds-50"
-      class="text-center"
-    >
+    <Column field="Status" headerClass="bg-adameds-50">
+      <template #header>
+        <div class="w-full font-semibold text-center">Status</div>
+      </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
           <CustomChip
