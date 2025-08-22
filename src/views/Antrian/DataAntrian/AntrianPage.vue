@@ -17,6 +17,7 @@ const dataAntrianRjProperties = ref({
   q: "",
   start_date: undefined as number | undefined,
   end_date: undefined as number | undefined,
+  status_antrian: [] as string[],
 });
 
 const dataAntrianAdmisiProperties = ref({
@@ -73,9 +74,10 @@ const handleUpdateTotalData = (totalData: number) => {
 };
 
 // Tangkap event search dari header: hanya berlaku saat tab Rawat Jalan aktif
-const handleHeaderSearch = (q: string) => {
+const handleHeaderSearch = (q: string, statuses?: string[]) => {
   if (value.value === "1") {
     dataAntrianRjProperties.value.q = q;
+    dataAntrianRjProperties.value.status_antrian = statuses ?? [];
     dataAntrianRjProperties.value.page = 1; // reset ke page 1 saat pencarian
   }
 };
@@ -108,6 +110,8 @@ watch(
       dataAntrianRjProperties.value.start_date = undefined;
       dataAntrianRjProperties.value.end_date = undefined;
       dataAntrianRjProperties.value.q = "";
+      // Kosongkan status saat pindah tab
+      dataAntrianRjProperties.value.status_antrian = [];
     }
   },
   { immediate: true }

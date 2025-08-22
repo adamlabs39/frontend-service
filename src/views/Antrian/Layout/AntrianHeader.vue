@@ -6,6 +6,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps({
   title: {
@@ -58,6 +59,11 @@ const handleChipSelect = (value: string) => {
       chipValues.value = ["SEMUA"];
     }
   }
+
+  // Pindahkan trigger ke sini agar SEMUA juga terpicu (auto-trigger, debounce 300ms)
+  if (props.activeTab === "1") {
+    debouncedSearch();
+  }
 };
 
 // Helper function untuk check apakah chip terpilih
@@ -109,10 +115,40 @@ watch(
   { immediate: true }
 );
 
+const getSelectedStatusesLowercase = (): string[] => {
+  if (chipValues.value.includes("SEMUA")) return [];
+  const map: Record<string, string> = {
+    ANTRI: "antri",
+    PROSES: "proses",
+    SELESAI: "selesai",
+    PENYERAHAN_OBAT: "penyerahan_obat",
+  };
+  return chipValues.value
+    .filter((v) => v !== "SEMUA")
+    .map((v) => map[v])
+    .filter(Boolean);
+};
+
+// Auto-trigger (chip) dengan debounce 300ms
+const performSearch = () => {
+  if (props.activeTab === "1") {
+    emit(
+      "search",
+      searchPatientFilter.value.trim(),
+      getSelectedStatusesLowercase()
+    );
+  }
+};
+const debouncedSearch = useDebounceFn(performSearch, 300);
+
 // Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
 const onClickSearch = () => {
   if (props.activeTab === "1") {
-    emit("search", searchPatientFilter.value.trim());
+    emit(
+      "search",
+      searchPatientFilter.value.trim(),
+      getSelectedStatusesLowercase()
+    );
     emit(
       "dateRange",
       dateToEpoch(startDateFilter.value),
@@ -124,10 +160,11 @@ const onClickSearch = () => {
 // Reset input dan kirim empty query agar hasil pencarian direset
 const onClickReset = () => {
   searchPatientFilter.value = "";
+  chipValues.value = ["SEMUA"];
   if (props.activeTab === "1") {
     startDateFilter.value = epochToDate(DEFAULT_START);
     endDateFilter.value = epochToDate(DEFAULT_END);
-    emit("search", "");
+    emit("search", "", getSelectedStatusesLowercase());
     emit("dateRange", DEFAULT_START, DEFAULT_END);
   } else {
     startDateFilter.value = null;

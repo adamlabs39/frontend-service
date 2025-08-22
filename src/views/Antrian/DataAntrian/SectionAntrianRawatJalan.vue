@@ -12,6 +12,7 @@ const props = defineProps<{
     limit: number;
     totalData: number;
     q: string;
+    status_antrian: string[];
   };
 }>();
 
@@ -59,13 +60,20 @@ const fetchGetDataAntrianRj = async () => {
     const startEpoch = props.paginationProperties.start_date ?? 1128557830;
     const endEpoch = props.paginationProperties.end_date ?? 1999999999;
 
+    const statusQuery =
+      props.paginationProperties.status_antrian &&
+      props.paginationProperties.status_antrian.length > 0
+        ? props.paginationProperties.status_antrian.join(",")
+        : "";
+
     const response = await dataAntrianStore.getAntrianRJ(
       startEpoch,
       endEpoch,
       props.paginationProperties.page,
       props.paginationProperties.limit,
       props.paginationProperties.totalData,
-      props.paginationProperties.q
+      props.paginationProperties.q,
+      statusQuery
     );
     console.log("Ini adalah data antrian rawat jalan", response);
     if (response) {
