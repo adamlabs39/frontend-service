@@ -216,9 +216,19 @@ const handlePage = (event: any) => {
   fetchJadwalDokter();
 };
 
-const filterCriteria = ref({ dokterUuid: "", poliUuid: "" });
+const filterCriteria = ref({
+  dokterUuid: "",
+  poliUuid: "",
+  aktif: undefined as boolean | undefined,
+  isValidSearch: true,
+});
 
 const displayedJadwalDokter = computed(() => {
+  // Jika pencarian ditandai tidak valid (contoh: teks filter poli tidak cocok dengan opsi),
+  // kembalikan data kosong agar tabel menampilkan "No data available".
+  if (filterCriteria.value.isValidSearch === false) {
+    return [];
+  }
   return jadwalDokterPayload.value.filter((item) => {
     const doctorOk =
       !filterCriteria.value.dokterUuid ||
@@ -250,7 +260,9 @@ onMounted(() => {
         :excludedDoctorUuids="existingDoctorUuids"
         @search="
           filterCriteria = $event;
-          fetchJadwalDokter();
+          if ($event.isValidSearch !== false) {
+            fetchJadwalDokter();
+          }
         "
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"

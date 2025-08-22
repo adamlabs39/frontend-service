@@ -80,22 +80,50 @@ const selectedDokter = ref<any>();
 const selectedPoli = ref<any>();
 const resetKey = ref(0);
 
+const poliFilterText = ref("");
+
+const handlePoliFilter = (value?: string) => {
+  poliFilterText.value = (value ?? "").toString();
+};
+
 watch(selectedPoli, (newPoliUuid) => {
   // Reset pilihan dokter ketika poli berubah
   selectedDokter.value = null;
+  poliFilterText.value = "";
 });
 
 const selectedPaymentMethod = ref<string[]>([]);
 
 // Fungsi untuk melakukan pencarian
 const performSearch = () => {
+  // Validasi: jika ada teks filter poli tapi tidak ada opsi yang cocok,
+  const q = poliFilterText.value?.trim().toLowerCase() ?? "";
+  const hasPoliQuery = q.length > 0;
+  const poliQueryMatches = props.poliOptions.some((p: any) =>
+    p?.name?.toLowerCase().includes(q)
+  );
+  const isValidSearch = !(hasPoliQuery && !poliQueryMatches);
+
+  console.log("Debug performSearch:", {
+    q,
+    hasPoliQuery,
+    poliQueryMatches,
+    isValidSearch,
+    selectedDokter: selectedDokter.value,
+    selectedPoli: selectedPoli.value,
+  });
+
   emit("search", {
-    dokterUuid: selectedDokter.value ?? "",
-    poliUuid: selectedPoli.value ?? "",
+    // Jika pencarian tidak valid, jangan kirim dokterUuid dan poliUuid
+    // agar filter menampilkan data kosong
+    dokterUuid: isValidSearch ? selectedDokter.value ?? "" : "",
+    poliUuid: isValidSearch ? selectedPoli.value ?? "" : "",
     aktif:
       selectedPaymentMethod.value.length === 1
         ? selectedPaymentMethod.value[0] === "AKTIF"
         : undefined,
+    // kirim flag validasi untuk dipakai di halaman
+    isValidSearch,
   });
 };
 
@@ -141,6 +169,7 @@ const resetFilter = () => {
     selectedDokter.value = null;
     selectedPoli.value = null;
   });
+  poliFilterText.value = "";
   resetKey.value++;
 };
 defineExpose({
@@ -161,7 +190,12 @@ function handleSearch() {
 function handleReset() {
   resetFilter(); // bersihkan pilihan lokal
 
-  emit("search", { dokterUuid: "", poliUuid: "", aktif: undefined });
+  emit("search", {
+    dokterUuid: "",
+    poliUuid: "",
+    aktif: undefined,
+    isValidSearch: true,
+  });
 
   // emit refresh untuk memuat ulang data dari server
   emit("refresh");
@@ -214,6 +248,7 @@ function handleReset() {
             prependIcon="PhMagnifyingGlass"
             label="Cari Poli"
             place-holder="Cari Poli"
+            @filter="handlePoliFilter"
           />
           <CustomSelect
             :key="`dokter-${resetKey}`"
