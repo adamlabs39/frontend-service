@@ -7,23 +7,24 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { utilsStore } from "@/stores/utils";
-import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
-import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar, downloadExportExcelKeperawatanInapPasien, downloadExportExcelBayiBaruLahir } from "@/utils/exportexceladmisi";
 import axios from "axios";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 const penjaminStore = usePenjaminStore();
 const storeUtils = utilsStore();
-const admisiLaporanStore = useAdmisiIGDStore();
+const admisiLaporanStore = useAdmisiReportStore();
 const praktisiStore = usePraktisiStore();
-const ruanganStore = useRuanganStore();
+const lokasiStore = useLokasiStore();
 const emit = defineEmits(["search"]);
 const route = useRoute();
 const pageType = ref("");
@@ -316,11 +317,12 @@ const updatePageType = async (path: string) => {
         (praktisi: any) => praktisi.isDoctor && praktisi.status
       );
     }
-    const responseRuangan = await ruanganStore.getAktifApi();
+    const responseRuangan = await lokasiStore.getApi(1,9999);
     if (responseRuangan && responseRuangan.payload) {
-      listRuangan.value = responseRuangan.payload;
+      listRuangan.value = responseRuangan.payload.filter(
+        (lokasi: any) => lokasi.locationType === "Room"
+      );
     }
-
     const responsePenjamin = await penjaminStore.getAktifApi();
     if (responsePenjamin && responsePenjamin.payload) {
       listPenjamin.value = responsePenjamin.payload;
@@ -403,9 +405,17 @@ const penjaminFilter = ref(null);
 const ruanganFilter = ref("Semua");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
+const rekapTabelFilter = ref(['kunjungan', 'dpjp', 'penjamin']);
+const rekapTabelOptions = ref([
+  { label: 'Rekap Kunjungan', value: 'kunjungan' },
+  { label: 'Rekap DPJP', value: 'dpjp' },
+  { label: 'Rekap Penjamin', value: 'penjamin' },
+]);
 
 const listDpjp = ref<any[]>([]);
 const listRuangan = ref<any[]>([]);
+const nameOptions = ref<any[]>([]);
+const nameFilter = ref<any[]>([]);
 
 
 watch(startDateFilter, (newDate) => {
@@ -424,6 +434,9 @@ const resetFilter = () => {
   ruanganFilter.value = "Semua";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  if (pageType.value === 'rekap-kunjungan') {
+    rekapTabelFilter.value = ['kunjungan', 'dpjp', 'penjamin'];
+  }
   searchData();
 };
 
@@ -701,8 +714,18 @@ defineExpose({
           </div>
           <div class="flex mt-[10px]">
             <div class="flex grow">
+              <CustomMultiSelect
+                v-if="pageType === 'rekap-kunjungan'"
+                v-model="rekapTabelFilter"
+                :options="rekapTabelOptions"
+                label="Tampilkan Tabel"
+                placeHolder="Pilih satu atau lebih tabel"
+                optionLabel="label"
+                optionValue="value"
+                class="mr-5 grow"
+              />
               <CustomTextfield
-                v-if="pageType != 'kunjungan' && pageType != 'penjamin' && pageType != 'status-kamar'"
+                v-if="pageType != 'kunjungan' && pageType != 'penjamin' && pageType != 'status-kamar' && pageType != 'rekap-kunjungan'"
                 v-model="filterParams.q"
                 label="Cari Pasien"
                 placeholder="Cari Nama / Alamat / No. RM"
@@ -722,7 +745,7 @@ defineExpose({
                 ]"
               />
               <CustomSelect
-                v-if="pageType !== 'bayi-baru-lahir' && pageType !== 'batal-kunjungan' && pageType !== 'keperawatan-inap-pasien'"
+                v-if="pageType !== 'bayi-baru-lahir' && pageType !== 'batal-kunjungan' && pageType !== 'keperawatan-inap-pasien' && pageType !== 'status-kamar'"
                 v-model="filterParams.penjamin_uuid" label="Penjamin"
                 @update:model-value="onSelectPenjamin"
                 placeHolder="Pilih Penjamin"
@@ -882,7 +905,8 @@ defineExpose({
       </div> -->
       <div class =" flex flex-col gap-6" v-if="reportType === 'rekap-kunjungan'">
         <CustomAccordion
-          class="max-w-[1000px] mx-auto"
+          v-if="rekapTabelFilter.includes('kunjungan')"
+          class="max-w-[1000px] mx-auto min-w-[1000px]"
           :openWithHeader="true"
           initialState="0"
           headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
@@ -910,13 +934,13 @@ defineExpose({
           <template #content>
             <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
               <div class="flex items-center p-4 bg-adameds-50">
-                    <label class="w-40 font-semibold">Jenis Kunjungan</label>
-                    <CustomSelect
-                      :showLabel="false"
-                      v-model="visitTypeFilter"
-                      class="w-full md:w-1/4"
-                    />
-                  </div>
+                  <label class="w-40 font-semibold">Jenis Kunjungan</label>
+                  <CustomSelect
+                    :showLabel="false"
+                    v-model="visitTypeFilter"
+                    class="w-full md:w-1/4"
+                  />
+                </div>
               <DataTable
                 :value="rekapData"
                 tableStyle="min-width: 50rem"
@@ -973,7 +997,8 @@ defineExpose({
           </template> 
         </CustomAccordion>
         <CustomAccordion
-          class="max-w-[1000px] mx-auto"
+          v-if="rekapTabelFilter.includes('dpjp')"
+          class="max-w-[1000px] mx-auto min-w-[1000px]"
           :openWithHeader="true"
           initialState="0"
           headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
@@ -1002,11 +1027,15 @@ defineExpose({
             <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
               <div class="flex items-center p-4 bg-adameds-50">
                 <label class="w-40 font-semibold">Dokter DPJP</label>
-                <CustomSelect
+                <CustomMultiSelect
                   :showLabel="false"
-                  v-model="dokterFilter"
-                  class="w-full md:w-1/4"
-                />
+                  v-model="nameFilter"
+                  :options="nameOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Pilih satu atau lebih nama untuk ditampilkan"
+                  class="w-full md:w-2/4"
+              />
               </div>
               <DataTable
                 :value="rekapDokterData"
@@ -1063,7 +1092,8 @@ defineExpose({
           </template> 
         </CustomAccordion>
         <CustomAccordion
-          class="max-w-[1000px] mx-auto"
+          v-if="rekapTabelFilter.includes('penjamin')"
+          class="max-w-[1000px] mx-auto min-w-[1000px]"
           :openWithHeader="true"
           initialState="0"
           headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"

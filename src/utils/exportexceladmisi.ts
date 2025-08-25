@@ -1,27 +1,50 @@
 import * as XLSX from "xlsx-js-style";
 import { epochToDate } from "./Helpers";
 import axios from "axios";
-import { utilsStore } from "@/stores/utils";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
+const getPeriodeTeksFromFilter = (filter?: any) => {
+  // Fungsi kecil di dalam untuk format tanggal
+  const formatTanggalIndonesia = (timestamp: any) => {
+    if (!timestamp) return null; // Kembalikan null jika tidak ada tanggal
+    const tanggal = new Date(Number(timestamp) * 1000);
+    return tanggal.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formattedStartDate = formatTanggalIndonesia(filter?.start_date);
+  const formattedEndDate = formatTanggalIndonesia(filter?.end_date);
+
+  // Logika untuk menampilkan periode atau tanggal tunggal
+  if (formattedStartDate && formattedEndDate) {
+    if (formattedStartDate === formattedEndDate) {
+      return `Tanggal : ${formattedStartDate}`;
+    }
+    return `Periode : ${formattedStartDate} - ${formattedEndDate}`;
+  }
+  
+  // Teks default jika tidak ada filter tanggal
+  const today = new Date().toLocaleDateString("id-ID", {
+      day: "2-digit", month: "long", year: "numeric",
+  });
+  return `Tanggal Export: ${today}`;
+};
 
 // STATUS KAMAR
 export const downloadExportExcelStatusKamar = async (filter?: any) => {
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/status-kamar`;
+    const admisiReportStore = useAdmisiReportStore();
+      const response = await admisiReportStore.ExportStatusKamarReport(filter || {});
 
-    const response = await axios.get(apiUrl, {
-      params: filter,
-      headers: {
-        Authorization: token,
-      },
-    });
+      console.log("Full response object from store action:", response);
+      const reportData = response.payload;
 
-    const reportData = response.data.payload;
-
-    if (!reportData || reportData.length === 0) {
-      alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
-      return;
-    }
+      if (!reportData || reportData.length === 0) {
+        alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+        return;
+      }
 
     const today = new Date();
     const formattedDate = today.toLocaleDateString("id-ID", {
@@ -31,7 +54,7 @@ export const downloadExportExcelStatusKamar = async (filter?: any) => {
     });
 
     const title = ["LAPORAN STATUS KAMAR"];
-    const tanggalExport = [`Tanggal Export: ${formattedDate}`];
+    const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
     const data: any[] = [];
     data.push({});
@@ -40,7 +63,7 @@ export const downloadExportExcelStatusKamar = async (filter?: any) => {
     data.push({
       No: "No",
       roomClass: "Kelas",
-      room: "Room",
+      room: "Kamar",
       totalPatients: "Jumlah Pasien",
     });
 
@@ -50,8 +73,7 @@ export const downloadExportExcelStatusKamar = async (filter?: any) => {
 
       data.push({
         No: i + 1,
-        // Asumsi nama properti dari API menggunakan snake_case
-        roomClass: room.class_name ?? "-",
+        roomClass: room.className ?? "-",
         room: room.name ?? "-",
         totalPatients: row.jumlahPasien ?? "-",
       });
@@ -105,21 +127,152 @@ export const downloadExportExcelStatusKamar = async (filter?: any) => {
 };
 
 // KUNJUNGAN
+// export const downloadExportExcelKunjungan = async (
+//   filter?: any
+//   ) => {
+//     try {
+//       const token = localStorage.getItem("access_token");
+//       const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/kunjungan`;
+
+//       const response = await axios.get(apiUrl, {
+//         params: filter,
+//         headers: {
+//           Authorization: token,
+//         },
+//       });
+
+//       const reportData = response.data.payload;
+
+//       if (!reportData || reportData.length === 0) {
+//         alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+//         return;
+//       }
+
+//       const today = new Date();
+//       const formattedDate = today.toLocaleDateString("id-ID", {
+//         day: "2-digit",
+//         month: "long",
+//         year: "numeric",
+//       });
+
+//       const title = ["LAPORAN KUNJUNGAN"];
+//       const tanggalExport = [getPeriodeTeksFromFilter(filter)];
+
+//       const data: any[] = [];
+//       data.push({});
+//       data.push({});
+//       data.push({});
+//       data.push({
+//         No: "No",
+//         tglRegistrasi: "Tanggal Registrasi",
+//         jenisKunjungan: "Jenis Kunjungan",
+//         noreg: "No. Registrasi",
+//         noRm: "No. RM",
+//         namaPasien: "Nama Pasien",
+//         jenisKelamin: "Jenis Kelamin",
+//         tglLahir: "Tanggal Lahir",
+//         umur: "Umur",
+//         alamat: "Alamat",
+//         jenisId: "Jenis Identitas",
+//         noIdentitas: "No. Identitas",
+//         dokter: "Dokter",
+//         poli: "Poli",
+//         penjamin: "Penjamin",
+//         noPenjamin: "No. Penjamin",
+//       });
+
+//       for (let i = 0; i < reportData.length; i++) {
+//         const row = reportData[i];
+//         try {
+//           const patient = row.patient ?? {};
+//           const insurance = patient.insurance?.[0] ?? {};
+//           const birthDetail = patient.birth_detail ?? {};
+//           const address = patient.address ?? {};
+
+//           const umur = `${birthDetail.age_year ?? 0} Tahun ${birthDetail.age_month ?? 0} Bulan ${birthDetail.age_day ?? 0} Hari`;
+
+//           data.push({
+//             No: i + 1,
+//             tglRegistrasi: epochToDate(row.tgl_registrasi, "dateTime"),
+//             jenisKunjungan: row.jenis_kunjungan ?? "-",
+//             noreg: row.noreg ?? "-",
+//             noRm: patient.no_rm ?? "-",
+//             namaPasien: patient.name ?? "-",
+//             jenisKelamin: patient.gender === "Male" ? "L" : patient.gender === "Female" ? "P" : "-",
+//             tglLahir: birthDetail.birth_date?.split("T")[0] ?? "-",
+//             umur: umur,
+//             alamat: address.full_address ?? "-",
+//             jenisId: patient.identity ?? "-",
+//             noIdentitas: patient.no_identity ?? "-",
+//             dokter: row.practitioner?.pegawai?.nama ?? "-",
+//             poli: row.lokasi?.name ?? "-",
+//             penjamin: insurance.name ?? "-",
+//             noPenjamin: insurance.accountNumber ?? "-",
+//           });
+//         } catch (error) {
+//           console.error(`Gagal memproses baris data ke-${i}:`, row);
+//           console.error("Pesan Error:", error);
+//           data.push({ No: i + 1, tglRegistrasi: "DATA ERROR", noreg: row.noreg });
+//         }
+//       }
+
+//       const workbook = XLSX.utils.book_new();
+//       const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+//       XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+//       XLSX.utils.sheet_add_aoa(worksheet, [tanggalExport], { origin: "A2" });
+
+//       worksheet["!merges"] = [
+//         { s: { r: 0, c: 0 }, e: { r: 0, c: 15 } },
+//         { s: { r: 1, c: 0 }, e: { r: 1, c: 15 } },
+//       ];
+
+//       worksheet["A1"].s = {
+//         alignment: { horizontal: "center", vertical: "center" },
+//         font: { bold: true, sz: 14 },
+//       };
+//       worksheet["A2"].s = {
+//         alignment: { horizontal: "center", vertical: "center" },
+//         font: { bold: true, sz: 11 },
+//       };
+
+//       const headerStyle = {
+//         alignment: { horizontal: "center", vertical: "center" },
+//         font: { bold: true },
+//       };
+//       const headers = ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "I4", "J4", "K4", "L4", "M4", "N4", "O4", "P4"];
+//       headers.forEach(header => {
+//         if (worksheet[header]) {
+//           worksheet[header].s = headerStyle;
+//         }
+//       });
+
+//       const columnWidths = data.reduce((widths: any, row: any) => {
+//         Object.keys(row).forEach((key, colIdx) => {
+//           const cellValue = row[key] ? row[key].toString() : "";
+//           widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+//         });
+//         return widths;
+//       }, []);
+//       worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+//       XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Kunjungan");
+//       XLSX.writeFile(workbook, `Laporan Kunjungan.xlsx`);
+//     } catch (error) {
+//       console.error("Error exporting Kunjungan", error);
+//       alert("Gagal mengekspor data. Silakan cek konsol untuk detail.");
+//     }
+// };
+
 export const downloadExportExcelKunjungan = async (
   filter?: any
   ) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/kunjungan`;
+      const admisiReportStore = useAdmisiReportStore();
+      const response = await admisiReportStore.ExportKunjunganReport(filter || {});
 
-      const response = await axios.get(apiUrl, {
-        params: filter,
-        headers: {
-          Authorization: token,
-        },
-      });
-
-      const reportData = response.data.payload;
+      console.log("Full response object from store action:", response);
+      const reportData = response.payload;
 
       if (!reportData || reportData.length === 0) {
         alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
@@ -134,7 +287,7 @@ export const downloadExportExcelKunjungan = async (
       });
 
       const title = ["LAPORAN KUNJUNGAN"];
-      const tanggalExport = [`Tanggal : ${formattedDate}`];
+      const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
       const data: any[] = [];
       data.push({});
@@ -171,17 +324,17 @@ export const downloadExportExcelKunjungan = async (
 
           data.push({
             No: i + 1,
-            tglRegistrasi: epochToDate(row.tgl_registrasi, "dateTime"),
-            jenisKunjungan: row.jenis_kunjungan ?? "-",
+            tglRegistrasi: epochToDate(row.tglRegistrasi, "dateTime"),
+            jenisKunjungan: row.jenisKunjungan ?? "-",
             noreg: row.noreg ?? "-",
-            noRm: patient.no_rm ?? "-",
+            noRm: patient.noRm ?? "-",
             namaPasien: patient.name ?? "-",
             jenisKelamin: patient.gender === "Male" ? "L" : patient.gender === "Female" ? "P" : "-",
-            tglLahir: birthDetail.birth_date?.split("T")[0] ?? "-",
+            tglLahir: patient.birthDetail.birthDate?.split("T")[0] ?? "-",
             umur: umur,
-            alamat: address.full_address ?? "-",
+            alamat: address.fullAddress ?? "-",
             jenisId: patient.identity ?? "-",
-            noIdentitas: patient.no_identity ?? "-",
+            noIdentitas: patient.noIdentity ?? "-",
             dokter: row.practitioner?.pegawai?.nama ?? "-",
             poli: row.lokasi?.name ?? "-",
             penjamin: insurance.name ?? "-",
@@ -247,22 +400,16 @@ export const downloadExportExcelBatalKunjungan = async (
   filter?: any
 ) => {
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/batal-kunjungan`;
+    const admisiReportStore = useAdmisiReportStore();
+      const response = await admisiReportStore.ExportBatalKunjunganReport(filter || {});
 
-    const response = await axios.get(apiUrl, {
-      params: filter,
-      headers: {
-        Authorization: token,
-      },
-    });
+      console.log("Full response object from store action:", response);
+      const reportData = response.payload;
 
-    const reportData = response.data.payload;
-
-    if (!reportData || reportData.length === 0) {
-      alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
-      return;
-    }
+      if (!reportData || reportData.length === 0) {
+        alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+        return;
+      }
 
     const today = new Date();
     const formattedDate = today.toLocaleDateString("id-ID", {
@@ -272,7 +419,7 @@ export const downloadExportExcelBatalKunjungan = async (
     });
 
     const title = ["LAPORAN BATAL KUNJUNGAN"];
-    const tanggalExport = [`Tanggal : ${formattedDate}`];
+    const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
     const data: any[] = [];
     data.push({});
@@ -298,16 +445,16 @@ export const downloadExportExcelBatalKunjungan = async (
       
       data.push({
         No: i + 1,
-        tglRegistrasi: epochToDate(row.tgl_registrasi, "dateTime") ?? "-",
-        jenisKunjungan: row.jenis_kunjungan ?? "-",
+        tglRegistrasi: epochToDate(row.tglRegistrasi, "date") ?? "-",
+        jenisKunjungan: row.jenisKunjungan ?? "-",
         noreg: row.noreg ?? "-",
-        noRm: patient.no_rm ?? "-",
+        noRm: patient.noRm ?? "-",
         namaPasien: patient.name ?? "-",
-        poli: row.lokasi?.nama ?? "-",
+        poli: row.lokasi?.name ?? "-",
         dokter: row.practitioner?.pegawai?.nama ?? "-",
-        tglBatal: epochToDate(row.cancel_date, "dateTime") ?? "-",
-        petugas: row.cancel_by?.pegawai?.nama ?? "-",
-        alasanBatal: row.cancel_reason ?? "-",
+        tglBatal: epochToDate(row.cancelDate, "date") ?? "-",
+        petugas: row.cancelBy ?? "-",
+        alasanBatal: row.cancelReason ?? "-",
       });
     }
 
@@ -364,22 +511,16 @@ export const downloadExportExcelKeperawatanInapPasien = async (
   filter?: any
 ) => {
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/keperawatan-inap`;
+    const admisiReportStore = useAdmisiReportStore();
+      const response = await admisiReportStore.ExportKeperawatanInapPasienReport(filter || {});
 
-    const response = await axios.get(apiUrl, {
-      params: filter,
-      headers: {
-        Authorization: token,
-      },
-    });
+      console.log("Full response object from store action:", response);
+      const reportData = response.payload;
 
-    const reportData = response.data.payload;
-
-    if (!reportData || reportData.length === 0) {
-      alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
-      return;
-    }
+      if (!reportData || reportData.length === 0) {
+        alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+        return;
+      }
 
     const today = new Date();
     const formattedDate = today.toLocaleDateString("id-ID", {
@@ -389,7 +530,7 @@ export const downloadExportExcelKeperawatanInapPasien = async (
     });
 
     const title = ["LAPORAN KEPERAWATAN INAP PASIEN"];
-    const tanggalExport = [`Tanggal : ${formattedDate}`];
+    const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
     const data: any[] = [];
     data.push({});
@@ -408,18 +549,16 @@ export const downloadExportExcelKeperawatanInapPasien = async (
 
     for (let i = 0; i < reportData.length; i++) {
     const row = reportData[i];
-    // Ambil objek 'room' dari dalam 'monitoring_room' untuk mempermudah
-    const roomInfo = row.monitoring_room?.room ?? {};
         
     data.push({
       No: i + 1,
-      namaPasien: row.nama_pasien ?? "-",
-      noRm: row.no_rm ?? "-",
-      ruangan: roomInfo.name ?? "-",
-      kelas: roomInfo.class_name ?? "-",
-      noBed: row.monitoring_room?.no_bed ?? "-",
-      tglMasuk: row.tanggal_dirawat ? epochToDate(row.tanggal_dirawat, "dateTime") : "-",
-      tglKeluar: row.discharge_date ? epochToDate(row.discharge_date, "dateTime") : "-",
+      namaPasien: row.patient.name ?? "-",
+      noRm: row.noRm ?? "-",
+      ruangan: row.monitoringRoom?.bedLokasi?.name ?? "-",
+      kelas: row.monitoringRoom?.bedLokasi?.className ?? "-",
+      noBed: row.monitoringRoom?.noBed ?? "-",
+      tglMasuk: row.tanggalDirawat ? epochToDate(row.tanggalDirawat, "date") : "-",
+      tglKeluar: row.dischargeDate ? epochToDate(row.dischargeDate, "date") : "-",
     });
   }
 
@@ -476,23 +615,17 @@ export const downloadExportExcelKeperawatanInapPasien = async (
 export const downloadExportExcelBayiBaruLahir = async (
   filter?: any
 ) => {
-  try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/export/bayi-baru-lahir`;
+   try {
+    const admisiReportStore = useAdmisiReportStore();
+      const response = await admisiReportStore.ExportBayiBaruLahirReport(filter || {});
 
-    const response = await axios.get(apiUrl, {
-      params: filter,
-      headers: {
-        Authorization: token,
-      },
-    });
+      console.log("Full response object from store action:", response);
+      const reportData = response.payload;
 
-    const reportData = response.data.payload;
-
-    if (!reportData || reportData.length === 0) {
-      alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
-      return;
-    }
+      if (!reportData || reportData.length === 0) {
+        alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+        return;
+      }
 
     const today = new Date();
     const formattedDate = today.toLocaleDateString("id-ID", {
@@ -502,7 +635,7 @@ export const downloadExportExcelBayiBaruLahir = async (
     });
 
     const title = ["LAPORAN BAYI BARU LAHIR"];
-    const tanggalExport = [`Tanggal : ${formattedDate}`];
+    const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
     const data: any[] = [];
     data.push({});
@@ -510,13 +643,15 @@ export const downloadExportExcelBayiBaruLahir = async (
     data.push({});
     data.push({
       No: "No.",
-      tglRegistrasi: "Tgl. Registrasi",
+      tglRegistrasi: "Tanggal Registrasi",
+      // jeniskunjungan: "Jenis Kunjungan",
+      // nomer registrasi: "No. Registrasi",
       noRmBaby: "No. RM",
       nameBaby: "Nama Bayi",
-      birthDate: "Tgl. Lahir",
-      birthTimeBaby: "Jam Lahir",
       genderBaby: "Jenis Kelamin",
       birthPlace: "Tempat Lahir",
+      birthDate: "Tanggal Lahir",
+      birthTimeBaby: "Jam Lahir",
       identitasIbu: "Identitas Ibu",
       namaIbu: "Nama Ibu",
     });
@@ -524,8 +659,6 @@ export const downloadExportExcelBayiBaruLahir = async (
     for (let i = 0; i < reportData.length; i++) {
       const row = reportData[i];
       const birthDetail = row.birth_detail ?? {};
-
-      // Menggunakan helper epochToDate karena tanggalDaftar adalah string ISO
       const tglRegistrasiStr = row.tanggal_daftar 
         ? epochToDate(new Date(row.tanggal_daftar).getTime() / 1000, "date") as string
         : "-";
@@ -539,10 +672,10 @@ export const downloadExportExcelBayiBaruLahir = async (
         tglRegistrasi: tglRegistrasiStr,
         noRmBaby: row.no_rm_baby ?? "-",
         nameBaby: row.name_baby ?? "-",
-        birthDate: tglLahirStr,
-        birthTimeBaby: row.birth_time_baby ?? "-",
         genderBaby: row.gender_baby === "Male" ? "L" : row.gender_baby === "Female" ? "P" : "-",
         birthPlace: birthDetail.birth_place ?? "-",
+        birthDate: tglLahirStr,
+        birthTimeBaby: row.birth_time_baby ?? "-",
         identitasIbu: row.identifier_mom ?? "-",
         namaIbu: row.name_mom ?? "-",
       });

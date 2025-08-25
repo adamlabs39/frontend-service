@@ -422,6 +422,12 @@ const handlePage = (event: any) => {
                 "
                 customClass="h-5 pr-[7px] mr-[5px]"
               />
+               <CustomChip
+                v-if="slotProps.data.polyclinic"
+                :showCheckedIcon="false"
+                :label="`${slotProps.data.polyclinic.name}`"
+                customClass="h-5 pr-[7px] mr-[5px]"
+              />
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"

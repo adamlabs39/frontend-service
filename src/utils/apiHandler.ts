@@ -16,6 +16,7 @@ import {
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
+import axios from "axios";
 
 const cekHost = (baseUrl: unknown, nextUrl: string) => {
   const url = new URL(baseUrl as string);
@@ -465,6 +466,31 @@ const apiAdmisiDelete = async (url: string, data: object) => {
     return response.data;
   } catch (error) {
     errorApiHandler(error);
+  }
+};
+export const apiAdmisiDownload = async (url: string) => {
+  const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
+  
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("Token tidak ditemukan, silakan login ulang");
+      return;
+    }
+
+    const response = await axios.get(fullUrl, {
+      responseType: "blob",
+      headers: {
+        'Authorization': token,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    });
+    
+    return response;
+
+  } catch (error) {
+    console.error("Error di apiAdmisiDownload:", error);
+    throw error;
   }
 };
 

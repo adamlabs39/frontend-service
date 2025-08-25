@@ -27,6 +27,7 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import { createPatientCard } from "@/utils/PdfMake";
 import axios from "axios";
 import { useDistrictStore } from "@/stores/datamaster/district";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -36,36 +37,29 @@ const generalConsentStore = useGeneralConsentStore();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const handleExport = async () => {
   try {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("Token tidak ditemukan, silakan login ulang");
+    const admisiReportStore = useAdmisiReportStore();
+    const response = await admisiReportStore.DownloadLaporanAdmisiReport();
+
+    if (!response || !response.data) {
+      alert("Download gagal. Pastikan file tersedia di server.");
       return;
     }
-
-    const endpoint = `${import.meta.env.VITE_BASE_ADMISI}/download`;
-
-    const response = await axios.get(endpoint, {
-      responseType: "blob",
-      headers: {
-        Authorization: token,
-        Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
-    });
 
     const blob = new Blob([response.data], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
     const url = window.URL.createObjectURL(blob);
-
     const link = document.createElement("a");
     link.href = url;
+    
     link.setAttribute("download", "laporan_admisi.xlsx"); 
+    
     document.body.appendChild(link);
     link.click();
     link.remove();
-
     window.URL.revokeObjectURL(url);
+
   } catch (error) {
     console.error("Error saat download:", error);
     alert("Download gagal");
