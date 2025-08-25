@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { apiAdmisiGet } from "@/utils/apiHandler";
+import { apiAdmisiDownload } from "@/utils/apiHandler";
 
-export const useAdmisiIGDStore = defineStore({
+export const useAdmisiReportStore = defineStore({
   id: "admisiReport",
   getters: {},
   actions: {
@@ -15,7 +16,6 @@ export const useAdmisiIGDStore = defineStore({
         startDate = "",
         endDate = "",
         room = ""
-
       },
       payload = {}
     ) {
@@ -232,6 +232,91 @@ export const useAdmisiIGDStore = defineStore({
         `/report/new-born?page=${page}&limit=${limit}&q=${q}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
         payload
       );
+    },
+    async ExportKunjunganReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        penjamin = "",
+        jenisKunjungan = "",
+        start_date = "",
+        end_date = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/export/kunjungan?page=${page}&limit=${limit}&q=${q}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${start_date}&end_date=${end_date}`,
+        payload
+      );
+    },
+    async ExportBatalKunjunganReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        jenisKunjungan = "",
+        start_date = "",
+        end_date = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/export/batal-kunjungan?page=${page}&limit=${limit}&q=${q}&jenis_kunjungan=${jenisKunjungan}&start_date=${start_date}&end_date=${end_date}`,
+        payload
+      );
+    },
+    async ExportKeperawatanInapPasienReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        room = "",
+        start_date = "",
+        end_date = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/export/keperawatan-inap?page=${page}&limit=${limit}&q=${q}&room=${room}&start_date=${start_date}&end_date=${end_date}`,
+        payload
+      );
+    },
+    async ExportStatusKamarReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        room = "",
+        start_date = "",
+        end_date = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/export/status-kamar?page=${page}&limit=${limit}&q=${q}&room=${room}&start_date=${start_date}&end_date=${end_date}`,
+        payload
+      );
+    },
+    async ExportBayiBaruLahirReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        jenisKunjungan = "",
+        start_date = "",
+        end_date = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/export/new-born?page=${page}&limit=${limit}&q=${q}&jenis_kunjungan=${jenisKunjungan}&start_date=${start_date}&end_date=${end_date}`,
+        payload
+      );
+    },
+    async DownloadLaporanAdmisiReport() {
+    const endpoint = `/download`;
+    return apiAdmisiDownload(endpoint);
     },
     // FIXME Belum mulai develop BPJS
     // async getJumlahBPJSReport({}, payload = {}) {

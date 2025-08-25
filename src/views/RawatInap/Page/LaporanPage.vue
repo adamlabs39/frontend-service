@@ -13,7 +13,7 @@ import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPa
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
-import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
@@ -45,7 +45,7 @@ const properties = ref({
 // STORE
 const useUtilsStore = utilsStore();
 const rekapTindakanPasienStore = useRekapTindakanStore()
-const kunjunganRawatInap = useAdmisiIGDStore()
+const kunjunganRawatInap = useAdmisiReportStore()
 const dokterStore = usePraktisiStore()
 const ruanganStore = useRuanganStore();
 

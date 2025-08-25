@@ -40,7 +40,7 @@ const props = defineProps({
 
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi(); 
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {

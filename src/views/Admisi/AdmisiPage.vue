@@ -86,7 +86,11 @@ const getPatientList = async () => {
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRJStore.getRJ(filterData.value);
+    const response = await admisiRJStore.getRJ({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -100,10 +104,15 @@ const fetchRJPatient = async () => {
     storeUtils.setLoading(false);
   }
 };
+
 const fetchRIPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRIStore.getRI(filterData.value);
+    const response = await admisiRIStore.getRI({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -117,10 +126,15 @@ const fetchRIPatient = async () => {
     storeUtils.setLoading(false);
   }
 };
+
 const fetchIGDPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiIGDStore.getIGD(filterData.value);
+    const response = await admisiIGDStore.getIGD({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -408,6 +422,12 @@ const handlePage = (event: any) => {
                 "
                 customClass="h-5 pr-[7px] mr-[5px]"
               />
+               <CustomChip
+                v-if="slotProps.data.polyclinic"
+                :showCheckedIcon="false"
+                :label="`${slotProps.data.polyclinic.name}`"
+                customClass="h-5 pr-[7px] mr-[5px]"
+              />
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
@@ -598,6 +618,7 @@ const handlePage = (event: any) => {
         <CustomPaginator
           :rows="properties.pageSize"
           :totalRecords="properties.total"
+          :rowsPerPageOptions="[10,20,30,40,50]"
           @page="handlePage"
         />
       </div>
