@@ -91,26 +91,17 @@ const handleHeaderDateRange = (start?: number | null, end?: number | null) => {
   }
 };
 
-// Default epoch untuk rawat jalan
-const DEFAULT_START = 1128557830;
-const DEFAULT_END = 1999999999;
-
 // Reset q ketika berpindah tab ke selain Rawat Jalan
 watch(
   () => value.value,
   (newVal) => {
     if (newVal === "1") {
-      // Saat masuk tab Rawat Jalan: set default jika belum ada
-      dataAntrianRjProperties.value.start_date =
-        dataAntrianRjProperties.value.start_date ?? DEFAULT_START;
-      dataAntrianRjProperties.value.end_date =
-        dataAntrianRjProperties.value.end_date ?? DEFAULT_END;
+      // start_date/end_date undefined saat pertama kali
     } else {
-      // Selain Rawat Jalan: kosongkan agar tidak ditampilkan di header
+      // Selain Rawat Jalan: dikosongkan agar tidak ditampilkan di header
       dataAntrianRjProperties.value.start_date = undefined;
       dataAntrianRjProperties.value.end_date = undefined;
       dataAntrianRjProperties.value.q = "";
-      // Kosongkan status saat pindah tab
       dataAntrianRjProperties.value.status_antrian = [];
     }
   },

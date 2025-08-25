@@ -71,13 +71,13 @@ const isChipSelected = (value: string) => {
   return chipValues.value.includes(value);
 };
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+const startDateFilter = ref<Date | null>(new Date());
+const endDateFilter = ref<Date | null>(new Date());
 const searchPatientFilter = ref<string>("");
 
 // emit event pencarian dan rentang tanggal
 const emit = defineEmits<{
-  search: [q: string];
+  search: [q: string, statuses?: string[]];
   dateRange: [start_date?: number | null, end_date?: number | null];
 }>();
 
@@ -91,19 +91,26 @@ const dateToEpoch = (date?: Date | null): number | null => {
   return Math.floor(date.getTime() / 1000);
 };
 
-// Default epoch untuk tab Rawat Jalan
-const DEFAULT_START = 1128557830;
-const DEFAULT_END = 1999999999;
+// Fallback tanggal untuk tampilan (display purpose only)
+const getNowDate = () => new Date(); // kanan (end)
+const getThreeDaysAgoDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 3);
+  return d; // kiri (start)
+};
 
 const syncDatepickerWithProps = () => {
   if (props.activeTab === "1") {
-    // Tab Rawat Jalan aktif
-    const start = props.startDateEpoch ?? DEFAULT_START;
-    const end = props.endDateEpoch ?? DEFAULT_END;
-    startDateFilter.value = epochToDate(start);
-    endDateFilter.value = epochToDate(end);
+    startDateFilter.value =
+      props.startDateEpoch !== undefined && props.startDateEpoch !== null
+        ? epochToDate(props.startDateEpoch)
+        : getThreeDaysAgoDate();
+
+    endDateFilter.value =
+      props.endDateEpoch !== undefined && props.endDateEpoch !== null
+        ? epochToDate(props.endDateEpoch)
+        : getNowDate();
   } else {
-    // Tab lain: kosongkan tampilan datepicker
     startDateFilter.value = null;
     endDateFilter.value = null;
   }
@@ -162,15 +169,13 @@ const onClickReset = () => {
   searchPatientFilter.value = "";
   chipValues.value = ["SEMUA"];
   if (props.activeTab === "1") {
-    startDateFilter.value = epochToDate(DEFAULT_START);
-    endDateFilter.value = epochToDate(DEFAULT_END);
+    startDateFilter.value = getThreeDaysAgoDate();
+    endDateFilter.value = getNowDate();
     emit("search", "", getSelectedStatusesLowercase());
-    emit("dateRange", DEFAULT_START, DEFAULT_END);
   } else {
     startDateFilter.value = null;
     endDateFilter.value = null;
     emit("search", "");
-    emit("dateRange", null, null);
   }
 };
 
@@ -178,6 +183,8 @@ const onClickReset = () => {
 watch(
   () => props.activeTab,
   (newVal) => {
+    chipValues.value = ["SEMUA"];
+
     if (newVal !== "1") {
       searchPatientFilter.value = "";
       emit("search", "");
@@ -190,7 +197,12 @@ watch(
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 justify-between items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="onClickReset"
+          title="refresh"
+        />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >
