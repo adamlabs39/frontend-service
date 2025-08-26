@@ -174,7 +174,7 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex justify-center items-center">
-              <div class="p-1.5 bg-adameds-300 rounded-lg">
+              <div class="p-1.5 bg-adameds-300 rounded-lg" @click="handleAktif">
                 <PhScreencast :size="26" color="#ffffff" weight="fill" />
               </div>
             </div>
