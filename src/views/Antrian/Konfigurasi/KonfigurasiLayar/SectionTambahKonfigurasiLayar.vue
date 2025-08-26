@@ -64,6 +64,15 @@ const fetchGetPoli = async () => {
   }
 };
 
+const selectedPoliData = computed(() => {
+  if (!poli_uuids.value || poli_uuids.value.length === 0) {
+    return [];
+  }
+  return jadwalPoliPayload.value.filter((poli) =>
+    poli_uuids.value.includes(poli.uuid)
+  );
+});
+
 const itemsLayar = ref([
   { name: "Layar 3 x 3 Panggilan", code: 1 },
   { name: "Layar 3 x 2 Panggilan", code: 2 },
@@ -84,7 +93,13 @@ const schema = toTypedSchema(
       .array()
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
-    media: yup.string(),
+    media: yup
+      .string()
+      .matches(
+        /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
+        "URL harus dari YouTube"
+      )
+      .nullable(),
     aktif: yup.boolean().default(true),
     poli_uuids: yup.array().of(yup.string()),
   })
@@ -114,8 +129,8 @@ const emit = defineEmits(["update:isDialogVisible", "close", "refresh"]);
 const onSubmit = handleSubmit(async (values: any) => {
   const payload = {
     ...values, // salin semua field yang sudah ada
-    isAdmisi: true, // atau nilai sesuai kebutuhan
-    isFarmasi: true, // idem
+    isAdmisi: values.isAdmisi ?? false, // atau nilai sesuai kebutuhan
+    isFarmasi: values.isFarmasi ?? false, // idem
     poli_uuids: values.poli_uuids ?? [], // pastikan array
     aktif: values.aktif ?? false, //
     status: values.aktif ?? false,
@@ -238,6 +253,12 @@ watch(
               :invalid="!!errors.judul"
               :invalid-message="errors.judul"
             />
+            <CustomSwitch
+              v-model="isAdmisi"
+              label="Admisi"
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+            />
             <div class="flex gap-2.5 items-end mt-4 text-black">
               <CustomSwitch
                 v-model="isPoli"
@@ -255,6 +276,12 @@ watch(
               optionLabel="name"
               class="mt-4 mr-5 w-full text-black multiselect-wrap"
               v-show="isPoli"
+            />
+            <CustomSwitch
+              v-model="isFarmasi"
+              label="Farmasi"
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
             />
             <CustomTextfield
               label="Youtube"
@@ -314,10 +341,13 @@ watch(
               <!-- Blok Konten -->
               <div class="flex-1 min-h-[500px] px-1" id="wrapper-antrian">
                 <template v-if="tipeLayar === 1">
-                  <layout-3x3-panggilan />
+                  <layout-3x3-panggilan
+                    :payload="selectedPoliData"
+                    :is-poli="isPoli"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 2">
-                  <layout-3x2-panggilan />
+                  <layout-3x2-panggilan :payload="jadwalPoliPayload" />
                 </template>
                 <template v-else-if="tipeLayar === 3">
                   <layout-list-3-panggilan-3 />

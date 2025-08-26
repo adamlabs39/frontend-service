@@ -120,9 +120,9 @@ const onSubmit = handleSubmit(async (values: any) => {
     nama_layar: values.namaLayar,
     tipe_layar: values.tipeLayar,
     judul: values.judul,
-    is_admisi: true,
+    is_admisi: values.is_admisi,
     is_poli: values.isPoli,
-    is_farmasi: true,
+    is_farmasi: values.is_farmasi,
     flash_text: values.flashText,
     aktif: values.aktif,
     poli_uuids: values.poli_uuids ?? [],
@@ -269,6 +269,12 @@ watch(
               :invalid="!!errors.judul"
               :invalid-message="errors.judul"
             />
+            <CustomSwitch
+              v-model="isAdmisi"
+              label="Admisi"
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
+            />
             <div class="flex gap-2.5 items-end mt-4 text-black">
               <CustomSwitch
                 v-model="isPoli"
@@ -286,6 +292,12 @@ watch(
               optionLabel="name"
               class="mt-4 mr-5 w-full text-black multiselect-wrap"
               v-show="isPoli"
+            />
+            <CustomSwitch
+              v-model="isFarmasi"
+              label="Farmasi"
+              sideLabel="Non-Aktif"
+              sideLabelTrue="Aktif"
             />
             <CustomTextfield
               label="Youtube"
