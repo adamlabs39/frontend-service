@@ -25,6 +25,8 @@ const allPoliData = ref<any[]>([]);
 const allDokterData = ref<
   Array<{ uuid: string; name: string; poliUuids: string[] }>
 >([]);
+
+const allSchedulesPayload = ref<any[]>([]);
 const jadwalDokterProperties = ref({
   page: 1,
   page_size: 10,
@@ -79,11 +81,26 @@ const fetchAllReferenceData = async () => {
     if (response?.payload) {
       allPoliData.value = buildPoliOptionsFromPayload(response.payload);
       allDokterData.value = buildDokterOptionsFromPayload(response.payload);
+      allSchedulesPayload.value = response.payload;
     }
   } catch (error) {
     console.error("Failed to fetch all reference data", error);
   }
 };
+
+const excludedDoctorUuidsByPoli = computed(() => {
+  const map: Record<string, Set<string>> = {};
+  (allSchedulesPayload.value || []).forEach((item: any) => {
+    const poliUuid = item?.poli?.uuid;
+    const doctorUuid = item?.doctor?.uuid;
+    if (!poliUuid || !doctorUuid) return;
+    if (!map[poliUuid]) map[poliUuid] = new Set<string>();
+    map[poliUuid]!.add(doctorUuid);
+  });
+  return Object.fromEntries(
+    Object.entries(map).map(([k, v]) => [k, Array.from(v)])
+  ) as Record<string, string[]>;
+});
 
 const fetchJadwalDokter = async () => {
   UseUtilsStore.setLoading(true);
@@ -258,6 +275,7 @@ onMounted(() => {
         @refresh="fetchJadwalDokter"
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
+        :excludedDoctorUuidsByPoli="excludedDoctorUuidsByPoli"
         @search="
           filterCriteria = $event;
           if ($event.isValidSearch !== false) {

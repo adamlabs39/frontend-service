@@ -27,6 +27,10 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => [],
   },
+  excludedDoctorUuidsByPoli: {
+    type: Object as PropType<Record<string, string[]>>,
+    default: () => ({}),
+  },
   payload: {
     type: Object,
     default: () => ({}),
@@ -330,6 +334,7 @@ function handleReset() {
   <TambahDataKonfigurasiJadwal
     v-model:isDialogVisible="dialogData.isVisible"
     :excludedDokterUuids="props.excludedDoctorUuids"
+    :excludedDoctorUuidsByPoli="props.excludedDoctorUuidsByPoli"
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
