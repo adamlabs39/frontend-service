@@ -44,6 +44,7 @@ const endDateFilter = ref<Date>(new Date());
 const statusFilter = ref("Semua");
 const selectedFilterPoli = ref<string[]>([]);
 const selectedPaymentMethod = ref<string[]>([]);
+const today = new Date();
 
 // State untuk Pencarian
 const searchResults = ref<any[]>([]);
@@ -54,16 +55,16 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Computed Properties & Data Statis dari BE
 const hasData = computed(() => closedBillList.value.length > 0);
-const filterPoliList = ref(["RAWAT INAP", "RAWAT JALAN", "IGD", "APS"]);
-// const statusOptions = ref(['SEMUA', 'LUNAS', 'PIUTANG']);
-const poliMapping: { [key: string]: string } = { "RAWAT INAP": "RI", "RAWAT JALAN": "RJ", "IGD": "IGD", "APS": "APS" };
+const filterPoliList = ref(["RAWAT INAP", "RAWAT JALAN", "IGD", "APS" , "OTC"]);
+const poliMapping: { [key: string]: string } = { "RAWAT INAP": "RI", "RAWAT JALAN": "RJ", "IGD": "IGD", "APS": "APS", "OTC": "OTC" };
 
 //untuk UI di column perawatan
 const reversePoliMapping: { [key: string]: string } = {
   "RI": "RAWAT INAP",
   "RJ": "RAWAT JALAN",
   "IGD": "IGD",
-  "APS": "APS"
+  "APS": "APS",
+  "ÖTC": "OTC"
 };
 
 const fetchClosedBills = async (searchUuid: string | null = null) => {
@@ -88,7 +89,7 @@ const fetchClosedBills = async (searchUuid: string | null = null) => {
     const response = await store.getApi(
       closedBillProperties.value.page,
       closedBillProperties.value.page_size,
-      dateToEpoch(startDate), // Gunakan variabel lokal 'startDate'
+      dateToEpoch(startDate),
       dateToEpoch(endDate),  
       searchUuid || selectedPatientUuid.value || "",
       statusForApi,
@@ -101,16 +102,16 @@ const fetchClosedBills = async (searchUuid: string | null = null) => {
         uuid: item.uuid,
         name: item.patientName,
         noInvoice: item.invoiceCode,
+        noReg:item.noReg,
         billCode: item.billCode,
         doctor: item.practitionerName,
         polyclinic: item.serviceTypeList,
-        status: item.isPaid ? 'LUNAS' : 'PIUTANG',
+        status: item.paymentStatus  ? 'LUNAS' : 'PIUTANG',
         address: item.fullAddress || "Alamat tidak tersedia",
         insurance_account_name: item.paymentType,
         noHandphone: item.noHandphone,   
         jenisKelamin: item.jenisKelamin, 
         noRm: item.noRm,   
-        noRegis: "",
         jeniskelamin: item.jenisKelamin, 
         ageYear: item.ageYear, 
         ageMonth: item.ageMonth, 
@@ -238,6 +239,7 @@ const onPoliSelect = (label: string) => {
     // Jika belum ada, tambahkan ke array
     selectedFilterPoli.value.push(label);
   }
+  searchData(); 
 };
 
 const onPaymentMethodSelect = (label: string) => {
@@ -246,6 +248,7 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value = [label];
   }
+  searchData();
 };
 
 const showPatientDetail = (event: any) => {
@@ -333,12 +336,15 @@ onMounted(() => {
                 v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                :maxDate="endDateFilter" 
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
                 v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                :minDate="startDateFilter"
+                :maxDate="today"
               />
               <CustomButton
                 @click="searchData"
@@ -434,7 +440,7 @@ onMounted(() => {
                   class="text-SM">
                   {{ slotProps.data.noRm }}
                 </div>
-                <div>{{ slotProps.data.noRegis }}</div>
+                <div>{{ slotProps.data.noReg }}</div>
                 <div>{{ slotProps.data.noInvoice }}</div>
               </div>
             </template>
@@ -452,9 +458,9 @@ onMounted(() => {
               <div class="flex flex-wrap mt-1">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.jenisKelamin == 'P' ? 'Perempuan' : 'Laki-laki'"
-                  :bgColor="slotProps.data.jenisKelamin == 'P' ? 'bg-female-75' : 'bg-male-75'"
-                  :textColor="slotProps.data.jenisKelamin == 'P' ? 'text-female-300' : 'text-male-300'"
+                  :label="slotProps.data.jenisKelamin === 'Perempuan' ? 'Perempuan' : 'Laki-laki'"
+                  :bgColor="slotProps.data.jenisKelamin === 'Perempuan' ? 'bg-female-75' : 'bg-male-75'"
+                  :textColor="slotProps.data.jenisKelamin === 'Perempuan' ? 'text-female-300' : 'text-male-300'"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
                 <CustomChip
@@ -470,7 +476,7 @@ onMounted(() => {
 
           <Column header="Keperawatan" headerClass="bg-adameds-50" style="width: 35%">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
+              <div class="text-SM">{{ slotProps.data.doctor }} <span v-if="slotProps.data.tanggal_jadwal" class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
               <div class="flex flex-wrap mt-1">
                 <CustomChip
                   :showCheckedIcon="false"

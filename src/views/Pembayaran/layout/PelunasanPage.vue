@@ -1,0 +1,660 @@
+<script setup lang="ts">
+import { onMounted, ref, computed, watch } from "vue";
+import { useReportCloseBillStore } from "@/stores/pembayaran/closeBill";
+import { useTagihanStore } from "@/stores/pembayaran/findBill";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import { utilsStore } from "@/stores/utils";
+import { epochToDate } from "@/utils/Helpers";
+import { useRouter, useRoute } from "vue-router";
+import type { MenuItem } from "primevue/menuitem";
+import type { DataTableRowClickEvent } from "primevue/datatable";
+
+
+// State Management
+const router = useRouter();
+const storeUtils = utilsStore();
+const closeBillStore = useReportCloseBillStore();
+const tagihanStore = useTagihanStore();
+
+// State Data
+const kasirData = ref<any>(null);
+const itemsPasien = ref<any[]>([]);
+const paymentHistoryList = ref<any[]>([]);
+const currentDebt = ref<number>(0);
+const isBillPaid = ref(false); 
+const route = useRoute();
+const billUuid = route.params.billUuid as string;
+
+// State untuk Dialog Detail & Pembayaran
+const listTagihanRIDialog = ref(false);
+const itemTagihan = ref<any>(null);
+const openedData = ref<any>({});
+const pembayaranDialog = ref(false);
+const amount = ref<number>();
+const payment_type = ref("");
+const payment_method = ref("");
+const note = ref("");
+const information = ref("");
+const kembalian = ref<number>(0);
+
+// Computed Property untuk Validasi
+const isAmountInsufficient = computed(() => {
+    const requiredAmount = currentDebt.value || 0;
+    const paidAmount = amount.value || 0;
+    return paidAmount > 0 && paidAmount < requiredAmount;
+});
+
+// Fungsi Format Tanggal Lokal
+const formatDateCustom = (epochTime: number) => {
+    if (!epochTime) return "";
+    const date = new Date(epochTime * 1000);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+};
+
+const dataBreadCrumb = ref<MenuItem[]>([
+    { label: "Detail Transaksi Pasien" },
+    { label: "Pelunasan" }
+]);
+
+const handleBack = () => {
+    router.go(-1); 
+};
+
+// Fungsi untuk memproses data list layanan
+const processBillData = (data: any[]) => {
+    if (data) {
+        itemsPasien.value = data.map((service: any) => ({
+            uuid: service.uuid,
+            layanan: service.serviceName,
+            doctor: service.practitionerName,
+        }));
+    } else {
+        itemsPasien.value = [];
+    }
+};
+
+// Fungsi utama untuk mengambil semua data
+const fetchPelunasanData = async () => {
+    if (!billUuid) return;
+    storeUtils.setLoading(true);
+    try {
+        const [historyResponse, patientBillResponse] = await Promise.all([
+            closeBillStore.getPaymentHistory(billUuid),
+            closeBillStore.getDetailPasienBill(billUuid),
+        ]);
+
+        if (historyResponse?.payload && patientBillResponse?.payload) {
+            const billDetails = historyResponse.payload.billDetails;
+            const historyList = historyResponse.payload.paymentHistory;
+            const patientData = patientBillResponse.payload.patient;
+            const billData = patientBillResponse.payload.bill;
+            const serviceBillData = patientBillResponse.payload.bill?.serviceBill;
+
+            kasirData.value = { ...billDetails, ...patientData, ...billData };
+            paymentHistoryList.value = historyList || [];
+            currentDebt.value = historyResponse.payload.debt || 0;
+
+            processBillData(serviceBillData);
+            isBillPaid.value = currentDebt.value === 0;
+        }
+    } catch (error) {
+        console.error("Gagal mengambil data pelunasan:", error);
+    } finally {
+        storeUtils.setLoading(false);
+    }
+};
+
+// Fungsi untuk membuka detail item tagihan
+const detailTagihan = async (event: DataTableRowClickEvent) => {
+    openedData.value = event.data;
+    storeUtils.setLoading(true);
+    try {
+        const response = await tagihanStore.getItemBill(openedData.value.uuid);
+        if (response && response.payload) { itemTagihan.value = response.payload; }
+    } catch (error) {
+        console.error("Gagal mengambil item tagihan:", error);
+    } finally {
+        storeUtils.setLoading(false);
+    }
+    listTagihanRIDialog.value = true;
+};
+
+// Fungsi untuk menghitung kembalian
+const getKembalian = () => {
+    const requiredAmount = currentDebt.value || 0;
+    const paidAmount = amount.value || 0;
+    kembalian.value = paidAmount - requiredAmount;
+};
+
+watch(amount, () => {
+    setTimeout(getKembalian, 700);
+});
+
+// Fungsi untuk submit pembayaran
+const submitPelunasan = async () => {
+    if (!billUuid) return;
+    storeUtils.setLoading(true);
+    try {
+        const payload = {
+            amount: amount.value,
+            paymentType: payment_type.value,
+            paymentMethod: payment_method.value,
+            note: note.value,
+            information: information.value,
+        };
+        await closeBillStore.payDebtOnClosedBill(billUuid, payload);
+        pembayaranDialog.value = false;
+        await fetchPelunasanData();
+    } catch (error) {
+        console.error("Gagal melakukan pelunasan:", error);
+    } finally {
+        storeUtils.setLoading(false);
+    }
+};
+
+const optionCaraBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Asuransi", value: "INSURANCE" }]);
+const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Transfer", value: "TRANSFER" }, { label: "Debit", value: "DEBIT" }, { label: "Kredit", value: "CREDIT" }]);
+
+onMounted(() => {
+    fetchPelunasanData();
+});
+</script>
+
+<template>
+    <div class="flex flex-col h-full overflow-hidden">
+        <Card pt:body:class="h-full pt-0" pt:content:class="h-full" class="h-full overflow-hidden overflow-y-auto">
+            <template #header>
+                <div class="flex justify-between p-4">
+                    <CustomBreadCrumb :home="{ label: 'Closed Bill' }" :model="dataBreadCrumb" />
+                    <div class="flex">
+                        <CustomButton @click="handleBack" icon="PhCaretLeft" label="Kembali" outlined
+                            borderColor="border-adameds-300" textColor="text-adameds-300" />
+                    </div>
+                </div>
+            </template>
+
+            <template #content>
+                <div v-if="kasirData" class="grid grid-cols-2 gap-5 h-full pt-5">
+                    <div class="flex flex-col gap-4">
+                        <div class="h-[120px] border-2 border-adameds-300 rounded-lg flex flex-row flex-shrink-0">
+                            <div class="basis-1/2">
+                                <p class="font-bold text-MD mt-[15px] ml-[15px]">{{ kasirData.patientName }}</p>
+                                <p class="ml-[15px] text-sm">{{ kasirData.invoiceCode }}</p>
+                                <CustomButton class="h-5 text-xs ml-[15px]">{{ kasirData.noRm }}</CustomButton>
+                                <CustomChip v-if="kasirData.gender" :showCheckedIcon="false"
+                                    :label="kasirData.gender === 'P' ? 'Perempuan' : 'Laki-laki'"
+                                    :bgColor="kasirData.gender === 'P' ? 'bg-female-75' : 'bg-male-75'"
+                                    :textColor="kasirData.gender === 'P' ? 'text-female-300' : 'text-male-300'"
+                                    customClass="h-5 pr-[6px] border-none ml-[10px]" />
+                            </div>
+                            <div class="bg-mediumGrey-300 w-[1px] h-[74px] mr-[20px] mt-[15px]"></div>
+                            <div class="mt-[30px] mr-[40px]">
+                                <p class="text-xs font-bold underline underline-offset-2">Umur</p>
+                                <p class="">{{ kasirData.ageYear }}Thn {{ kasirData.ageMonth }}Bln {{ kasirData.ageDay
+                                    }}Hr</p>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow overflow-hidden">
+                            <DataTable :value="itemsPasien" scrollable scrollHeight="flex"
+                                class="h-full overflow-hidden rounded-[10px]" :pt="{ headerRow: 'text-SM' }"
+                                @rowClick="detailTagihan">
+                                <Column headerClass="bg-adameds-300 text-white" bodyClass="text-SM" style="width: 100%">
+                                    <template #header>
+                                        <div class="w-full font-bold">List Tagihan Pelayanan</div>
+                                    </template>
+                                    <template #body="slotProps">
+                                        <div class="flex">
+                                            <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
+                                            <CustomChip class="ml-2" :showCheckedIcon="false" :label="kasirData.paymentType"
+                                                :bgColor="kasirData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                                                :textColor="kasirData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                                                :borderColor="kasirData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
+                                        </div>
+                                        <div class="flex">
+                                            <UserDoctorIcon class="mt-2" />
+                                            <p class="mt-2 text-sm text-grey-400">{{ slotProps.data.doctor }}</p>
+                                        </div>
+                                        <div v-if="kasirData.scheduleTime" class="flex">
+                                            <p class="text-sm">Tanggal</p>
+                                            <PhArrowRight :size="18" class="my-auto ml-2 text-success-300"
+                                                weight="bold" />
+                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "date") }}</p>
+                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }}</p>
+                                        </div>
+                                    </template>
+                                </Column>
+                            </DataTable>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-lg bg-adameds-50 overflow-y-auto">
+                        <div class="flex justify-between">
+                            <p class="text-base font-bold font-poppins">Total Pembayaran</p>
+                            <div class="flex">
+                                <CustomButton label="Cetak Invoice" class="mt-[-10px] mr-[10px]" />
+                                <CustomButton label="Cetak Rincian Biaya" class="mt-[-10px]" />
+                            </div>
+                        </div>
+                        <hr class="mt-2 mb-2 border border-slate-300" />
+                        <div class="flex justify-between mt-6">
+                            <div class="text-sm">Biaya Administrasi</div>
+                            <div class="text-sm">Rp, {{ kasirData.adminFee }}</div>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <div class="text-sm">Biaya Tindakan</div>
+                            <div class="text-sm">Rp, {{ kasirData.totalTindakan }}</div>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <div class="text-sm">Biaya Obat/Alkes</div>
+                            <div class="text-sm">Rp, {{ kasirData.totalObatAlkes }}</div>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <div class="text-sm">Biaya Kamar</div>
+                            <div class="text-sm">Rp, {{ kasirData.totalRuangan }}</div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <div class="text-sm">Diskon</div>
+                            <div class="text-sm">{{ kasirData.discount || "0" }} % </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <div class="text-sm">Voucher</div>
+                            <div class="text-sm">Rp, {{ kasirData.voucherValue || "0" }} </div>
+                        </div>
+                        <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
+                        <div class="flex justify-between mt-6">
+                            <div class="text-sm font-bold">Total</div>
+                            <div class="text-sm font-bold">Rp, {{ kasirData.subTotal }} </div>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <div class="text-sm">PPN</div>
+                            <div class="text-sm">Rp, {{ kasirData.ppn }}</div>
+                        </div>
+                        <hr class="mt-6 mb-2 border-slate-300 border-1" />
+                        <div class="flex justify-between mt-6">
+                            <div class="text-sm font-bold">Grand Total</div>
+                            <div class="text-sm font-bold">Rp, {{ kasirData.grandTotal }}</div>
+                        </div>
+                        <template v-if="paymentHistoryList.length > 0">
+                            <div v-for="history in paymentHistoryList" :key="history.createdAt">
+                                <div class="flex justify-between mt-4">
+                                    <div class="text-sm font-bold">Jumlah Terbayar - {{
+                                        formatDateCustom(history.createdAt) }}</div>
+                                    <div class="text-sm font-bold">Rp, {{ history.amount }}</div>
+                                </div>
+                                <div class="flex justify-between mt-2 ">
+                                    <div class="text-sm font-bold text-danger-300">Hutang</div>
+                                    <div class="text-sm font-bold text-danger-300">-Rp, {{ history.debtAfter }}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="mt-[60px] bg-adameds-50">
+                            <CustomButton v-if="!isBillPaid" @click="pembayaranDialog = true" label="Pelunasan"
+                                class="w-full" />
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="flex items-center justify-center h-full">
+                    <p>Memuat data pelunasan...</p>
+                </div>
+
+                <CustomDialog v-model:visible="pembayaranDialog" width="600px">
+                    <template #header>Pembayaran</template>
+                    <template #body>
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-bold mt-[20px]">Sisa Hutang</p>
+                            </div>
+                            <div>
+                                <p class="font-bold mt-[20px]">Rp. {{ currentDebt }}</p>
+                            </div>
+                        </div>
+                        <hr class="mt-6 border-1 border-grey-200" />
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-bold mt-[30px] text-sm">Jumlah Bayar</p>
+                            </div>
+                            <div>
+                                <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]"
+                                    placeholder="0"
+                                    :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
+                                    <template #prependText>
+                                        <div
+                                            class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                                            Rp.</div>
+                                    </template>
+                                </CustomInputNumber>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+                            <p class="text-xs text-danger-300">*Pembayaran kurang, tetap melanjutkan dengan status
+                                piutang?</p>
+                        </div>
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-bold mt-[30px] text-sm">Kembalian</p>
+                            </div>
+                            <div>
+                                <CustomInputNumber :model-value="kembalian" :show-label="false" class="mt-[15px]"
+                                    placeholder="0" :disabled="true"
+                                    :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' }, input: { class: isAmountInsufficient ? '!text-danger-300' : '' } }">
+                                    <template #prependText>
+                                        <div
+                                            class="font-semibold text-MD bg-adameds-300 text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md">
+                                            Rp.</div>
+                                    </template>
+                                </CustomInputNumber>
+                            </div>
+                        </div>
+                        <hr class="mt-6 border-1 border-grey-200" />
+                        <div>
+                            <CustomTextfield v-model="note" class="mt-[30px]" label="Catatan"
+                                placeholder="Keterangan" />
+                        </div>
+                        <div class="flex mt-[20px] gap-4">
+                            <div>
+                                <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value"
+                                    :options="optionCaraBayar" v-model="payment_type" />
+                            </div>
+                            <div v-if="payment_type !== 'INSURANCE'">
+                                <CustomSelect label="Metode Pembayaran" class="flex-1" optionLabel="label"
+                                    optionValue="value" :options="optionMetodeBayar" v-model="payment_method" />
+                            </div>
+                            <div>
+                                <CustomTextfield v-model="information" class="flex-1" label="Keterangan"
+                                    placeholder="Keterangan" />
+                            </div>
+                            <div class="mt-[25px] flex ">
+                                <CustomButton label="Pelunasan" @click="submitPelunasan" />
+                            </div>
+                        </div>
+                    </template>
+                </CustomDialog>
+
+                <CustomDialog v-model:visible="listTagihanRIDialog" width="1000px">
+                    <template #header>Detail Tagihan Pelayanan</template>
+                    <template #body>
+                        <div>
+                            <div class="pt-5">
+                                <div class="flex">
+                                    <p class="font-bold">{{ openedData.layanan }}</p>
+                                    <CustomChip class="ml-2" :showCheckedIcon="false" :label="kasirData.paymentType"
+                                        bgColor="bg-adameds-50" textColor="text-adameds-300"
+                                        borderColor="border-adameds-300" />
+                                    <!-- <CustomChip class="ml-2" :showCheckedIcon="false" :label="kasirData.bpjs"
+                                        bgColor="bg-warning-50" textColor="text-warning-300"
+                                        borderColor="border-warning-300" /> -->
+                                </div>
+                                <div class="flex">
+                                    <UserDoctorIcon class="mt-2" />
+                                    <p class="mt-2 text-sm text-grey-400">
+                                        {{ openedData.doctor }}
+                                    </p>
+                                </div>
+                                <div v-if="kasirData.scheduleTime" class="flex">
+                                    <p class="text-sm">Tanggal</p>
+                                    <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
+                                    <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "date") }}</p>
+                                    <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }} </p>
+                                </div>
+                            </div>
+
+                            <!-- table kamar-->
+                            <div class="pt-5 shadow-md rounded-xl" v-if="itemTagihan?.item?.ruangan?.list?.length > 0">
+                                <DataTable :value="itemTagihan.item.ruangan.list"
+                                    class="overflow-hidden rounded-t-[10px]" :pt="{ headerRow: 'text-SM' }">
+                                    <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 12%">
+                                        <template #body="slotProps">
+                                            <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Kamar" headerClass="bg-adameds-50" style="width: 20%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.itemName }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jenis Ruangan" headerClass="bg-adameds-50" style="width: 20%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.jenisRuangan }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Kelas Ruangan" headerClass="bg-adameds-50" style="width: 13%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.kelasRuangan }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Waktu" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 10%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty }} Hari</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                                <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
+                                    <p class="text-base font-bold ">Total</p>
+                                    <p class="text-base font-bold">
+                                        Total Rp {{ itemTagihan.item.ruangan.total }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- table penunjang -->
+                            <div class="pt-5 shadow-md rounded-xl"
+                                v-if="itemTagihan?.item?.penunjang?.list?.length > 0">
+                                <DataTable :value="itemTagihan.item.penunjang.list"
+                                    class="overflow-hidden rounded-t-[10px]" :pt="{ headerRow: 'text-SM' }">
+                                    <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%">
+                                        <template #body="slotProps">
+                                            <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Penunjang" headerClass="bg-adameds-50" style="width: 45%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.itemName }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jumlah" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 10%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 20%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                                <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
+                                    <p class="text-base font-bold ">Total</p>
+                                    <p class="text-base font-bold">
+                                        RP {{ itemTagihan.item.penunjang.total }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- table tindakan -->
+                            <div class="pt-5 shadow-md rounded-xl" v-if="itemTagihan?.item?.tindakan?.list?.length > 0">
+                                <DataTable :value="itemTagihan.item.tindakan.list"
+                                    class="overflow-hidden rounded-t-[10px]" :pt="{ headerRow: 'text-SM' }">
+                                    <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%">
+                                        <template #body="slotProps">
+                                            <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50"
+                                        style="width: 45%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.itemName }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jumlah" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                                <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
+                                    <p class="text-base font-bold ">Total</p>
+                                    <p class="text-base font-bold">
+                                        RP {{ itemTagihan.item.tindakan.total }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- table obat -->
+                            <div class="pt-5 shadow-md rounded-xl" v-if="itemTagihan?.item?.obat?.list?.length > 0">
+                                <DataTable :value="itemTagihan.item.obat.list" class="overflow-hidden rounded-t-[10px]"
+                                    :pt="{ headerRow: 'text-SM' }">
+                                    <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%">
+                                        <template #body="slotProps">
+                                            <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Obat" headerClass="bg-adameds-50" style="width: 25%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.itemName }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Golongan Obat" headerClass="bg-adameds-50" style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.additionalField }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jumlah" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tarif" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
+                                        style="width: 10%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 10%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.serviceFee ?? 0 }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">
+                                                {{ slotProps.data.qty * slotProps.data.price +
+                                                    (slotProps.data.serviceFee ?? 0) }}
+                                            </div>
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                                <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
+                                    <p class="text-base font-bold ">Total</p>
+                                    <p class="text-base font-bold">
+                                        RP {{ itemTagihan.item.obat.total }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- table alkes -->
+                            <div class="pt-5 shadow-md rounded-xl" v-if="itemTagihan?.item?.alkes?.list?.length > 0">
+                                <DataTable :value="itemTagihan.item.alkes.list" class="overflow-hidden rounded-t-[10px]"
+                                    :pt="{ headerRow: 'text-SM' }">
+                                    <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%">
+                                        <template #body="slotProps">
+                                            <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Alkes" headerClass="bg-adameds-50" style="width: 45%">
+                                        <template #body="slotProps">
+                                            <p class="text-sm">{{ slotProps.data.itemName }}</p>
+                                        </template>
+                                    </Column>
+                                    <Column header="Jumlah" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                    <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
+                                        style="width: 15%">
+                                        <template #body="slotProps">
+                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                                <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
+                                    <p class="text-base font-bold ">Total</p>
+                                    <p class="text-base font-bold">
+                                        RP {{ itemTagihan.item.alkes.total }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <card class="bg-adameds-50">
+                                    <template #content>
+                                        <div class="flex justify-between">
+                                            <p class="text-base font-bold">Total Keseluruhan</p>
+                                            <p class="text-base font-bold">
+                                                RP. {{ itemTagihan.total }},00
+                                            </p>
+                                        </div>
+                                    </template>
+                                </card>
+                            </div>
+                        </div>
+                    </template>
+                </CustomDialog>
+            </template>
+        </Card>
+    </div>
+</template>

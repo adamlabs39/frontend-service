@@ -17,30 +17,21 @@ const store = useReportCloseBillStore();
 const storeUtils = utilsStore();
 const paymentHistory = ref<any[]>([]);
 
-// [DITAMBAHKAN] Computed property untuk memeriksa status lunas
+// Computed property untuk memeriksa status lunas
 const shouldDisplayHistory = computed(() => {
     const history = paymentHistory.value;
 
-    // Jika tidak ada riwayat sama sekali, jangan tampilkan.
     if (history.length === 0) {
         return false;
     }
-
-    // Jika riwayatnya lebih dari satu, berarti pasti pernah ada hutang. Tampilkan.
     if (history.length > 1) {
         return true;
     }
 
-    // Jika riwayatnya HANYA SATU, kita perlu cek lebih lanjut.
     if (history.length === 1) {
-        // Ambil satu-satunya data histori tersebut.
         const singlePayment = history[0];
-        // Hanya tampilkan jika sisa hutangnya (debtAfter) LEBIH DARI 0.
-        // Jika debtAfter adalah 0, berarti itu pembayaran lunas langsung.
         return singlePayment.debtAfter > 0;
     }
-
-    // Default, jangan tampilkan.
     return false;
 });
 

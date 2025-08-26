@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { apiPembayaranGet,apiPembayaranPost } from "@/utils/apiHandler";
 
-export const usePelayananTransaction = defineStore({
-    id: "pelayanan",
+export const useApsOtcTransaction = defineStore({
+    id: "apsotc",
     state: () => ({}),
     getters: {},
     actions: {
@@ -27,7 +27,7 @@ export const usePelayananTransaction = defineStore({
                 payment_type,
             };
 
-            // Query builder ini  bisa handle array untuk service_type
+            // Query builder ini bisa handle array untuk service_type
             const queryString = Object.entries(params)
             .flatMap(([key, value]) => {
                 if (Array.isArray(value)) {
@@ -40,11 +40,11 @@ export const usePelayananTransaction = defineStore({
             })
             .join('&');
             
-            return apiPembayaranGet(`/pelayanan?${queryString}`, {});
+            return apiPembayaranGet(`/aps-otc?${queryString}`, {});
         },
 
-        async getPelayananList(payload = {}) {
-            return apiPembayaranGet(`/pelayanan`, payload);
+        async getApsOtcList(payload = {}) {
+            return apiPembayaranGet(`/aps-otc`, payload);
         },
         async getItemBill(uuid: string, payload = {}) {
             return apiPembayaranGet(`/payment/${uuid}/items`, payload);
@@ -56,7 +56,7 @@ export const usePelayananTransaction = defineStore({
             return apiPembayaranGet(`/payment/${uuid}`, payload);
         },
         async exportApi(payload = {}) {
-            return apiPembayaranGet(`/pelayanan/export`, payload);
+            return apiPembayaranGet(`/aps-otc/export`, payload);
         },
     },
 });

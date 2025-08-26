@@ -1,188 +1,301 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
-import { useTagihanStore } from "@/stores/pembayaran/findBill";
+import { utilsStore } from "@/stores/utils";
+import { dateToEpoch } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomPaginator from '@/components/Base/CustomPaginator.vue';
+import Paginator from 'primevue/paginator';
 import TransactionDetailPage from "@/views/Pembayaran/layout/TransactionDetailPage.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
+import { usePelayananTransaction as usePelayananStore } from "@/stores/pembayaran/pelayanan";
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+
+const today = new Date();
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(today.getDate() - 7);
+
+const startDateFilter = ref<Date>(sevenDaysAgo);
+const endDateFilter = ref<Date>(today);
 const pageType = ref("");
+const searchQuery = ref<string>("");
+const selectedBillUuid = ref<string>();
 
 const filterPoliList = ref([
-  "POLI UMUM",
-  "POLI ANAK",
-  "POLI GIGI POLI MATA",
+  "RAWAT JALAN",
+  "RAWAT INAP",
   "IGD",
-  "RAWAT INAP"
 ]);
 
-// Filter Menunggu Pembayaran
-const selectedPayType = ref<string>("MenungguPembayaran");
+const pelayananStore = usePelayananStore();
+const UseUtilsStore = utilsStore();
+const pelayananPayload = ref<any[]>([]);
+const pelayananProperties = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+});
 
-const onSelectPayType = (label: string) => {
-  selectedPayType.value = label;
-  console.log(selectedPayType, 'selectedPayType');
-  
+// State untuk Pencarian Dropdown
+const searchResults = ref<any[]>([]);
+const loadingSearch = ref(false);
+const selectedPatientUuid = ref<string | null>(null);
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+const hasData = computed(
+  () => pelayananPayload.value && pelayananPayload.value.length > 0
+);
+
+watch(startDateFilter, (newDate) => {
+  if (newDate) newDate.setHours(0, 0, 0, 0);
+}, { immediate: true });
+
+watch(endDateFilter, (newDate) => {
+  if (newDate) newDate.setHours(23, 59, 59, 999);
+}, { immediate: true });
+
+const poliMapping: { [key: string]: string } = {
+  "RAWAT JALAN": "RJ",
+  "RAWAT INAP": "RI",
+  "IGD": "IGD",
+  "APS & OTC": "APS",
 };
 
-// Filter Pelayanan
+// Mapping untuk menampilkan nama layanan dari kode 
+const reversePoliMapping: { [key: string]: string } = {
+  "RJ": "RAWAT JALAN",
+  "RI": "RAWAT INAP",
+  "IGD": "IGD",
+  "APS": "APS & OTC"
+};
+
+
+
+const fetchPelayanan = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    let statusForApi = '';
+      if (selectedPayType.value === 'MenungguPembayaran') {
+        statusForApi = 'PIUTANG';
+      } else if (selectedPayType.value === 'Lunas') {
+        statusForApi = 'LUNAS';
+      }
+// Jika selectedPayType.value adalah 'Semua', statusForApi akan tetap string kosong ''
+    const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
+    const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+    
+    const response = await pelayananStore.getApi(
+      pelayananProperties.value.page,
+      pelayananProperties.value.pageSize,
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      selectedPatientUuid.value || searchQuery.value, 
+      statusForApi,
+      poliForApi,
+      paymentForApi
+    );
+
+    const plainResponse = JSON.parse(JSON.stringify(response));
+    if (plainResponse && plainResponse.payload && plainResponse.properties) {
+      pelayananPayload.value = plainResponse.payload.map((item: any) => ({
+        uuid: item.uuid,
+        billCode: item.billCode,
+        invoiceCode: item.invoiceCode,
+        noReg: item.noReg,
+        patientName: item.patientName,
+        ageYear: item.ageYear,
+        ageMonth: item.ageMonth,
+        ageDay: item.ageDay,
+        fullAddress: item.fullAddress,
+        jenisKelamin: item.jenisKelamin,
+        noHandphone: item.noHandphone,
+        practitionerName: item.practitionerName,
+        scheduleTime: item.scheduleTime,
+        polyclinicName: item.polyclinicName,
+        mainServiceCategory: item.mainServiceCategory, // e.g., "RJ", "RI"
+        paymentType: item.paymentType,
+        completenessStatus: item.completenessStatus, // e.g., "Data Lengkap"
+      }));
+
+      const apiProperties = plainResponse.properties;
+      pelayananProperties.value.page = apiProperties.page;
+      pelayananProperties.value.pageSize = apiProperties.pageSize;
+      pelayananProperties.value.total = parseInt(apiProperties.totalData, 10) || 0;
+    } else {
+      pelayananPayload.value = [];
+      pelayananProperties.value.total = 0;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    pelayananPayload.value = [];
+    pelayananProperties.value.total = 0;
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const findTransactionsForDropdown = async (filter: string) => {
+  const filterText = filter || "";
+  searchQuery.value = filterText;
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+  }
+
+  if (!filterText) {
+    searchResults.value = [];
+    return;
+  }
+
+  searchTimer = setTimeout(async () => {
+    loadingSearch.value = true;
+    try {
+      // Mengambil filter aktif saat ini
+      let statusForApi = '';
+      if (selectedPayType.value === 'MenungguPembayaran') {
+        statusForApi = 'PIUTANG';
+      } else if (selectedPayType.value === 'Lunas') {
+        statusForApi = 'LUNAS';
+      }
+      const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
+      const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+
+      // Memanggil API dengan limit kecil untuk dropdown
+      const response = await pelayananStore.getApi(
+        1,
+        20, 
+        dateToEpoch(startDateFilter.value),
+        dateToEpoch(endDateFilter.value),
+        filterText, 
+        statusForApi,
+        poliForApi,
+        paymentForApi
+      );
+
+      const plainResponse = JSON.parse(JSON.stringify(response));
+      if (plainResponse && Array.isArray(plainResponse.payload)) {
+        searchResults.value = plainResponse.payload;
+      } else {
+        searchResults.value = [];
+      }
+    } catch (error) {
+      console.error("Gagal mencari data dropdown:", error);
+      searchResults.value = [];
+    } finally {
+      loadingSearch.value = false;
+    }
+  }, 500); // Jeda 500ms
+};
+
+const applyFilter = () => {
+  pelayananProperties.value.page = 1;
+  fetchPelayanan();
+};
+
+const resetFilter = () => {
+  const todayReset = new Date();
+  const sevenDaysAgoReset = new Date();
+  sevenDaysAgoReset.setDate(todayReset.getDate() - 7);
+
+  startDateFilter.value = sevenDaysAgoReset;
+  endDateFilter.value = todayReset;
+  searchQuery.value = "";
+  selectedPayType.value = "MenungguPembayaran";
+  selectedFilterPoli.value = [];
+  selectedPaymentMethod.value = [];
+  selectedPatientUuid.value = null;
+  searchResults.value = [];
+  applyFilter();
+};
+
+const selectedPayType = ref<string>("Semua");
+const onSelectPayType = (label: string) => {
+  selectedPayType.value = label;
+  applyFilter();
+};
+
 const selectedFilterPoli = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
-  if (selectedFilterPoli.value.includes(label)) {
-    console.log(selectedFilterPoli, 'selectedFilterPoli');
-    
-    selectedFilterPoli.value = selectedFilterPoli.value.filter(
-      (item) => item != label
-    );
+  const index = selectedFilterPoli.value.indexOf(label);
+  if (index > -1) {
+    selectedFilterPoli.value.splice(index, 1);
   } else {
     selectedFilterPoli.value.push(label);
   }
+  applyFilter();
 };
 
-// Filter Pembayaran
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
-    selectedPaymentMethod.value = selectedPaymentMethod.value.filter(
-      (item) => item != label
-    );
+    selectedPaymentMethod.value = [];
   } else {
-    selectedPaymentMethod.value.push(label);
+    selectedPaymentMethod.value = [label];
   }
+  applyFilter();
 };
 
-const itemsPasien = ref([
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "-",
-    no_SEP: "9999999999999999",
-    insurance_account_name: "BPJS",
-    polyclinic: "POLI KANDUNGAN",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. Og",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: true,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: "08.00 - 11.00",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: null,
-    new_patient: false,
-  },
-  {
-    noRM: "123456",
-    name: "Nama Pasien Lengkap",
-    noRegis: "REG1203012312",
-    noInvoice: "INVI1234",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    tanggal_jadwal: " - ",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI ANAK",
-    phone: "082112341234",
-    age_year: 20,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "00-00-00",
-    new_patient: false,
-  },
+
+const handlePage = (event: any) => {
+  pelayananProperties.value.page = event.page + 1;
+  pelayananProperties.value.pageSize = event.rows;
+  fetchPelayanan();
+};
+
+const dataBreadCrumb = ref<MenuItem[]>([
+  { label: 'Pelayanan' }
 ]);
 
-const emits = defineEmits(['update:rows', 'update:current-page']);
-const handleRowsUpdate = (rows: number) => {
-  console.log('Rows updated:', rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log('Page updated:', page);
-};
-
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
 const changeSection = (label: string) => {
-  if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
-  } else {
-    dataBreadCrumb.value.push({ label: label });
+  dataBreadCrumb.value.push({ label: label });
+};
+
+const dynamicOptionLabelKey = computed(() => {
+  const query = searchQuery.value;
+  const queryUC = query.toUpperCase();
+  const addressKeywords = ["JL", "DS", "DSN", "RT", "RW", "NO", "GG", "BLOK"];
+  const isAddressQuery = addressKeywords.some(keyword => queryUC.includes(keyword));
+
+  // Pola untuk No. RM
+  const isRmPattern = /^\d{2}-/.test(query);
+
+  if (isRmPattern) {
+    return 'noRm'; 
   }
+  if (isAddressQuery) {
+    return 'fullAddress';
+  }
+  return 'patientName';
+});
+
+const handlePatientSelection = (uuid: string) => {
+  if (!uuid) return;
+  selectedPatientUuid.value = uuid;
+  pelayananProperties.value.page = 1; // Reset halaman ke 1
+  fetchPelayanan(); // Panggil fungsi fetch utama
 };
 
 const showDetail = (event: DataTableRowClickEvent) => {
+  selectedBillUuid.value = event.data.uuid; // Simpan UUID
   changeSection("Detail Tagihan");
 };
+
+onMounted(() => {
+  fetchPelayanan();
+});
 </script>
+
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <Card
-      v-if="dataBreadCrumb.length == 0"
+      v-if="dataBreadCrumb.length === 1"
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
@@ -192,8 +305,9 @@ const showDetail = (event: DataTableRowClickEvent) => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPelayanan" />
                 <CustomBreadCrumb
+                  :model="dataBreadCrumb"
                   :home="{
                     label: 'Transaksi',
                     home: true,
@@ -204,29 +318,41 @@ const showDetail = (event: DataTableRowClickEvent) => {
           </template>
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomTextfield
+              <CustomSelect
+                v-model="selectedPatientUuid"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
+                place-holder="Cari Nama / Alamat / No. RM"
                 class="mr-5 grow"
+                :options="searchResults"
+                :optionLabel="dynamicOptionLabelKey"
+                optionValue="uuid"
+                :loading="loadingSearch"
+                @filter="findTransactionsForDropdown"
+                @update:model-value="handlePatientSelection"
               />
               <CustomDatePicker
                 v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                :maxDate="endDateFilter"
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
                 v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                :minDate="startDateFilter"
+                :maxDate="today"
               />
               <CustomButton
+                @click="applyFilter"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetFilter"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -237,11 +363,13 @@ const showDetail = (event: DataTableRowClickEvent) => {
             <div class="flex mt-[10px]">
               <div>
                 <CustomButton
+                  @click="onSelectPayType('Semua')"
                   icon="PhListBullets"
-                  outlined
+                  :outlined="selectedPayType != 'Semua'"
                   borderColor="border-adameds-300"
-                  textColor="text-adameds-300"
-                  class="mr-[10px] "
+                  :textColor="selectedPayType != 'Semua' ? 'text-adameds-300' : 'text-white'"
+                  :backgroundColor="selectedPayType != 'Semua' ? 'bg-transparent' : 'bg-adameds-300'"
+                  class="mr-[10px]"
                 />
               </div>
               <CustomButton
@@ -335,136 +463,137 @@ const showDetail = (event: DataTableRowClickEvent) => {
         </CustomAccordion>
       </template>
       <template #content>
-      <DataTable
-        v-if="itemsPasien.length"
-        :value="itemsPasien"
-        tableStyle="min-width: 50rem"
-        scrollable
-        scrollHeight="flex"
-        :pt="{ headerRow: 'text-SM' }"
-        @rowClick="showDetail"
-      >
-        <Column field="nomor" headerClass="bg-adameds-50">
-          <template #header>
-            <div class="w-full font-semibold text-center">Nomor</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-center">
-              <div v-if="slotProps.data.no_antrian"
-                class="text-SM">
-                {{ slotProps.data.no_antrian }}
-              </div>
-              <div class="text-SM">{{ slotProps.data.noRegis }}</div>
-              <div class="text-SM">{{ slotProps.data.noInvoice }}</div>
-            </div>
-          </template>
-        </Column>
-        <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
-          <template #body="slotProps">
-            <div class="text-SM">
-              <span class="font-semibold">{{ slotProps.data.name }}</span>
-              <span class="text-grey-300">
-                ({{ slotProps.data.age_year }}Th
-                {{ slotProps.data.age_month }}Bln
-                {{ slotProps.data.age_day }}Hr)
-              </span>
-            </div>
-            <div class="text-XS">{{ slotProps.data.address }}</div>
-            <div class="flex flex-wrap">
-              <PhUserCirclePlus
-                v-if="slotProps.data.new_patient"
-                :size="22"
-                class="text-adameds-300 mt-auto mr-[5px]"
-                weight="fill"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="
-                  slotProps.data.gender == 'P' ? 'Perempuan' : 'Laki-laki'
-                "
-                :bgColor="
-                  slotProps.data.gender == 'P' ? 'bg-female-75' : 'bg-male-75'
-                "
-                :textColor="
-                  slotProps.data.gender == 'P'
-                    ? 'text-female-300'
-                    : 'text-male-300'
-                "
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.phone"
-                bgColor="bg-adameds-50"
-                textColor="text-adameds-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-            </div>
-          </template>
-        </Column>
-        <Column
-          field="keperawatan"
-          header="Keperawatan"
-          headerClass="bg-adameds-50"
+        <NoData v-if="!hasData" />
+        <DataTable
+          v-else
+          :value="pelayananPayload"
+          tableStyle="min-width: 50rem"
+          scrollable
+          scrollHeight="flex"
+          :pt="{ headerRow: 'text-SM' }"
+          @rowClick="showDetail"
         >
-          <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.doctor }} <span class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-            <div class="flex flex-wrap">
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.polyclinic"
-                customClass="h-5 pr-[5px] mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.insurance_account_name"
-                :bgColor="
-                  slotProps.data.insurance_account_name == 'TUNAI'
-                    ? 'bg-adameds-50'
-                    : 'bg-warning-50'
-                "
-                :textColor="
-                  slotProps.data.insurance_account_name == 'TUNAI'
-                    ? 'text-adameds-300'
-                    : 'text-warning-300'
-                "
-                :borderColor="
-                  slotProps.data.insurance_account_name == 'TUNAI'
-                    ? 'border-adameds-300'
-                    : 'border-warning-300'
-                "
-                customClass="h-5 pr-[6px] mr-[5px]"
-              />
-              <CustomChip
-                v-if="slotProps.data.no_SEP"
-                :showCheckedIcon="false"
-                :label="`SEP.${slotProps.data.no_SEP}`"
-                bgColor="bg-warning-50"
-                textColor="text-warning-300"
-                borderColor="border-warning-300"
-                customClass="h-5 pr-[6px]"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <NoData v-else />
+          <Column field="nomor" headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold text-center">Nomor</div>
+            </template>
+            <template #body="slotProps">
+              <div class="text-center">
+                <div class="text-SM">{{ slotProps.data.billCode }}</div>
+                <div class="text-SM">{{ slotProps.data.noReg }}</div>
+                <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
+              </div>
+            </template>
+          </Column>
+          <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
+            <template #body="slotProps">
+              <div class="text-SM">
+                <span class="font-semibold">{{ slotProps.data.patientName }}</span>
+                <span class="text-grey-300">
+                  ({{ slotProps.data.ageYear }}Th
+                  {{ slotProps.data.ageMonth }}Bln
+                  {{ slotProps.data.ageDay }}Hr)
+                </span>
+              </div>
+              <div class="text-XS">{{ slotProps.data.fullAddress }}</div>
+              <div class="flex flex-wrap">
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="slotProps.data.jenisKelamin"
+                  :bgColor="
+                    slotProps.data.jenisKelamin == 'Perempuan' ? 'bg-female-75' : 'bg-male-75'
+                  "
+                  :textColor="
+                    slotProps.data.jenisKelamin == 'Perempuan'
+                      ? 'text-female-300'
+                      : 'text-male-300'
+                  "
+                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                />
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="slotProps.data.noHandphone"
+                  bgColor="bg-adameds-50"
+                  textColor="text-adameds-300"
+                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                />
+              </div>
+            </template>
+          </Column>
+          <Column
+            field="keperawatan"
+            header="Keperawatan"
+            headerClass="bg-adameds-50"
+          >
+            <template #body="slotProps">
+              <div class="text-SM">{{ slotProps.data.practitionerName }} <span v-if="slotProps.data.scheduleTime" class="text-adameds-300">|</span> {{ slotProps.data.scheduleTime }}</div>
+              
+              <div class="flex flex-wrap mt-1">
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="reversePoliMapping[slotProps.data.mainServiceCategory] || slotProps.data.mainServiceCategory"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.completenessStatus === 'Data Lengkap'"
+                  :showCheckedIcon="false"
+                  label="Data Lengkap"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.polyclinicName"
+                  :showCheckedIcon="false"
+                  :label="slotProps.data.polyclinicName"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="slotProps.data.paymentType"
+                  :bgColor="
+                    slotProps.data.paymentType == 'TUNAI'
+                      ? 'bg-adameds-50'
+                      : 'bg-warning-50'
+                  "
+                  :textColor="
+                    slotProps.data.paymentType == 'TUNAI'
+                      ? 'text-adameds-300'
+                      : 'text-warning-300'
+                  "
+                  :borderColor="
+                    slotProps.data.paymentType == 'TUNAI'
+                      ? 'border-adameds-300'
+                      : 'border-warning-300'
+                  "
+                  customClass="h-5 pr-[6px] mr-[5px]"
+                />
+              </div>
+
+            </template>
+          </Column>
+        </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-end">
-          <CustomPaginator
-            :rows="10"
-            :totalRecords="100"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
-          />
+        <div class="flex justify-between items-center">
+            <Paginator
+              :first="(pelayananProperties.page - 1) * pelayananProperties.pageSize"
+              :rows="pelayananProperties.pageSize"
+              :totalRecords="pelayananProperties.total"
+              :rowsPerPageOptions="[10, 20, 30]"
+              @page="handlePage"
+              template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+              currentPageReportTemplate="{currentPage}"
+              class="w-full"
+            >
+              <template #start>
+                <span class="font-semibold mr-4">Total Data: {{ pelayananProperties.total }}</span>
+              </template>
+            </Paginator>
         </div>
       </template>
     </Card>
     <TransactionDetailPage
-      v-else-if="dataBreadCrumb[0].label == 'Detail Tagihan'"
-      :dataBreadCrumb="dataBreadCrumb"
+      v-else
+      :bill-uuid="selectedBillUuid" :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
       @back="dataBreadCrumb.pop()"
     />
