@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
+import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps<{
   paginationProperties: {
@@ -200,6 +201,7 @@ const getStatusStyle = (status: string | undefined) => {
     dataKey="id"
     scrollable
     scrollHeight="flex"
+    v-if="dataAntrianRjPayload.length > 0"
   >
     <Column header="No." header-class="text-black bg-adameds-50">
       <template #body="slotProps">
@@ -353,4 +355,5 @@ const getStatusStyle = (status: string | undefined) => {
       </template>
     </Column>
   </DataTable>
+  <NoData class="min-h-full" v-else />
 </template>
