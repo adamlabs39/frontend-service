@@ -197,6 +197,44 @@ watch(
   },
   { immediate: false }
 );
+
+//Untuk dynamic layar antrian
+const activeOrder = ref<Array<"poli" | "admisi" | "farmasi">>([]);
+
+const pushIfNotExists = (key: "poli" | "admisi" | "farmasi") => {
+  if (!activeOrder.value.includes(key)) activeOrder.value.push(key);
+};
+
+const removeIfExists = (key: "poli" | "admisi" | "farmasi") => {
+  activeOrder.value = activeOrder.value.filter((k) => k !== key);
+};
+
+watch(
+  isAdmisi,
+  (val) => {
+    if (val === true) pushIfNotExists("admisi");
+    else removeIfExists("admisi");
+  },
+  { immediate: true }
+);
+
+watch(
+  isPoli,
+  (val) => {
+    if (val === true) pushIfNotExists("poli");
+    else removeIfExists("poli");
+  },
+  { immediate: true }
+);
+
+watch(
+  isFarmasi,
+  (val) => {
+    if (val === true) pushIfNotExists("farmasi");
+    else removeIfExists("farmasi");
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -344,6 +382,7 @@ watch(
                   <layout-3x3-panggilan
                     :payload="selectedPoliData"
                     :is-poli="isPoli"
+                    :active-order="activeOrder"
                   />
                 </template>
                 <template v-else-if="tipeLayar === 2">
