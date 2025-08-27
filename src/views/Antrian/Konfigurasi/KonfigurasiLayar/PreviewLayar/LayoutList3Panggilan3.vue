@@ -62,7 +62,7 @@ const panggilanData = ref([
               <div
                 v-for="i in 6"
                 :key="'poli-anak-' + i"
-                class="flex items-center px-4 text-2xl font-extrabold"
+                class="flex justify-center items-center px-4 text-2xl font-extrabold"
                 :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
               >
                 A00{{ i }}
@@ -82,7 +82,7 @@ const panggilanData = ref([
               <div
                 v-for="i in 6"
                 :key="'poli-anak-' + i"
-                class="flex items-center px-4 text-2xl font-extrabold"
+                class="flex justify-center items-center px-4 text-2xl font-extrabold"
                 :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
               >
                 AN00{{ i }}
