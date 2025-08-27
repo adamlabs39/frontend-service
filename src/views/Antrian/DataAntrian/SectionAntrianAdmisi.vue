@@ -240,11 +240,10 @@ const getStatusStyle = (status: string) => {
           />
         </div> </template
     ></Column>
-    <Column
-      header="Status"
-      header-class="flex justify-center items-center text-black bg-adameds-50"
-      class="text-center"
-    >
+    <Column headerClass="bg-adameds-50">
+      <template #header>
+        <div class="w-full font-semibold text-center">Status</div>
+      </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
           <CustomChip
