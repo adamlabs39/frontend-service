@@ -138,12 +138,27 @@ const panggilanData = ref([
       <!-- 3 Kotak Panggilan -->
       <div class="flex flex-col gap-2 content-area">
         <div
-          v-for="(panggilan, index) in panggilanData"
-          :key="panggilan.id"
-          class="flex-1 bg-adameds-50 border-2 border-adameds-300 rounded-lg flex items-center justify-center text-gray-500 font-semibold min-h-[80px]"
+          v-for="item in 3"
+          class="grid grid-rows-2 h-full bg-white rounded-lg"
         >
-          <span v-if="panggilan.text">{{ panggilan.text }}</span>
-          <span v-else class="text-gray-400">-</span>
+          <div class="flex justify-center items-center text-4xl font-extrabold">
+            A00{{ item }}
+          </div>
+          <div class="flex rounded-b-lg bg-adameds-50">
+            <div class="flex items-center w-full">
+              <div
+                class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
+                dir="rtl"
+              >
+                <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
+              </div>
+              <div class="px-3 w-full">
+                <div class="text-3xl font-black">Loket 1</div>
+                <hr class="border-adameds-300" />
+                <div class="text-xl font-bold">Admisi</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
