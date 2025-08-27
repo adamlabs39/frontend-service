@@ -87,11 +87,11 @@ const getImage = (image: string) => {
       @click="handleBackAntrian"
     >
       <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
+        class="flex gap-5 justify-between w-full text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
       >
         <!-- Logo and Divider -->
         <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
+          class="flex gap-1 justify-center items-center px-2.5 bg-white rounded-lg shadow-sm"
         >
           <img
             loading="lazy"
@@ -132,7 +132,7 @@ const getImage = (image: string) => {
     >
       <template #item="slotProps">
         <div
-          class="relative items-center justify-center mt-16 mb-4 mx-36 w-150"
+          class="relative justify-center items-center mx-36 mt-16 mb-4 w-150"
         >
           <div class="overflow-hidden rounded-xl">
             <div class="flex transition-transform duration-300">
@@ -145,11 +145,16 @@ const getImage = (image: string) => {
                 </div>
               </div>
 
-              <img
-                loading="lazy"
-                src="@/assets/images/APM/img-carousel-1.svg"
-                class="w-2/5 h-[280px] object-cover transition-transform duration-300 hover:scale-105"
-              />
+              <div class="relative w-2/5">
+                <img
+                  loading="lazy"
+                  src="@/assets/images/APM/img-carousel-test.svg"
+                  class="h-[280px] object-cover"
+                />
+                <div
+                  class="absolute w-full inset-y-0 left-0 h-[280px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
@@ -158,17 +163,33 @@ const getImage = (image: string) => {
 
     <div class="flex h-[220px] justify-center">
       <div class="w-[350px] my-10">
-        <CardPasien :cardPasien="cardPasienJKN" @click="handlePasienJKN" class="transition-transform duration-300 hover:scale-95"/>
+        <CardPasien
+          :cardPasien="cardPasienJKN"
+          @click="handlePasienJKN"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
       <div class="w-[350px] mx-8 my-10">
-        <CardPasien :cardPasien="cardPasienNonJKN" @click="handlePasienNonJKN" class="transition-transform duration-300 hover:scale-95"/>
+        <CardPasien
+          :cardPasien="cardPasienNonJKN"
+          @click="handlePasienNonJKN"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
-      <div class="w-1 my-auto rounded-md h-28 bg-adameds-300"></div>
+      <div class="my-auto w-1 h-28 rounded-md bg-adameds-300"></div>
       <div class="w-[180px] mx-8 my-10">
-        <CardAktivitas :cardAktivitas="cardAktivitasCheckIn" @click="handleCheckin" class="transition-transform duration-300 hover:scale-95"/>
+        <CardAktivitas
+          :cardAktivitas="cardAktivitasCheckIn"
+          @click="handleCheckin"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
       <div class="w-[180px] my-10">
-        <CardAktivitas :cardAktivitas="cardAktivitasPrint" @click="handlePrint" class="transition-transform duration-300 hover:scale-95"/>
+        <CardAktivitas
+          :cardAktivitas="cardAktivitasPrint"
+          @click="handlePrint"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
     </div>
   </div>
