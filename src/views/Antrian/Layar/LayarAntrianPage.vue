@@ -72,8 +72,8 @@ const selectedPatient = ref([]);
 <template>
   <Card
     v-if="dataBreadCrumb.length == 0"
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
+    pt:body:class="overflow-auto pt-0 h-full"
+    pt:content:class="overflow-auto h-full"
     class=""
   >
     <template #header>
@@ -113,14 +113,14 @@ const selectedPatient = ref([]);
                 :label="slotProps.data.antrian"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.panggilan"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 border-none mr-[5px]"
               />
             </div>
           </template>
@@ -140,7 +140,7 @@ const selectedPatient = ref([]);
                   :label="konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 border-none mr-[5px]"
                 />
               </div>
               <div v-else>
@@ -149,7 +149,7 @@ const selectedPatient = ref([]);
                   :label="slotProps.data.isi_konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 border-none mr-[5px]"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ const selectedPatient = ref([]);
                   :label="konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 border-none mr-[5px]"
                 />
               </div>
               <div v-else-if="slotProps.data.ucapan">
@@ -184,7 +184,7 @@ const selectedPatient = ref([]);
                   :label="slotProps.data.ucapan"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5 border-none mr-[5px]"
                 />
               </div>
             </div>
@@ -228,7 +228,7 @@ const selectedPatient = ref([]);
           headerClass="bg-adameds-50 justify-center"
         >
           <template #body="slotProps">
-            <div class="flex items-center gap-2.5">
+            <div class="flex gap-2.5 items-center">
               <CustomButton
                 size="small"
                 icon="PhScreencast"
