@@ -190,7 +190,7 @@ const poliAt = (idx: number) => {
 
       <!-- 3 Kotak Panggilan -->
       <div class="flex flex-col gap-2 content-area">
-        <template v-if="isPoli">
+        <template v-if="isAdmisi">
           <div
             v-for="item in 3"
             :key="'panggilan-' + item"
