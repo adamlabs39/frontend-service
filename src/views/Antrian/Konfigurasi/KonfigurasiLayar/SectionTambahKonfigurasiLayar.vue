@@ -327,6 +327,8 @@ watch(
               placeholder="URL Youtube"
               class="mt-4 mr-5 w-full text-black"
               v-show="tipeLayar === 5"
+              :invalid="!!errors.media"
+              :invalid-message="errors.media"
             />
             <div>
               <div class="mt-4 block font-semibold mb-[5px] text-normal">

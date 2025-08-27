@@ -87,7 +87,13 @@ const schema = toTypedSchema(
       .array()
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
-    media: yup.string(),
+    media: yup
+      .string()
+      .matches(
+        /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
+        "URL harus dari YouTube"
+      )
+      .nullable(),
     aktif: yup.boolean(),
     poli_uuids: yup.array().of(yup.string()),
   })
@@ -305,6 +311,8 @@ watch(
               placeholder="URL Youtube"
               class="mt-4 mr-5 w-full text-black"
               v-show="tipeLayar === 5"
+              :invalid="!!errors.media"
+              :invalid-message="errors.media"
             />
             <div>
               <div class="mt-4 block font-semibold mb-[5px] text-normal">
