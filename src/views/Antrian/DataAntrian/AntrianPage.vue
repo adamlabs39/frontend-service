@@ -1,13 +1,112 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import AntrianHeader from "../Layout/AntrianHeader.vue";
 import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
 import SectionAntrianRawatJalan from "./SectionAntrianRawatJalan.vue";
 import SectionAntrianFarmasi from "./SectionAntrianFarmasi.vue";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const value = ref("0");
+
+const dataAntrianRjProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+  q: "",
+  start_date: undefined as number | undefined,
+  end_date: undefined as number | undefined,
+  status_antrian: [] as string[],
+});
+
+const dataAntrianAdmisiProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+});
+
+const dataAntrianFarmasiProperties = ref({
+  page: 1,
+  limit: 10,
+  totalData: 0,
+});
+
+const currentPaginationProperties = computed(() => {
+  switch (value.value) {
+    case "0":
+      return dataAntrianAdmisiProperties.value;
+    case "1":
+      return dataAntrianRjProperties.value;
+    case "2":
+      return dataAntrianFarmasiProperties.value;
+    default:
+      return dataAntrianAdmisiProperties.value;
+  }
+});
+
+// Handler untuk pagination rawat jalan
+const handlePage = (event: any) => {
+  const newPage = event.page + 1;
+  const newLimit = event.rows;
+
+  switch (value.value) {
+    case "0":
+      // Admisi
+      dataAntrianAdmisiProperties.value.page = newPage;
+      dataAntrianAdmisiProperties.value.limit = newLimit;
+      break;
+    case "1":
+      // Rawat Jalan
+      dataAntrianRjProperties.value.page = newPage;
+      dataAntrianRjProperties.value.limit = newLimit;
+      break;
+    case "2":
+      // Farmasi
+      dataAntrianFarmasiProperties.value.page = newPage;
+      dataAntrianFarmasiProperties.value.limit = newLimit;
+      break;
+  }
+};
+
+const handleUpdateTotalData = (totalData: number) => {
+  dataAntrianRjProperties.value.totalData = totalData;
+};
+
+// Tangkap event search dari header: hanya berlaku saat tab Rawat Jalan aktif
+const handleHeaderSearch = (q: string, statuses?: string[]) => {
+  if (value.value === "1") {
+    dataAntrianRjProperties.value.q = q;
+    dataAntrianRjProperties.value.status_antrian = statuses ?? [];
+    dataAntrianRjProperties.value.page = 1; // reset ke page 1 saat pencarian
+  }
+};
+
+// Event dari header untuk rentang tanggal (epoch seconds)
+const handleHeaderDateRange = (start?: number | null, end?: number | null) => {
+  if (value.value === "1") {
+    dataAntrianRjProperties.value.start_date = start ?? undefined;
+    dataAntrianRjProperties.value.end_date = end ?? undefined;
+    dataAntrianRjProperties.value.page = 1;
+  }
+};
+
+// Reset q ketika berpindah tab ke selain Rawat Jalan
+watch(
+  () => value.value,
+  (newVal) => {
+    if (newVal === "1") {
+      // start_date/end_date undefined saat pertama kali
+    } else {
+      // Selain Rawat Jalan: dikosongkan agar tidak ditampilkan di header
+      dataAntrianRjProperties.value.start_date = undefined;
+      dataAntrianRjProperties.value.end_date = undefined;
+      dataAntrianRjProperties.value.q = "";
+      dataAntrianRjProperties.value.status_antrian = [];
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -21,6 +120,10 @@ const value = ref("0");
         title="Data Antrian"
         :filter="false"
         :search="false"
+        :startDateEpoch="dataAntrianRjProperties.start_date"
+        :endDateEpoch="dataAntrianRjProperties.end_date"
+        @search="handleHeaderSearch"
+        @dateRange="handleHeaderDateRange"
       >
         <template #header>
           <div class="flex flex-row gap-2 justify-end items-center">
@@ -68,7 +171,10 @@ const value = ref("0");
             <SectionAntrianAdmisi />
           </TabPanel>
           <TabPanel value="1">
-            <SectionAntrianRawatJalan />
+            <SectionAntrianRawatJalan
+              :paginationProperties="dataAntrianRjProperties"
+              @updateTotalData="handleUpdateTotalData"
+            />
           </TabPanel>
           <TabPanel value="2">
             <SectionAntrianFarmasi />
@@ -77,7 +183,13 @@ const value = ref("0");
       </Tabs>
     </template>
     <template #footer>
-      <AntrianFooter />
+      <CustomPaginator
+        class="ml-auto"
+        :rows="currentPaginationProperties.limit"
+        :totalRecords="currentPaginationProperties.totalData"
+        :rowsPerPageOptions="[10, 20, 30]"
+        @page="handlePage"
+      />
     </template>
   </Card>
 </template>
