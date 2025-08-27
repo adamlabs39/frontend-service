@@ -153,21 +153,11 @@ const poliAt = (idx: number) => {
               <div class="grid flex-1 grid-rows-6">
                 <div
                   v-for="i in 6"
-                  :key="'placeholder3-row-' + i"
-                  class="grid grid-cols-2"
+                  :key="'placeholder2-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
                 >
-                  <div
-                    class="flex justify-center items-center px-4 text-2xl font-extrabold border-r border-adameds-100"
-                    :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
-                  >
-                    -
-                  </div>
-                  <div
-                    class="flex justify-center items-center px-4 text-2xl font-extrabold"
-                    :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
-                  >
-                    -
-                  </div>
+                  -
                 </div>
               </div>
             </template>
