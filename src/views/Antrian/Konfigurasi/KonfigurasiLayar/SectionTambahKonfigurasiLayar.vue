@@ -393,7 +393,12 @@ watch(
                   />
                 </template>
                 <template v-else-if="tipeLayar === 3">
-                  <layout-list-3-panggilan-3 />
+                  <layout-list-3-panggilan-3
+                    :payload="jadwalPoliPayload"
+                    :is-poli="isPoli"
+                    :is-admisi="isAdmisi"
+                    :is-farmasi="isFarmasi"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 4">
                   <layout-2-list-2-panggilan />
