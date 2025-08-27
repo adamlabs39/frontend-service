@@ -386,7 +386,11 @@ watch(
                   />
                 </template>
                 <template v-else-if="tipeLayar === 2">
-                  <layout-3x2-panggilan :payload="jadwalPoliPayload" />
+                  <layout-3x2-panggilan
+                    :payload="jadwalPoliPayload"
+                    :is-poli="isPoli"
+                    :active-order="activeOrder"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 3">
                   <layout-list-3-panggilan-3 />
