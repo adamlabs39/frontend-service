@@ -24,12 +24,20 @@ const dataAntrianAdmisiProperties = ref({
   page: 1,
   limit: 10,
   totalData: 0,
+  q: "",
+  start_date: undefined as number | undefined,
+  end_date: undefined as number | undefined,
+  status_antrian: [] as string[],
 });
 
 const dataAntrianFarmasiProperties = ref({
   page: 1,
   limit: 10,
   totalData: 0,
+  q: "",
+  start_date: undefined as number | undefined,
+  end_date: undefined as number | undefined,
+  status_antrian: [] as string[],
 });
 
 const currentPaginationProperties = computed(() => {
@@ -42,6 +50,32 @@ const currentPaginationProperties = computed(() => {
       return dataAntrianFarmasiProperties.value;
     default:
       return dataAntrianAdmisiProperties.value;
+  }
+});
+
+const currentStartDateEpoch = computed(() => {
+  switch (value.value) {
+    case "0":
+      return dataAntrianAdmisiProperties.value.start_date;
+    case "1":
+      return dataAntrianRjProperties.value.start_date;
+    case "2":
+      return dataAntrianFarmasiProperties.value.start_date;
+    default:
+      return undefined;
+  }
+});
+
+const currentEndDateEpoch = computed(() => {
+  switch (value.value) {
+    case "0":
+      return dataAntrianAdmisiProperties.value.end_date;
+    case "1":
+      return dataAntrianRjProperties.value.end_date;
+    case "2":
+      return dataAntrianFarmasiProperties.value.end_date;
+    default:
+      return undefined;
   }
 });
 
@@ -69,25 +103,68 @@ const handlePage = (event: any) => {
   }
 };
 
-const handleUpdateTotalData = (totalData: number) => {
+// const handleUpdateTotalData = (totalData: number) => {
+//   if (value.value === "0") {
+//     dataAntrianAdmisiProperties.value.totalData = totalData;
+//   } else if (value.value === "1") {
+//     dataAntrianRjProperties.value.totalData = totalData;
+//   } else if (value.value === "2") {
+//     dataAntrianFarmasiProperties.value.totalData = totalData;
+//   }
+// };
+
+// Handler terpisah untuk setiap tab
+const handleUpdateTotalDataAdmisi = (totalData: number) => {
+  dataAntrianAdmisiProperties.value.totalData = totalData;
+};
+
+const handleUpdateTotalDataRawatJalan = (totalData: number) => {
   dataAntrianRjProperties.value.totalData = totalData;
+};
+
+const handleUpdateTotalDataFarmasi = (totalData: number) => {
+  dataAntrianFarmasiProperties.value.totalData = totalData;
 };
 
 // Tangkap event search dari header: hanya berlaku saat tab Rawat Jalan aktif
 const handleHeaderSearch = (q: string, statuses?: string[]) => {
-  if (value.value === "1") {
-    dataAntrianRjProperties.value.q = q;
-    dataAntrianRjProperties.value.status_antrian = statuses ?? [];
-    dataAntrianRjProperties.value.page = 1; // reset ke page 1 saat pencarian
+  switch (value.value) {
+    case "0":
+      dataAntrianAdmisiProperties.value.q = q;
+      dataAntrianAdmisiProperties.value.status_antrian = statuses ?? [];
+      dataAntrianAdmisiProperties.value.page = 1;
+      break;
+    case "1":
+      dataAntrianRjProperties.value.q = q;
+      dataAntrianRjProperties.value.status_antrian = statuses ?? [];
+      dataAntrianRjProperties.value.page = 1;
+      break;
+    case "2":
+      dataAntrianFarmasiProperties.value.q = q;
+      dataAntrianFarmasiProperties.value.status_antrian = statuses ?? [];
+      dataAntrianFarmasiProperties.value.page = 1;
+      break;
   }
 };
 
 // Event dari header untuk rentang tanggal (epoch seconds)
 const handleHeaderDateRange = (start?: number | null, end?: number | null) => {
-  if (value.value === "1") {
-    dataAntrianRjProperties.value.start_date = start ?? undefined;
-    dataAntrianRjProperties.value.end_date = end ?? undefined;
-    dataAntrianRjProperties.value.page = 1;
+  switch (value.value) {
+    case "0":
+      dataAntrianAdmisiProperties.value.start_date = start ?? undefined;
+      dataAntrianAdmisiProperties.value.end_date = end ?? undefined;
+      dataAntrianAdmisiProperties.value.page = 1;
+      break;
+    case "1":
+      dataAntrianRjProperties.value.start_date = start ?? undefined;
+      dataAntrianRjProperties.value.end_date = end ?? undefined;
+      dataAntrianRjProperties.value.page = 1;
+      break;
+    case "2":
+      dataAntrianFarmasiProperties.value.start_date = start ?? undefined;
+      dataAntrianFarmasiProperties.value.end_date = end ?? undefined;
+      dataAntrianFarmasiProperties.value.page = 1;
+      break;
   }
 };
 
@@ -120,8 +197,8 @@ watch(
         title="Data Antrian"
         :filter="false"
         :search="false"
-        :startDateEpoch="dataAntrianRjProperties.start_date"
-        :endDateEpoch="dataAntrianRjProperties.end_date"
+        :startDateEpoch="currentStartDateEpoch"
+        :endDateEpoch="currentEndDateEpoch"
         @search="handleHeaderSearch"
         @dateRange="handleHeaderDateRange"
       >
@@ -168,12 +245,15 @@ watch(
       <Tabs v-model:value="value">
         <TabPanels>
           <TabPanel value="0">
-            <SectionAntrianAdmisi />
+            <SectionAntrianAdmisi
+              :paginationProperties="dataAntrianAdmisiProperties"
+              @updateTotalData="handleUpdateTotalDataAdmisi"
+            />
           </TabPanel>
           <TabPanel value="1">
             <SectionAntrianRawatJalan
               :paginationProperties="dataAntrianRjProperties"
-              @updateTotalData="handleUpdateTotalData"
+              @updateTotalData="handleUpdateTotalDataRawatJalan"
             />
           </TabPanel>
           <TabPanel value="2">
