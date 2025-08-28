@@ -89,11 +89,17 @@ const schema = toTypedSchema(
       .default(["Selamat Datang di Klinik Adameds"]),
     media: yup
       .string()
-      .matches(
-        /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
-        "URL harus dari YouTube"
-      )
-      .nullable(),
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("youtube-url", "URL harus dari YouTube", function (value) {
+        // Tidak ada media => lolos
+        if (!value) return true;
+        // Validasi hanya bila tipeLayar adalah 5
+        const tipe = this.parent?.tipeLayar;
+        if (tipe !== 5) return true;
+        const re = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+        return re.test(value);
+      }),
     aktif: yup.boolean(),
     poli_uuids: yup.array().of(yup.string()),
   })
@@ -126,16 +132,18 @@ const onSubmit = handleSubmit(async (values: any) => {
     nama_layar: values.namaLayar,
     tipe_layar: values.tipeLayar,
     judul: values.judul,
-    is_admisi: values.is_admisi,
+    is_admisi: values.isAdmisi,
     is_poli: values.isPoli,
-    is_farmasi: values.is_farmasi,
+    is_farmasi: values.isFarmasi,
     flash_text: values.flashText,
     aktif: values.aktif,
     poli_uuids: values.poli_uuids ?? [],
   };
   console.log("Payload yang dikirim:", payload);
-  if (values.media && values.media.trim() !== "") {
-    payload.media = values.media;
+  if (values.tipeLayar === 5) {
+    payload.media = values.media?.trim() ? values.media.trim() : null;
+  } else {
+    payload.media = null;
   }
 
   try {
