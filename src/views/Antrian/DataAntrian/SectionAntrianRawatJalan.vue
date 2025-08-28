@@ -203,7 +203,10 @@ const getStatusStyle = (status: string | undefined) => {
     scrollHeight="flex"
     v-if="dataAntrianRjPayload.length > 0"
   >
-    <Column header="No." header-class="text-black bg-adameds-50">
+    <Column header-class="text-black bg-adameds-50">
+      <template #header>
+        <div class="w-full font-semibold text-center">No.</div>
+      </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
           {{
