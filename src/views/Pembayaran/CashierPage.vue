@@ -9,6 +9,7 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
 import type { DataTableRowClickEvent } from "primevue/datatable";
@@ -52,12 +53,6 @@ const selectedPatient = ref<string | null>(null);
 
 const route = useRoute();
 const closeBillStore = useReportCloseBillStore();
-
-const isPelunasanMode = ref(false);
-const paymentHistoryList = ref<any[]>([]);
-const currentDebt = ref<number>(0);
-
-
 const hasData = computed(() => kasirData.value && kasirData.value.length > 0);
 
 const handleKasirClick = () => {
@@ -70,28 +65,6 @@ const handleKasirClick = () => {
   }
 };
 
-// const dynamicMarginTop = computed(() => {
-//   // Jika bukan mode pelunasan, gunakan margin tetap.
-//   if (!isPelunasanMode.value) {
-//     return 'mt-[-540px]';
-//   }
-
-//   // Jika mode pelunasan, hitung margin berdasarkan jumlah riwayat.
-//   const historyCount = paymentHistoryList.value.length;
-  
-//   // Tentukan tinggi per item riwayat (sekitar 80-90px, kita bisa coba dengan 85)
-//   const heightPerItem = 85;
-
-//   // Margin awal (jika tidak ada riwayat, sama seperti mode normal)
-//   const initialMargin = -540;
-
-//   // Hitung margin baru
-//   const newMargin = initialMargin - (historyCount * heightPerItem);
-
-//   // Kembalikan sebagai class Tailwind
-//   return `mt-[${newMargin}px]`;
-// });
-
 const isClosingHarianDisabled = computed(
   () => saldoAwalDisabled.value && shiftDisabled.value
 );
@@ -103,53 +76,6 @@ const handleClosingKasir = () => {
   closeKasirDialog.value = false;
 };
 
-const submitPelunasan = async () => {
-  if (!kasirData.value?.uuid) return;
-  storeUtils.setLoading(true);
-  try {
-    const payload = {
-      amount: amount.value,
-      paymentType: payment_type.value,
-      paymentMethod: payment_method.value,
-      note: note.value,
-      information: information.value,
-    };
-    await closeBillStore.payDebtOnClosedBill(kasirData.value.uuid, payload);
-    
-    pembayaranBPJSDialog.value = false;
-    
-    // [LOGIKA BARU] Muat ulang data untuk mendapatkan status hutang terbaru
-    // Kita panggil ulang API history untuk mendapatkan data paling update
-    const historyResponse = await closeBillStore.getPaymentHistory(kasirData.value.uuid);
-    
-    if (historyResponse?.payload) {
-        // Perbarui daftar riwayat pembayaran di tampilan
-        paymentHistoryList.value = historyResponse.payload.paymentHistory || [];
-        // Perbarui sisa hutang saat ini
-        currentDebt.value = historyResponse.payload.debt || 0;
-
-        // Cek apakah hutang sudah lunas (debt === 0)
-        if (currentDebt.value === 0) {
-            // Jika lunas, atur isBillClosed menjadi true agar tombol hilang
-            // (karena v-if="isPelunasanMode" akan menargetkan tombol Pelunasan,
-            // dan di dalam template normal, isBillClosed=true akan menampilkan Close Bill,
-            // tapi karena kita masih di mode pelunasan, tombol Pelunasan akan disembunyikan)
-            isBillClosed.value = true; 
-        } else {
-            // Jika masih ada hutang, biarkan isBillClosed false agar tombol Pelunasan tetap muncul
-            isBillClosed.value = false;
-        }
-    }
-    
-    // Penting: isPelunasanMode JANGAN direset agar tetap di mode pelunasan
-    // isPelunasanMode.value = false; // <-- BARIS INI DIHAPUS/DIKOMENTARI
-    
-  } catch (error) {
-    console.error("Gagal melakukan pelunasan:", error);
-  } finally {
-    storeUtils.setLoading(false);
-  }
-};
 
 //closingharianDialogcheck
 const openClosingHarianDialog = async () => {
@@ -187,35 +113,15 @@ const openDynamicDialog = async (dialogRef: Ref<boolean>) => {
 
 //kembalian
 const getKembalian = () => {
-  const requiredAmount = isPelunasanMode.value ? currentDebt.value : (kasirData.value?.grandTotal || 0);
+  const requiredAmount = kasirData.value?.grandTotal || 0;
   const paidAmount = amount.value || 0;
 
-  if (isPelunasanMode.value) {
-    // [KHUSUS MODE PELUNASAN]
-    // Kembalian dihitung sebagai selisih, bisa positif atau negatif (sisa hutang).
+  if (paidAmount >= requiredAmount) {
     kembalian.value = paidAmount - requiredAmount;
   } else {
-    // [MODE NORMAL]
-    // Kembalian hanya dihitung jika pembayaran cukup. Jika kurang, kembalian adalah 0.
-    if (paidAmount >= requiredAmount) {
-      kembalian.value = paidAmount - requiredAmount;
-    } else {
-      kembalian.value = 0;
-    }
+    kembalian.value = 0;
   }
 };
-
-//khusus mode pelunasan
-const isAmountInsufficient = computed(() => {
-  // Hanya aktif di mode pelunasan
-  if (!isPelunasanMode.value) return false;
-  
-  const requiredAmount = currentDebt.value || 0;
-  const paidAmount = amount.value || 0;
-  
-  // Kondisi true jika ada jumlah yang dibayar, namun kurang dari total hutang
-  return paidAmount > 0 && paidAmount < requiredAmount;
-});
 
 // atur kembalian otomatis
 let kembalianTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -244,8 +150,8 @@ const searchPatientData = async (event: any) => {
   if (timer.value) clearTimeout(timer.value);
 
   if (!filterText || filterText.trim() === '') {
-    kasirPayload.value = []; // Kosongkan daftar opsi
-    return; // Hentikan eksekusi fungsi
+    kasirPayload.value = []; 
+    return; 
   }
   timer.value = setTimeout(async () => {
     loadingSearchPatient.value = true;
@@ -279,8 +185,6 @@ const processBillData = (data: any) => {
       uuid: service.uuid,
       layanan: service.serviceName,
       doctor: service.practitionerName,
-      tanggal_jadwal: epochToDate(service.date, "date"),
-      no_time: epochToDate(service.date, "time"),
     }));
   } else {
     itemsPasien.value = [];
@@ -293,70 +197,35 @@ const setSelectedPatientData = async (uuid: string) => {
   try {
     let dataFromApi: any = null;
     let serviceBillData: any[] | null = null;
-    paymentHistoryList.value = [];
 
-    if (isPelunasanMode.value) {
-      // --- ALUR MODE PELUNASAN ---
-      const [historyResponse, patientBillResponse] = await Promise.all([
-        closeBillStore.getPaymentHistory(uuid),
-        closeBillStore.getDetailPasienBill(uuid),
-      ]);
-
-      if (historyResponse?.payload && patientBillResponse?.payload?.bill) {
-        // [PERBAIKAN] Ambil data dari historyResponse terlebih dahulu
-        const billDetails = historyResponse.payload.billDetails;
-        const historyList = historyResponse.payload.paymentHistory;
-        
-        // [PERBAIKAN] Isi kasirData.value menggunakan data yang sudah ada
-        kasirData.value = billDetails; 
-
-        // [PERBAIKAN] Isi paymentHistoryList.value
-        paymentHistoryList.value = historyList || [];
-        currentDebt.value = historyResponse.payload.debt || 0;
-
-        // Ambil data serviceBill dari panggilan API kedua
-        const serviceBillData = patientBillResponse.payload.bill.serviceBill;
-        processBillData(serviceBillData);
-
-        // Atur status tombol berdasarkan data yang benar
-        if (kasirData.value.isPaid === true || kasirData.value.closeBill === true) {
-            isBillClosed.value = true;
-            discountDisabled.value = true;
-            voucherDisabled.value = true;
-        } else {
-            isBillClosed.value = false;
-            discountDisabled.value = false;
-            voucherDisabled.value = false;
-        }
-      }
-    } else {
-      // --- ALUR NORMAL ---
-      const response = await tagihanStore.getDetailBill(uuid);
-      if (response && response.payload) {
+    // Langsung panggil alur normal
+    const response = await tagihanStore.getDetailBill(uuid);
+    if (response && response.payload) {
         dataFromApi = response.payload;
         serviceBillData = dataFromApi.serviceBill;
-      }
     }
 
     if (dataFromApi) {
-      // Proses mapping data (sama seperti sebelumnya)
       kasirData.value = {
         uuid: dataFromApi.uuid,
-        patientName: dataFromApi.patientName || dataFromApi.patientName,
-        invoiceCode: dataFromApi.invoiceCode || dataFromApi.invoiceCode,
-        adminFee: dataFromApi.adminFee || dataFromApi.adminFee,
-        totalTindakan: dataFromApi.totalTindakan || dataFromApi.totalTindakan,
-        totalPenunjang: dataFromApi.totalPenunjang || dataFromApi.totalPenunjang,
-        totalObatAlkes: dataFromApi.totalObatAlkes || dataFromApi.totalObatAlkes,
-        totalRuangan: dataFromApi.totalRuangan || dataFromApi.totalRuangan,
+        patientName: dataFromApi.patientName,
+        invoiceCode: dataFromApi.invoiceCode,
+        adminFee: dataFromApi.adminFee,
+        scheduleTime: dataFromApi.scheduleTime,
+        totalTindakan: dataFromApi.totalTindakan,
+        totalPenunjang: dataFromApi.totalPenunjang,
+        totalObatAlkes: dataFromApi.totalObatAlkes,
+        totalRuangan: dataFromApi.totalRuangan ,
         discount: dataFromApi.discount,
-        voucherValue: dataFromApi.voucherValue || dataFromApi.voucherValue,
-        subTotal: dataFromApi.subTotal || dataFromApi.subTotal,
+        voucherValue: dataFromApi.voucherValue,
+        subTotal: dataFromApi.subTotal,
         ppn: dataFromApi.ppn,
-        grandTotal: dataFromApi.grandTotal || dataFromApi.grandTotal,
+        grandTotal: dataFromApi.grandTotal,
         closeBill: dataFromApi.closeBill,
+        paymentType: dataFromApi.paymentType,
         isPaid: dataFromApi.isPaid,
         noRm: dataFromApi.noRm,
+        gender: dataFromApi.gender,
         ageYear: dataFromApi .ageYear,
         ageMonth: dataFromApi.ageMonth,
         ageDay: dataFromApi.ageDay,
@@ -383,23 +252,18 @@ const setSelectedPatientData = async (uuid: string) => {
 };
 
 //untuk milih di dropdown search
-watch(selectedPatient, (newlySelectedUuid, oldUuid) => {
-  // 'oldUuid' akan memiliki nilai (tidak null) hanya jika ini adalah
-  // aksi pemilihan dari pengguna, BUKAN saat halaman pertama kali dimuat.
-  if (oldUuid && isPelunasanMode.value) {
-    // Jika user memilih pasien baru saat sedang dalam mode pelunasan,
-    // kita paksa keluar dari mode tersebut.
-    isPelunasanMode.value = false;
-    paymentHistoryList.value = []; 
-    currentDebt.value = 0;
-  }
-
+watch(selectedPatient, (newlySelectedUuid) => {
   if (newlySelectedUuid) {
-    // Lanjutkan untuk mengambil data pasien yang baru dipilih
     setSelectedPatientData(newlySelectedUuid);
   } else {
-    // Jika pilihan dikosongkan, reset tampilan
     kasirData.value = null;
+  }
+});
+
+//rest pop up pembayaran
+watch(pembayaranBPJSDialog, (isOpening) => {
+  if (isOpening) {
+    resetPaymentDialogState();
   }
 });
 
@@ -522,8 +386,16 @@ const startShortPolling = () => {
       if (status.payload.isOpen) {
         console.log("Kasir telah ditutup, menghentikan polling.");
         console.log(status);
-        saldoAwal.value = status.payload.beginningBalance;
-        selectShift.value = status.payload.shiftType;
+        saldoAwal.value = status.payload.saldoAwal;
+
+        //  Ambil nama shift dari API
+        const shiftNameFromApi = status.payload.shift;
+        const shiftOption = optionShiftItem.value.find(
+          (option) => option.label === shiftNameFromApi
+        );
+        if (shiftOption) {
+          selectShift.value = shiftOption.value;
+        }
         saldoAwalDisabled.value = true;
         shiftDisabled.value = true;
         isKasirOpen.value = true;
@@ -543,6 +415,24 @@ const stopShortPolling = () => {
   if (pollingInterval) {
     clearInterval(pollingInterval);
     pollingInterval = null;
+  }
+};
+
+// fungsi untuk reset pop up dialog pembayaran
+const resetPaymentDialogState = () => {
+  amount.value = undefined;
+  payment_method.value = "";
+  note.value = "";
+  information.value = "";
+  kembalian.value = 0;
+
+  if (kasirData.value && kasirData.value.paymentType) {
+    const defaultPaymentType = optionCaraBayar.value.find(
+      option => option.label.toUpperCase() === kasirData.value.paymentType.toUpperCase()
+    );
+    payment_type.value = defaultPaymentType ? defaultPaymentType.value : "";
+  } else {
+    payment_type.value = "";
   }
 };
 
@@ -627,18 +517,12 @@ const submitKasirCloseBill = async () => {
 const dynamicOptionLabelKey = computed(() => {
   const query = searchQuery.value.toUpperCase();
 
-  // Prioritas 1: Jika input mengandung "INV", tampilkan invoiceCode
   if (query.includes("INV")) {
     return 'invoiceCode';
   }
-
-  // Prioritas 2: Jika input mengandung pola No. RM (contoh: angka-angka-angka), tampilkan noRm
-  // Pola ini mencari string yang mengandung angka dan tanda hubung
   if (/\d/.test(searchQuery.value) && searchQuery.value.includes("-")) {
     return 'noRm';
   }
-  
-  // Default: Jika tidak ada pola di atas, tampilkan patientName
   return 'patientName';
 });
 
@@ -655,19 +539,9 @@ const formatDateCustom = (epochTime: number) => {
 };
 
 onMounted(() => {
-  startShortPolling(); // Fungsi polling yang sudah ada
-
-  const billUuidFromQuery = route.query.bill_uuid;
-  const modeFromQuery = route.query.mode;
-
-  // Jika datang dari halaman detail dengan mode pelunasan
-  if (modeFromQuery === 'pelunasan' && typeof billUuidFromQuery === 'string') {
-    isPelunasanMode.value = true;
-    // Langsung muat data tagihan berdasarkan UUID
-    setSelectedPatientData(billUuidFromQuery);
-    selectedPatient.value = billUuidFromQuery; 
+  startShortPolling(); 
   }
-});
+);
 
 onUnmounted(() => {
   stopShortPolling();
@@ -754,27 +628,27 @@ onUnmounted(() => {
               <div class="text-sm text-black font-poppins">
                 Biaya Administrasi
               </div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Biaya Tindakan -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Tindakan</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Biaya Penunjang -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Penunjang</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Biaya Obat -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat/Alkes</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Biaya Kamar -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Diskon -->
             <div class="flex justify-between mt-6">
@@ -784,24 +658,24 @@ onUnmounted(() => {
             <!-- Voucher-->
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins">Voucher</div>
-              <div class="text-sm font-poppins">Rp, 0 </div>
+              <div class="text-sm font-poppins">Rp 0 </div>
             </div>
             <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
             <!-- Total-->
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins font-bold">Total</div>
-              <div class="text-sm font-poppins font-bold">Rp, 0 </div>
+              <div class="text-sm font-poppins font-bold">Rp 0 </div>
             </div>
             <!-- PPN -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">PPN</div>
-              <div class="text-sm font-poppins">Rp, 0</div>
+              <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <hr class="mt-6 mb-2 border-black border-1" />
             <!-- Grand Total -->
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Grand Total</div>
-              <div class="text-sm font-bold font-poppins">Rp, 0</div>
+              <div class="text-sm font-bold font-poppins">Rp 0</div>
             </div>
             <div class="">
               <div class="flex">
@@ -850,29 +724,34 @@ onUnmounted(() => {
                     <div class="w-full font-bold">List Tagihan Pelayanan</div>
                   </template>
                   <template #body="slotProps">
-                    <div class="flex">
-                      <p class="font-bold text-normal">
-                        {{ slotProps.data.layanan }}
-                      </p>
-                      <CustomChip class="ml-2" :showCheckedIcon="false" label="TUNAI" bgColor="bg-adameds-50"
-                        textColor="text-adameds-300" borderColor="border-adameds-300" />
-                      <CustomChip class="ml-2" :showCheckedIcon="false" label="BPJS" bgColor="bg-warning-50"
-                        textColor="text-warning-300" borderColor="border-warning-300" />
-                    </div>
-                    <div class="flex">
-                      <UserDoctorIcon class="mt-2" />
-                      <p class="mt-2 text-sm text-grey-400">
-                        {{ slotProps.data.doctor }}
-                      </p>
-                    </div>
-                    <div class="flex">
-                      <p class="text-sm">Tanggal</p>
-                      <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
-                      <p class="ml-2 text-sm">
-                        {{ slotProps.data.tanggal_jadwal }}
-                      </p>
-                      <p class="ml-2 text-sm">{{ slotProps.data.no_time }}</p>
-                    </div>
+                      <div class="flex">
+                          <p class="font-bold text-normal">
+                              {{ slotProps.data.layanan }}
+                          </p>
+                          <CustomChip 
+                              v-if="kasirData.paymentType"
+                              class="ml-2" 
+                              :showCheckedIcon="false" 
+                              :label="kasirData.paymentType" 
+                              :bgColor="kasirData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                              :textColor="kasirData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                              :borderColor="kasirData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" 
+                          />
+                      </div>
+                      <div class="flex">
+                          <UserDoctorIcon class="mt-2" />
+                          <p class="mt-2 text-sm text-grey-400">
+                              {{ slotProps.data.doctor }}
+                          </p>
+                      </div>
+                      <div v-if="kasirData.scheduleTime" class="flex">
+                          <p class="text-sm">Tanggal</p>
+                          <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
+                          <p class="ml-2 text-sm">
+                              {{ epochToDate(kasirData.scheduleTime, "date") }}
+                          </p>
+                          <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }}</p>
+                      </div>
                   </template>
                 </Column>
               </DataTable>
@@ -891,23 +770,23 @@ onUnmounted(() => {
             
             <div class="flex justify-between mt-6">
               <div class="text-sm text-black font-poppins">Biaya Administrasi</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.adminFee }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.adminFee }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Tindakan</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.totalTindakan }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.totalTindakan }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Penunjang</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.totalPenunjang }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.totalPenunjang }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat/Alkes</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.totalObatAlkes }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.totalObatAlkes }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.totalRuangan }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.totalRuangan }}</div>
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins">Diskon</div>
@@ -915,146 +794,64 @@ onUnmounted(() => {
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins">Voucher</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.voucherValue || "0"}} </div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.voucherValue || "0"}} </div>
             </div>
             <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Total</div>
-              <div class="text-sm font-bold font-poppins">Rp, {{ kasirData.subTotal }} </div>
+              <div class="text-sm font-bold font-poppins">Rp {{ kasirData.subTotal }} </div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">PPN</div>
-              <div class="text-sm font-poppins">Rp, {{ kasirData.ppn }}</div>
+              <div class="text-sm font-poppins">Rp {{ kasirData.ppn }}</div>
             </div>
             <hr class="mt-6 mb-2 border-slate-300 border-1" />
 
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Grand Total</div>
-              <div class="text-sm font-bold font-poppins">Rp, {{ kasirData.grandTotal }}</div>
+              <div class="text-sm font-bold font-poppins">Rp {{ kasirData.grandTotal }}</div>
             </div>
 
-            <template v-if="isPelunasanMode && paymentHistoryList.length > 0">
-              <div v-for="history in paymentHistoryList" :key="history.createdAt">
-                <div class="flex justify-between mt-4">
-                  <div class="text-sm font-poppins font-bold">
-                    Jumlah Terbayar - {{ formatDateCustom(history.createdAt) }}
-                  </div>
-                  <div class="text-sm font-poppins font-bold">
-                    Rp, {{ history.amount }}
-                  </div>
-                </div>
-                <hr class="mt-6 mb-2 border-slate-300 border-1" />
-                <div class="flex justify-between mt-2 ">
-                  <div class="text-sm font-poppins text-danger-300 font-bold">Hutang</div>
-                  <div class="text-sm font-poppins text-danger-300 font-bold">
-                    -Rp, {{ history.debtAfter }}
-                  </div>
-                </div>
-              </div>
-            </template>
 
-            <template v-if="!isPelunasanMode">
-              <div class="flex mt-[30px]">
+            <div class="flex mt-[30px]">
                 <CustomInputNumber v-model="codeDiscount" placeholder="5" :show-label="false"
-                  class="w-[80px] bg-white rounded-xl" :disable="discountDisabled">
-                  <template #appendText>
+                    class="w-[80px] bg-white rounded-xl" :disable="discountDisabled">
+                    <template #appendText>
                     <div
-                      class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
-                      %
+                        class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
+                        %
                     </div>
-                  </template>
+                    </template>
                 </CustomInputNumber>
                 <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="submitDiscount"
-                  :disabled="discountDisabled" />
-  
+                    :disabled="discountDisabled" />
+
                 <CustomTextfield v-model="codeVoucher" :showLabel="false" placeholder="Masukkan Kode Voucher"
-                  class="w-[30%] ml-[50px] mr-[10px]" :disable="voucherDisabled" />
+                    class="w-[30%] ml-[50px] mr-[10px]" :disable="voucherDisabled" />
                 <CustomButton label="Pakai Voucher" class="" @click="submitVoucher" :disabled="voucherDisabled" />
-              </div>
-            </template>
+            </div>
 
             <!-- Button Bayar -->
             <div class="mt-[60px]">
               <div class="flex">
                 <CustomButton 
-                  v-if="isPelunasanMode" 
+                  v-if="!isBillClosed" 
                   @click="pembayaranBPJSDialog = true" 
-                  label="Pelunasan" 
-                  class="w-full"
-                />
-                
-                <template v-else>
-                  <CustomButton 
-                    v-if="!isBillClosed" 
-                    @click="pembayaranBPJSDialog = true" 
-                    label="Bayar" 
-                    class="w-full" 
-                  />
-                  <CustomButton 
-                    v-else 
-                    @click="kasirCloseBillDialog = true" 
-                    label="Close Bill" 
-                    class="w-full"
-                    backgroundColor="bg-danger-300" 
-                    borderColor="border-danger-300" 
-                    textColor="text-white" 
-                  />
-                </template>
-              </div>
-            </div>
-            <!-- <div class="mt-[60px]">
-              <div class="flex">
-                <CustomButton 
-                  @click="closeBillDialog = true"
+                  label="Bayar" 
+                  class="w-full" 
+              />
+              <CustomButton 
+                  v-else 
+                  @click="kasirCloseBillDialog = true" 
                   label="Close Bill" 
                   class="w-full"
-                  backgroundColor="bg-danger-300"
-                  borderColor="border-danger-300"
-                  textColor="text-white"
-                />
+                  backgroundColor="bg-danger-300" 
+                  borderColor="border-danger-300" 
+                  textColor="text-white" 
+              />
               </div>
-            </div> -->
+            </div>
           </div>
-
-          <!-- List Tagihan Pelayanan -->
-          <!-- <div 
-            class="mr-[20px]"
-            :class="dynamicMarginTop"
-          >
-            <DataTable :value="itemsPasien" scrollable scrollHeight="380px" class="overflow-hidden rounded-[10px]"
-              :pt="{ headerRow: 'text-SM' }" @rowClick="detailTagihan">
-              <Column field="no" headerClass="bg-adameds-300 text-white" bodyClass="text-SM" style="width: 60px">
-                <template #header>
-                  <div class="w-full font-bold">List Tagihan Pelayanan</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex">
-                    <p class="font-bold text-normal">
-                      {{ slotProps.data.layanan }}
-                    </p>
-                    <CustomChip class="ml-2" :showCheckedIcon="false" label="TUNAI" bgColor="bg-adameds-50"
-                      textColor="text-adameds-300" borderColor="border-adameds-300" />
-                    <CustomChip class="ml-2" :showCheckedIcon="false" label="BPJS" bgColor="bg-warning-50"
-                      textColor="text-warning-300" borderColor="border-warning-300" />
-                  </div>
-                  <div class="flex">
-                    <UserDoctorIcon class="mt-2" />
-                    <p class="mt-2 text-sm text-grey-400">
-                      {{ slotProps.data.doctor }}
-                    </p>
-                  </div>
-                  <div class="flex">
-                    <p class="text-sm">Tanggal</p>
-                    <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
-                    <p class="ml-2 text-sm">
-                      {{ slotProps.data.tanggal_jadwal }}
-                    </p>
-                    <p class="ml-2 text-sm">{{ slotProps.data.no_time }}</p>
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </div> -->
         </div>
       </template>
     </Card>
@@ -1241,8 +1038,7 @@ onUnmounted(() => {
           </div>
           <div>
             <p class="font-bold mt-[20px]">
-              <span v-if="isPelunasanMode">Rp. {{ currentDebt }}</span>
-              <span v-else>Rp. {{ kasirData.grandTotal }}</span>
+              <span>Rp. {{ kasirData.grandTotal }}</span>
             </p>
           </div>
         </div>
@@ -1259,7 +1055,7 @@ onUnmounted(() => {
                 :show-label="false" 
                 class="mt-[15px]" 
                 placeholder="0"
-                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }"
+                :pt="{ root: { class: 'border !border-danger-300 rounded-lg'   } }"
               >
                 <template #prependText>
                   <div class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
@@ -1268,11 +1064,6 @@ onUnmounted(() => {
                 </template>
               </CustomInputNumber>
             </div>
-          </div>
-          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
-              <p class="text-xs text-danger-300">
-                  *Pembayaran kurang dari Grand Total, tetap melanjutkan dengan status piutang?
-              </p>
           </div>
           
           <div class="flex justify-between">
@@ -1287,8 +1078,8 @@ onUnmounted(() => {
                 placeholder="0" 
                 :disabled="true"
                 :pt="{ 
-                  root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' },
-                  input: { class: isAmountInsufficient ? '!text-danger-300' : '' } 
+                  root: { class:  'border !border-danger-300 rounded-lg'  },
+                  input: { class:  '!text-danger-300'  } 
                 }"
               >
                 <template #prependText>
@@ -1341,15 +1132,9 @@ onUnmounted(() => {
             <CustomTextfield v-model="information" class="flex-1" label="Keterangan" placeholder="Keterangan" />
           </div>
           <div class="mt-[25px] flex items-end">
-          <CustomButton 
-                v-if="!isPelunasanMode" 
+            <CustomButton 
                 label="Bayar" 
                 @click="submitPaymentKasir" 
-            />
-          <CustomButton 
-                v-else 
-                label="Pelunasan" 
-                @click="submitPelunasan" 
             />
         </div>
         </div>
@@ -1362,25 +1147,30 @@ onUnmounted(() => {
       <template #body>
         <div>
           <div class="pt-5">
-            <div class="flex">
-              <p class="font-bold">{{ openedData.layanan }}</p>
-              <CustomChip class="ml-2" :showCheckedIcon="false" label="TUNAI" bgColor="bg-adameds-50"
-                textColor="text-adameds-300" borderColor="border-adameds-300" />
-              <CustomChip class="ml-2" :showCheckedIcon="false" label="BPJS" bgColor="bg-warning-50"
-                textColor="text-warning-300" borderColor="border-warning-300" />
-            </div>
-            <div class="flex">
-              <UserDoctorIcon class="mt-2" />
-              <p class="mt-2 text-sm text-grey-400">
-                {{ openedData.doctor }}
-              </p>
-            </div>
-            <div class="flex">
-              <p class="text-sm">Tanggal</p>
-              <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
-              <p class="ml-2 text-sm">{{ openedData.tanggal_jadwal }}</p>
-              <p class="ml-2 text-sm">{{ openedData.no_time }} </p>
-            </div>
+              <div class="flex">
+                  <p class="font-bold">{{ openedData.layanan }}</p>
+                  <CustomChip 
+                      v-if="kasirData.paymentType"
+                      class="ml-2" 
+                      :showCheckedIcon="false" 
+                      :label="kasirData.paymentType" 
+                      :bgColor="kasirData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                      :textColor="kasirData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                      :borderColor="kasirData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" 
+                  />
+              </div>
+              <div class="flex">
+                  <UserDoctorIcon class="mt-2" />
+                  <p class="mt-2 text-sm text-grey-400">
+                      {{ openedData.doctor }}
+                  </p>
+              </div>
+              <div v-if="kasirData.scheduleTime" class="flex">
+                  <p class="text-sm">Tanggal</p>
+                  <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
+                  <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "date") }}</p>
+                  <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }}</p>
+              </div>
           </div>
 
           <!-- table kamar-->

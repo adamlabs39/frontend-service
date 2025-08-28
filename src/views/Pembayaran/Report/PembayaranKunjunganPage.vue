@@ -54,6 +54,21 @@ const hasData = computed(
     pembayaranKunjunganPayload.value.length > 0
 );
 
+const paymentTypeMapping: { [key: string]: string } = {
+  'CASH' : 'Tunai',
+  'INSURANCE' : 'Asuransi'
+}
+
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+  if (typeof price !== 'number') return 'Rp 0';
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0, 
+  }).format(price);
+};
+
 watch(startDateFilter, (newDate) => {
   if (newDate) {
     newDate.setHours(0, 0, 0, 0);
@@ -362,21 +377,21 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
-          <Column header="Nomor" headerClass="bg-adameds-50">
+          <Column  header="Nomor" headerClass="bg-adameds-50 pl-10">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.noRm }}</div>
+              <div class="text-SM pl-4">{{ slotProps.data.noRm }}</div>
               <div class="text-SM">{{ slotProps.data.billCode }}</div>
               <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
             </template>
           </Column>
-          <Column header="Nama Pasien" headerClass="bg-adameds-50">
+          <Column header="Nama Pasien" headerClass="bg-adameds-50 pl-8">
             <template #body="slotProps">
               <div class="text-SM">
                 {{ slotProps.data.patientName }}
               </div>
             </template>
           </Column>
-          <Column header="Waktu Bayar" headerClass="bg-adameds-50">
+          <Column header="Waktu Bayar" headerClass="bg-adameds-50 pl-6">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
@@ -387,12 +402,12 @@ onMounted(() => {
           </Column>
           <Column header="Cara Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.paymentType }}</div>
+              <div class="text-SM">{{ paymentTypeMapping[slotProps.data.paymentType] || slotProps.data.paymentType }}</div>
             </template>
           </Column>
           <Column header="Total Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">Rp {{ slotProps.data.amount }}</div>
+              <div class="text-SM">{{  formatPriceLokal (slotProps.data.amount) }}</div>
             </template>
           </Column>
           <Column header="Kasir" headerClass="bg-adameds-50">
@@ -400,7 +415,7 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.data.cashierName }}</div>
             </template>
           </Column>
-          <Column header="Keterangan" headerClass="bg-adameds-50">
+          <Column header="Keterangan" headerClass="bg-adameds-50 " style="max-width: 250px" class="break-words">
             <template #body="slotProps">
               <div class="text-SM">{{ slotProps.data.note }}</div>
             </template>

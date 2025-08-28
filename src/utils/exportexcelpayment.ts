@@ -106,7 +106,7 @@ export const downloadExportExcelPendapatan = async (
             worksheet[cell].s = {
                 alignment: { horizontal: "center", vertical: "center" },
                 font: { bold: true },
-                fill: { fgColor: { rgb: "D3D3D3" } }, // Warna abu-abu muda
+                fill: { fgColor: { rgb: "D3D3D3" } }, 
             };
         });
 
@@ -239,10 +239,10 @@ export const downloadExportExcelClosingCashier = async (
             dataForSheet.push([
                 index + 1,
                 isShiftClosing ? "Closing kasir" : "Closing harian",
-                isShiftClosing ? epochToDate(row.shiftTimeOpen, "date") : "-",
-                isShiftClosing ? epochToDate(row.shiftTimeClosed, "date") : "-",
+                isShiftClosing ? (row.shiftTimeOpen ? epochToDate(row.shiftTimeOpen, "date") : "-") : "-", 
+                isShiftClosing ? (row.shiftTimeClosed ? epochToDate(row.shiftTimeClosed, "date") : "-") : "-",
                 isShiftClosing ? shiftTypeMap[row.shiftType] : row.shiftList,
-                isShiftClosing ? "-" : epochToDate(row.daysTimeClosed, "date"),
+                isShiftClosing ? "-" : (row.daysTimeClosed ? epochToDate(row.daysTimeClosed, "date") : "-"),
                 row.cashierName || row.petugasList || "-"
             ]);
         });
@@ -252,7 +252,7 @@ export const downloadExportExcelClosingCashier = async (
 
         XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
         XLSX.utils.sheet_add_aoa(worksheet, [tanggalExport], { origin: "A2" });
-        XLSX.utils.sheet_add_aoa(worksheet, [[]], { origin: "A3" }); // Baris kosong untuk jarak
+        XLSX.utils.sheet_add_aoa(worksheet, [[]], { origin: "A3" }); 
 
         XLSX.utils.sheet_add_aoa(worksheet, dataForSheet, { origin: "A4" });
 
