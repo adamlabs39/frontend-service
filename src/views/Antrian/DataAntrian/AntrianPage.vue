@@ -172,6 +172,19 @@ const handleHeaderDateRange = (start?: number | null, end?: number | null) => {
 watch(
   () => value.value,
   (newVal) => {
+    // Reset page ke 1 untuk semua tab saat berpindah
+    switch (newVal) {
+      case "0":
+        dataAntrianAdmisiProperties.value.page = 1;
+        break;
+      case "1":
+        dataAntrianRjProperties.value.page = 1;
+        break;
+      case "2":
+        dataAntrianFarmasiProperties.value.page = 1;
+        break;
+    }
+
     if (newVal === "1") {
       // start_date/end_date undefined saat pertama kali
     } else {
@@ -263,13 +276,16 @@ watch(
       </Tabs>
     </template>
     <template #footer>
-      <CustomPaginator
-        class="ml-auto"
-        :rows="currentPaginationProperties.limit"
-        :totalRecords="currentPaginationProperties.totalData"
-        :rowsPerPageOptions="[10, 20, 30]"
-        @page="handlePage"
-      />
+      <div class="flex justify-between px-5 py-2.5">
+        <CustomPaginator
+          class="ml-auto"
+          :key="`paginator-${value}`"
+          :rows="currentPaginationProperties.limit"
+          :totalRecords="currentPaginationProperties.totalData"
+          :rowsPerPageOptions="[10, 20, 30]"
+          @page="handlePage"
+        />
+      </div>
     </template>
   </Card>
 </template>
