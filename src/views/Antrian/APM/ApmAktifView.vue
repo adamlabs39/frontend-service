@@ -80,10 +80,10 @@ const getImage = (image: string) => {
 };
 </script>
 
-<template #body>
-  <div class="bg-adameds-75">
+<template>
+  <div class="py-5 w-full min-h-screen">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
       @click="handleBackAntrian"
     >
       <div
@@ -129,13 +129,14 @@ const getImage = (image: string) => {
       circular
       :showNavigators="false"
       :autoplayInterval="3000"
+      class="relative z-10"
     >
       <template #item="slotProps">
         <div class="flex relative justify-center items-center mx-36 mt-16 mb-4">
           <div class="overflow-hidden w-full rounded-xl">
             <div class="flex transition-transform duration-300">
               <div
-                class="bg-adameds-300 w-full h-[280px] flex items-center justify-center"
+                class="bg-adameds-300 w-full h-[330px] flex items-center justify-center"
               >
                 <div class="text-center text-white">
                   <div class="mb-2 text-5xl">#Improving</div>
@@ -147,10 +148,10 @@ const getImage = (image: string) => {
                 <img
                   loading="lazy"
                   src="@/assets/images/APM/img-carousel-1.svg"
-                  class="h-[280px] object-cover w-full"
+                  class="h-[330px] object-cover w-full"
                 />
                 <div
-                  class="absolute w-full inset-y-0 left-0 h-[280px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
+                  class="absolute w-full inset-y-0 left-0 h-[330px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
                 ></div>
               </div>
             </div>
@@ -159,7 +160,7 @@ const getImage = (image: string) => {
       </template>
     </Carousel>
 
-    <div class="flex h-[220px] justify-center">
+    <div class="flex relative z-10 justify-center">
       <div class="w-[350px] my-10">
         <CardPasien
           :cardPasien="cardPasienJKN"
@@ -189,6 +190,12 @@ const getImage = (image: string) => {
           class="transition-transform duration-300 hover:scale-95"
         />
       </div>
+    </div>
+    <div class="absolute -bottom-10 z-0 -left-[200px] rotate-12">
+      <img src="@/assets/images/APM/hexagon-left.svg" alt="hexagon-left" />
+    </div>
+    <div class="absolute -bottom-10 z-0 -rotate-12 -right-[200px]">
+      <img src="@/assets/images/APM/hexagon-right.svg" alt="hexagon-right" />
     </div>
   </div>
 </template>
