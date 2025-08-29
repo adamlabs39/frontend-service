@@ -127,17 +127,15 @@ const getImage = (image: string) => {
     <Carousel
       :value="device"
       circular
-      :autoplayInterval="3000"
       :showNavigators="false"
+      :autoplayInterval="3000"
     >
       <template #item="slotProps">
-        <div
-          class="relative justify-center items-center mx-36 mt-16 mb-4 w-150"
-        >
-          <div class="overflow-hidden rounded-xl">
+        <div class="flex relative justify-center items-center mx-36 mt-16 mb-4">
+          <div class="overflow-hidden w-full rounded-xl">
             <div class="flex transition-transform duration-300">
               <div
-                class="bg-adameds-300 w-3/5 h-[280px] flex items-center justify-center"
+                class="bg-adameds-300 w-full h-[280px] flex items-center justify-center"
               >
                 <div class="text-center text-white">
                   <div class="mb-2 text-5xl">#Improving</div>
@@ -148,8 +146,8 @@ const getImage = (image: string) => {
               <div class="relative w-2/5">
                 <img
                   loading="lazy"
-                  src="@/assets/images/APM/img-carousel-test.svg"
-                  class="h-[280px] object-cover"
+                  src="@/assets/images/APM/img-carousel-1.svg"
+                  class="h-[280px] object-cover w-full"
                 />
                 <div
                   class="absolute w-full inset-y-0 left-0 h-[280px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
