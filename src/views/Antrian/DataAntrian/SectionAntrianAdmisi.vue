@@ -41,12 +41,12 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
 watch(
   () => props.paginationProperties,
   () => {
-    fetchGetDataAntrianRj();
+    fetchGetDataAntrianAdmisi();
   },
   { deep: true }
 );
 
-const fetchGetDataAntrianRj = async () => {
+const fetchGetDataAntrianAdmisi = async () => {
   useUtilsStore.setLoading(true);
   try {
     const startEpoch = props.paginationProperties.start_date ?? 1128557830;
@@ -94,7 +94,7 @@ const dateFormat = (timestamp: number | string) => {
 };
 
 onMounted(() => {
-  fetchGetDataAntrianRj();
+  fetchGetDataAntrianAdmisi();
 });
 
 // Fungsi untuk mendapatkan style metode bayar
