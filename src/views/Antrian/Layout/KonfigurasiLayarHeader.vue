@@ -107,9 +107,6 @@ const resetFilter = () => {
   searchQuery.value = "";
   resetKey.value++;
 
-  // Emit refresh untuk memuat ulang data ke keadaan semula
-  emit("refresh");
-
   emit("reset");
 };
 

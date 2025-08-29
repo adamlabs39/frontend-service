@@ -3,9 +3,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import HeaderFilter from "../../Layout/KonfigurasiLayarHeader.vue";
 import { onMounted, ref, computed } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
-import AntrianFooter from "../../Layout/AntrianFooter.vue";
 import TambahDataKonfigurasiLayar from "./SectionTambahKonfigurasiLayar.vue";
 import NoData from "@/components/section/NoData.vue";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
@@ -15,7 +13,6 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 
 const pageType = ref("");
-const route = useRoute();
 
 const configLayarAntrianStore = useConfigLayarAntrianStore();
 const useUtilsStore = utilsStore();
@@ -26,31 +23,53 @@ const jadwalLayarAntrianProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
+  nama_layar: "",
+  tipe_layar: 0,
+  aktif: undefined as boolean | undefined,
 });
 
 // Search and filter states
 const searchQuery = ref("");
 const selectedTipeLayar = ref(null);
 const selectedStatus = ref<string[]>([]);
+const fetchRequestId = ref(0);
 
 const fetchJadwalAntrian = async () => {
+  const currentId = ++fetchRequestId.value;
   useUtilsStore.setLoading(true);
   try {
+    const namaParam =
+      jadwalLayarAntrianProperties.value.nama_layar?.trim() || undefined;
+    const tipeParam =
+      jadwalLayarAntrianProperties.value.tipe_layar &&
+      jadwalLayarAntrianProperties.value.tipe_layar > 0
+        ? jadwalLayarAntrianProperties.value.tipe_layar
+        : undefined;
+    const aktifParam = jadwalLayarAntrianProperties.value.aktif;
+
     const response = await configLayarAntrianStore.getApi(
       jadwalLayarAntrianProperties.value.page,
-      jadwalLayarAntrianProperties.value.page_size
+      jadwalLayarAntrianProperties.value.page_size,
+      namaParam,
+      tipeParam,
+      aktifParam
     );
-    console.log("Respon layar antrian get:", response.payload);
-    if (response && response.payload) {
-      originalJadwalAntrianPayload.value = response.payload;
-      applyFilters(); // Apply current filters
-      jadwalLayarAntrianProperties.value.total =
-        response.properties?.total || response.payload.length;
+
+    if (currentId === fetchRequestId.value) {
+      console.log("Respon layar antrian get:", response.payload);
+      if (response && response.payload) {
+        originalJadwalAntrianPayload.value = response.payload;
+        jadwalAntrianPayload.value = response.payload;
+        jadwalLayarAntrianProperties.value.total =
+          response.properties?.total || response.payload.length;
+      }
     }
   } catch (error) {
     console.log(error);
   } finally {
-    useUtilsStore.setLoading(false);
+    if (currentId === fetchRequestId.value) {
+      useUtilsStore.setLoading(false);
+    }
   }
 };
 
@@ -69,48 +88,31 @@ const availableTipeLayar = computed(() => {
   );
 });
 
-// Apply search and filters
-const applyFilters = () => {
-  if (!originalJadwalAntrianPayload.value) return;
-
-  let filteredData = [...originalJadwalAntrianPayload.value];
-
-  // Apply search filter
-  if (searchQuery.value.trim()) {
-    filteredData = filteredData.filter((item) =>
-      item.namaLayar?.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  }
-
-  // Apply tipe layar filter
-  if (selectedTipeLayar.value) {
-    filteredData = filteredData.filter(
-      (item) => item.tipeLayar === parseInt(selectedTipeLayar.value)
-    );
-  }
-
-  // Apply status filter
-  if (selectedStatus.value.length > 0) {
-    filteredData = filteredData.filter((item) => {
-      const status = item.status ? "AKTIF" : "NON-AKTIF";
-      return selectedStatus.value.includes(status);
-    });
-  }
-
-  jadwalAntrianPayload.value = filteredData;
-  jadwalLayarAntrianProperties.value.total = filteredData.length;
-};
-
 // Handle search from header
 const handleSearch = (
   query: string,
   tipeLayar: any,
   statusFilters: string[]
 ) => {
-  searchQuery.value = query;
-  selectedTipeLayar.value = tipeLayar;
-  selectedStatus.value = statusFilters;
-  applyFilters();
+  // set parameter pencarian untuk API
+  jadwalLayarAntrianProperties.value.page = 1;
+  jadwalLayarAntrianProperties.value.nama_layar = query || "";
+
+  // tipe layar: jika ada pilihannya, pakai angkanya, kalau tidak ada pakai 0 (tanpa filter)
+  jadwalLayarAntrianProperties.value.tipe_layar = tipeLayar
+    ? parseInt(tipeLayar)
+    : 0;
+
+  // status: jika hanya satu dipilih, terjemahkan ke boolean; jika 0 atau 2 (keduanya), jangan kirim filter (undefined)
+  if (statusFilters.length === 1) {
+    jadwalLayarAntrianProperties.value.aktif =
+      statusFilters[0] === "AKTIF" ? true : false;
+  } else {
+    jadwalLayarAntrianProperties.value.aktif = undefined;
+  }
+
+  // panggil API dengan parameter di atas
+  fetchJadwalAntrian();
 };
 
 // Handle reset filters
@@ -119,8 +121,11 @@ const handleResetFilters = () => {
   selectedTipeLayar.value = null;
   selectedStatus.value = [];
 
-  // Reset pagination ke halaman pertama
+  // Reset semua parameter pencarian
   jadwalLayarAntrianProperties.value.page = 1;
+  jadwalLayarAntrianProperties.value.nama_layar = "";
+  jadwalLayarAntrianProperties.value.tipe_layar = 0;
+  jadwalLayarAntrianProperties.value.aktif = undefined;
 
   // Fetch data fresh dari server
   fetchJadwalAntrian();
@@ -141,10 +146,6 @@ const deleteLayarAntrian = async (layarAntrianUuid: string) => {
 };
 
 const headerFilterRef = ref<typeof HeaderFilter>();
-const resetFilter = () => {
-  headerFilterRef.value?.resetFilter();
-  handleResetFilters();
-};
 
 const deleteModal = ref({
   isVisible: false,
@@ -221,15 +222,6 @@ const dialogData = ref({
   title: "Tambah",
   payload: {},
 });
-
-function handleAdd() {
-  dialogData.value = {
-    isVisible: true,
-    method: "add",
-    title: "Tambah",
-    payload: {},
-  };
-}
 
 function handleEdit(rowData: any) {
   dialogData.value = {
