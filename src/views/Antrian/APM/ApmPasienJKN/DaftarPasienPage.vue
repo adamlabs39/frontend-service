@@ -3,9 +3,16 @@ import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+const selectedType = ref<string | null>(null);
+const isDisabled = computed(() => !selectedType.value);
+const selectType = (type: string) => {
+  selectedType.value = type;
+};
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -89,31 +96,79 @@ const props = defineProps({
               <div class="text-center">Silahkan Pilih Tipe Nomor</div>
               <div class="py-6 space-y-4">
                 <div class="flex gap-7 justify-around items-center w-full">
-                  <div
-                    class="text-adameds-300 py-3 w-[160px] bg-white text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
-                  >
-                    RM
-                  </div>
-                  <div
-                    class="text-adameds-300 py-3 w-[160px] bg-white text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
-                  >
-                    BPJS
-                  </div>
-                  <div
-                    class="text-adameds-300 py-3 w-[160px] bg-white text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
-                  >
-                    KTP
-                  </div>
-                  <div
-                    class="text-adameds-300 py-3 w-[160px] bg-white text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
-                  >
-                    Passport
-                  </div>
-                  <div
-                    class="text-adameds-300 py-3 w-[160px] bg-white text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
-                  >
-                    Lainnya
-                  </div>
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'RM' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'RM' ? 'text-white' : 'text-adameds-300'
+                    "
+                    @click="selectType('RM')"
+                    :icon="selectedType === 'RM' ? 'CheckCircleIcon' : ''"
+                    label="RM"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'BPJS' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'BPJS'
+                        ? 'text-white'
+                        : 'text-adameds-300'
+                    "
+                    @click="selectType('BPJS')"
+                    :icon="selectedType === 'BPJS' ? 'CheckCircleIcon' : ''"
+                    label="BPJS"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'KTP' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'KTP' ? 'text-white' : 'text-adameds-300'
+                    "
+                    @click="selectType('KTP')"
+                    :icon="selectedType === 'KTP' ? 'CheckCircleIcon' : ''"
+                    label="KTP"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'Passport'
+                        ? 'bg-adameds-100'
+                        : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'Passport'
+                        ? 'text-white'
+                        : 'text-adameds-300'
+                    "
+                    @click="selectType('Passport')"
+                    :icon="selectedType === 'Passport' ? 'CheckCircleIcon' : ''"
+                    label="Passport"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'Lainnya' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'Lainnya'
+                        ? 'text-white'
+                        : 'text-adameds-300'
+                    "
+                    @click="selectType('Lainnya')"
+                    :icon="selectedType === 'Lainnya' ? 'CheckCircleIcon' : ''"
+                    label="Lainnya"
+                    iconPos="right"
+                  />
                 </div>
                 <div
                   class="w-[calc(100%+30px)] mx-[-15px] h-2 bg-adameds-300 rounded-xl"
@@ -121,11 +176,17 @@ const props = defineProps({
               </div>
             </div>
             <CustomTextfield
-              :label="`No. KTP`"
+              :disabled="isDisabled"
+              :label="`No. ${selectedType || ''}`"
               :placeholder="`Masukkan No. KTP`"
               class="w-2/5 mb-4"
             ></CustomTextfield>
-            <CustomButton label="Lanjutkan" class="w-2/5" @click="handleData" />
+            <CustomButton
+              :disabled="isDisabled"
+              label="Lanjutkan"
+              class="w-2/5"
+              @click="handleData"
+            />
           </div>
         </div>
       </div>
