@@ -1,10 +1,19 @@
 <script lang="ts" setup>
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+const selectedType = ref<string | null>(null);
+const isDisabled = computed(() => !selectedType.value);
+const selectType = (type: string) => {
+  selectedType.value = type;
+};
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -30,82 +39,42 @@ const props = defineProps({
 </script>
 
 <template #body>
-  <div class="bg-adameds-75">
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
-    <div class="relative items-center justify-center mb-4 mt-14 mx-36">
-      <div class="overflow-hidden rounded-3xl">
-        <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
-        >
+    <div class="flex relative flex-1 justify-center items-center mx-36">
+      <div
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
+      >
+        <div class="bg-white bg-opacity-30 w-full h-[540px] space-y-16">
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-48 h-10 bg-white shadow-md rounded-xl"
+              class="inline-flex items-center h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
               >
-                <!-- Logo Container -->
-                <div
-                  class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
-                >
-                  <PlusIcon class="text-white" :size="30" />
-                </div>
-
-                <!-- Text Container with Background -->
-                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
-                  Pasien Non-JKN
-                </div>
+                <BPJSIcon class="text-white" :size="30" />
+              </div>
+              <div
+                class="px-2 py-1 font-bold whitespace-nowrap text-adameds-300"
+              >
+                Pasien Non-JKN
               </div>
             </div>
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               Pendaftaran Pasien
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Kembali"
                 outlined
@@ -118,19 +87,90 @@ const props = defineProps({
           </div>
 
           <div class="flex flex-col items-center">
+            <div class="">
+              <div class="text-center">Silahkan Pilih Tipe Nomor</div>
+              <div class="py-6 space-y-4">
+                <div class="flex gap-7 justify-around items-center w-full">
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'RM' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'RM' ? 'text-white' : 'text-adameds-300'
+                    "
+                    @click="selectType('RM')"
+                    :icon="selectedType === 'RM' ? 'CheckCircleIcon' : ''"
+                    label="RM"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'KTP' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'KTP' ? 'text-white' : 'text-adameds-300'
+                    "
+                    @click="selectType('KTP')"
+                    :icon="selectedType === 'KTP' ? 'CheckCircleIcon' : ''"
+                    label="KTP"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'Passport'
+                        ? 'bg-adameds-100'
+                        : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'Passport'
+                        ? 'text-white'
+                        : 'text-adameds-300'
+                    "
+                    @click="selectType('Passport')"
+                    :icon="selectedType === 'Passport' ? 'CheckCircleIcon' : ''"
+                    label="Passport"
+                    iconPos="right"
+                  />
+                  <CustomButton
+                    class="border-none py-3 w-[160px] text-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg"
+                    :backgroundColor="
+                      selectedType === 'Lainnya' ? 'bg-adameds-100' : 'bg-white'
+                    "
+                    :textColor="
+                      selectedType === 'Lainnya'
+                        ? 'text-white'
+                        : 'text-adameds-300'
+                    "
+                    @click="selectType('Lainnya')"
+                    :icon="selectedType === 'Lainnya' ? 'CheckCircleIcon' : ''"
+                    label="Lainnya"
+                    iconPos="right"
+                  />
+                </div>
+                <div
+                  class="w-[calc(100%+30px)] mx-[-15px] h-2 bg-adameds-300 rounded-xl"
+                ></div>
+              </div>
+            </div>
             <CustomTextfield
-              :label="`No. KTP`"
+              :disabled="isDisabled"
+              :label="`No. ${selectedType || ''}`"
               :placeholder="`Masukkan No. KTP`"
-              class="w-2/5 mt-16 mr-5"
+              class="mb-4 w-2/5"
             ></CustomTextfield>
             <CustomButton
+              :disabled="isDisabled"
               label="Lanjutkan"
-              class="w-2/5 mt-10 mr-5"
+              class="w-2/5"
               @click="handleData"
             />
           </div>
         </div>
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>
