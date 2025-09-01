@@ -4,6 +4,8 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
 
@@ -65,58 +67,24 @@ const cardAktivitasKulit = ref({
 </script>
 
 <template #body>
-  <div class="bg-adameds-75">
+  <div class="py-5 w-full min-h-screen flex flex-col">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
-    <div class="relative items-center justify-center mb-4 mt-14 mx-36">
-      <div class="overflow-hidden rounded-3xl">
-        <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
-        >
+    <div class="relative mx-36 flex-1 flex items-center justify-center">
+      <div
+        class="flex flex-col justify-center w-full overflow-hidden rounded-3xl"
+      >
+        <div class="bg-white bg-opacity-30 w-full h-[640px] space-y-14">
+          <!-- Header -->
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-40 h-10 bg-white shadow-md rounded-xl"
+              class="flex justify-between w-40 h-10 bg-white rounded-xl shadow-md"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
                 <!-- Logo Container -->
                 <div
@@ -126,7 +94,7 @@ const cardAktivitasKulit = ref({
                 </div>
 
                 <!-- Text Container with Background -->
-                <div class="px-2 py-16 font-bold rounded-xl text-adameds-300">
+                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
                   Pasien JKN
                 </div>
               </div>
@@ -134,13 +102,13 @@ const cardAktivitasKulit = ref({
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               Data Pasien
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Kembali"
                 outlined
@@ -152,28 +120,48 @@ const cardAktivitasKulit = ref({
             </div>
           </div>
 
-          <div class="flex flex-col items-center px-20 pb-4">
-            <div class="grid grid-cols-9 pt-10 text-sm gap-x-4 gap-y-2">
-              <div class="font-bold">NIK</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.nik }}</div>
-              <div class="font-bold">Nama</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.nama }}</div>
-              <div class="font-bold">Tgl. Lahir</div>
-              <div class="col-span-2">
-                : &nbsp {{ dataPasien.tanggalLahir }}
-              </div>
+          <!-- Data Pasien -->
+          <div class="flex justify-around">
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">NIK</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.nik }}</div>
 
-              <div class="font-bold">No.BPJS</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.noBPJS }}</div>
-              <div class="font-bold">No.RM</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.noRM }}</div>
-              <div class="pr-2 font-bold">Jenis Kelamin</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.gender }}</div>
+              <div class="font-bold whitespace-nowrap">Nama</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.nama }}</div>
+            </div>
+
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">Tanggal Lahir</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.tanggalLahir }}</div>
+
+              <div class="font-bold whitespace-nowrap">Gender</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.gender }}</div>
+            </div>
+
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">No RM</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.noRM }}</div>
+
+              <div class="font-bold whitespace-nowrap">No BPJS</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.noBPJS }}</div>
             </div>
           </div>
 
-          <div class="grid grid-cols-[1fr_min-content_1fr_1fr_1fr_1fr_1fr]">
-            <div class="pl-6 w-[240px]">
+          <!-- Content -->
+          <div class="flex justify-center gap-6">
+            <div class="w-[300px]">
               <div class="justify-start pl-1 text-lg font-bold">
                 No. Referensi
               </div>
@@ -182,19 +170,19 @@ const cardAktivitasKulit = ref({
                 Silahkan Cari No. Referensi
               </div>
               <div>
-                <CustomButton label="Cari" class="w-full mx-2 my-1" @click="" />
+                <CustomButton label="Cari" class="w-full my-1" @click="" />
                 <CustomTextfield
                   :show-label="false"
                   :placeholder="`No. Referensi`"
-                  class="w-full mx-2"
+                  class="w-full"
                 ></CustomTextfield>
               </div>
             </div>
 
-            <div class="ml-12 border-2 border-adameds-300 h-[345px]"></div>
+            <div class="border-2 border-adameds-300 h-[270px] mt-16"></div>
 
-            <div class="col-span-5">
-              <div class="px-8">
+            <div class="col-span-5 space-y-7">
+              <div class="">
                 <div class="justify-start pl-1 text-lg font-bold">
                   Daftar Poli
                 </div>
@@ -205,9 +193,9 @@ const cardAktivitasKulit = ref({
               </div>
 
               <div class="flex flex-col items-center h-[220px] justify-center">
-                <div style="transform: scale(0.9)">
-                  <div class="grid grid-cols-4 gap-x-6 gap-y-6">
-                    <div class="w-[220px] h-[140px]">
+                <div>
+                  <div class="grid grid-cols-4 gap-x-6 gap-y-6 w-full">
+                    <div class="w-[220px] h-[120px]">
                       <CardAktivitas
                         :cardAktivitas="cardAktivitasUmum"
                         class="transition-transform duration-300 hover:scale-95"
@@ -263,5 +251,6 @@ const cardAktivitasKulit = ref({
         </div>
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>
