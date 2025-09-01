@@ -48,16 +48,6 @@ function closeDialog() {
   emit("close");
 }
 
-const currentIndex = ref(0);
-
-function nextSlide() {
-  currentIndex.value = (currentIndex.value + 1) % 2; // Change 2 to the number of images in the carousel
-}
-
-function prevSlide() {
-  currentIndex.value = (currentIndex.value - 1 + 2) % 2; // Change 2 to the number of images in the carousel
-}
-
 const cardPasienJKN = ref({
   keterangan: "Pasien JKN",
 });
@@ -72,14 +62,6 @@ const cardAktivitasPrint = ref({
 });
 
 const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
-
-const getImage = (image: string) => {
-  const imgUrl = new URL(
-    `@/assets/images/APM/img-carousel-1.svg`,
-    import.meta.url
-  ).href;
-  return imgUrl;
-};
 </script>
 
 <template>
