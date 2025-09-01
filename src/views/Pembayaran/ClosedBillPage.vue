@@ -64,7 +64,7 @@ const reversePoliMapping: { [key: string]: string } = {
   "RJ": "RAWAT JALAN",
   "IGD": "IGD",
   "APS": "APS",
-  "ÖTC": "OTC"
+  "OTC": "OTC"
 };
 
 const fetchClosedBills = async (searchUuid: string | null = null) => {
