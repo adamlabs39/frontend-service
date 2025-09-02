@@ -35,14 +35,14 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
             logo = faskesProfile.logo;
         }
 
-        const safeBill = detailBill || {};
+        const safeBill = detailBill?.bill || detailBill || {};
+        const safePatient = detailBill?.patient || safeBill;
         const safePayment = paymentResult || {};
         
-        const kasirName = safePayment.cashierName || localStorage.getItem("nama_user") || '-';
-        let itemCounter = 1;
+        const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
+        
         const totalDiterima = safeBill.totalPaid || 0;
         const terbilangDiterima = totalDiterima > 0 ? numberToWords(totalDiterima).trim() + ' Rupiah' : '-';
-
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
         
@@ -62,9 +62,9 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             table: {
                                 widths: ['auto', '*'],
                                 body: [
-                                    ['No. RM', { text: `: ${safeBill.noRm || '-'}`, bold: true }],
+                                    ['No. RM', { text: `: ${safePatient.noRm || safeBill.noRm || '-'}`, bold: true }],
                                     ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
-                                    ['Alamat', { text: `: ${safeBill.fullAddress || '-'}`, bold: true }],
+                                    ['Alamat', { text: `: ${safeBill.alamat|| '-'}`, bold: true }],
                                     ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
                                     ['Penjamin', { text: ': -', bold: true }]
                                 ]

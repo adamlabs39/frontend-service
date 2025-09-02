@@ -124,7 +124,13 @@ const submitPayment = async () => {
       note: note.value,
       information: information.value,
     };
-    await pelayananStore.postPayment(props.billUuid, payload);
+    
+    const paymentResponse: any = await pelayananStore.postPayment(props.billUuid, payload);
+    if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
+      const billUuid = props.billUuid;
+      // Simpan sebagai string JSON dengan kunci: 'paymentResult_UUID_TAGIHAN'
+      localStorage.setItem(`paymentResult_${billUuid}`, JSON.stringify(paymentResponse.data.payload));
+    }
     pembayaranDialog.value = false;
     await fetchDetailBill(); // Muat ulang data untuk update status tombol & info
   } catch (error) {

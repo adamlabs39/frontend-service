@@ -25,7 +25,7 @@ const reversePoliMapping: { [key: string]: string } = {
     "OTC": "OTC"
 };
 
-// Nama fungsi diubah dan parameter 'itemBill' ditambahkan
+
 export async function createRincianPdf({ detailBill, itemBill, paymentResult }: { detailBill: any, itemBill: any, paymentResult?: any }) {
     try {
         const faskesProfile = JSON.parse(
@@ -37,13 +37,13 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
             logo = faskesProfile.logo;
         }
 
-        const safeBill = detailBill || {};
-        const safeItems = itemBill || {}; // Data untuk tabel rincian
+        const safeBill = detailBill?.bill || detailBill || {};
+        const safePatient = detailBill?.patient || safeBill; 
         const safePayment = paymentResult || {};
+        const safeItems = itemBill || {};         
         const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
-        
         
         
         const totalDiterima = safeBill.totalPaid || 0;
@@ -56,7 +56,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
 
         // Helper function untuk membuat tabel per kategori
         const createCategoryTable = (title: string, items: any[], columns: string[], dataMapping: (item: any, index: number) => any[]) => {
-            if (!items || items.length === 0) return; // Jangan buat tabel jika tidak ada data
+            if (!items || items.length === 0) return; 
             const widths = Array(columns.length).fill('*');
             // Judul Kategori
             rincianContent.push({
@@ -73,10 +73,10 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                 layout: 'lightHorizontalLines',
                 table: {
                     headerRows: 1,
-                    widths, // Lebar kolom otomatis
+                    widths, 
                     body: [
-                        columns.map(h => ({ text: h, style: 'tableHeader' })), // Header tabel
-                        ...items.map(dataMapping) // Isi tabel
+                        columns.map(h => ({ text: h, style: 'tableHeader' })),
+                        ...items.map(dataMapping) 
                     ],
                 },
             });
@@ -90,7 +90,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
             (item, index) => [
                 epochToDate(item.dateUsed, "date"),
                 item.itemName || '-',
-                safeBill.serviceBill?.[0]?.practitionerName || '-', // Ambil nama dokter dari getDetailBill
+                safeBill.serviceBill?.[0]?.practitionerName || '-', 
                 item.qty,
                 { text: formatPrice(item.price), alignment: 'left' },
                 { text: formatPrice(item.serviceFee), alignment: 'left' },
@@ -174,7 +174,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                                                 body: [
                                                     ['No. RM', { text: `: ${safeBill.noRm || '-'}`, bold: true }],
                                                     ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
-                                                    ['Alamat', { text: `: ${safeBill.fullAddress || '-'}`, bold: true }],
+                                                    ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
                                                     ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
                                                     ['Penjamin', { text: ': -', bold: true }]
                                                 ]
