@@ -72,7 +72,7 @@ const cardAktivitasKandungan = ref({
           <!-- Header -->
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-40 h-10 bg-white rounded-xl shadow-md"
+              class="flex justify-between w-fit h-10 bg-white rounded-xl shadow-md"
             >
               <div
                 class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
@@ -81,12 +81,12 @@ const cardAktivitasKandungan = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <BPJSIcon class="text-white" :size="30" />
+                  <PlusIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->
                 <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
-                  Pasien JKN
+                  Pasien Non-JKN
                 </div>
               </div>
             </div>

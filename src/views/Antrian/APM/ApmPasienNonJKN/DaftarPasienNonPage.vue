@@ -57,7 +57,7 @@ const props = defineProps({
               <div
                 class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
               >
-                <BPJSIcon class="text-white" :size="30" />
+                <PlusIcon class="text-white" :size="30" />
               </div>
               <div
                 class="px-2 py-1 font-bold whitespace-nowrap text-adameds-300"
