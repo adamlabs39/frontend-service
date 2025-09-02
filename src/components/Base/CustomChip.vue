@@ -62,11 +62,16 @@ const props = defineProps({
     type: String,
     default: "h-6",
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["selected"]);
 
 const onSelectedValue = () => {
+  if (props.disabled) return;
   if (props.value) emit("selected", props.value);
   else emit("selected", props.label);
 };

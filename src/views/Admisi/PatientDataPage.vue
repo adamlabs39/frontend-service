@@ -124,7 +124,10 @@ const propertiesHistory = ref({
   total: 0,
 });
 const search = ref("");
-
+const resetFilter = () => {
+  search.value = ""
+  searchData();
+};
 const patientUuid = ref<string>("");
 
 const onSelectPatient = (patient: any) => {
@@ -262,7 +265,7 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
     }
     } else {
       openedPatientData.value = {};
-      itemsMedicalRecord.value = []; // kalau pasien kosong, reset juga
+      itemsMedicalRecord.value = [];
     }
     const responseHistory = await masterPasienStore.getPatientHistory(
       event.data.uuid,
@@ -833,14 +836,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+          <div class = "flex mt-[10px]">
             <CustomTextfield
               v-model="search"
-              @update:model-value="searchData"
+              @keydown.enter="searchData"
               label="Pencarian"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Nama / address / No. RM"
-              class="mt-[10px]"
+              class="mt-[10px] flex-1"
             />
+            <CustomButton
+              @click="searchData"
+              icon="PhMagnifyingGlass"
+              label="Cari"
+              class="ml-5 mr-[10px] mt-auto"
+            />
+            <CustomButton
+              @click="resetFilter"
+              label="Reset"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              class="mt-auto"
+            />
+          </div>
             <hr class="border-grey-200 mt-[10px] mb-[2px]" />
           </template>
           <template #collapseIcon>
@@ -1299,7 +1318,7 @@ onMounted(() => {
                 <template #header="{ files, chooseCallback }">
                   <div class="flex mx-auto">
                     <span class="leading-10 text-SM">{{
-                      files[0] ? files[0].name : "No File Chosen"
+                      files[0] ? files[0].name : "Upload file dalam bentuk PDF"
                     }}</span>
                     <CustomButton
                       @click="chooseCallback()"
