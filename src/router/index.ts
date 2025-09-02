@@ -200,6 +200,8 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
+import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
+import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/DaftarFarmasiPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -713,6 +715,18 @@ const router = createRouter({
       component: PasienDataPage,
     },
     {
+      path: "/antrian/apm/aktif/pasien/jkn/poli",
+      name: "antrian-apm-aktif-pasien-jkn-poli",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienPoliPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/jkn/farmasi",
+      name: "antrian-apm-aktif-pasien-jkn-farmasi",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: DaftarFarmasiPage,
+    },
+    {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",
       name: "antrian-apm-aktif-pasien-jkn-berhasil",
       meta: { layout: DefaultLayout, requiresAuth: true },
@@ -731,8 +745,8 @@ const router = createRouter({
       component: PasienNonDataPage,
     },
     {
-      path: "/antrian/apm/aktif/pasien/non-jkn/poli-umum",
-      name: "antrian-apm-aktif-pasien-non-jkn-poli-umum",
+      path: "/antrian/apm/aktif/pasien/non-jkn/poli",
+      name: "antrian-apm-aktif-pasien-non-jkn-poli",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PasienNonPoliPage,
     },
