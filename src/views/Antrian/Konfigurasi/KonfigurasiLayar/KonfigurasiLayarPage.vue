@@ -62,6 +62,9 @@ const fetchJadwalAntrian = async () => {
         jadwalAntrianPayload.value = response.payload;
         jadwalLayarAntrianProperties.value.total =
           response.properties?.total || response.payload.length;
+
+        // Setelah tahu total, refresh opsi tipe layar berdasarkan SELURUH dataset saat ini (abaikan filter tipe)
+        await fetchAvailableTipeLayarOptions();
       }
     }
   } catch (error) {
@@ -73,13 +76,60 @@ const fetchJadwalAntrian = async () => {
   }
 };
 
+const availableTipeCodes = ref<number[] | null>(null);
+const fetchAvailableTipeLayarOptions = async () => {
+  try {
+    // Gunakan total terbaru; fallback ke page_size jika total belum ada
+    const total =
+      jadwalLayarAntrianProperties.value.total ||
+      jadwalLayarAntrianProperties.value.page_size;
+
+    const namaParam =
+      jadwalLayarAntrianProperties.value.nama_layar?.trim() || undefined;
+    const aktifParam = jadwalLayarAntrianProperties.value.aktif;
+
+    // Ambil semua data yang match filter lain (tanpa filter tipe_layar)
+    const resp = await configLayarAntrianStore.getApi(
+      1,
+      total > 0 ? total : 1000, // fallback aman
+      namaParam,
+      undefined, // PENTING: jangan filter tipe_layar supaya opsi tidak menyusut
+      aktifParam
+    );
+
+    if (resp && resp.payload) {
+      const codes = [
+        ...new Set(
+          resp.payload
+            .map((item: any) => item.tipeLayar ?? item.tipe_layar)
+            .filter((v: any) => typeof v === "number")
+        ),
+      ];
+      availableTipeCodes.value = codes;
+    } else {
+      availableTipeCodes.value = [];
+    }
+  } catch (e) {
+    console.log("Gagal memuat daftar tipe layar:", e);
+    availableTipeCodes.value = [];
+  }
+};
+
 // Get unique tipe layar from database
 const availableTipeLayar = computed(() => {
+  if (availableTipeCodes.value && availableTipeCodes.value.length > 0) {
+    return itemsLayar.value.filter((layar) =>
+      availableTipeCodes.value!.includes(parseInt(layar.code))
+    );
+  }
+
   if (!originalJadwalAntrianPayload.value) return [];
 
   const uniqueTipeLayar = [
     ...new Set(
-      originalJadwalAntrianPayload.value.map((item) => item.tipeLayar)
+      originalJadwalAntrianPayload.value.map(
+        (item) => item.tipeLayar ?? item.tipe_layar
+      )
     ),
   ];
 
@@ -188,23 +238,23 @@ onMounted(() => {
 const itemsLayar = ref([
   {
     code: "1",
-    tipe_layar: "3 x 3 Panggilan",
+    tipe_layar: "Layar 3 x 3 Panggilan",
   },
   {
     code: "2",
-    tipe_layar: "3 x 2 Panggilan",
+    tipe_layar: "Layar 3 x 2 Panggilan",
   },
   {
     code: "3",
-    tipe_layar: "3 list & 3 Panggilan",
+    tipe_layar: "Layar 3 list & 3 Panggilan",
   },
   {
     code: "4",
-    tipe_layar: "2 list & 2 Panggilan",
+    tipe_layar: "Layar 2 list & 2 Panggilan",
   },
   {
     code: "5",
-    tipe_layar: "1 list & 1 Panggilan",
+    tipe_layar: "Layar 1 List, 1 Panggilan, 1 Gambar",
   },
 ]);
 
