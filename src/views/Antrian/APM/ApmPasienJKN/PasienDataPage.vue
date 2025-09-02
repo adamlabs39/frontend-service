@@ -12,8 +12,9 @@ const router = useRouter();
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+
+const handlePoli = () => {
+  router.push("/antrian/apm/aktif/pasien/jkn/poli");
 };
 
 const props = defineProps({
@@ -199,6 +200,7 @@ const cardAktivitasKulit = ref({
                       <CardAktivitas
                         :cardAktivitas="cardAktivitasUmum"
                         class="transition-transform duration-300 hover:scale-95"
+                        @click="handlePoli"
                       />
                     </div>
                     <div class="w-[220px]">
