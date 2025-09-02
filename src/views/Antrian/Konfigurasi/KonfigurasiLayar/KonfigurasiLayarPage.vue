@@ -234,21 +234,26 @@ const deleteLayarAntrian = async (layarAntrianUuid: string) => {
   try {
     await configLayarAntrianStore.deleteLayarAntrian(layarAntrianUuid);
 
-    // Hitung total baru secara optimistis untuk hindari request page kosong / list kosong (404)
+    // Hitung total baru secara optimistis
     const currentTotal = jadwalLayarAntrianProperties.value.total || 0;
     const newTotal = Math.max(0, currentTotal - 1);
     jadwalLayarAntrianProperties.value.total = newTotal;
 
     if (newTotal === 0) {
-      // Jika setelah delete tidak ada data sama sekali, kosongkan tampilan tanpa memanggil API list (hindari 404)
+      // Kosongkan tampilan untuk filter aktif saat ini,
+      // namun tetap refresh daftar opsi tipe secara GLOBAL agar dropdown akurat
       jadwalAntrianPayload.value = [];
       originalJadwalAntrianPayload.value = [];
       availableTipeCodes.value = [];
+
+      await fetchAvailableTipeLayarOptions();
     } else {
       // Jika masih ada data, pastikan page tidak melebihi max page
       adjustPageAfterDelete();
-      await fetchJadwalAntrian();
     }
+
+    // Selalu refresh data list berdasar filter aktif (aman walau hasilnya 0)
+    await fetchJadwalAntrian();
   } catch (error) {
     console.log("Failed to delete layar antrian", error);
   } finally {
