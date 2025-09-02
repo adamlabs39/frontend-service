@@ -56,7 +56,21 @@ const fetchJadwalAntrian = async () => {
     );
 
     if (currentId === fetchRequestId.value) {
-      console.log("Respon layar antrian get:", response.payload);
+      console.log("Respon layar antrian get:", response?.payload);
+      // Fallback: jika payload kosong pada page > 1, mundur 1 page dan coba lagi sekali
+      if (
+        response &&
+        Array.isArray(response.payload) &&
+        response.payload.length === 0 &&
+        jadwalLayarAntrianProperties.value.page > 1
+      ) {
+        jadwalLayarAntrianProperties.value.page =
+          jadwalLayarAntrianProperties.value.page - 1;
+        // refetch sekali lagi
+        await fetchJadwalAntrian();
+        return;
+      }
+
       if (response && response.payload) {
         originalJadwalAntrianPayload.value = response.payload;
         jadwalAntrianPayload.value = response.payload;
@@ -65,6 +79,12 @@ const fetchJadwalAntrian = async () => {
 
         // Setelah tahu total, refresh opsi tipe layar berdasarkan SELURUH dataset saat ini (abaikan filter tipe)
         await fetchAvailableTipeLayarOptions();
+      } else {
+        // Jika response undefined (misal API return 404 untuk list kosong), kosongkan tampilan
+        originalJadwalAntrianPayload.value = [];
+        jadwalAntrianPayload.value = [];
+        jadwalLayarAntrianProperties.value.total = 0;
+        availableTipeCodes.value = [];
       }
     }
   } catch (error) {
@@ -79,33 +99,45 @@ const fetchJadwalAntrian = async () => {
 const availableTipeCodes = ref<number[] | null>(null);
 const fetchAvailableTipeLayarOptions = async () => {
   try {
-    // Gunakan total terbaru; fallback ke page_size jika total belum ada
-    const total =
-      jadwalLayarAntrianProperties.value.total ||
-      jadwalLayarAntrianProperties.value.page_size;
-
+    // Ambil semua data yang match filter lain (tanpa filter tipe_layar)
     const namaParam =
       jadwalLayarAntrianProperties.value.nama_layar?.trim() || undefined;
     const aktifParam = jadwalLayarAntrianProperties.value.aktif;
 
-    // Ambil semua data yang match filter lain (tanpa filter tipe_layar)
+    // Tahap 1: dapatkan total data UNFILTERED by tipe
+    const head = await configLayarAntrianStore.getApi(
+      1,
+      1,
+      namaParam,
+      undefined, // penting: tanpa filter tipe
+      aktifParam
+    );
+    const unfilteredTotal =
+      head?.properties?.total ??
+      (Array.isArray(head?.payload) ? head.payload.length : 0);
+
+    // Tahap 2: fetch semua data UNFILTERED by tipe untuk menghimpun semua tipe unik
+    const pageSize = unfilteredTotal > 0 ? unfilteredTotal : 1000; // fallback aman
     const resp = await configLayarAntrianStore.getApi(
       1,
-      total > 0 ? total : 1000, // fallback aman
+      pageSize,
       namaParam,
-      undefined, // PENTING: jangan filter tipe_layar supaya opsi tidak menyusut
+      undefined, // penting: tanpa filter tipe
       aktifParam
     );
 
-    if (resp && resp.payload) {
-      const codes = [
-        ...new Set(
-          resp.payload
-            .map((item: any) => item.tipeLayar ?? item.tipe_layar)
-            .filter((v: any) => typeof v === "number")
-        ),
-      ];
-      availableTipeCodes.value = codes;
+    if (resp && Array.isArray(resp.payload)) {
+      const codesSet = new Set();
+      for (const item of resp.payload) {
+        const code = Number(item.tipeLayar ?? item.tipe_layar);
+        if (!Number.isNaN(code)) codesSet.add(code);
+      }
+
+      // Pastikan tipe yang sedang dipilih tetap ada di opsi (mencegah label hilang)
+      const selectedCode = jadwalLayarAntrianProperties.value.tipe_layar;
+      if (selectedCode && selectedCode > 0) codesSet.add(selectedCode);
+
+      availableTipeCodes.value = Array.from(codesSet);
     } else {
       availableTipeCodes.value = [];
     }
@@ -115,27 +147,43 @@ const fetchAvailableTipeLayarOptions = async () => {
   }
 };
 
+const adjustPageAfterDelete = () => {
+  const { total, page, page_size } = jadwalLayarAntrianProperties.value;
+  const newTotal = Math.max(0, (total || 0) - 1);
+  const maxPage = Math.max(1, Math.ceil(newTotal / page_size));
+  if (page > maxPage) {
+    jadwalLayarAntrianProperties.value.page = maxPage;
+  }
+};
+
 // Get unique tipe layar from database
 const availableTipeLayar = computed(() => {
+  // Jika sudah ada hasil komputasi global (unfiltered), gunakan itu
   if (availableTipeCodes.value && availableTipeCodes.value.length > 0) {
+    const codesSet = new Set(availableTipeCodes.value);
+
+    // Safety: paksa masukkan tipe yang sedang dipilih agar tidak hilang dari dropdown
+    const selectedCode = jadwalLayarAntrianProperties.value.tipe_layar;
+    if (selectedCode && selectedCode > 0) codesSet.add(selectedCode);
+
     return itemsLayar.value.filter((layar) =>
-      availableTipeCodes.value!.includes(parseInt(layar.code))
+      codesSet.has(parseInt(layar.code))
     );
   }
 
+  // Fallback: hitung dari payload halaman saat ini (termasuk menjaga selected)
   if (!originalJadwalAntrianPayload.value) return [];
 
-  const uniqueTipeLayar = [
-    ...new Set(
-      originalJadwalAntrianPayload.value.map(
-        (item) => item.tipeLayar ?? item.tipe_layar
-      )
-    ),
-  ];
-
-  return itemsLayar.value.filter((layar) =>
-    uniqueTipeLayar.includes(parseInt(layar.code))
+  const unique = new Set(
+    originalJadwalAntrianPayload.value
+      .map((item) => Number(item.tipeLayar ?? item.tipe_layar))
+      .filter((v) => !Number.isNaN(v))
   );
+
+  const selectedCode = jadwalLayarAntrianProperties.value.tipe_layar;
+  if (selectedCode && selectedCode > 0) unique.add(selectedCode);
+
+  return itemsLayar.value.filter((layar) => unique.has(parseInt(layar.code)));
 });
 
 // Handle search from header
@@ -184,10 +232,23 @@ const handleResetFilters = () => {
 const deleteLayarAntrian = async (layarAntrianUuid: string) => {
   useUtilsStore.setLoading(true);
   try {
-    const response = await configLayarAntrianStore.deleteLayarAntrian(
-      layarAntrianUuid
-    );
-    fetchJadwalAntrian();
+    await configLayarAntrianStore.deleteLayarAntrian(layarAntrianUuid);
+
+    // Hitung total baru secara optimistis untuk hindari request page kosong / list kosong (404)
+    const currentTotal = jadwalLayarAntrianProperties.value.total || 0;
+    const newTotal = Math.max(0, currentTotal - 1);
+    jadwalLayarAntrianProperties.value.total = newTotal;
+
+    if (newTotal === 0) {
+      // Jika setelah delete tidak ada data sama sekali, kosongkan tampilan tanpa memanggil API list (hindari 404)
+      jadwalAntrianPayload.value = [];
+      originalJadwalAntrianPayload.value = [];
+      availableTipeCodes.value = [];
+    } else {
+      // Jika masih ada data, pastikan page tidak melebihi max page
+      adjustPageAfterDelete();
+      await fetchJadwalAntrian();
+    }
   } catch (error) {
     console.log("Failed to delete layar antrian", error);
   } finally {
