@@ -145,6 +145,7 @@ const fetchDetailPatientData = async () => {
       response = await admisiIGDStore.getDetailIGD(props.patientData.uuid);
     }
     if (response && response.payload) {
+      fullVisitData.value = response.payload;
       openedPatientData.value = response.payload.patient;
       openedPatientData.value.withoutIdentity =
         response.payload.withoutIdentity;
@@ -161,6 +162,82 @@ const fetchDetailPatientData = async () => {
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+const fullVisitData = ref<any>({});
+
+const handlePrintPatientVisit = async () => {
+  if (props.pageType !== 'rawat-jalan') return;
+  if (!openedPatientData.value.uuid) {
+    await fetchDetailPatientData();
+  }
+  const patientIdentityData = openedPatientData.value;
+  const visitDetailData = fullVisitData.value;
+
+  console.log("isinya ini: ", visitDetailData.insurance)
+
+  const completeVisitData = {
+    queueNumber: visitDetailData.noAntrianPoli || '-',
+    qrCodeData: visitDetailData.bookingCode || visitDetailData.uuid,
+    doctorName: visitDetailData.practitioner.pegawai.nama || '-',
+    poliName: visitDetailData.lokasi?.name || '-',
+    patientType: visitDetailData.insurance
+      ? `ASURANSI (${visitDetailData.insurance.name || 'BPJS'})`
+      : 'TUNAI',
+    insuranceNumber: visitDetailData.insurance?.accountNumber || '-',
+    sepNumber: visitDetailData.sep || '-',
+    patient: {
+      ...patientIdentityData,
+      patientAge: patientIdentityData.patientAge || `${patientIdentityData.birthDetail?.ageYear || 0} Thn, ${patientIdentityData.birthDetail?.ageMonth || 0} Bln, ${patientIdentityData.birthDetail?.ageDay || 0} Hri`,
+      gender: patientIdentityData.gender || '-',
+    },
+  };
+
+  createPatientVisit({ visitData: completeVisitData });
+};
+
+const handlePrintPatientLabel = async () => {
+  const visitDetailData = fullVisitData.value;
+  const patientIdentityData = visitDetailData.patient;
+
+  if (!visitDetailData || !patientIdentityData) {
+    console.error("Data pasien tidak ditemukan untuk mencetak label.");
+    return;
+  }
+
+  const labelData = {
+    patientName: patientIdentityData.name,
+    noRm: patientIdentityData.noRm,
+    noReg: visitDetailData.noReg,
+    birthDate: patientIdentityData.birthDetail?.birthDate,
+    patientAge: `${patientIdentityData.birthDetail?.ageYear || 0} Thn, ${patientIdentityData.birthDetail?.ageMonth || 0} Bln, ${patientIdentityData.birthDetail?.ageDay || 0} Hri`,
+    gender: patientIdentityData.gender,
+    address: patientIdentityData.address?.fullAddress,
+  };
+
+  await createPatientLabel({ labelData: labelData });
+};
+
+const handlePrintPatientBracelet = async () => {
+  const visitDetailData = fullVisitData.value;
+  const patientIdentityData = visitDetailData.patient;
+
+  if (!visitDetailData || !patientIdentityData) {
+    console.error("Data pasien tidak ditemukan untuk mencetak gelang.");
+    return;
+  }
+
+  const braceletData = {
+    patientName: patientIdentityData.name,
+    gender: patientIdentityData.gender,
+    noRm: patientIdentityData.noRm,
+    birthDate: patientIdentityData.birthDetail?.birthDate,
+    ageYear: patientIdentityData.birthDetail?.ageYear,
+    birthPlace: patientIdentityData.birthDetail?.birthPlace,
+    doctorName: `${visitDetailData.practitioner?.pegawai?.firstTitle || ''} ${visitDetailData.practitioner?.pegawai?.nama || ''}`.trim(),
+  };
+
+  await createPatientBracelet({ braceletData: braceletData });
 };
 
 // NOTE Patient form
@@ -293,6 +370,7 @@ const postRegisterPatient = async () => {
         }
       }
       if (response && response.payload) {
+        fullVisitData.value = response.payload;
         openedPatientData.value = response.payload.patient;
 
         setDetailDoctorVisitData(response.payload);
@@ -640,23 +718,24 @@ const deleteGeneralConsent = async () => {
       <template #content>
         <div v-if="isDetail()" class="flex">
           <CustomButton
-            v-if="pageType == 'rawat-jalan'"
-            @click="createPatientVisit({ data: '' })"
+             v-if="pageType == 'rawat-jalan' && isDetail()"
+            @click="handlePrintPatientVisit"
             icon="PhPrinter"
             label="Cetak Kunjungan"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            v-else
-            @click="createPatientBracelet({ data: '' })"
+            v-else-if="isDetail()"
+            @click="handlePrintPatientBracelet"
             icon="PhPrinter"
             label="Cetak Gelang"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="createPatientLabel({ data: '' })"
+            v-if="isDetail()"
+            @click="handlePrintPatientLabel"
             icon="PhPrinter"
             label="Cetak Label"
             class=""
