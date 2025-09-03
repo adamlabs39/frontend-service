@@ -9,6 +9,8 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice"; 
+import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import { useRouter, useRoute } from "vue-router";
@@ -27,7 +29,7 @@ const kasirData = ref<any>(null);
 const itemsPasien = ref<any[]>([]);
 const paymentHistoryList = ref<any[]>([]);
 const currentDebt = ref<number>(0);
-const isBillPaid = ref(false); 
+const isBillPaid = ref(false);
 const route = useRoute();
 const billUuid = route.params.billUuid as string;
 
@@ -66,7 +68,7 @@ const dataBreadCrumb = ref<MenuItem[]>([
 ]);
 
 const handleBack = () => {
-    router.go(-1); 
+    router.go(-1);
 };
 
 // Fungsi untuk memproses data list layanan
@@ -135,6 +137,92 @@ const getKembalian = () => {
     kembalian.value = paidAmount - requiredAmount;
 };
 
+//fungsi untuk cetak invoice
+const handleCetakInvoice = async () => {
+    storeUtils.setLoading(true);
+    try {
+        const billUuid = route.params.billUuid as string;
+        if (!billUuid) {
+            console.error("UUID tagihan tidak ditemukan.");
+            storeUtils.setLoading(false);
+            return;
+        }
+        // Ganti ke getDetailPasienBill
+        const detailBillResponse: any = await closeBillStore.getDetailPasienBill(billUuid);
+        let paymentResultFromStorage = null;
+        const storedPayment = localStorage.getItem(`paymentResult_${billUuid}`);
+        if (storedPayment) {
+            paymentResultFromStorage = JSON.parse(storedPayment);
+        }
+        if (detailBillResponse && detailBillResponse.payload) {
+            await createInvoicePdf({
+                detailBill: detailBillResponse.payload, // pastikan mapping sesuai
+                paymentResult: paymentResultFromStorage
+            });
+        } else {
+            console.error("Struktur respons API getDetailPasienBill tidak sesuai, 'payload' tidak ditemukan.");
+        }
+    } catch (error) {
+        console.error("Gagal memproses cetak invoice:", error);
+    } finally {
+        storeUtils.setLoading(false);
+    }
+};
+
+//fungsi untuk cetak rincian biaya
+const handleCetakRincianBiaya = async () => {
+    storeUtils.setLoading(true);
+    try {
+        const billUuid = route.params.billUuid as string;
+        if (!billUuid) {
+            storeUtils.setLoading(false);
+            alert("Silakan pilih pasien/tagihan terlebih dahulu!");
+            return;
+        }
+
+        // Ambil detail pasien bill
+        const detailBillResponse: any = await closeBillStore.getDetailPasienBill(billUuid);
+        const serviceBillList = detailBillResponse?.payload?.bill?.serviceBill || [];
+        if (!serviceBillList.length) {
+            storeUtils.setLoading(false);
+            alert("Tidak ada data pelayanan pada tagihan ini.");
+            return;
+        }
+
+        // Ambil UUID service bill pertama
+        const serviceBillUuid = serviceBillList[0]?.uuid;
+        if (!serviceBillUuid) {
+            storeUtils.setLoading(false);
+            alert("UUID pelayanan tidak ditemukan.");
+            return;
+        }
+
+        // Ambil rincian item
+        const itemBillResponse: any = await tagihanStore.getItemBill(serviceBillUuid);
+
+        // Ambil data pembayaran dari localStorage
+        let paymentResultFromStorage = null;
+        const storedPayment = localStorage.getItem(`paymentResult_${billUuid}`);
+        if (storedPayment) {
+            paymentResultFromStorage = JSON.parse(storedPayment);
+        }
+
+        if (detailBillResponse && detailBillResponse.payload) {
+            await createRincianPdf({
+                detailBill: detailBillResponse.payload, 
+                itemBill: itemBillResponse?.payload,    
+                paymentResult: paymentResultFromStorage
+            });
+        } else {
+            console.error("Struktur respons API getDetailPasienBill tidak sesuai, 'payload' tidak ditemukan.");
+        }
+    } catch (error) {
+        console.error("Gagal memproses cetak rincian biaya:", error);
+    } finally {
+        storeUtils.setLoading(false);
+    }
+};
+
 watch(amount, () => {
     setTimeout(getKembalian, 700);
 });
@@ -151,7 +239,14 @@ const submitPelunasan = async () => {
             note: note.value,
             information: information.value,
         };
-        await closeBillStore.payDebtOnClosedBill(billUuid, payload);
+
+        
+        const paymentResponse: any = await closeBillStore.payDebtOnClosedBill(billUuid, payload);
+        if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
+            // Ambil nilai kembalian dari response API
+            kembalian.value = paymentResponse.data.payload.change ?? 0;
+            localStorage.setItem(`paymentResult_${billUuid}`, JSON.stringify(paymentResponse.data.payload));
+        }
         pembayaranDialog.value = false;
         await fetchPelunasanData();
     } catch (error) {
@@ -200,7 +295,7 @@ onMounted(() => {
                             <div class="mt-[30px] mr-[40px]">
                                 <p class="text-xs font-bold underline underline-offset-2">Umur</p>
                                 <p class="">{{ kasirData.ageYear }}Thn {{ kasirData.ageMonth }}Bln {{ kasirData.ageDay
-                                    }}Hr</p>
+                                }}Hr</p>
                             </div>
                         </div>
 
@@ -215,7 +310,8 @@ onMounted(() => {
                                     <template #body="slotProps">
                                         <div class="flex">
                                             <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
-                                            <CustomChip class="ml-2" :showCheckedIcon="false" :label="kasirData.paymentType"
+                                            <CustomChip class="ml-2" :showCheckedIcon="false"
+                                                :label="kasirData.paymentType"
                                                 :bgColor="kasirData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
                                                 :textColor="kasirData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
                                                 :borderColor="kasirData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
@@ -228,8 +324,10 @@ onMounted(() => {
                                             <p class="text-sm">Tanggal</p>
                                             <PhArrowRight :size="18" class="my-auto ml-2 text-success-300"
                                                 weight="bold" />
-                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "date") }}</p>
-                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }}</p>
+                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "date") }}
+                                            </p>
+                                            <p class="ml-2 text-sm">{{ epochToDate(kasirData.scheduleTime, "time") }}
+                                            </p>
                                         </div>
                                     </template>
                                 </Column>
@@ -241,8 +339,8 @@ onMounted(() => {
                         <div class="flex justify-between">
                             <p class="text-base font-bold font-poppins">Total Pembayaran</p>
                             <div class="flex">
-                                <CustomButton label="Cetak Invoice" class="mt-[-10px] mr-[10px]" />
-                                <CustomButton label="Cetak Rincian Biaya" class="mt-[-10px]" />
+                                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice" class="mt-[-10px] mr-[10px]" />
+                                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
                             </div>
                         </div>
                         <hr class="mt-2 mb-2 border border-slate-300" />
