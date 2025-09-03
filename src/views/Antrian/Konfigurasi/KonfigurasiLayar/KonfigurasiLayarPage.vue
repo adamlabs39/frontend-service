@@ -94,35 +94,29 @@ const fetchJadwalAntrian = async () => {
 const availableTipeCodes = ref<number[] | null>(null);
 const fetchAvailableTipeLayarOptions = async () => {
   try {
-    // Ambil semua data yang match filter lain (tanpa filter tipe_layar)
-    const namaParam =
-      jadwalLayarAntrianProperties.value.nama_layar?.trim() || undefined;
-    const aktifParam = jadwalLayarAntrianProperties.value.aktif;
-
-    // Tahap 1: dapatkan total data UNFILTERED by tipe
+    // Ambil SELURUH dataset tanpa filter nama maupun status
     const head = await configLayarAntrianStore.getApi(
       1,
       1,
-      namaParam,
-      undefined, // penting: tanpa filter tipe
-      aktifParam
+      undefined, // tanpa filter nama
+      undefined, // tanpa filter tipe
+      undefined // tanpa filter status
     );
     const unfilteredTotal =
       head?.properties?.total ??
       (Array.isArray(head?.payload) ? head.payload.length : 0);
 
-    // Tahap 2: fetch semua data UNFILTERED by tipe untuk menghimpun semua tipe unik
     const pageSize = unfilteredTotal > 0 ? unfilteredTotal : 1000; // fallback aman
     const resp = await configLayarAntrianStore.getApi(
       1,
       pageSize,
-      namaParam,
-      undefined, // penting: tanpa filter tipe
-      aktifParam
+      undefined, // tanpa filter nama
+      undefined, // tanpa filter tipe
+      undefined // tanpa filter status
     );
 
     if (resp && Array.isArray(resp.payload)) {
-      const codesSet = new Set();
+      const codesSet = new Set<number>();
       for (const item of resp.payload) {
         const code = Number(item.tipeLayar ?? item.tipe_layar);
         if (!Number.isNaN(code)) codesSet.add(code);
