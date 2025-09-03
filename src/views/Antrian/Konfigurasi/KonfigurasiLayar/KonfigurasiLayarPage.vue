@@ -321,6 +321,12 @@ const getTipeLayarDescription = (tipeLayarCode: number): string => {
   return tipeLayar ? tipeLayar.tipe_layar : `Tipe ${tipeLayarCode}`;
 };
 
+const isAdmisi = (row: any) =>
+  row?.is_admisi === true || row?.isAdmisi === true;
+const isPoli = (row: any) => row?.is_poli === true || row?.isPoli === true;
+const isFarmasi = (row: any) =>
+  row?.is_farmasi === true || row?.isFarmasi === true;
+
 const dialogData = ref({
   isVisible: false,
   method: "add",
@@ -470,24 +476,39 @@ const selectedPatient = ref([]);
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex flex-wrap">
-              <div
+            <div class="flex flex-wrap gap-1">
+              <template
                 v-if="
-                  Array.isArray(slotProps.data.lokasi) &&
-                  slotProps.data.lokasi.length > 0
+                  isAdmisi(slotProps.data) ||
+                  isPoli(slotProps.data) ||
+                  isFarmasi(slotProps.data)
                 "
-                class=""
               >
                 <CustomChip
-                  v-for="(konten, index) in slotProps.data.lokasi"
-                  :key="index"
+                  v-if="isAdmisi(slotProps.data)"
                   :showCheckedIcon="false"
-                  :label="konten.name"
+                  label="Admisi"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="px-2 py-[2px] border-none mr-[5px] whitespace-normal break-words leading-tight"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
                 />
-              </div>
+                <CustomChip
+                  v-if="isPoli(slotProps.data)"
+                  :showCheckedIcon="false"
+                  label="Poli"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
+                />
+                <CustomChip
+                  v-if="isFarmasi(slotProps.data)"
+                  :showCheckedIcon="false"
+                  label="Farmasi"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
+                />
+              </template>
               <div v-else class="flex justify-center items-center">
                 <PhMinus :size="18" weight="bold" />
               </div>
