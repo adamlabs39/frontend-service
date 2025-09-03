@@ -78,6 +78,12 @@ const fetchJadwalAntrian = async () => {
     }
   } catch (error) {
     console.log(error);
+    if (currentId === fetchRequestId.value) {
+      // Perlakukan sebagai 'tidak ada data' agar UI menampilkan NoData
+      originalJadwalAntrianPayload.value = [];
+      jadwalAntrianPayload.value = [];
+      jadwalLayarAntrianProperties.value.total = 0;
+    }
   } finally {
     if (currentId === fetchRequestId.value) {
       useUtilsStore.setLoading(false);
