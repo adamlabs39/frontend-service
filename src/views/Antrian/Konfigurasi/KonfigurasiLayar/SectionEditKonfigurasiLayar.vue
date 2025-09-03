@@ -334,7 +334,7 @@ watch(
               <div class="mt-4 block font-semibold mb-[5px] text-normal">
                 Flash Text
               </div>
-              <Chips v-model="flashText" class="w-full" />
+              <Chips v-model="flashText" class="w-full break-all" />
               <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
                 {{ errors.flashText }}
               </p>
