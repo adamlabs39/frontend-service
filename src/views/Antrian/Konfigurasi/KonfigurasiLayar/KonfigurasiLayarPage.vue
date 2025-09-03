@@ -355,21 +355,33 @@ function handleRefresh(updatedRow?: any) {
     const list = jadwalAntrianPayload.value;
     const idx = list.findIndex((x: any) => x.uuid === updatedRow.uuid);
     if (idx !== -1) {
-      const currentFilter = jadwalLayarAntrianProperties.value.tipe_layar || 0;
+      const currentTypeFilter =
+        jadwalLayarAntrianProperties.value.tipe_layar || 0;
       const newType = Number(updatedRow.tipeLayar ?? updatedRow.tipe_layar);
-      if (
-        currentFilter > 0 &&
+
+      const currentStatusFilter = jadwalLayarAntrianProperties.value.aktif; // true | false | undefined
+      const newStatus =
+        typeof updatedRow.status === "boolean"
+          ? updatedRow.status
+          : updatedRow.aktif;
+
+      const typeMismatch =
+        currentTypeFilter > 0 &&
         !Number.isNaN(newType) &&
-        newType !== currentFilter
-      ) {
-        // Tidak cocok lagi dengan filter aktif -> keluarkan dari tabel secara lokal
+        newType !== currentTypeFilter;
+      const statusMismatch =
+        typeof currentStatusFilter === "boolean" &&
+        newStatus !== currentStatusFilter;
+
+      if (typeMismatch || statusMismatch) {
+        // Tidak lagi cocok dengan filter aktif -> keluarkan dari tabel secara lokal
         list.splice(idx, 1);
         jadwalLayarAntrianProperties.value.total = Math.max(
           0,
           (jadwalLayarAntrianProperties.value.total || 0) - 1
         );
       } else {
-        // Masih pada filter yang sama -> perbarui datanya saja
+        // Masih cocok dengan filter aktif -> perbarui datanya saja
         list[idx] = { ...list[idx], ...updatedRow };
       }
     }
