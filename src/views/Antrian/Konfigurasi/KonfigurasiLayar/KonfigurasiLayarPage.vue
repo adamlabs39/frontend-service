@@ -57,20 +57,7 @@ const fetchJadwalAntrian = async () => {
 
     if (currentId === fetchRequestId.value) {
       console.log("Respon layar antrian get:", response?.payload);
-      // Fallback: jika payload kosong pada page > 1, mundur 1 page dan coba lagi sekali
-      if (
-        response &&
-        Array.isArray(response.payload) &&
-        response.payload.length === 0 &&
-        jadwalLayarAntrianProperties.value.page > 1
-      ) {
-        jadwalLayarAntrianProperties.value.page =
-          jadwalLayarAntrianProperties.value.page - 1;
-        // refetch sekali lagi
-        await fetchJadwalAntrian();
-        return;
-      }
-
+      // ... existing code ...
       if (response && response.payload) {
         originalJadwalAntrianPayload.value = response.payload;
         jadwalAntrianPayload.value = response.payload;
@@ -84,7 +71,9 @@ const fetchJadwalAntrian = async () => {
         originalJadwalAntrianPayload.value = [];
         jadwalAntrianPayload.value = [];
         jadwalLayarAntrianProperties.value.total = 0;
-        availableTipeCodes.value = [];
+
+        // Pastikan dropdown tipe tetap akurat (himpun dari seluruh dataset tanpa filter)
+        await fetchAvailableTipeLayarOptions();
       }
     }
   } catch (error) {
@@ -354,8 +343,40 @@ const handlePage = (event: any) => {
   fetchJadwalAntrian();
 };
 
-function handleRefresh() {
+function handleRefresh(updatedRow?: any) {
   dialogData.value.isVisible = false;
+
+  // Optimistic update: jika baris yang disimpan tidak lagi cocok dengan filter aktif, hapus dari tabel
+  if (
+    updatedRow &&
+    updatedRow.uuid &&
+    Array.isArray(jadwalAntrianPayload.value)
+  ) {
+    const list = jadwalAntrianPayload.value;
+    const idx = list.findIndex((x: any) => x.uuid === updatedRow.uuid);
+    if (idx !== -1) {
+      const currentFilter = jadwalLayarAntrianProperties.value.tipe_layar || 0;
+      const newType = Number(updatedRow.tipeLayar ?? updatedRow.tipe_layar);
+      if (
+        currentFilter > 0 &&
+        !Number.isNaN(newType) &&
+        newType !== currentFilter
+      ) {
+        // Tidak cocok lagi dengan filter aktif -> keluarkan dari tabel secara lokal
+        list.splice(idx, 1);
+        jadwalLayarAntrianProperties.value.total = Math.max(
+          0,
+          (jadwalLayarAntrianProperties.value.total || 0) - 1
+        );
+      } else {
+        // Masih pada filter yang sama -> perbarui datanya saja
+        list[idx] = { ...list[idx], ...updatedRow };
+      }
+    }
+  }
+
+  // Refresh opsi tipe global dan sinkronkan ulang data dari server
+  fetchAvailableTipeLayarOptions();
   fetchJadwalAntrian();
 }
 

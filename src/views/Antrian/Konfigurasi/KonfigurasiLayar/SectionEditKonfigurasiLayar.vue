@@ -155,7 +155,15 @@ const onSubmit = handleSubmit(async (values: any) => {
       summary: "Data berhasil disimpan",
       life: 3000,
     });
-    emit("refresh");
+    emit("refresh", {
+      uuid,
+      tipeLayar: values.tipeLayar,
+      namaLayar: values.namaLayar,
+      judul: values.judul,
+      status: values.aktif,
+      flashText: values.flashText,
+      media: values.tipeLayar === 5 ? values.media?.trim() || null : null,
+    });
 
     closeDialog();
   } catch (error) {
