@@ -54,7 +54,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId);
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -71,7 +71,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -87,7 +87,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId); 
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -109,6 +109,14 @@ const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
 
+    if (tempPatientData.address && tempPatientData.address.country === 'Indonesia') {
+      tempPatientData.address.country = 'id-ID';
+    }
+
+    if (tempPatientData.language === 'Indonesian') {
+      tempPatientData.language = 'ID';
+    }
+
     await fetchKabupaten(tempPatientData.address.prov);
     await fetchKecamatan(tempPatientData.address.city);
     await fetchKelurahan(tempPatientData.address.district);
@@ -129,6 +137,7 @@ const setFormData = async (data: any, uuid: string = "") => {
 onMounted(() => {
   setFormData(props.patientData);
   fetchProvinsi();
+  searchPatientData()
 });
 
 onUpdated(() => {
@@ -139,27 +148,26 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (filter: string) => {
-  if (timer.value) {
-    clearTimeout(timer.value);
-    timer.value = null;
-  }
-  timer.value = setTimeout(async () => {
-    loadingSearchPatient.value = true;
-    try {
-      const response = await masterPasienStore.getMasterPasien({
-        q: filter,
-      });
-      if (response && response.payload) {
-        listDataPatient.value = response.payload;
-      } else listDataPatient.value = [];
-    } catch (error) {
-      console.error("Failed to fetch data", error);
-      return [];
-    } finally {
-      loadingSearchPatient.value = false;
+const searchPatientData = async (event?: { query: string }) => {
+  const query = event?.query || "";
+  
+  loadingSearchPatient.value = true;
+  try {
+    const response = await masterPasienStore.getMasterPasien({
+      q: query,
+      limit: 9999,
+    });
+    if (response && response.payload) {
+      listDataPatient.value = response.payload;
+    } else {
+      listDataPatient.value = [];
     }
-  }, 800);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listDataPatient.value = [];
+  } finally {
+    loadingSearchPatient.value = false;
+  }
 };
 
 const setSelectedPatientData = async (data: any) => {

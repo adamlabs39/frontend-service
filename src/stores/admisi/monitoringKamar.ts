@@ -25,7 +25,7 @@ export const useMonitoringKamarStore = defineStore({
       });
 
       const response = await apiAdmisiGet(
-        `/monitoring-rooms?page=${page}&limit=${limit}&q=${q}&filter_kelas=${filterKelas}&filter_kategori=${tempFilterKategori}`,
+        `/monitoring-rooms?page=${page}&limit=${limit}&name=${q}&filter_kelas=${filterKelas}&filter_kategori=${tempFilterKategori}`,
         payload
       );
 

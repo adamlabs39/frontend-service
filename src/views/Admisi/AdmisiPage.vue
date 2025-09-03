@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import { utilsStore } from "@/stores/utils";
@@ -257,12 +257,16 @@ const cancelVisit = async () => {
   }
 };
 
+watch(formType, (newValue, oldValue) => {
+  if (newValue === 'edit' && oldValue !== 'edit') {
+  }
+});
+
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.pageSize = event.rows;
   getPatientList();
 };
-
 
 </script>
 
@@ -280,9 +284,7 @@ const handlePage = (event: any) => {
         :pageType="pageType"
         :filterData="filterData"
         @daftar="changeSection('Daftar'), (formType = 'add')"
-        @daftarBayi="
-          changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')
-        "
+        @daftarBayi="changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')"
         @search="search"
       />
     </template>
@@ -313,8 +315,10 @@ const handlePage = (event: any) => {
               >
                 {{ slotProps.data.noAntrianAdmisi }}
               </div>
+              <div class="text-SM">{{ slotProps.data.noAntrianAdmisi ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noRm ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
+              <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
             </div>
           </template>
         </Column>
@@ -489,7 +493,7 @@ const handlePage = (event: any) => {
                 />
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
-              <div
+              <!-- <div
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
@@ -500,7 +504,7 @@ const handlePage = (event: any) => {
                   weight="bold"
                 />
                 {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
-              </div>
+              </div> -->
               <div
                 v-if="
                   pageType == 'rawat-jalan' && slotProps.data.tanggalCheckin
@@ -525,7 +529,8 @@ const handlePage = (event: any) => {
                   class="my-auto mr-5 text-grey-300"
                   weight="bold"
                 />
-                {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
+                <!-- {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }} -->
+                  -
               </div>
               <div
                 v-if="pageType == 'rawat-inap' && slotProps.data.tanggalDirawat"

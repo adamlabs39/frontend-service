@@ -102,6 +102,7 @@ const ruangStatus = computed(() => {
 
 const resetFilter = () => {
   search.value = "";
+  fetchData();
 };
 
 const timer = ref<any>();
@@ -237,8 +238,6 @@ const showBedForm = async (data: any) => {
   }
 };
 
-
-
 const schema = toTypedSchema(
   yup
     .object({
@@ -288,22 +287,22 @@ const onSubmit = handleSubmit(async (values) => {
     const payload = (values.bedData ?? []).map((bed) => {
       return {
         uuid: bed.uuid ?? null, 
-        no_bed: String(bed.noBed),   
+        no_bed: String(bed.noBed),  
         type: bed.bedType,
         status_operasional: bed.statusOperasionalRuangan || "Penuh",
         lokasi_uuid: bed.lokasi_uuid || undefined,
       };
     });
-
     await monitoringKamarStore.updateBed(
       openedRoomData.value.uuid,
       { beds: payload } 
     );
+    await fetchData(); 
     const updatedBeds = await fetchBedData(openedRoomData.value);
-    itemsBed.value = updatedBeds;
-    await monitoringKamarStore.getMonitoringKamar({});
+    itemsBed.value = updatedBeds
     roomSettingDialog.value = false;
     resetForm();
+
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -353,14 +352,14 @@ function getByPartOfApi(partOfUuid: string) {
           <div class="flex mt-[10px]">
             <CustomTextfield
               v-model="search"
-              @update:model-value="searchData"
+              @keydown.enter="fetchData"
               :showLabel="false"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Ruangan / Kamar"
               class="mt-[10px] flex-1"
             />
             <CustomButton
-              @click="emit('search')"
+              @click="fetchData"
               icon="PhMagnifyingGlass"
               label="Cari"
               class="ml-5 mr-[10px] mt-auto"
@@ -527,48 +526,63 @@ function getByPartOfApi(partOfUuid: string) {
               </Column>
             </DataTable>
           </div>
-          <div v-if="itemsBed.length" class="relative overflow-hidden">
-            <div
-              class="relative bg-adameds-50 h-[60px] rounded-t-[10px] px-5 flex items-center"
-            >
-              <PhHospital
-                :size="40"
-                class="text-adameds-300 mr-[10px]"
-                weight="fill"
+          <div v-if="Object.keys(openedRoomData).length > 0" class="relative overflow-hidden">
+          <div
+            class="relative bg-adameds-50 h-[60px] rounded-t-[10px] px-5 flex items-center"
+          >
+            <PhHospital
+              :size="40"
+              class="text-adameds-300 mr-[10px]"
+              weight="fill"
+            />
+            <span class="font-bold text-MD mr-[10px]">{{
+              openedRoomData.name
+            }}</span>
+            <CustomChip
+              :showCheckedIcon="false"
+              :label="openedRoomData.kategoriRuangan.name"
+              bgColor="bg-adameds-300"
+              textColor="text-white"
+              customClass="h-5 border-none"
+              class="mr-1"
+            />
+            <CustomChip
+              :showCheckedIcon="false"
+              :label="openedRoomData.className"
+              bgColor="bg-adameds-300"
+              textColor="text-white"
+              customClass="h-5 border-none"
+              class=""
+            />
+          </div>
+
+          <div
+            v-if="itemsBed.length > 0"
+            class="inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px] max-h-[300px]"
+          >
+            <div v-for="(bed, index) in itemsBed" :key="index" class="h-fit">
+              <EmptyMonitoringBedCard
+                v-if="bed.isAvailable"
+                :bedData="bed"
+                @click="() => {}"
               />
-              <span class="font-bold text-MD mr-[10px]">{{
-                openedRoomData.name
-              }}</span>
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="openedRoomData.kategoriRuangan.name"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 border-none"
-                class="mr-1"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="openedRoomData.className" 
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 border-none"
-                class=""
-              />
-            </div>
-            <div
-              class="inset-0 top-[60px] border-[1px] overflow-auto rounded-b-[10px] py-[10px] px-5 grid grid-cols-2 gap-[10px] max-h-[300px]"
-            >
-              <div v-for="(bed, index) in itemsBed" class="h-fit">
-                <EmptyMonitoringBedCard
-                  v-if="bed.isAvailable"
-                  :bedData="bed"
-                  @click="() => {}"
-                />
-                <MonitoringBedCard v-else :bedData="bed" />
-              </div>
+              <MonitoringBedCard v-else :bedData="bed" />
             </div>
           </div>
+          <div
+            v-else
+            class="flex flex-col text-center border-dashed border-[1px] border-grey-300 h-full rounded-b-lg"
+          >
+            <div class="m-auto text-SM">
+              <img
+                src="../../assets/icons/no-data-icon-2.svg"
+                alt="no data"
+                class="mx-auto"
+              />
+              <div class="text-grey-200">Ruangan ini belum memiliki bed</div>
+            </div>
+          </div>
+        </div>
           <div
             v-else
             class="flex flex-col text-center border-dashed border-[1px] border-grey-300 h-full rounded-lg"

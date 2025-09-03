@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ListMenu, Module } from "@/utils/Interface";
-import { onMounted, ref, onBeforeMount } from "vue";
+import { onMounted, ref, onBeforeMount, reactive, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "../Base/CustomButton.vue";
@@ -9,6 +9,8 @@ import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import { useSettingStore } from "@/stores/setting";
 import CustomSelect from "../Base/CustomSelect.vue";
+import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import { PhMegaphone, PhX } from '@phosphor-icons/vue';
 
 interface userData {
   name: string;
@@ -119,6 +121,65 @@ const isDialogVisible = ref(false);
 const showDialog = () => {
   isDialogVisible.value = true;
 };
+
+const isCardPanggilanVisible = ref(false);
+
+const toggleCardPanggilan = () => {
+  isCardPanggilanVisible.value = !isCardPanggilanVisible.value;
+};
+
+const daftarPanggilan = ref([
+  {
+    id: 1,
+    nomorAntrian: "A-012",
+    namaPasien: 'Siti Aisyah',
+    nomorIdentitas: '3201234567890002',
+    status: 'selesai',
+    showIconPanggil: false,
+    showIconLewati: false,
+    showIconProcess: false,
+  },
+  {
+    id: 2,
+    nomorAntrian: "B-005",
+    namaPasien: 'Budi Santoso',
+    nomorIdentitas: '3201234567890003',
+    status: 'selesai',
+    showIconPanggil: false,
+    showIconLewati: false,
+    showIconProcess: false,
+  },
+  {
+    id: 3,
+    nomorAntrian: "C-021",
+    namaPasien: 'Rina Melati',
+    nomorIdentitas: '3201234567890004',
+    status: 'aktif',
+    showIconPanggil: true,
+    showIconLewati: true,
+    showIconProcess: true,
+  },
+  {
+    id: 4,
+    nomorAntrian: "D-007",
+    namaPasien: 'Agus Wijaya',
+    nomorIdentitas: '3201234567890005',
+    status: 'terlewat',
+    showIconPanggil: true,
+    showIconLewati: true,
+    showIconProcess: true,
+  },
+]);
+
+const activeTab = ref('aktif');
+
+const filteredPanggilan = computed(() => {
+  if (activeTab.value === 'aktif') {
+    return daftarPanggilan.value.filter(p => p.status !== 'selesai');
+  }
+  return daftarPanggilan.value.filter(p => p.status === activeTab.value);
+});
+
 
 const userData = ref<userData>();
 const logout = async () => {
@@ -291,6 +352,16 @@ const isSuperAdmin = getUserRole() === "super admin";
         </div>
       </div>
       <div class="flex justify-between">
+        <svg
+          @click="toggleCardPanggilan" class="relative w-8 aspect-square mr-4 cursor-pointer" viewBox="0 0 27 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13.5333 6.06673H2.86662C2.15937 6.06673 1.4811 6.34768 0.981 6.84778C0.480903 7.34788 0.199951 8.02615 0.199951 8.7334V14.0667C0.199951 14.774 0.480903 15.4523 0.981 15.9523C1.4811 16.4524 2.15937 16.7334 2.86662 16.7334H4.19995V22.0667C4.19995 22.4204 4.34043 22.7595 4.59048 23.0095C4.84052 23.2596 5.17966 23.4001 5.53328 23.4001H8.19995C8.55357 23.4001 8.89271 23.2596 9.14276 23.0095C9.39281 22.7595 9.53329 22.4204 9.53329 22.0667V16.7334H13.5333L20.2 22.0667V0.733398L13.5333 6.06673ZM26.2 11.4001C26.2 13.6801 24.92 15.7467 22.8666 16.7334V6.06673C24.9066 7.06673 26.2 9.1334 26.2 11.4001Z"
+            fill="white"
+          />
+        </svg>
         <img
           loading="lazy"
           src="../../assets/icons/Bell Notification.svg"
@@ -386,6 +457,58 @@ const isSuperAdmin = getUserRole() === "super admin";
             </div>
           </template>
         </Dialog>
+      </div>
+    </div>
+     <div
+      v-if="isCardPanggilanVisible"
+      class="fixed top-[80px] right-4 z-50 w-[500px] bg-white rounded-lg shadow-lg flex flex-col"
+    >
+      <div class="flex items-center justify-between p-4 border-b">
+        <div class="flex items-center gap-x-2">
+          <PhMegaphone :size="24" class="text-gray-600" />
+          <h2 class="font-bold text-lg text-gray-800">Panggilan Antrian</h2>
+        </div>
+        <button @click="toggleCardPanggilan" class="text-gray-500 hover:text-gray-800">
+          <PhX :size="20" weight="bold" />
+        </button>
+      </div>
+
+            <div class="flex items-center justify-around p-4 border-b">
+        <button
+          @click="activeTab = 'aktif'"
+          :class="[activeTab === 'aktif' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
+          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+        >
+          Antrian Aktif
+        </button>
+        <button
+          @click="activeTab = 'terlewat'"
+          :class="[activeTab === 'terlewat' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
+          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+        >
+          Terlewat
+        </button>
+        <button
+          @click="activeTab = 'selesai'"
+          :class="[activeTab === 'selesai' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
+          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+        >
+          Selesai
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-y-3 p-4 overflow-y-auto max-h-[calc(100vh-215px)]">
+        <CardPanggilanAdmisi
+          v-for="panggilan in filteredPanggilan"
+          :key="panggilan.id"
+          :nomor-antrian="panggilan.nomorAntrian"
+          :nama-pasien="panggilan.namaPasien"
+          :nomor-identitas="panggilan.nomorIdentitas"
+          :status="panggilan.status"
+          :show-icon-panggil="panggilan.showIconPanggil"
+          :show-icon-lewati="panggilan.showIconLewati"
+          :show-icon-process="panggilan.showIconProcess"
+        />
       </div>
     </div>
   </div>
