@@ -4,6 +4,18 @@ import { customVfs } from "./customVfs";
 import { generateBarcode, generateQRCode, getDateNow } from "./Helpers";
 import type { PageOrientation, PageSize } from "pdfmake/interfaces";
 
+function formatTanggal(dateString: string | Date, monthFormat: 'long' | 'short' = 'long'): string {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: monthFormat,
+    year: 'numeric'
+  };
+  const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date);
+  return monthFormat === 'short' ? formattedDate.replace(/\./g, '') : formattedDate;
+}
+
 export function downloadPdf({
   data,
   page = "A4",
@@ -153,7 +165,7 @@ try {
   return pdfMake.createPdf(docDefinition);
 }
 
-export function createPatientLabel({ data }: { data: any }) {
+export function createPatientLabel({ labelData }: { labelData: any }) {
   pdfMake.vfs = customVfs.pdfMake.vfs;
 
   pdfMake.fonts = {
@@ -175,117 +187,60 @@ export function createPatientLabel({ data }: { data: any }) {
     content: [
       {
         columns: [
-          {
-            width: "25%",
-            text: "Nama Pasien",
-          },
+          { width: "25%", text: "Nama Pasien" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: labelData.patientName || "-", bold: true },
+        ],
+        margin: [0, 0, 0, 2],
+      },
+      {
+        columns: [
+          { width: "25%", text: "No. RM" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: labelData.noRm || "-", bold: true },
+        ],
+        margin: [0, 0, 0, 2],
+      },
+      {
+        columns: [
+          { width: "25%", text: "No. Reg" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: labelData.noReg || "-", bold: true },
+        ],
+        margin: [0, 0, 0, 2],
+      },
+      {
+        columns: [
+          { width: "25%", text: "Tgl. Lahir" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
           {
             width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Nama Lengkap Pasien Jika Panjang",
-            bold: true,
+            text: `${formatTanggal(labelData.birthDate, 'short')} (${labelData.patientAge || '-'})`,
           },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "No. RM",
-          },
+          { width: "25%", text: "Jenis Kelamin" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
           {
             width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "123456",
-            bold: true,
+            text: labelData.gender === 'Male' ? 'Laki-laki' : (labelData.gender === 'Female' ? 'Perempuan' : '-'),
           },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "No. Reg",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "123456",
-            bold: true,
-          },
+          { width: "25%", text: "Alamat" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: labelData.address || "-" },
         ],
         margin: [0, 0, 0, 2],
       },
       {
-        columns: [
-          {
-            width: "25%",
-            text: "Tgl. Lahir",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "01 Jan 2000 (24 Thn 1 Bln 1 Hri)",
-          },
-        ],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        columns: [
-          {
-            width: "25%",
-            text: "Jenis Kelamin",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Laki-laki",
-          },
-        ],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        columns: [
-          {
-            width: "25%",
-            text: "Alamat",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Alamat Lengkap",
-          },
-        ],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        image: generateBarcode("123456"),
+        image: generateBarcode(labelData.noRm || '000000'),
         width: 97.5,
         height: 22,
         alignment: "center",
@@ -343,16 +298,13 @@ export function createPatientCard({ data, clinicProfile }: { data: any, clinicPr
         alignment: "center",
         columns: [
           {
-            image: dummyLogo(),
+            image: (clinicProfile.logo && clinicProfile.logo.startsWith('data:image'))
+              ? clinicProfile.logo
+              : dummyLogo(),
             fit: [54, 30.375],
             width: "auto",
             height: "auto",
           },
-          // {
-          //   image: clinicProfile.logo, 
-          //   fit: [54, 30.375],
-          //   //...
-          // },
           {
             stack: [
               { text: clinicProfile?.name ?? "Nama Klinik", bold: true, fontSize: "10.5" },
@@ -437,7 +389,7 @@ export function createPatientCard({ data, clinicProfile }: { data: any, clinicPr
   pdfMake.createPdf(docDefinition).open();
 }
 
-export async function createPatientVisit({ data }: { data: any }) {
+export async function createPatientVisit({ visitData }: { visitData: any }) {
   pdfMake.vfs = customVfs.pdfMake.vfs;
 
   pdfMake.fonts = {
@@ -471,16 +423,16 @@ export async function createPatientVisit({ data }: { data: any }) {
               {
                 text: "Nomor Antrian",
                 bold: true,
-                fontSize: "12",
+                fontSize: 12,
                 decoration: "underline",
               },
-              { text: "PD-02-01", fontSize: "24", bold: true },
+              { text: visitData.queueNumber || "-", fontSize: 24, bold: true },
             ],
             margin: [0, 0, 0, 0],
             width: "*",
           },
           {
-            image: await generateQRCode("Kode Boking 123456"),
+            image: await generateQRCode(visitData.qrCodeData || "no-data"),
             width: 45,
             height: 45,
             fit: [45, 45],
@@ -490,203 +442,97 @@ export async function createPatientVisit({ data }: { data: any }) {
       {
         margin: [0, 4.125, 0, 6],
         canvas: [
-          {
-            type: "line",
-            x1: 0,
-            y1: 1,
-            x2: 325.157,
-            y2: 1,
-            lineWidth: 1,
-            lineColor: "black",
-          },
+          { type: "line", x1: 0, y1: 1, x2: 325.157, y2: 1, lineWidth: 1, lineColor: "black" },
         ],
       },
       {
         text: "TIKET ANTRIAN POLIKLINIK",
         bold: true,
-        fontSize: "13.5",
+        fontSize: 13.5,
         margin: [0, 0, 0, 6.25],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "No. RM",
-          },
+          { width: "25%", text: "No. RM" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.patient?.noRm || "-", bold: true },
+        ],
+        margin: [0, 0, 0, 2],
+      },
+      {
+        columns: [
+          { width: "25%", text: "Nama Pasien" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.patient?.name || "-", bold: true },
+        ],
+        margin: [0, 0, 0, 2],
+      },
+      {
+        columns: [
+          { width: "25%", text: "Tgl. Lahir" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
           {
             width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "123456",
-            bold: true,
+            text: `${formatTanggal(visitData.patient?.birthDetail?.birthDate)} (${visitData.patient?.patientAge || '-'})`,
           },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Nama Pasien",
-          },
+          { width: "25%", text: "Jenis Kelamin" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
           {
             width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Nama Lengkap Pasien Jika Panjang",
-            bold: true,
+            text: visitData.patient?.gender === 'Male' ? 'Laki-laki' : (visitData.patient?.gender === 'Female' ? 'Perempuan' : '-'),
           },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Tgl. Lahir",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "01 Januari 2000 (24 Thn 1 Bln 1 Hri)",
-          },
+          { width: "25%", text: "Dokter" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.doctorName || "-", bold: true },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Jenis Kelamin",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "Laki-laki",
-          },
+          { width: "25%", text: "Tujuan Poli" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.poliName || "-", bold: true },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Dokter",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "dr. Nama Dokter Dalam Sp. D",
-            bold: true,
-          },
+          { width: "25%", text: "Jenis Pasien" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.patientType || "-", bold: true },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Tujuan Poli",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "POLI DALAM",
-            bold: true,
-          },
+          { width: "25%", text: "No. Asuransi" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.insuranceNumber || "-" },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         columns: [
-          {
-            width: "25%",
-            text: "Jenis Pasien",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "ASURANSI (BPJS)",
-            bold: true,
-          },
-        ],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        columns: [
-          {
-            width: "25%",
-            text: "No. Asuransi",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "523214315123123",
-          },
-        ],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        columns: [
-          {
-            width: "25%",
-            text: "SEP",
-          },
-          {
-            width: "auto",
-            text: ":",
-            margin: [0, 0, 3, 0],
-          },
-          {
-            width: "auto",
-            text: "12345678901234567890",
-            bold: true,
-          },
+          { width: "25%", text: "SEP" },
+          { width: "auto", text: ":", margin: [0, 0, 3, 0] },
+          { width: "auto", text: visitData.sepNumber || "-", bold: true },
         ],
         margin: [0, 0, 0, 2],
       },
       {
         margin: [0, 4.125, 0, 6],
         canvas: [
-          {
-            type: "line",
-            x1: 0,
-            y1: 1,
-            x2: 325.157,
-            y2: 1,
-            lineWidth: 1,
-            lineColor: "black",
-          },
+          { type: "line", x1: 0, y1: 1, x2: 325.157, y2: 1, lineWidth: 1, lineColor: "black" },
         ],
       },
       { text: "Perhatian!", bold: true },
@@ -697,7 +543,7 @@ export async function createPatientVisit({ data }: { data: any }) {
   pdfMake.createPdf(docDefinition).open();
 }
 
-export function createPatientBracelet({ data }: { data: any }) {
+export function createPatientBracelet({ braceletData }: { braceletData: any }) {
   pdfMake.vfs = customVfs.pdfMake.vfs;
 
   pdfMake.fonts = {
@@ -708,6 +554,8 @@ export function createPatientBracelet({ data }: { data: any }) {
       bolditalics: "Arial_Bold_Italic.ttf",
     },
   };
+
+  const genderInitial = braceletData.gender === 'Male' ? 'L' : (braceletData.gender === 'Female' ? 'P' : '');
 
   const docDefinition: any = {
     pageSize: { width: 283.465, height: 70.866 },
@@ -721,26 +569,26 @@ export function createPatientBracelet({ data }: { data: any }) {
         columnGap: 7.5,
         columns: [
           {
-            image: generateBarcode("3210123456789456"),
+            image: generateBarcode(braceletData.noRm || '000000'),
             width: 61.5,
             height: 55.687,
           },
           {
             stack: [
               {
-                text: `Nama (L)`,
+                text: `${braceletData.patientName || 'Nama Pasien'} (${genderInitial})`,
                 bold: true,
-                fontSize: "10.5",
+                fontSize: 10.5,
               },
               {
                 margin: [0, 0.5, 0, 0],
                 text: [
-                  { text: "RM123456", bold: true },
+                  { text: `RM${braceletData.noRm || '-'}`, bold: true },
                   "  |  ",
-                  "01 Jan 2024 / 1 Thn ",
+                  `${formatTanggal(braceletData.birthDate, 'short')} / ${braceletData.ageYear || '-'} Thn`,
                 ],
               },
-              "Surabaya",
+              braceletData.birthPlace || 'Tempat Lahir',
               {
                 margin: [0, 4.5, 0, 4.5],
                 canvas: [
@@ -755,7 +603,7 @@ export function createPatientBracelet({ data }: { data: any }) {
                   },
                 ],
               },
-              "dr. Nama Dokter",
+              braceletData.doctorName || 'Nama Dokter',
             ],
             margin: [0, 3, 0, 0],
             width: "*",

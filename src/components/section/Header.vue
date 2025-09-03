@@ -465,8 +465,8 @@ const isSuperAdmin = getUserRole() === "super admin";
     >
       <div class="flex items-center justify-between p-4 border-b">
         <div class="flex items-center gap-x-2">
-          <PhMegaphone :size="24" class="text-gray-600" />
-          <h2 class="font-bold text-lg text-gray-800">Panggilan Antrian</h2>
+          <PhMegaphone :size="24" class="text-[#14B8A6]" />
+          <h2 class="font-bold text-lg text-[#14B8A6]">Panggilan Antrian</h2>
         </div>
         <button @click="toggleCardPanggilan" class="text-gray-500 hover:text-gray-800">
           <PhX :size="20" weight="bold" />

@@ -102,6 +102,7 @@ const ruangStatus = computed(() => {
 
 const resetFilter = () => {
   search.value = "";
+  selectedFilterRoomCategory.value = [];
   fetchData();
 };
 
@@ -600,7 +601,7 @@ function getByPartOfApi(partOfUuid: string) {
         </div>
       </template>
     </Card>
-    <CustomDialog v-model:visible="roomSettingDialog" width="900px">
+    <CustomDialog v-model:visible="roomSettingDialog" width="970px">
   <template #header> Setting Kamar </template>
   <template #body>
     <div class="mt-5"> 

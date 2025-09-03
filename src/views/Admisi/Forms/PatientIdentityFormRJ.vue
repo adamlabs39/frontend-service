@@ -250,9 +250,16 @@ const schema = toTypedSchema(
 );
 
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setValues, values } = useForm({
   validationSchema: schema,
 });
+
+const getFormData = () => {
+  return {
+    ...values,
+    patientAge: patientAge.value,
+  };
+};
 
 const [noRm] = defineField("noRm");
 const [title] = defineField("title");
@@ -292,6 +299,7 @@ const getAge = (date: Date) => {
 defineExpose({
   onSubmit,
   onResetForm,
+  getFormData,
 });
 </script>
 
