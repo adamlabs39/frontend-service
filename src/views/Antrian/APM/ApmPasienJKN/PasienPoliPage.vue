@@ -16,7 +16,7 @@ const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
 const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+  router.push("/antrian/apm/aktif/pasien/jkn/berhasil");
 };
 
 const selectedType = ref<string | null>(null);
@@ -91,12 +91,12 @@ const cardJamMalam = ref({
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <PlusIcon class="text-white" :size="30" />
+                  <BPJSIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->
                 <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
-                  Pasien Non-JKN
+                  Pasien JKN
                 </div>
               </div>
             </div>

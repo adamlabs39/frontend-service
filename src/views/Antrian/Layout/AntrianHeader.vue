@@ -61,7 +61,7 @@ const handleChipSelect = (value: string) => {
   }
 
   // Pindahkan trigger ke sini agar SEMUA juga terpicu (auto-trigger, debounce 300ms)
-  if (props.activeTab === "1") {
+  if (["0", "1", "2"].includes(props.activeTab)) {
     debouncedSearch();
   }
 };
@@ -100,7 +100,7 @@ const getThreeDaysAgoDate = () => {
 };
 
 const syncDatepickerWithProps = () => {
-  if (props.activeTab === "1") {
+  if (["0", "1", "2"].includes(props.activeTab)) {
     startDateFilter.value =
       props.startDateEpoch !== undefined && props.startDateEpoch !== null
         ? epochToDate(props.startDateEpoch)
@@ -138,7 +138,7 @@ const getSelectedStatusesLowercase = (): string[] => {
 
 // Auto-trigger (chip) dengan debounce 300ms
 const performSearch = () => {
-  if (props.activeTab === "1") {
+  if (["0", "1", "2"].includes(props.activeTab)) {
     emit(
       "search",
       searchPatientFilter.value.trim(),
@@ -150,7 +150,7 @@ const debouncedSearch = useDebounceFn(performSearch, 300);
 
 // Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
 const onClickSearch = () => {
-  if (props.activeTab === "1") {
+  if (["0", "1", "2"].includes(props.activeTab)) {
     emit(
       "search",
       searchPatientFilter.value.trim(),
@@ -168,7 +168,7 @@ const onClickSearch = () => {
 const onClickReset = () => {
   searchPatientFilter.value = "";
   chipValues.value = ["SEMUA"];
-  if (props.activeTab === "1") {
+  if (["0", "1", "2"].includes(props.activeTab)) {
     startDateFilter.value = getThreeDaysAgoDate();
     endDateFilter.value = getNowDate();
     emit("search", "", getSelectedStatusesLowercase());
@@ -185,7 +185,7 @@ watch(
   (newVal) => {
     chipValues.value = ["SEMUA"];
 
-    if (newVal !== "1") {
+    if (["0", "1", "2"].includes(props.activeTab)) {
       searchPatientFilter.value = "";
       emit("search", "");
     }

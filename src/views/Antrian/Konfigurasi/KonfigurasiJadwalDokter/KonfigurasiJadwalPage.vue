@@ -174,6 +174,7 @@ const confirmDelete = async () => {
       deleteModalData.value.poliUuid
     );
     await fetchJadwalDokter();
+    await fetchAllReferenceData();
   } catch (error) {
     console.error("Failed to delete doctor", error);
   } finally {
@@ -222,9 +223,11 @@ const handleClose = () => {
   dialogData.value.isVisible = false;
 };
 
-const handleRefresh = () => {
+const handleRefresh = async () => {
   dialogData.value.isVisible = false; // tutup dialog
-  fetchJadwalDokter(); // muat ulang data tabel utama
+  // Penting: refresh tabel + refresh referensi untuk update excludedDoctorUuidsByPoli
+  await fetchJadwalDokter();
+  await fetchAllReferenceData();
 };
 
 const handlePage = (event: any) => {
@@ -272,7 +275,7 @@ onMounted(() => {
   >
     <template #header>
       <konfigurasi-jadwal-header
-        @refresh="fetchJadwalDokter"
+        @refresh="handleRefresh"
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
         :excludedDoctorUuidsByPoli="excludedDoctorUuidsByPoli"

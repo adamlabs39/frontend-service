@@ -1,6 +1,171 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import { utilsStore } from "@/stores/utils";
+import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
+
+const props = defineProps<{
+  paginationProperties: {
+    start_date: number | undefined;
+    end_date: number | undefined;
+    page: number;
+    limit: number;
+    totalData: number;
+    q: string;
+    status_antrian: string[];
+  };
+}>();
+
+const emit = defineEmits<{
+  updateTotalData: [totalData: number];
+}>();
+
+const dataAntrianStore = useDataAntrianStore();
+const useUtilsStore = utilsStore();
+
+const dataAntrianAdmisiPayload = ref([]);
+
+const convertPaymentMethod = (paymentMethod: number | string): string => {
+  const method = Number(paymentMethod);
+
+  switch (method) {
+    case 1:
+      return "Tunai";
+    case 2:
+      return "Asuransi";
+    default:
+      return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
+  }
+};
+
+watch(
+  () => props.paginationProperties,
+  () => {
+    fetchGetDataAntrianAdmisi();
+  },
+  { deep: true }
+);
+
+const fetchGetDataAntrianAdmisi = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
+    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+
+    const statusQuery =
+      props.paginationProperties.status_antrian &&
+      props.paginationProperties.status_antrian.length > 0
+        ? props.paginationProperties.status_antrian.join(",")
+        : "";
+
+    const response = await dataAntrianStore.getAntrianRJ(
+      startEpoch,
+      endEpoch,
+      props.paginationProperties.page,
+      props.paginationProperties.limit,
+      props.paginationProperties.totalData,
+      props.paginationProperties.q,
+      statusQuery
+    );
+    console.log("Ini adalah data antrian rawat jalan", response);
+    if (response) {
+      dataAntrianAdmisiPayload.value = response.payload;
+      emit("updateTotalData", response.properties.totalData);
+    }
+  } catch (error) {
+    console.log("Error fetching data antrian rawat jalan:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const dateFormat = (timestamp: number | string) => {
+  // Konversi timestamp dari detik ke milliseconds
+  const timestampMs =
+    typeof timestamp === "string"
+      ? parseInt(timestamp) * 1000
+      : timestamp * 1000;
+
+  const newDate = new Date(timestampMs);
+  const day = newDate.getDate();
+  const month = newDate.getMonth() + 1;
+  const year = newDate.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+onMounted(() => {
+  fetchGetDataAntrianAdmisi();
+});
+
+// Fungsi untuk mendapatkan style metode bayar
+const getMetodeBayarStyle = (paymentMethod: number) => {
+  const convertedMethod = convertPaymentMethod(paymentMethod).toLowerCase();
+
+  if (convertedMethod === "tunai") {
+    return {
+      bgColor: "bg-adameds-50",
+      textColor: "text-adameds-300",
+      borderColor: "border-adameds-300",
+    };
+  } else if (convertedMethod === "asuransi") {
+    return {
+      bgColor: "bg-warning-50",
+      textColor: "text-warning-300",
+      borderColor: "border-warning-300",
+    };
+  } else {
+    return {
+      bgColor: "bg-gray-50",
+      textColor: "text-gray-500",
+      borderColor: "border-gray-300",
+    };
+  }
+};
+
+// Mapping style untuk status
+const statusStyles = {
+  antri: {
+    bgColor: "bg-grey-50",
+    textColor: "text-grey-300",
+    borderColor: "border-grey-300",
+    label: "ANTRI",
+  },
+  proses: {
+    bgColor: "bg-warning-50",
+    textColor: "text-warning-300",
+    borderColor: "border-warning-300",
+    label: "PROSES",
+  },
+  selesai: {
+    bgColor: "bg-adameds-50",
+    textColor: "text-adameds-300",
+    borderColor: "border-adameds-300",
+    label: "SELESAI",
+  },
+  default: {
+    bgColor: "bg-gray-50",
+    textColor: "text-gray-500",
+    borderColor: "border-gray-300",
+    label: "UNKNOWN",
+  },
+} as const;
+
+const convertStatusRj = (statusRj: number): string => {
+  switch (statusRj) {
+    case 1:
+      return "antri";
+    case 2:
+      return "antri";
+    case 3:
+      return "antri";
+    case 4:
+      return "proses";
+    case 5:
+      return "selesai";
+    default:
+      return "unknown";
+  }
+};
 
 const data = ref([
   {
@@ -44,64 +209,11 @@ const data = ref([
   },
 ]);
 const expandedRows = ref();
-onMounted(() => {
-  data.value;
-});
 
-// Fungsi untuk mendapatkan style metode bayar
-const getMetodeBayarStyle = (metodeBayar: string) => {
-  const method = metodeBayar.toLowerCase();
-
-  if (method === "tunai") {
-    return {
-      bgColor: "bg-adameds-50",
-      textColor: "text-adameds-300",
-      borderColor: "border-adameds-300",
-    };
-  } else if (method === "bpjs") {
-    return {
-      bgColor: "bg-warning-50",
-      textColor: "text-warning-300",
-      borderColor: "border-warning-300",
-    };
-  } else {
-    return {
-      bgColor: "bg-gray-50",
-      textColor: "text-gray-500",
-      borderColor: "border-gray-300",
-    };
+const getStatusStyle = (status: string | undefined) => {
+  if (!status) {
+    return statusStyles.default;
   }
-};
-
-// Mapping style untuk status
-const statusStyles = {
-  antri: {
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-500",
-    borderColor: "border-gray-300",
-    label: "ANTRI",
-  },
-  proses: {
-    bgColor: "bg-warning-50",
-    textColor: "text-warning-300",
-    borderColor: "border-warning-300",
-    label: "PROSES",
-  },
-  selesai: {
-    bgColor: "bg-adameds-50",
-    textColor: "text-adameds-300",
-    borderColor: "border-adameds-300",
-    label: "SELESAI",
-  },
-  default: {
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-500",
-    borderColor: "border-gray-300",
-    label: "UNKNOWN",
-  },
-} as const;
-
-const getStatusStyle = (status: string) => {
   const normalizedStatus = status.toLowerCase();
   return (
     statusStyles[normalizedStatus as keyof typeof statusStyles] ||
@@ -113,7 +225,7 @@ const getStatusStyle = (status: string) => {
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
-    :value="data"
+    :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
     class="text-xs"
@@ -121,21 +233,27 @@ const getStatusStyle = (status: string) => {
     dataKey="id"
     scrollable
     scrollHeight="flex"
+    v-if="dataAntrianAdmisiPayload.length > 0"
   >
-    <Column header-class="justify-center text-black bg-adameds-50">
+    <Column header-class="text-black bg-adameds-50">
       <template #header>
         <div class="w-full font-semibold text-center">No.</div>
       </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
-          {{ slotProps.index + 1 }}
+          {{
+            (props.paginationProperties.page - 1) *
+              props.paginationProperties.limit +
+            slotProps.index +
+            1
+          }}
         </div>
       </template>
     </Column>
     <Column
       header="Data kunjungan"
       header-class="text-black bg-adameds-50"
-      class="p-0 py-2 w-auto"
+      class="p-0 w-auto"
     >
       <template #body="slotProps">
         <div class="space-y-2 text-SM">
@@ -147,7 +265,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_daftar }}
+              {{ dateFormat(slotProps.data.tanggalDaftar) }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -158,7 +276,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_jadwal }}
+              {{ slotProps.data.schedule.endTime }}
             </div>
           </div>
         </div>
@@ -180,7 +298,7 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_book }}
+                {{ slotProps.data.kodeBooking ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -193,7 +311,7 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_antrian }}
+                {{ slotProps.data.noAntrianAdmisi ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -202,14 +320,14 @@ const getStatusStyle = (status: string) => {
     </Column>
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0"
       ><template #body="slotProps">
-        <div class="items-center py-1.5 space-y-0.5">
+        <div class="items-center space-y-0.5">
           <div class="flex items-center font-semibold">
-            {{ slotProps.data.nama_pasien }}
+            {{ slotProps.data.patient?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
             <CustomChip
               :showCheckedIcon="false"
-              :label="slotProps.data.no_rm"
+              :label="slotProps.data.noRm"
               bgColor="bg-adameds-300"
               textColor="text-white"
               border-color="border-adameds-300"
@@ -228,19 +346,21 @@ const getStatusStyle = (status: string) => {
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.metode_bayar).bgColor"
+            :bgColor="getMetodeBayarStyle(slotProps.data.paymentMethod).bgColor"
             :textColor="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).textColor
+              getMetodeBayarStyle(slotProps.data.paymentMethod).textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).borderColor
+              getMetodeBayarStyle(slotProps.data.paymentMethod).borderColor
             "
             customClass="h-5"
-            :label="slotProps.data.metode_bayar.toUpperCase()"
+            :label="
+              convertPaymentMethod(slotProps.data.paymentMethod).toUpperCase()
+            "
           />
         </div> </template
     ></Column>
-    <Column headerClass="bg-adameds-50">
+    <Column field="Status" headerClass="bg-adameds-50">
       <template #header>
         <div class="w-full font-semibold text-center">Status</div>
       </template>
@@ -248,7 +368,7 @@ const getStatusStyle = (status: string) => {
         <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
-            v-bind="getStatusStyle(slotProps.data.status)"
+            v-bind="getStatusStyle(convertStatusRj(slotProps.data.statusRj))"
             customClass="h-5"
           />
         </div>

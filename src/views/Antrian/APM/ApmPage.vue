@@ -10,8 +10,30 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const handleAktif = () => {
-  router.push("/antrian/apm/aktif");
+const goToApmAktif = () => router.push({ name: "antrian-apm-aktif" });
+const goToFarmasi = () =>
+  router.push({ name: "antrian-apm-aktif-pasien-jkn-farmasi" });
+
+// Util: tentukan apakah APM adalah jenis "Antrian Obat"
+const isFarmasi = (apm: { ucapan: string[] | string }) => {
+  const menus = Array.isArray(apm.ucapan)
+    ? apm.ucapan
+    : apm.ucapan
+    ? [apm.ucapan]
+    : [];
+  return menus.includes("Antrian Obat");
+};
+
+const handleNavigate = (apm: { ucapan: string[] | string }) => {
+  if (isFarmasi(apm)) {
+    goToFarmasi();
+  } else {
+    goToApmAktif();
+  }
+};
+
+const handleAktif = (apm: { ucapan: string[] | string }) => {
+  handleNavigate(apm);
 };
 import NoData from "@/components/section/NoData.vue";
 
@@ -52,6 +74,13 @@ const itemsAPM = ref([
     name: "APM 1",
     jumlahMenu: 4,
     ucapan: ["Pasien JKN", "Pasien Non-JKN", "Checkin", "Print"],
+    status: "AKTIF",
+  },
+  {
+    noAPM: "2",
+    name: "APM 2",
+    jumlahMenu: 4,
+    ucapan: ["Antrian Obat"],
     status: "AKTIF",
   },
 ]);
@@ -174,7 +203,10 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex justify-center items-center">
-              <div class="p-1.5 bg-adameds-300 rounded-lg" @click="handleAktif">
+              <div
+                class="p-1.5 bg-adameds-300 rounded-lg"
+                @click="handleAktif(slotProps.data)"
+              >
                 <PhScreencast :size="26" color="#ffffff" weight="fill" />
               </div>
             </div>

@@ -4,6 +4,8 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CardPasien from "@/components/Antrian/CardPasien.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import { useRouter } from "vue-router";
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
 
@@ -46,16 +48,6 @@ function closeDialog() {
   emit("close");
 }
 
-const currentIndex = ref(0);
-
-function nextSlide() {
-  currentIndex.value = (currentIndex.value + 1) % 2; // Change 2 to the number of images in the carousel
-}
-
-function prevSlide() {
-  currentIndex.value = (currentIndex.value - 1 + 2) % 2; // Change 2 to the number of images in the carousel
-}
-
 const cardPasienJKN = ref({
   keterangan: "Pasien JKN",
 });
@@ -70,74 +62,30 @@ const cardAktivitasPrint = ref({
 });
 
 const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
-
-const getImage = (image: string) => {
-  const imgUrl = new URL(
-    `@/assets/images/APM/img-carousel-1.svg`,
-    import.meta.url
-  ).href;
-  return imgUrl;
-};
 </script>
 
-<template #body>
-  <div class="bg-adameds-75">
+<template>
+  <div class="py-5 w-full min-h-screen">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
       @click="handleBackAntrian"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
     <!-- Carousel Section -->
     <Carousel
       :value="device"
       circular
-      :autoplayInterval="3000"
       :showNavigators="false"
+      :autoplayInterval="3000"
+      class="relative z-10"
     >
       <template #item="slotProps">
-        <div
-          class="relative items-center justify-center mt-16 mb-4 mx-36 w-150"
-        >
-          <div class="overflow-hidden rounded-xl">
+        <div class="flex relative justify-center items-center mx-36 mt-16 mb-4">
+          <div class="overflow-hidden w-full rounded-xl">
             <div class="flex transition-transform duration-300">
               <div
-                class="bg-adameds-300 w-3/5 h-[280px] flex items-center justify-center"
+                class="bg-adameds-300 w-full h-[330px] flex items-center justify-center"
               >
                 <div class="text-center text-white">
                   <div class="mb-2 text-5xl">#Improving</div>
@@ -145,31 +93,53 @@ const getImage = (image: string) => {
                 </div>
               </div>
 
-              <img
-                loading="lazy"
-                src="@/assets/images/APM/img-carousel-1.svg"
-                class="w-2/5 h-[280px] object-cover transition-transform duration-300 hover:scale-105"
-              />
+              <div class="relative w-2/5">
+                <img
+                  loading="lazy"
+                  src="@/assets/images/APM/img-carousel-1.svg"
+                  class="h-[330px] object-cover w-full"
+                />
+                <div
+                  class="absolute w-full inset-y-0 left-0 h-[330px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
       </template>
     </Carousel>
 
-    <div class="flex h-[220px] justify-center">
+    <div class="flex relative z-10 justify-center">
       <div class="w-[350px] my-10">
-        <CardPasien :cardPasien="cardPasienJKN" @click="handlePasienJKN" class="transition-transform duration-300 hover:scale-95"/>
+        <CardPasien
+          :cardPasien="cardPasienJKN"
+          @click="handlePasienJKN"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
       <div class="w-[350px] mx-8 my-10">
-        <CardPasien :cardPasien="cardPasienNonJKN" @click="handlePasienNonJKN" class="transition-transform duration-300 hover:scale-95"/>
+        <CardPasien
+          :cardPasien="cardPasienNonJKN"
+          @click="handlePasienNonJKN"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
-      <div class="w-1 my-auto rounded-md h-28 bg-adameds-300"></div>
+      <div class="my-auto w-1 h-28 rounded-md bg-adameds-300"></div>
       <div class="w-[180px] mx-8 my-10">
-        <CardAktivitas :cardAktivitas="cardAktivitasCheckIn" @click="handleCheckin" class="transition-transform duration-300 hover:scale-95"/>
+        <CardAktivitas
+          :cardAktivitas="cardAktivitasCheckIn"
+          @click="handleCheckin"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
       <div class="w-[180px] my-10">
-        <CardAktivitas :cardAktivitas="cardAktivitasPrint" @click="handlePrint" class="transition-transform duration-300 hover:scale-95"/>
+        <CardAktivitas
+          :cardAktivitas="cardAktivitasPrint"
+          @click="handlePrint"
+          class="transition-transform duration-300 hover:scale-95"
+        />
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>
