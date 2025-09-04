@@ -1,68 +1,8 @@
-<!-- <script setup>
-import Card from "primevue/card";
-import CustomChip from "./CustomChip.vue";
-import {
-  PhCheckCircle,
-  PhMegaphone,
-  PhSkipForward,
-  PhAddressBook
-} from '@phosphor-icons/vue';
-
-const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false,
-  },
-  // Kiri
-  nomorAntrian: {
-    type: Number,
-    default: 1,
-  },
-  // Tengah
-  namaPasien: {
-    type: String,
-    default: "Nama Pasien",
-  },
-  nomorIdentitas: {
-    type: String,
-    default: "123",
-  },
-  // kodeBooking: {
-  //   type: String,
-  //   default: "BOOK.123",
-  // },
-  // Kanan
-  showIconSelesai: {
-    type: Boolean,
-    default: false,
-  },
-  showIconPanggil: {
-    type: Boolean,
-    default: true,
-  },
-  showIconLewati: {
-    type: Boolean,
-    default: true,
-  },
-  showIconProcess: {
-    type: Boolean,
-    default: true,
-  },
-  status: {
-    type: String,
-    default: 'aktif',
-  },
-});
-const emit = defineEmits(['update:visible']);
-</script> -->
-
 <script setup>
 import Card from "primevue/card";
 import CustomChip from "./CustomChip.vue";
 import {
   PhCheckCircle,
-  PhMegaphone,
-  PhSkipForward,
   PhAddressBook
 } from '@phosphor-icons/vue';
 import { computed } from 'vue';
