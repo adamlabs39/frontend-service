@@ -72,6 +72,7 @@ const grandTotalPenjamin = ref(0);
 const totalKunjunganPerDay = ref<{ [key: string]: number }>({});
 const grandTotalKunjungan = ref(0);
 const dateRangeColumns = ref<string[]>([]);
+const admisiReportStore = useAdmisiReportStore();
 
 const formatDateHeader = (fullDate: string) => {
   if (!fullDate) return '';
@@ -424,39 +425,34 @@ const updatePageType = async (path: string) => {
   reportType.value = pageType.value;
   
   if (pageType.value === "rekap-kunjungan") {
-    storeUtils.setLoading(true);
-    try {
-      const token = localStorage.getItem("access_token");
-      const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/rekap/jenis-kunjungan`;
+  storeUtils.setLoading(true);
+  try {
+    const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
+    const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-      const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
-      const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
-      
-      const response = await axios.get(apiUrl, {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-          practitioner_uuid: filterParams.dpjp ?? "", 
-          penjamin: filterParams.penjamin ?? "",
-          jenis_kunjungan: filterParams.jenis_kunjungan ?? "",
-        },
-        headers: {
-          Authorization: token,
-        },
-      });
-      if (response && response.data.payload && response.data.payload.kunjungan) {
-        processRekapData(response.data.payload.kunjungan);
-      } else {
-        rekapData.value = [];
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data rekap:", error);
+    const params = {
+      startDate: startDate.toString(),
+      endDate: endDate.toString(),
+      practitionerUuid: filterParams.dpjp ?? "",
+      penjamin: filterParams.penjamin ?? "",
+      jenisKunjungan: filterParams.jenis_kunjungan ?? "",
+    };
+
+    const response = await admisiReportStore.getRekapJenisKunjunganReport(params);
+
+    if (response && response.data.payload && response.data.payload.kunjungan) {
+      processRekapData(response.data.payload.kunjungan);
+    } else {
       rekapData.value = [];
-    } finally {
-      storeUtils.setLoading(false);
     }
-    return;
+  } catch (error) {
+    console.error("Gagal mengambil data rekap:", error);
+    rekapData.value = [];
+  } finally {
+    storeUtils.setLoading(false);
   }
+  return;
+}
   
   let filter = {} as Filter;
   filter = setFilter();
@@ -545,7 +541,7 @@ const setFilter = () => {
 
   filter.page = properties.value.page;
   filter.limit = properties.value.pageSize;
-  filter.q = search.value;
+  filter.q = filterParams.q || "";
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
   )}`;
@@ -605,19 +601,6 @@ const setFilter = () => {
 };
 
 const fetchReportData = async (filter: Filter = {}) => {
-  filter = {
-    ...filter,
-    penjamin: filterParams.penjamin || "",
-    jenis_kunjungan:
-      filterParams.jenis_kunjungan && filterParams.jenis_kunjungan !== "Semua"
-        ? filterParams.jenis_kunjungan
-        : "",
-    start_date: startDateFilter.value || "",
-    end_date: endDateFilter.value || "",
-    ruangan: filter.ruangan || "",
-    practitioner_uuid: filter.practitionerUuid || "",
-  };
-
   storeUtils.setLoading(true);
   let response;
   try {
@@ -707,6 +690,7 @@ watch(filterParams, () => {
 }, {
   deep: true 
 });
+
 
 const handleExport = () => {
   const filterSnakeCase: any = {};
@@ -815,7 +799,7 @@ defineExpose({
             class="grid grid-cols-2 mt-[10px] gap-5"
           >
             <CustomTextfield
-              v-model="search"
+              v-model="filterParams.q"
               label="Cari Pasien"
               placeholder="Cari Nama / Alamat / No. RM"
               class="grow"
@@ -864,10 +848,7 @@ defineExpose({
                 class="mr-5 grow"
                 optionLabel="name"
                 optionValue="name"
-                :options="[
-                  { name: 'Semua' },
-                  ...listRuangan,
-                ]"
+                :options="listRuangan"
               />
               <CustomSelect
                 v-if="pageType !== 'bayi-baru-lahir' && pageType !== 'batal-kunjungan' && pageType !== 'keperawatan-inap-pasien' && pageType !== 'status-kamar' && pageType !== 'rekap-kunjungan'"
@@ -1647,7 +1628,7 @@ defineExpose({
                       header-class="text-black bg-adameds-50"
                     ></Column>
                     <Column
-                      field="nameMom"
+                      field="birthDetail.patient.noIdentity"
                       header="Identitas Ibu"
                       header-class="text-black bg-adameds-50"
                     ></Column>

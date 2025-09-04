@@ -316,6 +316,21 @@ export const useAdmisiReportStore = defineStore({
         payload
       );
     },
+    async getRekapJenisKunjunganReport(
+      {
+        startDate = "",
+        endDate = "",
+        practitionerUuid = "",
+        penjamin = "",
+        jenisKunjungan = "",
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/rekap/jenis-kunjungan?start_date=${startDate}&end_date=${endDate}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}`,
+        payload
+      );
+    },
     async DownloadLaporanAdmisiReport() {
     const endpoint = `/download`;
     return apiAdmisiDownload(endpoint);

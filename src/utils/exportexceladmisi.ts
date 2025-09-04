@@ -186,10 +186,10 @@ export const downloadExportExcelKunjungan = async (
         try {
           const patient = row.patient ?? {};
           const insurance = patient.insurance?.[0] ?? {};
-          const birthDetail = patient.birth_detail ?? {};
+          const birthDetail = patient.birthDetail ?? {};
           const address = patient.address ?? {};
 
-          const umur = `${birthDetail.age_year ?? 0} Tahun ${birthDetail.age_month ?? 0} Bulan ${birthDetail.age_day ?? 0} Hari`;
+          const umur = `${birthDetail.ageYear ?? 0} Tahun ${birthDetail.ageMonth ?? 0} Bulan ${birthDetail.ageDay ?? 0} Hari`;
 
           data.push({
             No: i + 1,
@@ -423,7 +423,7 @@ export const downloadExportExcelKeperawatanInapPasien = async (
       No: i + 1,
       namaPasien: row.patient.name ?? "-",
       noRm: row.noRm ?? "-",
-      ruangan: row.monitoringRoom?.bedLokasi?.name ?? "-",
+      ruangan: row.monitoringRoom?.room?.name ?? "-",
       kelas: row.monitoringRoom?.bedLokasi?.className ?? "-",
       noBed: row.monitoringRoom?.noBed ?? "-",
       tglMasuk: row.tanggalDirawat ? epochToDate(row.tanggalDirawat, "date") : "-",
@@ -544,7 +544,7 @@ export const downloadExportExcelBayiBaruLahir = async (
         birthPlace: birthDetail.birthPlace ?? "-",
         birthDate: tglLahirStr,
         birthTimeBaby: row.birthTimeBaby ?? "-",
-        identitasIbu: row.identifierMom ?? "-",
+        identitasIbu: birthDetail.patient.noIdentity ?? "-",
         namaIbu: row.nameMom ?? "-",
         jenisKunjungan: birthDetail?.patient?.logPelayanan?.jenisKunjungan ?? "-",
       });
@@ -620,9 +620,12 @@ export const downloadExportExcelRekapKunjungan = async (
     const title = ["LAPORAN REKAP KUNJUNGAN"];
     const tanggalExport = [getPeriodeTeksFromFilter(filter)];
 
-    const dynamicHeaders = dateRangeColumns.map(dateStr => 
-        new Date(dateStr).toLocaleDateString("id-ID", { day: "2-digit" })
-    );
+    const dynamicHeaders = dateRangeColumns.map(dateStr => {
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
+    });
     const tableHeader = ["Data", "Nama", ...dynamicHeaders, "Total"];
     const totalColumns = tableHeader.length;
 
