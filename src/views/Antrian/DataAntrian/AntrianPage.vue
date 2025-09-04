@@ -12,32 +12,35 @@ const value = ref("0");
 
 const dataAntrianRjProperties = ref({
   page: 1,
-  limit: 10,
-  totalData: 0,
-  q: "",
+  page_size: 10,
+  total: 0,
+  name: "",
   start_date: undefined as number | undefined,
   end_date: undefined as number | undefined,
-  status_antrian: [] as string[],
+  status_panggilan: [] as number[],
+  pelayanan: "poli",
 });
 
 const dataAntrianAdmisiProperties = ref({
   page: 1,
-  limit: 10,
-  totalData: 0,
-  q: "",
+  page_size: 10,
+  total: 0,
+  name: "",
   start_date: undefined as number | undefined,
   end_date: undefined as number | undefined,
-  status_antrian: [] as string[],
+  status_panggilan: [] as number[],
+  pelayanan: "admisi",
 });
 
 const dataAntrianFarmasiProperties = ref({
   page: 1,
-  limit: 10,
-  totalData: 0,
-  q: "",
+  page_size: 10,
+  total: 0,
+  name: "",
   start_date: undefined as number | undefined,
   end_date: undefined as number | undefined,
-  status_antrian: [] as string[],
+  status_panggilan: [] as number[],
+  pelayanan: "farmasi",
 });
 
 const currentPaginationProperties = computed(() => {
@@ -66,6 +69,19 @@ const currentStartDateEpoch = computed(() => {
   }
 });
 
+const currentPelayanan = computed(() => {
+  switch (value.value) {
+    case "0":
+      return "admisi";
+    case "1":
+      return "poli";
+    case "2":
+      return "farmasi";
+    default:
+      return "admisi";
+  }
+});
+
 const currentEndDateEpoch = computed(() => {
   switch (value.value) {
     case "0":
@@ -88,17 +104,17 @@ const handlePage = (event: any) => {
     case "0":
       // Admisi
       dataAntrianAdmisiProperties.value.page = newPage;
-      dataAntrianAdmisiProperties.value.limit = newLimit;
+      dataAntrianAdmisiProperties.value.page_size = newLimit;
       break;
     case "1":
       // Rawat Jalan
       dataAntrianRjProperties.value.page = newPage;
-      dataAntrianRjProperties.value.limit = newLimit;
+      dataAntrianRjProperties.value.page_size = newLimit;
       break;
     case "2":
       // Farmasi
       dataAntrianFarmasiProperties.value.page = newPage;
-      dataAntrianFarmasiProperties.value.limit = newLimit;
+      dataAntrianFarmasiProperties.value.page_size = newLimit;
       break;
   }
 };
@@ -115,33 +131,36 @@ const handlePage = (event: any) => {
 
 // Handler terpisah untuk setiap tab
 const handleUpdateTotalDataAdmisi = (totalData: number) => {
-  dataAntrianAdmisiProperties.value.totalData = totalData;
+  dataAntrianAdmisiProperties.value.total = totalData;
 };
 
 const handleUpdateTotalDataRawatJalan = (totalData: number) => {
-  dataAntrianRjProperties.value.totalData = totalData;
+  dataAntrianRjProperties.value.total = totalData;
 };
 
 const handleUpdateTotalDataFarmasi = (totalData: number) => {
-  dataAntrianFarmasiProperties.value.totalData = totalData;
+  dataAntrianFarmasiProperties.value.total = totalData;
 };
 
 // Tangkap event search dari header: hanya berlaku saat tab Rawat Jalan aktif
 const handleHeaderSearch = (q: string, statuses?: string[]) => {
   switch (value.value) {
     case "0":
-      dataAntrianAdmisiProperties.value.q = q;
-      dataAntrianAdmisiProperties.value.status_antrian = statuses ?? [];
+      dataAntrianAdmisiProperties.value.name = q;
+      dataAntrianAdmisiProperties.value.status_panggilan =
+        statuses?.map((status) => Number(status)) ?? [];
       dataAntrianAdmisiProperties.value.page = 1;
       break;
     case "1":
-      dataAntrianRjProperties.value.q = q;
-      dataAntrianRjProperties.value.status_antrian = statuses ?? [];
+      dataAntrianRjProperties.value.name = q;
+      dataAntrianRjProperties.value.status_panggilan =
+        statuses?.map((status) => Number(status)) ?? [];
       dataAntrianRjProperties.value.page = 1;
       break;
     case "2":
-      dataAntrianFarmasiProperties.value.q = q;
-      dataAntrianFarmasiProperties.value.status_antrian = statuses ?? [];
+      dataAntrianFarmasiProperties.value.name = q;
+      dataAntrianFarmasiProperties.value.status_panggilan =
+        statuses?.map((status) => Number(status)) ?? [];
       dataAntrianFarmasiProperties.value.page = 1;
       break;
   }
@@ -191,8 +210,8 @@ watch(
       // Selain Rawat Jalan: dikosongkan agar tidak ditampilkan di header
       dataAntrianRjProperties.value.start_date = undefined;
       dataAntrianRjProperties.value.end_date = undefined;
-      dataAntrianRjProperties.value.q = "";
-      dataAntrianRjProperties.value.status_antrian = [];
+      dataAntrianRjProperties.value.name = "";
+      dataAntrianRjProperties.value.status_panggilan = [];
     }
   },
   { immediate: true }
@@ -280,8 +299,8 @@ watch(
         <CustomPaginator
           class="ml-auto"
           :key="`paginator-${value}`"
-          :rows="currentPaginationProperties.limit"
-          :totalRecords="currentPaginationProperties.totalData"
+          :rows="currentPaginationProperties.page_size"
+          :totalRecords="currentPaginationProperties.total"
           :rowsPerPageOptions="[10, 20, 30]"
           @page="handlePage"
         />
