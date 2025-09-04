@@ -346,19 +346,19 @@ onMounted(() => {
                         <hr class="mt-2 mb-2 border border-slate-300" />
                         <div class="flex justify-between mt-6">
                             <div class="text-sm">Biaya Administrasi</div>
-                            <div class="text-sm">Rp, {{ kasirData.adminFee }}</div>
+                            <div class="text-sm">Rp {{ kasirData.adminFee?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Tindakan</div>
-                            <div class="text-sm">Rp, {{ kasirData.totalTindakan }}</div>
+                            <div class="text-sm">Rp {{ kasirData.totalTindakan?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Obat/Alkes</div>
-                            <div class="text-sm">Rp, {{ kasirData.totalObatAlkes }}</div>
+                            <div class="text-sm">Rp {{ kasirData.totalObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Kamar</div>
-                            <div class="text-sm">Rp, {{ kasirData.totalRuangan }}</div>
+                            <div class="text-sm">Rp {{ kasirData.totalRuangan?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-6">
                             <div class="text-sm">Diskon</div>
@@ -366,32 +366,32 @@ onMounted(() => {
                         </div>
                         <div class="flex justify-between mt-6">
                             <div class="text-sm">Voucher</div>
-                            <div class="text-sm">Rp, {{ kasirData.voucherValue || "0" }} </div>
+                            <div class="text-sm">Rp {{ kasirData.voucherValue || "0" }} </div>
                         </div>
                         <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
                         <div class="flex justify-between mt-6">
                             <div class="text-sm font-bold">Total</div>
-                            <div class="text-sm font-bold">Rp, {{ kasirData.subTotal }} </div>
+                            <div class="text-sm font-bold">Rp {{ kasirData.subTotal?.toLocaleString('id-ID') || 0 }} </div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">PPN</div>
-                            <div class="text-sm">Rp, {{ kasirData.ppn }}</div>
+                            <div class="text-sm">Rp {{ kasirData.ppn?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <hr class="mt-6 mb-2 border-slate-300 border-1" />
                         <div class="flex justify-between mt-6">
                             <div class="text-sm font-bold">Grand Total</div>
-                            <div class="text-sm font-bold">Rp, {{ kasirData.grandTotal }}</div>
+                            <div class="text-sm font-bold">Rp {{ kasirData.grandTotal?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <template v-if="paymentHistoryList.length > 0">
                             <div v-for="history in paymentHistoryList" :key="history.createdAt">
                                 <div class="flex justify-between mt-4">
                                     <div class="text-sm font-bold">Jumlah Terbayar - {{
                                         formatDateCustom(history.createdAt) }}</div>
-                                    <div class="text-sm font-bold">Rp, {{ history.amount }}</div>
+                                    <div class="text-sm font-bold">Rp {{ history.amount?.toLocaleString('id-ID') || 0 }}</div>
                                 </div>
                                 <div class="flex justify-between mt-2 ">
                                     <div class="text-sm font-bold text-danger-300">Hutang</div>
-                                    <div class="text-sm font-bold text-danger-300">-Rp, {{ history.debtAfter }}</div>
+                                    <div class="text-sm font-bold text-danger-300">-Rp {{ history.debtAfter?. toLocaleString ('id-ID') || 0 }}</div>
                                 </div>
                             </div>
                         </template>
@@ -539,20 +539,20 @@ onMounted(() => {
                                     <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                 </DataTable>
                                 <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
                                     <p class="text-base font-bold ">Total</p>
                                     <p class="text-base font-bold">
-                                        Total Rp {{ itemTagihan.item.ruangan.total }}
+                                        Total Rp {{ itemTagihan.item.ruangan.total?. toLocaleString ('id-ID') || 0 }}
                                     </p>
                                 </div>
                             </div>
@@ -581,20 +581,20 @@ onMounted(() => {
                                     <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 20%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                 </DataTable>
                                 <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                                     <p class="text-base font-bold ">Total</p>
                                     <p class="text-base font-bold">
-                                        RP {{ itemTagihan.item.penunjang.total }}
+                                        RP {{ itemTagihan.item.penunjang.total?.toLocaleString('id-ID') || 0 }}
                                     </p>
                                 </div>
                             </div>
@@ -623,20 +623,20 @@ onMounted(() => {
                                     <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                 </DataTable>
                                 <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                                     <p class="text-base font-bold ">Total</p>
                                     <p class="text-base font-bold">
-                                        RP {{ itemTagihan.item.tindakan.total }}
+                                        RP {{ itemTagihan.item.tindakan.total?.toLocaleString('id-ID') || 0 }}
                                     </p>
                                 </div>
                             </div>
@@ -669,21 +669,20 @@ onMounted(() => {
                                     <Column header="Tarif" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
                                         style="width: 10%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 10%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.serviceFee ?? 0 }}</div>
+                                            <div class="text-SM">{{ slotProps.data.serviceFee?.toLocaleString ('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">
-                                                {{ slotProps.data.qty * slotProps.data.price +
-                                                    (slotProps.data.serviceFee ?? 0) }}
+                                                {{ (slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee ?? 0))?.toLocaleString('id-ID') || 0 }}
                                             </div>
                                         </template>
                                     </Column>
@@ -691,7 +690,7 @@ onMounted(() => {
                                 <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                                     <p class="text-base font-bold ">Total</p>
                                     <p class="text-base font-bold">
-                                        RP {{ itemTagihan.item.obat.total }}
+                                        RP {{ itemTagihan.item.obat.total?.toLocaleString('id-ID') || 0 }}
                                     </p>
                                 </div>
                             </div>
@@ -719,20 +718,20 @@ onMounted(() => {
                                     <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
                                         style="width: 15%">
                                         <template #body="slotProps">
-                                            <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                                            <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                 </DataTable>
                                 <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                                     <p class="text-base font-bold ">Total</p>
                                     <p class="text-base font-bold">
-                                        RP {{ itemTagihan.item.alkes.total }}
+                                        RP {{ itemTagihan.item.alkes.total?.toLocaleString('id-ID') || 0 }}
                                     </p>
                                 </div>
                             </div>
@@ -743,7 +742,7 @@ onMounted(() => {
                                         <div class="flex justify-between">
                                             <p class="text-base font-bold">Total Keseluruhan</p>
                                             <p class="text-base font-bold">
-                                                RP. {{ itemTagihan.total }},00
+                                                RP {{ itemTagihan.total?.toLocaleString('id-ID') || 0 }}
                                             </p>
                                         </div>
                                     </template>

@@ -98,37 +98,37 @@ onMounted(() => {
         <div v-if="paymentData.isPaid === true">
           <div class="flex justify-between">
             <p class="text-base font-bold">Grand Total</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.totalBill }}</p>
+            <p class="text-base font-bold"> Rp {{ paymentData.totalBill?.toLocaleString ('id-ID') || 0 }}</p>
           </div>
           <div class="flex justify-between mt-4">
             <p class="text-base font-bold">Diskon</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.discount || 0 }}</p>
+            <p class="text-base font-bold"> Rp {{ paymentData.discount?.toLocaleString ('id-ID') || 0 }}</p>
           </div>
           <div class="flex justify-between mt-4">
             <p class="text-base font-bold">Jumlah Terbayar</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.totalPaid }}</p>
+            <p class="text-base font-bold"> Rp {{ paymentData.totalPaid?.toLocaleString ('id-ID') || 0 }}</p>
           </div>
         </div>
 
         <div v-else>
           <div class="flex justify-between">
             <p class="text-base font-bold">Grand Total</p>
-            <p class="text-base font-bold">Rp. {{ paymentData.totalBill}}</p>
+            <p class="text-base font-bold">Rp {{ paymentData.totalBill?.toLocaleString ('id-ID') || 0}}</p>
           </div>
           <div class="flex justify-between mt-4">
             <p class="text-base font-bold">Diskon</p>
-            <p class="text-base font-bold">Rp. {{ paymentData.discount || 0}}</p>
+            <p class="text-base font-bold">Rp {{ paymentData.discount?.toLocaleString ('id-ID') || 0}}</p>
           </div>
           
           <div v-for="history in paymentData.paymentHistory" :key="history.createdAt">
             <div class="flex justify-between mt-4">
               <p class="text-base font-bold">Jumlah Terbayar</p>
-              <p class="text-base font-bold">Rp. {{ history.amount}}</p>
+              <p class="text-base font-bold">Rp {{ history.amount}}</p>
             </div>
             <hr class="my-7 border-2 border-grey-200" />
             <div class="flex justify-between">
               <p class="text-base font-bold text-danger-300">Hutang</p>
-              <p class="text-base font-bold text-danger-300">- Rp. {{ history.debtAfter }}</p>
+              <p class="text-base font-bold text-danger-300">- Rp {{ history.debtAfter?.toLocaleString ('id-ID') || 0 }}</p>
             </div>
           </div>
         </div>

@@ -559,7 +559,7 @@ onMounted(() => {
             currentPageReportTemplate="{currentPage}"
           >
           <template #start>
-          <span class="font-semibold mr-4">Total Data: {{ closedBillProperties.total }}</span>
+          <span class="font-md mr-4">Total Data: {{ closedBillProperties.total }}</span>
         </template>
           </Paginator>
         </div>

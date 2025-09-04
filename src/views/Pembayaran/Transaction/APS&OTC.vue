@@ -464,7 +464,7 @@ onMounted(() => {
                         template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
                         currentPageReportTemplate="{currentPage}" >
                         <template #start>
-                            <span class="font-semibold mr-4">Total Data: {{ apsotcProperties.total }}</span>
+                            <span class="font-md mr-4">Total Data: {{ apsotcProperties.total }}</span>
                         </template>
                     </Paginator>
                 </div>

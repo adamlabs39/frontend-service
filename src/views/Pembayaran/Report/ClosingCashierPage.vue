@@ -306,7 +306,7 @@ onMounted(() => {
               <div class="text-SM">{{ jenisKasirMap[slotProps.data.type] }}</div>
             </template>
           </Column>
-          <Column header="Tgl. Buka Kasir" headerClass="bg-adameds-50">
+          <Column header="Tgl. Open Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
@@ -315,7 +315,7 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column header="Tgl. Tutup Kasir" headerClass="bg-adameds-50">
+          <Column header="Tgl. Closing Kasir" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
@@ -330,7 +330,7 @@ onMounted(() => {
               <div class="text-SM"> {{ slotProps.data.type === 'SHIFT' ? shiftTypeMap[slotProps.data.shiftType] : slotProps.data.shiftList }}</div>
             </template>
           </Column>
-          <Column header="Tgl. Closing Harian" headerClass="bg-adameds-50">
+          <Column header="Tgl. Close Harian" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
@@ -366,7 +366,7 @@ onMounted(() => {
             currentPageReportTemplate="{currentPage}"
           >
             <template #start>
-              <span class="font-semibold mr-4">Total Data: {{ closeCashierProperties.total }}</span>
+              <span class="font-md mr-4">Total Data: {{ closeCashierProperties.total }}</span>
             </template>
           </Paginator>
         </div>

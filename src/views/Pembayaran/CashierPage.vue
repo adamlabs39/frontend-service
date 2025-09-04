@@ -1325,19 +1325,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                Total Rp {{ itemTagihan.item.ruangan.total }}
+                Rp {{ itemTagihan.item.ruangan.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1363,19 +1363,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 20%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.penunjang.total }}
+                RP {{ itemTagihan.item.penunjang.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1401,19 +1401,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.tindakan.total }}
+                RP {{ itemTagihan.item.tindakan.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1444,18 +1444,18 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 10%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.serviceFee ?? 0 }}</div>
+                  <div class="text-SM">{{ slotProps.data.serviceFee?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
                   <div class="text-SM">
-                    {{ slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee ?? 0) }}
+                    {{ (slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee ?? 0))?.toLocaleString ('id-ID') || 0 }}
                   </div>
                 </template>
               </Column>
@@ -1463,7 +1463,7 @@ onUnmounted(() => {
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.obat.total }}
+                RP {{ itemTagihan.item.obat.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1489,19 +1489,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.alkes.total }}
+                RP {{ itemTagihan.item.alkes.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1512,7 +1512,7 @@ onUnmounted(() => {
                 <div class="flex justify-between">
                   <p class="text-base font-bold">Total Keseluruhan</p>
                   <p class="text-base font-bold">
-                    RP. {{ itemTagihan.total }},00
+                    RP {{ itemTagihan.total?.toLocaleString ('id-ID') || 0 }}
                   </p>
                 </div>
               </template>
