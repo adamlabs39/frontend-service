@@ -186,36 +186,82 @@ watch(selectedJadwalPoli, async (poliUuid) => {
 });
 
 
+// const setFormData = () => {
+//   if (Object.keys(props.doctorVisitData).length) {
+//     let tempDoctorVisitData = props.doctorVisitData;
+//     setPoliDpjpJadwal(tempDoctorVisitData.jadwalDokterUuid);
+//     if (tempDoctorVisitData.paymentMethod == 2) {
+//       const tempInsurance = listPenjamin.value.find(
+//         (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
+//       );
+//       if (tempInsurance) {
+//         tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
+//       } else tempDoctorVisitData.insurance.penjaminUuid = "";
+//     }
+
+//     setValues({
+//       ...tempDoctorVisitData,
+//     });
+//     onPaymentMethodSelect(
+//       tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
+//     );
+//   }
+// };
+
 const setFormData = () => {
-  if (Object.keys(props.doctorVisitData).length) {
-    let tempDoctorVisitData = props.doctorVisitData;
-    setPoliDpjpJadwal(tempDoctorVisitData.jadwalDokterUuid);
-    if (tempDoctorVisitData.paymentMethod == 2) {
-      const tempInsurance = listPenjamin.value.find(
-        (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
-      );
-      if (tempInsurance) {
-        tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
-      } else tempDoctorVisitData.insurance.penjaminUuid = "";
+  if (Object.keys(props.doctorVisitData).length && listPenjamin.value.length) {
+    const rawData = props.doctorVisitData;
+
+    const matchedPenjamin = listPenjamin.value.find(
+      (penjamin) => penjamin.code === rawData.insurance?.code
+    );
+    
+    if (rawData.practitioner && rawData.practitioner.pegawai) {
+        rawData.practitioner.pegawai.name = rawData.practitioner.pegawai.nama;
     }
 
-    setValues({
-      ...tempDoctorVisitData,
-    });
-    onPaymentMethodSelect(
-      tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
-    );
+    const formData = {
+      ...rawData,
+      selectedPoli: rawData.lokasi_uuid,
+      practitionerUuid: rawData.practitioner_uuid,
+      jadwalDokterUuid: rawData.jadwal_dokter_uuid,
+      paymentMethod: rawData.payment_method === 2 ? "ASURANSI" : "TUNAI",
+      insurance: {
+        penjaminUuid: matchedPenjamin ? matchedPenjamin.uuid : "",
+        accountNumber: rawData.insurance?.account_number,
+        classEntitle: rawData.insurance?.class_entitle,
+      },
+    };
+
+    setValues(formData);
+    
+    onPaymentMethodSelect(formData.paymentMethod);
+    setPoliDpjpJadwal(formData.jadwalDokterUuid);
   }
 };
 
-onMounted(() => {
-  fetchUtils();
-  setFormData();
+// onMounted(() => {
+//   fetchUtils();
+//   setFormData();
+// });
+
+onMounted(async () => {
+  await fetchUtils(); 
+  setFormData();      
 });
 
-onUpdated(() => {
-  fetchUtils();
-  setFormData();
+// onUpdated(() => {
+//   fetchUtils();
+//   setFormData();
+// });
+watch(() => props.doctorVisitData, (newData) => {
+  if (newData && Object.keys(newData).length > 0) {
+    console.log("props.doctorVisitData berubah, form akan di-update.");
+    setFormData(); // Panggil setFormData hanya saat props ini berubah
+  }
+}, {
+  deep: true,
+  immediate: false
 });
 
 const selectedJadwalDpjp = ref("");

@@ -3,60 +3,64 @@ import Card from "primevue/card";
 import CustomChip from "./CustomChip.vue";
 import {
   PhCheckCircle,
-  PhMegaphone,
-  PhSkipForward,
   PhAddressBook
 } from '@phosphor-icons/vue';
+import { computed } from 'vue';
+import AnnouncementIcon from "../icons/AnnouncementIcon.vue";
+import SkipIcon from "../icons/SkipIcon.vue";
 
 const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false,
-  },
-  // Kiri
-  nomorAntrian: {
-    type: Number,
-    default: 1,
-  },
-  // Tengah
-  namaPasien: {
-    type: String,
-    default: "Nama Pasien",
-  },
-  nomorIdentitas: {
-    type: String,
-    default: "123",
-  },
-  // kodeBooking: {
-  //   type: String,
-  //   default: "BOOK.123",
-  // },
-  // Kanan
-  showIconSelesai: {
-    type: Boolean,
-    default: false,
-  },
-  showIconPanggil: {
-    type: Boolean,
-    default: true,
-  },
-  showIconLewati: {
-    type: Boolean,
-    default: true,
-  },
-  showIconProcess: {
-    type: Boolean,
-    default: true,
-  },
-  status: {
-    type: String,
-    default: 'aktif',
+  panggilan: {
+    type: Object,
+    required: true,
   },
 });
-const emit = defineEmits(['update:visible']);
+
+const emit = defineEmits(['panggil', 'lewati', 'proses']);
+
+const nomorAntrian = computed(() => props.panggilan.patientData?.antrian?.noAntrianAdmisi || '-');
+const namaPasien = computed(() => props.panggilan.patientData?.name || 'Nama Tidak Ditemukan');
+const nomorIdentitas = computed(() => props.panggilan.patientData?.noIdentity ? `NIK. ${props.panggilan.patientData.noIdentity}` : '-');
+const jenisPasien = computed(() => {
+  const paymentMap = {
+    1: 'TUNAI',
+    2: 'ASURANSI'
+  };
+
+  const method = props.panggilan.patientData?.paymentMethod;
+
+  return paymentMap[method] || 'TUNAI';
+});
+const pasienBaru = computed(() => props.panggilan.pasienBaru);
+
+const status = computed(() => {
+  if (props.panggilan.statusPanggilan === 4) {
+    return 'selesai';
+  }
+  if (props.panggilan.statusPanggilan === 2) {
+    return 'terlewat';
+  }
+  return 'aktif';
+});
+
+const showIconPanggil = computed(() => {
+  const currentStatus = props.panggilan.statusPanggilan;
+  return [0, 2].includes(currentStatus);
+});
+
+const showIconLewati = computed(() => {
+  const currentStatus = props.panggilan.statusPanggilan;
+  return [0, 1, 3].includes(currentStatus);
+});
+
+const showIconProcess = computed(() => {
+  const currentStatus = props.panggilan.statusPanggilan;
+  return currentStatus !== 4;
+});
 </script>
 
-<template>
+
+<!-- <template>
   <Card class="bg-adameds-50 w-full rounded-lg">
     <template #content>
       <div class="grid grid-cols-[auto_1fr_auto] items-center h-[60px] gap-3">
@@ -114,6 +118,73 @@ const emit = defineEmits(['update:visible']);
             </button>
             <button
               v-if="showIconProcess"
+              class="w-[40px] h-[40px] rounded-lg flex items-center justify-center bg-[#14B8A6] hover:opacity-90"
+              title="Proses"
+            >
+              <PhAddressBook :size="22" color="white" weight="fill" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </Card>
+</template> -->
+
+<template>
+  <Card class="bg-adameds-50 w-full rounded-lg">
+    <template #content>
+      <div class="grid grid-cols-[auto_1fr_auto] items-center h-[60px] gap-3">
+  
+        <div class="flex bg-adameds-75 rounded-md w-[60px] h-[60px] items-center justify-center text-adameds-300 font-semibold text-base font-poppins shrink-0">
+          {{ nomorAntrian }}
+        </div>
+  
+        <div class="flex flex-col justify-start gap-2 text-black min-w-0">
+          <div class="flex flex-col justify-center font-poppins">
+            <div class="font-bold text-md truncate" :title="namaPasien">{{ namaPasien }}</div>
+            <div class="font-normal text-sm text-gray-500">{{ nomorIdentitas }}</div>
+          </div>
+          <hr class="border-[1px] border-adameds-300 -mt-1" />
+          <div class="flex items-center gap-1 -mt-1">
+            <CustomChip
+            :label="jenisPasien"
+            :border-color="jenisPasien === 'ASURANSI' ? 'border-[#E89F29]' : 'border-teal-500'"
+            :text-color="jenisPasien === 'ASURANSI' ? 'text-[#E89F29]' : 'text-teal-500'"
+            :showCheckedIcon="false"
+            customClass="font-semibold h-4 border rounded-full text-[9px] bg-transparent font-poppins px-2"
+          />
+          </div>
+        </div>
+  
+        <div class="flex items-center gap-2">
+          <div
+            v-if="status === 'selesai'"
+            class="bg-success-300 w-[44px] h-[44px] rounded-xl flex justify-center items-center"
+            v-tooltip.bottom="'Selesai'"
+          >
+            <PhCheckCircle :size="28" color="#ffffff" weight="fill" />
+          </div>
+  
+          <div v-else class="flex items-center gap-2">
+            <button
+              v-if="showIconPanggil"
+              @click="$emit('panggil', panggilan.uuid)"
+              class="w-[40px] h-[40px] rounded-lg flex items-center justify-center bg-[#3D84E5] hover:opacity-90"
+              title="Panggil"
+            >
+            <AnnouncementIcon :size="22" class="text-white"/>
+            </button>
+            <button
+              v-if="showIconLewati"
+              @click="$emit('lewati', panggilan.uuid)"
+              class="w-[40px] h-[40px] rounded-lg flex items-center justify-center bg-[#E89F29] hover:opacity-90"
+              title="Lewati"
+            >
+            <SkipIcon :size="22" class="text-white"/>
+            </button>
+            <button
+              v-if="showIconProcess"
+              @click="$emit('proses', panggilan.uuid)"
               class="w-[40px] h-[40px] rounded-lg flex items-center justify-center bg-[#14B8A6] hover:opacity-90"
               title="Proses"
             >

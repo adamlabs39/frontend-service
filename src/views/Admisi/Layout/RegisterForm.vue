@@ -192,8 +192,10 @@ const handlePrintPatientVisit = async () => {
       gender: patientIdentityData.gender || '-',
     },
   };
-
-  createPatientVisit({ visitData: completeVisitData });
+  
+  const faskesProfileString = localStorage.getItem('faskes_profile');
+  const faskesProfileData = faskesProfileString ? JSON.parse(faskesProfileString) : {};
+  createPatientVisit({ visitData: completeVisitData, clinicProfile: faskesProfileData });
 };
 
 const handlePrintPatientLabel = async () => {
@@ -233,7 +235,7 @@ const handlePrintPatientBracelet = async () => {
     noRm: patientIdentityData.noRm,
     birthDate: patientIdentityData.birthDetail?.birthDate,
     ageYear: patientIdentityData.birthDetail?.ageYear,
-    birthPlace: patientIdentityData.birthDetail?.birthPlace,
+    birthPlace: patientIdentityData.address?.fullAddress || '',
     doctorName: `${visitDetailData.practitioner?.pegawai?.firstTitle || ''} ${visitDetailData.practitioner?.pegawai?.nama || ''}`.trim(),
   };
 

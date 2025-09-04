@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ListMenu, Module } from "@/utils/Interface";
-import { onMounted, ref, onBeforeMount, reactive, computed } from "vue";
+import { onMounted, ref, onBeforeMount, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "../Base/CustomButton.vue";
@@ -11,6 +11,8 @@ import { useSettingStore } from "@/stores/setting";
 import CustomSelect from "../Base/CustomSelect.vue";
 import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
 import { PhMegaphone, PhX } from '@phosphor-icons/vue';
+import { useAntrianCallStore } from "@/stores/antrian/antrianCall";
+import AnnouncementIcon from "../icons/AnnouncementIcon.vue";
 
 interface userData {
   name: string;
@@ -22,6 +24,7 @@ const emit = defineEmits(["selectedFaskes"]);
 const UseUtilsStore = utilsStore();
 const faskesStore = useFaskesStore();
 const settingStore = useSettingStore();
+const antrianCallStore = useAntrianCallStore();
 
 const faskesPayload = ref<any[]>([]);
 const router = useRouter();
@@ -128,58 +131,45 @@ const toggleCardPanggilan = () => {
   isCardPanggilanVisible.value = !isCardPanggilanVisible.value;
 };
 
-const daftarPanggilan = ref([
-  {
-    id: 1,
-    nomorAntrian: "A-012",
-    namaPasien: 'Siti Aisyah',
-    nomorIdentitas: '3201234567890002',
-    status: 'selesai',
-    showIconPanggil: false,
-    showIconLewati: false,
-    showIconProcess: false,
-  },
-  {
-    id: 2,
-    nomorAntrian: "B-005",
-    namaPasien: 'Budi Santoso',
-    nomorIdentitas: '3201234567890003',
-    status: 'selesai',
-    showIconPanggil: false,
-    showIconLewati: false,
-    showIconProcess: false,
-  },
-  {
-    id: 3,
-    nomorAntrian: "C-021",
-    namaPasien: 'Rina Melati',
-    nomorIdentitas: '3201234567890004',
-    status: 'aktif',
-    showIconPanggil: true,
-    showIconLewati: true,
-    showIconProcess: true,
-  },
-  {
-    id: 4,
-    nomorAntrian: "D-007",
-    namaPasien: 'Agus Wijaya',
-    nomorIdentitas: '3201234567890005',
-    status: 'terlewat',
-    showIconPanggil: true,
-    showIconLewati: true,
-    showIconProcess: true,
-  },
-]);
+const fetchAntrianData = async () => {
+  await antrianCallStore.getAllAntrianCall();
+};
+
+watch(isCardPanggilanVisible, (newValue) => {
+  if (newValue) {
+    fetchAntrianData();
+  }
+});
 
 const activeTab = ref('aktif');
 
 const filteredPanggilan = computed(() => {
-  if (activeTab.value === 'aktif') {
-    return daftarPanggilan.value.filter(p => p.status !== 'selesai');
+  const list = antrianCallStore.antrianList;
+  if (!list) return [];
+  
+  switch (activeTab.value) {
+    case 'aktif':
+      return list.filter(p => [0, 1, 3].includes(p.statusPanggilan));
+    case 'terlewat':
+      return list.filter(p => p.statusPanggilan === 2);
+    case 'selesai':
+      return list.filter(p => p.statusPanggilan === 4);
+    default:
+      return [];
   }
-  return daftarPanggilan.value.filter(p => p.status === activeTab.value);
 });
 
+const handlePanggil = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 1);
+};
+
+const handleLewati = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 2);
+};
+
+const handleProses = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 4);
+};
 
 const userData = ref<userData>();
 const logout = async () => {
@@ -353,7 +343,9 @@ const isSuperAdmin = getUserRole() === "super admin";
       </div>
       <div class="flex justify-between">
         <svg
-          @click="toggleCardPanggilan" class="relative w-8 aspect-square mr-4 cursor-pointer" viewBox="0 0 27 24"
+          @click="toggleCardPanggilan"
+          class="relative w-8 aspect-square mr-4 cursor-pointer"
+          viewBox="0 0 27 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -459,57 +451,100 @@ const isSuperAdmin = getUserRole() === "super admin";
         </Dialog>
       </div>
     </div>
-     <div
-      v-if="isCardPanggilanVisible"
-      class="fixed top-[80px] right-4 z-50 w-[500px] bg-white rounded-lg shadow-lg flex flex-col"
-    >
+     <Transition name="drawer">
+    <div v-show="isCardPanggilanVisible" class="fixed inset-0 z-50 flex justify-end">
+    <div
+      @click="toggleCardPanggilan"
+      class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+    ></div>
+
+    <div class="relative w-full max-w-lg bg-white h-full flex flex-col shadow-xl">
       <div class="flex items-center justify-between p-4 border-b">
         <div class="flex items-center gap-x-2">
-          <PhMegaphone :size="24" class="text-[#14B8A6]" />
+          <AnnouncementIcon :size="24" class="text-[#14B8A6]" />
           <h2 class="font-bold text-lg text-[#14B8A6]">Panggilan Antrian</h2>
         </div>
         <button @click="toggleCardPanggilan" class="text-gray-500 hover:text-gray-800">
           <PhX :size="20" weight="bold" />
         </button>
       </div>
-
-            <div class="flex items-center justify-around p-4 border-b">
-        <button
-          @click="activeTab = 'aktif'"
-          :class="[activeTab === 'aktif' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
-          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+      <Tabs style="margin-top: 7px;"
+      v-model:value="activeTab"
+      :dt="{
+        tabActiveBackground: '#E8F8F6',
+        tabActiveColor: '#14B8A6',
+        tabActiveBorderColor: '#14B8A6',
+      }"
+    >
+      <TabList :pt="{ tabList: 'h-10 text-SM' }">
+        <Tab
+          class="py-0 px-[10px]"
+          value="aktif"
+          :pt="{ root: 'rounded-t-lg' }"
         >
-          Antrian Aktif
-        </button>
-        <button
-          @click="activeTab = 'terlewat'"
-          :class="[activeTab === 'terlewat' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
-          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+          <div class="flex">
+            Antrian Aktif
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="terlewat"
+          :pt="{ root: 'rounded-t-lg' }"
         >
-          Terlewat
-        </button>
-        <button
-          @click="activeTab = 'selesai'"
-          :class="[activeTab === 'selesai' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
-          class="pb-2 text-sm font-semibold border-b-2 transition-colors"
+          <div class="flex">
+            Terlewat
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="selesai"
+          :pt="{ root: 'rounded-t-lg' }"
         >
-          Selesai
-        </button>
-      </div>
-
-      <div class="flex flex-col gap-y-3 p-4 overflow-y-auto max-h-[calc(100vh-215px)]">
+          <div class="flex">
+            Selesai
+          </div>
+        </Tab>
+      </TabList>
+    </Tabs>
+      <div class="flex flex-col gap-y-3 p-4 flex-grow overflow-y-auto">
         <CardPanggilanAdmisi
-          v-for="panggilan in filteredPanggilan"
-          :key="panggilan.id"
-          :nomor-antrian="panggilan.nomorAntrian"
-          :nama-pasien="panggilan.namaPasien"
-          :nomor-identitas="panggilan.nomorIdentitas"
-          :status="panggilan.status"
-          :show-icon-panggil="panggilan.showIconPanggil"
-          :show-icon-lewati="panggilan.showIconLewati"
-          :show-icon-process="panggilan.showIconProcess"
-        />
+        v-for="panggilan in filteredPanggilan"
+        :key="panggilan.uuid"
+        :panggilan="panggilan"
+        @panggil="handlePanggil"
+        @lewati="handleLewati"
+        @proses="handleProses"
+      />
       </div>
     </div>
   </div>
+</Transition>
+  </div>
 </template>
+
+<style scoped>
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  & > div:first-child {
+    opacity: 0;
+  }
+  & > div:last-child {
+    transform: translateX(100%);
+  }
+}
+
+.drawer-enter-to,
+.drawer-leave-from {
+  & > div:first-child {
+    opacity: 1;
+  }
+  & > div:last-child {
+    transform: translateX(0);
+  }
+}
+</style>
