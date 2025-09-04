@@ -14,7 +14,7 @@ export const usePelayananTransaction = defineStore({
             search: string = "",
             status: string = "",
             service_type: string | string[] = "", 
-            payment_type: string = ""
+            payment_type: string | string[] = ""
         ) {
             const params = {
                 page,
