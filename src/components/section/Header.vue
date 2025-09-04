@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import type { ListMenu, Module } from "@/utils/Interface";
 import { onMounted, ref, onBeforeMount, reactive, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
@@ -296,6 +296,296 @@ const getUserRole = () => {
 };
 
 const isSuperAdmin = getUserRole() === "super admin";
+</script> -->
+
+<script setup lang="ts">
+import type { ListMenu, Module } from "@/utils/Interface";
+import { onMounted, ref, onBeforeMount, computed, watch } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { utilsStore } from "@/stores/utils";
+import CustomButton from "../Base/CustomButton.vue";
+import { useRoute, useRouter } from "vue-router";
+import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
+import { useFaskesStore } from "@/stores/datamaster/faskes";
+import { useSettingStore } from "@/stores/setting";
+import CustomSelect from "../Base/CustomSelect.vue";
+import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import { PhMegaphone, PhX } from '@phosphor-icons/vue';
+import { useAntrianCallStore } from "@/stores/antrian/antrianCall";
+import AnnouncementIcon from "../icons/AnnouncementIcon.vue";
+
+interface userData {
+  name: string;
+  role: string;
+}
+
+const authStore = useAuthStore();
+const emit = defineEmits(["selectedFaskes"]);
+const UseUtilsStore = utilsStore();
+const faskesStore = useFaskesStore();
+const settingStore = useSettingStore();
+const antrianCallStore = useAntrianCallStore();
+
+const faskesPayload = ref<any[]>([]);
+const router = useRouter();
+const route = useRoute();
+const goToPage = (url: string) => {
+  router.push(url);
+};
+
+const listMenu = ref<ListMenu[]>([]);
+const templistMenu = ref<ListMenu[]>([
+  {
+    title: "Dashboard",
+    icon: "PhChartLine",
+    iconWeight: "bold",
+    url: "/dashboard",
+  },
+  {
+    title: "Antrian",
+    icon: "PhUsers",
+    url: "/antrian",
+  },
+  {
+    title: "Admisi",
+    icon: "PhAddressBook",
+    url: "/admisi",
+  },
+  {
+    title: "Rawat Jalan",
+    icon: "PhHospital",
+    url: "/rawat-jalan",
+  },
+  {
+    title: "Rawat Inap",
+    icon: "PhHospital",
+    url: "/rawat-inap",
+  },
+  {
+    title: "IGD",
+    icon: "PhHospital",
+    url: "/igd",
+  },
+  {
+    title: "Farmasi",
+    icon: "PhAsclepius",
+    iconWeight: "bold",
+    url: "/farmasi",
+  },
+  {
+    title: "Laboratorium",
+    icon: "PhMicroscope",
+    iconWeight: "bold",
+    url: "/laboratorium",
+  },
+  {
+    title: "Fisioterapi",
+    icon: "FisioIcon",
+    url: "/fisioterapi",
+  },
+  {
+    title: "Training",
+    icon: "TrainingIcon",
+    url: "/training",
+  },
+  {
+    title: "Pembayaran",
+    icon: "PhMoneyWavy",
+    url: "/pembayaran",
+  },
+  {
+    title: "Inventory",
+    icon: "DoubleBoxIcon",
+    url: "/inventory",
+  },
+  {
+    title: "Datamaster",
+    icon: "PhDatabase",
+    url: "/datamaster",
+  },
+  {
+    title: "Laporan",
+    icon: "FileReportIcon",
+    url: "/laporan",
+  },
+]);
+
+const profileEdit = () => {
+  isDialogVisible.value = false;
+  router.push({ name: "setting-profil-akun" });
+};
+
+const clickSetting = () => {
+  isDialogVisible.value = false;
+  router.push({ name: "setting-profil-faskes" });
+};
+const isDialogVisible = ref(false);
+
+const showDialog = () => {
+  isDialogVisible.value = true;
+};
+
+const isCardPanggilanVisible = ref(false);
+
+const toggleCardPanggilan = () => {
+  isCardPanggilanVisible.value = !isCardPanggilanVisible.value;
+};
+
+const fetchAntrianData = async () => {
+  await antrianCallStore.getAllAntrianCall();
+};
+
+watch(isCardPanggilanVisible, (newValue) => {
+  if (newValue) {
+    fetchAntrianData();
+  }
+});
+
+const activeTab = ref('aktif');
+
+const filteredPanggilan = computed(() => {
+  const list = antrianCallStore.antrianList;
+  if (!list) return [];
+  
+  switch (activeTab.value) {
+    case 'aktif':
+      return list.filter(p => [0, 1, 3].includes(p.statusPanggilan));
+    case 'terlewat':
+      return list.filter(p => p.statusPanggilan === 2);
+    case 'selesai':
+      return list.filter(p => p.statusPanggilan === 4);
+    default:
+      return [];
+  }
+});
+
+const handlePanggil = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 1);
+};
+
+const handleLewati = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 2);
+};
+
+const handleProses = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 4);
+};
+
+const userData = ref<userData>();
+const logout = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    await authStore.logoutApi();
+    router.push("login");
+  } catch (error: any) {
+    console.log(error.message);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+onBeforeMount(async () => {
+  await fetchFaskes();
+  authStore.setFaskesUuid(faskesUuid.value ?? "");
+  emit("selectedFaskes");
+});
+
+onMounted(() => {
+  fetchFaskes();
+  loadFaskesFromLocalStorage();
+  listMenu.value.push(templistMenu.value[0]);
+  userData.value = JSON.parse(localStorage.getItem("user") ?? "");
+  const listPermissionStr = localStorage.getItem("permission");
+  if (listPermissionStr) {
+    const listPermission: Module[] = JSON.parse(listPermissionStr);
+    listPermission.forEach((module) => {
+      const listMenuFind = templistMenu.value.find(
+        (menu) => menu.title == module.module && menu.title != "Dashboard"
+      );
+      if (listMenuFind) {
+        listMenu.value.push(listMenuFind);
+      }
+    });
+  }
+});
+
+const checkActiveTab = (url: string) => {
+  let split = route.path.split("/");
+  return `/${split[1]}` == url;
+};
+const fetchFaskes = async () => {
+  try {
+    const response = await faskesStore.getAktifApi();
+    if (response && response.payload) {
+      faskesPayload.value = response.payload;
+    } else {
+      faskesPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch faskes", error);
+    faskesPayload.value = [];
+  }
+};
+
+const fetchSettingProfilFaskesData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await settingStore.getProfilFaskesApi();
+    if (response) {
+      UseUtilsStore.setProfilFaskes(response);
+    } else {
+      console.error("Unexpected response Structure", response);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const faskesName = ref<string>("");
+const faskesSelected = ref<string>("");
+const faskesUuid = ref<string>("");
+
+const updateDataFaskes = async (value: string) => {
+  const response = await authStore.tokenApi(faskesSelected.value);
+  localStorage.setItem("access_token", `Bearer ${response.payload.newToken}`);
+  localStorage.setItem("faskes", JSON.stringify(response.payload));
+  authStore.setFaskesUuid(value);
+  await fetchSettingProfilFaskesData();
+  loadFaskesFromLocalStorage();
+  window.location.reload()
+};
+
+const loadFaskesFromLocalStorage = () => {
+  const faskesData = localStorage.getItem("faskes");
+  if (faskesData) {
+    try {
+      const parsedFaskesData = JSON.parse(faskesData);
+      faskesSelected.value = parsedFaskesData.faskesUuid || "";
+      faskesName.value = parsedFaskesData.faskesName || "";
+      faskesUuid.value = parsedFaskesData.faskesUuid || "";
+    } catch (error) {
+      console.error("Error parsing faskes data from localStorage:", error);
+    }
+  }
+};
+
+const getUserRole = () => {
+  const userDataString = localStorage.getItem("user");
+  if (userDataString) {
+    try {
+      const userData = JSON.parse(userDataString);
+      return userData.role;
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const isSuperAdmin = getUserRole() === "super admin";
 </script>
 
 <template>
@@ -353,7 +643,9 @@ const isSuperAdmin = getUserRole() === "super admin";
       </div>
       <div class="flex justify-between">
         <svg
-          @click="toggleCardPanggilan" class="relative w-8 aspect-square mr-4 cursor-pointer" viewBox="0 0 27 24"
+          @click="toggleCardPanggilan"
+          class="relative w-8 aspect-square mr-4 cursor-pointer"
+          viewBox="0 0 27 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -459,21 +751,80 @@ const isSuperAdmin = getUserRole() === "super admin";
         </Dialog>
       </div>
     </div>
-     <div
-      v-if="isCardPanggilanVisible"
-      class="fixed top-[80px] right-4 z-50 w-[500px] bg-white rounded-lg shadow-lg flex flex-col"
-    >
+     <Transition name="drawer">
+    <div v-show="isCardPanggilanVisible" class="fixed inset-0 z-50 flex justify-end">
+    <div
+      @click="toggleCardPanggilan"
+      class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+    ></div>
+
+    <div class="relative w-full max-w-lg bg-white h-full flex flex-col shadow-xl">
       <div class="flex items-center justify-between p-4 border-b">
         <div class="flex items-center gap-x-2">
-          <PhMegaphone :size="24" class="text-[#14B8A6]" />
+          <AnnouncementIcon :size="24" class="text-[#14B8A6]" />
           <h2 class="font-bold text-lg text-[#14B8A6]">Panggilan Antrian</h2>
         </div>
         <button @click="toggleCardPanggilan" class="text-gray-500 hover:text-gray-800">
           <PhX :size="20" weight="bold" />
         </button>
       </div>
-
-            <div class="flex items-center justify-around p-4 border-b">
+      <Tabs style="margin-top: 7px;"
+      v-model:value="activeTab"
+      :dt="{
+        tabActiveBackground: '#E8F8F6',
+        tabActiveColor: '#14B8A6',
+        tabActiveBorderColor: '#14B8A6',
+      }"
+    >
+      <TabList :pt="{ tabList: 'h-10 text-SM' }">
+        <Tab
+          class="py-0 px-[10px]"
+          value="aktif"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            <!-- <PhListPlus
+              v-if="activeTab == 'aktif'"
+              :size="18"
+              weight="fill"
+              class="mr-[10px]"
+            /> -->
+            Antrian Aktif
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="terlewat"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            <!-- <PhListPlus
+              v-if="activeTab == 'terlewat'"
+              :size="18"
+              weight="fill"
+              class="mr-[10px]"
+            /> -->
+            Terlewat
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="selesai"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            <!-- <PhListPlus
+              v-if="activeTab == 'selesai'"
+              :size="18"
+              weight="fill"
+              class="mr-[10px]"
+            /> -->
+            Selesai
+          </div>
+        </Tab>
+      </TabList>
+    </Tabs>
+      <!-- <div class="flex items-center justify-around p-4 border-b">
         <button
           @click="activeTab = 'aktif'"
           :class="[activeTab === 'aktif' ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent']"
@@ -495,21 +846,47 @@ const isSuperAdmin = getUserRole() === "super admin";
         >
           Selesai
         </button>
-      </div>
+      </div> -->
 
-      <div class="flex flex-col gap-y-3 p-4 overflow-y-auto max-h-[calc(100vh-215px)]">
+      <div class="flex flex-col gap-y-3 p-4 flex-grow overflow-y-auto">
         <CardPanggilanAdmisi
-          v-for="panggilan in filteredPanggilan"
-          :key="panggilan.id"
-          :nomor-antrian="panggilan.nomorAntrian"
-          :nama-pasien="panggilan.namaPasien"
-          :nomor-identitas="panggilan.nomorIdentitas"
-          :status="panggilan.status"
-          :show-icon-panggil="panggilan.showIconPanggil"
-          :show-icon-lewati="panggilan.showIconLewati"
-          :show-icon-process="panggilan.showIconProcess"
-        />
+        v-for="panggilan in filteredPanggilan"
+        :key="panggilan.uuid"
+        :panggilan="panggilan"
+        @panggil="handlePanggil"
+        @lewati="handleLewati"
+        @proses="handleProses"
+      />
       </div>
     </div>
   </div>
+</Transition>
+  </div>
 </template>
+
+<style scoped>
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  & > div:first-child {
+    opacity: 0;
+  }
+  & > div:last-child {
+    transform: translateX(100%);
+  }
+}
+
+.drawer-enter-to,
+.drawer-leave-from {
+  & > div:first-child {
+    opacity: 1;
+  }
+  & > div:last-child {
+    transform: translateX(0);
+  }
+}
+</style>

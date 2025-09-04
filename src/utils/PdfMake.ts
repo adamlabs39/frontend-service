@@ -389,7 +389,7 @@ export function createPatientCard({ data, clinicProfile }: { data: any, clinicPr
   pdfMake.createPdf(docDefinition).open();
 }
 
-export async function createPatientVisit({ visitData }: { visitData: any }) {
+export async function createPatientVisit({ visitData, clinicProfile }: { visitData: any, clinicProfile: any  }) {
   pdfMake.vfs = customVfs.pdfMake.vfs;
 
   pdfMake.fonts = {
@@ -412,7 +412,9 @@ export async function createPatientVisit({ visitData }: { visitData: any }) {
       {
         columns: [
           {
-            image: dummyLogo(),
+            image: (clinicProfile.logo && clinicProfile.logo.startsWith('data:image'))
+              ? clinicProfile.logo
+              : dummyLogo(),
             fit: [80.002, 45],
             width: "auto",
             height: "auto",
