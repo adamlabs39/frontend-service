@@ -69,19 +69,6 @@ const currentStartDateEpoch = computed(() => {
   }
 });
 
-const currentPelayanan = computed(() => {
-  switch (value.value) {
-    case "0":
-      return "admisi";
-    case "1":
-      return "poli";
-    case "2":
-      return "farmasi";
-    default:
-      return "admisi";
-  }
-});
-
 const currentEndDateEpoch = computed(() => {
   switch (value.value) {
     case "0":
