@@ -10,10 +10,11 @@ const props = defineProps<{
     start_date: number | undefined;
     end_date: number | undefined;
     page: number;
-    limit: number;
-    totalData: number;
-    q: string;
-    status_antrian: string[];
+    page_size: number;
+    total: number;
+    name: string;
+    status_panggilan: number[];
+    pelayanan: string;
   };
 }>();
 
@@ -39,6 +40,52 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
   }
 };
 
+const dataAntrianAdmisiPayload = ref([]);
+
+const fetchDataAntrianAdmisi = async () => {
+  useUtilsStore.setLoading(true);
+  // Kosongkan data terlebih dahulu agar tidak menampilkan data lama saat loading/error
+  dataAntrianAdmisiPayload.value = [];
+  try {
+    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
+    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+
+    const statusQuery =
+      props.paginationProperties.status_panggilan &&
+      props.paginationProperties.status_panggilan.length > 0
+        ? props.paginationProperties.status_panggilan.join(",")
+        : "";
+
+    const response = await dataAntrianStore.getAntrianAdmisi(
+      startEpoch,
+      endEpoch,
+      props.paginationProperties.page,
+      props.paginationProperties.page_size,
+      props.paginationProperties.total,
+      props.paginationProperties.name,
+      statusQuery, // status_panggilan
+      props.paginationProperties.pelayanan // pelayanan
+    );
+    console.log("Ini adalah data antrian admisi antrian", response);
+
+    // Jika response sukses tapi payload kosong/tidak valid -> tampilkan NoData
+    if (response && Array.isArray(response.payload)) {
+      dataAntrianAdmisiPayload.value = response.payload;
+      emit("updateTotalData", response.properties?.total ?? 0);
+    } else {
+      dataAntrianAdmisiPayload.value = [];
+      emit("updateTotalData", 0);
+    }
+  } catch (error) {
+    // Anggap "data tidak ditemukan" sebagai hasil kosong, bukan kegagalan UI
+    console.log("No data or error fetching data antrian admisi:", error);
+    dataAntrianAdmisiPayload.value = [];
+    emit("updateTotalData", 0);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
 // watch(
 //   () => dataAntrianRjPayload.value,
 //   (newValue) => {
@@ -50,43 +97,44 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
 watch(
   () => props.paginationProperties,
   () => {
-    fetchGetDataAntrianRj();
+    // fetchGetDataAntrianRj();
+    fetchDataAntrianAdmisi();
   },
   { deep: true }
 );
 
-const fetchGetDataAntrianRj = async () => {
-  useUtilsStore.setLoading(true);
-  try {
-    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
-    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+// const fetchGetDataAntrianRj = async () => {
+//   useUtilsStore.setLoading(true);
+//   try {
+//     const startEpoch = props.paginationProperties.start_date ?? 1128557830;
+//     const endEpoch = props.paginationProperties.end_date ?? 1999999999;
 
-    const statusQuery =
-      props.paginationProperties.status_antrian &&
-      props.paginationProperties.status_antrian.length > 0
-        ? props.paginationProperties.status_antrian.join(",")
-        : "";
+//     const statusQuery =
+//       props.paginationProperties.status_antrian &&
+//       props.paginationProperties.status_antrian.length > 0
+//         ? props.paginationProperties.status_antrian.join(",")
+//         : "";
 
-    const response = await dataAntrianStore.getAntrianRJ(
-      startEpoch,
-      endEpoch,
-      props.paginationProperties.page,
-      props.paginationProperties.limit,
-      props.paginationProperties.totalData,
-      props.paginationProperties.q,
-      statusQuery
-    );
-    console.log("Ini adalah data antrian rawat jalan", response);
-    if (response) {
-      dataAntrianRjPayload.value = response.payload;
-      emit("updateTotalData", response.properties.totalData);
-    }
-  } catch (error) {
-    console.log("Error fetching data antrian rawat jalan:", error);
-  } finally {
-    useUtilsStore.setLoading(false);
-  }
-};
+//     const response = await dataAntrianStore.getAntrianRJ(
+//       startEpoch,
+//       endEpoch,
+//       props.paginationProperties.page,
+//       props.paginationProperties.limit,
+//       props.paginationProperties.totalData,
+//       props.paginationProperties.q,
+//       statusQuery
+//     );
+//     console.log("Ini adalah data antrian rawat jalan", response);
+//     if (response) {
+//       dataAntrianRjPayload.value = response.payload;
+//       emit("updateTotalData", response.properties.totalData);
+//     }
+//   } catch (error) {
+//     console.log("Error fetching data antrian rawat jalan:", error);
+//   } finally {
+//     useUtilsStore.setLoading(false);
+//   }
+// };
 
 const dateFormat = (timestamp: number | string) => {
   // Konversi timestamp dari detik ke milliseconds
@@ -103,7 +151,8 @@ const dateFormat = (timestamp: number | string) => {
 };
 
 onMounted(() => {
-  fetchGetDataAntrianRj();
+  // fetchGetDataAntrianRj();
+  fetchDataAntrianAdmisi();
 });
 
 const expandedRows = ref();
@@ -163,16 +212,18 @@ const statusStyles = {
 
 const convertStatusRj = (statusRj: number): string => {
   switch (statusRj) {
+    case 0:
+      return "antri";
     case 1:
       return "antri";
     case 2:
       return "antri";
     case 3:
-      return "antri";
-    case 4:
       return "proses";
-    case 5:
+    case 4:
       return "selesai";
+    case 5:
+      return "verifikasi obat";
     default:
       return "unknown";
   }
@@ -193,7 +244,7 @@ const getStatusStyle = (status: string | undefined) => {
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
-    :value="dataAntrianRjPayload"
+    :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
     class="text-xs"
@@ -201,7 +252,7 @@ const getStatusStyle = (status: string | undefined) => {
     dataKey="id"
     scrollable
     scrollHeight="flex"
-    v-if="dataAntrianRjPayload.length > 0"
+    v-if="dataAntrianAdmisiPayload.length > 0"
   >
     <Column header-class="text-black bg-adameds-50">
       <template #header>
@@ -211,7 +262,7 @@ const getStatusStyle = (status: string | undefined) => {
         <div class="flex justify-center items-center">
           {{
             (props.paginationProperties.page - 1) *
-              props.paginationProperties.limit +
+              props.paginationProperties.page_size +
             slotProps.index +
             1
           }}
@@ -233,7 +284,7 @@ const getStatusStyle = (status: string | undefined) => {
               class=""
             />
             <div>
-              {{ dateFormat(slotProps.data.tanggalDaftar) }}
+              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -244,7 +295,7 @@ const getStatusStyle = (status: string | undefined) => {
               class=""
             />
             <div>
-              {{ slotProps.data.schedule.endTime }}
+              {{ slotProps.data.patientData.jadwalDokter.endTime }}
             </div>
           </div>
         </div>
@@ -262,7 +313,7 @@ const getStatusStyle = (status: string | undefined) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.kodeBooking ?? "N/A" }}
+                {{ slotProps.data.patientData.antrian.kodeBooking ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -275,7 +326,7 @@ const getStatusStyle = (status: string | undefined) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.noAntrianPoli ?? "N/A" }}
+                {{ slotProps.data.patientData.antrian.noAntrianPoli ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -286,12 +337,12 @@ const getStatusStyle = (status: string | undefined) => {
       <template #body="slotProps">
         <div class="items-center space-y-0.5">
           <div class="flex items-center font-semibold">
-            {{ slotProps.data.patient?.name ?? "N/A" }}
+            {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
             <CustomChip
               :showCheckedIcon="false"
-              :label="slotProps.data.noRm"
+              :label="slotProps.data.patientData.noRm"
               bgColor="bg-adameds-300"
               textColor="text-white"
               border-color="border-adameds-300"
@@ -309,18 +360,20 @@ const getStatusStyle = (status: string | undefined) => {
       <template #body="slotProps">
         <div class="flex gap-1 items-center">
           <div>
-            {{ slotProps.data.practitioner.nama }}
+            {{ slotProps.data.patientData?.jadwalDokter?.namaDokter ?? "N/A" }}
           </div>
-          <div>|</div>
+          <div v-if="slotProps.data.patientData?.jadwalDokter?.namaDokter">
+            |
+          </div>
           <div>
-            {{ slotProps.data.schedule.startTime }} -
-            {{ slotProps.data.schedule.endTime }}
+            {{ slotProps.data.patientData?.jadwalDokter?.startTime ?? "-" }} -
+            {{ slotProps.data.patientData?.jadwalDokter?.endTime ?? "-" }}
           </div>
         </div>
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.polyclinic.name"
+            :label="slotProps.data.patientData?.jadwalDokter?.namaPoli || 'N/A'"
             bgColor="bg-grey-50"
             textColor="text-grey-300"
             border-color="border-grey-300"
@@ -328,16 +381,23 @@ const getStatusStyle = (status: string | undefined) => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.paymentMethod).bgColor"
+            :bgColor="
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .bgColor
+            "
             :textColor="
-              getMetodeBayarStyle(slotProps.data.paymentMethod).textColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.paymentMethod).borderColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .borderColor
             "
             customClass="h-5"
             :label="
-              convertPaymentMethod(slotProps.data.paymentMethod).toUpperCase()
+              convertPaymentMethod(
+                slotProps.data.patientData.paymentMethod
+              ).toUpperCase()
             "
           />
         </div>
@@ -351,7 +411,9 @@ const getStatusStyle = (status: string | undefined) => {
         <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
-            v-bind="getStatusStyle(convertStatusRj(slotProps.data.statusRj))"
+            v-bind="
+              getStatusStyle(convertStatusRj(slotProps.data.statusPanggilan))
+            "
             customClass="h-5"
           />
         </div>
