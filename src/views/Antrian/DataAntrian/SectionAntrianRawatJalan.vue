@@ -247,7 +247,7 @@ const getStatusStyle = (status: string | undefined) => {
     :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
-    class="text-xs"
+    class="flex text-xs"
     stripedRows
     dataKey="id"
     scrollable
@@ -420,5 +420,5 @@ const getStatusStyle = (status: string | undefined) => {
       </template>
     </Column>
   </DataTable>
-  <NoData class="min-h-full" v-else />
+  <NoData class="flex-1 h-full" v-else />
 </template>

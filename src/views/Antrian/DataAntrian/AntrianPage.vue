@@ -261,22 +261,24 @@ watch(
       </AntrianHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="value">
-        <TabPanels>
-          <TabPanel value="0">
+      <Tabs v-model:value="value" class="flex flex-col h-full">
+        <TabPanels class="flex flex-col flex-1">
+          <TabPanel value="0" class="flex flex-col flex-1">
             <SectionAntrianAdmisi
               :paginationProperties="dataAntrianAdmisiProperties"
               @updateTotalData="handleUpdateTotalDataAdmisi"
+              class="flex flex-col flex-1"
             />
           </TabPanel>
-          <TabPanel value="1">
+          <TabPanel value="1" class="flex flex-col flex-1">
             <SectionAntrianRawatJalan
               :paginationProperties="dataAntrianRjProperties"
               @updateTotalData="handleUpdateTotalDataRawatJalan"
+              class="flex flex-col flex-1"
             />
           </TabPanel>
-          <TabPanel value="2">
-            <SectionAntrianFarmasi />
+          <TabPanel value="2" class="flex flex-col flex-1">
+            <SectionAntrianFarmasi class="flex flex-col flex-1" />
           </TabPanel>
         </TabPanels>
       </Tabs>
