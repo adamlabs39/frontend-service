@@ -350,6 +350,7 @@ const postRegisterPatient = async () => {
         }
       } else if (props.pageType == "rawat-inap") {
         payload.isNewborn = tempPatientData.isNewBorn;
+        payload.multipleBirth = tempPatientData.multipleBirth;
         if (props.formType == "add") {
           response = await admisiRIStore.registNewBorn(payload);
         } else {
@@ -651,13 +652,13 @@ const deleteGeneralConsent = async () => {
           <!-- batal edit -->
           <div class="flex">
             <CustomButton
-              @click="closeRegisterForm"
-              :icon="isEditing ? undefined : 'PhCaretLeft'"
-              :label="isEditing ? 'Batal Edit' : 'Kembali'"
-              class="mr-[10px]"
-              outlined
-              borderColor="border-adameds-300"
-              textColor="text-adameds-300"
+                @click="closeRegisterForm"
+                :icon="formType === 'edit' ? undefined : 'PhCaretLeft'"
+                :label="formType === 'edit' ? 'Batal Edit' : 'Kembali'"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
             />
             <CustomButton
               v-if="isDetail()"

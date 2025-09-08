@@ -133,25 +133,21 @@ const fetchAllReportData = async () => {
 const fetchRekapData = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}rekap/jenis-kunjungan`;
-    
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-        jenis_kunjungan: filterParams.jenis_kunjungan ?? "",
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+    const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      jenisKunjungan: filterParams.jenis_kunjungan ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload) {
-      processRekapData(response.data.payload);
+    const response = await admisiLaporanStore.getJenisKunjunganReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapData(response.payload);
     } else {
       rekapData.value = [];
     }
@@ -165,21 +161,21 @@ const fetchRekapData = async () => {
 
 const processRekapData = (payload: any) => {
   const dailyTotals: { [key: string]: number } = {};
-  if (payload.total_harian && Array.isArray(payload.total_harian)) {
-    for (const item of payload.total_harian) {
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
       dailyTotals[item.tanggal] = item.total;
     }
   }
   totalKunjunganPerDay.value = dailyTotals;
-  grandTotalKunjungan.value = payload.total_keseluruhan || 0;
+  grandTotalKunjungan.value = payload.totalKeseluruhan || 0;
 
   const finalData: RekapRow[] = [];
   const kunjunganData = payload.kunjungan;
 
   const totalsMap: { [key: string]: number } = {};
-  if (payload.total_jenis_kunjungan && Array.isArray(payload.total_jenis_kunjungan)) {
-    for (const item of payload.total_jenis_kunjungan) {
-      totalsMap[item.jenis_kunjungan] = item.total;
+  if (payload.totalJenisKunjungan && Array.isArray(payload.totalJenisKunjungan)) {
+    for (const item of payload.totalJenisKunjungan) {
+      totalsMap[item.jenisKunjungan] = item.total;
     }
   }
 
@@ -211,25 +207,21 @@ const processRekapData = (payload: any) => {
 const fetchRekapDokter = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}rekap/dokter`;
-
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-        practitioner_uuid: filterParams.dpjp ?? "",
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+     const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      practitionerUuid: filterParams.dpjp ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload) {
-      processRekapDokter(response.data.payload);
+    const response = await admisiLaporanStore.getDpjpReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapDokter(response.payload);
     } else {
       rekapDokterData.value = [];
       totalDokterPerDay.value = {};
@@ -247,21 +239,21 @@ const fetchRekapDokter = async () => {
 
 const processRekapDokter = (payload: any) => {
   const dailyTotals: { [key: string]: number } = {};
-  if (payload.total_harian && Array.isArray(payload.total_harian)) {
-    for (const item of payload.total_harian) {
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
       dailyTotals[item.tanggal] = item.total;
     }
   }
   totalDokterPerDay.value = dailyTotals;
-  grandTotalDokter.value = payload.total_keseluruhan || 0;
+  grandTotalDokter.value = payload.totalKeseluruhan || 0;
 
   const finalData: RekapRow[] = [];
   const dokterData = payload.dokter;
 
   const doctorTotals: { [key: string]: number } = {};
-  if (payload.total_dokter && Array.isArray(payload.total_dokter)) {
-    for (const item of payload.total_dokter) {
-      doctorTotals[item.nama_dokter] = item.total;
+  if (payload.totalDokter && Array.isArray(payload.totalDokter)) {
+    for (const item of payload.totalDokter) {
+      doctorTotals[item.namaDokter] = item.total;
     }
   }
 
@@ -293,25 +285,22 @@ const processRekapDokter = (payload: any) => {
 const fetchRekapPenjamin = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}rekap/penjamin`;
-
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-        penjamin: filterParams.penjamin ?? "",
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+    const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      penjamin: filterParams.penjamin ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload) {
-      processRekapPenjamin(response.data.payload);
+
+    const response = await admisiLaporanStore.getPenjaminReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapPenjamin(response.payload);
     } else {
       rekapPenjaminData.value = [];
       totalPenjaminPerDay.value = {};
@@ -329,21 +318,21 @@ const fetchRekapPenjamin = async () => {
 
 const processRekapPenjamin = (payload: any) => {
   const dailyTotals: { [key: string]: number } = {};
-  if (payload.total_harian && Array.isArray(payload.total_harian)) {
-    for (const item of payload.total_harian) {
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
       dailyTotals[item.tanggal] = item.total;
     }
   }
   totalPenjaminPerDay.value = dailyTotals;
-  grandTotalPenjamin.value = payload.total_keseluruhan || 0;
+  grandTotalPenjamin.value = payload.totalKeseluruhan || 0;
 
   const finalData: RekapRow[] = [];
   const penjaminData = payload.penjamin;
 
   const penjaminTotals: { [key: string]: number } = {};
-  if (payload.total_penjamin && Array.isArray(payload.total_penjamin)) {
-    for (const item of payload.total_penjamin) {
-      penjaminTotals[item.nama_penjamin] = item.total;
+  if (payload.totalPenjamin && Array.isArray(payload.totalPenjamin)) {
+    for (const item of payload.totalPenjamin) {
+      penjaminTotals[item.namaPenjamin] = item.total;
     }
   }
 
