@@ -295,7 +295,7 @@ const getStatusStyle = (status: string | undefined) => {
               class=""
             />
             <div>
-              {{ slotProps.data.patientData.jadwalDokter.endTime }}
+              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
         </div>
