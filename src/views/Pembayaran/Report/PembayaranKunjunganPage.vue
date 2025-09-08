@@ -164,10 +164,19 @@ const handleExport = async () => {
 //optionlabel
 const dynamicOptionLabelKey = computed(() => {
   const query = searchQuery.value;
+  const queryUC = query.toUpperCase();
+  const addressKeywords = ["JL", "DS", "DSN", "RT", "RW", "NO", "GG", "BLOK"];
+  const isAddressQuery = addressKeywords.some(keyword => queryUC.includes(keyword));
+
+  // Pola untuk No. RM
   const isRmPattern = /^\d{2}-/.test(query);
+
 
   if (isRmPattern) {
     return 'noRm'; 
+  }
+  if (isAddressQuery) {
+    return 'patientAddress';
   }
   return 'patientName';
 });
@@ -293,7 +302,7 @@ onMounted(() => {
             <div class="flex mt-[10px]">
               <CustomSelect
                 v-model="selectedPatientUuid"
-                label="Pencarian Transaksi"
+                label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 place-holder="Cari Nama / No. RM"
                 class="mr-5 grow"
@@ -441,7 +450,7 @@ onMounted(() => {
         currentPageReportTemplate="{currentPage}"
       >
         <template #start>
-          <span class="font-semibold mr-4">Total Data: {{ pembayaranKunjunganProperties.total }}</span>
+          <span class="font-md mr-4">Total Data: {{ pembayaranKunjunganProperties.total }}</span>
         </template>
       </Paginator>
   </div>

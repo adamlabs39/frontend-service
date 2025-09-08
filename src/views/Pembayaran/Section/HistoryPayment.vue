@@ -78,12 +78,12 @@ onMounted(() => {
                         </Column>
                         <Column header="Hutang" headerClass="bg-adameds-50" style="width: 25%">
                             <template #body="slotProps">
-                                Rp. {{ slotProps.data.debtBefore }}
+                                Rp. {{ Number(slotProps.data.debtBefore).toLocaleString('id-ID') }}
                             </template>
                         </Column>
                         <Column header="Hutang Terbayar" headerClass="bg-adameds-50" style="width: 25%">
                             <template #body="slotProps">
-                                Rp. {{ slotProps.data.amount }}
+                                Rp. {{ Number(slotProps.data.amount).toLocaleString('id-ID')     }}
                             </template>
                         </Column>
                         <Column header="Catatan" field="note" headerClass="bg-adameds-50" style="width: 25%">

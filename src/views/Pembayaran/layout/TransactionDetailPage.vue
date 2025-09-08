@@ -62,6 +62,33 @@ const codeDiscount = ref<number>();
 const discountDisabled = ref(false);
 const voucherDisabled = ref(false);
 
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+    if (typeof price !== 'number') return 'Rp 0';
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0, 
+    }).format(price);
+};
+
+//Flexibilitas Format Voucher
+const formattedVoucherValue = computed(() => {
+    if (!detailData.value || !detailData.value.voucherValue) {
+        return 'Rp 0';
+    }
+
+    const type = detailData.value.voucherType;
+    const value = detailData.value.voucherValue;
+    if (type === 'persentase') {
+        return `${value} %`;
+    } 
+    else if (type === 'potongan') {
+        return formatPriceLokal(value);
+    }
+    return formatPriceLokal(value);
+});
+
 // Mengambil data detail tagihan utama
 const fetchDetailBill = async () => {
   if (!props.billUuid) return;
@@ -403,7 +430,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm">Voucher</div>
-              <div class="text-sm">Rp {{ detailData.voucherValue?.toLocaleString('id-ID') || "0" }} </div>
+              <div class="text-sm">Rp {{ formattedVoucherValue }} </div>
             </div>
             <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
             <div class="flex justify-between mt-6">

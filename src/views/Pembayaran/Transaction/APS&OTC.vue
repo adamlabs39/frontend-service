@@ -38,7 +38,7 @@ const UseUtilsStore = utilsStore();
 const apsotcPayload = ref<any[]>([]);
 const apsotcProperties = ref({
     page: 1,
-    pageSize: 10,
+    page_size: 10,
     total: 0,
 });
 
@@ -90,11 +90,11 @@ const fetchApsotc = async () => {
         }
         // Jika selectedPayType.value adalah 'Semua', statusForApi akan tetap string kosong ''
         const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
-        const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+        const paymentForApi = selectedPaymentMethod.value;
 
         const response = await apsotcStore.getApi(
             apsotcProperties.value.page,
-            apsotcProperties.value.pageSize,
+            apsotcProperties.value.page_size,
             dateToEpoch(startDateFilter.value),
             dateToEpoch(endDateFilter.value),
             selectedPatientUuid.value || searchQuery.value,
@@ -108,6 +108,7 @@ const fetchApsotc = async () => {
             apsotcPayload.value = plainResponse.payload.map((item: any) => ({
                 uuid: item.uuid,
                 billCode: item.billCode,
+                noRm: item.noRm,
                 invoiceCode: item.invoiceCode,
                 patientName: item.patientName,
                 noReg: item.noReg,
@@ -128,7 +129,7 @@ const fetchApsotc = async () => {
 
             const apiProperties = plainResponse.properties;
             apsotcProperties.value.page = apiProperties.page;
-            apsotcProperties.value.pageSize = apiProperties.pageSize;
+            apsotcProperties.value.page_size = apiProperties.pageSize;
             apsotcProperties.value.total = parseInt(apiProperties.totalData, 10) || 0;
         } else {
             apsotcPayload.value = [];
@@ -166,12 +167,12 @@ const findTransactionsForDropdown = async (filter: string) => {
                 statusForApi = 'LUNAS';
             }
             const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
-            const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+            const paymentForApi = selectedPaymentMethod.value;
 
             // Memanggil API dengan limit kecil untuk dropdown
             const response = await apsotcStore.getApi(
                 1,
-                20, 
+                20,
                 dateToEpoch(startDateFilter.value),
                 dateToEpoch(endDateFilter.value),
                 filterText,
@@ -235,10 +236,13 @@ const onPoliSelect = (label: string) => {
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
-    if (selectedPaymentMethod.value.includes(label)) {
-        selectedPaymentMethod.value = [];
+    const index = selectedPaymentMethod.value.indexOf(label);
+    if (index > -1) {
+        // Jika sudah ada, hapus dari array
+        selectedPaymentMethod.value.splice(index, 1);
     } else {
-        selectedPaymentMethod.value = [label];
+        // Jika belum ada, tambahkan ke array
+        selectedPaymentMethod.value.push(label);
     }
     applyFilter();
 };
@@ -246,12 +250,12 @@ const onPaymentMethodSelect = (label: string) => {
 
 const handlePage = (event: any) => {
     apsotcProperties.value.page = event.page + 1;
-    apsotcProperties.value.pageSize = event.rows;
+    apsotcProperties.value.page_size = event.rows;
     fetchApsotc();
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([
-    { label: 'Aps&Otc' }
+    { label: 'APS & OTC' }
 ]);
 
 const changeSection = (label: string) => {
@@ -340,11 +344,11 @@ onMounted(() => {
                                 :outlined="selectedPayType != 'MenungguPembayaran'" borderColor="border-adameds-300"
                                 :textColor="selectedPayType != 'MenungguPembayaran' ? 'text-adameds-300' : 'text-white'
                                     " :backgroundColor="selectedPayType != 'MenungguPembayaran' ? 'bg-transparent' : 'bg-adameds-300'
-                    " class="mt-auto mr-[5px] font-semibold" full />
+                                        " class="mt-auto mr-[5px] font-semibold" full />
                             <CustomButton @click="onSelectPayType('Lunas')" label="LUNAS"
                                 :outlined="selectedPayType != 'Lunas'" borderColor="border-adameds-300" :textColor="selectedPayType != 'Lunas' ? 'text-adameds-300' : 'text-white'
                                     " :backgroundColor="selectedPayType != 'Lunas' ? 'bg-transparent' : 'bg-adameds-300'
-                    " class="mt-auto ml-[5px] font-semibold" full />
+                                        " class="mt-auto ml-[5px] font-semibold" full />
                         </div>
                         <div class="flex mb-[10px] mt-5 font-semibold text-SM text-grey-300">
                             <div class="w-[15%]">Filter Pelayanan</div>
@@ -390,7 +394,7 @@ onMounted(() => {
                         </template>
                         <template #body="slotProps">
                             <div class="text-center">
-                                <div class="text-SM">{{ slotProps.data.billCode }}</div>
+                                <div class="text-SM">{{ slotProps.data.noRm }}</div>
                                 <div class="text-SM">{{ slotProps.data.noReg }}</div>
                                 <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
                             </div>
@@ -408,11 +412,11 @@ onMounted(() => {
                             </div>
                             <div class="text-XS">{{ slotProps.data.fullAddress }}</div>
                             <div class="flex flex-wrap">
-                                <CustomChip :showCheckedIcon="false" :label="slotProps.data.jenisKelamin" :bgColor="slotProps.data.jenisKelamin == 'Perempuan' ? 'bg-female-75' : 'bg-male-75'
-                                    " :textColor="slotProps.data.jenisKelamin == 'Perempuan'
-                        ? 'text-female-300'
-                        : 'text-male-300'
-                    " customClass="h-5 pr-[6px] border-none mr-[5px]" />
+                                <CustomChip :showCheckedIcon="false"
+                                    :label="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'Perempuan' : 'Laki-laki'"
+                                    :bgColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'bg-female-75' : 'bg-male-75'"
+                                    :textColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'text-female-300' : 'text-male-300'"
+                                    customClass="h-5 pr-[6px] border-none mr-[5px]" />
                                 <CustomChip :showCheckedIcon="false" :label="slotProps.data.noHandphone"
                                     bgColor="bg-adameds-50" textColor="text-adameds-300"
                                     customClass="h-5 pr-[6px] border-none mr-[5px]" />
@@ -423,7 +427,7 @@ onMounted(() => {
                         <template #body="slotProps">
                             <div class="text-SM">{{ slotProps.data.practitionerName }} <span
                                     v-if="slotProps.data.scheduleTime" class="text-adameds-300">|</span> {{
-                                slotProps.data.scheduleTime }}</div>
+                                        slotProps.data.scheduleTime }}</div>
 
                             <div class="flex flex-wrap mt-1">
                                 <CustomChip :showCheckedIcon="false"
@@ -437,15 +441,15 @@ onMounted(() => {
                                 <CustomChip v-if="slotProps.data.polyclinicName" :showCheckedIcon="false"
                                     :label="slotProps.data.polyclinicName" customClass="h-5 pr-[5px] mr-[5px]" />
                                 <CustomChip :showCheckedIcon="false" :label="slotProps.data.paymentType" :bgColor="slotProps.data.paymentType == 'TUNAI'
-                                        ? 'bg-adameds-50'
-                                        : 'bg-warning-50'
+                                    ? 'bg-adameds-50'
+                                    : 'bg-warning-50'
                                     " :textColor="slotProps.data.paymentType == 'TUNAI'
-                        ? 'text-adameds-300'
-                        : 'text-warning-300'
-                    " :borderColor="slotProps.data.paymentType == 'TUNAI'
+                                        ? 'text-adameds-300'
+                                        : 'text-warning-300'
+                                        " :borderColor="slotProps.data.paymentType == 'TUNAI'
                         ? 'border-adameds-300'
                         : 'border-warning-300'
-                    " customClass="h-5 pr-[6px] mr-[5px]" />
+                        " customClass="h-5 pr-[6px] mr-[5px]" />
                             </div>
 
                         </template>
@@ -453,20 +457,20 @@ onMounted(() => {
                 </DataTable>
             </template>
             <template #footer>
-                <div class="flex justify-between items-center">
-                    <Paginator :first="(apsotcProperties.page - 1) * apsotcProperties.pageSize"
-                        :rows="apsotcProperties.pageSize" :totalRecords="apsotcProperties.total"
+                <div class="flex justify-end">
+                    <Paginator :first="(apsotcProperties.page - 1) * apsotcProperties.page_size"
+                        :rows="apsotcProperties.page_size" :totalRecords="apsotcProperties.total"
                         :rowsPerPageOptions="[10, 20, 30]" @page="handlePage"
                         template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-                        currentPageReportTemplate="{currentPage}" class="w-full">
+                        currentPageReportTemplate="{currentPage}" >
                         <template #start>
-                            <span class="font-semibold mr-4">Total Data: {{ apsotcProperties.total }}</span>
+                            <span class="font-md mr-4">Total Data: {{ apsotcProperties.total }}</span>
                         </template>
                     </Paginator>
                 </div>
             </template>
         </Card>
-        <TransactionApsOtc v-else :bill-uuid="selectedBillUuid" :dataBreadCrumb="dataBreadCrumb"
-            :pageType="pageType" @back="dataBreadCrumb.pop()" />
+        <TransactionApsOtc v-else :bill-uuid="selectedBillUuid" :dataBreadCrumb="dataBreadCrumb" :pageType="pageType"
+            @back="dataBreadCrumb.pop()" />
     </div>
 </template>

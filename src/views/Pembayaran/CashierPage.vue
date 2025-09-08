@@ -56,32 +56,36 @@ const closingHarianData = ref<any>({});
 const selectedPatient = ref<string | null>(null);
 const selectedServiceBillUuid = ref<string | null>(null);
 
-const route = useRoute();
-const closeBillStore = useReportCloseBillStore();
-const hasData = computed(() => kasirData.value && kasirData.value.length > 0);
-const lastPaymentResult = ref(null);
-
-const handleKasirClick = () => {
-  if (!isKasirOpen.value) {
-    saldoAwalDisabled.value = true;
-    shiftDisabled.value = true;
-    isKasirOpen.value = true;
-  } else {
-    closeKasirDialog.value = true;
-  }
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+  if (typeof price !== 'number') return 'Rp 0';
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0, 
+  }).format(price);
 };
+
+//Flexibilitas Format Voucher
+const formattedVoucherValue = computed(() => {
+  if (!kasirData.value || !kasirData.value.voucherValue) {
+    return 'Rp 0';
+  }
+
+  const type = kasirData.value.voucherType;
+  const value = kasirData.value.voucherValue;
+  if (type === 'persentase') {
+    return `${value} %`;
+  } 
+  else if (type === 'potongan') {
+    return formatPriceLokal(value);
+  }
+  return formatPriceLokal(value);
+});
 
 const isClosingHarianDisabled = computed(
   () => saldoAwalDisabled.value && shiftDisabled.value
 );
-
-const handleClosingKasir = () => {
-  saldoAwalDisabled.value = false;
-  shiftDisabled.value = false;
-  isKasirOpen.value = false;
-  closeKasirDialog.value = false;
-};
-
 
 //closingharianDialogcheck
 const openClosingHarianDialog = async () => {
@@ -226,6 +230,7 @@ const setSelectedPatientData = async (uuid: string) => {
         totalRuangan: dataFromApi.totalRuangan ,
         discount: dataFromApi.discount,
         voucherValue: dataFromApi.voucherValue,
+        voucherType: dataFromApi.voucherType,
         subTotal: dataFromApi.subTotal,
         ppn: dataFromApi.ppn,
         grandTotal: dataFromApi.grandTotal,
@@ -241,7 +246,7 @@ const setSelectedPatientData = async (uuid: string) => {
 
       processBillData(serviceBillData);
 
-      // Logika tombol (sama seperti sebelumnya)
+      // Logika tombol
       if (kasirData.value.isPaid === true || kasirData.value.closeBill === true) {
         isBillClosed.value = true;
         discountDisabled.value = true;
@@ -584,18 +589,6 @@ const submitClosingHarianKasir = async () => {
   }
 };
 
-// const submitClosingHarianKasir = async () => {
-//   storeUtils.setLoading(true);
-//   try {
-//     const response = await tagihanStore.postCloseHarianKasir();
-//     closeHarianDialog.value = false;
-//   } catch (error) {
-//     console.error("Failed to process the data:", error);
-//   } finally {
-//     storeUtils.setLoading(false);
-//   }
-// };
-
 const submitPaymentKasir = async () => {
   storeUtils.setLoading(true);
   try {
@@ -898,23 +891,23 @@ onUnmounted(() => {
             
             <div class="flex justify-between mt-6">
               <div class="text-sm text-black font-poppins">Biaya Administrasi</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.adminFee }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.adminFee) }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Tindakan</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.totalTindakan }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.totalTindakan) }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Penunjang</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.totalPenunjang }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.totalPenunjang) }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat/Alkes</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.totalObatAlkes }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.totalObatAlkes) }}</div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.totalRuangan }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.totalRuangan) }}</div>
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins">Diskon</div>
@@ -922,22 +915,22 @@ onUnmounted(() => {
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm font-poppins">Voucher</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.voucherValue || "0"}} </div>
+              <div class="text-sm font-poppins"> {{ formattedVoucherValue }} </div>
             </div>
             <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Total</div>
-              <div class="text-sm font-bold font-poppins">Rp {{ kasirData.subTotal }} </div>
+              <div class="text-sm font-bold font-poppins"> {{ formatPriceLokal(kasirData.subTotal) }} </div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">PPN</div>
-              <div class="text-sm font-poppins">Rp {{ kasirData.ppn }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.ppn) }}</div>
             </div>
             <hr class="mt-6 mb-2 border-slate-300 border-1" />
 
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold font-poppins">Grand Total</div>
-              <div class="text-sm font-bold font-poppins">Rp {{ kasirData.grandTotal }}</div>
+              <div class="text-sm font-bold font-poppins"> {{ formatPriceLokal(kasirData.grandTotal) }}</div>
             </div>
 
 
@@ -1332,19 +1325,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                Total Rp {{ itemTagihan.item.ruangan.total }}
+                Rp {{ itemTagihan.item.ruangan.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1370,19 +1363,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 20%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.penunjang.total }}
+                RP {{ itemTagihan.item.penunjang.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1408,19 +1401,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.tindakan.total }}
+                RP {{ itemTagihan.item.tindakan.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1451,18 +1444,18 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 10%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.serviceFee ?? 0 }}</div>
+                  <div class="text-SM">{{ slotProps.data.serviceFee?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
                   <div class="text-SM">
-                    {{ slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee ?? 0) }}
+                    {{ (slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee ?? 0))?.toLocaleString ('id-ID') || 0 }}
                   </div>
                 </template>
               </Column>
@@ -1470,7 +1463,7 @@ onUnmounted(() => {
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.obat.total }}
+                RP {{ itemTagihan.item.obat.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1496,19 +1489,19 @@ onUnmounted(() => {
               </Column>
               <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.price }}</div>
+                  <div class="text-SM">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
               <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left" style="width: 15%">
                 <template #body="slotProps">
-                  <div class="text-SM">{{ slotProps.data.qty * slotProps.data.price }}</div>
+                  <div class="text-SM">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
                 </template>
               </Column>
             </DataTable>
             <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
               <p class="text-base font-bold ">Total</p>
               <p class="text-base font-bold">
-                RP {{ itemTagihan.item.alkes.total }}
+                RP {{ itemTagihan.item.alkes.total?.toLocaleString ('id-ID') || 0 }}
               </p>
             </div>
           </div>
@@ -1519,7 +1512,7 @@ onUnmounted(() => {
                 <div class="flex justify-between">
                   <p class="text-base font-bold">Total Keseluruhan</p>
                   <p class="text-base font-bold">
-                    RP. {{ itemTagihan.total }},00
+                    RP {{ itemTagihan.total?.toLocaleString ('id-ID') || 0 }}
                   </p>
                 </div>
               </template>

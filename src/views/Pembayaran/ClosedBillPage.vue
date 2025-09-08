@@ -82,9 +82,7 @@ const fetchClosedBills = async (searchUuid: string | null = null) => {
 
     const statusForApi = statusFilter.value.toUpperCase() === 'SEMUA' ? '' : statusFilter.value.toUpperCase();
     const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli]);
-    
-    const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
-
+    const paymentForApi = selectedPaymentMethod.value;
 
     const response = await store.getApi(
       closedBillProperties.value.page,
@@ -112,19 +110,21 @@ const fetchClosedBills = async (searchUuid: string | null = null) => {
         noHandphone: item.noHandphone,   
         jenisKelamin: item.jenisKelamin, 
         noRm: item.noRm,   
-        jeniskelamin: item.jenisKelamin, 
         ageYear: item.ageYear, 
         ageMonth: item.ageMonth, 
         ageDay: item.ageDay,
         completenessStatus: item.completenessStatus,
+        bedNumber: item.bedNumber,
+        roomName: item.roomName,
         phone: item.noHandphone ,
         polyclinic_name: item.polyclinicName,
-        tanggal_jadwal: item.scheduleTime|| "",
+        scheduleStartTime: item.scheduleStartTime|| "",
+        scheduleEndTime: item.scheduleEndTime|| ""
       }));
       
       const properties = response.properties;
       closedBillProperties.value.page = properties.page || 1;
-      closedBillProperties.value.page_size = properties.pagesize || 10;
+      closedBillProperties.value.page_size = properties.pageSize || 10;
       closedBillProperties.value.total = parseInt(properties.totalData, 10) || 0;
     }
 
@@ -243,10 +243,13 @@ const onPoliSelect = (label: string) => {
 };
 
 const onPaymentMethodSelect = (label: string) => {
-  if (selectedPaymentMethod.value.includes(label)) {
-    selectedPaymentMethod.value = [];
+  const index = selectedPaymentMethod.value.indexOf(label);
+  if (index > -1) {
+    // Jika sudah ada, hapus dari array
+    selectedPaymentMethod.value.splice(index, 1);
   } else {
-    selectedPaymentMethod.value = [label];
+    // Jika belum ada, tambahkan ke array
+    selectedPaymentMethod.value.push(label);
   }
   searchData();
 };
@@ -457,12 +460,12 @@ onMounted(() => {
               <div class="text-XS">{{ slotProps.data.address }}</div>
               <div class="flex flex-wrap mt-1">
                 <CustomChip
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.jenisKelamin === 'Perempuan' ? 'Perempuan' : 'Laki-laki'"
-                  :bgColor="slotProps.data.jenisKelamin === 'Perempuan' ? 'bg-female-75' : 'bg-male-75'"
-                  :textColor="slotProps.data.jenisKelamin === 'Perempuan' ? 'text-female-300' : 'text-male-300'"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
-                />
+                :showCheckedIcon="false"
+                :label="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'Perempuan' : 'Laki-laki'"
+                :bgColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'bg-female-75' : 'bg-male-75'"
+                :textColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'text-female-300' : 'text-male-300'"
+                customClass="h-5 pr-[6px] border-none mr-[5px]"
+              />
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="slotProps.data.noHandphone"
@@ -476,11 +479,32 @@ onMounted(() => {
 
           <Column header="Keperawatan" headerClass="bg-adameds-50" style="width: 35%">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.doctor }} <span v-if="slotProps.data.tanggal_jadwal" class="text-adameds-300">|</span> {{ slotProps.data.tanggal_jadwal }}</div>
-              <div class="flex flex-wrap mt-1">
+              <div class="text-SM">
+                  {{ slotProps.data.doctor }}
+                  
+                  <span v-if="slotProps.data.scheduleStartTime">
+                    <span class="text-adameds-300"> | </span>
+                    {{ epochToDate(slotProps.data.scheduleStartTime, 'time') }}
+                    
+                    <template v-if="slotProps.data.scheduleEndTime"> - {{ epochToDate(slotProps.data.scheduleEndTime, 'time') }}</template>
+                  </span>
+                </div>              
+                <div class="flex flex-wrap mt-1">
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="reversePoliMapping[slotProps.data.polyclinic] || slotProps.data.polyclinic"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.roomName"
+                  :showCheckedIcon="false"
+                  label="RUANGAN"  
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.bedNumber"
+                  :showCheckedIcon="false"
+                  label="BED"  
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
@@ -535,7 +559,7 @@ onMounted(() => {
             currentPageReportTemplate="{currentPage}"
           >
           <template #start>
-          <span class="font-semibold mr-4">Total Data: {{ closedBillProperties.total }}</span>
+          <span class="font-md mr-4">Total Data: {{ closedBillProperties.total }}</span>
         </template>
           </Paginator>
         </div>

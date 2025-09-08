@@ -58,12 +58,12 @@ const props = defineProps({
             <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%"><template #body="slotProps">{{ epochToDate(slotProps.data.dateUsed, "date") }}</template></Column>
             <Column field="itemName" header="Kamar" headerClass="bg-adameds-50"></Column>
             <Column field="qty" header="Waktu (Hari)" headerClass="bg-adameds-50 text-center" bodyClass="text-left"></Column>
-            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width:15%"><template #body="slotProps">{{ slotProps.data.price }}</template></Column>
-            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ slotProps.data.qty * slotProps.data.price }}</template></Column>
+            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width:15%"><template #body="slotProps">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0}}</template></Column>
+            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</template></Column>
           </DataTable>
           <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
             <p class="text-base font-bold">Total Ruangan</p>
-            <p class="text-base font-bold"> Rp.{{ service.items.item.ruangan.total }}</p>
+            <p class="text-base font-bold"> Rp {{ Number(service.items.item.ruangan.total) .toLocaleString ('id-ID') || 0}}</p>
           </div>
         </div>
 
@@ -72,12 +72,12 @@ const props = defineProps({
             <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%"><template #body="slotProps">{{ epochToDate(slotProps.data.dateUsed, "date") }}</template></Column>
             <Column field="itemName" header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50" style="width: 45%"></Column>
             <Column field="qty" header="Jumlah" headerClass="bg-adameds-50 text-center" bodyClass="text-left" ></Column>
-            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price }}</template></Column>
-            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ slotProps.data.qty * slotProps.data.price }}</template></Column>
+            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</template></Column>
+            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</template></Column>
           </DataTable>
           <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
             <p class="text-base font-bold">Total Tindakan</p>
-            <p class="text-base font-bold"> Rp.{{ service.items.item.tindakan.total }}</p>
+            <p class="text-base font-bold"> Rp {{ Number(service.items.item.tindakan.total) .toLocaleString ('id-ID') || 0}}</p>
           </div>
         </div>
 
@@ -86,12 +86,12 @@ const props = defineProps({
             <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%"><template #body="slotProps">{{ epochToDate(slotProps.data.dateUsed, "date") }}</template></Column>
             <Column field="itemName" header="Penunjang" headerClass="bg-adameds-50" style="width: 45%"></Column>
             <Column field="qty" header="Jumlah" headerClass="bg-adameds-50 text-center" bodyClass="text-center" style="width: 10%"></Column>
-            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-right" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price }}</template></Column>
-            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-right" style="width: 10%"><template #body="slotProps">{{ slotProps.data.qty * slotProps.data.price }}</template></Column>
+            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-right" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</template></Column>
+            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-right" style="width: 10%"><template #body="slotProps">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</template></Column>
           </DataTable>
           <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
             <p class="text-base font-bold">Total Penunjang</p>
-            <p class="text-base font-bold"> Rp.{{ service.items.item.penunjang.total }}</p>
+            <p class="text-base font-bold"> Rp {{ Number(service.items.item.penunjang.total) .toLocaleString ('id-ID') || 0}}</p>
           </div>
         </div>
 
@@ -101,13 +101,13 @@ const props = defineProps({
             <Column field="itemName" header="Obat" headerClass="bg-adameds-50"></Column>
             <Column field="additionalField" header="Golongan" headerClass="bg-adameds-50"></Column>
             <Column field="qty" header="Jumlah" headerClass="bg-adameds-50 text-center" bodyClass="text-left"></Column>
-            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"><template #body="slotProps">{{ slotProps.data.price }}</template></Column>
-            <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.serviceFee || 0 }}</template></Column>
-            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee || 0) }}</template></Column>
+            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left"><template #body="slotProps">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0 }}</template></Column>
+            <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.serviceFee?.toLocaleString ('id-ID') || 0 }}</template></Column>
+            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ (slotProps.data.qty * slotProps.data.price + (slotProps.data.serviceFee || 0))?.toLocaleString('id-ID') || 0 }}</template></Column>
           </DataTable>
           <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
             <p class="text-base font-bold">Total Obat</p>
-            <p class="text-base font-bold"> Rp.{{ service.items.item.obat.total }}</p>
+            <p class="text-base font-bold"> Rp {{ Number(service.items.item.obat.total) .toLocaleString ('id-ID') || 0}}</p>
           </div>
         </div>
         
@@ -116,12 +116,12 @@ const props = defineProps({
             <Column header="Tanggal" headerClass="bg-adameds-50" style="width: 15%"><template #body="slotProps">{{ epochToDate(slotProps.data.dateUsed, "date") }}</template></Column>
             <Column field="itemName" header="Alkes" headerClass="bg-adameds-50" style="width: 45%"></Column>
             <Column field="qty" header="Jumlah" headerClass="bg-adameds-50 text-center" bodyClass="text-left" ></Column>
-            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price }}</template></Column>
-            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ slotProps.data.qty * slotProps.data.price }}</template></Column>
+            <Column header="Tarif" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 15%"><template #body="slotProps">{{ slotProps.data.price?.toLocaleString ('id-ID') || 0}}</template></Column>
+            <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left" style="width: 10%"><template #body="slotProps">{{ (slotProps.data.qty * slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</template></Column>
           </DataTable>
           <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
             <p class="text-base font-bold">Total Alkes</p>
-            <p class="text-base font-bold"> Rp.{{ service.items.item.alkes.total }}</p>
+            <p class="text-base font-bold"> Rp {{ Number(service.items.item.alkes.total) .toLocaleString ('id-ID') || 0}}</p>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ const props = defineProps({
               <div class="flex justify-between">
                 <p class="text-base font-bold">Total Keseluruhan</p>
                 <p class="text-base font-bold">
-                Rp.{{ service.items.total }}
+                Rp {{ Number(service.items.total) .toLocaleString('id-ID') || 0 }}
                 </p>
               </div>
             </template>

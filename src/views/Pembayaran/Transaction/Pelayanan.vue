@@ -2,7 +2,7 @@
 import { onMounted, ref, computed, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import { utilsStore } from "@/stores/utils";
-import { dateToEpoch } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -16,6 +16,7 @@ import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
 import { usePelayananTransaction as usePelayananStore } from "@/stores/pembayaran/pelayanan";
+
 
 
 const today = new Date();
@@ -89,7 +90,7 @@ const fetchPelayanan = async () => {
       }
 // Jika selectedPayType.value adalah 'Semua', statusForApi akan tetap string kosong ''
     const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
-    const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+    const paymentForApi = selectedPaymentMethod.value;
     
     const response = await pelayananStore.getApi(
       pelayananProperties.value.page,
@@ -108,6 +109,7 @@ const fetchPelayanan = async () => {
         uuid: item.uuid,
         billCode: item.billCode,
         invoiceCode: item.invoiceCode,
+        noRm: item.noRm,
         noReg: item.noReg,
         patientName: item.patientName,
         ageYear: item.ageYear,
@@ -117,17 +119,20 @@ const fetchPelayanan = async () => {
         jenisKelamin: item.jenisKelamin,
         noHandphone: item.noHandphone,
         practitionerName: item.practitionerName,
-        scheduleTime: item.scheduleTime,
+        scheduleStartTime: item.scheduleStartTime,
+        scheduleEndTime: item.scheduleEndTime,
         polyclinicName: item.polyclinicName,
         mainServiceCategory: item.mainServiceCategory, // e.g., "RJ", "RI"
         paymentType: item.paymentType,
         completenessStatus: item.completenessStatus, // e.g., "Data Lengkap"
+        roomName: item.roomName,
+        bedNumber: item.bedNumber,
       }));
 
       const apiProperties = plainResponse.properties;
       pelayananProperties.value.page = apiProperties.page;
-      pelayananProperties.value.pageSize = apiProperties.pageSize;
-      pelayananProperties.value.total = parseInt(apiProperties.totalData, 10) || 0;
+      pelayananProperties.value.pageSize = apiProperties.pageSize; 
+      pelayananProperties.value.total = parseInt(apiProperties.totalData, 10) || 0; 
     } else {
       pelayananPayload.value = [];
       pelayananProperties.value.total = 0;
@@ -164,7 +169,7 @@ const findTransactionsForDropdown = async (filter: string) => {
         statusForApi = 'LUNAS';
       }
       const poliForApi = selectedFilterPoli.value.map(poli => poliMapping[poli] || poli);
-      const paymentForApi = selectedPaymentMethod.value.length > 0 ? selectedPaymentMethod.value[0] : "";
+      const paymentForApi = selectedPaymentMethod.value;
 
       // Memanggil API dengan limit kecil untuk dropdown
       const response = await pelayananStore.getApi(
@@ -233,10 +238,13 @@ const onPoliSelect = (label: string) => {
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
-  if (selectedPaymentMethod.value.includes(label)) {
-    selectedPaymentMethod.value = [];
+  const index = selectedPaymentMethod.value.indexOf(label);
+  if (index > -1) {
+    // Jika sudah ada, hapus dari array
+    selectedPaymentMethod.value.splice(index, 1);
   } else {
-    selectedPaymentMethod.value = [label];
+    // Jika belum ada, tambahkan ke array
+    selectedPaymentMethod.value.push(label);
   }
   applyFilter();
 };
@@ -479,7 +487,7 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="text-center">
-                <div class="text-SM">{{ slotProps.data.billCode }}</div>
+                <div class="text-SM">{{ slotProps.data.noRm }}</div>
                 <div class="text-SM">{{ slotProps.data.noReg }}</div>
                 <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
               </div>
@@ -499,15 +507,9 @@ onMounted(() => {
               <div class="flex flex-wrap">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.jenisKelamin"
-                  :bgColor="
-                    slotProps.data.jenisKelamin == 'Perempuan' ? 'bg-female-75' : 'bg-male-75'
-                  "
-                  :textColor="
-                    slotProps.data.jenisKelamin == 'Perempuan'
-                      ? 'text-female-300'
-                      : 'text-male-300'
-                  "
+                  :label="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'Perempuan' : 'Laki-laki'"
+                  :bgColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'bg-female-75' : 'bg-male-75'"
+                  :textColor="['Perempuan', 'Female'].includes((slotProps.data.jenisKelamin || '').toString().trim()) ? 'text-female-300' : 'text-male-300'"
                   customClass="h-5 pr-[6px] border-none mr-[5px]"
                 />
                 <CustomChip
@@ -526,12 +528,32 @@ onMounted(() => {
             headerClass="bg-adameds-50"
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.practitionerName }} <span v-if="slotProps.data.scheduleTime" class="text-adameds-300">|</span> {{ slotProps.data.scheduleTime }}</div>
-              
+            <div class="text-SM">
+                  {{ slotProps.data.practitionerName }}
+                  
+                  <span v-if="slotProps.data.scheduleStartTime">
+                    <span class="text-adameds-300"> | </span>
+                    {{ epochToDate(slotProps.data.scheduleStartTime, 'time') }}
+                    
+                    <template v-if="slotProps.data.scheduleEndTime"> - {{ epochToDate(slotProps.data.scheduleEndTime, 'time') }}</template>
+                  </span>
+                </div>               
               <div class="flex flex-wrap mt-1">
                 <CustomChip
                   :showCheckedIcon="false"
                   :label="reversePoliMapping[slotProps.data.mainServiceCategory] || slotProps.data.mainServiceCategory"
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.roomName"
+                  :showCheckedIcon="false"
+                  label="RUANGAN"  
+                  customClass="h-5 pr-[5px] mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.bedNumber"
+                  :showCheckedIcon="false"
+                  label="BED"  
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
@@ -573,7 +595,7 @@ onMounted(() => {
         </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-between items-center">
+        <div class="flex justify-end">
             <Paginator
               :first="(pelayananProperties.page - 1) * pelayananProperties.pageSize"
               :rows="pelayananProperties.pageSize"
@@ -582,10 +604,9 @@ onMounted(() => {
               @page="handlePage"
               template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
               currentPageReportTemplate="{currentPage}"
-              class="w-full"
             >
               <template #start>
-                <span class="font-semibold mr-4">Total Data: {{ pelayananProperties.total }}</span>
+                <span class="font-md mr-4">Total Data: {{ pelayananProperties.total }}</span>
               </template>
             </Paginator>
         </div>
