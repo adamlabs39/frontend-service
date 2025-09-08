@@ -122,28 +122,34 @@ watch(
   { immediate: true }
 );
 
-const getSelectedStatusesLowercase = (): string[] => {
+const getSelectedStatusCodes = (): string[] => {
   if (chipValues.value.includes("SEMUA")) return [];
-  const map: Record<string, string> = {
-    ANTRI: "antri",
-    PROSES: "proses",
-    SELESAI: "selesai",
-    PENYERAHAN_OBAT: "penyerahan_obat",
-  };
-  return chipValues.value
-    .filter((v) => v !== "SEMUA")
-    .map((v) => map[v])
-    .filter(Boolean);
+  const set = new Set<string>();
+  for (const v of chipValues.value) {
+    switch (v) {
+      case "ANTRI":
+        set.add("0");
+        set.add("1");
+        set.add("2");
+        break;
+      case "PROSES":
+        set.add("3");
+        break;
+      case "SELESAI":
+        set.add("4");
+        break;
+      case "PENYERAHAN_OBAT":
+        set.add("5");
+        break;
+    }
+  }
+  return Array.from(set);
 };
 
 // Auto-trigger (chip) dengan debounce 300ms
 const performSearch = () => {
   if (["0", "1", "2"].includes(props.activeTab)) {
-    emit(
-      "search",
-      searchPatientFilter.value.trim(),
-      getSelectedStatusesLowercase()
-    );
+    emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
   }
 };
 const debouncedSearch = useDebounceFn(performSearch, 300);
@@ -151,11 +157,7 @@ const debouncedSearch = useDebounceFn(performSearch, 300);
 // Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
 const onClickSearch = () => {
   if (["0", "1", "2"].includes(props.activeTab)) {
-    emit(
-      "search",
-      searchPatientFilter.value.trim(),
-      getSelectedStatusesLowercase()
-    );
+    emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
     emit(
       "dateRange",
       dateToEpoch(startDateFilter.value),
@@ -171,7 +173,7 @@ const onClickReset = () => {
   if (["0", "1", "2"].includes(props.activeTab)) {
     startDateFilter.value = getThreeDaysAgoDate();
     endDateFilter.value = getNowDate();
-    emit("search", "", getSelectedStatusesLowercase());
+    emit("search", "", getSelectedStatusCodes());
   } else {
     startDateFilter.value = null;
     endDateFilter.value = null;
