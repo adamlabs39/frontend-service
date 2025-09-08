@@ -93,9 +93,9 @@ const dateToEpoch = (date?: Date | null): number | null => {
 
 // Fallback tanggal untuk tampilan (display purpose only)
 const getNowDate = () => new Date(); // kanan (end)
-const getThreeDaysAgoDate = () => {
+const getThirtyDaysAgoDate = () => {
   const d = new Date();
-  d.setDate(d.getDate() - 3);
+  d.setDate(d.getDate() - 30);
   return d; // kiri (start)
 };
 
@@ -104,7 +104,7 @@ const syncDatepickerWithProps = () => {
     startDateFilter.value =
       props.startDateEpoch !== undefined && props.startDateEpoch !== null
         ? epochToDate(props.startDateEpoch)
-        : getThreeDaysAgoDate();
+        : getThirtyDaysAgoDate();
 
     endDateFilter.value =
       props.endDateEpoch !== undefined && props.endDateEpoch !== null
@@ -171,7 +171,7 @@ const onClickReset = () => {
   searchPatientFilter.value = "";
   chipValues.value = ["SEMUA"];
   if (["0", "1", "2"].includes(props.activeTab)) {
-    startDateFilter.value = getThreeDaysAgoDate();
+    startDateFilter.value = getThirtyDaysAgoDate();
     endDateFilter.value = getNowDate();
     emit("search", "", getSelectedStatusCodes());
   } else {

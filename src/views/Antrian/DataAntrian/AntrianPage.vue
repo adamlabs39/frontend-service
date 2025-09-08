@@ -200,7 +200,17 @@ watch(
       dataAntrianRjProperties.value.name = "";
       dataAntrianRjProperties.value.status_panggilan = [];
     }
+
+    if (newVal === "2") {
+      dataAntrianFarmasiProperties.value.name = "";
+      dataAntrianFarmasiProperties.value.status_panggilan = [];
+      dataAntrianFarmasiProperties.value.start_date = undefined;
+      dataAntrianFarmasiProperties.value.end_date = undefined;
+      // optional: reset total agar paginator sinkron, akan diperbarui oleh updateTotalData
+      dataAntrianFarmasiProperties.value.total = 0;
+    }
   },
+
   { immediate: true }
 );
 </script>
@@ -278,7 +288,11 @@ watch(
             />
           </TabPanel>
           <TabPanel value="2" class="flex flex-col flex-1">
-            <SectionAntrianFarmasi class="flex flex-col flex-1" />
+            <SectionAntrianFarmasi
+              :paginationProperties="dataAntrianFarmasiProperties"
+              @updateTotalData="handleUpdateTotalDataFarmasi"
+              class="flex flex-col flex-1"
+            />
           </TabPanel>
         </TabPanels>
       </Tabs>
