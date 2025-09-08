@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import { utilsStore } from "@/stores/utils";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
+import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps<{
   paginationProperties: {
@@ -48,6 +49,8 @@ watch(
 
 const fetchGetDataAntrianAdmisi = async () => {
   useUtilsStore.setLoading(true);
+  // Kosongkan data terlebih dahulu agar tidak menampilkan data lama saat loading/error
+  dataAntrianAdmisiPayload.value = [];
   try {
     const startEpoch = props.paginationProperties.start_date ?? 1128557830;
     const endEpoch = props.paginationProperties.end_date ?? 1999999999;
@@ -69,12 +72,20 @@ const fetchGetDataAntrianAdmisi = async () => {
       props.paginationProperties.pelayanan // pelayanan
     );
     console.log("Ini adalah data antrian admisi antrian", response);
-    if (response) {
+
+    // Jika response sukses tapi payload kosong/tidak valid -> tampilkan NoData
+    if (response && Array.isArray(response.payload)) {
       dataAntrianAdmisiPayload.value = response.payload;
-      emit("updateTotalData", response.properties.total);
+      emit("updateTotalData", response.properties?.total ?? 0);
+    } else {
+      dataAntrianAdmisiPayload.value = [];
+      emit("updateTotalData", 0);
     }
   } catch (error) {
-    console.log("Error fetching data antrian admisi:", error);
+    // Anggap "data tidak ditemukan" sebagai hasil kosong, bukan kegagalan UI
+    console.log("No data or error fetching data antrian admisi:", error);
+    dataAntrianAdmisiPayload.value = [];
+    emit("updateTotalData", 0);
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -163,6 +174,8 @@ const convertStatusRj = (statusRj: number): string => {
       return "proses";
     case 4:
       return "selesai";
+    case 5:
+      return "verifikasi obat";
     default:
       return "unknown";
   }
@@ -339,4 +352,5 @@ const getStatusStyle = (status: string | undefined) => {
       </template>
     </Column>
   </DataTable>
+  <NoData class="min-h-full" v-else />
 </template>
