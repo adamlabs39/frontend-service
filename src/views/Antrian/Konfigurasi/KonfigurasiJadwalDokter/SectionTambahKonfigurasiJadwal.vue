@@ -99,7 +99,7 @@ const fetchGetDokter = async (poliUuid: string) => {
       jadwalDokterProperties.value.name
     );
     if (response && response.payload) {
-      // NEW: ambil daftar excluded khusus poli yang dipilih (fallback ke excludedDokterUuids bila mapping kosong)
+      // ambil daftar excluded khusus poli yang dipilih (fallback ke excludedDokterUuids bila mapping kosong)
       const excludedSet = new Set(
         (props.excludedDoctorUuidsByPoli?.[poliUuid] as string[] | undefined) ??
           props.excludedDokterUuids ??
