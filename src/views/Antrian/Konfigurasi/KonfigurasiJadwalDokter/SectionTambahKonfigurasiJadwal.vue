@@ -99,7 +99,7 @@ const fetchGetDokter = async (poliUuid: string) => {
       jadwalDokterProperties.value.name
     );
     if (response && response.payload) {
-      // NEW: ambil daftar excluded khusus poli yang dipilih (fallback ke excludedDokterUuids bila mapping kosong)
+      // ambil daftar excluded khusus poli yang dipilih (fallback ke excludedDokterUuids bila mapping kosong)
       const excludedSet = new Set(
         (props.excludedDoctorUuidsByPoli?.[poliUuid] as string[] | undefined) ??
           props.excludedDokterUuids ??
@@ -667,25 +667,7 @@ const selectedPatient = ref([]);
                 </div>
               </template>
             </Column>
-            <Column
-              field="durasi per-pasien"
-              headerClass="bg-adameds-50 whitespace-nowrap"
-            >
-              <template #header>
-                <div
-                  class="flex justify-center items-center w-full h-full font-bold"
-                >
-                  Durasi Per-pasien
-                </div>
-              </template>
-              <template #body="slotProps">
-                <div
-                  class="flex justify-center items-center whitespace-nowrap text-SM"
-                >
-                  {{ slotProps.data.durasiPelayanan }} menit
-                </div>
-              </template>
-            </Column>
+
             <Column field="slot jkn" headerClass="bg-adameds-50">
               <template #header>
                 <div
@@ -762,6 +744,25 @@ const selectedPatient = ref([]);
                     (parseInt(slotProps.data.kuotaNonJkn) || 0)
                   }}
                   Pasien
+                </div>
+              </template>
+            </Column>
+            <Column
+              field="durasi per-pasien"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Durasi Per-pasien
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
+                  {{ slotProps.data.durasiPelayanan }} menit
                 </div>
               </template>
             </Column>

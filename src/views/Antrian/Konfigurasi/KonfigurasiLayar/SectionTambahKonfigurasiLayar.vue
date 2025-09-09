@@ -281,55 +281,57 @@ watch(
               {{ layarTitle }}
             </div>
             <hr class="mt-4" />
-            <CustomTextfield
-              label="Teks Judul"
-              v-model="judul"
-              placeholder="Teks Judul"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-              :invalid="!!errors.judul"
-              :invalid-message="errors.judul"
-            />
-            <CustomSwitch
-              v-model="isAdmisi"
-              label="Admisi"
-              sideLabel="Non-Aktif"
-              sideLabelTrue="Aktif"
-            />
-            <div class="flex gap-2.5 items-end mt-4 text-black">
+            <div class="space-y-5">
+              <CustomTextfield
+                label="Teks Judul"
+                v-model="judul"
+                placeholder="Teks Judul"
+                optionValue="code"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black"
+                :invalid="!!errors.judul"
+                :invalid-message="errors.judul"
+              />
               <CustomSwitch
-                v-model="isPoli"
-                label="Poli"
+                v-model="isAdmisi"
+                label="Admisi"
                 sideLabel="Non-Aktif"
                 sideLabelTrue="Aktif"
               />
+              <div class="flex gap-2.5 items-end mt-4 text-black">
+                <CustomSwitch
+                  v-model="isPoli"
+                  label="Poli"
+                  sideLabel="Non-Aktif"
+                  sideLabelTrue="Aktif"
+                />
+              </div>
+              <CustomMultiSelect
+                label="Pilih Poli"
+                placeholder="Pilih Poli"
+                v-model="poli_uuids"
+                :options="jadwalPoliPayload"
+                optionValue="uuid"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black multiselect-wrap"
+                v-show="isPoli"
+              />
+              <CustomSwitch
+                v-model="isFarmasi"
+                label="Farmasi"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
+              <CustomTextfield
+                label="Youtube"
+                v-model="media"
+                placeholder="URL Youtube"
+                class="mt-4 mr-5 w-full text-black"
+                v-show="tipeLayar === 5"
+                :invalid="!!errors.media"
+                :invalid-message="errors.media"
+              />
             </div>
-            <CustomMultiSelect
-              label="Pilih Poli"
-              placeholder="Pilih Poli"
-              v-model="poli_uuids"
-              :options="jadwalPoliPayload"
-              optionValue="uuid"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="isPoli"
-            />
-            <CustomSwitch
-              v-model="isFarmasi"
-              label="Farmasi"
-              sideLabel="Non-Aktif"
-              sideLabelTrue="Aktif"
-            />
-            <CustomTextfield
-              label="Youtube"
-              v-model="media"
-              placeholder="URL Youtube"
-              class="mt-4 mr-5 w-full text-black"
-              v-show="tipeLayar === 5"
-              :invalid="!!errors.media"
-              :invalid-message="errors.media"
-            />
             <div>
               <div class="mt-4 block font-semibold mb-[5px] text-normal">
                 Flash Text
