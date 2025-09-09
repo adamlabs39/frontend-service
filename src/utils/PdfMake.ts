@@ -240,7 +240,7 @@ export function createPatientLabel({ labelData }: { labelData: any }) {
         margin: [0, 0, 0, 2],
       },
       {
-        image: generateBarcode(labelData.noRm || '000000'),
+        image: generateBarcode(`${labelData.noRm || '000000'} ${labelData.patientName || ''}`),
         width: 97.5,
         height: 22,
         alignment: "center",
@@ -434,7 +434,7 @@ export async function createPatientVisit({ visitData, clinicProfile }: { visitDa
             width: "*",
           },
           {
-            image: await generateQRCode(visitData.qrCodeData || "no-data"),
+            image: await generateQRCode(visitData.queueNumber || "no-data"),
             width: 45,
             height: 45,
             fit: [45, 45],
@@ -558,7 +558,6 @@ export function createPatientBracelet({ braceletData }: { braceletData: any }) {
   };
 
   const genderInitial = braceletData.gender === 'Male' ? 'L' : (braceletData.gender === 'Female' ? 'P' : '');
-
   const docDefinition: any = {
     pageSize: { width: 283.465, height: 70.866 },
     pageMargins: 7.5,
@@ -571,7 +570,7 @@ export function createPatientBracelet({ braceletData }: { braceletData: any }) {
         columnGap: 7.5,
         columns: [
           {
-            image: generateBarcode(braceletData.noRm || '000000'),
+            image: generateBarcode(`${braceletData.noRm || '000000'} ${braceletData.patientName || ''}`),
             width: 61.5,
             height: 55.687,
           },
@@ -587,7 +586,7 @@ export function createPatientBracelet({ braceletData }: { braceletData: any }) {
                 text: [
                   { text: `RM${braceletData.noRm || '-'}`, bold: true },
                   "  |  ",
-                  `${formatTanggal(braceletData.birthDate, 'short')} / ${braceletData.ageYear || '-'} Thn`,
+                  `${formatTanggal(braceletData.birthDate, 'short')} / ${braceletData.ageYear || '0'} Thn`,
                 ],
               },
               braceletData.birthPlace || 'Tempat Lahir',

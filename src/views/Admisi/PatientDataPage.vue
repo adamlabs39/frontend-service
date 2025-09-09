@@ -34,10 +34,12 @@ const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
+const admisiReportStore = useAdmisiReportStore();
 const dataBreadCrumb = ref<MenuItem[]>([]);
+
+
 const handleExport = async () => {
   try {
-    const admisiReportStore = useAdmisiReportStore();
     const response = await admisiReportStore.DownloadLaporanAdmisiReport();
 
     if (!response || !response.data) {
