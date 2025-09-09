@@ -60,9 +60,6 @@ const handlePage = (event: any) => {
 };
 
 const headerFilterRef = ref<typeof HeaderFilter>();
-const resetFilter = () => {
-  headerFilterRef.value?.resetFilter();
-};
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
@@ -74,15 +71,6 @@ const changeSection = (label: string) => {
   }
 };
 
-const updatePageType = (path: string) => {
-  resetFilter();
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[2] ?? "";
-};
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
-});
 onMounted(() => {
   fetchLayarAntrian();
 });
