@@ -10,6 +10,15 @@ import NoData from "@/components/section/NoData.vue";
 import { utilsStore } from "@/stores/utils";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import CustomDialog from "@/components/Base/CustomDialog.vue";
+import PreviewLayout3x3 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout3x3Panggilan.vue";
+import PreviewLayout3x2 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout3x2Panggilan.vue";
+import PreviewLayoutList3Panggilan3 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/LayoutList3Panggilan3.vue";
+import PreviewLayout2List2Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout2List2Panggilan.vue";
+import PreviewLayout1List1Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout1List1Panggilan.vue";
+import { Vue3Marquee } from "vue3-marquee";
+import adamedsLogo from "@/assets/images/adameds-logo.png";
+import adamedsText from "@/assets/images/adameds.png";
 
 const pageType = ref("");
 const route = useRoute();
@@ -134,14 +143,96 @@ const handleResetFilters = () => {
   // Fetch data fresh dari server
   fetchLayarAntrian();
 };
+
+const showPreviewDialog = ref(false);
+const previewTitle = ref("");
+const previewType = ref<number | null>(null);
+const previewRow = ref<any | null>(null);
+
+const activeOrderForRow = (row: any): Array<"poli" | "admisi" | "farmasi"> => {
+  const defaultOrder: Array<"poli" | "admisi" | "farmasi"> = [
+    "poli",
+    "admisi",
+    "farmasi",
+  ];
+  return defaultOrder.filter((k) =>
+    k === "poli" ? isPoli(row) : k === "admisi" ? isAdmisi(row) : isFarmasi(row)
+  );
+};
+
+const openPreview = (row: any) => {
+  previewRow.value = row;
+  // tipeLayar sudah numeric sesuai convertLayarType di kolom; gunakan langsung
+  previewType.value = row?.tipeLayar ?? 0;
+  previewTitle.value = `Preview - ${row?.namaLayar ?? ""} (${convertLayarType(
+    previewType.value || 0
+  )})`;
+  showPreviewDialog.value = true;
+};
+
+const closePreview = () => {
+  showPreviewDialog.value = false;
+};
+
+const previewComponent = computed(() => {
+  switch (previewType.value) {
+    case 1:
+      return PreviewLayout3x3;
+    case 2:
+      return PreviewLayout3x2;
+    case 3:
+      return PreviewLayoutList3Panggilan3;
+    case 4:
+      return PreviewLayout2List2Panggilan;
+    case 5:
+      return PreviewLayout1List1Panggilan;
+    default:
+      return null;
+  }
+});
+
+const previewProps = computed(() => {
+  const row = previewRow.value || {};
+  const payload = Array.isArray(row?.payload) ? row.payload : [];
+  switch (previewType.value) {
+    case 1: // 3x3 panggilan
+      return {
+        payload,
+        isPoli: isPoli(row),
+        activeOrder: activeOrderForRow(row),
+      };
+    case 2: // 3x2 panggilan
+      return {
+        payload,
+        isPoli: isPoli(row),
+        activeOrder: activeOrderForRow(row),
+      };
+    case 3: // 3 list & 3 panggilan
+      return {
+        payload,
+        isPoli: isPoli(row),
+        isAdmisi: isAdmisi(row),
+        isFarmasi: isFarmasi(row),
+      };
+    // 2 list & 2 panggilan dan 1 list 1 panggilan 1 gambar tidak butuh props khusus
+    default:
+      return {};
+  }
+});
+
+// Flash text untuk running text di bagian bawah preview dialog
+const previewFlashText = computed<string[]>(() => {
+  const row = previewRow.value || {};
+  return Array.isArray(row.flashText) ? row.flashText : [];
+});
 </script>
 
 <template>
   <Card
     v-if="dataBreadCrumb.length == 0"
     pt:body:class="overflow-auto pt-0 h-full"
-    pt:content:class="overflow-auto h-full"
-    class=""
+    pt:content:class="overflow-auto h-full w-full"
+    class="w-full"
   >
     <template #header>
       <HeaderFilter
@@ -157,11 +248,16 @@ const handleResetFilters = () => {
         v-if="jadwalLayarAntrianProperties.total > 0"
         v-model:selection="selectedPatient"
         :value="jadwalAntrianPayload"
-        tableStyle="min-width: 50rem"
+        class="w-full"
+        tableStyle="min-width: 50rem; width: 100%"
         stripedRows
         scrollable
         scrollHeight="flex"
-        :pt="{ headerRow: 'text-SM' }"
+        :pt="{
+          headerRow: 'text-SM',
+          table: { class: 'w-full' },
+          root: { class: 'w-full' },
+        }"
       >
         <Column field="No." headerClass="bg-adameds-50">
           <template #header>
@@ -309,6 +405,7 @@ const handleResetFilters = () => {
                 size="small"
                 icon="PhScreencast"
                 customClass="bg-adameds-300 rounded-full p-0 flex"
+                @click="openPreview(slotProps.data)"
               >
               </CustomButton>
             </div>
@@ -330,6 +427,95 @@ const handleResetFilters = () => {
       </div>
     </template>
   </Card>
+  <CustomDialog
+    v-model:visible="showPreviewDialog"
+    :fullScreen="true"
+    dismissableMask
+    @closeDialog="closePreview"
+  >
+    <template #header>
+      {{ previewTitle }}
+    </template>
+    <template #body>
+      <div class="h-full pt-5">
+        <!-- Wrapper Preview: meniru struktur SectionTambahKonfigurasiLayar -->
+        <div
+          class="w-full h-full flex flex-col bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
+        >
+          <!-- Navbar Preview Layar -->
+          <div
+            class="flex gap-4 items-center font-semibold text-white rounded-lg bg-adameds-300 text-subHeading"
+          >
+            <!-- Logo -->
+            <div
+              class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg"
+            >
+              <img
+                loading="lazy"
+                :src="adamedsLogo"
+                class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-[50px]"
+              />
+              <div
+                class="bg-adameds-300 w-[3px] h-[50px] my-auto rounded-md"
+              ></div>
+              <img
+                loading="lazy"
+                :src="adamedsText"
+                class="self-stretch object-cover w-[106px] my-auto shrink-0"
+              />
+            </div>
+            <!-- Komponen di sebelah Logo -->
+            <div class="">Klinik Adameds</div>
+            <div class="mr-3 ml-auto font-semibold text-right">
+              <div class="text-subHeading">09:00 AM</div>
+              <div class="text-XS">Senin, 01 Jan 2024</div>
+            </div>
+          </div>
+
+          <!-- Blok Konten -->
+          <div class="flex-1 min-h-[500px] px-1" id="wrapper-antrian">
+            <component
+              v-if="previewComponent"
+              :is="previewComponent"
+              v-bind="previewProps"
+              class="h-full"
+            />
+          </div>
+
+          <!-- Running Text -->
+          <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+            <Vue3Marquee>
+              <span
+                v-for="(item, index) in previewFlashText"
+                :key="index"
+                class="mx-2"
+              >
+                {{ item }}
+              </span>
+            </Vue3Marquee>
+          </div>
+        </div>
+      </div>
+    </template>
+  </CustomDialog>
 </template>
 
-<style></style>
+<style>
+:deep(.p-card) {
+  width: 100%;
+}
+
+/* Pastikan area konten Card (p-card-content) juga penuh */
+:deep(.p-card-content) {
+  width: 100%;
+}
+
+/* Paksa DataTable dan tabel di dalamnya penuh lebar */
+:deep(.p-datatable) {
+  width: 100%;
+}
+
+:deep(.p-datatable-table) {
+  width: 100%;
+}
+</style>
