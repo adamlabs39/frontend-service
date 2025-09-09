@@ -7,9 +7,52 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
 import NoData from "@/components/section/NoData.vue";
+import { utilsStore } from "@/stores/utils";
+import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const pageType = ref("");
 const route = useRoute();
+
+const configLayarAntrianStore = useConfigLayarAntrianStore();
+const useUtilsStore = utilsStore();
+
+const jadwalAntrianPayload = ref<any[]>();
+const jadwalLayarAntrianProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+  nama_layar: "",
+  aktif: undefined as boolean | undefined,
+});
+
+const fetchLayarAntrian = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const res = await configLayarAntrianStore.getApi(
+      jadwalLayarAntrianProperties.value.page,
+      jadwalLayarAntrianProperties.value.page_size,
+      jadwalLayarAntrianProperties.value.nama_layar,
+      undefined,
+      jadwalLayarAntrianProperties.value.aktif
+    );
+    if (res) {
+      jadwalAntrianPayload.value = res.payload;
+      jadwalLayarAntrianProperties.value.total = res.properties.total;
+      console.log("layar Antrian:", res);
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const handlePage = (event: any) => {
+  jadwalLayarAntrianProperties.value.page = event.page + 1;
+  jadwalLayarAntrianProperties.value.page_size = event.rows;
+  fetchLayarAntrian();
+};
 
 const headerFilterRef = ref<typeof HeaderFilter>();
 const resetFilter = () => {
@@ -36,37 +79,38 @@ onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
-  updatePageType(route.path);
+  fetchLayarAntrian();
 });
 
-const itemsLayar = ref([
-  {
-    noLayar: "1",
-    name: "Layar 1",
-    antrian: "Antrian 1",
-    panggilan: "2 List & 2 Panggilan",
-    isi_konten: ["Admisi", "Poli"],
-    ucapan: [
-      "Selamat Datang Di Klinik Adameds",
-      "#ImprovingHealthCare",
-      "#SATUSEHAT",
-    ],
-    status: "AKTIF",
-  },
-  {
-    noLayar: "2",
-    name: "Layar 2",
-    antrian: "Antrian 2",
-    panggilan: "3 x 3 Panggilan",
-    isi_konten: "Poli",
-    ucapan: "Selamat Datang Di Klinik Adameds",
-    status: "AKTIF",
-  },
-]);
-
-const totalItems = computed(() => itemsLayar.value.length);
-
 const selectedPatient = ref([]);
+
+const convertLayarType = (type: number): string => {
+  const layarTypes = {
+    1: "Layar 3 x 3 Panggilan",
+    2: "Layar 3 x 2 Panggilan",
+    3: "Layar 3 List & 3 Panggilan",
+    4: "Layar 2 List & 2 Panggilan",
+    5: "Layar 1 List, 1 Panggilan, 1 Gambar",
+  };
+  return layarTypes[type as keyof typeof layarTypes] || "Unknown Type";
+};
+
+const getLayarTypeNumber = (description: string): number => {
+  const reverseLayarTypes = {
+    "Layar 3 x 3 Panggilan": 1,
+    "Layar 3 x 2 Panggilan": 2,
+    "Layar 3 List & 3 Panggilan": 3,
+    "Layar 2 List & 2 Panggilan": 4,
+    "Layar 1 List, 1 Panggilan, 1 Gambar": 5,
+  };
+  return reverseLayarTypes[description as keyof typeof reverseLayarTypes] || 0;
+};
+
+const isAdmisi = (row: any) =>
+  row?.is_admisi === true || row?.isAdmisi === true;
+const isPoli = (row: any) => row?.is_poli === true || row?.isPoli === true;
+const isFarmasi = (row: any) =>
+  row?.is_farmasi === true || row?.isFarmasi === true;
 </script>
 
 <template>
@@ -85,9 +129,9 @@ const selectedPatient = ref([]);
     </template>
     <template #content>
       <DataTable
-        v-if="itemsLayar.length"
+        v-if="jadwalLayarAntrianProperties.total > 0"
         v-model:selection="selectedPatient"
-        :value="itemsLayar"
+        :value="jadwalAntrianPayload"
         tableStyle="min-width: 50rem"
         stripedRows
         scrollable
@@ -100,13 +144,20 @@ const selectedPatient = ref([]);
           </template>
           <template #body="slotProps">
             <div class="text-center">
-              <div class="text-sm">{{ slotProps.data.noLayar }}</div>
+              <div class="text-sm">
+                {{
+                  (jadwalLayarAntrianProperties.page - 1) *
+                    jadwalLayarAntrianProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
+              </div>
             </div>
           </template>
         </Column>
         <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.name }}</div>
+            <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
             <div class="flex flex-wrap">
               <CustomChip
                 :showCheckedIcon="false"
@@ -117,7 +168,7 @@ const selectedPatient = ref([]);
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.panggilan"
+                :label="convertLayarType(slotProps.data.tipeLayar)"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 border-none mr-[5px]"
@@ -131,26 +182,41 @@ const selectedPatient = ref([]);
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex flex-wrap">
-              <div v-if="Array.isArray(slotProps.data.isi_konten)">
+            <div class="flex flex-wrap gap-1">
+              <template
+                v-if="
+                  isAdmisi(slotProps.data) ||
+                  isPoli(slotProps.data) ||
+                  isFarmasi(slotProps.data)
+                "
+              >
                 <CustomChip
-                  v-for="(konten, index) in slotProps.data.isi_konten"
-                  :key="index"
+                  v-if="isAdmisi(slotProps.data)"
                   :showCheckedIcon="false"
-                  :label="konten"
+                  label="Admisi"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
                 />
-              </div>
-              <div v-else>
                 <CustomChip
+                  v-if="isPoli(slotProps.data)"
                   :showCheckedIcon="false"
-                  :label="slotProps.data.isi_konten"
+                  label="Poli"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
                 />
+                <CustomChip
+                  v-if="isFarmasi(slotProps.data)"
+                  :showCheckedIcon="false"
+                  label="Farmasi"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="px-2 py-[2px] border-none whitespace-normal break-words leading-tight"
+                />
+              </template>
+              <div v-else class="flex justify-center items-center">
+                <PhMinus :size="18" weight="bold" />
               </div>
             </div>
           </template>
@@ -162,61 +228,49 @@ const selectedPatient = ref([]);
         >
           <template #body="slotProps">
             <div class="flex flex-wrap">
-              <div
-                v-if="
-                  Array.isArray(slotProps.data.ucapan) &&
-                  slotProps.data.ucapan.length
-                "
-              >
-                <CustomChip
-                  v-for="(konten, index) in slotProps.data.ucapan"
-                  :key="index"
-                  :showCheckedIcon="false"
-                  :label="konten"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
-                />
-              </div>
-              <div v-else-if="slotProps.data.ucapan">
-                <CustomChip
-                  :showCheckedIcon="false"
-                  :label="slotProps.data.ucapan"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
-                />
+              <div class="flex flex-wrap">
+                <div
+                  v-if="
+                    Array.isArray(slotProps.data.flashText) &&
+                    slotProps.data.flashText.length > 0
+                  "
+                >
+                  <CustomChip
+                    v-for="(konten, index) in slotProps.data.flashText"
+                    :key="index"
+                    :showCheckedIcon="false"
+                    :label="konten"
+                    bgColor="bg-adameds-300"
+                    textColor="text-white"
+                    customClass="h-5 border-none mr-[5px]"
+                  />
+                </div>
+                <div v-else class="flex justify-center items-center">
+                  <PhMinus :size="18" weight="bold" />
+                </div>
               </div>
             </div>
           </template>
         </Column>
         <Column
           field="status"
-          header="Status"
-          headerClass="bg-adameds-50 flex items-center justify-center"
+          headerClass="bg-adameds-50 items-center justify-center"
         >
+          <template #header>
+            <div class="w-full font-semibold text-center">Status</div>
+          </template>
           <template #body="slotProps">
             <div class="flex justify-center items-center min-w-[120px]">
               <CustomChip
-                :label="slotProps.data.status"
+                :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                 :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
+                  slotProps.data.status ? 'text-white' : 'text-[#80868d]'
                 "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
+                :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
                 :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
+                  slotProps.data.status ? 'border-none' : 'border-[#80868d]'
                 "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
+                :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                 customClass="text-xs font-semibold h-6 flex"
               />
             </div>
@@ -243,7 +297,15 @@ const selectedPatient = ref([]);
       <NoData v-else />
     </template>
     <template #footer>
-      <AntrianFooter />
+      <div class="flex justify-between px-5 py-2.5">
+        <CustomPaginator
+          class="ml-auto"
+          :rows="jadwalLayarAntrianProperties.page_size"
+          :totalRecords="jadwalLayarAntrianProperties.total"
+          :rowsPerPageOptions="[10, 20, 30]"
+          @page="handlePage"
+        />
+      </div>
     </template>
   </Card>
 </template>
