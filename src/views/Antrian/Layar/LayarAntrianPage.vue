@@ -161,7 +161,7 @@ const isFarmasi = (row: any) =>
             <div class="flex flex-wrap">
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.antrian"
+                :label="slotProps.data.judul"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 border-none mr-[5px]"
