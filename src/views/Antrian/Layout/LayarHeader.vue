@@ -63,7 +63,12 @@ const resetFilter = () => {
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 justify-between items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" @click="resetFilter" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="resetFilter"
+          title="refresh"
+        />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >

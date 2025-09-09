@@ -398,6 +398,7 @@ const previewFlashText = computed<string[]>(() => {
           field="action"
           header="action"
           headerClass="bg-adameds-50 justify-center"
+          title="Lihat layar"
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 items-center">
