@@ -25,6 +25,44 @@ export const useAdmisiReportStore = defineStore({
         payload
       );
     },
+    async getJenisKunjunganReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        practitionerUuid = "",
+        penjamin = "",
+        jenisKunjungan = "",
+        startDate = "",
+        endDate = "",
+        room = ""
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/rekap/jenis-kunjungan?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&room=${room}`,
+        payload
+      );
+    },
+    async getDpjpReport(
+      {
+        page = 1,
+        limit = 10,
+        q = "",
+        practitionerUuid = "",
+        penjamin = "",
+        jenisKunjungan = "",
+        startDate = "",
+        endDate = "",
+        room = ""
+      },
+      payload = {}
+    ) {
+      return apiAdmisiGet(
+        `/rekap/dokter?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&room=${room}`,
+        payload
+      );
+    },
     // return {
     //   message: "berhasil mendapatkan data",
     //   payload: [
@@ -166,7 +204,7 @@ export const useAdmisiReportStore = defineStore({
       payload = {}
     ) {
       return apiAdmisiGet(
-        `/report/penjamin?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+        `/rekap/penjamin?page=${page}&limit=${limit}&q=${q}&practitioner_uuid=${practitionerUuid}&penjamin=${penjamin}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
         payload
       );
     },

@@ -71,7 +71,7 @@ const onPoliSelect = (label: string) => {
   emit("search");
 };
 
-const filterRegisterMethod = ref(["ADMISI", "APM", "MOBILE APP"]);
+const filterRegisterMethod = ref(["ADMISI", "APM", "MOBILE"]);
 const selectedFilterRegisterMethod = ref<string[]>([]);
 const onRegisterMethodSelect = (label: string) => {
   if (selectedFilterRegisterMethod.value.includes(label)) {
@@ -80,6 +80,7 @@ const onRegisterMethodSelect = (label: string) => {
   } else {
     selectedFilterRegisterMethod.value.push(label);
   }
+  emit("search");
 };
 // !SECTION
 
@@ -171,7 +172,7 @@ const resetFilter = () => {
 const setFilter = (dataFilter: FilterAdmisi) => {
   selectedFilterPoli.value = dataFilter.poly ?? [];
   selectedFilterRegisterMethod.value = dataFilter.platform
-    ? [dataFilter.platform]
+    ? dataFilter.platform.split(',')
     : [];
   selectedFilterRoom.value = dataFilter.room ?? [];
   selectedFilterPatient.value = dataFilter.withoutIdentity
@@ -255,7 +256,7 @@ const searchData = () => {
       ? ""
       : selectedPaymentMethod.value[0];
   if (props.pageType == "rawat-jalan") {
-    filter.platform = selectedFilterRegisterMethod.value[0];
+    filter.platform = selectedFilterRegisterMethod.value.join(',');
     filter.poly = selectedFilterPoli.value;
   }
   // FIXME Belum bisa multiple

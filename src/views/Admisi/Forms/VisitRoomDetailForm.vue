@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, watch, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
@@ -225,10 +225,16 @@ onMounted(() => {
   setFormData();
 });
 
-onUpdated(() => {
-  fetchUtils();
-  setFormData();
-});
+watch(() => props.doctorVisitData, (newData) => {
+    if (newData && Object.keys(newData).length > 0) {
+        setFormData();
+    }
+}, { deep: true });
+
+// onUpdated(() => {
+//   fetchUtils();
+//   setFormData();
+// });
 
 const listKelasRuangan = ref([
   { label: "Kelas 1", value: "Kelas 1" },
