@@ -14,6 +14,9 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 const pageType = ref("");
 const route = useRoute();
 
+const searchQuery = ref("");
+const selectedStatus = ref<string[]>([]);
+
 const configLayarAntrianStore = useConfigLayarAntrianStore();
 const useUtilsStore = utilsStore();
 
@@ -36,13 +39,15 @@ const fetchLayarAntrian = async () => {
       undefined,
       jadwalLayarAntrianProperties.value.aktif
     );
-    if (res) {
-      jadwalAntrianPayload.value = res.payload;
-      jadwalLayarAntrianProperties.value.total = res.properties.total;
-      console.log("layar Antrian:", res);
-    }
+    jadwalAntrianPayload.value = res.payload;
+    jadwalLayarAntrianProperties.value.total = res.properties.total;
+
+    console.log("layar Antrian:", res);
   } catch (error) {
     console.log(error);
+    // Pastikan state kosong saat error
+    jadwalAntrianPayload.value = [];
+    jadwalLayarAntrianProperties.value.total = 0;
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -111,6 +116,36 @@ const isAdmisi = (row: any) =>
 const isPoli = (row: any) => row?.is_poli === true || row?.isPoli === true;
 const isFarmasi = (row: any) =>
   row?.is_farmasi === true || row?.isFarmasi === true;
+
+const handleSearch = (query: string, statusFilters: string[]) => {
+  // set parameter pencarian untuk API
+  jadwalLayarAntrianProperties.value.page = 1;
+  jadwalLayarAntrianProperties.value.nama_layar = query || "";
+
+  // status: jika hanya satu dipilih, terjemahkan ke boolean; jika 0 atau 2 (keduanya), jangan kirim filter (undefined)
+  if (statusFilters.length === 1) {
+    jadwalLayarAntrianProperties.value.aktif =
+      statusFilters[0] === "AKTIF" ? true : false;
+  } else {
+    jadwalLayarAntrianProperties.value.aktif = undefined;
+  }
+
+  // panggil API dengan parameter di atas
+  fetchLayarAntrian();
+};
+
+const handleResetFilters = () => {
+  searchQuery.value = "";
+  selectedStatus.value = [];
+
+  // Reset semua parameter pencarian
+  jadwalLayarAntrianProperties.value.page = 1;
+  jadwalLayarAntrianProperties.value.nama_layar = "";
+  jadwalLayarAntrianProperties.value.aktif = undefined;
+
+  // Fetch data fresh dari server
+  fetchLayarAntrian();
+};
 </script>
 
 <template>
@@ -125,6 +160,8 @@ const isFarmasi = (row: any) =>
         ref="headerFilterRef"
         :pageType="pageType"
         @daftar="changeSection('Daftar')"
+        @search="handleSearch"
+        @reset="handleResetFilters"
       />
     </template>
     <template #content>
@@ -158,7 +195,7 @@ const isFarmasi = (row: any) =>
         <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
-            <div class="flex flex-wrap">
+            <div class="flex items-center flex-wrap">
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.judul"
@@ -227,7 +264,7 @@ const isFarmasi = (row: any) =>
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex flex-wrap">
+            <div class="flex items-center flex-wrap">
               <div class="flex flex-wrap">
                 <div
                   v-if="
@@ -252,10 +289,7 @@ const isFarmasi = (row: any) =>
             </div>
           </template>
         </Column>
-        <Column
-          field="status"
-          headerClass="bg-adameds-50 items-center justify-center"
-        >
+        <Column field="status" headerClass="bg-adameds-50 ">
           <template #header>
             <div class="w-full font-semibold text-center">Status</div>
           </template>

@@ -5,6 +5,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps({
   title: {
@@ -21,7 +22,15 @@ const props = defineProps({
   },
 });
 
-// !SECTION
+const searchQuery = ref("");
+
+const emit = defineEmits(["search", "reset", "daftar"]);
+
+const performSearch = () => {
+  emit("search", searchQuery.value, selectedPaymentMethod.value);
+};
+
+const debouncedSearch = useDebounceFn(performSearch, 500);
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
@@ -32,6 +41,9 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
 };
 
 const filters = [selectedPaymentMethod];
@@ -40,17 +52,18 @@ const resetFilter = () => {
   filters.forEach((filter) => {
     filter.value = [];
   });
+
+  searchQuery.value = "";
+
+  emit("reset");
 };
-defineExpose({
-  resetFilter,
-});
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 justify-between items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" />
+        <CustomButton label="" icon="PhArrowClockwise" @click="resetFilter" />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >
@@ -68,15 +81,18 @@ defineExpose({
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
             class="grow"
+            v-model="searchQuery"
           >
           </CustomTextfield>
           <CustomButton
             icon="PhMagnifyingGlass"
             label="Cari"
             class="ml-5 mr-[10px] mt-auto w-[95px]"
+            @click="performSearch"
           />
           <CustomButton
             label="Reset"
+            @click="resetFilter"
             outlined
             borderColor="border-adameds-300"
             textColor="text-adameds-300"
