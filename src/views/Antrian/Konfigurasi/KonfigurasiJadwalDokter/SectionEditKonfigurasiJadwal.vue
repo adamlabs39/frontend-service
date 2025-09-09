@@ -613,28 +613,7 @@ const confirmDeleteRow = () => {
                 </div>
               </template>
             </Column>
-            <Column
-              field="durasi per-pasien"
-              headerClass="bg-adameds-50 whitespace-nowrap"
-            >
-              <template #header>
-                <div
-                  class="flex justify-center items-center w-full h-full font-bold"
-                >
-                  Durasi Per-pasien
-                  <small class="block ml-1 text-xs font-normal text-gray-500"
-                    >(Auto)</small
-                  >
-                </div>
-              </template>
-              <template #body="slotProps">
-                <div
-                  class="flex justify-center items-center whitespace-nowrap text-SM"
-                >
-                  {{ slotProps.data.value.durasiPelayanan }} menit
-                </div>
-              </template>
-            </Column>
+
             <Column field="slot jkn" headerClass="bg-adameds-50">
               <template #header>
                 <div
@@ -708,6 +687,25 @@ const confirmDeleteRow = () => {
                     (parseInt(slotProps.data.value.kuotaNonJkn) || 0)
                   }}
                   Pasien
+                </div>
+              </template>
+            </Column>
+            <Column
+              field="durasi per-pasien"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Durasi Per-pasien
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
+                  {{ slotProps.data.value.durasiPelayanan }} menit
                 </div>
               </template>
             </Column>

@@ -423,22 +423,7 @@ onMounted(() => {
                   </div>
                 </template>
               </Column>
-              <Column
-                field="durasi_pasien"
-                header-class="text-black bg-adameds-50"
-                class="text-sm"
-              >
-                <template #header>
-                  <div class="flex justify-center items-center w-full h-full">
-                    <div class="font-bold">Durasi Per-Pasien</div>
-                  </div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex justify-center items-center">
-                    {{ slotProps.data.durasiPelayanan }} Menit
-                  </div>
-                </template>
-              </Column>
+
               <Column
                 field="kuota_jkn"
                 header-class="text-center text-black bg-adameds-50"
@@ -484,6 +469,22 @@ onMounted(() => {
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
                     {{ slotProps.data.kuota }} Slot
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="durasi_pasien"
+                header-class="text-black bg-adameds-50"
+                class="text-sm"
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Durasi Per-Pasien</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.durasiPelayanan }} Menit
                   </div>
                 </template>
               </Column>
