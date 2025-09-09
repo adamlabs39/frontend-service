@@ -174,10 +174,18 @@ const onClickReset = () => {
     startDateFilter.value = getThirtyDaysAgoDate();
     endDateFilter.value = getNowDate();
     emit("search", "", getSelectedStatusCodes());
+    // Kirim juga rentang tanggal default: 30 hari ke belakang sampai hari ini
+    emit(
+      "dateRange",
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
+    );
   } else {
     startDateFilter.value = null;
     endDateFilter.value = null;
     emit("search", "");
+    // Bersihkan rentang tanggal di parent
+    emit("dateRange", null, null);
   }
 };
 
