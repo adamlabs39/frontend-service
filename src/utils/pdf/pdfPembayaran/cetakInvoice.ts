@@ -1,9 +1,12 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import { customVfs } from "@/utils/customVfs";
-import { convertImageToBase64, epochToDate, generateQRCode, formatPrice, numberToWords} from "@/utils/Helpers";
-import { defaultHeader } from "../HeaderPrint"; 
+import { convertImageToBase64, epochToDate, generateQRCode, formatPrice, numberToWords } from "@/utils/Helpers";
+import { defaultHeader } from "../HeaderPrint";
+import { lunasStamp } from "@/utils/PdfMake";
 import logoUrl from "@/assets/images/adameds-square.png";
+import lunasStampUrl from "@/assets/images/Pembayaran/lunas-stamp.png";
+import belumLunasStampUrl from "@/assets/images/Pembayaran/belumlunas-stamp2.png";
 
 pdfMake.vfs = customVfs.pdfMake.vfs;
 pdfMake.fonts = {
@@ -29,29 +32,31 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
         const faskesProfile = JSON.parse(
             localStorage.getItem("faskes_profile") ?? "{}"
         );
-        
-        let logo = await convertImageToBase64(logoUrl); 
+
+        let logo = await convertImageToBase64(logoUrl);
         if (faskesProfile.logo && faskesProfile.logo.startsWith('data:image')) {
             logo = faskesProfile.logo;
         }
+        const lunasStampBase64 = await convertImageToBase64(lunasStampUrl);
+        const belumLunasStampBase64 = await convertImageToBase64(belumLunasStampUrl);
 
         const safeBill = detailBill?.bill || detailBill || {};
         const safePatient = detailBill?.patient || safeBill;
         const safePayment = paymentResult || {};
-        
+
         const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
-        
+
         const totalDiterima = safeBill.totalPaid || 0;
         const terbilangDiterima = totalDiterima > 0 ? numberToWords(totalDiterima).trim() + ' Rupiah' : '-';
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
-        
+
         const docDefinition: TDocumentDefinitions = {
             pageSize: 'A4',
             pageMargins: [40, 110, 40, 60],
             defaultStyle: { font: 'Arial', fontSize: 9, lineHeight: 1.1 },
-            
-            header: defaultHeader(safeBill.invoiceCode || '-', "KUITANSI PEMBAYARAN", logo, faskesProfile,{}),
+
+            header: defaultHeader("invoice", "INVOINCE", logo, faskesProfile, { invoiceCode: safeBill.invoiceCode || '-' }),
             content: [
 
                 //Biodata Pasien
@@ -63,8 +68,9 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                                 widths: ['auto', '*'],
                                 body: [
                                     ['No. RM', { text: `: ${safePatient.noRm || safeBill.noRm || '-'}`, bold: true }],
+                                    ['No. Invoice', { text: `: ${safePatient.invoiceCode || safeBill.invoiceCode || '-'}`, bold: true }],
                                     ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
-                                    ['Alamat', { text: `: ${safeBill.alamat|| '-'}`, bold: true }],
+                                    ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
                                     ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
                                     ['Penjamin', { text: ': -', bold: true }]
                                 ]
@@ -75,7 +81,7 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             table: {
                                 widths: ['auto', '*'],
                                 body: [
-                                    ['Nomer Kunjungan', { text: ': -', bold: true }],
+                                    ['Nomer Kunjungan', { text: `: ${safeBill.noReg || '-'}`, bold: true }],
                                     ['Pelayanan', { text: `: ${reversePoliMapping[safeBill.serviceBill && safeBill.serviceBill[0]?.type] || (safeBill.serviceBill && safeBill.serviceBill[0]?.type) || '-'}`, bold: true }],
                                     ['Tanggal Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
                                     ['Tanggal Discharge', { text: ': -', bold: true }]
@@ -122,34 +128,51 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             ],
                             [
                                 safeBill.paymentType || '-',
-                                { text: formatPrice(safeBill.totalPaid || 0), alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
-                                { text: formatPrice(safeBill.grandTotal || 0), alignment: 'right' },
-                                { text: formatPrice(safePayment.change || 0), alignment: 'right' },
+                                { text: `Rp ${(safeBill.totalPaid || 0).toLocaleString('id-ID')}`, alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
+                                { text: `Rp ${(safeBill.grandTotal || 0).toLocaleString('id-ID')}`, alignment: 'right' },
+                                { text: `Rp ${(safePayment.change || 0).toLocaleString('id-ID')}`, alignment: 'right' },
                                 { text: kasirName, alignment: 'center' }
                             ]
                         ]
                     }
                 },
-                
+
                 // Baris Terbilang Diterima
                 {
                     layout: 'noBorders',
                     table: {
                         widths: ['*'],
                         body: [
-                            [{ 
+                            [{
                                 text: [
                                     { text: 'Terbilang Diterima :', bold: true },
-                                    { text: ` ${terbilangDiterima}`, italics: true ,bold:true}
-                                ], 
+                                    { text: ` ${terbilangDiterima}`, italics: true, bold: true }
+                                ],
                                 fillColor: '#EAECEF',
-                                margin: [5, 5] 
+                                margin: [5, 5]
                             }]
                         ]
                     },
-                    margin: [0, 10, 0, 0] 
+                    margin: [0, 10, 0, 0]
                 },
-                { text: '', margin: [0, 150, 0, 0] },
+                (safeBill.totalPaid >= safeBill.grandTotal && safeBill.grandTotal > 0)
+                    ? { 
+                        image: lunasStampBase64,
+                        width: 90,
+                        opacity: 1,
+                        alignment: 'right',
+                        margin: [0, 20, 25, 20]
+                    }
+                        
+                    : (safeBill.totalPaid < safeBill.grandTotal && safeBill.totalPaid > 0)
+                        ? { 
+                            image: belumLunasStampBase64, 
+                            width: 150, 
+                            opacity: 0.8,
+                            alignment: 'right',
+                            margin: [0, 20, 25, 20]
+                        }
+                        : { text: '', margin: [0, 150, 0, 0] },
                 //QR code dan ttd
                 {
                     columns: [
@@ -163,7 +186,7 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                                 { image: qrCodePasien, width: 70, margin: [0, 5, 0, 5] },
                                 { text: ` ${safeBill.patientName || 'Nama Pasien'} `, bold: true, margin: [0, 0, 0, 10] },
                                 { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 170, y2: 0, lineWidth: 0.5 }] },
-                                
+
                             ]
                         },
                         // KOLOM KANAN (KASIR)
@@ -171,12 +194,12 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             width: '*',
                             alignment: 'center',
                             stack: [
-                                { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 10, 0, 0] ,bold:true},
-                                { text: 'Pengirim ', margin: [0, 10, 0, 10],bold:true },
+                                { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 10, 0, 0], bold: true },
+                                { text: 'Petugas', margin: [0, 10, 0, 10], bold: true },
                                 { image: qrCodeKasir, width: 70, margin: [0, 5, 0, 5] },
                                 { text: ` ${kasirName} `, bold: true, margin: [0, 0, 0, 10] },
                                 { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 170, y2: 0, lineWidth: 0.5 }] },
-                                
+
                             ],
                         }
                     ],
@@ -192,18 +215,13 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                     ],
                     fontSize: 8,
                     italics: true,
-                    bold:true
+                    bold: true
                 }
             ],
             styles: {
                 tableHeader: { bold: true, fillColor: '#EEEEEE', margin: [5, 2] }
             },
-            // footer: {
-            //     margin: [40, 10, 40, 0],
-            //     columns: [
-            //         { text: `Dicetak pada: ${epochToDate(Date.now() / 1000, "dateTime")}`, alignment: 'right' },
-            //     ]
-            // }
+            // footer: {}
         };
 
         pdfMake.createPdf(docDefinition).open();

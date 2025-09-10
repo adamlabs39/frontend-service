@@ -1,10 +1,10 @@
 // File: utils/pdf/pdfPembayaran/cetakRincian.ts (BARU)
 
 import pdfMake from "pdfmake/build/pdfmake";
-import type { TDocumentDefinitions,TableCell,Content} from "pdfmake/interfaces";
+import type { TDocumentDefinitions, TableCell, Content } from "pdfmake/interfaces";
 import { customVfs } from "@/utils/customVfs";
 import { convertImageToBase64, epochToDate, generateQRCode, formatPrice, numberToWords } from "@/utils/Helpers";
-import { defaultHeader } from "../HeaderPrint"; 
+import { defaultHeader } from "../HeaderPrint";
 import logoUrl from "@/assets/images/adameds-square.png";
 
 pdfMake.vfs = customVfs.pdfMake.vfs;
@@ -31,21 +31,21 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
         const faskesProfile = JSON.parse(
             localStorage.getItem("faskes_profile") ?? "{}"
         );
-        
-        let logo = await convertImageToBase64(logoUrl); 
+
+        let logo = await convertImageToBase64(logoUrl);
         if (faskesProfile.logo && faskesProfile.logo.startsWith('data:image')) {
             logo = faskesProfile.logo;
         }
 
         const safeBill = detailBill?.bill || detailBill || {};
-        const safePatient = detailBill?.patient || safeBill; 
+        const safePatient = detailBill?.patient || safeBill;
         const safePayment = paymentResult || {};
-        const safeItems = itemBill || {};         
+        const safeItems = itemBill || {};
         const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
-        
-        
+
+
         const totalDiterima = safeBill.totalPaid || 0;
         const total = safeBill.grandTotal || 0;
         const terbilangDiterima = totalDiterima > 0 ? numberToWords(totalDiterima).trim() + ' Rupiah' : '-';
@@ -56,7 +56,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
 
         // Helper function untuk membuat tabel per kategori
         const createCategoryTable = (title: string, items: any[], columns: string[], dataMapping: (item: any, index: number) => any[]) => {
-            if (!items || items.length === 0) return; 
+            if (!items || items.length === 0) return;
             const widths = Array(columns.length).fill('*');
             // Judul Kategori
             rincianContent.push({
@@ -73,43 +73,43 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                 layout: 'lightHorizontalLines',
                 table: {
                     headerRows: 1,
-                    widths, 
+                    widths,
                     body: [
                         columns.map(h => ({ text: h, style: 'tableHeader' })),
-                        ...items.map(dataMapping) 
+                        ...items.map(dataMapping)
                     ],
                 },
             });
         };
-        
+
         // Tabel Tindakan
         createCategoryTable(
             'BIAYA TINDAKAN',
             itemData.tindakan?.list,
-            [ 'Tanggal', 'Biaya Tindakan', 'Petugas', 'Jml', 'Tarif', 'Potongan', 'Total'],
-            (item, index) => [
-                epochToDate(item.dateUsed, "date"),
-                item.itemName || '-',
-                safeBill.serviceBill?.[0]?.practitionerName || '-', 
-                item.qty,
-                { text: formatPrice(item.price), alignment: 'left' },
-                { text: formatPrice(item.serviceFee), alignment: 'left' },
-                { text: formatPrice(item.price * item.qty + item.serviceFee), alignment: 'left' }
-            ]
-        );
-        
-        // Tabel Penunjang 
-        createCategoryTable(
-            'BIAYA PENUNJANG MEDIS DAN LAIN-LAIN',
-            itemData.penunjang?.list,
-            [ 'Tanggal', 'Biaya Lab', 'Petugas', 'Jml', 'Tarif', 'Total'],
+            ['Tanggal', 'Biaya Tindakan', 'Petugas', 'Jml', 'Tarif', 'Potongan', 'Total'],
             (item, index) => [
                 epochToDate(item.dateUsed, "date"),
                 item.itemName || '-',
                 safeBill.serviceBill?.[0]?.practitionerName || '-',
                 item.qty,
-                { text: formatPrice(item.price), alignment: 'left' },
-                { text: formatPrice(item.price * item.qty), alignment: 'left' }
+                { text: `Rp ${(item.price?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.serviceFee?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.price * item.qty + item.serviceFee)?.toLocaleString ('id-ID') || 0}`, alignment: 'left' }
+            ]
+        );
+
+        // Tabel Penunjang 
+        createCategoryTable(
+            'BIAYA PENUNJANG MEDIS DAN LAIN-LAIN',
+            itemData.penunjang?.list,
+            ['Tanggal', 'Biaya Lab', 'Petugas', 'Jml', 'Tarif', 'Total'],
+            (item, index) => [
+                epochToDate(item.dateUsed, "date"),
+                item.itemName || '-',
+                safeBill.serviceBill?.[0]?.practitionerName || '-',
+                item.qty,
+                { text: `Rp ${(item.price?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.price * item.qty)?.toLocaleString ('id-ID') || 0}`, alignment: 'left' }
             ]
         );
 
@@ -117,14 +117,14 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
         createCategoryTable(
             'BIAYA ALAT KESEHATAN (ALKES)',
             itemData.alkes?.list,
-            [ 'Tanggal', 'Nama Barang', 'Petugas', 'Jml', 'Tarif', 'Total'],
+            ['Tanggal', 'Nama Barang', 'Petugas', 'Jml', 'Tarif', 'Total'],
             (item, index) => [
                 epochToDate(item.dateUsed, "date"),
                 item.itemName || '-',
                 safeBill.serviceBill?.[0]?.practitionerName || '-',
                 item.qty,
-                { text: formatPrice(item.price), alignment: 'left' },
-                { text: formatPrice(item.price * item.qty), alignment: 'left' }
+                { text: `Rp ${(item.price?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.price * item.qty)?.toLocaleString ('id-ID') || 0}`, alignment: 'left' }
             ]
         );
 
@@ -132,29 +132,29 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
         createCategoryTable(
             'BIAYA OBAT ',
             itemData.obat?.list,
-            [ 'Tanggal', 'Nama Obat', 'Petugas', 'Jml', 'Tarif', 'Total'],
+            ['Tanggal', 'Nama Obat', 'Petugas', 'Jml', 'Tarif', 'Total'],
             (item, index) => [
                 epochToDate(item.dateUsed, "date"),
                 item.itemName || '-',
                 safeBill.serviceBill?.[0]?.practitionerName || '-',
                 item.qty,
-                { text: formatPrice(item.price), alignment: 'left' },
-                { text: formatPrice(item.price * item.qty), alignment: 'left' }
+                { text: `Rp ${(item.price?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.price * item.qty)?.toLocaleString ('id-ID') || 0}`, alignment: 'left' }
             ]
         );
-        
+
         // Tabel Kamar
         createCategoryTable(
             'BIAYA RAWAT INAP',
             itemData.ruangan?.list,
-            [ 'Tanggal', 'Nama Ruangan', 'Petugas', 'Jml', 'Tarif', 'Total'],
+            ['Tanggal', 'Nama Ruangan', 'Petugas', 'Jml', 'Tarif', 'Total'],
             (item, index) => [
                 epochToDate(item.dateUsed, "date"),
                 item.itemName || '-',
                 safeBill.serviceBill?.[0]?.practitionerName || '-',
                 item.qty,
-                { text: formatPrice(item.price), alignment: 'left' },
-                { text: formatPrice(item.price * item.qty), alignment: 'left' }
+                { text: `Rp ${(item.price?.toLocaleString ('id-ID') || 0)}`, alignment: 'left' },
+                { text: `Rp ${(item.price * item.qty)?.toLocaleString ('id-ID') || 0}`, alignment: 'left' }
             ]
         );
 
@@ -162,39 +162,40 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
             pageSize: 'A4',
             pageMargins: [40, 110, 40, 60],
             defaultStyle: { font: 'Arial', fontSize: 9, lineHeight: 1.1 },
-            
-            header: defaultHeader(safeBill.invoiceCode || '-', "KUITANSI PEMBAYARAN", logo, faskesProfile,{}),
+
+            header: defaultHeader("invoice", "RINCIAN BIAYA", logo, faskesProfile, { grandTotal: safeBill.grandTotal || safeBill.invoice_code || '-' }),
             content: [
                 {
-                                    columns: [
-                                        {
-                                            layout: 'noBorders',
-                                            table: {
-                                                widths: ['auto', '*'],
-                                                body: [
-                                                    ['No. RM', { text: `: ${safeBill.noRm || '-'}`, bold: true }],
-                                                    ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
-                                                    ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
-                                                    ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
-                                                    ['Penjamin', { text: ': -', bold: true }]
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            layout: 'noBorders',
-                                            table: {
-                                                widths: ['auto', '*'],
-                                                body: [
-                                                    ['Nomer Kunjungan', { text: ': -', bold: true }],
-                                                    ['Pelayanan', { text: `: ${reversePoliMapping[safeBill.serviceBill && safeBill.serviceBill[0]?.type] || (safeBill.serviceBill && safeBill.serviceBill[0]?.type) || '-'}`, bold: true }],
-                                                    ['Tanggal Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
-                                                    ['Tanggal Discharge', { text: ': -', bold: true }]
-                                                ]
-                                            }
-                                        }
-                                    ],
-                                    margin: [0, 0, 0, 10]
-                                },
+                    columns: [
+                        {
+                            layout: 'noBorders',
+                            table: {
+                                widths: ['auto', '*'],
+                                body: [
+                                    ['No. RM', { text: `: ${safeBill.noRm || '-'}`, bold: true }],
+                                    ['No. Invoice', { text: `: ${safeBill.invoiceCode || '-'}`, bold: true }],
+                                    ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
+                                    ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
+                                    ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
+                                    ['Penjamin', { text: ': -', bold: true }]
+                                ]
+                            }
+                        },
+                        {
+                            layout: 'noBorders',
+                            table: {
+                                widths: ['auto', '*'],
+                                body: [
+                                    ['Nomer Kunjungan', { text: `: ${safeBill.noReg || '-'}`, bold: true }],//ini nomer reg
+                                    ['Pelayanan', { text: `: ${reversePoliMapping[safeBill.serviceBill && safeBill.serviceBill[0]?.type] || (safeBill.serviceBill && safeBill.serviceBill[0]?.type) || '-'}`, bold: true }],
+                                    ['Tanggal Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
+                                    ['Tanggal Discharge', { text: ': -', bold: true }]
+                                ]
+                            }
+                        }
+                    ],
+                    margin: [0, 0, 0, 10]
+                },
                 ...rincianContent,
 
                 //Detail Tagihan
@@ -203,13 +204,13 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                     table: {
                         widths: ['*', 'auto'],
                         body: [
-                            [{ text: 'Total(Termasuk potongan Biaya Pelayanan)', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }, { text: formatPrice(safeBill.subTotal + safeBill.ppn || 0), alignment: 'right', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }],
-                            [{ text: 'Total Tagihan', margin: [5, 2],bold:true}, { text: formatPrice(safeBill.subTotal || 0), alignment: 'right', bold: true , margin: [5, 2]}],
-                            [{ text: 'Total Potongan', fillColor: '#EEEEEE', bold: true, margin: [5, 2] }, { text: formatPrice(safeBill.voucherValue || 0), alignment: 'right', fillColor: '#EEEEEE', margin: [5, 2],bold:true }],
-                            [{ text: 'Pembulatan', margin: [5, 2],bold:true}, { text: '-', alignment: 'right', bold: true , margin: [5, 2]}],
-                            [{ text: 'Biaya yang harus dibayar', fillColor: '#EEEEEE', bold: true, margin: [5, 2] }, { text: formatPrice(safeBill.grandTotal || 0), alignment: 'right', fillColor: '#EEEEEE', margin: [5, 2],bold:true }],
-                            [{ text: 'Terima Pembayaran', margin: [5, 2],bold:true}, { text: formatPrice(safeBill.totalPaid || 0), alignment: 'right', bold: true , margin: [5, 2]}],
-                            [{ text: 'TUNAI/CASH', fillColor: '#EEEEEE', margin: [5, 2] }, { text: formatPrice(safeBill.totalPaid || 0), alignment: 'right', fillColor: '#EEEEEE', margin: [5, 2],bold:true }],
+                            [{ text: 'Total Tagihan', fillColor: '#EEEEEE', margin: [5, 2], bold: true }, { text: `Rp ${(safeBill.subTotal || 0)?.toLocaleString ('id-ID')}`, alignment: 'right', fillColor: '#EEEEEE', bold: true, margin: [5, 2] }],
+                            [{ text: 'Total Potongan', bold: true, margin: [5, 2] }, { text: (safeBill.voucherValue || 0), alignment: 'right', margin: [5, 2], bold: true }],
+                            [{ text: 'Total(Termasuk potongan Biaya Pelayanan)', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }, { text: `Rp ${(safeBill.grandTotal || 0)?.toLocaleString ('id-ID')}`, alignment: 'right', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }],
+                            [{ text: 'Pembulatan', margin: [5, 2], bold: true }, { text: '-', alignment: 'right', bold: true, margin: [5, 2] }],
+                            [{ text: 'Biaya yang harus dibayar', fillColor: '#EEEEEE', margin: [5, 2], bold: true }, { text: `Rp ${(safeBill.grandTotal || 0)?.toLocaleString ('id-ID')}`, alignment: 'right', fillColor: '#EEEEEE', bold: true, margin: [5, 2] }],
+                            [{ text: 'Terima Pembayaran', margin: [5, 2], bold: true }, { text: `${(safeBill.totalPaid || 0)?.toLocaleString ('id-ID')}`, alignment: 'right', bold: true, margin: [5, 2] }],
+                            [{ text: 'TUNAI/CASH', fillColor: '#EEEEEE', margin: [5, 2] }, { text: `${(safeBill.totalPaid || 0)?.toLocaleString ('id-ID')}`, alignment: 'right', fillColor: '#EEEEEE', margin: [5, 2], bold: true }],
                         ]
                     },
                     margin: [0, 5, 0, 2]
@@ -221,8 +222,8 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                     table: {
                         widths: ['*'],
                         body: [
-                            [{ 
-                                text: [ { text: 'Terbilang :', bold: true }, { text: `${terbilangTotal}`, italics: true,bold:true } ], 
+                            [{
+                                text: [{ text: 'Terbilang :', bold: true }, { text: `${terbilangTotal}`, italics: true, bold: true }],
                                 fillColor: '#EAECEF',
                                 margin: [5, 5]
                             }]
@@ -271,34 +272,34 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                             ],
                             [
                                 safeBill.paymentType || '-',
-                                { text: formatPrice(safeBill.totalPaid || 0), alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
-                                { text: formatPrice(safeBill.grandTotal || 0), alignment: 'right' },
-                                { text: formatPrice(safePayment.change || 0), alignment: 'right' },
+                                { text: `Rp ${(safeBill.totalPaid || 0).toLocaleString('id-ID')}`, alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
+                                { text: `Rp ${(safeBill.grandTotal || 0).toLocaleString('id-ID')}`, alignment: 'right' },
+                                { text: `Rp ${(safePayment.change || 0).toLocaleString('id-ID')}`, alignment: 'right' },
                                 { text: kasirName, alignment: 'center' }
                             ]
                         ]
                     }
                 },
-                
+
                 // Baris Terbilang Diterima
                 {
                     layout: 'noBorders',
                     table: {
                         widths: ['*'],
                         body: [
-                            [{ 
+                            [{
                                 text: [
                                     { text: 'Terbilang Diterima :', bold: true },
-                                    { text: ` ${terbilangDiterima}`, italics: true ,bold:true}
-                                ], 
+                                    { text: ` ${terbilangDiterima}`, italics: true, bold: true }
+                                ],
                                 fillColor: '#EAECEF',
-                                margin: [5, 5] 
+                                margin: [5, 5]
                             }]
                         ]
                     },
-                    margin: [0, 10, 0, 0] 
+                    margin: [0, 0, 0, 0]
                 },
-                { text: '', margin: [0, 50, 0, 0] },
+                { text: '', margin: [0, 20, 0, 0] },
                 //QR code dan ttd
                 {
                     columns: [
@@ -308,11 +309,11 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                             alignment: 'center',
                             stack: [
                                 { text: 'Mengetahui', margin: [0, 10, 0, 0], bold: true },
-                                { text: 'Pasien/Keluarga Pasien', margin: [0, 10, 0, 10], bold: true },
+                                { text: 'Pasien/Keluarga Pasien', margin: [0, 0, 0, 10], bold: true },
                                 { image: qrCodePasien, width: 70, margin: [0, 5, 0, 5] },
                                 { text: ` ${safeBill.patientName || 'Nama Pasien'} `, bold: true, margin: [0, 0, 0, 10] },
                                 { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 170, y2: 0, lineWidth: 0.5 }] },
-                                
+
                             ]
                         },
                         // KOLOM KANAN (KASIR)
@@ -320,12 +321,12 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
                             width: '*',
                             alignment: 'center',
                             stack: [
-                                { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 10, 0, 0] ,bold:true},
-                                { text: 'Pengirim ', margin: [0, 10, 0, 10],bold:true },
+                                { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 10, 0, 0], bold: true },
+                                { text: 'Petugas', margin: [0, 0, 0, 10], bold: true },
                                 { image: qrCodeKasir, width: 70, margin: [0, 5, 0, 5] },
                                 { text: ` ${kasirName} `, bold: true, margin: [0, 0, 0, 10] },
                                 { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 170, y2: 0, lineWidth: 0.5 }] },
-                                
+
                             ],
                         }
                     ],

@@ -644,6 +644,9 @@ const dynamicOptionLabelKey = computed(() => {
   if (/\d/.test(searchQuery.value) && searchQuery.value.includes("-")) {
     return 'noRm';
   }
+  if (query.includes("INV")) {
+    return 'invoiceCode';
+  }
   return 'patientName';
 });
 
@@ -658,6 +661,7 @@ const formatDateCustom = (epochTime: number) => {
 
   return `${day} ${month} ${year}`;
 };
+
 
 onMounted(() => {
   startShortPolling(); 

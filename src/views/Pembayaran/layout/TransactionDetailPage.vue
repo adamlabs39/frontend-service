@@ -688,7 +688,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                   <p class="text-SM">{{ epochToDate(slotProps.data.dateUsed, "date") }}</p>
                 </template>
               </Column>
-              <Column header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50" style="width: 45%">
+              <Column header="Tindakan, Pemeriksaan, dan Administrasi" headerClass="bg-adameds-50" style="width: 35%">
                 <template #body="slotProps">
                   <p class="text-sm">{{ slotProps.data.itemName }}</p>
                 </template>
@@ -698,7 +698,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                   <div class="text-SM">{{ slotProps.data.qty }}</div>
                 </template>
               </Column>
-              <Column header="Tarif" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 15%">
+              <Column header="Tarif" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 13%">
                 <template #body="slotProps">
                   <div class="text-SM">Rp {{ slotProps.data.price?.toLocaleString('id-ID') }}</div>
                 </template>
