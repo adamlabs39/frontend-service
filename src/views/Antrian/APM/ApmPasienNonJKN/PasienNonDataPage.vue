@@ -17,7 +17,7 @@ const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
 const handlePoli = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/poli-umum");
+  router.push("/antrian/apm/aktif/pasien/non-jkn/poli");
 };
 
 const props = defineProps({
@@ -72,7 +72,7 @@ const cardAktivitasKandungan = ref({
           <!-- Header -->
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-fit h-10 bg-white rounded-xl shadow-md"
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
                 class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
