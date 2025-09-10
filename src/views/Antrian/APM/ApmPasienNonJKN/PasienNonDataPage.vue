@@ -18,8 +18,14 @@ const handleHome = () => {
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
-const handlePoli = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/poli");
+const handlePoli = (poli: any) => {
+  router.push({
+    path: "/antrian/apm/aktif/pasien/non-jkn/poli",
+    query: {
+      poli_uuid: poli?.uuid || "",
+      poli_name: poli?.name || "",
+    },
+  });
 };
 
 const props = defineProps({
@@ -206,7 +212,7 @@ onMounted(() => {
                       <CardAktivitas
                         :cardAktivitas="item.name"
                         class="transition-transform duration-300 hover:scale-95"
-                        @click="handlePoli"
+                        @click="handlePoli(item)"
                       />
                     </div>
                   </div>
