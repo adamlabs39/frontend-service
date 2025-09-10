@@ -243,6 +243,8 @@ const filterCriteria = ref({
   isValidSearch: true,
 });
 
+const paginatorKey = ref(0);
+
 function handleHeaderSearch(payload: {
   dokterUuid?: string;
   poliUuid?: string;
@@ -556,6 +558,7 @@ onMounted(() => {
       <div class="flex justify-between px-5 py-2.5">
         <CustomPaginator
           class="ml-auto"
+          :key="`paginator-${paginatorKey}`"
           :rows="jadwalDokterProperties.page_size"
           :totalRecords="jadwalDokterProperties.total"
           :rowsPerPageOptions="[10, 20, 30]"
