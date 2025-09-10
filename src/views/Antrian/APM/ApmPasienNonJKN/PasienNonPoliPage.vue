@@ -12,8 +12,8 @@ import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
 
-const handleHome = () => {
-  router.push("/antrian/apm/aktif");
+const handleBack = () => {
+  router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
 };
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
@@ -64,6 +64,11 @@ const cardJamSiang = ref({
 const cardJamMalam = ref({
   jam: "18:00 - 20:00",
 });
+
+const selectedDokter = ref<string | null>(null);
+const selectDokter = (id: string) => {
+  selectedDokter.value = id;
+};
 </script>
 
 <template #body>
@@ -117,14 +122,12 @@ const cardJamMalam = ref({
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="w-[120px]"
-                @click="handleHome"
+                @click="handleBack"
               />
             </div>
           </div>
 
-          <div
-            class="grid grid-cols-[1fr_min-content_340px] w-full my-5 mx-16 items-start"
-          >
+          <div class="flex items-start mx-16 my-5">
             <div class="pr-6 pl-6 w-full">
               <div class="justify-start pl-1 text-lg font-bold">
                 List Dokter
@@ -138,56 +141,56 @@ const cardJamMalam = ref({
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjang"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('1')"
+                    @click="selectDokter('1')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjang"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('2')"
+                    @click="selectDokter('2')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjangSekali"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('3')"
+                    @click="selectDokter('3')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjangSekali"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('4')"
+                    @click="selectDokter('4')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('5')"
+                    @click="selectDokter('5')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('6')"
+                    @click="selectDokter('6')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('7')"
+                    @click="selectDokter('7')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectType('8')"
+                    @click="selectDokter('8')"
                   />
                 </div>
               </div>
@@ -196,10 +199,11 @@ const cardJamMalam = ref({
             <!-- Divider vertikal sesuai Figma -->
             <div
               class="mx-8 w-[4px] bg-adameds-300 rounded self-stretch mt-16"
+              v-show="selectedDokter"
             ></div>
 
             <!-- Panel Jam Praktek (selalu tampil) -->
-            <div class="pr-6">
+            <div class="" v-show="selectedDokter">
               <div>
                 <div class="justify-start pl-1 text-lg font-bold">
                   Jam Praktek

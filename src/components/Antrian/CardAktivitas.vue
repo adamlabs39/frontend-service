@@ -41,15 +41,22 @@ const props = defineProps({
           class="text-adameds-300"
           :size="40"
           v-if="
-            ['Umum', 'Anak', 'Mata', 'Kandungan', 'Gigi', 'THT', 'Tulang', 'Kulit'].includes(
-              cardAktivitas.keterangan
-            )
+            [
+              'Umum',
+              'Anak',
+              'Mata',
+              'Kandungan',
+              'Gigi',
+              'THT',
+              'Tulang',
+              'Kulit',
+            ].includes(cardAktivitas.keterangan)
           "
         />
       </div>
     </template>
     <template #content>
-      <div class="flex items-center justify-center h-full mt-2">
+      <div class="flex justify-center items-center h-full">
         <div class="font-extrabold text-[22px] text-adameds-300">
           {{ cardAktivitas.keterangan }}
         </div>
