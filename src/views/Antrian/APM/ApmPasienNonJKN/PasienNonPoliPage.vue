@@ -3,14 +3,18 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import CardDokter from "@/components/Antrian/CardDokter.vue";
-import { useRouter } from "vue-router";
-import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { computed, onMounted, ref, type PropType } from "vue";
 import Stethoscop from "@/components/icons/Stethoscop.vue";
 import CardJam from "@/components/Antrian/CardJam.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
+import { watch } from "vue";
 
 const router = useRouter();
+const route = useRoute();
 
 const handleBack = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
@@ -43,7 +47,83 @@ const props = defineProps({
   dataPasien: {
     default: Object,
   },
+  excludedDokterUuids: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
+  excludedDoctorUuidsByPoli: {
+    type: Object as PropType<Record<string, string[]>>,
+    default: () => ({}),
+  },
 });
+
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+
+const getDokterPayload = ref<any[]>([]);
+const getDokterProperties = ref({
+  poliUuid: "",
+  name: "",
+});
+
+const poliName = ref<string>("");
+
+const jadwalDokterPayload = ref<any[]>([]);
+const jadwalDokterProperties = ref({
+  page: 1,
+  page_size: 99999999999999,
+  total: 0,
+});
+
+const fetchJadwalDokter = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApi(
+      jadwalDokterProperties.value.page,
+      jadwalDokterProperties.value.page_size
+    );
+
+    const selectedPoliUuid = getDokterProperties.value.poliUuid;
+
+    // response.payload adalah array (lihat console.txt), setiap item punya struktur: { doctor, poli, jadwal_dokter }
+    if (Array.isArray(response?.payload)) {
+      const filtered = selectedPoliUuid
+        ? response.payload.filter(
+            (item: any) => item?.poli?.uuid === selectedPoliUuid
+          )
+        : response.payload;
+
+      jadwalDokterPayload.value = filtered;
+      // total diset sesuai hasil filter agar merepresentasikan data yang sedang ditampilkan
+      jadwalDokterProperties.value.total = filtered.length;
+      console.log("filtered:", jadwalDokterPayload.value);
+    } else {
+      // fallback jika payload tidak sesuai ekspektasi
+      jadwalDokterPayload.value = [];
+      jadwalDokterProperties.value.total = 0;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    jadwalDokterPayload.value = [];
+    jadwalDokterProperties.value.total = 0;
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  getDokterProperties.value.poliUuid = (route.query.poli_uuid as string) || "";
+  poliName.value = (route.query.poli_name as string) || "";
+  fetchJadwalDokter();
+});
+
+// watch(
+//   () => route.query.poli_uuid,
+//   (newVal) => {
+//     selectedPoliUuid.value = (newVal as string) || "";
+//     fetchGetDokter(selectedPoliUuid.value);
+//   }
+// );
 
 const cardDokterNamaPanjang = ref({
   namaDokter: "dr. Nama Dokter Nama Panjang",
@@ -66,9 +146,19 @@ const cardJamMalam = ref({
 });
 
 const selectedDokter = ref<string | null>(null);
-const selectDokter = (id: string) => {
-  selectedDokter.value = id;
+const selectDokter = (doctorUuid: string) => {
+  selectedDokter.value = doctorUuid;
+  selectedTime.value = null;
 };
+
+const selectedDoctorDetail = computed(() => {
+  if (!selectedDokter.value) return null;
+  return (
+    jadwalDokterPayload.value.find(
+      (item: any) => item?.doctor?.uuid === selectedDokter.value
+    ) || null
+  );
+});
 </script>
 
 <template #body>
@@ -111,7 +201,7 @@ const selectDokter = (id: string) => {
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               <Stethoscop class="text-adameds-300" :size="28" />
-              &nbsp Poli Umum
+              &nbsp {{ poliName || "Poli" }}
             </div>
 
             <!-- Button Container (Right) -->
@@ -137,61 +227,21 @@ const selectDokter = (id: string) => {
                 Silahkan Pilih Dokter
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div>
+                <div v-for="dokter in jadwalDokterPayload" :key="dokter.uuid">
                   <cardDokter
-                    :cardDokter="cardDokterNamaPanjang"
+                    :cardDokter="{
+                      namaDokter: dokter?.doctor?.name || 'Dokter',
+                    }"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('1')"
+                    @click="selectDokter(dokter?.doctor?.uuid)"
                   />
                 </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNamaPanjang"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('2')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNamaPanjangSekali"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('3')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNamaPanjangSekali"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('4')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNama"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('5')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNama"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('6')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNama"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('7')"
-                  />
-                </div>
-                <div>
-                  <cardDokter
-                    :cardDokter="cardDokterNama"
-                    class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter('8')"
-                  />
+
+                <div
+                  v-if="jadwalDokterPayload.length === 0"
+                  class="col-span-2 text-sm italic text-gray-500"
+                >
+                  Tidak ada dokter untuk poli ini.
                 </div>
               </div>
             </div>
@@ -214,71 +264,46 @@ const selectDokter = (id: string) => {
                 </div>
 
                 <!-- Daftar Jam sesuai Figma -->
-                <div class="grid grid-cols-1 gap-4 w-[280px]">
-                  <!-- Pagi -->
-                  <button
-                    type="button"
-                    @click="selectTime('pagi')"
-                    :class="[
-                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
-                      selectedTime === 'pagi'
-                        ? 'bg-adameds-100 text-white'
-                        : 'bg-white text-adameds-300',
-                    ]"
+                <!-- Ganti kontainer menjadi pembungkus lebar + area scroll di dalamnya -->
+                <div class="w-[280px]">
+                  <!-- Area daftar yang dibatasi tinggi dan bisa scroll -->
+                  <div
+                    class="grid overflow-y-auto grid-cols-1 gap-4 pr-2 max-h-64"
                   >
-                    <span class="font-extrabold text-[16px]">{{
-                      cardJamPagi.jam
-                    }}</span>
-                    <CheckCircleIcon
-                      v-if="selectedTime === 'pagi'"
-                      :size="20"
-                      class="absolute right-4 text-white"
-                    />
-                  </button>
+                    <template v-if="selectedDoctorDetail">
+                      <template
+                        v-for="j in selectedDoctorDetail.jadwalDokter"
+                        :key="j.jadwalDokterUuid"
+                      >
+                        <button
+                          type="button"
+                          :class="[
+                            'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-all duration-300',
+                            selectedTime === j.jadwalDokterUuid
+                              ? 'bg-adameds-100 text-white'
+                              : 'bg-white text-adameds-300 hover:bg-adameds-100 hover:text-white',
+                            'hover:scale-95',
+                          ]"
+                          @click="selectTime(j.jadwalDokterUuid)"
+                        >
+                          <span class="font-extrabold text-[16px]">
+                            {{ j.startTime }} - {{ j.endTime }}
+                          </span>
+                          <CheckCircleIcon
+                            :size="20"
+                            class="absolute right-4"
+                            :class="
+                              selectedTime === j.jadwalDokterUuid
+                                ? 'text-white'
+                                : 'text-transparent'
+                            "
+                          />
+                        </button>
+                      </template>
+                    </template>
+                  </div>
 
-                  <!-- Siang -->
-                  <button
-                    type="button"
-                    @click="selectTime('siang')"
-                    :class="[
-                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
-                      selectedTime === 'siang'
-                        ? 'bg-adameds-100 text-white'
-                        : 'bg-white text-adameds-300',
-                    ]"
-                  >
-                    <span class="font-extrabold text-[16px]">{{
-                      cardJamSiang.jam
-                    }}</span>
-                    <CheckCircleIcon
-                      v-if="selectedTime === 'siang'"
-                      :size="20"
-                      class="absolute right-4 text-white"
-                    />
-                  </button>
-
-                  <!-- Malam -->
-                  <button
-                    type="button"
-                    @click="selectTime('malam')"
-                    :class="[
-                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
-                      selectedTime === 'malam'
-                        ? 'bg-adameds-100 text-white'
-                        : 'bg-white text-adameds-300',
-                    ]"
-                  >
-                    <span class="font-extrabold text-[16px]">{{
-                      cardJamMalam.jam
-                    }}</span>
-                    <CheckCircleIcon
-                      v-if="selectedTime === 'malam'"
-                      :size="20"
-                      class="absolute right-4 text-white"
-                    />
-                  </button>
-
-                  <!-- Tombol Lanjutkan -->
+                  <!-- Tombol di luar area scroll sehingga tidak terpengaruh max-h -->
                   <CustomButton
                     v-show="selectedTime"
                     label="Lanjutkan"
