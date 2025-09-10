@@ -3,10 +3,12 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
 
 const router = useRouter();
 
@@ -35,6 +37,32 @@ const props = defineProps({
   },
 });
 
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+
+const jadwalPoliPayload = ref<any[]>([]);
+const jadwalPoliProperties = ref({
+  name: "",
+});
+
+const fetchGetPoli = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiPoli(
+      jadwalPoliProperties.value.name
+    );
+    console.log("Hasil dari response poli:", response);
+    if (response && response.payload) {
+      jadwalPoliPayload.value = response.payload;
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalPoliPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
 const dataPasien = ref({
   noRM: "001827",
   nik: "327012371204102",
@@ -54,6 +82,10 @@ const cardAktivitasMata = ref({
 });
 const cardAktivitasKandungan = ref({
   keterangan: "Kandungan",
+});
+
+onMounted(() => {
+  fetchGetPoli();
 });
 </script>
 
@@ -166,29 +198,15 @@ const cardAktivitasKandungan = ref({
               <div class="flex flex-col items-center h-[220px] justify-center">
                 <div>
                   <div class="grid grid-cols-4 gap-x-6 gap-y-6 w-full">
-                    <div class="w-[220px] h-[120px]">
+                    <div
+                      v-for="item in jadwalPoliPayload"
+                      :key="item.uuid || item.id"
+                      class="w-[220px] h-[120px]"
+                    >
                       <CardAktivitas
-                        :cardAktivitas="cardAktivitasUmum"
+                        :cardAktivitas="item.name"
                         class="transition-transform duration-300 hover:scale-95"
                         @click="handlePoli"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasAnak"
-                        class="transition-transform duration-300 hover:scale-95"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasMata"
-                        class="transition-transform duration-300 hover:scale-95"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasKandungan"
-                        class="transition-transform duration-300 hover:scale-95"
                       />
                     </div>
                   </div>
