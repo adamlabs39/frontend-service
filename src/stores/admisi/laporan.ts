@@ -370,8 +370,7 @@ export const useAdmisiReportStore = defineStore({
       );
     },
     async DownloadLaporanAdmisiReport() {
-    const endpoint = `/download`;
-    return apiAdmisiDownload(endpoint);
+      return apiAdmisiDownload(`/download`);
     },
     // FIXME Belum mulai develop BPJS
     // async getJumlahBPJSReport({}, payload = {}) {
