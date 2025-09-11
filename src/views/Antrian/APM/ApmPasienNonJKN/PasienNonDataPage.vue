@@ -141,37 +141,33 @@ onMounted(() => {
             <div
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
-              <div class="font-bold whitespace-nowrap">NIK</div>
+              <div class="font-bold whitespace-nowrap">No. Identitas</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.nik }}</div>
 
+              <div class="font-bold whitespace-nowrap">No. RM</div>
+              <div class="text-center">:</div>
+              <div>{{ dataPasien.noRM }}</div>
+            </div>
+
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
               <div class="font-bold whitespace-nowrap">Nama</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.nama }}</div>
-            </div>
 
-            <div
-              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
-            >
-              <div class="font-bold whitespace-nowrap">Tanggal Lahir</div>
+              <div class="font-bold whitespace-nowrap">Tgl. Lahir</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.tanggalLahir }}</div>
-
-              <div class="font-bold whitespace-nowrap">Gender</div>
-              <div class="text-center">:</div>
-              <div>{{ dataPasien.gender }}</div>
             </div>
 
             <div
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
-              <div class="font-bold whitespace-nowrap">No RM</div>
+              <div class="font-bold whitespace-nowrap">Jenis Kelamin</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.noRM }}</div>
-
-              <div class="font-bold whitespace-nowrap">No BPJS</div>
-              <div class="text-center">:</div>
-              <div>{{ dataPasien.noBPJS }}</div>
+              <div>{{ dataPasien.gender }}</div>
             </div>
           </div>
 
