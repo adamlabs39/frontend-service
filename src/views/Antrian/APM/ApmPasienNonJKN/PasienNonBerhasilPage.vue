@@ -1,21 +1,22 @@
 <script lang="ts" setup>
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
+const route = useRoute();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
-const handleBack = () => {
-  router.push("/antrian/apm/aktif/pasien/jkn");
-};
+// const handleBack = () => {
+//   router.push("/antrian/apm/aktif/pasien/jkn");
+// };
 
 const props = defineProps({
   isDialogVisible: {
@@ -44,28 +45,97 @@ const tiketAntrian = ref({
   tanggal: "10 Jan 2024",
   noAntri: "PD-02-01",
 });
+
+const formatDateId = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(d);
+  } catch {
+    return iso;
+  }
+};
+
+const mapGender = (g?: string) => {
+  if (!g) return "";
+  const m = g.toLowerCase();
+  if (m === "male") return "Laki-laki";
+  if (m === "female") return "Perempuan";
+  return g;
+};
+
+onMounted(() => {
+  // Log response dari apmSucces.txt
+  if (route.query.data) {
+    try {
+      const responseData = JSON.parse(
+        decodeURIComponent(route.query.data as string)
+      );
+      console.log("APM Success Response (apmSucces.txt):", responseData);
+
+      // Update tiket antrian dengan data dari response
+      if (responseData) {
+        tiketAntrian.value = {
+          noRM: responseData.patient?.no_rm || "00-00-00",
+          noBooking: responseData.kode_booking || "63DJ83",
+          noRegistrasi: responseData.no_reg || "REG2407010049",
+          noBPJS: "", // Tidak ada di response
+          nik: responseData.patient?.no_identity || "327012371204102",
+          nama:
+            responseData.patient?.name || "Nama Lengkap Pasien Jika Panjang",
+          tanggalLahir:
+            formatDateId(responseData.patient?.birth_detail?.birth_date) ||
+            "01 Januari 2000",
+          gender: mapGender(responseData.patient?.gender) || "Laki-laki",
+          namaPoli: responseData.lokasi?.name || "Poli Anak",
+          dokter: `${
+            responseData.practitioner?.pegawai?.first_title || "dr."
+          } ${responseData.practitioner?.pegawai?.nama || "Nama Dokter"} ${
+            responseData.practitioner?.pegawai?.last_title || ""
+          }`.trim(),
+          jadwal: `${responseData.jadwal_dokter?.start_time || "07:00"} - ${
+            responseData.jadwal_dokter?.end_time || "10:00"
+          }`,
+          tanggal: new Date().toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          noAntri: responseData.no_antrian_poli || "PD-02-01",
+        };
+      }
+    } catch (error) {
+      console.error("Error parsing response data:", error);
+    }
+  }
+});
 </script>
 
 <template #body>
-  <div class="py-5 w-full min-h-screen flex flex-col">
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
       class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
       <NavbarAntrian />
     </div>
-    <div class="relative mx-36 flex-1 flex items-center justify-center">
+    <div class="flex relative flex-1 justify-center items-center mx-36">
       <div
-        class="flex flex-col justify-center w-full overflow-hidden rounded-3xl"
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
+          class="bg-white bg-opacity-30 w-full min-h-[640px] items-center justify-center"
         >
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-48 h-10 bg-white shadow-md rounded-xl"
+              class="flex justify-between w-48 h-10 bg-white rounded-xl shadow-md"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
                 <!-- Logo Container -->
                 <div
@@ -83,13 +153,13 @@ const tiketAntrian = ref({
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               Pendaftaran Berhasil
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Halaman Utama"
                 outlined
@@ -101,8 +171,8 @@ const tiketAntrian = ref({
             </div>
           </div>
 
-          <div class="flex items-center justify-center">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="w-10/12 mt-14" />
+          <div class="flex justify-center items-center px-16">
+            <TiketAntrian :tiketAntrian="tiketAntrian" class="mt-14" />
           </div>
         </div>
       </div>

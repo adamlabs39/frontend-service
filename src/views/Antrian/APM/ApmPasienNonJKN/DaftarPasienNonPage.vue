@@ -4,13 +4,26 @@ import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
+import { useApmStore } from "@/stores/antrian/apm";
+import { utilsStore } from "@/stores/utils";
+import { useAuthStore } from "@/stores/auth";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
 
 const router = useRouter();
 
 const selectedType = ref<string | null>(null);
 const isDisabled = computed(() => !selectedType.value);
+
+const useUtilsStore = utilsStore();
+const apmStore = useApmStore();
+const authStore = useAuthStore();
+
+const faskesUuid = computed(() => authStore.getFaskesUuid);
+
 const selectType = (type: string) => {
   selectedType.value = type;
 };
@@ -18,12 +31,80 @@ const selectType = (type: string) => {
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
-const handleData = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
-};
-// const handleBerhasil = () => {
-//   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
-// };
+
+// Validasi dinamis berdasarkan tipe yang dipilih
+const schema = toTypedSchema(
+  yup.object({
+    no_identity: yup
+      .string()
+      .required("Nomor identitas wajib diisi")
+      .test("len-by-type", "Panjang nomor tidak sesuai dengan tipe", (val) => {
+        const type = selectedType.value;
+        if (!type) return false;
+        const expected: Record<string, number> = {
+          RM: 8,
+          KTP: 16,
+          Passport: 8,
+          Lainnya: 8,
+        };
+        return !!val && val.trim().length === expected[type];
+      }),
+  })
+);
+
+const { errors, handleSubmit, defineField } = useForm({
+  validationSchema: schema,
+});
+
+const [no_identity] = defineField("no_identity");
+
+const identityLabel = computed(() =>
+  selectedType.value ? `No. ${selectedType.value}` : "No."
+);
+
+// Submit handler
+const onSubmit = handleSubmit(async (values) => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    const payload = {
+      faskes_uuid: faskesUuid.value,
+      no_identity: values.no_identity,
+      identity: selectedType.value,
+    };
+
+    const response = await apmStore.checkPasien(payload);
+
+    if (response?.payload && response.payload.uuid) {
+      // Sukses: pasien sudah terdaftar (postman.txt)
+      const dataParam = encodeURIComponent(JSON.stringify(response.payload));
+      router.push({
+        path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
+        query: {
+          status: "success",
+          data: dataParam,
+          identity: selectedType.value || "",
+          no_identity: values.no_identity,
+        },
+      });
+    } else {
+      // Anggap gagal jika tidak ada uuid
+      throw new Error("Patient not found");
+    }
+  } catch (error) {
+    // Gagal: pasien belum terdaftar (console.txt)
+    router.push({
+      path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
+      query: {
+        status: "not_found",
+        identity: selectedType.value || "",
+        no_identity: no_identity.value || "",
+      },
+    });
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+});
 
 const props = defineProps({
   isDialogVisible: {
@@ -155,17 +236,26 @@ const props = defineProps({
                 ></div>
               </div>
             </div>
+            <!-- Input dengan validasi -->
             <CustomTextfield
               :disabled="isDisabled"
-              :label="`No. ${selectedType || ''}`"
-              :placeholder="`Masukkan No. KTP`"
-              class="mb-4 w-2/5"
+              v-model="no_identity"
+              :label="identityLabel"
+              :placeholder="`Masukkan ${identityLabel}`"
+              class="mb-1 w-2/5"
             ></CustomTextfield>
+            <!-- Error message -->
+            <div
+              v-if="errors.no_identity"
+              class="mb-3 w-2/5 text-xs text-red-500"
+            >
+              {{ errors.no_identity }}
+            </div>
             <CustomButton
               :disabled="isDisabled"
               label="Lanjutkan"
               class="w-2/5"
-              @click="handleData"
+              @click="onSubmit"
             />
           </div>
         </div>

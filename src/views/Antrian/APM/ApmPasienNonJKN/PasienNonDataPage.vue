@@ -2,7 +2,7 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
@@ -11,6 +11,7 @@ import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 
 const router = useRouter();
+const route = useRoute();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -19,12 +20,23 @@ const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
 const handlePoli = (poli: any) => {
+  // Kirim data pasien dan status ke halaman poli
+  const queryData = {
+    poli_uuid: poli?.uuid || "",
+    poli_name: poli?.name || "",
+    patient_status: patientStatus.value,
+    identity: (route.query.identity as string) || "",
+    no_identity: (route.query.no_identity as string) || "",
+  };
+
+  // Jika pasien lama, kirim juga data lengkap
+  if (patientStatus.value === "success" && route.query.data) {
+    queryData.patient_data = route.query.data as string;
+  }
+
   router.push({
     path: "/antrian/apm/aktif/pasien/non-jkn/poli",
-    query: {
-      poli_uuid: poli?.uuid || "",
-      poli_name: poli?.name || "",
-    },
+    query: queryData,
   });
 };
 
@@ -70,14 +82,70 @@ const fetchGetPoli = async () => {
 };
 
 const dataPasien = ref({
-  noRM: "001827",
-  nik: "327012371204102",
-  nama: "Nama Lengkap Pasien Jika",
-  tanggalLahir: "01 Januari 2000",
-  gender: "Laki-laki",
+  noRM: "",
+  nik: "",
+  nama: "",
+  tanggalLahir: "",
+  gender: "",
 });
 
+const patientStatus = ref<string>("");
+
+// Helper functions
+const formatDateId = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(d);
+  } catch {
+    return iso;
+  }
+};
+
+const mapGender = (g?: string) => {
+  if (!g) return "";
+  const m = g.toLowerCase();
+  if (m === "male") return "Laki-laki";
+  if (m === "female") return "Perempuan";
+  return g;
+};
+
 onMounted(() => {
+  const status = (route.query.status as string) || "";
+  patientStatus.value = status;
+
+  if (status === "success" && route.query.data) {
+    // Pasien lama - tampilkan semua data
+    try {
+      const payload = JSON.parse(
+        decodeURIComponent(route.query.data as string)
+      );
+      dataPasien.value = {
+        noRM: payload.no_rm || "",
+        nik: payload.no_identity || "",
+        nama: payload.name || "",
+        tanggalLahir: formatDateId(payload?.birth_detail?.birth_date),
+        gender: mapGender(payload.gender),
+      };
+    } catch (error) {
+      console.error("Error parsing patient data:", error);
+    }
+  } else if (status === "not_found") {
+    // Pasien baru - hanya tampilkan nomor identitas
+    dataPasien.value = {
+      noRM: "",
+      nik: (route.query.no_identity as string) || "",
+      nama: "",
+      tanggalLahir: "",
+      gender: "",
+    };
+  }
+
   fetchGetPoli();
 });
 </script>
@@ -145,12 +213,17 @@ onMounted(() => {
               <div class="text-center">:</div>
               <div>{{ dataPasien.nik }}</div>
 
-              <div class="font-bold whitespace-nowrap">No. RM</div>
-              <div class="text-center">:</div>
-              <div>{{ dataPasien.noRM }}</div>
+              <!-- Hanya tampilkan No. RM jika pasien lama -->
+              <template v-if="patientStatus === 'success'">
+                <div class="font-bold whitespace-nowrap">No. RM</div>
+                <div class="text-center">:</div>
+                <div>{{ dataPasien.noRM }}</div>
+              </template>
             </div>
 
+            <!-- Hanya tampilkan kolom kedua jika pasien lama -->
             <div
+              v-if="patientStatus === 'success'"
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
               <div class="font-bold whitespace-nowrap">Nama</div>
@@ -162,7 +235,9 @@ onMounted(() => {
               <div>{{ dataPasien.tanggalLahir }}</div>
             </div>
 
+            <!-- Hanya tampilkan kolom ketiga jika pasien lama -->
             <div
+              v-if="patientStatus === 'success'"
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
               <div class="font-bold whitespace-nowrap">Jenis Kelamin</div>

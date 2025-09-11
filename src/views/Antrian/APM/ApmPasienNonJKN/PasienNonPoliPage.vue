@@ -12,9 +12,12 @@ import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { watch } from "vue";
+import { useApmStore } from "@/stores/antrian/apm";
 
 const router = useRouter();
 const route = useRoute();
+
+const apmStore = useApmStore();
 
 const HARI_ID = [
   "Minggu",
@@ -51,8 +54,67 @@ const isDoctorDisabled = (item: any) => !hasScheduleToday(item);
 const handleBack = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
 };
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+const handleBerhasil = async () => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    // Ambil data dari query
+    const patientStatus = (route.query.patient_status as string) || "";
+    const identity = (route.query.identity as string) || "";
+    const no_identity = (route.query.no_identity as string) || "";
+
+    let payload: any;
+
+    if (patientStatus === "success" && route.query.patient_data) {
+      // Pasien Lama
+      try {
+        const patientData = JSON.parse(
+          decodeURIComponent(route.query.patient_data as string)
+        );
+        payload = {
+          patient_data: {
+            identity: identity,
+            no_identity: no_identity,
+          },
+          jadwal_dokter_uuid: selectedTime.value,
+        };
+      } catch (error) {
+        console.error("Error parsing patient data:", error);
+        return;
+      }
+    } else {
+      // Pasien Baru
+      payload = {
+        patient_data: {
+          patient_uuid: "", // Akan diisi dari response checkPasien jika ada
+          identity: identity,
+          no_identity: no_identity,
+        },
+        jadwal_dokter_uuid: selectedTime.value,
+      };
+    }
+
+    console.log("Register payload:", payload);
+
+    const response = await apmStore.register(payload);
+
+    if (response) {
+      console.log("Register response (apmSucces.txt):", response);
+
+      // Kirim data ke halaman berhasil
+      const dataParam = encodeURIComponent(JSON.stringify(response));
+      router.push({
+        path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
+        query: {
+          data: dataParam,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Error during registration:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 
 const selectedType = ref<string | null>(null);
