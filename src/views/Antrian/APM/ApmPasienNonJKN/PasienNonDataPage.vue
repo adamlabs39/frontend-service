@@ -77,19 +77,6 @@ const dataPasien = ref({
   gender: "Laki-laki",
 });
 
-const cardAktivitasUmum = ref({
-  keterangan: "Umum",
-});
-const cardAktivitasAnak = ref({
-  keterangan: "Anak",
-});
-const cardAktivitasMata = ref({
-  keterangan: "Mata",
-});
-const cardAktivitasKandungan = ref({
-  keterangan: "Kandungan",
-});
-
 onMounted(() => {
   fetchGetPoli();
 });
