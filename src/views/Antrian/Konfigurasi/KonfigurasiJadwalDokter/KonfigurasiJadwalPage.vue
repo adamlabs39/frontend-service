@@ -25,6 +25,8 @@ const allPoliData = ref<any[]>([]);
 const allDokterData = ref<
   Array<{ uuid: string; name: string; poliUuids: string[] }>
 >([]);
+
+const allSchedulesPayload = ref<any[]>([]);
 const jadwalDokterProperties = ref({
   page: 1,
   page_size: 10,
@@ -79,11 +81,26 @@ const fetchAllReferenceData = async () => {
     if (response?.payload) {
       allPoliData.value = buildPoliOptionsFromPayload(response.payload);
       allDokterData.value = buildDokterOptionsFromPayload(response.payload);
+      allSchedulesPayload.value = response.payload;
     }
   } catch (error) {
     console.error("Failed to fetch all reference data", error);
   }
 };
+
+const excludedDoctorUuidsByPoli = computed(() => {
+  const map: Record<string, Set<string>> = {};
+  (allSchedulesPayload.value || []).forEach((item: any) => {
+    const poliUuid = item?.poli?.uuid;
+    const doctorUuid = item?.doctor?.uuid;
+    if (!poliUuid || !doctorUuid) return;
+    if (!map[poliUuid]) map[poliUuid] = new Set<string>();
+    map[poliUuid]!.add(doctorUuid);
+  });
+  return Object.fromEntries(
+    Object.entries(map).map(([k, v]) => [k, Array.from(v)])
+  ) as Record<string, string[]>;
+});
 
 const fetchJadwalDokter = async () => {
   UseUtilsStore.setLoading(true);
@@ -157,6 +174,7 @@ const confirmDelete = async () => {
       deleteModalData.value.poliUuid
     );
     await fetchJadwalDokter();
+    await fetchAllReferenceData();
   } catch (error) {
     console.error("Failed to delete doctor", error);
   } finally {
@@ -205,22 +223,11 @@ const handleClose = () => {
   dialogData.value.isVisible = false;
 };
 
-// untuk handle perubahan rows per page
-const handleRowsUpdate = (newRows: number) => {
-  jadwalDokterProperties.value.page_size = newRows;
-  jadwalDokterProperties.value.page = 1; // Reset ke halaman pertama
-  fetchJadwalDokter(); // Refresh data
-};
-
-const handleRefresh = () => {
+const handleRefresh = async () => {
   dialogData.value.isVisible = false; // tutup dialog
-  fetchJadwalDokter(); // muat ulang data tabel utama
-};
-
-// untuk handle perubahan halaman
-const handlePageUpdate = (newPage: number) => {
-  jadwalDokterProperties.value.page = newPage;
-  fetchJadwalDokter(); // Refresh data
+  // Penting: refresh tabel + refresh referensi untuk update excludedDoctorUuidsByPoli
+  await fetchJadwalDokter();
+  await fetchAllReferenceData();
 };
 
 const handlePage = (event: any) => {
@@ -229,9 +236,19 @@ const handlePage = (event: any) => {
   fetchJadwalDokter();
 };
 
-const filterCriteria = ref({ dokterUuid: "", poliUuid: "" });
+const filterCriteria = ref({
+  dokterUuid: "",
+  poliUuid: "",
+  aktif: undefined as boolean | undefined,
+  isValidSearch: true,
+});
 
 const displayedJadwalDokter = computed(() => {
+  // Jika pencarian ditandai tidak valid (contoh: teks filter poli tidak cocok dengan opsi),
+  // kembalikan data kosong agar tabel menampilkan "No data available".
+  if (filterCriteria.value.isValidSearch === false) {
+    return [];
+  }
   return jadwalDokterPayload.value.filter((item) => {
     const doctorOk =
       !filterCriteria.value.dokterUuid ||
@@ -258,12 +275,15 @@ onMounted(() => {
   >
     <template #header>
       <konfigurasi-jadwal-header
-        @refresh="fetchJadwalDokter"
+        @refresh="handleRefresh"
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
+        :excludedDoctorUuidsByPoli="excludedDoctorUuidsByPoli"
         @search="
           filterCriteria = $event;
-          fetchJadwalDokter();
+          if ($event.isValidSearch !== false) {
+            fetchJadwalDokter();
+          }
         "
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"
@@ -289,7 +309,12 @@ onMounted(() => {
         <Column header="No." header-class="text-black bg-adameds-50">
           <template #body="slotProps">
             <div class="">
-              {{ slotProps.index + 1 }}
+              {{
+                (jadwalDokterProperties.page - 1) *
+                  jadwalDokterProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -324,12 +349,10 @@ onMounted(() => {
             </div>
           </template>
         </Column>
-        <Column
-          field="Action"
-          header="Action"
-          headerClass="bg-adameds-50 flex items-center justify-center"
-          class="text-sm"
-        >
+        <Column field="Action" headerClass="bg-adameds-50">
+          <template #header>
+            <div class="w-full font-semibold text-center">Action</div>
+          </template>
           <template #body="slotProps">
             <div class="flex gap-2.5 justify-center items-center">
               <div title="Edit">
@@ -400,22 +423,7 @@ onMounted(() => {
                   </div>
                 </template>
               </Column>
-              <Column
-                field="durasi_pasien"
-                header-class="text-black bg-adameds-50"
-                class="text-sm"
-              >
-                <template #header>
-                  <div class="flex justify-center items-center w-full h-full">
-                    <div class="font-bold">Durasi Per-Pasien</div>
-                  </div>
-                </template>
-                <template #body="slotProps">
-                  <div class="flex justify-center items-center">
-                    {{ slotProps.data.durasiPelayanan }} Menit
-                  </div>
-                </template>
-              </Column>
+
               <Column
                 field="kuota_jkn"
                 header-class="text-center text-black bg-adameds-50"
@@ -461,6 +469,22 @@ onMounted(() => {
                 <template #body="slotProps">
                   <div class="flex justify-center items-center">
                     {{ slotProps.data.kuota }} Slot
+                  </div>
+                </template>
+              </Column>
+              <Column
+                field="durasi_pasien"
+                header-class="text-black bg-adameds-50"
+                class="text-sm"
+              >
+                <template #header>
+                  <div class="flex justify-center items-center w-full h-full">
+                    <div class="font-bold">Durasi Per-Pasien</div>
+                  </div>
+                </template>
+                <template #body="slotProps">
+                  <div class="flex justify-center items-center">
+                    {{ slotProps.data.durasiPelayanan }} Menit
                   </div>
                 </template>
               </Column>

@@ -3,7 +3,6 @@ import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import { customVfs } from "@/utils/customVfs";
 import { convertImageToBase64, epochToDate, generateQRCode, formatPrice, numberToWords } from "@/utils/Helpers";
 import { defaultHeader } from "../HeaderPrint";
-import { lunasStamp } from "@/utils/PdfMake";
 import logoUrl from "@/assets/images/adameds-square.png";
 import lunasStampUrl from "@/assets/images/Pembayaran/lunas-stamp.png";
 import belumLunasStampUrl from "@/assets/images/Pembayaran/belumlunas-stamp2.png";

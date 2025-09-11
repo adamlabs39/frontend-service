@@ -64,6 +64,15 @@ const fetchGetPoli = async () => {
   }
 };
 
+const selectedPoliData = computed(() => {
+  if (!poli_uuids.value || poli_uuids.value.length === 0) {
+    return [];
+  }
+  return jadwalPoliPayload.value.filter((poli) =>
+    poli_uuids.value.includes(poli.uuid)
+  );
+});
+
 const itemsLayar = ref([
   { name: "Layar 3 x 3 Panggilan", code: 1 },
   { name: "Layar 3 x 2 Panggilan", code: 2 },
@@ -84,7 +93,13 @@ const schema = toTypedSchema(
       .array()
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
-    media: yup.string(),
+    media: yup
+      .string()
+      .matches(
+        /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
+        "URL harus dari YouTube"
+      )
+      .nullable(),
     aktif: yup.boolean().default(true),
     poli_uuids: yup.array().of(yup.string()),
   })
@@ -114,8 +129,8 @@ const emit = defineEmits(["update:isDialogVisible", "close", "refresh"]);
 const onSubmit = handleSubmit(async (values: any) => {
   const payload = {
     ...values, // salin semua field yang sudah ada
-    isAdmisi: true, // atau nilai sesuai kebutuhan
-    isFarmasi: true, // idem
+    isAdmisi: values.isAdmisi ?? false, // atau nilai sesuai kebutuhan
+    isFarmasi: values.isFarmasi ?? false, // idem
     poli_uuids: values.poli_uuids ?? [], // pastikan array
     aktif: values.aktif ?? false, //
     status: values.aktif ?? false,
@@ -182,6 +197,44 @@ watch(
   },
   { immediate: false }
 );
+
+//Untuk dynamic layar antrian
+const activeOrder = ref<Array<"poli" | "admisi" | "farmasi">>([]);
+
+const pushIfNotExists = (key: "poli" | "admisi" | "farmasi") => {
+  if (!activeOrder.value.includes(key)) activeOrder.value.push(key);
+};
+
+const removeIfExists = (key: "poli" | "admisi" | "farmasi") => {
+  activeOrder.value = activeOrder.value.filter((k) => k !== key);
+};
+
+watch(
+  isAdmisi,
+  (val) => {
+    if (val === true) pushIfNotExists("admisi");
+    else removeIfExists("admisi");
+  },
+  { immediate: true }
+);
+
+watch(
+  isPoli,
+  (val) => {
+    if (val === true) pushIfNotExists("poli");
+    else removeIfExists("poli");
+  },
+  { immediate: true }
+);
+
+watch(
+  isFarmasi,
+  (val) => {
+    if (val === true) pushIfNotExists("farmasi");
+    else removeIfExists("farmasi");
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -228,46 +281,62 @@ watch(
               {{ layarTitle }}
             </div>
             <hr class="mt-4" />
-            <CustomTextfield
-              label="Teks Judul"
-              v-model="judul"
-              placeholder="Teks Judul"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-              :invalid="!!errors.judul"
-              :invalid-message="errors.judul"
-            />
-            <div class="flex gap-2.5 items-end mt-4 text-black">
+            <div class="space-y-5">
+              <CustomTextfield
+                label="Teks Judul"
+                v-model="judul"
+                placeholder="Teks Judul"
+                optionValue="code"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black"
+                :invalid="!!errors.judul"
+                :invalid-message="errors.judul"
+              />
               <CustomSwitch
-                v-model="isPoli"
-                label="Poli"
+                v-model="isAdmisi"
+                label="Admisi"
                 sideLabel="Non-Aktif"
                 sideLabelTrue="Aktif"
               />
+              <div class="flex gap-2.5 items-end mt-4 text-black">
+                <CustomSwitch
+                  v-model="isPoli"
+                  label="Poli"
+                  sideLabel="Non-Aktif"
+                  sideLabelTrue="Aktif"
+                />
+              </div>
+              <CustomMultiSelect
+                label="Pilih Poli"
+                placeholder="Pilih Poli"
+                v-model="poli_uuids"
+                :options="jadwalPoliPayload"
+                optionValue="uuid"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black multiselect-wrap"
+                v-show="isPoli"
+              />
+              <CustomSwitch
+                v-model="isFarmasi"
+                label="Farmasi"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
+              <CustomTextfield
+                label="Youtube"
+                v-model="media"
+                placeholder="URL Youtube"
+                class="mt-4 mr-5 w-full text-black"
+                v-show="tipeLayar === 5"
+                :invalid="!!errors.media"
+                :invalid-message="errors.media"
+              />
             </div>
-            <CustomMultiSelect
-              label="Pilih Poli"
-              placeholder="Pilih Poli"
-              v-model="poli_uuids"
-              :options="jadwalPoliPayload"
-              optionValue="uuid"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="isPoli"
-            />
-            <CustomTextfield
-              label="Youtube"
-              v-model="media"
-              placeholder="URL Youtube"
-              class="mt-4 mr-5 w-full text-black"
-              v-show="tipeLayar === 5"
-            />
             <div>
               <div class="mt-4 block font-semibold mb-[5px] text-normal">
                 Flash Text
               </div>
-              <Chips v-model="flashText" class="w-full" />
+              <Chips v-model="flashText" class="w-full text-wrap break-all" />
               <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
                 {{ errors.flashText }}
               </p>
@@ -314,13 +383,26 @@ watch(
               <!-- Blok Konten -->
               <div class="flex-1 min-h-[500px] px-1" id="wrapper-antrian">
                 <template v-if="tipeLayar === 1">
-                  <layout-3x3-panggilan />
+                  <layout-3x3-panggilan
+                    :payload="selectedPoliData"
+                    :is-poli="isPoli"
+                    :active-order="activeOrder"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 2">
-                  <layout-3x2-panggilan />
+                  <layout-3x2-panggilan
+                    :payload="jadwalPoliPayload"
+                    :is-poli="isPoli"
+                    :active-order="activeOrder"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 3">
-                  <layout-list-3-panggilan-3 />
+                  <layout-list-3-panggilan-3
+                    :payload="jadwalPoliPayload"
+                    :is-poli="isPoli"
+                    :is-admisi="isAdmisi"
+                    :is-farmasi="isFarmasi"
+                  />
                 </template>
                 <template v-else-if="tipeLayar === 4">
                   <layout-2-list-2-panggilan />

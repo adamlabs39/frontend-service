@@ -35,9 +35,20 @@ export const useAdmisiMasterPasienStore = defineStore({
         {}
       );
     },
-
     async importMasterPasien(payload = {}) {
       return apiAdmisiPost(`/patient/import`, payload);
+    },
+    async getBerkasApi(uuid = "", payload = {}) {
+      return apiAdmisiGet(`/file/${uuid}`, payload);
+    },
+    async uploadBerkasApi(uuid = "", file: File) {
+      const formData = new FormData();
+      formData.append("unggah_berkas", file); 
+
+      return apiAdmisiPut(`/file/${uuid}`, formData);
+    },
+    async deleteBerkasApi(pasienUuid = "", fileUuid = "") {
+      return apiAdmisiDelete(`/file/${pasienUuid}`, { uuid: fileUuid });
     },
   },
 });

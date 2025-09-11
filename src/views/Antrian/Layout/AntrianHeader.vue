@@ -6,6 +6,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps({
   title: {
@@ -23,6 +24,14 @@ const props = defineProps({
   activeTab: {
     type: String,
     required: true,
+  },
+  startDateEpoch: {
+    type: Number,
+    default: undefined,
+  },
+  endDateEpoch: {
+    type: Number,
+    default: undefined,
   },
 });
 
@@ -50,6 +59,11 @@ const handleChipSelect = (value: string) => {
       chipValues.value = ["SEMUA"];
     }
   }
+
+  // Pindahkan trigger ke sini agar SEMUA juga terpicu (auto-trigger, debounce 300ms)
+  if (["0", "1", "2"].includes(props.activeTab)) {
+    debouncedSearch();
+  }
 };
 
 // Helper function untuk check apakah chip terpilih
@@ -57,16 +71,148 @@ const isChipSelected = (value: string) => {
   return chipValues.value.includes(value);
 };
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+const startDateFilter = ref<Date | null>(new Date());
+const endDateFilter = ref<Date | null>(new Date());
 const searchPatientFilter = ref<string>("");
+
+// emit event pencarian dan rentang tanggal
+const emit = defineEmits<{
+  search: [q: string, statuses?: string[]];
+  dateRange: [start_date?: number | null, end_date?: number | null];
+}>();
+
+// Helper konversi epoch seconds <-> Date
+const epochToDate = (epoch?: number | null): Date | null => {
+  if (epoch === undefined || epoch === null) return null;
+  return new Date(epoch * 1000);
+};
+const dateToEpoch = (date?: Date | null): number | null => {
+  if (!date) return null;
+  return Math.floor(date.getTime() / 1000);
+};
+
+// Fallback tanggal untuk tampilan (display purpose only)
+const getNowDate = () => new Date(); // kanan (end)
+const getThirtyDaysAgoDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 30);
+  return d; // kiri (start)
+};
+
+const syncDatepickerWithProps = () => {
+  if (["0", "1", "2"].includes(props.activeTab)) {
+    startDateFilter.value =
+      props.startDateEpoch !== undefined && props.startDateEpoch !== null
+        ? epochToDate(props.startDateEpoch)
+        : getThirtyDaysAgoDate();
+
+    endDateFilter.value =
+      props.endDateEpoch !== undefined && props.endDateEpoch !== null
+        ? epochToDate(props.endDateEpoch)
+        : getNowDate();
+  } else {
+    startDateFilter.value = null;
+    endDateFilter.value = null;
+  }
+};
+
+watch(
+  () => [props.activeTab, props.startDateEpoch, props.endDateEpoch],
+  () => syncDatepickerWithProps(),
+  { immediate: true }
+);
+
+const getSelectedStatusCodes = (): string[] => {
+  if (chipValues.value.includes("SEMUA")) return [];
+  const set = new Set<string>();
+  for (const v of chipValues.value) {
+    switch (v) {
+      case "ANTRI":
+        set.add("0");
+        set.add("1");
+        set.add("2");
+        break;
+      case "PROSES":
+        set.add("3");
+        break;
+      case "SELESAI":
+        set.add("4");
+        break;
+      case "PENYERAHAN_OBAT":
+        set.add("5");
+        break;
+    }
+  }
+  return Array.from(set);
+};
+
+// Auto-trigger (chip) dengan debounce 300ms
+const performSearch = () => {
+  if (["0", "1", "2"].includes(props.activeTab)) {
+    emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
+  }
+};
+const debouncedSearch = useDebounceFn(performSearch, 300);
+
+// Hanya jalankan pencarian untuk tab Rawat Jalan (activeTab === '1')
+const onClickSearch = () => {
+  if (["0", "1", "2"].includes(props.activeTab)) {
+    emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
+    emit(
+      "dateRange",
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
+    );
+  }
+};
+
+// Reset input dan kirim empty query agar hasil pencarian direset
+const onClickReset = () => {
+  searchPatientFilter.value = "";
+  chipValues.value = ["SEMUA"];
+  if (["0", "1", "2"].includes(props.activeTab)) {
+    startDateFilter.value = getThirtyDaysAgoDate();
+    endDateFilter.value = getNowDate();
+    emit("search", "", getSelectedStatusCodes());
+    // Kirim juga rentang tanggal default: 30 hari ke belakang sampai hari ini
+    emit(
+      "dateRange",
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
+    );
+  } else {
+    startDateFilter.value = null;
+    endDateFilter.value = null;
+    emit("search", "");
+    // Bersihkan rentang tanggal di parent
+    emit("dateRange", null, null);
+  }
+};
+
+// Reset otomatis ketika pindah tab ke selain Rawat Jalan
+watch(
+  () => props.activeTab,
+  (newVal) => {
+    chipValues.value = ["SEMUA"];
+
+    if (["0", "1", "2"].includes(props.activeTab)) {
+      searchPatientFilter.value = "";
+      emit("search", "");
+    }
+  }
+);
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
       <div class="flex gap-5 justify-between items-center mr-2.5 w-full">
-        <CustomButton label="" icon="PhArrowClockwise" />
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="onClickReset"
+          title="refresh"
+        />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >
@@ -99,6 +245,7 @@ const searchPatientFilter = ref<string>("");
           icon="PhMagnifyingGlass"
           label="Cari"
           class="ml-5 mr-[10px] mt-auto w-[95px]"
+          @click="onClickSearch"
         />
         <CustomButton
           label="Reset"
@@ -106,6 +253,7 @@ const searchPatientFilter = ref<string>("");
           borderColor="border-adameds-300"
           textColor="text-adameds-300"
           class="mt-auto w-[70px]"
+          @click="onClickReset"
         />
       </div>
       <div class="font-semibold text-SM text-grey-300">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, watch, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
@@ -45,6 +45,18 @@ const props = defineProps({
   doctorVisitData: {
     type: Object as PropType<any>,
     required: true,
+  },
+  initialRoomCategory: {
+    type: String,
+    default: null
+  },
+  initialRoomClass: {
+    type: String,
+    default: null
+  },
+  initialRoom: {
+    type: String,
+    default: null
   },
 });
 
@@ -102,9 +114,20 @@ const setFormData = () => {
 
     noSpri.value = tempDoctorVisitData.noSpri ?? "";
     selectedRoomCategory.value = tempDoctorVisitData.kategoriRuanganUuid ?? "";
-    selectedRoomClass.value = tempDoctorVisitData.roomClass ?? "";
     selectedRoom.value = tempDoctorVisitData.roomUuid ?? "";
     selectedBed.value = [tempDoctorVisitData.monitoringRoomUuid ?? ""];
+
+    const classNameFromProp = tempDoctorVisitData.roomClassName;
+    if (classNameFromProp) {
+      const matchingClass = listKelasRuangan.value.find(
+        (kelas: any) => kelas.label === classNameFromProp
+      );
+      if (matchingClass) {
+        selectedRoomClass.value = matchingClass.value;
+      }
+    } else {
+      selectedRoomClass.value = "";
+    }
 
     fetchListRoomData();
 
@@ -113,7 +136,7 @@ const setFormData = () => {
     }
     if (tempDoctorVisitData.paymentMethod == 2) {
       const tempInsurance = listPenjamin.value.find(
-        (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
+        (penjamin: any) => penjamin.code == tempDoctorVisitData.insurance.code
       );
       if (tempInsurance) {
         tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
@@ -132,8 +155,8 @@ const fetchListRoomData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await monitoringKamarStore.getMonitoringKamar({
-      filterKelas: selectedRoomClass.value,
-      filterKategori: [selectedRoomCategory.value],
+      filterKelas: selectedRoomClass.value ?? "",
+      filterKategori: [selectedRoomCategory.value ?? ""],
     });
     if (response && response.payload) {
       listRuangan.value = response.payload;
@@ -202,27 +225,31 @@ onMounted(() => {
   setFormData();
 });
 
-onUpdated(() => {
-  fetchUtils();
-  setFormData();
-});
+watch(() => props.doctorVisitData, (newData) => {
+    if (newData && Object.keys(newData).length > 0) {
+        setFormData();
+    }
+}, { deep: true });
+
+// onUpdated(() => {
+//   fetchUtils();
+//   setFormData();
+// });
 
 const listKelasRuangan = ref([
-  { label: "kelas 1", value: "1" },
-  { label: "kelas 2", value: "2" },
-  { label: "kelas 3", value: "3" },
-  { label: "VIP", value: "4" },
-  { label: "VVIP", value: "5" },
+  { label: "Kelas 1", value: "Kelas 1" },
+  { label: "Kelas 2", value: "Kelas 2" },
+  { label: "Kelas 3", value: "Kelas 3" },
+  { label: "VIP", value: "VIP" },
+  { label: "VVIP", value: "VVIP" },
 ]);
+
 const listRuangan = ref<any[]>([]);
 const listBed = ref<any[]>([]);
 const listBedCadangan = ref<any[]>([]);
 const listBoxBayi = ref<any[]>([]);
 
 const noSpri = ref("");
-const selectedRoomCategory = ref();
-const selectedRoomClass = ref();
-const selectedRoom = ref();
 const selectedBed = ref<string[]>([]);
 
 const selectedPaymentMethod = ref<string>("TUNAI");
@@ -269,6 +296,9 @@ const schema = computed(() =>
                 });
           })
           .noUnknown(),
+          selectedRoomCategory: yup.string().required("Kategori Ruangan harus dipilih"),
+          selectedRoomClass: yup.string().required("Kelas harus dipilih"),
+          selectedRoom: yup.string().required("Ruangan harus dipilih"),
         practitionerUuid: yup.string().required("DPJP harus dipilih"),
         monitoringRoomUuid: yup
           .string()
@@ -277,6 +307,136 @@ const schema = computed(() =>
         boxBaby: yup.boolean().default(false),
       })
       .noUnknown()
+  )
+);
+
+const { errors, handleSubmit, defineField, resetForm, setValues, validate } = useForm({
+  validationSchema: schema,
+});
+
+const [paymentMethod] = defineField("paymentMethod");
+const [practitionerUuid] = defineField("practitionerUuid");
+const [complaint] = defineField("complaint");
+const [familyBill] = defineField("familyBill");
+const [maternity] = defineField("maternity");
+const [entrustedPatient] = defineField("entrustedPatient");
+const [upgradeClass] = defineField("upgradeClass");
+const [previousBill] = defineField("previousBill");
+const [insuranceUuid] = defineField("insurance.penjaminUuid");
+const [insuranceAccount] = defineField("insurance.accountNumber");
+const [insuranceClass] = defineField("insurance.classEntitle");
+const [monitoringRoomUuid] = defineField("monitoringRoomUuid");
+const [spareBed] = defineField("spareBed");
+const [boxBaby] = defineField("boxBaby");
+const [selectedRoomCategory, selectedRoomCategoryAttrs] = defineField('selectedRoomCategory');
+const [selectedRoomClass, selectedRoomClassAttrs] = defineField('selectedRoomClass');
+const [selectedRoom, selectedRoomAttrs] = defineField('selectedRoom');
+
+const onSubmit = handleSubmit(async (values) => {
+  return values;
+});
+const onResetForm = () => {
+  resetForm();
+};
+
+defineExpose({
+  onSubmit,
+  onResetForm,
+});
+</script>
+<!-- <script setup lang="ts">
+import { computed, onMounted, ref, watch, type PropType } from "vue";
+import { utilsStore } from "@/stores/utils";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import { useKategoriRuanganStore } from "@/stores/datamaster/kategoriRuangan";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+
+const storeUtils = utilsStore();
+const monitoringKamarStore = useMonitoringKamarStore();
+const lokasiStore = useLokasiStore();
+const praktisiStore = usePraktisiStore();
+const penjaminStore = usePenjaminStore();
+const kategoriRuanganStore = useKategoriRuanganStore();
+
+const props = defineProps({
+  pageType: {
+    type: String,
+    required: true,
+  },
+  formType: {
+    type: String,
+    default: "",
+  },
+  isDetail: {
+    type: Boolean,
+    required: false,
+  },
+  patientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
+  doctorVisitData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
+});
+
+const listDpjp = ref<any[]>([]);
+const listPenjamin = ref<any[]>([]);
+const listKategoriRuangan = ref<any[]>([]);
+const listKelasRuangan = ref([
+  { label: "Kelas 1", value: "Kelas 1" },
+  { label: "Kelas 2", value: "Kelas 2" },
+  { label: "Kelas 3", value: "Kelas 3" },
+  { label: "VIP", value: "VIP" },
+  { label: "VVIP", value: "VVIP" },
+]);
+const listRuangan = ref<any[]>([]);
+const listBed = ref<any[]>([]);
+const listBedCadangan = ref<any[]>([]);
+const listBoxBayi = ref<any[]>([]);
+const noSpri = ref("");
+const selectedBed = ref<string[]>([]);
+const selectedPaymentMethod = ref<string>("TUNAI");
+const utilsLoaded = ref(false);
+
+const schema = computed(() =>
+  toTypedSchema(
+    yup.object({
+      paymentMethod: yup.string().default("TUNAI"),
+      familyBill: yup.boolean().default(false),
+      maternity: yup.boolean().default(false),
+      entrustedPatient: yup.boolean().default(false),
+      upgradeClass: yup.boolean().default(false),
+      previousBill: yup.boolean().default(false),
+      complaint: yup.string().default(""),
+      note: yup.string().default(""),
+      insurance: yup.object({
+          penjaminUuid: yup.string().nullable(),
+          accountNumber: yup.string().nullable(),
+          classEntitle: yup.string().nullable(),
+        }).when("paymentMethod", ([paymentMethod], schema) => {
+          return paymentMethod == "TUNAI"
+            ? schema
+            : schema.shape({
+                penjaminUuid: yup.string().required("Nama Penjamin harus dipilih"),
+                accountNumber: yup.string().required("No. Penjamin harus diisi"),
+                classEntitle: yup.string().required("Kelas harus dipilih"),
+              });
+        }).noUnknown(),
+      selectedRoomCategory: yup.string().required("Kategori Ruangan harus dipilih"),
+      selectedRoomClass: yup.string().required("Kelas harus dipilih"),
+      selectedRoom: yup.string().required("Ruangan harus dipilih"),
+      practitionerUuid: yup.string().required("DPJP harus dipilih"),
+      monitoringRoomUuid: yup.string().required("Harus memilih bed terlebih dahulu"),
+      spareBed: yup.boolean().default(false),
+      boxBaby: yup.boolean().default(false),
+    }).noUnknown()
   )
 );
 
@@ -298,10 +458,150 @@ const [insuranceClass] = defineField("insurance.classEntitle");
 const [monitoringRoomUuid] = defineField("monitoringRoomUuid");
 const [spareBed] = defineField("spareBed");
 const [boxBaby] = defineField("boxBaby");
+const [selectedRoomCategory] = defineField('selectedRoomCategory');
+const [selectedRoomClass] = defineField('selectedRoomClass');
+const [selectedRoom] = defineField('selectedRoom');
+
+const fetchUtils = async () => {
+  try {
+    const responseDpjp = await praktisiStore.getApi({ limit: 9999, non_doctor: false });
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter((praktisi: any) => praktisi.isDoctor && praktisi.status);
+    }
+    const responsePenjamin = await penjaminStore.getAktifApi();
+    if (responsePenjamin && responsePenjamin.payload) {
+      listPenjamin.value = responsePenjamin.payload;
+    }
+    const responseKategoriRuangan = await kategoriRuanganStore.getAktifApi();
+    if (responseKategoriRuangan && responseKategoriRuangan.payload) {
+      listKategoriRuangan.value = responseKategoriRuangan.payload;
+    }
+  } catch (error) {
+    console.error("Failed to fetch utils data", error);
+  }
+};
+
+const fetchListRoomData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await monitoringKamarStore.getMonitoringKamar({
+      filterKelas: selectedRoomClass.value ?? "",
+      filterKategori: [selectedRoomCategory.value ?? ""],
+    });
+    if (response && response.payload) {
+      listRuangan.value = response.payload;
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const fetchListBedData = async (uuid: string) => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await monitoringKamarStore.getDetailMonitoringKamar(uuid);
+    if (response && response.payload) {
+      listBed.value = [];
+      listBedCadangan.value = [];
+      listBoxBayi.value = [];
+      const beds = Array.isArray(response.payload.detail) ? response.payload.detail : Array.isArray(response.payload) ? response.payload : [];
+      beds.forEach((bed: any) => {
+        if (bed.type == "Bed") listBed.value.push(bed);
+        else if (bed.type == "Bed Cadangan") listBedCadangan.value.push(bed);
+        else if (bed.type == "Box Bayi") listBoxBayi.value.push(bed);
+      });
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const setFormData = async () => {
+  if (Object.keys(props.doctorVisitData).length > 0 && utilsLoaded.value) {
+    let tempDoctorVisitData = props.doctorVisitData;
+
+    noSpri.value = tempDoctorVisitData.noSpri ?? "";
+    selectedRoomCategory.value = tempDoctorVisitData.kategoriRuanganUuid ?? "";
+
+    const classNameFromProp = tempDoctorVisitData.roomClassName;
+    if (classNameFromProp) {
+      const matchingClass = listKelasRuangan.value.find(
+        (kelas: any) => kelas.label === classNameFromProp
+      );
+      if (matchingClass) {
+        selectedRoomClass.value = matchingClass.value;
+      }
+    } else {
+      selectedRoomClass.value = "";
+    }
+
+    await fetchListRoomData();
+    selectedRoom.value = tempDoctorVisitData.roomUuid ?? "";
+
+    if (selectedRoom.value) {
+      await fetchListBedData(selectedRoom.value);
+    }
+    
+    selectedBed.value = [tempDoctorVisitData.monitoringRoomUuid ?? ""];
+    
+    if (tempDoctorVisitData.paymentMethod == 2) {
+      const tempInsurance = listPenjamin.value.find(
+        (penjamin: any) => penjamin.code == tempDoctorVisitData.insurance.code
+      );
+      if (tempInsurance) {
+        tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
+      }
+    }
+    setValues({ ...tempDoctorVisitData });
+    onPaymentMethodSelect(
+      tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
+    );
+  }
+};
+
+watch(
+  () => props.doctorVisitData,
+  () => {
+    setFormData();
+  },
+  {
+    deep: true,
+  }
+);
+
+onMounted(async () => {
+  if (props.formType == "Daftar Bayi Baru Lahir") {
+    boxBaby.value = true;
+  }
+  await fetchUtils();
+  utilsLoaded.value = true;
+  setFormData();
+});
+
+const getRoomName = () => {
+  const result = listRuangan.value.find((data: any) => data.uuid == selectedRoom.value);
+  return result ? result.name : "-";
+};
+
+const onPaymentMethodSelect = (label: string) => {
+  selectedPaymentMethod.value = label;
+  paymentMethod.value = label;
+};
+
+const setSelectedBed = (data: any) => {
+  if (data.length) {
+    monitoringRoomUuid.value = data[0];
+  }
+};
 
 const onSubmit = handleSubmit(async (values) => {
   return values;
 });
+
 const onResetForm = () => {
   resetForm();
 };
@@ -310,7 +610,8 @@ defineExpose({
   onSubmit,
   onResetForm,
 });
-</script>
+</script> -->
+
 
 <template>
   <CustomAccordion :openWithHeader="false" class="mt-[10px]" initialState="0">
@@ -325,6 +626,7 @@ defineExpose({
             }}
           </span>
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('TUNAI')"
             label="TUNAI"
             borderColor="border-adameds-300"
             bgColor="bg-adameds-50"
@@ -334,9 +636,11 @@ defineExpose({
             class="my-auto ml-5"
             :isSelected="selectedPaymentMethod.includes('TUNAI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-adameds-300 border-adameds-300"
           />
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('ASURANSI')"
             label="ASURANSI"
             borderColor="border-warning-300"
             bgColor="bg-warning-50"
@@ -346,6 +650,7 @@ defineExpose({
             class="ml-[10px] my-auto"
             :isSelected="selectedPaymentMethod.includes('ASURANSI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-warning-300 border-warning-300"
           />
         </div>
@@ -390,13 +695,13 @@ defineExpose({
               :disabled="isDetail"
             />
           </div>
-          <CustomSwitch
-            v-if="patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir'"
-            v-model="familyBill"
-            :disabled="isDetail"
-            label="Tagihan Keluarga"
-            sideLabel="Iya"
-          />
+        <CustomSwitch
+          v-if="patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir'"
+          v-model="familyBill"
+          :disabled="isDetail"
+          label="Tagihan Keluarga"
+          :sideLabel="familyBill ? 'Iya' : 'Tidak'"
+        />
         </div>
         <div
           v-if="!patientData.isNewBorn && formType != 'Daftar Bayi Baru Lahir'"
@@ -507,43 +812,49 @@ defineExpose({
               readOnly
             /> 
             <!-- FIXME Dummy Data -->
-            <CustomSelect
-              v-model="selectedRoomCategory"
-              @update:model-value="fetchListRoomData"
-              label="Kategori Ruangan"
-              placeHolder="Pilih Kategori Ruangan"
-              class="col-span-2"
-              optionLabel="name"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="[
-                ...listKategoriRuangan,
-              ]"
+            <CustomSelect 
+              v-model="selectedRoomCategory" 
+              @update:model-value="fetchListRoomData" 
+              label="Kategori Ruangan" 
+              placeHolder="Pilih Kategori Ruangan" 
+              class="col-span-2" 
+              optionLabel="name" 
+              optionValue="uuid" 
+              :showFilter="false" 
+              :options="[ 
+                ...listKategoriRuangan, 
+              ]" 
               :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoomClass"
-              @update:model-value="fetchListRoomData"
-              label="Kelas"
-              placeHolder="Pilih Kelas"
-              class=""
-              optionLabel="label"
-              optionValue="value"
-              :showFilter="false"
-              :options="listKelasRuangan"
-              :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoom"
-              @update:model-value="fetchListBedData"
-              label="Ruangan"
-              placeHolder="Pilih Ruangan"
-              class="col-span-2"
-              optionLabel="name"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="listRuangan"
-              :disabled="isDetail"
+              :invalid="!!errors.selectedRoomCategory"
+              :invalidMessage="errors.selectedRoomCategory"
+            /> 
+            <CustomSelect 
+              v-model="selectedRoomClass" 
+              @update:model-value="fetchListRoomData" 
+              label="Kelas" 
+              placeHolder="Pilih Kelas" 
+              class="" 
+              optionLabel="label" 
+              optionValue="value" 
+              :showFilter="false" 
+              :options="listKelasRuangan" 
+              :disabled="isDetail" 
+              :invalid="!!errors.selectedRoomClass"
+              :invalidMessage="errors.selectedRoomClass"
+            /> 
+            <CustomSelect 
+              v-model="selectedRoom" 
+              @update:model-value="fetchListBedData" 
+              label="Ruangan" 
+              placeHolder="Pilih Ruangan" 
+              class="col-span-2" 
+              optionLabel="name" 
+              optionValue="uuid" 
+              :showFilter="false" 
+              :options="listRuangan" 
+              :disabled="isDetail" 
+              :invalid="!!errors.selectedRoom"
+              :invalidMessage="errors.selectedRoom"
             />
           </div>
           <div v-if="selectedRoom" class="grid grid-cols-3 mt-[30px]">

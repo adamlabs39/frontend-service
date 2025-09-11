@@ -87,7 +87,19 @@ const schema = toTypedSchema(
       .array()
       .of(yup.string())
       .default(["Selamat Datang di Klinik Adameds"]),
-    media: yup.string(),
+    media: yup
+      .string()
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("youtube-url", "URL harus dari YouTube", function (value) {
+        // Tidak ada media => lolos
+        if (!value) return true;
+        // Validasi hanya bila tipeLayar adalah 5
+        const tipe = this.parent?.tipeLayar;
+        if (tipe !== 5) return true;
+        const re = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+        return re.test(value);
+      }),
     aktif: yup.boolean(),
     poli_uuids: yup.array().of(yup.string()),
   })
@@ -120,16 +132,18 @@ const onSubmit = handleSubmit(async (values: any) => {
     nama_layar: values.namaLayar,
     tipe_layar: values.tipeLayar,
     judul: values.judul,
-    is_admisi: true,
+    is_admisi: values.isAdmisi,
     is_poli: values.isPoli,
-    is_farmasi: true,
+    is_farmasi: values.isFarmasi,
     flash_text: values.flashText,
     aktif: values.aktif,
     poli_uuids: values.poli_uuids ?? [],
   };
   console.log("Payload yang dikirim:", payload);
-  if (values.media && values.media.trim() !== "") {
-    payload.media = values.media;
+  if (values.tipeLayar === 5) {
+    payload.media = values.media?.trim() ? values.media.trim() : null;
+  } else {
+    payload.media = null;
   }
 
   try {
@@ -141,7 +155,15 @@ const onSubmit = handleSubmit(async (values: any) => {
       summary: "Data berhasil disimpan",
       life: 3000,
     });
-    emit("refresh");
+    emit("refresh", {
+      uuid,
+      tipeLayar: values.tipeLayar,
+      namaLayar: values.namaLayar,
+      judul: values.judul,
+      status: values.aktif,
+      flashText: values.flashText,
+      media: values.tipeLayar === 5 ? values.media?.trim() || null : null,
+    });
 
     closeDialog();
   } catch (error) {
@@ -259,49 +281,65 @@ watch(
               {{ layarTitle }}
             </div>
             <hr class="mt-4" />
-            <CustomTextfield
-              label="Teks Judul"
-              v-model="judul"
-              placeholder="Teks Judul"
-              optionValue="code"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black"
-              :invalid="!!errors.judul"
-              :invalid-message="errors.judul"
-            />
-            <div class="flex gap-2.5 items-end mt-4 text-black">
+            <div class="space-y-5">
+              <CustomTextfield
+                label="Teks Judul"
+                v-model="judul"
+                placeholder="Teks Judul"
+                optionValue="code"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black"
+                :invalid="!!errors.judul"
+                :invalid-message="errors.judul"
+              />
               <CustomSwitch
-                v-model="isPoli"
-                label="Poli"
+                v-model="isAdmisi"
+                label="Admisi"
                 sideLabel="Non-Aktif"
                 sideLabelTrue="Aktif"
               />
-            </div>
-            <CustomMultiSelect
-              label="Pilih Poli"
-              placeholder="Pilih Poli"
-              v-model="poli_uuids"
-              :options="jadwalPoliPayload"
-              optionValue="uuid"
-              optionLabel="name"
-              class="mt-4 mr-5 w-full text-black multiselect-wrap"
-              v-show="isPoli"
-            />
-            <CustomTextfield
-              label="Youtube"
-              v-model="media"
-              placeholder="URL Youtube"
-              class="mt-4 mr-5 w-full text-black"
-              v-show="tipeLayar === 5"
-            />
-            <div>
-              <div class="mt-4 block font-semibold mb-[5px] text-normal">
-                Flash Text
+              <div class="flex gap-2.5 items-end mt-4 text-black">
+                <CustomSwitch
+                  v-model="isPoli"
+                  label="Poli"
+                  sideLabel="Non-Aktif"
+                  sideLabelTrue="Aktif"
+                />
               </div>
-              <Chips v-model="flashText" class="w-full" />
-              <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
-                {{ errors.flashText }}
-              </p>
+              <CustomMultiSelect
+                label="Pilih Poli"
+                placeholder="Pilih Poli"
+                v-model="poli_uuids"
+                :options="jadwalPoliPayload"
+                optionValue="uuid"
+                optionLabel="name"
+                class="mt-4 mr-5 w-full text-black multiselect-wrap"
+                v-show="isPoli"
+              />
+              <CustomSwitch
+                v-model="isFarmasi"
+                label="Farmasi"
+                sideLabel="Non-Aktif"
+                sideLabelTrue="Aktif"
+              />
+              <CustomTextfield
+                label="Youtube"
+                v-model="media"
+                placeholder="URL Youtube"
+                class="mt-4 mr-5 w-full text-black"
+                v-show="tipeLayar === 5"
+                :invalid="!!errors.media"
+                :invalid-message="errors.media"
+              />
+              <div>
+                <div class="mt-4 block font-semibold mb-[5px] text-normal">
+                  Flash Text
+                </div>
+                <Chips v-model="flashText" class="w-full break-all" />
+                <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
+                  {{ errors.flashText }}
+                </p>
+              </div>
             </div>
           </div>
           <div

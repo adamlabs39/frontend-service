@@ -27,14 +27,46 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import { createPatientCard } from "@/utils/PdfMake";
 import axios from "axios";
 import { useDistrictStore } from "@/stores/datamaster/district";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
+const admisiReportStore = useAdmisiReportStore();
 const dataBreadCrumb = ref<MenuItem[]>([]);
- const handleExport = () => {};
+
+
+const handleExport = async () => {
+  try {
+    const response = await admisiReportStore.DownloadLaporanAdmisiReport();
+
+    if (!response || !response.data) {
+      alert("Download gagal. Pastikan file tersedia di server.");
+      return;
+    }
+
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    link.setAttribute("download", "laporan_admisi.xlsx"); 
+    
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error("Error saat download:", error);
+    alert("Download gagal");
+  }
+};
 
 const changeSection = (label: string) => {
   if (dataBreadCrumb.value.length) {
@@ -45,13 +77,23 @@ const changeSection = (label: string) => {
 };
 
 const itemsPasien = ref<any[]>([]);
-const itemsMedicalRecord = ref([
-  // {
-  //   fileName: "Berkas File Pasien Lama - adameds bin adam",
-  //   type: "Pdf",
-  //   uploadDate: "10 Jan 2024 09:00",
-  // },
-]);
+interface MedicalRecordItem {
+  uuid: string; 
+  fileName: string;
+  type: string;
+  uploadDate: string;
+  data: string;
+}
+
+const itemsMedicalRecord = ref<MedicalRecordItem[]>([]);
+
+// const itemsMedicalRecord = ref([
+//   // {
+//   //   fileName: "Berkas File Pasien Lama - adameds bin adam",
+//   //   type: "Pdf",
+//   //   uploadDate: "10 Jan 2024 09:00",
+//   // },
+// ]);
 
 const detailPatientDialog = ref(false);
 const showUploadForm = ref(false);
@@ -84,7 +126,10 @@ const propertiesHistory = ref({
   total: 0,
 });
 const search = ref("");
-
+const resetFilter = () => {
+  search.value = ""
+  searchData();
+};
 const patientUuid = ref<string>("");
 
 const onSelectPatient = (patient: any) => {
@@ -112,13 +157,13 @@ const fetchData = async () => {
 };
 
 const districtStore = useDistrictStore();
-
 const openedPatientData = ref<any>({});
 const listHistoryPatient = ref<any[]>([]);
 
 const showDetailPatient = async (event: DataTableRowClickEvent) => {
   storeUtils.setLoading(true);
   try {
+    patientUuid.value = event.data.uuid;
     const responsePatient = await masterPasienStore.getDetailMasterPasien(event.data.uuid);
 
     if (responsePatient && responsePatient.payload) {
@@ -180,11 +225,50 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
           districtName,
           villageName,
         },
+        berkas: null, 
       };
+
+      try {
+        const responseBerkas = await masterPasienStore.getBerkasApi(event.data.uuid);
+    if (responseBerkas && responseBerkas.payload) {
+
+  if (responseBerkas.payload.berkasInfo?.name && responseBerkas.payload.data) {
+
+    openedPatientData.value.berkas = {
+      uuid: responseBerkas.payload.uuid || '',
+      name: responseBerkas.payload.berkasInfo?.name || '',
+      tanggalUnggah: responseBerkas.payload.berkasInfo?.tanggalUnggah || null,
+      tipe: responseBerkas.payload.tipe || '',
+      data: responseBerkas.payload.data || '', 
+    };
+    itemsMedicalRecord.value = [
+      {
+        uuid: openedPatientData.value.berkas.uuid,
+        fileName: openedPatientData.value.berkas.name,
+        type: openedPatientData.value.berkas.tipe,
+        uploadDate: openedPatientData.value.berkas.tanggalUnggah
+          ? new Date(openedPatientData.value.berkas.tanggalUnggah * 1000).toLocaleString(
+              'id-ID',
+              { dateStyle: 'medium', timeStyle: 'short' }
+            )
+          : '',
+        data: openedPatientData.value.berkas.data
+      }
+    ];
+
+  } else {
+    itemsMedicalRecord.value = [];
+  }
+    } else {
+      itemsMedicalRecord.value = [];
+    }
+    } catch (err) {
+      console.warn("Gagal mengambil berkas pasien", err);
+    }
     } else {
       openedPatientData.value = {};
+      itemsMedicalRecord.value = [];
     }
-
     const responseHistory = await masterPasienStore.getPatientHistory(
       event.data.uuid,
       {
@@ -206,6 +290,142 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
     console.error("Failed to fetch data", error);
   } finally {
     storeUtils.setLoading(false);
+  }
+};
+
+const handlePrintCard = () => {
+  const patientData = openedPatientData.value;
+
+  if (!patientData || Object.keys(patientData).length === 0) {
+    console.error("Gagal mencetak kartu: data pasien tidak ditemukan atau kosong.");
+    return;
+  }
+
+  const faskesProfileString = localStorage.getItem('faskes_profile');
+  const faskesProfileData = faskesProfileString ? JSON.parse(faskesProfileString) : {};
+  createPatientCard({ data: patientData, clinicProfile: faskesProfileData });
+};
+
+const previewFile = (file: any) => {
+  if (file?.data) {
+    const byteCharacters = atob(file.data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+  }
+};
+
+const editFile = async (rowData: any) => {
+  try {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".pdf";
+
+    fileInput.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileUuid = rowData.uuid;
+      const response = await masterPasienStore.uploadBerkasApi(fileUuid, file);
+      console.log("File berhasil diupdate:", response);
+
+      const pasienUuid = patientUuid.value; 
+      if (!pasienUuid) {
+        console.error("UUID Pasien tidak ditemukan untuk refresh data.");
+        return;
+      }
+
+      const responseBerkas = await masterPasienStore.getBerkasApi(pasienUuid as string);
+      if (responseBerkas && responseBerkas.payload) {
+        if (responseBerkas.payload.berkasInfo?.name && responseBerkas.payload.data) {
+          openedPatientData.value.berkas = {
+            uuid: responseBerkas.payload.uuid || '',
+            name: responseBerkas.payload.berkasInfo?.name || '',
+            tanggalUnggah: responseBerkas.payload.berkasInfo?.tanggalUnggah || null,
+            tipe: responseBerkas.payload.tipe || '',
+            data: responseBerkas.payload.data || '', 
+          };
+          itemsMedicalRecord.value = [
+            {
+              uuid: openedPatientData.value.berkas.uuid,
+              fileName: openedPatientData.value.berkas.name,
+              type: openedPatientData.value.berkas.tipe,
+              uploadDate: openedPatientData.value.berkas.tanggalUnggah
+                ? new Date(openedPatientData.value.berkas.tanggalUnggah * 1000).toLocaleString(
+                    'id-ID',
+                    { dateStyle: 'medium', timeStyle: 'short' }
+                  )
+                : '',
+              data: openedPatientData.value.berkas.data
+            }
+          ];
+        } else {
+          itemsMedicalRecord.value = [];
+        }
+      } else {
+        itemsMedicalRecord.value = [];
+      }
+    };
+
+    fileInput.click();
+  } catch (err) {
+    console.error("Gagal edit file:", err);
+  }
+};
+
+const removeFile = async (rowData: any) => {
+  try {
+    const pasienUuid = patientUuid.value;
+    const fileUuid = rowData?.uuid;
+
+    if (!pasienUuid || !fileUuid) {
+      console.error("UUID kosong, tidak bisa hapus");
+      return;
+    }
+
+    const response = await masterPasienStore.deleteBerkasApi(
+      pasienUuid as string,
+      fileUuid as string
+    );
+    
+    const responseBerkas = await masterPasienStore.getBerkasApi(pasienUuid as string);
+    if (responseBerkas && responseBerkas.payload) {
+      if (responseBerkas.payload.berkasInfo?.name && responseBerkas.payload.data) {
+        openedPatientData.value.berkas = {
+          uuid: responseBerkas.payload.uuid || '',
+          name: responseBerkas.payload.berkasInfo?.name || '',
+          tanggalUnggah: responseBerkas.payload.berkasInfo?.tanggalUnggah || null,
+          tipe: responseBerkas.payload.tipe || '',
+          data: responseBerkas.payload.data || '', 
+        };
+        itemsMedicalRecord.value = [
+          {
+            uuid: openedPatientData.value.berkas.uuid,
+            fileName: openedPatientData.value.berkas.name,
+            type: openedPatientData.value.berkas.tipe,
+            uploadDate: openedPatientData.value.berkas.tanggalUnggah
+              ? new Date(openedPatientData.value.berkas.tanggalUnggah * 1000).toLocaleString(
+                  'id-ID',
+                  { dateStyle: 'medium', timeStyle: 'short' }
+                )
+              : '',
+            data: openedPatientData.value.berkas.data
+          }
+        ];
+      } else {
+        itemsMedicalRecord.value = [];
+      }
+    } else {
+      itemsMedicalRecord.value = [];
+    }
+
+  } catch (err) {
+    console.error("Gagal menghapus file:", err);
   }
 };
 
@@ -281,8 +501,7 @@ const handlePageHistory = (event: any) => {
   fetchData();
 };
 
-const files = ref<File[]>([]); // ini sesuai sama slot props
-const token = localStorage.getItem("token");
+const files = ref<File[]>([]);
 const customUploadCallback = async (files: File[], uuid: string) => {
   if (!files[0]) {
     console.error("Tidak ada file yang dipilih");
@@ -291,25 +510,51 @@ const customUploadCallback = async (files: File[], uuid: string) => {
 
   const file = files[0];
 
-  // Validasi PDF
   if (file.type !== "application/pdf") {
     alert("File harus bertipe PDF");
     return;
   }
 
   try {
-    const formData = new FormData();
-    formData.append("file", file);
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("Token tidak ditemukan, silakan login ulang");
+      return;
+    }
 
-    const response = await axios.put(`http://192.168.1.77:8083/api/v3/admisi/patient/file/${uuid}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-         Authorization: `Bearer ${token}`
-      },
-    });
+    const response = await masterPasienStore.uploadBerkasApi(uuid, file);
 
-    console.log("Upload sukses:", response.data);
-    alert("Upload berhasil");
+    const responseBerkas = await masterPasienStore.getBerkasApi(uuid);
+    if (responseBerkas && responseBerkas.payload) {
+      if (responseBerkas.payload.berkasInfo?.name && responseBerkas.payload.data) {
+        openedPatientData.value.berkas = {
+          uuid: responseBerkas.payload.uuid || '',
+          name: responseBerkas.payload.berkasInfo?.name || '',
+          tanggalUnggah: responseBerkas.payload.berkasInfo?.tanggalUnggah || null,
+          tipe: responseBerkas.payload.tipe || '',
+          data: responseBerkas.payload.data || '', 
+        };
+        itemsMedicalRecord.value = [
+          {
+            uuid: openedPatientData.value.berkas.uuid,
+            fileName: openedPatientData.value.berkas.name,
+            type: openedPatientData.value.berkas.tipe,
+            uploadDate: openedPatientData.value.berkas.tanggalUnggah
+              ? new Date(openedPatientData.value.berkas.tanggalUnggah * 1000).toLocaleString(
+                  'id-ID',
+                  { dateStyle: 'medium', timeStyle: 'short' }
+                )
+              : '',
+            data: openedPatientData.value.berkas.data
+          }
+        ];
+      } else {
+        itemsMedicalRecord.value = [];
+      }
+    } else {
+      itemsMedicalRecord.value = [];
+    }
+
   } catch (error) {
     console.error("Upload gagal:", error);
     alert("Upload gagal");
@@ -593,14 +838,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+          <div class = "flex mt-[10px]">
             <CustomTextfield
               v-model="search"
-              @update:model-value="searchData"
+              @keydown.enter="searchData"
               label="Pencarian"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Nama / address / No. RM"
-              class="mt-[10px]"
+              class="mt-[10px] flex-1"
             />
+            <CustomButton
+              @click="searchData"
+              icon="PhMagnifyingGlass"
+              label="Cari"
+              class="ml-5 mr-[10px] mt-auto"
+            />
+            <CustomButton
+              @click="resetFilter"
+              label="Reset"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              class="mt-auto"
+            />
+          </div>
             <hr class="border-grey-200 mt-[10px] mb-[2px]" />
           </template>
           <template #collapseIcon>
@@ -1023,21 +1284,21 @@ onMounted(() => {
                 <template #body="slotProps">
                   <div class="flex justify-center">
                     <CustomButton
-                      @click="() => {}"
+                      @click="() => previewFile(slotProps.data)"
                       icon="PhEye"
                       label=""
                       class="h-[30px]"
                       backgroundColor="bg-adameds-300"
                     />
                     <CustomButton
-                      @click="() => {}"
+                      @click="editFile(slotProps.data)"
                       icon="PhPencilSimple"
                       label=""
                       class="h-[30px] mx-[5px]"
                       backgroundColor="bg-info-300"
                     />
                     <CustomButton
-                      @click="() => {}"
+                      @click="removeFile(slotProps.data)"
                       icon="PhTrash"
                       label=""
                       class="h-[30px]"
@@ -1056,10 +1317,10 @@ onMounted(() => {
                 chooseIcon="pi pi-upload"
                 :pt="{ root: 'border-none', content: 'hidden' }"
               >
-                <template #header="{ files, chooseCallback, uploadCallback }">
+                <template #header="{ files, chooseCallback }">
                   <div class="flex mx-auto">
                     <span class="leading-10 text-SM">{{
-                      files[0] ? files[0].name : "No File Chosen"
+                      files[0] ? files[0].name : "Upload file dalam bentuk PDF"
                     }}</span>
                     <CustomButton
                       @click="chooseCallback()"
@@ -1160,7 +1421,7 @@ onMounted(() => {
         <div class="flex justify-between w-full">
           <div class="flex">
             <CustomButton
-              @click="createPatientCard({ data: openedPatientData })"
+              @click="handlePrintCard()"
               icon="PhPrinter"
               label="Cetak Kartu Pasien"
               class=""

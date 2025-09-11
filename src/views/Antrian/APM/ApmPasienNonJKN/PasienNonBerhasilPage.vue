@@ -5,6 +5,8 @@ import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
 import { ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
 
@@ -45,49 +47,16 @@ const tiketAntrian = ref({
 </script>
 
 <template #body>
-  <div class="bg-adameds-75">
+  <div class="py-5 w-full min-h-screen flex flex-col">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
-    <div class="relative items-center justify-center mb-4 mt-14 mx-36">
-      <div class="overflow-hidden rounded-3xl">
+    <div class="relative mx-36 flex-1 flex items-center justify-center">
+      <div
+        class="flex flex-col justify-center w-full overflow-hidden rounded-3xl"
+      >
         <div
           class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
         >
@@ -126,7 +95,7 @@ const tiketAntrian = ref({
                 outlined
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
-                class="w-[170px]"
+                class="w-fit"
                 @click="handleHome"
               />
             </div>
@@ -138,5 +107,6 @@ const tiketAntrian = ref({
         </div>
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>

@@ -1,29 +1,41 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-// Data dummy untuk informasi antrian
-const antrianData = ref([
-  { lokasi: "Lokasi 1", antrian: ["-", "-", "-", "-", "-", "-"] },
-  { lokasi: "Lokasi 2", antrian: ["-", "-", "-", "-", "-", "-"] },
-  { lokasi: "Lokasi 3", antrian: ["-", "-", "-", "-", "-", "-"] },
-]);
+const props = defineProps({
+  payload: {
+    type: Object,
+    default: () => ({}),
+  },
+  isPoli: {
+    type: Boolean,
+    default: false,
+  },
+  isAdmisi: {
+    type: Boolean,
+    default: false,
+  },
+  isFarmasi: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-// Data dummy untuk panggilan
-const panggilanData = ref([
-  { id: 1, text: "" },
-  { id: 2, text: "" },
-  { id: 3, text: "" },
-]);
+const poliAt = (idx: number) => {
+  const arr = Array.isArray(props.payload) ? props.payload : [];
+  if (arr.length === 0) return null;
+  // gunakan modulo agar tidak error saat jumlah payload < 3
+  return arr[idx % arr.length] ?? null;
+};
 </script>
 
 <template>
-  <div class="flex h-full gap-2 pt-1">
+  <div class="flex gap-2 pt-1 h-full">
     <!-- Bagian Kiri: Informasi Antrian (3 Kolom List) -->
-    <div class="flex-1 flex gap-2">
+    <div class="flex flex-1 gap-2">
       <!-- Header Informasi Antrian -->
       <div class="w-full">
         <div
-          class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300 mb-2"
+          class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
         >
           <div>
             <PhInfo :size="18" weight="fill" />
@@ -32,44 +44,133 @@ const panggilanData = ref([
         </div>
 
         <!-- 3 Kolom List -->
-        <div class="content-area flex gap-2">
+        <div class="flex gap-2 content-area">
+          <!-- Kolom 1: Admisi atau Placeholder -->
           <div
-            v-for="(data, index) in antrianData"
-            :key="index"
-            class="flex-1 flex flex-col"
+            class="flex overflow-hidden flex-col w-full h-full bg-white rounded-lg"
           >
-            <!-- Header Lokasi -->
-            <div
-              class="bg-adameds-300 text-white text-center py-2 rounded-t-lg font-semibold text-sm"
-            >
-              {{ data.lokasi }}
-            </div>
-
-            <!-- List Antrian -->
-            <div
-              class="flex-1 bg-white border-2 border-adameds-300 border-t-0 rounded-b-lg flex flex-col overflow-hidden"
-            >
-              <div
-                v-for="(item, itemIndex) in data.antrian"
-                :key="itemIndex"
-                class="flex-1 border-b border-gray-200 last:border-b-0 px-3 text-center text-gray-600 flex items-center justify-center"
-                :class="{
-                  'bg-gray-50': itemIndex % 2 === 1,
-                }"
-              >
-                {{ item }}
+            <template v-if="isAdmisi">
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Admisi
               </div>
-            </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'admisi-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                >
+                  A00{{ i }}
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Lokasi 1
+              </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'placeholder1-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                >
+                  -
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Kolom 2: Poli atau Placeholder -->
+          <div
+            class="flex overflow-hidden flex-col w-full h-full bg-white rounded-lg"
+          >
+            <template v-if="isPoli">
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Poli
+              </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'poli-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                >
+                  {{ poliAt(i)?.codeAntrianPoli }}00{{ i }}
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Lokasi 2
+              </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'placeholder2-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                >
+                  -
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Kolom 3: Farmasi atau Placeholder -->
+          <div
+            class="flex overflow-hidden flex-col w-full h-full bg-white rounded-lg"
+          >
+            <template v-if="isFarmasi">
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Farmasi
+              </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'farmasi-row-' + i"
+                  class="grid grid-cols-2"
+                >
+                  <div
+                    class="flex justify-center items-center px-4 text-2xl font-extrabold border-r border-adameds-100"
+                    :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                  >
+                    R00{{ i }}
+                  </div>
+                  <div
+                    class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                    :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                  >
+                    NR00{{ i }}
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="py-2 font-bold text-center text-white bg-adameds-300">
+                Lokasi 3
+              </div>
+              <div class="grid flex-1 grid-rows-6">
+                <div
+                  v-for="i in 6"
+                  :key="'placeholder2-' + i"
+                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
+                >
+                  -
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Bagian Kanan: Panggilan (3 Kotak) -->
-    <div class="w-1/3 flex flex-col h-full">
+    <div class="flex flex-col w-1/3 h-full">
       <!-- Header Panggilan -->
       <div
-        class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300 mb-2"
+        class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
       >
         <div>
           <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -78,15 +179,46 @@ const panggilanData = ref([
       </div>
 
       <!-- 3 Kotak Panggilan -->
-      <div class="content-area flex flex-col gap-2">
-        <div
-          v-for="(panggilan, index) in panggilanData"
-          :key="panggilan.id"
-          class="flex-1 bg-gray-200 border-2 border-adameds-300 rounded-lg flex items-center justify-center text-gray-500 font-semibold min-h-[80px]"
-        >
-          <span v-if="panggilan.text">{{ panggilan.text }}</span>
-          <span v-else class="text-gray-400">-</span>
-        </div>
+      <div class="flex flex-col gap-2 content-area">
+        <template v-if="isAdmisi">
+          <div
+            v-for="item in 3"
+            :key="'panggilan-' + item"
+            class="grid grid-rows-2 h-full bg-white rounded-lg"
+          >
+            <div
+              class="flex justify-center items-center text-4xl font-extrabold"
+            >
+              A00{{ item }}
+            </div>
+            <div class="flex rounded-b-lg bg-adameds-50">
+              <div class="flex items-center w-full">
+                <div
+                  class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
+                  dir="rtl"
+                >
+                  <PhCaretDoubleRight
+                    :size="44"
+                    color="#ffffff"
+                    weight="bold"
+                  />
+                </div>
+                <div class="px-3 w-full">
+                  <div class="text-3xl font-black">Loket 1</div>
+                  <hr class="border-adameds-300" />
+                  <div class="text-xl font-bold">Admisi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div
+            v-for="item in 3"
+            :key="'placeholder-panggilan-' + item"
+            class="h-full rounded-lg bg-adameds-50"
+          ></div>
+        </template>
       </div>
     </div>
   </div>

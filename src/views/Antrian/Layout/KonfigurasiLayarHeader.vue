@@ -107,11 +107,22 @@ const resetFilter = () => {
   searchQuery.value = "";
   resetKey.value++;
 
-  // Emit refresh untuk memuat ulang data ke keadaan semula
-  emit("refresh");
-
   emit("reset");
 };
+
+watch(
+  () => props.availableTipeLayar,
+  (newOptions) => {
+    const exists =
+      Array.isArray(newOptions) &&
+      newOptions.some(
+        (opt: any) => String(opt.code) === String(selectedLayar.value)
+      );
+    if (!exists && selectedLayar.value != null) {
+      selectedLayar.value = null;
+    }
+  }
+);
 
 defineExpose({
   resetFilter,

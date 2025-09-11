@@ -114,9 +114,9 @@ const schema = toTypedSchema(
           .number()
           .transform((value) => (isNaN(value) ? undefined : value))
           .required("Hari wajib diisi"),
-        startTime: yup.string().required("Jam mulai harus diisi"),
+        startTime: yup.date(),
         endTime: yup
-          .string()
+          .date()
           .required("Jam selesai harus diisi")
           .test(
             "is-greater",
@@ -188,8 +188,8 @@ const addRow = () => {
   push({
     jadwalDokterUuid: null,
     day: null,
-    startTime: "",
-    endTime: "",
+    startTime: defaultTime(),
+    endTime: defaultTime(),
     durasiPelayanan: 30,
     kuotaJkn: 0,
     kuotaNonJkn: 0,
@@ -205,6 +205,13 @@ const parseTimeString = (timeString: string) => {
   const date = new Date();
   date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
   return date;
+};
+
+//Helper function untuk mendapatkan waktu default
+const defaultTime = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
 };
 
 // Function untuk format Date object ke string waktu
@@ -272,8 +279,8 @@ watch(
           {
             jadwalDokterUuid: null,
             day: null,
-            startTime: "",
-            endTime: "",
+            startTime: defaultTime(),
+            endTime: defaultTime(),
             durasiPelayanan: 30,
             kuotaJkn: 0,
             kuotaNonJkn: 0,
@@ -606,28 +613,7 @@ const confirmDeleteRow = () => {
                 </div>
               </template>
             </Column>
-            <Column
-              field="durasi per-pasien"
-              headerClass="bg-adameds-50 whitespace-nowrap"
-            >
-              <template #header>
-                <div
-                  class="flex justify-center items-center w-full h-full font-bold"
-                >
-                  Durasi Per-pasien
-                  <small class="block ml-1 text-xs font-normal text-gray-500"
-                    >(Auto)</small
-                  >
-                </div>
-              </template>
-              <template #body="slotProps">
-                <div
-                  class="flex justify-center items-center whitespace-nowrap text-SM"
-                >
-                  {{ slotProps.data.value.durasiPelayanan }} menit
-                </div>
-              </template>
-            </Column>
+
             <Column field="slot jkn" headerClass="bg-adameds-50">
               <template #header>
                 <div
@@ -701,6 +687,25 @@ const confirmDeleteRow = () => {
                     (parseInt(slotProps.data.value.kuotaNonJkn) || 0)
                   }}
                   Pasien
+                </div>
+              </template>
+            </Column>
+            <Column
+              field="durasi per-pasien"
+              headerClass="bg-adameds-50 whitespace-nowrap"
+            >
+              <template #header>
+                <div
+                  class="flex justify-center items-center w-full h-full font-bold"
+                >
+                  Durasi Per-pasien
+                </div>
+              </template>
+              <template #body="slotProps">
+                <div
+                  class="flex justify-center items-center whitespace-nowrap text-SM"
+                >
+                  {{ slotProps.data.value.durasiPelayanan }} menit
                 </div>
               </template>
             </Column>

@@ -14,11 +14,28 @@ export const useConfigLayarAntrianStore = defineStore({
     async getApi(
       page: number = 1,
       page_size: number = 10,
-
+      nama_layar?: string,
+      tipe_layar?: number,
+      aktif?: boolean,
       payload = {}
     ) {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        page_size: page_size.toString(),
+      });
+
+      if (nama_layar !== undefined && nama_layar !== "") {
+        params.append("nama_layar", nama_layar);
+      }
+      if (tipe_layar !== undefined) {
+        params.append("tipe_layar", tipe_layar.toString());
+      }
+      if (aktif !== undefined) {
+        params.append("aktif", aktif ? "true" : "false");
+      }
+
       return apiAntrianGet(
-        `/antrian/layar-antrian?page=${page}&page_size=${page_size}`,
+        `/antrian/layar-antrian?${params.toString()}`,
         payload
       );
     },

@@ -1,64 +1,125 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import { utilsStore } from "@/stores/utils";
+import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
+import NoData from "@/components/section/NoData.vue";
 
-const data = ref([
-  {
-    id: "1",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "tunai",
-    status: "antri",
+const props = defineProps<{
+  paginationProperties: {
+    start_date: number | undefined;
+    end_date: number | undefined;
+    page: number;
+    page_size: number;
+    total: number;
+    name: string;
+    status_panggilan: number[];
+    pelayanan: string;
+  };
+}>();
+
+const emit = defineEmits<{
+  updateTotalData: [totalData: number];
+}>();
+
+const dataAntrianStore = useDataAntrianStore();
+const useUtilsStore = utilsStore();
+
+const dataAntrianAdmisiPayload = ref([]);
+
+const convertPaymentMethod = (jenisPasien: string | undefined): string => {
+  const jp = (jenisPasien ?? "").toUpperCase();
+  switch (jp) {
+    case "JKN":
+      return "BPJS";
+    case "NON-JKN":
+      return "TUNAI";
+    default:
+      return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
+  }
+};
+
+watch(
+  () => props.paginationProperties,
+  () => {
+    fetchGetDataAntrianAdmisi();
   },
-  {
-    id: "2",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "tunai",
-    status: "proses",
-  },
-  {
-    id: "3",
-    tanggal_daftar: "2023-10-10 09:00",
-    tanggal_jadwal: "2023-10-20 10:00",
-    nomor_book: "BK.123456",
-    nomor_antrian: "PD-01-02",
-    nama_pasien: "Nama Lengkap Pasien",
-    no_rm: "00-00-00",
-    doktor_keperawatan: "dr. Adameds bin Adameds Sp. Pk",
-    nama_poli: "poli umum",
-    metode_bayar: "BPJS",
-    status: "selesai",
-  },
-]);
-const expandedRows = ref();
+  { deep: true }
+);
+
+const fetchGetDataAntrianAdmisi = async () => {
+  useUtilsStore.setLoading(true);
+  // Kosongkan data terlebih dahulu agar tidak menampilkan data lama saat loading/error
+  dataAntrianAdmisiPayload.value = [];
+  try {
+    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
+    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+
+    const statusQuery =
+      props.paginationProperties.status_panggilan &&
+      props.paginationProperties.status_panggilan.length > 0
+        ? props.paginationProperties.status_panggilan.join(",")
+        : "";
+
+    const response = await dataAntrianStore.getAntrianAdmisi(
+      startEpoch,
+      endEpoch,
+      props.paginationProperties.page,
+      props.paginationProperties.page_size,
+      props.paginationProperties.total,
+      props.paginationProperties.name,
+      statusQuery, // status_panggilan
+      props.paginationProperties.pelayanan // pelayanan
+    );
+    console.log("Ini adalah data antrian admisi antrian", response);
+
+    // Jika response sukses tapi payload kosong/tidak valid -> tampilkan NoData
+    if (response && Array.isArray(response.payload)) {
+      dataAntrianAdmisiPayload.value = response.payload;
+      emit("updateTotalData", response.properties?.total ?? 0);
+    } else {
+      dataAntrianAdmisiPayload.value = [];
+      emit("updateTotalData", 0);
+    }
+  } catch (error) {
+    // Anggap "data tidak ditemukan" sebagai hasil kosong, bukan kegagalan UI
+    console.log("No data or error fetching data antrian admisi:", error);
+    dataAntrianAdmisiPayload.value = [];
+    emit("updateTotalData", 0);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const dateFormat = (timestamp: number | string) => {
+  // Konversi timestamp dari detik ke milliseconds
+  const timestampMs =
+    typeof timestamp === "string"
+      ? parseInt(timestamp) * 1000
+      : timestamp * 1000;
+
+  const newDate = new Date(timestampMs);
+  const day = newDate.getDate();
+  const month = newDate.getMonth() + 1;
+  const year = newDate.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 onMounted(() => {
-  data.value;
+  fetchGetDataAntrianAdmisi();
 });
 
 // Fungsi untuk mendapatkan style metode bayar
-const getMetodeBayarStyle = (metodeBayar: string) => {
-  const method = metodeBayar.toLowerCase();
+const getMetodeBayarStyle = (jenisPasien: string | undefined) => {
+  const convertedMethod = convertPaymentMethod(jenisPasien).toLowerCase();
 
-  if (method === "tunai") {
+  if (convertedMethod === "tunai") {
     return {
       bgColor: "bg-adameds-50",
       textColor: "text-adameds-300",
       borderColor: "border-adameds-300",
     };
-  } else if (method === "bpjs") {
+  } else if (convertedMethod === "bpjs") {
     return {
       bgColor: "bg-warning-50",
       textColor: "text-warning-300",
@@ -76,9 +137,9 @@ const getMetodeBayarStyle = (metodeBayar: string) => {
 // Mapping style untuk status
 const statusStyles = {
   antri: {
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-500",
-    borderColor: "border-gray-300",
+    bgColor: "bg-grey-50",
+    textColor: "text-grey-300",
+    borderColor: "border-grey-300",
     label: "ANTRI",
   },
   proses: {
@@ -101,7 +162,31 @@ const statusStyles = {
   },
 } as const;
 
-const getStatusStyle = (status: string) => {
+const convertStatusRj = (statusRj: number): string => {
+  switch (statusRj) {
+    case 0:
+      return "antri";
+    case 1:
+      return "antri";
+    case 2:
+      return "antri";
+    case 3:
+      return "proses";
+    case 4:
+      return "selesai";
+    case 5:
+      return "verifikasi obat";
+    default:
+      return "unknown";
+  }
+};
+
+const expandedRows = ref();
+
+const getStatusStyle = (status: string | undefined) => {
+  if (!status) {
+    return statusStyles.default;
+  }
   const normalizedStatus = status.toLowerCase();
   return (
     statusStyles[normalizedStatus as keyof typeof statusStyles] ||
@@ -113,29 +198,35 @@ const getStatusStyle = (status: string) => {
 <template>
   <DataTable
     v-model:expandedRows="expandedRows"
-    :value="data"
+    :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
     :pt="{ headerRow: 'bg-blue-500 text-white' }"
-    class="text-xs"
+    class="flex text-xs"
     stripedRows
     dataKey="id"
     scrollable
     scrollHeight="flex"
+    v-if="dataAntrianAdmisiPayload.length > 0"
   >
-    <Column header-class="justify-center text-black bg-adameds-50">
+    <Column header-class="text-black bg-adameds-50">
       <template #header>
         <div class="w-full font-semibold text-center">No.</div>
       </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
-          {{ slotProps.index + 1 }}
+          {{
+            (props.paginationProperties.page - 1) *
+              props.paginationProperties.page_size +
+            slotProps.index +
+            1
+          }}
         </div>
       </template>
     </Column>
     <Column
       header="Data kunjungan"
       header-class="text-black bg-adameds-50"
-      class="p-0 py-2 w-auto"
+      class="p-0 w-auto"
     >
       <template #body="slotProps">
         <div class="space-y-2 text-SM">
@@ -147,7 +238,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_daftar }}
+              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -158,7 +249,7 @@ const getStatusStyle = (status: string) => {
               class=""
             />
             <div>
-              {{ slotProps.data.tanggal_jadwal }}
+              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
         </div>
@@ -180,7 +271,7 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_book }}
+                {{ slotProps.data.patientData.antrian.kodeBooking ?? "N/A" }}
               </div>
             </div>
           </div>
@@ -193,7 +284,9 @@ const getStatusStyle = (status: string) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.nomor_antrian }}
+                {{
+                  slotProps.data.patientData.antrian.noAntrianAdmisi ?? "N/A"
+                }}
               </div>
             </div>
           </div>
@@ -202,14 +295,14 @@ const getStatusStyle = (status: string) => {
     </Column>
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0"
       ><template #body="slotProps">
-        <div class="items-center py-1.5 space-y-0.5">
+        <div class="items-center space-y-0.5">
           <div class="flex items-center font-semibold">
-            {{ slotProps.data.nama_pasien }}
+            {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
             <CustomChip
               :showCheckedIcon="false"
-              :label="slotProps.data.no_rm"
+              :label="slotProps.data.patientData.noRm"
               bgColor="bg-adameds-300"
               textColor="text-white"
               border-color="border-adameds-300"
@@ -228,32 +321,36 @@ const getStatusStyle = (status: string) => {
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.metode_bayar).bgColor"
+            :bgColor="getMetodeBayarStyle(slotProps.data.jenisPasien).bgColor"
             :textColor="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).textColor
+              getMetodeBayarStyle(slotProps.data.jenisPasien).textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.metode_bayar).borderColor
+              getMetodeBayarStyle(slotProps.data.jenisPasien).borderColor
             "
             customClass="h-5"
-            :label="slotProps.data.metode_bayar.toUpperCase()"
+            :label="
+              convertPaymentMethod(slotProps.data.jenisPasien).toUpperCase()
+            "
           />
         </div> </template
     ></Column>
-    <Column
-      header="Status"
-      header-class="flex justify-center items-center text-black bg-adameds-50"
-      class="text-center"
-    >
+    <Column field="Status" headerClass="bg-adameds-50">
+      <template #header>
+        <div class="w-full font-semibold text-center">Status</div>
+      </template>
       <template #body="slotProps">
         <div class="flex justify-center items-center">
           <CustomChip
             :showCheckedIcon="false"
-            v-bind="getStatusStyle(slotProps.data.status)"
+            v-bind="
+              getStatusStyle(convertStatusRj(slotProps.data.statusPanggilan))
+            "
             customClass="h-5"
           />
         </div>
       </template>
     </Column>
   </DataTable>
+  <NoData class="flex-1 h-full" v-else />
 </template>
