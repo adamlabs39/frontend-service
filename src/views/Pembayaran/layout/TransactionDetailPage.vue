@@ -312,6 +312,19 @@ const submitVoucher = async () => {
   }
 };
 
+//maks 15 digit amount 
+watch(amount, (newValue) => {
+  if (newValue) {
+    const digitsOnly = String(newValue).replace(/\D/g, '');
+    
+    const maxLength = 15;
+    if (digitsOnly.length > maxLength) {
+      const truncatedDigits = digitsOnly.slice(0, maxLength);
+      amount.value = Number(truncatedDigits);
+    }
+  }
+});
+
 watch(amount, () => {
   setTimeout(getKembalian, 700);
 });
