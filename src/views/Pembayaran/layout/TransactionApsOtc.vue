@@ -10,7 +10,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useApsOtcTransaction as useApsOtcStore } from "@/stores/pembayaran/apsotc";
 import { useTagihanStore } from "@/stores/pembayaran/findBill";
-import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice"; 
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice";
 import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
@@ -69,7 +69,7 @@ const formatPriceLokal = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
-        maximumFractionDigits: 0, 
+        maximumFractionDigits: 0,
     }).format(price);
 };
 
@@ -83,7 +83,7 @@ const formattedVoucherValue = computed(() => {
     const value = detailData.value.voucherValue;
     if (type === 'persentase') {
         return `${value} %`;
-    } 
+    }
     else if (type === 'potongan') {
         return formatPriceLokal(value);
     }
@@ -153,13 +153,13 @@ const submitPayment = async () => {
             note: note.value,
             information: information.value,
         };
-        
+
         const paymentResponse: any = await apsotcStore.postPayment(props.billUuid, payload);
-    if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
-        const billUuid = props.billUuid;
-        // Simpan sebagai string JSON dengan kunci: 'paymentResult_UUID_TAGIHAN'
-        localStorage.setItem(`paymentResult_${billUuid}`, JSON.stringify(paymentResponse.data.payload));
-    }
+        if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
+            const billUuid = props.billUuid;
+            // Simpan sebagai string JSON dengan kunci: 'paymentResult_UUID_TAGIHAN'
+            localStorage.setItem(`paymentResult_${billUuid}`, JSON.stringify(paymentResponse.data.payload));
+        }
         pembayaranDialog.value = false;
         await fetchDetailBill(); // Muat ulang data untuk update status tombol & info
     } catch (error) {
@@ -313,6 +313,17 @@ const handleCetakRincianBiaya = async () => {
     }
 };
 
+watch(amount, (newValue) => {
+    if (newValue) {
+        const digitsOnly = String(newValue).replace(/\D/g, '');
+
+        const maxLength = 15;
+        if (digitsOnly.length > maxLength) {
+            const truncatedDigits = digitsOnly.slice(0, maxLength);
+            amount.value = Number(truncatedDigits);
+        }
+    }
+});
 
 watch(amount, () => {
     setTimeout(getKembalian, 700);
@@ -402,8 +413,10 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         <div class="flex justify-between">
                             <p class="text-base font-bold font-poppins">Total Pembayaran</p>
                             <div class="flex">
-                                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice" class="mt-[-10px] mr-[10px]" />
-                                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
+                                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice"
+                                    class="mt-[-10px] mr-[10px]" />
+                                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya"
+                                    class="mt-[-10px]" />
                             </div>
                         </div>
                         <hr class="mt-2 mb-2 border border-slate-300" />
@@ -625,7 +638,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
                             <p class="text-base font-bold ">Total kamar</p>
                             <p class="text-base font-bold">Rp {{ itemTagihan.item.ruangan.total?.toLocaleString('id-ID')
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
 
@@ -740,7 +753,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                             <Column header="Jasa" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 10%">
                                 <template #body="slotProps">
                                     <div class="text-SM">Rp {{ (slotProps.data.serviceFee ?? 0).toLocaleString('id-ID')
-                                    }}</div>
+                                        }}</div>
                                 </template>
                             </Column>
                             <Column header="Total" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 15%">
@@ -793,7 +806,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                             <p class="text-base font-bold ">Total alkes</p>
                             <p class="text-base font-bold">Rp {{ itemTagihan.item.alkes.total?.toLocaleString('id-ID')
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
 
@@ -803,7 +816,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                                 <div class="flex justify-between">
                                     <p class="text-base font-bold">Total Keseluruhan Item</p>
                                     <p class="text-base font-bold">Rp {{ itemTagihan.total?.toLocaleString('id-ID') || 0
-                                    }}</p>
+                                        }}</p>
                                 </div>
                             </template>
                         </card>
