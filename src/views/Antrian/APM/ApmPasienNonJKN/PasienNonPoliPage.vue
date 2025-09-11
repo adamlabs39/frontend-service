@@ -16,6 +16,38 @@ import { watch } from "vue";
 const router = useRouter();
 const route = useRoute();
 
+const HARI_ID = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+const now = ref(new Date());
+const todayName = computed(() => HARI_ID[now.value.getDay()]);
+
+const toMinutes = (hhmm: string) => {
+  const [h, m] = (hhmm || "").split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+const nowMinutes = computed(
+  () => now.value.getHours() * 60 + now.value.getMinutes()
+);
+
+const isScheduleDisabled = (j: any) => {
+  // Disable jika waktu sekarang sudah melewati atau tepat sama dengan endTime
+  const end = toMinutes(j?.endTime);
+  return nowMinutes.value >= end;
+};
+
+const hasScheduleToday = (item: any) => {
+  const list = item?.jadwalDokter || [];
+  return list.some((j: any) => j?.day === todayName.value);
+};
+const isDoctorDisabled = (item: any) => !hasScheduleToday(item);
+
 const handleBack = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
 };
@@ -85,7 +117,6 @@ const fetchJadwalDokter = async () => {
 
     const selectedPoliUuid = getDokterProperties.value.poliUuid;
 
-    // response.payload adalah array (lihat console.txt), setiap item punya struktur: { doctor, poli, jadwal_dokter }
     if (Array.isArray(response?.payload)) {
       const filtered = selectedPoliUuid
         ? response.payload.filter(
@@ -93,12 +124,27 @@ const fetchJadwalDokter = async () => {
           )
         : response.payload;
 
-      jadwalDokterPayload.value = filtered;
-      // total diset sesuai hasil filter agar merepresentasikan data yang sedang ditampilkan
-      jadwalDokterProperties.value.total = filtered.length;
+      // Normalisasi field jadwal_dokter -> jadwalDokter (camelCase)
+      jadwalDokterPayload.value = filtered.map((item: any) => ({
+        ...item,
+        jadwalDokter: Array.isArray(item?.jadwalDokter)
+          ? item.jadwalDokter.map((j: any) => ({
+              jadwalDokterUuid: j?.jadwalDokterUuid,
+              day: j?.day,
+              startTime: j?.startTime,
+              endTime: j?.endTime,
+              kuota: j?.kuota,
+              kuotaJkn: j?.kuotaJkn,
+              kuotaNonJkn: j?.kuotaNonJkn,
+              durasiPelayanan: j?.durasiPelayanan,
+              status: j?.status,
+            }))
+          : [],
+      }));
+
+      jadwalDokterProperties.value.total = jadwalDokterPayload.value.length;
       console.log("filtered:", jadwalDokterPayload.value);
     } else {
-      // fallback jika payload tidak sesuai ekspektasi
       jadwalDokterPayload.value = [];
       jadwalDokterProperties.value.total = 0;
     }
@@ -125,26 +171,6 @@ onMounted(() => {
 //   }
 // );
 
-const cardDokterNamaPanjang = ref({
-  namaDokter: "dr. Nama Dokter Nama Panjang",
-});
-const cardDokterNamaPanjangSekali = ref({
-  namaDokter: "dr. Nama Dokter Nama Panjang Sekali",
-});
-const cardDokterNama = ref({
-  namaDokter: "dr. Nama Dokter",
-});
-
-const cardJamPagi = ref({
-  jam: "07:00 - 10:00",
-});
-const cardJamSiang = ref({
-  jam: "12:00 - 15:00",
-});
-const cardJamMalam = ref({
-  jam: "18:00 - 20:00",
-});
-
 const selectedDokter = ref<string | null>(null);
 const selectDokter = (doctorUuid: string) => {
   selectedDokter.value = doctorUuid;
@@ -153,11 +179,19 @@ const selectDokter = (doctorUuid: string) => {
 
 const selectedDoctorDetail = computed(() => {
   if (!selectedDokter.value) return null;
-  return (
+  const found =
     jadwalDokterPayload.value.find(
       (item: any) => item?.doctor?.uuid === selectedDokter.value
-    ) || null
+    ) || null;
+
+  if (!found) return null;
+
+  // Hanya jadwal untuk hari ini
+  const onlyToday = (found.jadwalDokter || []).filter(
+    (j: any) => j?.day === todayName.value
   );
+
+  return { ...found, jadwalDokter: onlyToday };
 });
 </script>
 
@@ -233,7 +267,14 @@ const selectedDoctorDetail = computed(() => {
                       namaDokter: dokter?.doctor?.name || 'Dokter',
                     }"
                     class="w-full transition-transform duration-300 hover:scale-95"
-                    @click="selectDokter(dokter?.doctor?.uuid)"
+                    :class="{
+                      'opacity-50 pointer-events-none':
+                        isDoctorDisabled(dokter),
+                    }"
+                    @click="
+                      !isDoctorDisabled(dokter) &&
+                        selectDokter(dokter?.doctor?.uuid)
+                    "
                   />
                 </div>
 
@@ -277,14 +318,22 @@ const selectedDoctorDetail = computed(() => {
                       >
                         <button
                           type="button"
+                          :disabled="isScheduleDisabled(j)"
                           :class="[
                             'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-all duration-300',
-                            selectedTime === j.jadwalDokterUuid
+                            selectedTime === j.jadwalDokterUuid &&
+                            !isScheduleDisabled(j)
                               ? 'bg-adameds-100 text-white'
-                              : 'bg-white text-adameds-300 hover:bg-adameds-100 hover:text-white',
+                              : 'bg-white text-adameds-300',
+                            isScheduleDisabled(j)
+                              ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                              : 'hover:bg-adameds-100 hover:text-white',
                             'hover:scale-95',
                           ]"
-                          @click="selectTime(j.jadwalDokterUuid)"
+                          @click="
+                            !isScheduleDisabled(j) &&
+                              selectTime(j.jadwalDokterUuid)
+                          "
                         >
                           <span class="font-extrabold text-[16px]">
                             {{ j.startTime }} - {{ j.endTime }}
@@ -293,7 +342,8 @@ const selectedDoctorDetail = computed(() => {
                             :size="20"
                             class="absolute right-4"
                             :class="
-                              selectedTime === j.jadwalDokterUuid
+                              selectedTime === j.jadwalDokterUuid &&
+                              !isScheduleDisabled(j)
                                 ? 'text-white'
                                 : 'text-transparent'
                             "
