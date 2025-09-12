@@ -128,7 +128,7 @@ onMounted(() => {
         class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
-          class="bg-white bg-opacity-30 w-full min-h-[640px] items-center justify-center"
+          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
         >
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div

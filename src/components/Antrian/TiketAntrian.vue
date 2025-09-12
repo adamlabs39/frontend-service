@@ -6,78 +6,80 @@ const props = defineProps({
 });
 </script>
 <template>
-  <Card style="width: full; overflow: hidden">
+  <Card class="overflow-hidden w-full h-[350px]">
     <template #content>
-      <div class="flex justify-between gap-7">
-        <div class="w-full">
-          <div class="mb-4 font-bold leading-8 text-subHeading">
+      <div class="flex gap-7 justify-between">
+        <div class="space-y-3 w-full">
+          <div class="font-bold leading-8 text-heading">
             Data Pasien
             <hr class="border-black border-1" />
           </div>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">No. RM</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">No. RM</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.noRM }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">No. Booking</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">No. Booking</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.noBooking }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">No. Registrasi</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">
+              No. Registrasi
+            </div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.noRegistrasi }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">No. BPJS</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">No. BPJS</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.noBPJS }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">NIK</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">NIK</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.nik }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">Nama</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">Nama</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.nama }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">Tgl. Lahir</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">Tgl. Lahir</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.tanggalLahir }}
-            </td>
-          </tr>
-          <tr>
-            <td class="font-semibold leading-5 text-normal w-[100px]">Jenis Kelamin</td>
-            <td class="px-3">:</td>
-            <td class="font-normal leading-5 text-normal">
+            </div>
+          </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">Jenis Kelamin</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
               {{ tiketAntrian.gender }}
-            </td>
-          </tr>
+            </div>
+          </div>
         </div>
-        
+
         <div class="w-full">
-          <div class="mb-4 font-bold leading-8 text-subheading">
+          <div class="mb-4 font-bold leading-8 text-heading">
             Pelayanan
             <hr class="border-black border-1" />
           </div>
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-3">
             <div class="flex flex-col">
               <div
                 class="font-normal leading-7 underline text-normal underline-offset-4"
@@ -110,21 +112,23 @@ const props = defineProps({
             </div>
           </div>
         </div>
-        <div class="relative flex items-center justify-center w-3/4 h-1/2">
+        <div class="flex relative justify-center items-center w-3/4 h-[420px]">
           <div class="absolute right-0 -top-16">
             <img src="../../assets/icons/Rectangle 1023.svg" alt="" />
             <div
-              class="absolute flex flex-col items-center justify-center w-full gap-10 top-10"
+              class="flex absolute top-10 flex-col gap-10 justify-center items-center w-full"
             >
               <div
-                class="flex items-center justify-center w-48 border-b-2 border-dashed"
+                class="flex justify-center items-center w-48 border-b-2 border-dashed"
               >
                 <div class="mx-5 my-4 text-center">
                   <div class="font-bold leading-8 text-white text-subheading">
                     No. Antrian
                   </div>
                   <hr />
-                  <div class="mt-1 text-sm font-normal leading-7 text-white opacity-85">
+                  <div
+                    class="mt-1 text-sm font-normal leading-7 text-white opacity-85"
+                  >
                     {{ tiketAntrian.tanggal }}
                   </div>
                 </div>
