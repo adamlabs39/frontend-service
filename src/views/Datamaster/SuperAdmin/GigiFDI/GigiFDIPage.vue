@@ -78,7 +78,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  openDialog("detail", "Detail Data Gigi FDI", selectedData.value);
 };
 
 // Dialog Management
@@ -138,7 +138,7 @@ const downloadExportExcel = async () => {
       Code: "Code SATUSEHAT",
       Gigi: "Gigi",
       Display: "Display SATUSEHAT",
-      Status: "Status",
+      // Status: "Status",
     });
 
     // Data Rows
@@ -148,7 +148,7 @@ const downloadExportExcel = async () => {
         Code: rows[i].code,
         Gigi: rows[i].name,
         Display: rows[i].display,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        // Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -292,7 +292,7 @@ const handleFileUpload = async (file: File) => {
         pageType="gigi-fdi"
         isSuperAdmin
         @update:valueSearch="searchQuery = $event"
-        @tambah-data="openDialog('add', 'Tambah Data')"
+        @tambah-data="openDialog('add', 'Tambah Data Gigi FDI')"
         @reload-data="fetchGigiData()"
       />
     </template>
@@ -339,7 +339,7 @@ const handleFileUpload = async (file: File) => {
           class="w-full"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
+        <!-- <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
         >
@@ -362,7 +362,7 @@ const handleFileUpload = async (file: File) => {
               />
             </div>
           </template>
-        </Column>
+        </Column> -->
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
@@ -377,7 +377,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                @click="openDialog('edit', 'Edit Data Gigi FDI', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>

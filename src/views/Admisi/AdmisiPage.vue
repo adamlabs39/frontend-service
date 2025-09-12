@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import { utilsStore } from "@/stores/utils";
@@ -74,16 +74,23 @@ const search = async () => {
 const getPatientList = async () => {
   if (pageType.value == "rawat-jalan") {
     patientData.value = await fetchRJPatient();
+    console.log("Data rawat jalan:", patientData.value);
   } else if (pageType.value == "rawat-inap") {
     patientDataRI.value = await fetchRIPatient();
+    console.log("Data rawat inap:", patientDataRI.value);
   } else if (pageType.value == "igd") {
     patientDataIGD.value = await fetchIGDPatient();
+    console.log("Data IGD:", patientDataIGD.value);
   }
 };
 const fetchRJPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRJStore.getRJ(filterData.value);
+    const response = await admisiRJStore.getRJ({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -97,10 +104,15 @@ const fetchRJPatient = async () => {
     storeUtils.setLoading(false);
   }
 };
+
 const fetchRIPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiRIStore.getRI(filterData.value);
+    const response = await admisiRIStore.getRI({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -114,10 +126,15 @@ const fetchRIPatient = async () => {
     storeUtils.setLoading(false);
   }
 };
+
 const fetchIGDPatient = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await admisiIGDStore.getIGD(filterData.value);
+    const response = await admisiIGDStore.getIGD({
+      ...filterData.value,
+      page: properties.value.page,
+      limit: properties.value.pageSize,
+    });
     if (response && response.payload) {
       properties.value.total = response.properties.totalData;
       return response.payload;
@@ -140,6 +157,7 @@ const updatePageType = async (path: string) => {
 
   await getPatientList();
 };
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
@@ -239,11 +257,17 @@ const cancelVisit = async () => {
   }
 };
 
+watch(formType, (newValue, oldValue) => {
+  if (newValue === 'edit' && oldValue !== 'edit') {
+  }
+});
+
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.pageSize = event.rows;
   getPatientList();
 };
+
 </script>
 
 <template>
@@ -260,9 +284,7 @@ const handlePage = (event: any) => {
         :pageType="pageType"
         :filterData="filterData"
         @daftar="changeSection('Daftar'), (formType = 'add')"
-        @daftarBayi="
-          changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')
-        "
+        @daftarBayi="changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')"
         @search="search"
       />
     </template>
@@ -293,25 +315,27 @@ const handlePage = (event: any) => {
               >
                 {{ slotProps.data.noAntrianAdmisi }}
               </div>
+              <div class="text-SM">{{ slotProps.data.noAntrianAdmisi ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noRm ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
+              <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
             </div>
           </template>
         </Column>
-        <Column field="pasien" header="Pasien" headerClass="bg-adameds-50">
+        <Column field="patient" header="Pasien" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">
               <span class="font-semibold">{{
-                slotProps.data.patient.name
+                slotProps.data?.patient?.name
               }}</span>
               <span class="text-grey-300">
-                ({{ slotProps.data.birthDetail.ageYear }}Th
-                {{ slotProps.data.birthDetail.ageMonth }}Bln
-                {{ slotProps.data.birthDetail.ageDay }}Hr)
+                ({{ slotProps.data?.birthDetail?.ageYear }}Th
+                {{ slotProps.data?.birthDetail?.ageMonth }}Bln
+                {{ slotProps.data?.birthDetail?.ageDay }}Hr)
               </span>
             </div>
             <div class="text-XS">
-              {{ slotProps.data.patient.address.full_address }}
+              {{ slotProps.data?.patient?.address?.fullAddress }}
             </div>
             <div class="flex flex-wrap">
               <!-- <PhUserCirclePlus
@@ -323,11 +347,11 @@ const handlePage = (event: any) => {
               <CustomChip
                 v-if="
                   pageType == 'rawat-jalan' &&
-                  slotProps.data.platform != 'ADMISI' &&
-                  slotProps.data.platform
+                  slotProps.data?.platform != 'ADMISI' &&
+                  slotProps.data?.platform
                 "
                 :showCheckedIcon="false"
-                :label="slotProps.data.platform"
+                :label="slotProps.data?.platform"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -335,28 +359,28 @@ const handlePage = (event: any) => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'Perempuan'
                     : 'Laki-laki'
                 "
                 :bgColor="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'bg-female-75'
                     : 'bg-male-75'
                 "
                 :textColor="
-                  slotProps.data.patient.gender == 'Female'
+                  slotProps.data?.patient?.gender == 'Female'
                     ? 'text-female-300'
                     : 'text-male-300'
                 "
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 pr-[9px] border-none mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
-                :label="slotProps.data.patient.phone ?? '-'"
+                :label="slotProps.data?.patient?.phone ?? '-'"
                 bgColor="bg-adameds-75"
                 textColor="text-adameds-300"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
+                customClass="h-5 pr-[8px] border-none mr-[5px]"
               />
             </div>
           </template>
@@ -383,15 +407,15 @@ const handlePage = (event: any) => {
             </div>
             <div class="flex flex-wrap">
               <CustomChip
-                v-if="pageType != 'igd'"
-                :showCheckedIcon="false"
-                :label="
-                  pageType == 'rawat-jalan'
-                    ? slotProps.data.polyclinic.name
-                    : slotProps.data.monitoringRoom.room
-                "
-                customClass="h-5 pr-[5px] mr-[5px]"
-              />
+                  v-if="pageType != 'igd' && slotProps.data.monitoringRoom?.room"
+                  :showCheckedIcon="false"
+                  :label="
+                    pageType == 'rawat-jalan'
+                      ? slotProps.data.monitoringRoom.room.className
+                      : slotProps.data.monitoringRoom.room.name
+                  "
+                  customClass="h-5 pr-[7px] mr-[5px]"
+                />
               <CustomChip
                 v-else
                 :showCheckedIcon="false"
@@ -400,13 +424,19 @@ const handlePage = (event: any) => {
                     ? 'DATA TIDAK TIDAK LENGKAP'
                     : 'DATA LENGKAP'
                 "
-                customClass="h-5 pr-[5px] mr-[5px]"
+                customClass="h-5 pr-[7px] mr-[5px]"
+              />
+               <CustomChip
+                v-if="slotProps.data.polyclinic"
+                :showCheckedIcon="false"
+                :label="`${slotProps.data.polyclinic.name}`"
+                customClass="h-5 pr-[7px] mr-[5px]"
               />
               <CustomChip
                 v-if="pageType == 'rawat-inap'"
                 :showCheckedIcon="false"
-                :label="`${slotProps.data.monitoringRoom.bedName} ${slotProps.data.monitoringRoom.noBed}`"
-                customClass="h-5 pr-[5px] mr-[5px]"
+                :label="`${slotProps.data.monitoringRoom.bedLokasi.name}`"
+                customClass="h-5 pr-[7px] mr-[5px]"
               />
               <CustomChip
                 :showCheckedIcon="false"
@@ -428,7 +458,7 @@ const handlePage = (event: any) => {
                     ? 'border-adameds-300'
                     : 'border-warning-300'
                 "
-                customClass="h-5 pr-[6px] mr-[5px]"
+                customClass="h-5 pr-[9px] mr-[5px]"
               />
               <!-- NOTE Belum Ada BPJS -->
               <CustomChip
@@ -463,7 +493,7 @@ const handlePage = (event: any) => {
                 />
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
-              <div
+              <!-- <div
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
@@ -474,7 +504,7 @@ const handlePage = (event: any) => {
                   weight="bold"
                 />
                 {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
-              </div>
+              </div> -->
               <div
                 v-if="
                   pageType == 'rawat-jalan' && slotProps.data.tanggalCheckin
@@ -499,7 +529,8 @@ const handlePage = (event: any) => {
                   class="my-auto mr-5 text-grey-300"
                   weight="bold"
                 />
-                {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
+                <!-- {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }} -->
+                  -
               </div>
               <div
                 v-if="pageType == 'rawat-inap' && slotProps.data.tanggalDirawat"
@@ -592,6 +623,7 @@ const handlePage = (event: any) => {
         <CustomPaginator
           :rows="properties.pageSize"
           :totalRecords="properties.total"
+          :rowsPerPageOptions="[10,20,30,40,50]"
           @page="handlePage"
         />
       </div>

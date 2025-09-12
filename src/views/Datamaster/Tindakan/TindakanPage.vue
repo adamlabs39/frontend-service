@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useTindakanStore } from "@/stores/datamaster/tindakan";
+import { useSnomedCTStore } from "@/stores/datamaster/snomedCT";
+import { useIcd9Store } from "@/stores/datamaster/icd9";
 import { utilsStore } from "@/stores/utils";
 import * as XLSX from "xlsx-js-style";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -13,6 +15,8 @@ import NoData from "@/components/section/NoData.vue";
 
 // State Management
 const tindakanStore = useTindakanStore();
+const snomedStore = useSnomedCTStore();
+const icd9Store = useIcd9Store();
 const UseUtilsStore = utilsStore();
 const tindakanPayload = ref<any[]>([]);
 const tindakanProperties = ref({
@@ -53,7 +57,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchTindakanData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -137,8 +141,8 @@ const downloadExportExcel = async () => {
       No: "No",
       Kode: "Kode Tindakan",
       Nama: "Nama Tindakan",
-      Snomed:"Snomed",
-      icd:"ICD 9 CM",
+      Snomed: "Snomed",
+      icd: "ICD 9 CM",
       Status: "Status",
     });
 
@@ -148,8 +152,8 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
-        Snomed: rows[i].snomed?.name ?? '-',
-        icd: rows[i].icd_9?.name ?? '-',
+        Snomed: rows[i].snomed?.name ?? "-",
+        icd: rows[i].icd_9?.name ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -169,7 +173,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -177,7 +181,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -226,29 +230,69 @@ const downloadExportExcel = async () => {
 
 const downloadFormatExcel = async () => {
   try {
+    let snomedData = [];
+    const responseSnomed = await snomedStore.exportApi();
+    if (responseSnomed && responseSnomed.payload) {
+      snomedData = responseSnomed.payload;
+    } else {
+      snomedData = [];
+    }
+
+    let icd9Data = [];
+    const responseIcd9 = await icd9Store.exportApi();
+    if (responseIcd9 && responseIcd9.payload) {
+      icd9Data = responseIcd9.payload;
+    } else {
+      icd9Data = [];
+    }
+
     // Prepare Data for Export
     const data = [];
 
     // Header Row
-  data.push({
+    data.push({
       No: "No",
       Code: "Kode Tindakan*",
       Name: "Nama Tindakan*",
-      Snomed:"snomed-CT",
-      ICD:"ICD-9"
+      Snomed: "snomed-CT",
+      ICD: "ICD-9",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1", Code: "PDU-001", Name: "Pemeriksaan Dokter Umum", Snomed:"SNOMED-CT Amoxilin", ICD:"ICD-9 Aspirin" });
 
+    data.push({
+      No: "1",
+      Code: "PDU-001",
+      Name: "Pemeriksaan Dokter Umum",
+      Snomed: "",
+      ICD: "",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
+    worksheet["G1"] = {
+      t: "s",
+      v: "Catatan :",
+      s: {
+        font: {
+          bold: true,
+        },
+      },
+    };
+    worksheet["G2"] = {
+      t: "s",
+      v: "Data Nama Snomed CT harus sesuai sheet SNOMED-CT",
+    };
+    worksheet["G3"] = { t: "s", v: "Data Nama ICD 9 harus sesuai sheet ICD 9" };
+
+    // Pastikan worksheet["!ref"] mencakup A-E dan G1-G3
+    const maxRow = Math.max(data.length + 1, 3); // +1 karena ada header
+    worksheet["!ref"] = `A1:G${maxRow}`;
+
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -256,30 +300,102 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
-
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Tindakan");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Tindakan"
+    );
+    const snomedSheet = await generateWorksheetSnomed(snomedData);
+    XLSX.utils.book_append_sheet(workbook, snomedSheet, "SNOMED-CT");
+    const icd9Sheet = await generateWorksheetIcd9(icd9Data);
+    XLSX.utils.book_append_sheet(workbook, icd9Sheet, "ICD 9");
     XLSX.writeFile(workbook, `Format Datamaster Tindakan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
 };
 
+// NOTE Export SNOMED dan ICD9
+const generateWorksheetSnomed = async (snomedData: any[]) => {
+  const data = [];
+
+  data.push({
+    No: "No",
+    Kode: "Kode Snomed CT",
+    Nama: "Nama Snomed CT",
+  });
+
+  // Data Rows
+  for (let i = 0; i < snomedData.length; i++) {
+    data.push({
+      No: i + 1,
+      Kode: snomedData[i].code,
+      Nama: snomedData[i].name,
+    });
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+  // Column Widths
+  const columnWidths = data.reduce((widths: any, row: any) => {
+    Object.keys(row).forEach((key, colIdx) => {
+      const cellValue = row[key] ? row[key].toString() : "";
+      widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+    });
+    return widths;
+  }, []);
+
+  worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+  return worksheet;
+};
+const generateWorksheetIcd9 = async (icd9Data: any[]) => {
+  const data = [];
+
+  data.push({
+    No: "No",
+    Kode: "Kode ICD-9 CM",
+    Nama: "Nama ICD-9 CM",
+  });
+
+  // Data Rows
+  for (let i = 0; i < icd9Data.length; i++) {
+    data.push({
+      No: i + 1,
+      Kode: icd9Data[i].code,
+      Nama: icd9Data[i].name,
+    });
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+  // Column Widths
+  const columnWidths = data.reduce((widths: any, row: any) => {
+    Object.keys(row).forEach((key, colIdx) => {
+      const cellValue = row[key] ? row[key].toString() : "";
+      widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+    });
+    return widths;
+  }, []);
+
+  worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+  return worksheet;
+};
+
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await tindakanStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchTindakanData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchTindakanData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -343,12 +459,16 @@ const handleFileUpload = async (file: File) => {
           class="w-3/12"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column header="Snomed & ICD 9 CM" class="w-3/12" headerClass="bg-adameds-50">
+        <Column
+          header="Snomed & ICD 9 CM"
+          class="w-3/12"
+          headerClass="bg-adameds-50"
+        >
           <template #body="slotProps">
             <div class="underline">Snomed-CT</div>
             <div class="mb-3 font-bold">
               {{
-                slotProps.data.snomedDetail && slotProps.data.snomedDetail.name 
+                slotProps.data.snomedDetail && slotProps.data.snomedDetail.name
                   ? slotProps.data.snomedDetail.name
                   : "Tidak ada data"
               }}
@@ -360,7 +480,6 @@ const handleFileUpload = async (file: File) => {
                   ? slotProps.data.icd9Detail.name
                   : "Tidak ada data"
               }}
-
             </div>
           </template>
         </Column>
@@ -408,7 +527,13 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>

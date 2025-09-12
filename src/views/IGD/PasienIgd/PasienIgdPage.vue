@@ -10,6 +10,8 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { useAdmisiIGDStore } from "@/stores/admisi/igd";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useToast } from "primevue/usetoast";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
@@ -20,7 +22,9 @@ import { formatDate } from "@/utils/Helpers";
 const storeUtils = utilsStore();
 const admisiIGDStore = useAdmisiIGDStore();
 const praktisiStore = usePraktisiStore();
+const lokasiStore = useLokasiStore();
 const rekamMedisStore = useRekamMedisStore();
+const toast = useToast();
 
 const pageType = ref("");
 const route = useRoute();
@@ -206,6 +210,10 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
     if (responseDetailPelayanan && responseDetailPelayanan.payload) {
       openedPatientData.value = responseDetailPelayanan.payload;
       openedPatientData.value.rekamMedisUuid = event.data.rekamMedisUuid;
+      // NOTE Get Praktisi Data
+      openedPatientData.value.practitioner = praktisiPayload.value.find(
+        (praktisi) => praktisi.uuid == openedPatientData.value.practitionerUuid
+      );
     }
     let response: any;
     if (openedPatientData.value.rekamMedisUuid) {
@@ -213,13 +221,26 @@ const openDialogRM = async (event: DataTableRowClickEvent) => {
         rekamMedisUuid: openedPatientData.value.rekamMedisUuid,
       });
     } else {
+      let lokasiUuid = "";
+      const responseLokasi = await lokasiStore.getByCodeApi("IGD");
+      if (responseLokasi && responseLokasi.payload) {
+        lokasiUuid = responseLokasi.payload.uuid;
+      } else {
+        toast.add({
+          severity: "error",
+          summary: "Lokasi IGD tidak ada di datamaster lokasi",
+          detail: "",
+          life: 3000,
+        });
+        return;
+      }
+
       response = await rekamMedisStore.createRekamMedis({
         noRm: openedPatientData.value.noRm,
         noReg: openedPatientData.value.noReg,
         date: formatDate(new Date(), true),
         pelayanan: "igd",
-        // FIXME Statis UUID
-        lokasiUuid: "0194f3e1-1b65-709e-8b57-e7eecb4c2a10",
+        lokasiUuid: lokasiUuid,
         noPelayanan: openedPatientData.value.noPelayanan,
         paymentMethod: openedPatientData.value.paymentMethod,
       });
@@ -260,14 +281,12 @@ const fetchPraktisiData = async () => {
   storeUtils.setLoading(true);
   try {
     let isDoctor = true;
-    let isNonDoctor = false;
 
     const response = await praktisiStore.getApi({
       page: praktisiProperties.value.page,
       limit: praktisiProperties.value.page_size,
       name: searchDoctor.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
+      isDoctor: isDoctor,
     });
 
     if (response && response.payload) {

@@ -12,34 +12,41 @@ import {
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
   baseInstanceInventory,
+  baseInstanceAntrian,
 } from "./Api";
 import { app } from "@/main";
+import { useAuthStore } from "@/stores/auth";
+import axios from "axios";
 
 const cekHost = (baseUrl: unknown, nextUrl: string) => {
   const url = new URL(baseUrl as string);
-  const tempUrl = `:${url.port}${url.pathname}`;
-  let newUrl = nextUrl;
+  let tempUrl = `:${url.port}${url.pathname}`;
   const currentHostUrl = window.location.hostname;
+  const baseLocation =
+    window.location.protocol + "//" + window.location.hostname;
+
   if (
     !currentHostUrl.includes("localhost") &&
     !currentHostUrl.includes("adameds")
   ) {
-    newUrl =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      tempUrl +
-      nextUrl;
+    if (tempUrl.endsWith("/") && nextUrl.startsWith("/")) {
+      tempUrl = tempUrl.slice(0, -1);
+    }
+    return baseLocation + tempUrl + nextUrl;
   }
-  return newUrl;
+
+  return nextUrl;
 };
 
 const errorApiHandler = (error: any) => {
   let tempSummary = ``;
   let tempDetail = ``;
+  const authStore = useAuthStore();
+  // NOTE Belum refresh token
   if (error.response.data.message) {
     if (
       error.response.data.message == "token tidak valid!" ||
+      error.response.data.message == "jwt expired" ||
       ((error.response.data.message == "Authentikasi gagal" ||
         error.response.data.message == "Authorization gagal" ||
         error.response.data.message == "jwt expired") &&
@@ -52,8 +59,31 @@ const errorApiHandler = (error: any) => {
       localStorage.removeItem("permission");
       localStorage.removeItem("user");
       localStorage.removeItem("faskes");
+      localStorage.removeItem("faskes_profile");
       window.location.reload();
     }
+    // NOTE Refresh Token
+    // if (
+    //   error.response.data.message == "token tidak valid!" ||
+    //   ((error.response.data.message == "Authentikasi gagal" ||
+    //     error.response.data.message == "Authorization gagal" ||
+    //     error.response.data.message == "jwt expired") &&
+    //     (error.response.data.errors[0].type.toLowerCase() == "invalid token" ||
+    //       error.response.data.errors[0].type == "Invalid signature" ||
+    //       (error.response.data.errors[0].type == "auth" &&
+    //         error.response.data.errors[0].message == "jwt expired")))
+    // ) {
+    //   authStore.refreshTokenApi();
+    //   return;
+    // }
+    // if (error.response.data.message == "Refresh token telah kadaluarsa" || error.response.data.errors[0].type == "expired") {
+    //   localStorage.removeItem("access_token");
+    //   localStorage.removeItem("permission");
+    //   localStorage.removeItem("user");
+    //   localStorage.removeItem("faskes");
+    //   localStorage.removeItem("faskes_profile");
+    //   window.location.reload();
+    // }
     tempSummary = error.response.data.message;
     error.response.data.errors?.forEach((errorMsg: any, index: number) => {
       if (error.response.data.errors.length == index + 1) {
@@ -164,6 +194,7 @@ const apiAuthGet = async (url: string, data: object) => {
   }
 };
 const apiAuthPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_AUTH, url);
   try {
     let response = await authInstance.put(url, data);
     return response.data;
@@ -229,7 +260,6 @@ const apiDatamasterPost = async (url: string, data: object) => {
       summary: response.data.message,
       life: 3000,
     });
-    console.log("response", response);
     return response;
   } catch (error) {
     errorApiHandler(error);
@@ -436,6 +466,31 @@ const apiAdmisiDelete = async (url: string, data: object) => {
     return response.data;
   } catch (error) {
     errorApiHandler(error);
+  }
+};
+export const apiAdmisiDownload = async (url: string) => {
+  const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
+  
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("Token tidak ditemukan, silakan login ulang");
+      return;
+    }
+
+    const response = await axios.get(fullUrl, {
+      responseType: "blob",
+      headers: {
+        'Authorization': token,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    });
+    
+    return response;
+
+  } catch (error) {
+    console.error("Error di apiAdmisiDownload:", error);
+    throw error;
   }
 };
 
@@ -700,6 +755,57 @@ const apiInventoryDelete = async (url: string, data: object) => {
   }
 };
 
+//Antrian
+const apiAntrianGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianGetDatamaster = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
+  try {
+    let response = await baseInstanceDatamaster.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -751,4 +857,9 @@ export {
   apiInventoryPut,
   apiInventoryDelete,
   apiRekamMedisDelete,
+  apiAntrianGet,
+  apiAntrianDelete,
+  apiAntrianPost,
+  apiAntrianPut,
+  apiAntrianGetDatamaster,
 };

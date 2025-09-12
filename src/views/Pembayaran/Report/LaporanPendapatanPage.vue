@@ -2,17 +2,32 @@
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
-import { onMounted, ref } from "vue";
+import { onMounted, ref , watch } from "vue";
 import TotalLaporan from "../layout/TotalLaporan.vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { useReportLaporanPendapatanStore } from "@/stores/pembayaran/laporanPendapatan";
+import { dateToEpoch, epochToDate, formatPrice } from "@/utils/Helpers";
+import { utilsStore } from "@/stores/utils";
 import type { MenuItem } from "primevue/menuitem";
+import { downloadExportExcelPendapatan } from '@/utils/exportexcelpayment';
 
 const route = useRoute();
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([{}]);
+const laporanPendapatanStore = useReportLaporanPendapatanStore();
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+const today = new Date();
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(today.getDate() - 7);
+const startDateFilter = ref<Date>(sevenDaysAgo);
+const endDateFilter = ref<Date>(today);
+
+const dataPendapatan = ref({
+  totalPendapatan: 0,
+  totalTunai: 0,
+  totalDebit: 0,
+  totalKredit: 0,
+});
 
 const updatePageType = (path: string) => {
   dataBreadCrumb.value = [];
@@ -26,11 +41,68 @@ const updatePageType = (path: string) => {
   //   console.log(pageType.value);
 };
 
+const fetchLaporanPendapatan = async () => {
+  try {
+    const startDate = new Date(startDateFilter.value);
+    startDate.setHours(0, 0, 0, 0); 
+
+    const endDate = new Date(endDateFilter.value);
+    endDate.setHours(23, 59, 59, 999); 
+
+    const response = await laporanPendapatanStore.getApi(
+      dateToEpoch(startDate), 
+      dateToEpoch(endDate)    
+    );
+
+    const plainResponse = JSON.parse(JSON.stringify(response));
+
+    if (plainResponse && plainResponse.payload) {
+      dataPendapatan.value.totalPendapatan = plainResponse.payload.totalPendapatan || 0;
+      dataPendapatan.value.totalTunai = plainResponse.payload.totalTunai || 0;
+      dataPendapatan.value.totalDebit = plainResponse.payload.totalDebit || 0;
+      dataPendapatan.value.totalKredit = plainResponse.payload.totalKredit || 0;
+    } else {
+      dataPendapatan.value = { totalPendapatan: 0, totalTunai: 0, totalDebit: 0, totalKredit: 0 };
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data pendapatan:", error);
+    dataPendapatan.value = { totalPendapatan: 0, totalTunai: 0, totalDebit: 0, totalKredit: 0 };
+  }
+};
+
+let dateChangeTimeout: ReturnType<typeof setTimeout> | null = null;
+watch([startDateFilter, endDateFilter], () => {
+  if (dateChangeTimeout) clearTimeout(dateChangeTimeout);
+  dateChangeTimeout = setTimeout(() => {
+    fetchLaporanPendapatan();
+  }, 500); // Tunggu 500ms setelah user selesai mengubah tanggal
+});
+
+
+const handleExport = () => {
+  downloadExportExcelPendapatan(
+        dataPendapatan.value,
+        startDateFilter.value,
+        endDateFilter.value
+      );
+};
+
+
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
 });
 onMounted(() => {
   updatePageType(route.path);
+});
+
+onMounted(() => {
+  updatePageType(route.path);
+  fetchLaporanPendapatan(); 
+});
+
+
+watch([startDateFilter, endDateFilter], () => {
+  fetchLaporanPendapatan();
 });
 </script>
 
@@ -56,66 +128,60 @@ onMounted(() => {
         <div class="flex items-start">
           <CustomDatePicker
             v-model="startDateFilter"
-            label=""
+            label="Tanggal"
             class="w-[150px]"
+            :maxDate="endDateFilter" 
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
             v-model="endDateFilter"
             :showLabel="false"
             class="mt-auto w-[150px]"
+            :minDate="startDateFilter"
+            :maxDate="today"
           />
         </div>
       </div>
     </template>
 
     <template #content>
-      <hr />
+  <hr />
 
-      <div class="grid grid-cols-2 gap-5 py-5">
-        <TotalLaporan
-          backgroundIcon="UangIcon"
-          titleCard="Total Pendapatan"
-          :totalTest="10000000"
-          satuanCard="Rp"
-          bottomIcon="UangIcon"
-        />
-        <TotalLaporan
-          backgroundIcon="PayMoneyIcon"
-          titleCard="Total Tunai"
-          :totalTest="10000000"
-          satuanCard="Rp"
-          bottomIcon="PayMoneyIcon"
-        />
-        <TotalLaporan
-          backgroundIcon="WalletIcon"
-          titleCard="Total Debit"
-          :totalTest="10000000"
-          satuanCard="Rp"
-          bottomIcon="WalletIcon"
-        />
-        <TotalLaporan
-          backgroundIcon="CreditCardIcon"
-          titleCard="Total Kredit (Asuransi/Piutang)"
-          :totalTest="10000000"
-          satuanCard="Rp"
-          bottomIcon="CreditCardIcon"
-        />
-      </div>
-    </template>
+  <div class="grid grid-cols-2 gap-5 py-5">
+    <TotalLaporan
+      backgroundIcon="UangIcon"
+      titleCard="Total Pendapatan"
+      :totalTest="dataPendapatan.totalPendapatan" satuanCard="Rp"
+      bottomIcon="UangIcon"
+    />
+    <TotalLaporan
+      backgroundIcon="PayMoneyIcon"
+      titleCard="Total Tunai"
+      :totalTest="dataPendapatan.totalTunai" satuanCard="Rp"
+      bottomIcon="PayMoneyIcon"
+    />
+    <TotalLaporan
+      backgroundIcon="WalletIcon"
+      titleCard="Total Debit"
+      :totalTest="dataPendapatan.totalDebit" satuanCard="Rp"
+      bottomIcon="WalletIcon"
+    />
+    <TotalLaporan
+      backgroundIcon="CreditCardIcon"
+      titleCard="Total Kredit (Asuransi/Piutang)"
+      :totalTest="dataPendapatan.totalKredit" satuanCard="Rp"
+      bottomIcon="CreditCardIcon"
+    />
+  </div>
+</template>
     <template #footer>
       <hr />
       <div class="flex items-center justify-between pt-2">
-        <CustomButton label="Export" icon="FileImportIcon" />
-         <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+        <CustomButton 
+          label="Export" 
+          icon="FileImportIcon" 
+          @click="handleExport" 
+        />
       </div>
     </template>
   </Card>

@@ -4,9 +4,11 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import CardDokter from "@/components/Antrian/CardDokter.vue";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import Stethoscop from "@/components/icons/Stethoscop.vue";
 import CardJam from "@/components/Antrian/CardJam.vue";
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 
 const router = useRouter();
 
@@ -15,6 +17,17 @@ const handleHome = () => {
 };
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
+};
+
+const selectedType = ref<string | null>(null);
+const isDisabled = computed(() => !selectedType.value);
+const selectType = (type: string) => {
+  selectedType.value = type;
+};
+
+const selectedTime = ref<string | null>(null);
+const selectTime = (time: string) => {
+  selectedTime.value = time;
 };
 
 const props = defineProps({
@@ -54,58 +67,25 @@ const cardJamMalam = ref({
 </script>
 
 <template #body>
-  <div class="bg-adameds-75">
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
-    <div class="relative items-center justify-center mb-4 mt-14 mx-36">
-      <div class="overflow-hidden rounded-3xl">
+    <div class="flex relative flex-1 justify-center items-center mx-36">
+      <div
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
+      >
         <div
           class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
         >
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-48 h-10 bg-white shadow-md rounded-xl"
+              class="flex justify-between w-48 h-10 bg-white rounded-xl shadow-md"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
                 <!-- Logo Container -->
                 <div
@@ -123,14 +103,14 @@ const cardJamMalam = ref({
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               <Stethoscop class="text-adameds-300" :size="28" />
               &nbsp Poli Umum
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Kembali"
                 outlined
@@ -143,9 +123,9 @@ const cardJamMalam = ref({
           </div>
 
           <div
-            class="grid grid-cols-[1fr_1fr_1fr_1fr_min-content_1fr] my-5 mx-16"
+            class="grid grid-cols-[1fr_min-content_340px] w-full my-5 mx-16 items-start"
           >
-            <div class="pl-6 w-[800px] col-span-4">
+            <div class="pr-6 pl-6 w-full">
               <div class="justify-start pl-1 text-lg font-bold">
                 List Dokter
               </div>
@@ -157,58 +137,68 @@ const cardJamMalam = ref({
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjang"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('1')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjang"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('2')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjangSekali"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('3')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNamaPanjangSekali"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('4')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('5')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('6')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('7')"
                   />
                 </div>
                 <div>
                   <cardDokter
                     :cardDokter="cardDokterNama"
-                    class="w-[380px] transition-transform duration-300 hover:scale-95"
+                    class="w-full transition-transform duration-300 hover:scale-95"
+                    @click="selectType('8')"
                   />
                 </div>
               </div>
             </div>
 
+            <!-- Divider vertikal sesuai Figma -->
             <div
-              class="mr-12 border-2 border-adameds-300 h-[330px] mt-16"
+              class="mx-8 w-[4px] bg-adameds-300 rounded self-stretch mt-16"
             ></div>
 
+            <!-- Panel Jam Praktek (selalu tampil) -->
             <div class="pr-6">
               <div>
                 <div class="justify-start pl-1 text-lg font-bold">
@@ -218,25 +208,81 @@ const cardJamMalam = ref({
                 <div class="justify-start pb-4 pl-1 text-sm text-adameds-300">
                   Silahkan Pilih Jam Praktek
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                  <div>
-                    <CardJam
-                      :cardJam="cardJamPagi"
-                      class="w-[200px] transition-transform duration-300 hover:scale-95"
+
+                <!-- Daftar Jam sesuai Figma -->
+                <div class="grid grid-cols-1 gap-4 w-[280px]">
+                  <!-- Pagi -->
+                  <button
+                    type="button"
+                    @click="selectTime('pagi')"
+                    :class="[
+                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
+                      selectedTime === 'pagi'
+                        ? 'bg-adameds-100 text-white'
+                        : 'bg-white text-adameds-300',
+                    ]"
+                  >
+                    <span class="font-extrabold text-[16px]">{{
+                      cardJamPagi.jam
+                    }}</span>
+                    <CheckCircleIcon
+                      v-if="selectedTime === 'pagi'"
+                      :size="20"
+                      class="absolute right-4 text-white"
                     />
-                  </div>
-                  <div>
-                    <CardJam
-                      :cardJam="cardJamSiang"
-                      class="w-[200px] transition-transform duration-300 hover:scale-95"
+                  </button>
+
+                  <!-- Siang -->
+                  <button
+                    type="button"
+                    @click="selectTime('siang')"
+                    :class="[
+                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
+                      selectedTime === 'siang'
+                        ? 'bg-adameds-100 text-white'
+                        : 'bg-white text-adameds-300',
+                    ]"
+                  >
+                    <span class="font-extrabold text-[16px]">{{
+                      cardJamSiang.jam
+                    }}</span>
+                    <CheckCircleIcon
+                      v-if="selectedTime === 'siang'"
+                      :size="20"
+                      class="absolute right-4 text-white"
                     />
-                  </div>
-                  <div>
-                    <CardJam
-                      :cardJam="cardJamMalam"
-                      class="w-[200px] transition-transform duration-300 hover:scale-95"
+                  </button>
+
+                  <!-- Malam -->
+                  <button
+                    type="button"
+                    @click="selectTime('malam')"
+                    :class="[
+                      'relative flex items-center justify-center h-[60px] w-[280px] rounded-2xl shadow-md transition-transform duration-300 hover:scale-95',
+                      selectedTime === 'malam'
+                        ? 'bg-adameds-100 text-white'
+                        : 'bg-white text-adameds-300',
+                    ]"
+                  >
+                    <span class="font-extrabold text-[16px]">{{
+                      cardJamMalam.jam
+                    }}</span>
+                    <CheckCircleIcon
+                      v-if="selectedTime === 'malam'"
+                      :size="20"
+                      class="absolute right-4 text-white"
                     />
-                  </div>
+                  </button>
+
+                  <!-- Tombol Lanjutkan -->
+                  <CustomButton
+                    v-show="selectedTime"
+                    label="Lanjutkan"
+                    class="w-[280px] mt-2"
+                    backgroundColor="bg-adameds-100"
+                    textColor="text-white"
+                    @click="handleBerhasil"
+                  />
                 </div>
               </div>
             </div>
@@ -244,5 +290,6 @@ const cardJamMalam = ref({
         </div>
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>

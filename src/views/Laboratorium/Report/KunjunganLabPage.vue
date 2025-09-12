@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import * as XLSX from "xlsx-js-style";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -10,101 +10,235 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import { useKunjungan } from "@/stores/laporanLaboratorium/laporanKunjungan";
+import { utilsStore } from "@/stores/utils";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
-const reportType = ref("");
-const reportData = ref([
-  {
-    noRM: "00-00-00",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "POLI Anak",
-    gender: "L",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-  {
-    noRM: "00-00-01",
-    noReg: "REG2407010049",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctorData: {
-      doctor: "dr. Spesialis Sp. A",
-      schedule: "08:00-10:00",
-    },
-    tanggal_daftar: "10-10-2024 09:00",
-    tanggal_jadwal: "10-10-2024 10:00",
-    tanggal_checkin: "10-10-2024 09:30",
-    no_SEP: "",
-    insurance_account_name: "TUNAI",
-    polyclinic: "-",
-    gender: "P",
-    phone: "082112341234",
-    age_year: 10,
-    age_month: 3,
-    age_day: 5,
-    no_antrian: "1",
-    new_patient: true,
-    platform: "ADMISI",
-    status_rj: "1",
-    status_ri: "1",
-    is_newborn: false,
-  },
-]);
-const expandedRows = ref();
-const pageType = ref("");
-const route = useRoute();
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const jenisPelayanan = ref();
-const optionJenisPelayanan = ref([
-  { label: "Semua", value: "0" },
-  { label: "Rawat Jalan", value: "1" },
-  { label: "Rawat Inap", value: "2" },
-  { label: "IGD", value: "3" },
-  { label: "APS", value: "4" },
-]);
-
-const emits = defineEmits(["update:rows", "update:current-page"]);
-const handleRowsUpdate = (rows: number) => {
-  console.log("Rows updated:", rows);
-};
-const handlePageUpdate = (page: number) => {
-  console.log("Page updated:", page);
-};
-
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[3] ?? "";
-  reportType.value = pageType.value;
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
+const searchQuery = ref<string>("");
+const kunjunganPayload = ref<any[]>([]);
+const UseUtilsStore = utilsStore();
+const kunjunganStore = useKunjungan();
+const kunjunganProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
+const expandedRows = ref<any[]>([]);
+
+const jenisPelayanan = ref<string>("");
+const optionJenisPelayanan = ref([
+  { label: "Semua", value: "" },
+  { label: "Rawat Jalan", value: "rajal" },
+  { label: "Rawat Inap", value: "ranap" },
+  { label: "IGD", value: "igd" },
+  { label: "APS", value: "aps" },
+]);
+
+const fetchKunjungan = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params: any = {
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+      jenisPelayanan: jenisPelayanan.value,
+      search: searchQuery.value,
+      page: kunjunganProperties.value.page,
+      pageSize: kunjunganProperties.value.page_size,
+    };
+    const response = await kunjunganStore.getApi(params);
+
+    if (response && response.payload) {
+      kunjunganProperties.value.total = response.payload.pagination.total;
+      kunjunganPayload.value = response.payload.data;
+    } else {
+      kunjunganPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    kunjunganPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+const hasData = computed(
+  () => kunjunganPayload.value && kunjunganPayload.value.length > 0
+);
+
+const cloneData = (data: any) => {
+  try {
+    return JSON.parse(JSON.stringify(data));
+  } catch {
+    return {};
+  }
+};
+
+const searchData = () => {
+  searchQuery.value;
+  dateToEpoch(startDateFilter.value);
+  dateToEpoch(endDateFilter.value);
+  jenisPelayanan.value;
+  fetchKunjungan();
+};
+
+const handlePage = (event: any) => {
+  kunjunganProperties.value.page = event.page + 1;
+  kunjunganProperties.value.page_size = event.rows;
+  fetchKunjungan();
+};
+
+const resetFilters = () => {
+  startDateFilter.value = new Date();
+  endDateFilter.value = new Date();
+  searchQuery.value = "";
+  jenisPelayanan.value = "";
+  kunjunganProperties.value.page = 1;
+  kunjunganProperties.value.page_size = 10;
+  fetchKunjungan();
+};
+
+const downloadExcel = () => {
+  const workbook = XLSX.utils.book_new();
+
+  const title = [["LAPORAN KUNJUNGAN LABORATORIUM"]];
+  const period = [
+    [
+      `PERIODE: ${epochToDate(
+        dateToEpoch(startDateFilter.value),
+        "date"
+      )} S/D ${epochToDate(dateToEpoch(endDateFilter.value), "date")}`,
+    ],
+  ];
+
+  const header = [
+    "No",
+    "Tanggal",
+    "No Registrasi",
+    "No RM",
+    "Nama Pasien",
+    "Dokter",
+    "Petugas",
+    "Pelayanan",
+    "Unit Asal",
+    "Metode Pembayaran",
+    "Pemeriksaan",
+    "Biaya",
+  ];
+
+  const data = kunjunganPayload.value.flatMap((item, index) =>
+    item.orderLabPemeriksaan.map((pemeriksaan: any, i: number) => [
+      i === 0 ? index + 1 : "",
+      i === 0 ? epochToDate(parseInt(item.tglOrder) / 1000, "date") : "",
+      i === 0 ? item.noreg : "",
+      i === 0 ? item.noRm : "",
+      i === 0 ? item.patient?.name ?? "-" : "",
+      i === 0 ? item.dokterPengirim?.pegawai?.name ?? "-" : "",
+      i === 0 ? item.petugasOrder ?? "-" : "",
+      i === 0 ? item.pelayanan ?? "-" : "",
+      i === 0 ? item.lokasi?.name ?? "-" : "",
+      i === 0 ? (item.paymentMethod === 1 ? "Tunai" : "Asuransi") : "",
+      pemeriksaan.tarifLab?.name ?? "-",
+      pemeriksaan.tarifLab?.grandTotal ?? 0,
+    ])
+  );
+
+  const worksheetData = [...title, ...period, [], header, ...data];
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  worksheet["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } },
+  ];
+
+  const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+
+  for (let R = 0; R <= range.e.r; ++R) {
+    for (let C = 0; C <= range.e.c; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = worksheet[cellAddress];
+      if (!cell) continue;
+
+      const isTitle = R === 0;
+      const isPeriod = R === 1;
+      const isHeader = R === 3;
+      const isBody = R >= 4;
+
+      // Default style
+      cell.s = {
+        font: {
+          name: "Calibri",
+          sz: isTitle || isPeriod ? 14 : isHeader ? 12 : 11,
+          bold: isTitle || isPeriod || isHeader,
+        },
+        alignment: {
+          vertical: "center",
+          horizontal:
+            isTitle || isPeriod
+              ? "center"
+              : isHeader
+              ? "center"
+              : C === 11
+              ? "right"
+              : "left",
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } },
+        },
+      };
+
+      // Background untuk header
+      if (isHeader) {
+        cell.s.fill = {
+          fill: { fgColor: { rgb: "000000" } },
+        };
+        cell.s.font.color = { rgb: "FFFFFF" };
+      }
+
+      // Alignment untuk kolom Biaya
+      if (isBody && C === 11) {
+        cell.s.alignment = { horizontal: "right", vertical: "center" };
+        cell.z = "#,##0";
+      }
+    }
+  }
+
+  worksheet["!cols"] = [
+    { wch: 5 }, // No
+    { wch: 15 }, // Tanggal
+    { wch: 20 }, // No Registrasi
+    { wch: 10 }, // No RM
+    { wch: 25 }, // Nama Pasien
+    { wch: 25 }, // Dokter
+    { wch: 25 }, // Petugas
+    { wch: 15 }, // Pelayanan
+    { wch: 20 }, // Unit Asal
+    { wch: 20 }, // Metode Pembayaran
+    { wch: 30 }, // Pemeriksaan
+    { wch: 15 }, // Biaya
+  ];
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Kunjungan");
+  XLSX.writeFile(workbook, "LAPORAN KUNJUNGAN LABORATORIUM.xlsx");
+};
 
 onMounted(() => {
-  updatePageType(route.path);
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
+  fetchKunjungan();
 });
 </script>
 
@@ -120,7 +254,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchKunjungan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
@@ -146,6 +284,7 @@ onMounted(() => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama / No. RM / No. Reg"
@@ -154,23 +293,25 @@ onMounted(() => {
               <CustomSelect
                 v-model="jenisPelayanan"
                 label="Jenis Pelayanan"
+                place-holder="Semua"
                 class="mr-5 w-[250px]"
                 optionLabel="label"
                 optionValue="value"
                 :options="optionJenisPelayanan"
               />
               <CustomDatePicker
-                v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                v-model="startDateFilter"
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
-                v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                v-model="endDateFilter"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
@@ -203,10 +344,13 @@ onMounted(() => {
       </template>
 
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
-          v-if="reportData.length"
-          v-model:expandedRows="expandedRows"
-          :value="reportData"
+          :value="kunjunganPayload"
+          :key="kunjunganPayload.length"
+          responsiveLayout="scroll"
+          dataKey="id"
+          :expandedRows="expandedRows"
           scrollable
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
@@ -219,7 +363,7 @@ onMounted(() => {
           />
           <!-- No -->
           <Column
-            field="no"
+            field="id"
             header="No."
             header-class="text-black bg-adameds-50"
             style="width: 40px"
@@ -238,7 +382,14 @@ onMounted(() => {
           >
             <template #body="slotProps">
               <div class="text-center">
-                <div>{{ slotProps.data.tanggal_daftar.split(" ")[0] }}</div>
+                <div>
+                  {{
+                    epochToDate(
+                      parseInt(slotProps.data.tglOrder) / 1000,
+                      "date"
+                    )
+                  }}
+                </div>
               </div>
             </template>
           </Column>
@@ -246,41 +397,83 @@ onMounted(() => {
             field="noReg"
             header="No. Registrasi"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noreg }}</div>
+              </div>
+            </template>
+          </Column>
           <Column
             field="noRM"
             header="No. RM"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                <div>{{ slotProps.data.noRm }}</div>
+              </div>
+            </template>
+          </Column>
           <Column
             field="name"
             header="Nama Pasien"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.patient.name }}
+              </div>
+            </template>
+          </Column>
           <Column
-            field="polyclinic"
+            field="pelayanan"
             header="Jenis Pelayanan"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.pelayanan || "-" }}
+              </div>
+            </template>
+          </Column>
           <Column
-            field="unitAsal"
+            field="lokasi.name"
             header="Unit Asal"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.lokasi.name || "-" }}
+              </div>
+            </template>
+          </Column>
           <Column
-            field="insurance_account_name"
+            field="paymentMethod"
             header="Cara Bayar"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-SM">
+                {{ slotProps.data.paymentMethod === 1 ? "Tunai" : "Asuransi" }}
+              </div>
+            </template>
+          </Column>
           <Column
             field="total"
             header="Total"
             header-class="text-black bg-adameds-50"
-          ></Column>
+          >
+            <template #body="slotProps">
+              <div class="text-right text-SM">
+                {{ formatPrice(slotProps.data.grandTotalLab) }}
+              </div>
+            </template>
+          </Column>
           <template #expansion="slotProps">
             <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
               <DataTable
-                :value="[slotProps.data]"
+                :value="[cloneData(slotProps.data)]"
                 class="overflow-hidden rounded-lg"
                 :pt="{ headerRow: 'text-SM' }"
               >
@@ -289,9 +482,9 @@ onMounted(() => {
                   header="Dokter"
                   header-class=" bg-adameds-50"
                 >
-                  <template #body="slotProps">
+                  <template #body="{ data }">
                     <div>
-                      {{ slotProps.data.doctorData.doctor }}
+                      {{ data.dokterPengirim?.pegawai?.name ?? "-" }}
                     </div>
                   </template>
                 </Column>
@@ -300,42 +493,77 @@ onMounted(() => {
                   header="Petugas"
                   header-class=" bg-adameds-50"
                 >
-                  <template #body="slotProps">
-                    <div></div>
+                  <template #body="{ data }">
+                    <div>{{ data.petugasOrder ?? "-" }}</div>
                   </template>
                 </Column>
                 <Column
                   field="tarifPemeriksaan"
                   header="Tarif Pemeriksaan"
                   header-class="bg-adameds-50"
-                ></Column>
+                >
+                  <template #body="{ data }">
+                    <div
+                      v-if="
+                        data.orderLabPemeriksaan &&
+                        data.orderLabPemeriksaan.length > 0
+                      "
+                    >
+                      <div
+                        v-for="(item, index) in data.orderLabPemeriksaan"
+                        :key="index"
+                        class="text-SM"
+                      >
+                        <span class="mt-2">{{
+                          item.tarifLab?.name || "-"
+                        }}</span>
+                      </div>
+                    </div>
+                    <div v-else>-</div>
+                  </template>
+                </Column>
                 <Column
                   field="hargaPemeriksaan"
                   header="Harga Pemeriksaan"
                   header-class=" bg-adameds-50"
-                ></Column>
+                >
+                  <template #body="{ data }">
+                    <div
+                      v-if="
+                        data.orderLabPemeriksaan &&
+                        data.orderLabPemeriksaan.length > 0
+                      "
+                    >
+                      <div
+                        v-for="(item, index) in data.orderLabPemeriksaan"
+                        :key="index"
+                        class="text-SM"
+                      >
+                        {{ formatPrice(item.tarifLab?.grandTotal) || "-" }}
+                      </div>
+                    </div>
+                    <div v-else>-</div>
+                  </template>
+                </Column>
               </DataTable>
             </div>
           </template>
         </DataTable>
-
-        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-between">
           <CustomButton
-            @click="() => {}"
+            @click="downloadExcel"
             icon="PhPrinter"
             label="Cetak"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomPaginator
-            :rows="10"
-            :totalRecords="reportData.length"
+            :rows="kunjunganProperties.page_size"
+            :totalRecords="kunjunganProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>

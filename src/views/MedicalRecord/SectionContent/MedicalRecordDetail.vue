@@ -29,10 +29,12 @@ import FormOrderFisio from "@/components/RekamMedis/OrderFisio/FormOrderFisio.vu
 import FormPersetujuanPasien from "@/components/RekamMedis/PersetujuanPasien/FormPersetujuanPasien.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const roomPharmacyStore = useRoomPharmacyStore();
+const rekamMedisStore = useRekamMedisStore();
 
 const emit = defineEmits(["editAsesmen", "editAsesmenMata"]);
 
@@ -55,6 +57,10 @@ const props = defineProps({
   rmDate: {
     type: String,
     default: "",
+  },
+  patientData: {
+    type: Object,
+    required: true,
   },
 });
 
@@ -120,9 +126,22 @@ const getListOrderAlkes = async () => {
   }
 };
 
+const resultsPersetujan = ref<any[]>([]);
+const getListPersetujuan = async () => {
+  if (props.rmUuid && props.rmDate) {
+    const response = await rekamMedisStore.getAllInformConsent({
+      rekamMedisUuid: props.rmUuid,
+    });
+    if (response && response.payload) {
+      resultsPersetujan.value = response.payload;
+    }
+  }
+};
+
 onMounted(async () => {
   try {
     storeUtils.setLoading(true);
+    await getListPersetujuan();
     await getListOrderAlkes();
   } catch (error) {
     console.error(error);
@@ -274,7 +293,14 @@ onMounted(async () => {
       />
       <OrderLab :ref="refs.orderLab" method="detail" />
       <FormOrderFisio :ref="refs.orderFisio" method="detail" />
-      <FormPersetujuanPasien :ref="refs.persetujuanPasien" method="detail" />
+      <FormPersetujuanPasien
+        v-if="resultsPersetujan.length"
+        :ref="refs.persetujuanPasien"
+        :rmUuid="rmUuid"
+        :patientData="patientData"
+        :listPersetujuanPasien="resultsPersetujan"
+        method="detail"
+      />
     </div>
     <div class="flex flex-col mx-[10px]">
       <CustomButton

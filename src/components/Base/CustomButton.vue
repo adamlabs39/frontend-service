@@ -76,7 +76,7 @@ const emit = defineEmits(["click"]);
       disabled && !outlined ? 'bg-grey-200 text-grey-400 border-none' : '',
     ]"
     :fluid="full"
-    @click="emit('click')"
+    @click="(event) => emit('click', event)"
     :pt:label:class="`font-semibold ${size == 'small' ? 'text-XS' : 'text-normal'}`"
   >
     <template #default>

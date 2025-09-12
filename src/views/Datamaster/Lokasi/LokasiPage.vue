@@ -33,11 +33,9 @@ const fetchLokasiData = async () => {
       lokasiProperties.value.page_size,
       searchQuery.value
     );
-    console.log("API Response:", response);
 
     if (response && response.payload) {
-      console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
+      lokasiProperties.value.total = response.properties.totalItem;
       lokasiPayload.value = response.payload;
     } else {
       lokasiPayload.value = [];
@@ -252,6 +250,7 @@ const downloadFormatExcel = async () => {
     // Header Row
     data.push({
       No: "No",
+      IHS: "IHS Number*",
       Kode: "Kode Lokasi*",
       Nama: "Nama Lokasi*",
       Description: "Deskripsi*",
@@ -262,22 +261,43 @@ const downloadFormatExcel = async () => {
       Status: "Status Operasional",
       Kelas: "Kelas",
       PartOf: "Part Of",
+      StatusPoli: "Status Poli",
+      KodeAntrianPoli: "Kode Antrian Poli",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
 
     data.push({
       No: "1",
+      IHS: "12345",
       Kode: "ANA-001",
       Nama: "Poli Umum",
       Description: "Poli Umum AVC",
       Phone: "(032) 888 987",
-      email: "polianak@gmail.com",
-      Url: "https://polianak.com",
+      email: "poliumum@gmail.com",
+      Url: "https://poliumum.com",
+      Tipe: "Site",
+      Status: "Occupied",
+      Kelas: "Kelas VVIP",
+      PartOf: "",
+      StatusPoli: "FALSE",
+      KodeAntrianPoli: "",
+    });
+    data.push({
+      No: "2",
+      IHS: "12345",
+      Kode: "ANA-002",
+      Nama: "Ruang Poli Umum",
+      Description: "Poli Gigi AVC",
+      Phone: "(032) 888 990",
+      email: "ruangpoliumum@gmail.com",
+      Url: "https://ruangpoliumum.com",
       Tipe: "Building",
       Status: "Occupied",
       Kelas: "Kelas VVIP",
-      PartOf: "-",
+      PartOf: "Poli Umum",
+      StatusPoli: "TRUE",
+      KodeAntrianPoli: "A01",
     });
 
     // Create Workbook and Worksheet
@@ -478,6 +498,7 @@ const handleFileUpload = async (file: File) => {
         @export="downloadExportExcel"
         @import="handleFileUpload"
         @download="downloadFormatExcel"
+        noPagination
       />
     </template>
   </Card>

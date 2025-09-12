@@ -159,14 +159,14 @@ watch(
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
         <!-- Status Switch -->
-        <CustomSwitch
+        <!-- <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
           class="col-span-2"
-        />
+        /> -->
       </div>
       <div v-else class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Referensi Sistem SATUSEHAT" :value="system" />
@@ -174,7 +174,7 @@ watch(
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Nama Kategori" :value="name" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status">
+        <!-- <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
               :label="status ? 'AKTIF' : 'NON-AKTIF'"
@@ -185,7 +185,7 @@ watch(
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
           </template>
-        </CustomInfoRow>
+        </CustomInfoRow> -->
       </div>
     </template>
 

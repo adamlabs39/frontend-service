@@ -5,7 +5,7 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import { useIgdLaporanStore } from "@/stores/igd/laporan";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { utilsStore } from "@/stores/utils";
-import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import HeaderFilter from "../Layout/HeaderFilter.vue";
 import KunjunganIgd from "./KunjunganIgd.vue";
@@ -22,7 +22,7 @@ const pageType = ref("");
 // Store
 const praktisiStore = usePraktisiStore();
 const IgdLaporanStore = useIgdLaporanStore();
-const admisiLaporanStore = useAdmisiIGDStore();
+const admisiLaporanStore = useAdmisiReportStore();
 const UseUtilsStore = utilsStore();
 const reportType = ref("");
 const reportData = ref<any[]>([]);

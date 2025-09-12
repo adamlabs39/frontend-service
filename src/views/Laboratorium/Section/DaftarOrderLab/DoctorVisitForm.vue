@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, computed, ref, type PropType, onUpdated } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -9,6 +9,12 @@ import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import * as yup from "yup";
+import { toTypedSchema } from "@vee-validate/yup";
+import { useForm } from "vee-validate";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { usePenjaminStore } from "@/stores/datamaster/penjamin";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 const props = defineProps({
   pageType: {
@@ -28,41 +34,125 @@ const props = defineProps({
     required: true,
   },
 });
+
 const status = ref(false);
-
+const praktisiStore = usePraktisiStore();
 const storeUtils = utilsStore();
+const penjaminStore = usePenjaminStore();
+const lokasiStore = useLokasiStore();
+const listDpjp = ref<any[]>([]);
+const listPenjamin = ref<any[]>([]);
+const listLokasi = ref<any[]>([]);
 
-onMounted(() => {
-  if (props.formType == "Daftar Bayi Baru Lahir") {
-    babyBox.value = true;
-  }
-  if (storeUtils.selectedRoom) {
-    selectedRoomCategory.value = storeUtils.selectedRoom.roomCategory;
-    selectedRoomClass.value = storeUtils.selectedRoom.roomClass;
-    selectedRoom.value = storeUtils.selectedRoom.room;
-    selectedBed.value.push(`${storeUtils.selectedRoom.bed}`);
-    storeUtils.setSelectedRoom(null);
-  }
-});
+const fetchUtils = async () => {
+  try {
+    const responseDpjp = await praktisiStore.getAktifApi();
+    if (responseDpjp && responseDpjp.payload) {
+      listDpjp.value = responseDpjp.payload.filter(
+        (praktisi: any) => praktisi.isDoctor && praktisi.status
+      );
+    }
 
-const mergeBill = ref(false);
-const selectedRoomCategory = ref();
-const selectedRoomClass = ref();
-const selectedRoom = ref();
-const selectedBed = ref<string[]>([]);
-const babyBox = ref(false);
+    const responsePenjamin = await penjaminStore.getAktifApi();
+
+    if (responsePenjamin && responsePenjamin.payload) {
+      listPenjamin.value = responsePenjamin.payload;
+      console.log("listPenjamin.value", listPenjamin.value);
+    } else {
+      listPenjamin.value = [];
+    }
+
+    const lokasiresponse = await lokasiStore.getApi(99999,9999);
+
+    if (lokasiresponse && lokasiresponse.payload) {
+      listLokasi.value = lokasiresponse.payload;
+      console.log("listLokasi.value", listLokasi.value);
+    } else {
+      listLokasi.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const selectedPaymentMethod = ref<string[]>(["TUNAI"]);
 const onPaymentMethodSelect = (label: string) => {
   selectedPaymentMethod.value[0] = label;
+  paymentMethod.value = label;
+
+  if (label === "TUNAI") {
+    accountNumber.value = "";
+    classEntitle.value = "";
+    penjaminUuid.value = "";
+  }
 };
 
-const submitForm = () => {
-  console.log("Submited Doctor Visit Detail Form");
-};
+const schema = computed(() =>
+  toTypedSchema(
+    yup
+      .object({
+        paymentMethod: yup.string().default("TUNAI"),
+        pasienMaternitas: yup.boolean().default(false),
+        keluhanUtama: yup.string().default("").notRequired(),
+        catatan: yup.string().default("").notRequired(),
+        penjaminUuid: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Nama Penjamin harus dipilih"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
+        dokterPengirimUuid: yup.string().required("Dokter harus dipilih"),
+        lokasiUuid: yup.string().required("Unit Asal harus dipilih"),
+        accountNumber: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Nomor Account harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
+        classEntitle: yup.string().when("paymentMethod", {
+          is: (val: string) => val === "ASURANSI",
+          then: (schema) => schema.required("Class Entitle harus diisi"),
+          otherwise: (schema) => schema.notRequired(),
+        }),
+      })
+      .noUnknown()
+  )
+);
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+  validationSchema: schema,
+});
+
+const [paymentMethod] = defineField("paymentMethod");
+const [pasienMaternitas] = defineField("pasienMaternitas");
+const [keluhanUtama] = defineField("keluhanUtama");
+const [catatan] = defineField("catatan");
+const [penjaminUuid] = defineField("penjaminUuid");
+const [dokterPengirimUuid] = defineField("dokterPengirimUuid");
+const [lokasiUuid] = defineField("lokasiUuid");
+const [accountNumber] = defineField("accountNumber");
+const [classEntitle] = defineField("classEntitle");
+
+const onSubmit = handleSubmit(async (values) => {
+  const modifiedValues = {
+    ...values,
+    patitionerUuid: values.dokterPengirimUuid,
+    paymentMethod: values.paymentMethod === "TUNAI" ? 1 : 2,
+  };
+
+  console.log("modifiedValues", modifiedValues);
+  return modifiedValues;
+});
+
+onMounted(() => {
+  fetchUtils();
+});
+
+onUpdated(() => {
+  fetchUtils();
+});
 
 defineExpose({
-  submitForm,
+  onSubmit,
 });
 </script>
 
@@ -105,35 +195,50 @@ defineExpose({
       <div class="pt-5">
         <div class="flex gap-y-5 gap-x-[30px]">
           <CustomSelect
+            v-model="lokasiUuid"
             label="Unit Asal"
             placeHolder="Pilih Unit Asal"
-            optionLabel=""
-            optionValue=""
+            optionValue="uuid"
+            optionLabel="name"
             :showFilter="false"
-            :options="['Laboratorium', 'Bed 2', 'Bed 3']"
+            :options="listLokasi"
+            :disabled="isDetail"
+            :invalid="!!errors.lokasiUuid"
+            :invalidMessage="errors.lokasiUuid"
             class="mr-3 grow"
           />
-          <CustomTextfield
+          <CustomSelect
+            v-model="dokterPengirimUuid"
             label="Dokter Pengirim"
             placeholder="Dokter Pengirim"
             class="w-1/3 mr-3"
+            optionLabel="pegawai.name"
+            optionValue="uuid"
+            :options="listDpjp"
+            :showFilter="false"
+            :disabled="isDetail"
+            :invalid="!!errors.dokterPengirimUuid"
+            :invalidMessage="errors.dokterPengirimUuid"
           />
           <CustomSwitch
-            v-model="status"
+            v-model="pasienMaternitas"
             :show-label="true"
             label="Pasien Maternitas"
             sideLabel="Tidak"
             sideLabelTrue="Iya"
             class="w-[150px] mr-3"
+            :disabled="isDetail"
           />
         </div>
         <div class="flex gap-y-5 gap-x-[30px] mt-5">
           <CustomTextfield
+            v-model="keluhanUtama"
             label="Keluhan Utama"
             class="w-1/2 col-span-2 mr-3 grow"
             placeholder="Keluhan Utama"
           />
           <CustomTextArea
+            v-model="catatan"
             label="Catatan"
             class="w-1/2 col-span-2 mr-3"
             placeholder="Catatan"
@@ -142,161 +247,67 @@ defineExpose({
         </div>
         <div v-if="selectedPaymentMethod.includes('ASURANSI')">
           <hr class="my-[30px]" />
-          <div class="grid grid-cols-2 gap-y-5 gap-x-[30px]">
+          <div class="grid grid-cols-3 gap-y-5 gap-x-[30px]">
             <CustomSelect
+              v-model="penjaminUuid"
               label="Nama Penjamin"
               placeHolder="Pilih Nama Penjamin"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               :showFilter="false"
-              :options="[
-                'BPJS Kesehatan',
-                'Asuransi Prudential',
-                'Asuransi Allianz',
-              ]"
+              :options="listPenjamin"
               :disabled="isDetail"
+              :invalid="!!errors['penjaminUuid']"
+              :invalidMessage="errors['penjaminUuid']"
             />
             <CustomTextfield
+              v-model="accountNumber"
               label="No. Penjamin"
               class=""
               placeholder="No. Penjamin"
               :disabled="isDetail"
             />
-          </div>
-        </div>
-        <div v-if="pageType == 'rawat-inap'">
-          <hr class="my-[30px]" />
-          <div class="grid grid-cols-6 gap-x-[30px]">
-            <CustomTextfield
-              label="SPRI"
-              class=""
-              placeholder="SPRI"
-              disabled
-            />
             <CustomSelect
-              v-model="selectedRoomCategory"
-              label="Kategori Ruangan"
-              placeHolder="Pilih Kategori Ruangan"
-              class="col-span-2"
-              optionLabel=""
-              optionValue=""
-              :showFilter="false"
-              :options="['Rawatan Umum']"
-              :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoomClass"
+              v-model="classEntitle"
               label="Kelas"
               placeHolder="Pilih Kelas"
               class=""
-              optionLabel=""
-              optionValue=""
+              optionLabel="name"
+              optionValue="uuid"
               :showFilter="false"
-              :options="['Kelas 2']"
-              :disabled="isDetail"
-            />
-            <CustomSelect
-              v-model="selectedRoom"
-              label="Ruangan"
-              placeHolder="Pilih Ruangan"
-              class="col-span-2"
-              optionLabel=""
-              optionValue=""
-              :showFilter="false"
-              :options="['Mawar']"
-              :disabled="isDetail"
-            />
-          </div>
-          <div v-if="selectedRoom" class="grid grid-cols-3 mt-[30px]">
-            <div
-              class=""
-              :class="[
-                formType == 'Daftar Bayi Baru Lahir'
-                  ? 'col-span-3'
-                  : 'col-span-2',
+              :options="[
+                {
+                  uuid: 'kelas1',
+                  name: 'Kelas 1',
+                },
+                {
+                  uuid: 'kelas2',
+                  name: 'Kelas 2',
+                },
+                {
+                  uuid: 'kelas3',
+                  name: 'Kelas 3',
+                },
+                {
+                  uuid: 'kelasVip',
+                  name: 'Kelas VIP',
+                },
+                {
+                  uuid: 'kelasVvip',
+                  name: 'Kelas VVIP',
+                },
+                {
+                  uuid: 'kelasReguler',
+                  name: 'Kelas Reguler',
+                },
+                {
+                  uuid: 'kelasEksekutif',
+                  name: 'Kelas Eksekutif',
+                },
               ]"
-            >
-              <div>
-                <div class="font-semibold text-normal">
-                  <span class="text-adameds-300">{{ selectedRoom }}</span> >
-                  Pilih Bed
-                </div>
-                <div class="grid grid-cols-2 gap-[10px] mr-[15px]">
-                  <CustomCheckbox
-                    v-for="(data, index) in ['1', '2', '3', '4', '5', '6']"
-                    v-model="selectedBed"
-                    :title="
-                      selectedBed[0] == data || data == '2' || data == '4'
-                        ? 'Nama Lengkap Pasien'
-                        : '-'
-                    "
-                    :subTitle="'Bed ' + data"
-                    :endText="
-                      selectedBed[0] == data
-                        ? 'Terpilih'
-                        : data == '2' || data == '4'
-                        ? 'Terisi'
-                        : 'Kosong'
-                    "
-                    :key="data + index"
-                    :binary="false"
-                    :value="`${data}`"
-                    :multiple="false"
-                    :disabled="
-                      data == '2' ||
-                      data == '4' ||
-                      isDetail ||
-                      formType == 'Daftar Bayi Baru Lahir'
-                    "
-                  />
-                </div>
-              </div>
-              <div v-if="babyBox">
-                <div class="mt-5 font-semibold text-normal">
-                  <span class="text-adameds-300">{{ selectedRoom }}</span> >
-                  Pilih Bed - Box Bayi
-                </div>
-                <div class="grid grid-cols-2 col-span-2 gap-[10px] mr-[15px]">
-                  <CustomCheckbox
-                    v-for="(data, index) in [
-                      'Bed 1',
-                      'Bed 2',
-                      'Bed 3',
-                      'Bed 4',
-                      'Bed 5',
-                      'Bed 6',
-                    ]"
-                    v-model="selectedBed"
-                    title="-"
-                    :subTitle="'Box ' + data"
-                    endText="Kosong"
-                    :key="data + index"
-                    :binary="false"
-                    :value="`${data}`"
-                    :multiple="false"
-                    :disabled="isDetail"
-                  />
-                </div>
-              </div>
-            </div>
-            <div
-              v-if="formType != 'Daftar Bayi Baru Lahir'"
-              class="border-l-[1px] border-gray-100 pl-[15px]"
-            >
-              <CustomSwitch
-                label="Tambahan"
-                class="mb-[30px]"
-                sideLabel="Bed Cadangan"
-                :disabled="isDetail"
-              />
-              <CustomSwitch
-                v-model="babyBox"
-                label=""
-                sideLabel="Box Bayi"
-                :disabled="isDetail"
-              />
-            </div>
+              :disabled="isDetail"
+            />
           </div>
         </div>
       </div>

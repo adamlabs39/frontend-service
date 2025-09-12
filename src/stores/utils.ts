@@ -15,5 +15,8 @@ export const utilsStore = defineStore({
     setLoading(status: boolean) {
       this.isLoading = status;
     },
+    setProfilFaskes(data: any) {
+      localStorage.setItem("faskes_profile", JSON.stringify(data));
+    },
   },
 });

@@ -10,8 +10,30 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const handleAktif = () => {
-  router.push('/antrian/apm/aktif');
+const goToApmAktif = () => router.push({ name: "antrian-apm-aktif" });
+const goToFarmasi = () =>
+  router.push({ name: "antrian-apm-aktif-pasien-jkn-farmasi" });
+
+// Util: tentukan apakah APM adalah jenis "Antrian Obat"
+const isFarmasi = (apm: { ucapan: string[] | string }) => {
+  const menus = Array.isArray(apm.ucapan)
+    ? apm.ucapan
+    : apm.ucapan
+    ? [apm.ucapan]
+    : [];
+  return menus.includes("Antrian Obat");
+};
+
+const handleNavigate = (apm: { ucapan: string[] | string }) => {
+  if (isFarmasi(apm)) {
+    goToFarmasi();
+  } else {
+    goToApmAktif();
+  }
+};
+
+const handleAktif = (apm: { ucapan: string[] | string }) => {
+  handleNavigate(apm);
 };
 import NoData from "@/components/section/NoData.vue";
 
@@ -52,6 +74,13 @@ const itemsAPM = ref([
     name: "APM 1",
     jumlahMenu: 4,
     ucapan: ["Pasien JKN", "Pasien Non-JKN", "Checkin", "Print"],
+    status: "AKTIF",
+  },
+  {
+    noAPM: "2",
+    name: "APM 2",
+    jumlahMenu: 4,
+    ucapan: ["Antrian Obat"],
     status: "AKTIF",
   },
 ]);
@@ -136,11 +165,7 @@ const selectedPatient = ref([]);
             <div class="text-SM">{{ slotProps.data.jumlahMenu }} Menu</div>
           </template>
         </Column>
-        <Column
-          field="flash-text"
-          header="Flash Text"
-          headerClass="bg-adameds-50"
-        >
+        <Column field="flash-text" header="Menu" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="flex flex-wrap">
               <div
@@ -156,7 +181,7 @@ const selectedPatient = ref([]);
                   :label="konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5  border-none mr-[5px]"
                 />
               </div>
               <div v-else-if="slotProps.data.ucapan">
@@ -165,42 +190,25 @@ const selectedPatient = ref([]);
                   :label="slotProps.data.ucapan"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 pr-[6px] border-none mr-[5px]"
+                  customClass="h-5  border-none mr-[5px]"
                 />
               </div>
             </div>
           </template>
         </Column>
         <Column
-          field="status"
-          header="Status"
+          field="Action"
+          header="Action"
           headerClass="bg-adameds-50 flex items-center justify-center"
         >
           <template #body="slotProps">
-            <div class="flex justify-center items-center min-w-[120px]">
-              <CustomChip
-                @click="handleAktif"
-                :label="slotProps.data.status"
-                :textColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'text-white'
-                    : 'text-[#80868d]'
-                "
-                :bgColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'bg-adameds-300'
-                    : 'bg-white'
-                "
-                :borderColor="
-                  slotProps.data.status === 'AKTIF'
-                    ? 'border-none'
-                    : 'border-[#80868d]'
-                "
-                :icon-color="
-                  slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
-                "
-                customClass="text-xs font-semibold h-6 flex"
-              />
+            <div class="flex justify-center items-center">
+              <div
+                class="p-1.5 bg-adameds-300 rounded-lg"
+                @click="handleAktif(slotProps.data)"
+              >
+                <PhScreencast :size="26" color="#ffffff" weight="fill" />
+              </div>
             </div>
           </template>
         </Column>

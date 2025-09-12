@@ -40,31 +40,27 @@ const onFilterChange = (filters: string[]) => {
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    let isDoctor = false;
-    let isNonDoctor = false;
-
+    let isDoctor: string | boolean = "";
     if (
       selectedFilters.value.includes("dokter") &&
       selectedFilters.value.includes("non-dokter")
     ) {
-      isDoctor = true;
-      isNonDoctor = true;
+      isDoctor = "";
     } else if (selectedFilters.value.includes("dokter")) {
       isDoctor = true;
     } else if (selectedFilters.value.includes("non-dokter")) {
-      isNonDoctor = true;
+      isDoctor = false;
     }
 
     const response = await praktisiStore.getApi({
       page: praktisiProperties.value.page,
       limit: praktisiProperties.value.page_size,
       name: searchQuery.value,
-      doctor: isDoctor,
-      non_doctor: isNonDoctor,
+      isDoctor: isDoctor,
     });
 
     if (response && response.payload) {
-      praktisiProperties.value.total = response.properties.total;
+      praktisiProperties.value.total = response.properties.totalItem;
       praktisiPayload.value = response.payload;
     } else {
       praktisiPayload.value = [];
@@ -142,66 +138,6 @@ const confirmDelete = async (item: any) => {
       UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
-  }
-};
-
-const downloadFormatExcel = async () => {
-  try {
-    // Prepare Data for Export
-    const data = [];
-
-    // Header Row
-    data.push({
-      No: "No",
-      Tipe: "Tipe Praktisi*",
-      Name: "Nama Praktisi*",
-      Code: "Kode HFIS (BPJS)",
-      SIP: "SIP",
-      STR: "STR",
-      Antrian: "Kode Antrian Dokter",
-      Pelayanan: "Pelayanan*",
-    });
-
-    // Add Empty Rows (4 empty rows to match the example)
-
-    data.push({
-      No: "1",
-      Tipe: "Dokter",
-      Name: "Zahrotul Hidayah",
-      Code: "BPJS-0001",
-      SIP: "12345",
-      STR: "1234567890",
-      Antrian: "A01",
-      Pelayanan: "Poliklinik Anak 04, Poliklinik Anak 01",
-    });
-
-    // Create Workbook and Worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
-
-    // Column Widths
-    const columnWidths = data.reduce((widths: any, row: any) => {
-      Object.keys(row).forEach((key, colIdx) => {
-        const cellValue = row[key] ? row[key].toString() : "";
-        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
-      });
-      return widths;
-    }, []);
-
-    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
-
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
-
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Format Datamaster Praktisi"
-    );
-    XLSX.writeFile(workbook, `Format Datamaster Praktisi.xlsx`);
-  } catch (error) {
-    console.error("Error while exporting Excel", error);
   }
 };
 
@@ -390,12 +326,14 @@ const downloadExportExcel = async () => {
           <template #body="slotProps">
             <div>
               {{
-                slotProps.data.pegawai?.firstTitle
+                slotProps.data.pegawai?.firstTitle &&
+                slotProps.data.pegawai?.firstTitle != "-"
                   ? slotProps.data.pegawai?.firstTitle + ". "
                   : ""
               }}{{ slotProps.data.pegawai?.name
               }}{{
-                slotProps.data.pegawai?.lastTitle
+                slotProps.data.pegawai?.lastTitle &&
+                slotProps.data.pegawai?.lastTitle != "-"
                   ? ", " + slotProps.data.pegawai?.lastTitle
                   : ""
               }}
@@ -456,7 +394,7 @@ const downloadExportExcel = async () => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.pegawai.name}`,
                     slotProps.data
                   )
                 "
@@ -488,9 +426,9 @@ const downloadExportExcel = async () => {
         :rows="praktisiProperties.page_size"
         :totalRecords="praktisiProperties.total"
         :showImport="false"
+        :showDownload="false"
         @page="handlePage"
         @export="downloadExportExcel"
-        @download="downloadFormatExcel"
       />
     </template>
   </Card>

@@ -56,6 +56,7 @@ import Slider from 'primevue/slider';
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 import RadioButton from 'primevue/radiobutton';
+import SpeedDial from 'primevue/speeddial';
 import { definePreset } from "@primevue/themes";
 
 import { CkeditorPlugin } from '@ckeditor/ckeditor5-vue';
@@ -136,6 +137,7 @@ app.component("TabPanel", TabPanel);
 app.component("Slider", Slider);
 app.component("Toast", Toast);
 app.component("RadioButton", RadioButton);
+app.component("SpeedDial", SpeedDial);
 
 app.use(icons)
 app.use(Vue3Lottie)

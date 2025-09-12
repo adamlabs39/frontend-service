@@ -40,7 +40,7 @@ const props = defineProps({
 
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi(); 
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {
@@ -54,7 +54,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId);
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -71,7 +71,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -87,7 +87,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId); 
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -109,6 +109,14 @@ const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
 
+    if (tempPatientData.address && tempPatientData.address.country === 'Indonesia') {
+      tempPatientData.address.country = 'id-ID';
+    }
+
+    if (tempPatientData.language === 'Indonesian') {
+      tempPatientData.language = 'ID';
+    }
+
     await fetchKabupaten(tempPatientData.address.prov);
     await fetchKecamatan(tempPatientData.address.city);
     await fetchKelurahan(tempPatientData.address.district);
@@ -129,6 +137,7 @@ const setFormData = async (data: any, uuid: string = "") => {
 onMounted(() => {
   setFormData(props.patientData);
   fetchProvinsi();
+  searchPatientData()
 });
 
 onUpdated(() => {
@@ -139,27 +148,26 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (filter: string) => {
-  if (timer.value) {
-    clearTimeout(timer.value);
-    timer.value = null;
-  }
-  timer.value = setTimeout(async () => {
-    loadingSearchPatient.value = true;
-    try {
-      const response = await masterPasienStore.getMasterPasien({
-        q: filter,
-      });
-      if (response && response.payload) {
-        listDataPatient.value = response.payload;
-      } else listDataPatient.value = [];
-    } catch (error) {
-      console.error("Failed to fetch data", error);
-      return [];
-    } finally {
-      loadingSearchPatient.value = false;
+const searchPatientData = async (event?: { query: string }) => {
+  const query = event?.query || "";
+  
+  loadingSearchPatient.value = true;
+  try {
+    const response = await masterPasienStore.getMasterPasien({
+      q: query,
+      limit: 9999,
+    });
+    if (response && response.payload) {
+      listDataPatient.value = response.payload;
+    } else {
+      listDataPatient.value = [];
     }
-  }, 800);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listDataPatient.value = [];
+  } finally {
+    loadingSearchPatient.value = false;
+  }
 };
 
 const setSelectedPatientData = async (data: any) => {
@@ -189,7 +197,29 @@ const schema = toTypedSchema(
       title: yup.string().required("Awalan/Gelar harus dipilih"),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -219,9 +249,17 @@ const schema = toTypedSchema(
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+
+const { errors, handleSubmit, defineField, resetForm, setValues, values } = useForm({
   validationSchema: schema,
 });
+
+const getFormData = () => {
+  return {
+    ...values,
+    patientAge: patientAge.value,
+  };
+};
 
 const [noRm] = defineField("noRm");
 const [title] = defineField("title");
@@ -261,6 +299,7 @@ const getAge = (date: Date) => {
 defineExpose({
   onSubmit,
   onResetForm,
+  getFormData,
 });
 </script>
 
@@ -504,7 +543,6 @@ defineExpose({
         </div>
         <hr class="my-[30px]" />
         <div class="grid grid-cols-4 gap-y-5 gap-x-[30px]">
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressProv"
             @update:model-value="fetchKabupaten"
@@ -513,12 +551,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...provinsiPayload]"
+            :options="provinsiPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.prov']"
             :invalidMessage="errors['address.prov']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressCity"
             @update:model-value="fetchKecamatan"
@@ -527,12 +564,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kabupatenPayload]"
+            :options="kabupatenPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.city']"
             :invalidMessage="errors['address.city']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressDistrict"
             @update:model-value="fetchKelurahan"
@@ -541,12 +577,11 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kecamatanPayload]"
+            :options="kecamatanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.district']"
             :invalidMessage="errors['address.district']"
           />
-          <!-- FIXME Dummy -->
           <CustomSelect
             v-model="addressVillage"
             label="Kelurahan / Desa"
@@ -554,7 +589,7 @@ defineExpose({
             class=""
             optionLabel="name"
             optionValue="code"
-            :options="[{ name: 'dummy', code: 'dummy' }, ...kelurahanPayload]"
+            :options="kelurahanPayload"
             :disabled="isDetail"
             :invalid="!!errors['address.village']"
             :invalidMessage="errors['address.village']"
@@ -579,16 +614,11 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
-          <!-- FIXME Dummy -->
-          <CustomSelect
+          <CustomTextfield
             v-model="addressPostalCode"
             label="Kode Pos"
-            placeHolder="Pilih Kode Pos"
+            placeholder="Kode Pos"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['10110', '40115', '60241']"
             :disabled="isDetail"
             :invalid="!!errors['address.postalCode']"
             :invalidMessage="errors['address.postalCode']"

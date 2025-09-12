@@ -1,25 +1,73 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import FormTarifLab from "../Layout/FormTarifLab.vue";
+import { useTarifPemeriksaanStore } from "@/stores/datamasterLaboratorium/tarifPemeriksaan";
+import * as XLSX from "xlsx-js-style";
+import DialogDelete from "../Layout/DialogDelete.vue";
 
-const addSpesimenDialog = ref(false);
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
-const status = ref(false);
+const status = ref(true);
+const tarifPemeriksaanStore = useTarifPemeriksaanStore();
+const tarifPemeriksaanPayload = ref<any[]>([]);
+const namaTarif = ref("");
+const codeTarif = ref("");
+const grandTotal = ref(0);
+const pelayanans = ref([
+  { label: "Rajal", value: "rawat jalan" },
+  { label: "Ranap", value: "rawat inap" },
+  { label: "IGD", value: "igd" },
+]);
+const tarifPemeriksaanProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+const searchQuery = ref<string>("");
+const handleSearchQuery = (searchValue: string) => {
+  searchQuery.value = searchValue;
+};
+const utils = utilsStore();
 
-const handleRowsUpdate = (newRows: number) => {
-  rowsPerPage.value = newRows;
-  currentPage.value = 0;
+// Fetch Tarif
+const fetchTarifPemeriksaan = async () => {
+  utils.setLoading(true);
+  try {
+    const response = await tarifPemeriksaanStore.getApi({
+      page: tarifPemeriksaanProperties.value.page,
+      limit: tarifPemeriksaanProperties.value.page_size,
+      name: searchQuery.value,
+    });
+    console.log("Response", response);
+
+    if (response && response.payload) {
+      tarifPemeriksaanProperties.value.total =
+        response.payload.pagination.total;
+      tarifPemeriksaanPayload.value = response.payload.data;
+    } else {
+      tarifPemeriksaanPayload.value = [];
+    }
+    console.log("Data Kategori Pemeriksaan", tarifPemeriksaanPayload.value);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    tarifPemeriksaanPayload.value = [];
+  } finally {
+    utils.setLoading(false);
+  }
+};
+
+// Handle Page
+const handlePage = (event: any) => {
+  tarifPemeriksaanProperties.value.page = event.page + 1;
+  tarifPemeriksaanProperties.value.page_size = event.rows;
+  fetchTarifPemeriksaan();
 };
 
 const handlePageUpdate = (newPage: number) => {
@@ -36,21 +84,356 @@ const dataBedruangan = ref([
 ]);
 
 const isTambahTindakanDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
 const dialogConfig = ref<any>({
-  method: "add",
-  title: "Tambah Data",
-  data: null,
+  method: "",
+  title: "",
+  data: {},
 });
 
-const emit = defineEmits(["deleteItem","updated"]);
-const FormTindakanDialog = (
-  method: string,
-  title: string,
-  data: any = null
-) => {
+const metaKey = ref(true);
+const selectedData = ref();
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  openDialog("detail", "Detail Data", selectedData.value);
+};
+
+const openDialog = (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahTindakanDialogVisible.value = true;
+  console.log("method", method);
 };
+const deleteDialog = (method: string, title: string, data: any = null) => {
+  dialogConfig.value = { method, title, data };
+  isDeleteDialogVisible.value = true;
+};
+const confirmDelete = async (item: any) => {
+  if (item) {
+    utils.setLoading(true);
+    try {
+      await tarifPemeriksaanStore.deleteApi(item.uuid);
+      tarifPemeriksaanPayload.value = [];
+      await fetchTarifPemeriksaan();
+    } catch (error) {
+      console.error("Failed to delete data", error);
+    } finally {
+      utils.setLoading(false);
+      isDeleteDialogVisible.value = false;
+    }
+  }
+};
+
+const emit = defineEmits(["deleteItem", "updated"]);
+
+// Import Excel
+const onUpload = (event: any) => {
+  const uploadedFiles = event.files[0]; // Ambil file yang diunggah
+  importExcel(uploadedFiles);
+};
+const importExcel = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await tarifPemeriksaanStore.importApi(dataUpload);
+    fetchTarifPemeriksaan();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
+
+const exportToExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      Pelayanan: "Pelayanan*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Komponen Tarif",
+      Persentase: "Persentase*",
+      HargaPersen: "Harga Tarif (persen)",
+      HargaRupiah: "Harga Tarif (rupiah)",
+      ItemPemeriksaan: "Item Pemeriksaan",
+      KomponenTarifItem: "Komponen Tarif",
+      PersentaseItem: "Persentase",
+      HargaPersenItem: "Harga Tarif (persen)",
+      HargaRupiahItem: "Harga Tarif (rupiah)",
+      GrandTotal: "Grand Total",
+    });
+
+    // Process each tarif pemeriksaan
+    tarifPemeriksaanPayload.value.forEach((tarif, index) => {
+      // Process each penjamin (metode pembayaran)
+      tarif.tarifLabPenjamin.forEach((penjamin: any, penjaminIndex: number) => {
+        // Process each pelayanan
+        tarif.pelayanan.forEach((pelayanan: any, pelayananIndex: number) => {
+          // Process each item pemeriksaan
+          tarif.tarifLabItem.forEach((item: any, itemIndex: number) => {
+            // Only add komponen tarif if it exists
+            item.komponenTarif.forEach(
+              (komponen: any, komponenIndex: number) => {
+                data.push({
+                  No: index + 1,
+                  KodeTarif: tarif.code,
+                  NamaTarif: tarif.name,
+                  Pelayanan: pelayanan.pelayanan,
+                  MetodePembayaran: penjamin.penjamin.name,
+                  KelompokPemeriksaan: item.kelompokPemeriksaan?.name || "",
+                  KomponenTarif: komponen.name,
+                  Persentase: komponen.prosentase ? "TRUE" : "FALSE",
+                  HargaPersen: komponen.prosentase ? komponen.prosentase : "",
+                  HargaRupiah: !komponen.prosentase
+                    ? `Rp. ${komponen.tarif.toLocaleString("id-ID")}`
+                    : "",
+                  ItemPemeriksaan: item.itemPemeriksaan?.name || "",
+                  KomponenTarifItem: komponen.name,
+                  PersentaseItem: komponen.prosentase ? "TRUE" : "FALSE",
+                  HargaPersenItem: komponen.prosentase
+                    ? komponen.prosentase
+                    : "",
+                  HargaRupiahItem: !komponen.prosentase
+                    ? `Rp. ${komponen.tarif.toLocaleString("id-ID")}`
+                    : "",
+                  GrandTotal: `Rp. ${tarif.grandTotal.toLocaleString("id-ID")}`,
+                });
+              }
+            );
+          });
+        });
+      });
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = [
+      { wch: 5 }, // No
+      { wch: 15 }, // KodeTarif
+      { wch: 30 }, // NamaTarif
+      { wch: 15 }, // Pelayanan
+      { wch: 20 }, // MetodePembayaran
+      { wch: 25 }, // KelompokPemeriksaan
+      { wch: 20 }, // KomponenTarif
+      { wch: 15 }, // Persentase
+      { wch: 20 }, // HargaPersen
+      { wch: 20 }, // HargaRupiah
+      { wch: 25 }, // ItemPemeriksaan
+      { wch: 20 }, // KomponenTarifItem
+      { wch: 15 }, // PersentaseItem
+      { wch: 20 }, // HargaPersenItem
+      { wch: 20 }, // HargaRupiahItem
+      { wch: 15 }, // GrandTotal
+    ];
+
+    worksheet["!cols"] = columnWidths;
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tarif Pemeriksaan");
+    XLSX.writeFile(
+      workbook,
+      `Data_Tarif_Pemeriksaan_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      KodeTarif: "Kode Tarif*",
+      NamaTarif: "Nama Tarif*",
+      Pelayanan: "Pelayanan*",
+      MetodePembayaran: "Metode Pembayaran*",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Komponen Tarif",
+      Persentase: "Persentase*",
+      HargaPersen: "Harga Tarif (persen)",
+      HargaRupiah: "Harga Tarif (rupiah)",
+      ItemPemeriksaan: "Item Pemeriksaan",
+      KomponenTarifItem: "Komponen Tarif",
+      PersentaseItem: "Persentase",
+      HargaPersenItem: "Harga Tarif (persen)",
+      HargaRupiahItem: "Harga Tarif (rupiah)",
+      GrandTotal: "Grand Total",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "igd",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "2",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat inap",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "20",
+      HargaRupiah: "",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "3",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat jalan",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "True",
+      HargaPersen: "10",
+      HargaRupiah: "",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "4",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "rawat jalan",
+      MetodePembayaran: "BPJS",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+    data.push({
+      No: "5",
+      KodeTarif: "TD-001",
+      NamaTarif: "Paket pemeriksaan dokter spesialis",
+      Pelayanan: "igd",
+      MetodePembayaran: "Tunai",
+      KelompokPemeriksaan: "Kelompok Pemeriksaan",
+      KomponenTarif: "Jasa dokter",
+      Persentase: "False",
+      HargaPersen: "",
+      HargaRupiah: "Rp. 500.000",
+      ItemPemeriksaan: "GDS Stik",
+      KomponenTarifItem: "Jasa Klinik",
+      PersentaseItem: "TRUE",
+      HargaPersenItem: "40",
+      HargaRupiahItem: "",
+      GrandTotal: "Rp. 1.300.000",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // worksheet["!merges"] = [
+    //   { s: { r: 1, c: 0 }, e: { r: 6, c: 0 } },
+    //   { s: { r: 1, c: 1 }, e: { r: 6, c: 1 } },
+    //   { s: { r: 1, c: 2 }, e: { r: 4, c: 2 } },
+    //   { s: { r: 5, c: 2 }, e: { r: 6, c: 2 } },
+    //   { s: { r: 1, c: 3 }, e: { r: 6, c: 3 } },
+    //   { s: { r: 1, c: 4 }, e: { r: 6, c: 4 } },
+    //   { s: { r: 1, c: 5 }, e: { r: 6, c: 5 } },
+    //   { s: { r: 1, c: 6 }, e: { r: 2, c: 6 } },
+    //   { s: { r: 3, c: 6 }, e: { r: 4, c: 6 } },
+    //   { s: { r: 5, c: 6 }, e: { r: 6, c: 6 } },
+    //   { s: { r: 1, c: 7 }, e: { r: 3, c: 7 } },
+    //   { s: { r: 4, c: 7 }, e: { r: 6, c: 7 } },
+    //   { s: { r: 1, c: 9 }, e: { r: 2, c: 9 } },
+    //   { s: { r: 3, c: 9 }, e: { r: 4, c: 9 } },
+    //   { s: { r: 5, c: 9 }, e: { r: 6, c: 9 } },
+    //   { s: { r: 1, c: 12 }, e: { r: 2, c: 12 } },
+    //   { s: { r: 3, c: 12 }, e: { r: 4, c: 12 } },
+    //   { s: { r: 5, c: 12 }, e: { r: 6, c: 12 } },
+    //   { s: { r: 1, c: 13 }, e: { r: 6, c: 13 } },
+    // ];
+
+    worksheet["!merges"] = [
+      // { s: { r: 1, c: 0 }, e: { r: 0, c: 0 } }, // Merge header row for the title
+      { s: { r: 5, c: 0 }, e: { r: 1, c: 0 } }, // "No"
+      { s: { r: 5, c: 1 }, e: { r: 1, c: 1 } }, // "Kode Tarif"
+      { s: { r: 5, c: 2 }, e: { r: 1, c: 2 } }, // "Nama Tarif"
+      { s: { r: 1, c: 3 }, e: { r: 1, c: 3 } }, // "Pelayanan"
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 4 } }, // "Metode Pembayaran"
+      { s: { r: 1, c: 5 }, e: { r: 1, c: 5 } }, // "Kelompok Pemeriksaan"
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 6 } }, // "Komponen Tarif"
+      { s: { r: 1, c: 7 }, e: { r: 1, c: 7 } }, // "Persentase"
+      { s: { r: 1, c: 8 }, e: { r: 1, c: 8 } }, // "Harga Tarif (persen)"
+      { s: { r: 1, c: 9 }, e: { r: 1, c: 9 } }, // "Harga Tarif (rupiah)"
+      { s: { r: 1, c: 10 }, e: { r: 1, c: 10 } }, // "Item Pemeriksaan"
+      { s: { r: 1, c: 11 }, e: { r: 1, c: 11 } }, // "Komponen Tarif Item"
+      { s: { r: 1, c: 12 }, e: { r: 1, c: 12 } }, // "Persentase Item"
+      { s: { r: 1, c: 13 }, e: { r: 1, c: 13 } }, // "Grand Total"
+    ];
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tindakan");
+
+    XLSX.writeFile(workbook, `Format Datamaster Tarif Lab.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+
+onMounted(() => {
+  fetchTarifPemeriksaan();
+});
 </script>
 
 <template>
@@ -65,7 +448,11 @@ const FormTindakanDialog = (
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchTarifPemeriksaan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -86,7 +473,7 @@ const FormTindakanDialog = (
                 </div>
               </div>
               <CustomButton
-                @click="FormTindakanDialog"
+                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
                 label="Tarif"
                 class="mr-[10px]"
@@ -105,7 +492,7 @@ const FormTindakanDialog = (
             <div
               class="flex my-[10px] mt-5 font-semibold text-SM text-grey-300"
             >
-              <div class="w-[15%]">Filter Pembayaran</div>
+              <div class="w-[15%]">Filter Pelayanan</div>
               <div class="flex">
                 |
                 <CustomChip
@@ -192,7 +579,10 @@ const FormTindakanDialog = (
       </template>
       <template #content>
         <DataTable
-          :value="dataBedruangan"
+          :value="tarifPemeriksaanPayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
@@ -217,25 +607,38 @@ const FormTindakanDialog = (
           >
             <template #body="slotProps">
               <div class="font-semibold text-SM">
-                {{ slotProps.data.namaRuangan }}
+                {{ slotProps.data.name }}
               </div>
               <div class="mt-2">
                 <CustomChip
-                  label="TUNAI"
+                  v-for="(item, i) in slotProps.data.tarifLabPenjamin"
+                  :label="item.penjamin.name"
                   :showCheckedIcon="false"
-                  selectedColor="bg-adameds-300 border-adameds-300"
-                  border-color="border-none"
-                  bg-color="bg-adameds-300"
-                  customClass=" cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3"
+                  :border-color="
+                    item.penjamin.name === 'Tunai'
+                      ? 'border-none'
+                      : 'border-none'
+                  "
+                  :bg-color="
+                    item.penjamin.name === 'Tunai'
+                      ? 'bg-adameds-300'
+                      : 'bg-warning-300'
+                  "
+                  :customClass="
+                    item.penjamin.name === 'Tunai'
+                      ? 'text-xs font-semibold cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3 ml-[10px]'
+                      : 'cursor-auto h-5 bg-warning-300 text-white pr-2 pl-3 ml-[10px]'
+                  "
                 />
-                <CustomChip
-                  label="ASURANSI"
+                <!-- <CustomChip
+                  v-for="(item, i) in slotProps.data.tarifLabPenjamin"
+                  :label="item.penjamin.name"
                   :showCheckedIcon="false"
                   selectedColor="bg-warning-300 border-warning-300"
                   border-color="border-none"
                   bg-color="bg-warning-300"
                   customClass=" cursor-auto h-5 bg-adameds-300 text-white pr-2 pl-3 ml-[10px]"
-                />
+                /> -->
               </div>
             </template>
           </Column>
@@ -246,9 +649,12 @@ const FormTindakanDialog = (
           >
             <template #body="slotProps">
               <div class="flex flex-wrap gap-2 text-nowrap">
-                <div v-for="items in slotProps.data.pelayanan" :key="items">
+                <div v-for="items in slotProps.data.tarifLabItem" :key="items">
                   <CustomChip
-                    :label="items.unitPelayananName"
+                    :label="
+                      items.itemPemeriksaan?.name ||
+                      items.kelompokPemeriksaan?.name
+                    "
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
@@ -267,7 +673,7 @@ const FormTindakanDialog = (
               <div class="flex flex-wrap gap-2 text-nowrap">
                 <div v-for="items in slotProps.data.pelayanan" :key="items">
                   <CustomChip
-                    :label="items.unitPelayananName"
+                    :label="items.pelayanan"
                     :showCheckedIcon="false"
                     border-color="border-none"
                     bg-color="bg-adameds-300"
@@ -284,7 +690,7 @@ const FormTindakanDialog = (
             class=""
           >
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.namaRuangan }}</div>
+              <div class="text-SM">Rp . {{ slotProps.data.grandTotal }}</div>
             </template>
           </Column>
 
@@ -298,24 +704,26 @@ const FormTindakanDialog = (
             <template #body="slotProps">
               <div class="flex justify-center items-center min-w-[120px]">
                 <CustomChip
-                  :label="slotProps.data.status"
+                  :label="
+                    slotProps.data.status === true ? 'AKTIF' : 'NON-AKTIF'
+                  "
                   :textColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'text-white'
                       : 'text-[#80868d]'
                   "
                   :bgColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'bg-adameds-300'
                       : 'bg-white'
                   "
                   :borderColor="
-                    slotProps.data.status === 'AKTIF'
+                    slotProps.data.status === true
                       ? 'border-none'
                       : 'border-[#80868d]'
                   "
                   :icon-color="
-                    slotProps.data.status === 'AKTIF' ? 'white' : '#80868d'
+                    slotProps.data.status === true ? 'white' : '#80868d'
                   "
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -332,6 +740,7 @@ const FormTindakanDialog = (
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="openDialog('edit', 'Edit Data', slotProps.data)"
                 >
                   <img src="@/assets/icons/edit.svg" alt="" />
                 </CustomButton>
@@ -339,6 +748,13 @@ const FormTindakanDialog = (
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -350,34 +766,52 @@ const FormTindakanDialog = (
       <template #footer>
         <div class="flex justify-between px-5 py-2.5">
           <div class="flex items-center gap-2.5">
-            <CustomButton label="Import">
-              <img src="@/assets/icons/File Import.svg" alt="" />Import
-            </CustomButton>
-            <CustomButton label="Eksport">
+            <FileUpload
+              mode="basic"
+              accept=".xls,.xlsx"
+              :maxFileSize="1000000"
+              label="Import"
+              chooseLabel="Import"
+              auto
+              class="bg-adameds-300 rounded-[10px] h-10 text-white border-adameds-300"
+              @select="onUpload"
+              custom-upload
+              name="dems[]"
+            >
+              <template #chooseicon>
+                <img src="@/assets/icons/File Import.svg" alt="" />
+              </template>
+            </FileUpload>
+            <CustomButton label="Eksport" @click="exportToExcel">
               <img src="@/assets/icons/File Import.svg" alt="" />Eksport
             </CustomButton>
-            <CustomButton label="Eksport" @click="">
+            <CustomButton label="Eksport" @click="downloadFormatExcel">
               <img src="@/assets/icons/download.svg" alt="" />Download
             </CustomButton>
           </div>
           <CustomPaginator
-            :rows="rowsPerPage"
-            :totalRecords="dataBedruangan.length"
+            :rows="tarifPemeriksaanProperties.page_size"
+            :totalRecords="tarifPemeriksaanProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @update:rows="handleRowsUpdate"
-            @update:current-page="handlePageUpdate"
+            @page="handlePage"
           />
         </div>
       </template>
     </Card>
 
-   <FormTarifLab
-    v-model:isDialogVisible="isTambahTindakanDialogVisible"
-    :title="dialogConfig.title"
-    :method="dialogConfig.method"
-    :payload="dialogConfig.data"
-    @data-updated="$emit('updated')"
+    <FormTarifLab
+      v-model:isDialogVisible="isTambahTindakanDialogVisible"
+      :title="dialogConfig.title"
+      :method="dialogConfig.method"
+      :payload="dialogConfig.data"
+      @data-updated="fetchTarifPemeriksaan"
+    />
 
-  />
+    <DialogDelete
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      :title="dialogConfig.title"
+      :itemToDelete="dialogConfig.data"
+      @delete="confirmDelete"
+    />
   </div>
 </template>

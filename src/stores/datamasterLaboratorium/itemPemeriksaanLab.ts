@@ -34,6 +34,22 @@ export const useItemPemeriksaanStore = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiLaboratoriumDelete(`/lab/item-pemeriksaan/${uuid}`, payload);
     },
+
+    // Nilai Rujukan
+    async getNilaiRujukanApi(uuid: string, payload = {}) {
+      return apiLaboratoriumGet(`/lab/nilai-rujukan/${uuid}`, payload);
+    },
+    async postNilaiRujukanApi(payload = {}) {
+      return apiLaboratoriumPost(`/lab/nilai-rujukan`, payload);
+    },
+    async putNilaiRujukanApi(uuid: string, payload = {}) {
+      return apiLaboratoriumPut(`/lab/nilai-rujukan/${uuid}`, payload);
+    },
+    async deleteNilaiRujukanApi(uuid: string, payload = {}) {
+      return apiLaboratoriumDelete(`/lab/nilai-rujukan/${uuid}`, payload);
+    },
+
+    // eksport dan import
     async exportApi(payload = {}) {
       return apiLaboratoriumGet(
         `/farmasi/datamaster/kategori-obat/export`,
@@ -41,10 +57,10 @@ export const useItemPemeriksaanStore = defineStore({
       );
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost(
-        "/farmasi/datamaster/kategori-obat/import",
-        payload
-      );
+      return apiLaboratoriumPost("/lab/item-pemeriksaan/import", payload);
+    },
+    async getActive(payload = {}) {
+      return apiLaboratoriumGet(`/lab/item-pemeriksaan/active`, payload);
     },
   },
 });

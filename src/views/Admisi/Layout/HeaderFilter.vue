@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from "vue";
+import { onMounted, ref, type PropType, computed, } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
@@ -15,12 +15,13 @@ import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const praktisiStore = usePraktisiStore();
 const lokasiStore = useLokasiStore();
-const ruanganStore = useRuanganStore();
+const monitoringStore = useMonitoringKamarStore();
 
 const props = defineProps({
   pageType: {
@@ -47,11 +48,17 @@ const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
 const searchDPJPFilter = ref<string | undefined>("Semua");
+const selectedRoomName = ref<string | null>(null);
+
 
 const listDpjp = ref<any[]>([]);
 
 // SECTION Rawat Jalan
-const filterPoliList = ref([]);
+const filterPoliList = ref<Poli[]>([]);
+interface Poli {
+  name: string;
+  faskesUuid: string;
+}
 const selectedFilterPoli = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterPoli.value.includes(label)) {
@@ -64,7 +71,7 @@ const onPoliSelect = (label: string) => {
   emit("search");
 };
 
-const filterRegisterMethod = ref(["ADMISI", "APM", "MOBILE APP"]);
+const filterRegisterMethod = ref(["ADMISI", "APM", "MOBILE"]);
 const selectedFilterRegisterMethod = ref<string[]>([]);
 const onRegisterMethodSelect = (label: string) => {
   if (selectedFilterRegisterMethod.value.includes(label)) {
@@ -73,12 +80,15 @@ const onRegisterMethodSelect = (label: string) => {
   } else {
     selectedFilterRegisterMethod.value.push(label);
   }
+  emit("search");
 };
 // !SECTION
 
 // SECTION Rawat Inap
+const payload = ref<any[]>([]); 
 const filterRoomList = ref<any[]>([]);
 const selectedFilterRoom = ref<string[]>([]);
+
 const onFilterRoomSelect = (label: string) => {
   if (selectedFilterRoom.value.includes(label)) {
     selectedFilterRoom.value = selectedFilterRoom.value.filter(
@@ -156,12 +166,13 @@ const resetFilter = () => {
   endDateFilter.value = new Date();
   searchPatientFilter.value = "";
   searchDPJPFilter.value = "Semua";
+  emit('search');
 };
 
 const setFilter = (dataFilter: FilterAdmisi) => {
   selectedFilterPoli.value = dataFilter.poly ?? [];
   selectedFilterRegisterMethod.value = dataFilter.platform
-    ? [dataFilter.platform]
+    ? dataFilter.platform.split(',')
     : [];
   selectedFilterRoom.value = dataFilter.room ?? [];
   selectedFilterPatient.value = dataFilter.withoutIdentity
@@ -197,17 +208,31 @@ const fetchUtils = async () => {
       // FIXME Masih menggunakan api biasa dan filter by FE
       const responsePoli = await lokasiStore.getApi(0, 9999);
       if (responsePoli && responsePoli.payload) {
-        filterPoliList.value = responsePoli.payload.filter(
-          (lokasi: any) => lokasi.isPoli && lokasi.status
-        );
+        filterPoliList.value = responsePoli.payload
+          .filter((lokasi: any) => lokasi.isPoli && lokasi.status)
+          .map((lokasi: any) => {
+            return {
+              name: lokasi.name,
+              faskesUuid: lokasi.uuid,
+            };
+          });
       } else filterPoliList.value = [];
     }
-    if (props.pageType == "rawat-inap") {
-      const responseRoom = await ruanganStore.getAktifApi();
-      if (responseRoom && responseRoom.payload) {
-        filterRoomList.value = responseRoom.payload;
-      } else filterRoomList.value = [];
-    }
+    if (props.pageType == "rawat-inap" || props.pageType == "rawat-jalan") {
+    const responseRoom = await monitoringStore.getAktifRuangan();
+    if (responseRoom && responseRoom.payload) {
+      filterRoomList.value = responseRoom.payload.map((room: any) => ({
+        ...room,
+        label:
+          props.pageType === "rawat-jalan"
+            ? room.className
+            : room.name,
+      }));
+  } else { 
+    filterRoomList.value = [];
+    console.log("No room data found.");
+  }
+}
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -231,7 +256,7 @@ const searchData = () => {
       ? ""
       : selectedPaymentMethod.value[0];
   if (props.pageType == "rawat-jalan") {
-    filter.platform = selectedFilterRegisterMethod.value[0];
+    filter.platform = selectedFilterRegisterMethod.value.join(',');
     filter.poly = selectedFilterPoli.value;
   }
   // FIXME Belum bisa multiple
@@ -402,20 +427,14 @@ defineExpose({
             <div class="flex flex-wrap grow">
               <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
-                v-for="(poli, index) in [
-                  {
-                    name: 'Faskes Example',
-                    faskesUuid: '0191a18a-22e4-773b-8229-a023f420d0bb',
-                  },
-                  ...filterPoliList,
-                ]"
-                :key="poli.faskesUuid + index"
-                :label="poli.name"
-                :value="poli.faskesUuid"
-                class="ml-[10px]"
-                :isSelected="selectedFilterPoli.includes(poli.faskesUuid)"
-                @selected="onPoliSelect"
-              />
+              v-for="poli in filterPoliList"
+              :key="poli.faskesUuid"
+              :label="poli.name"
+              :value="poli.faskesUuid"
+              class="ml-[10px]"
+              :isSelected="selectedFilterPoli.includes(poli.faskesUuid)"
+              @selected="onPoliSelect"
+            />
             </div>
           </div>
           <div v-if="!isSEP" class="flex my-[10px]">
@@ -443,7 +462,7 @@ defineExpose({
             <div class="w-[15%]">Filter Ruangan</div>
             <div class="flex">
               <div class="h-5 my-auto border border-grey-300"></div>
-              <CustomChip
+              <!-- <CustomChip
                 v-for="(room, index) in [
                   { uuid: '123', name: '102' },
                   ...filterRoomList,
@@ -453,7 +472,15 @@ defineExpose({
                 class="ml-[10px]"
                 :isSelected="selectedFilterRoom.includes(room.name)"
                 @selected="onFilterRoomSelect"
-              />
+              /> -->
+              <CustomChip
+                  v-for="(room, index) in filterRoomList"
+                  :key="room.uuid + index"
+                  :label="room.label"
+                  class="ml-[10px]"
+                  :isSelected="selectedFilterRoom.includes(room.label)"
+                  @selected="onFilterRoomSelect"
+                />
             </div>
           </div>
           <!-- <div class="flex my-[10px]">

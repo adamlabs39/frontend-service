@@ -44,7 +44,7 @@ const lokasiPayload = ref<any[]>([]);
 
 const fetchPegawai = async () => {
   try {
-    const response = await pegawaiStore.getAktifApi();
+    const response = await pegawaiStore.getAktifApi("1");
     if (response && response.payload) {
       pegawaiPayload.value = response.payload;
     } else {
@@ -57,7 +57,10 @@ const fetchPegawai = async () => {
 };
 const fetchLokasi = async () => {
   try {
-    const response = await lokasiStore.getAktifApi();
+    const response = await lokasiStore.getAktifApi({
+      type: "Ward",
+      isPoli: true,
+    });
     if (response && response.payload) {
       lokasiPayload.value = response.payload;
     } else {
@@ -90,9 +93,13 @@ const schema = toTypedSchema(
   yup
     .object({
       pegawaiUuid: yup.string().required("Pegawai harus dipilih"),
-      codeBpjs: yup.string().nullable().notRequired(),
-      sip: yup.string().default("").nullable(),
-      str: yup.string().default("").nullable(),
+      codeBpjs: yup.string().when("isDoctor", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Kode BPJS harus diisi"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      sip: yup.string().nullable(),
+      str: yup.string().nullable(),
       isDoctor: yup.boolean().required("Tipe Praktisi harus diisi"),
       codeAntrianDokter: yup.string().when("isDoctor", {
         is: (value: boolean) => value === true,
@@ -107,19 +114,30 @@ const schema = toTypedSchema(
       status: yup.bool().default(true),
       practitionerPoliSelected: yup
         .array()
+        .of(yup.string().required("Poli harus dipilih"))
         .when("isDoctor", {
           is: (value: boolean) => value === true,
-          then: (schema) => schema.required("Poli harus dipilih"),
+          then: (schema) =>
+            schema
+              .required("Poli harus dipilih")
+              .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+              .required("Unit Pelayanan harus dipilih"),
           otherwise: (schema) => schema.notRequired(),
-        })
-        .of(yup.string().required("Poli harus dipilih"))
-        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
-        .required("Unit Pelayanan harus dipilih"),
+        }),
+      // .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+      // .required("Unit Pelayanan harus dipilih"),
     })
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  validateField,
+} = useForm({
   validationSchema: schema,
 });
 
@@ -137,24 +155,12 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const { push: pushPractitionerPoli } = useFieldArray("poliPelayanan");
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  console.log("🚀 ~ handlePenjaminUpdate ~ selectedValues:", selectedValues)
-  console.log("🚀 ~ handlePenjaminUpdate ~ tempPoli.value:", tempPoli.value)
-  poliPelayanan.value = tempPoli.value.map(
-    (item: { lokasiUuid: string; uuid: string }) => {
-      if (!selectedValues.includes(item.lokasiUuid)) {
-        return {
-          lokasiUuid: item.lokasiUuid,
-          uuid: item.uuid,
-          isDeleted: true,
-        };
-      } else {
-        return {
-          lokasiUuid: item.uuid,
-          uuid: item.uuid,
-        };
-      }
-    }
-  );
+  poliPelayanan.value = tempPoli.value
+    .filter((item: any) => selectedValues.includes(item.lokasiUuid))
+    .map((item: any) => ({
+      lokasiUuid: item.uuid,
+      uuid: item.uuid,
+    }));
 
   selectedValues.forEach((value) => {
     const existsInTemp = tempPoli.value.some(
@@ -167,6 +173,7 @@ const handlePenjaminUpdate = (selectedValues: string[]) => {
       });
     }
   });
+  validateField("practitionerPoliSelected");
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
@@ -179,18 +186,15 @@ const onSubmit = handleSubmit(async (values: any) => {
     } else if (values.str === "") {
       values.str = null;
     }
-    
+
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
         throw new Error("UUID is missing for edit operation");
       }
       const uuid = props.payload.uuid;
-      console.log("data delete", values);
       const response = await praktisiStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
-      console.log("Adding new data with values:", values);
       const response = await praktisiStore.postApi(values);
       emit("data-updated");
     }
@@ -242,7 +246,9 @@ watch(
           ) || [];
         setValues({
           ...props.payload,
+          poliPelayanan: props.payload.poliPelayanan ?? [],
           practitionerPoliSelected: poliPayload,
+          pegawaiUuid: props.payload?.pegawai?.uuid,
         });
         tempPoli.value = tempPoliObject;
       }
@@ -389,7 +395,7 @@ const tempPoli = ref([]);
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <div class="font-bold text-heading">
-          Data Pegawai -
+          Data Praktisi -
           {{ payload.isDoctor ? "DOKTOR" : "NON-DOKTOR" }}
         </div>
         <hr class="border-grey-200" />
@@ -434,7 +440,6 @@ const tempPoli = ref([]);
               : '-'
           "
         />
-
         <CustomInfoRow v-if="payload.isDoctor" label="Poli">
           <template #value>
             <div
@@ -454,19 +459,61 @@ const tempPoli = ref([]);
             <div v-else>-</div>
           </template>
         </CustomInfoRow>
+        <CustomInfoRow
+          label="ID SATUSEHAT"
+          :value="
+            payload.satuSehatId && payload.satuSehatId.trim() !== ''
+              ? payload.satuSehatId
+              : '-'
+          "
+        />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status">
-          <template #value>
-            <CustomChip
-              :label="status ? 'AKTIF' : 'NON-AKTIF'"
-              :textColor="status ? 'text-white' : 'text-[#80868d]'"
-              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
-              :icon-color="status ? 'white' : '#80868d'"
-              customClass="text-xs font-semibold h-5 flex w-fit"
-            />
-          </template>
-        </CustomInfoRow>
+        <div class="grid grid-cols-2">
+          <CustomInfoRow label="Status">
+            <template #value>
+              <CustomChip
+                :label="status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="status ? 'text-white' : 'text-[#80868d]'"
+                :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+                :icon-color="status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </template>
+          </CustomInfoRow>
+          <CustomInfoRow label="Status SATUSEHAT">
+            <template #value>
+              <CustomChip
+                :label="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'AKTIF'
+                    : 'NON-AKTIF'
+                "
+                :textColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'text-white'
+                    : 'text-[#80868d]'
+                "
+                :bgColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'bg-adameds-300'
+                    : 'bg-white'
+                "
+                :borderColor="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'border-none'
+                    : 'border-[#80868d]'
+                "
+                :icon-color="
+                  payload.satuSehatId && payload.satuSehatId.trim() !== ''
+                    ? 'white'
+                    : '#80868d'
+                "
+                customClass="text-xs font-semibold h-5 flex w-fit"
+              />
+            </template>
+          </CustomInfoRow>
+        </div>
       </div>
     </template>
     <template #footer>

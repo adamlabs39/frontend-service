@@ -11,20 +11,27 @@ export const useSpesimenLabStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(
-      params: {
-        page?: number;
-        limit?: number;
-        name?: string;
-        payload?: object;
-      } = {}
-    ) {
-      const { page = 1, limit = 10, name = "", payload = {} } = params;
-      return apiLaboratoriumGet(
-        `/lab/spesimen?page=${page}&limit=${limit}&name=${name}`,
-        payload
-      );
-    },
+    // async getApi(
+    //   params: {
+    //     page?: number;
+    //     limit?: number;
+    //     name?: string;
+    //     payload?: object;
+    //   } = {}
+    // ) {
+    //   const { page = 1, limit = 10, name = "", payload = {} } = params;
+    //   return apiLaboratoriumGet(
+    //     `/lab/spesimen?page=${page}&limit=${limit}&name=${name}`,
+    //     payload
+    //   );
+    // },
+
+     async getApi(page: number = 1, limit: number = 10, name: string , payload = {}) {
+          return apiLaboratoriumGet(
+            `/lab/spesimen?page=${page}&limit=${limit}&name=${name}`,
+            payload
+          );
+        },
     async postApi(payload = {}) {
       return apiLaboratoriumPost("/lab/spesimen", payload);
     },
@@ -35,16 +42,10 @@ export const useSpesimenLabStore = defineStore({
       return apiLaboratoriumDelete(`/lab/spesimen/${uuid}`, payload);
     },
     async exportApi(payload = {}) {
-      return apiLaboratoriumGet(
-        `/farmasi/datamaster/kategori-obat/export`,
-        payload
-      );
+      return apiLaboratoriumGet(`/lab/spesimen/export`, payload);
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost(
-        "/farmasi/datamaster/kategori-obat/import",
-        payload
-      );
+      return apiLaboratoriumPost("/lab/spesimen/import", payload);
     },
   },
 });

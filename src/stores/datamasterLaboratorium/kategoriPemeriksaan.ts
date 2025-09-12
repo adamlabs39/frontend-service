@@ -44,10 +44,10 @@ export const useKategoriPemeriksaanStore = defineStore({
       );
     },
     async importApi(payload: any) {
-      return apiLaboratoriumPost(
-        "/farmasi/datamaster/kategori-obat/import",
-        payload
-      );
+      return apiLaboratoriumPost("/lab/category-pemeriksaan/import", payload);
+    },
+    async getActive(payload = {}) {
+      return apiLaboratoriumGet(`/lab/category-pemeriksaan/active`, payload);
     },
   },
 });

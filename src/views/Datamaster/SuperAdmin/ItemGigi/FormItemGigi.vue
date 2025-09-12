@@ -54,16 +54,18 @@ onMounted(() => {
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    kategoriGigiUuid: yup.string().required("Kategori Gigi harus dipilih"),
-    system: yup.string().required("Referensi sistem SATUSEHAT harus diisi"),
-    code: yup.string().required("Kode SATUSEHAT harus diisi"),
-    display: yup.string().required("Display SATUSEHAT harus diisi"),
-    name: yup.string().required("Nama Gigi harus diisi"),
-    image: yup.string(),
-    catatan: yup.string().notRequired(),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      kategoriGigiUuid: yup.string().required("Kategori Gigi harus dipilih"),
+      system: yup.string().required("Referensi sistem SATUSEHAT harus diisi"),
+      code: yup.string().required("Kode SATUSEHAT harus diisi"),
+      display: yup.string().required("Display SATUSEHAT harus diisi"),
+      name: yup.string().required("Nama Gigi harus diisi"),
+      image: yup.string().notRequired(),
+      catatan: yup.string().notRequired(),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -105,9 +107,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -118,7 +120,6 @@ const handleEdit = () => {
   method.value = "edit";
   title.value = "Edit Data";
 };
-
 
 const closeDialog = () => {
   emit("update:isDialogVisible", false);
@@ -145,13 +146,11 @@ watch(
 
 const itemGigiUpload = ref<InstanceType<typeof CustomDragDrop> | null>(null);
 const clearItemGigiPreview = () => {
-  image.value = ""; 
+  image.value = "";
   if (itemGigiUpload.value) {
-    itemGigiUpload.value.clearFile(); 
+    itemGigiUpload.value.clearFile();
   }
 };
-
-
 </script>
 
 <template>
@@ -169,7 +168,7 @@ const clearItemGigiPreview = () => {
     @update:visible="updateVisibility"
     headerBg="bg-adameds-300"
   >
-    <template #header>{{ title }} Gigi FDI</template>
+    <template #header>{{ title }}</template>
 
     <!-- BODY CONTENT -->
     <template #body>
@@ -258,17 +257,20 @@ const clearItemGigiPreview = () => {
             >
               <img :src="image" />
             </div>
+            <div v-if="errors.image" class="text-SM text-danger-300">
+              {{ errors.image }}
+            </div>
           </div>
         </div>
         <hr class="col-span-2 border-gray-200" />
-        <CustomSwitch
+        <!-- <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
           class="col-span-2"
-        />
+        /> -->
       </div>
 
       <!-- Kondisi untuk 'preview' -->
@@ -291,7 +293,7 @@ const clearItemGigiPreview = () => {
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
         <CustomInfoRow
           label="Kategori Gigi"
-          :value="payload.kategoriGigiName"
+          :value="payload.kategoriGigi.name"
         />
         <CustomInfoRow
           label="Referensi Sistem SATUSEHAT"
@@ -300,9 +302,14 @@ const clearItemGigiPreview = () => {
         <CustomInfoRow label="Code SATUSEHAT" :value="payload.code" />
         <CustomInfoRow label="Display SATUSEHAT" :value="payload.display" />
         <CustomInfoRow label="Nama Item Gigi" :value="payload.name" />
-        <CustomInfoRow label="Catatan" :value="payload.catatan ==='' ? '-': '-'" />
+        <CustomInfoRow
+          label="Catatan"
+          :value="
+            payload.catatan && payload.catatan != '' ? payload.catatan : '-'
+          "
+        />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status" :value="payload.status">
+        <!-- <CustomInfoRow label="Status" :value="payload.status">
           <template #value>
             <CustomChip
               :label="payload.status ? 'AKTIF' : 'NON-AKTIF'"
@@ -313,7 +320,7 @@ const clearItemGigiPreview = () => {
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
           </template>
-        </CustomInfoRow>
+        </CustomInfoRow> -->
         <CustomInfoRow label="Preview Gigi">
           <template #value>
             <div
@@ -340,6 +347,7 @@ const clearItemGigiPreview = () => {
           @click="resetForm()"
         ></CustomButton>
         <CustomButton
+          v-if="method === 'add' || method === 'edit'"
           label="Simpan"
           @click="onSubmit"
         ></CustomButton>

@@ -209,6 +209,7 @@ const filterStatus = async (status: string) => {
       <DataPoliBPJSHeader
         ref="headerPoliBPJSRef"
         @search="search"
+        @reload-data="search"
         @payment="search"
         :filter-menu="filter"
         :filter-data="filterData"

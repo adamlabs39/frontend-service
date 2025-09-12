@@ -1,18 +1,97 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { computed, ref, type PropType } from "vue";
+import type { MenuItem } from "primevue/menuitem";
+import { useForm, ErrorMessage } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+
+
+const props = defineProps({
+  pageType: {
+    type: String,
+    required: true,
+  },
+  dataBreadCrumb: {
+    type: Array as PropType<MenuItem[]>,
+    default: () => [],
+  },
+  formType: {
+    type: String,
+    default: "",
+  },
+  isDetail: {
+    type: Boolean,
+    required: false,
+  },
+  openedPatientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
+});
 
 const historyVisitDialog = ref(false);
-const submitForm = () => {
-  console.log("Submited Patient Identity Form");
+
+const isOrderStatus = computed(() => {
+  return props.openedPatientData?.orderStatus === 3;
+});
+
+const hasilPemeriksaanSchema = computed(() =>
+  toTypedSchema(
+    yup.object({
+      orderLabUuid: yup.string().uuid().required("Order lab UUID wajib diisi"),
+      hasilPemeriksaan: yup.array().of(
+        yup.object({
+          observationItemUuid: yup
+            .string()
+            .uuid()
+            .required("Observation item UUID wajib diisi"),
+          result: yup.string() || null,
+        })
+      ),
+    })
+  )
+);
+
+const { errors, handleSubmit, defineField, setFieldValue } = useForm({
+  validationSchema: hasilPemeriksaanSchema,
+  initialValues: {
+    orderLabUuid: props.openedPatientData.uuid,
+    hasilPemeriksaan: [],
+  },
+});
+
+const [orderLabUuid] = defineField("orderLabUuid");
+const [hasilPemeriksaan] = defineField("hasilPemeriksaan");
+
+const onSubmit = async () => {
+  try {
+    const values = await handleSubmit((values) => values)();
+
+    const hasilPemeriksaanPayload =
+      props.openedPatientData?.hasilPemeriksaan?.map((item: any) => ({
+        observationItemUuid: item.uuid,
+        result: item.result,
+      })) ?? [];
+
+    const modifiedValues = {
+      ...values,
+      hasilPemeriksaan: hasilPemeriksaanPayload,
+      orderLabUuid: props.openedPatientData.uuid,
+    };
+    return modifiedValues;
+  } catch (e) {
+    throw e;
+  }
 };
 
 defineExpose({
-  submitForm,
+  onSubmit,
 });
 </script>
 
@@ -39,46 +118,64 @@ defineExpose({
             <p class="text-xs font-bold underline underline-offset-2">
               Dokter Penanggung Jawab
             </p>
-            <p>dr. Nama Dokter</p>
+            <p class="">
+              {{ openedPatientData.practitioner?.pegawai?.firstTitle }}
+              {{ openedPatientData.practitioner?.pegawai?.name }}
+              {{ openedPatientData.practitioner?.pegawai?.lastTitle }}
+            </p>
           </div>
 
           <div>
             <p class="mr-2 text-xs font-bold underline underline-offset-2">
               Spesimen
             </p>
-            <div class="flex gap-1 mt-1">
-              <CustomButton class="w-auto h-5 text-xs">Urine</CustomButton>
-              <CustomButton class="w-auto h-5 text-xs">Darah</CustomButton>
+            <div
+              class="flex gap-1 mt-1"
+              v-if="openedPatientData.spesimenUuids?.length"
+            >
+              <div
+                v-for="items in openedPatientData.spesimenUuids"
+                :key="items"
+              >
+                <CustomChip
+                  :label="items.name"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  customClass="h-6"
+                  class="mr-[5px]"
+                />
+              </div>
             </div>
           </div>
-             <div class="basis-1/4">
+          <div class="basis-1/4">
             <p class="text-xs font-bold underline underline-offset-2">
               Status Puasa
             </p>
-            <p>Tidak</p>
+            <p>{{ openedPatientData.statusPuasa ? "Iya" : "Tidak" }}</p>
           </div>
-            <div class="basis-1/4">
-            <p class="text-xs font-bold underline underline-offset-2">
-              CITO
-            </p>
-            <p>Tidak</p>
+          <div class="basis-1/4">
+            <p class="text-xs font-bold underline underline-offset-2">CITO</p>
+            <p>{{ openedPatientData.cito ? "Iya" : "Tidak" }}</p>
           </div>
         </div>
         <card class="mt-4 bg-adameds-50">
           <template #content>
             <div class="flex justify-between">
               <div class="flex">
-                <p class="text-base font-bold text-adameds-300">LAB1234</p>
-                <div class="bg-black w-[2px] h-[15px] ml-2 mt-1"></div>
-                <p class="ml-2 text-base ">
-                  Kimia Klinik
+                <p class="text-base font-bold text-adameds-300">
+                  {{ openedPatientData.noOrder }}
                 </p>
+                <div class="bg-black w-[2px] h-[15px] ml-2 mt-1"></div>
+                <p class="ml-2 text-base">Kimia Klinik</p>
               </div>
             </div>
           </template>
         </card>
         <div class="pt-5 mt-[-20px]">
           <DataTable
+            :value="openedPatientData.hasilPemeriksaan"
             class="overflow-hidden rounded-[10px]"
             scrollable
             scrollHeight="flex"
@@ -89,32 +186,41 @@ defineExpose({
                 <div class="flex justify-between">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.pemeriksaanName }}
+                      {{ slotProps.data.itemPemeriksaan.name }}
                     </p>
                   </div>
                 </div>
               </template>
             </Column>
-            
-            
-            <Column field="hasilPemeriksaan" header="Hasil Pemeriksaan" >
-           <template #body="slotProps">
-                <CustomInputNumber
+
+            <Column field="result" header="Hasil Pemeriksaan">
+              <template #body="slotProps">
+                <CustomTextfield
                   :show-label="false"
-                  v-model="slotProps.data.jumlah"
-              
+                  v-model="slotProps.data.result"
+                  :disabled="isOrderStatus"
                   class=""
+                  @update:model-value="
+                    (value) => {
+                      setFieldValue(
+                        `hasilPemeriksaan.${slotProps.data.index}.result`,
+                        value
+                      );
+                    }
+                  "
                 />
               </template>
             </Column>
-            
+
             <Column field="flags" header="Flags" class="w-[10%]">
               <template #body="slotProps">
                 <div class="flex justify-between">
                   <div>
-                    <p class="text-SM">
-                      {{ slotProps.data.pemeriksaanName }}
-                    </p>
+                    <CustomButton
+                      :label="slotProps.data.flag ? slotProps.data.flag : '-'"
+                      background-color="bg-mediumGrey-300"
+                      text-color="text-mediumGrey-500"
+                    />
                   </div>
                 </div>
               </template>
@@ -124,7 +230,7 @@ defineExpose({
                 <div class="flex justify-between">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.pemeriksaanName }}
+                      {{ slotProps.data.itemPemeriksaan.metode }}
                     </p>
                   </div>
                 </div>
@@ -135,7 +241,7 @@ defineExpose({
                 <div class="flex justify-between">
                   <div>
                     <p class="text-SM">
-                      {{ slotProps.data.pemeriksaanName }}
+                      {{ slotProps.data.itemPemeriksaan.satuan }}
                     </p>
                   </div>
                 </div>
@@ -146,24 +252,39 @@ defineExpose({
               <template #body="slotProps">
                 <div>
                   <p class="text-sm">
-                    {{ slotProps.data.diagnosa }}
+                    {{ slotProps.data.itemPemeriksaan.nilaiRujukan || "-" }}
                   </p>
                 </div>
               </template>
             </Column>
-            <Column field="statusPemeriksaan">
+            <Column field="statusPeriksa">
               <template #header>
                 <div class="font-bold text-center">Status Pemeriksaan</div>
               </template>
               <template #body="slotProps">
-                <div class="text-center text-SM">
-                  {{ slotProps.data.harga }}
-                </div>
+                <CustomChip
+                  :showCheckedIcon="false"
+                  :label="
+                    slotProps.data.statusPeriksa == false
+                      ? 'Belum Selesai'
+                      : 'Selesai'
+                  "
+                  :bgColor="
+                    slotProps.data.statusPeriksa == false
+                      ? 'bg-mediumGrey-300'
+                      : 'bg-male-75'
+                  "
+                  :textColor="
+                    slotProps.data.statusPeriksa == false
+                      ? 'text-mediumGrey-500'
+                      : 'text-male-300'
+                  "
+                  customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
+                />
               </template>
             </Column>
           </DataTable>
         </div>
-    
       </div>
     </template>
     <template #collapseIcon>

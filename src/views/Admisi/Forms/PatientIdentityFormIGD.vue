@@ -40,6 +40,7 @@ const props = defineProps({
   },
 });
 
+
 const fetchProvinsi = async () => {
   try {
     const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
@@ -190,6 +191,7 @@ const setSelectedPatientData = async (data: any) => {
 const selectedDataPatient = ref<any>();
 const patientAge = ref("");
 
+
 const schema = toTypedSchema(
   yup
     .object({
@@ -209,7 +211,29 @@ const schema = toTypedSchema(
         ),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -742,16 +766,11 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
-          <!-- FIXME Dummy -->
-          <CustomSelect
+          <CustomTextfield
             v-model="addressPostalCode"
             label="Kode Pos"
-            placeHolder="Pilih Kode Pos"
+            placeholder="Kode Pos"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['10110', '40115', '60241']"
             :disabled="isDetail"
             :invalid="!!errors['address.postalCode']"
             :invalidMessage="errors['address.postalCode']"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -14,12 +14,22 @@ import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const praktisiStore = usePraktisiStore();
 const penjaminStore = usePenjaminStore();
 const admisiRJStore = useAdmisiRJStore();
+const lokasiStore = useLokasiStore();
+const filteredDpjp = computed(() => {
+  if (!selectedPoli.value) return [];
+  return listDpjp.value.filter(
+    (dpjp: any) =>
+      String(dpjp.poliUuid).toLowerCase() ===
+      String(selectedPoli.value).toLowerCase()
+  );
+});
 
 const props = defineProps({
   pageType: {
@@ -48,6 +58,41 @@ const filterPoliList = ref([]);
 const listDpjp = ref<any[]>([]);
 const listPenjamin = ref<any[]>([]);
 const listJadwalDokter = ref<any[]>([]);
+const selectedJadwalPoli = ref("");
+const selectedPoliUuid = ref("");
+
+const listJadwalDokterFiltered = computed(() => {
+  const currentUuid = practitionerUuid.value;
+
+  if (!currentUuid) {
+    return [];
+  }
+
+  const doctorSchedule = listJadwalDokter.value.find((item) => {
+    const isMatch = item.doctor.uuid === currentUuid;
+    return isMatch;
+  });
+
+  if (!doctorSchedule) {
+    return [];
+  }
+
+  const filtered = doctorSchedule.jadwalDokter.filter((jadwal: any) => {
+    const aktif = jadwal.status === "aktif";
+    return aktif;
+  });
+
+  const mapped = filtered.map((jadwal: any) => ({
+    uuid: jadwal.jadwalDokterUuid,
+    day: jadwal.day,
+    startTime: jadwal.startTime,
+    endTime: jadwal.endTime,
+    label: `${jadwal.day} | ${jadwal.startTime} - ${jadwal.endTime}`,
+  }));
+
+  return mapped;
+});
+
 
 const fetchUtils = async () => {
   try {
@@ -77,6 +122,47 @@ const fetchUtils = async () => {
     } else {
       listJadwalDokter.value = [];
     }
+
+    const responseLokasi = await lokasiStore.getApi(1,9999);
+    if (responseLokasi && responseLokasi.payload) {
+
+      filterPoliList.value = responseLokasi.payload
+      .filter((lokasi: any) => {
+        return (
+          lokasi.locationType?.toLowerCase() === "ward" &&
+          Boolean(lokasi.isPoli) === true
+        );
+      })
+      .map((lokasi: any) => ({
+        name: lokasi.name,
+        uuid: lokasi.uuid
+      }));
+
+    } else {
+      filterPoliList.value = [];
+    }
+
+    const responseDpjpPoli = await praktisiStore.getPractitionerApi({
+      limit: 9999,
+      non_doctor: false,
+    });
+    if (responseDpjpPoli && responseDpjpPoli.payload) {
+      watch(selectedPoliUuid, (uuidPoli) => {
+        if (!uuidPoli) {
+          listDpjp.value = [];
+          return;
+        }
+        listDpjp.value = responseDpjpPoli.payload.filter(
+          (praktisi: any) =>
+            praktisi.is_doctor &&
+            praktisi.status &&
+            praktisi.poli_pelayanan?.some(
+              (poli: any) => poli.lokasi_uuid === uuidPoli
+            )
+        );
+      });
+    }
+
   } catch (error) {
     console.error("Failed to fetch data", error);
   } finally {
@@ -84,52 +170,116 @@ const fetchUtils = async () => {
   }
 };
 
+watch(selectedJadwalPoli, async (poliUuid) => {
+  if (!poliUuid) {
+    listDpjp.value = [];
+    return;
+  }
+
+  try {
+    const responseDpjp = await praktisiStore.getPractitionerApi({ poli_uuid: poliUuid });
+    listDpjp.value = responseDpjp?.payload || [];
+  } catch (error) {
+    console.error("Gagal mengambil data DPJP", error);
+    listDpjp.value = [];
+  }
+});
+
+
+// const setFormData = () => {
+//   if (Object.keys(props.doctorVisitData).length) {
+//     let tempDoctorVisitData = props.doctorVisitData;
+//     setPoliDpjpJadwal(tempDoctorVisitData.jadwalDokterUuid);
+//     if (tempDoctorVisitData.paymentMethod == 2) {
+//       const tempInsurance = listPenjamin.value.find(
+//         (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
+//       );
+//       if (tempInsurance) {
+//         tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
+//       } else tempDoctorVisitData.insurance.penjaminUuid = "";
+//     }
+
+//     setValues({
+//       ...tempDoctorVisitData,
+//     });
+//     onPaymentMethodSelect(
+//       tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
+//     );
+//   }
+// };
+
 const setFormData = () => {
-  if (Object.keys(props.doctorVisitData).length) {
-    let tempDoctorVisitData = props.doctorVisitData;
-    setPoliDpjpJadwal(tempDoctorVisitData.jadwalDokterUuid);
-    if (tempDoctorVisitData.paymentMethod == 2) {
-      const tempInsurance = listPenjamin.value.find(
-        (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
-      );
-      if (tempInsurance) {
-        tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
-      } else tempDoctorVisitData.insurance.penjaminUuid = "";
+  if (Object.keys(props.doctorVisitData).length && listPenjamin.value.length) {
+    const rawData = props.doctorVisitData;
+
+    const matchedPenjamin = listPenjamin.value.find(
+      (penjamin) => penjamin.code === rawData.insurance?.code
+    );
+    
+    if (rawData.practitioner && rawData.practitioner.pegawai) {
+        rawData.practitioner.pegawai.name = rawData.practitioner.pegawai.nama;
     }
 
-    setValues({
-      ...tempDoctorVisitData,
-    });
-    onPaymentMethodSelect(
-      tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
-    );
+    const formData = {
+      ...rawData,
+      selectedPoli: rawData.lokasi_uuid,
+      practitionerUuid: rawData.practitioner_uuid,
+      jadwalDokterUuid: rawData.jadwal_dokter_uuid,
+      paymentMethod: rawData.payment_method === 2 ? "ASURANSI" : "TUNAI",
+      insurance: {
+        penjaminUuid: matchedPenjamin ? matchedPenjamin.uuid : "",
+        accountNumber: rawData.insurance?.account_number,
+        classEntitle: rawData.insurance?.class_entitle,
+      },
+    };
+
+    setValues(formData);
+    
+    onPaymentMethodSelect(formData.paymentMethod);
+    setPoliDpjpJadwal(formData.jadwalDokterUuid);
   }
 };
 
-onMounted(() => {
-  fetchUtils();
-  setFormData();
+// onMounted(() => {
+//   fetchUtils();
+//   setFormData();
+// });
+
+onMounted(async () => {
+  await fetchUtils(); 
+  setFormData();      
 });
 
-onUpdated(() => {
-  fetchUtils();
-  setFormData();
+// onUpdated(() => {
+//   fetchUtils();
+//   setFormData();
+// });
+watch(() => props.doctorVisitData, (newData) => {
+  if (newData && Object.keys(newData).length > 0) {
+    console.log("props.doctorVisitData berubah, form akan di-update.");
+    setFormData(); // Panggil setFormData hanya saat props ini berubah
+  }
+}, {
+  deep: true,
+  immediate: false
 });
 
-const selectedJadwalPoli = ref("");
 const selectedJadwalDpjp = ref("");
-const setPoliDpjpJadwal = (uuid: any) => {
-  if (uuid) {
-    let tempDataJadwal = listJadwalDokter.value.find(
-      (data) => data.uuid == uuid
+const setPoliDpjpJadwal = (jadwalDokterUuid: string) => {
+  if (jadwalDokterUuid) {
+    const tempDataJadwal = listJadwalDokter.value.find(
+      (data) => data.uuid === jadwalDokterUuid
     );
     if (tempDataJadwal) {
-      selectedJadwalPoli.value = tempDataJadwal.poli;
-      selectedJadwalDpjp.value = tempDataJadwal.name;
+      selectedJadwalPoli.value = tempDataJadwal.poliName;
+      selectedJadwalDpjp.value = tempDataJadwal.doctorName;
     } else {
       selectedJadwalPoli.value = "";
       selectedJadwalDpjp.value = "";
     }
+  } else {
+    selectedJadwalPoli.value = "";
+    selectedJadwalDpjp.value = "";
   }
 };
 
@@ -145,9 +295,9 @@ const schema = computed(() =>
       .object({
         paymentMethod: yup.string().default("TUNAI"),
         jadwalDokterUuid:
-          props.pageType == "igd"
-            ? yup.string()
-            : yup.string().required("Jadwal harus dipilih"),
+          props.pageType == "rawat-jalan"
+            ? yup.string().required("Jadwal harus dipilih")
+            : yup.string(),
         maternity: yup.boolean(),
         complaint: yup.string().default(""),
         note: yup.string().default(""),
@@ -173,8 +323,13 @@ const schema = computed(() =>
           .noUnknown(),
         // NOTE IGD
         practitionerUuid:
-          props.pageType == "igd"
+          props.pageType == "igd" || props.pageType == "rawat-jalan"
             ? yup.string().required("DPJP harus dipilih")
+            : yup.string(),
+        // NOTE RJ
+        selectedPoli:
+          props.pageType == 'rawat-jalan'
+            ? yup.string().required("Poli harus dipilih")
             : yup.string(),
       })
       .noUnknown()
@@ -193,6 +348,7 @@ const [insuranceUuid] = defineField("insurance.penjaminUuid");
 const [insuranceAccount] = defineField("insurance.accountNumber");
 const [insuranceClass] = defineField("insurance.classEntitle");
 // NOTE Rawat Jalan
+const [selectedPoli] = defineField("selectedPoli");
 const [jadwalDokterUuid] = defineField("jadwalDokterUuid");
 // NOTE IGD
 const [practitionerUuid] = defineField("practitionerUuid");
@@ -226,6 +382,7 @@ defineExpose({
             }}
           </span>
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('TUNAI')"
             label="TUNAI"
             borderColor="border-adameds-300"
             bgColor="bg-adameds-50"
@@ -235,9 +392,11 @@ defineExpose({
             class="my-auto ml-5"
             :isSelected="selectedPaymentMethod.includes('TUNAI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-adameds-300 border-adameds-300"
           />
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('ASURANSI')"
             label="ASURANSI"
             borderColor="border-warning-300"
             bgColor="bg-warning-50"
@@ -247,6 +406,7 @@ defineExpose({
             class="ml-[10px] my-auto"
             :isSelected="selectedPaymentMethod.includes('ASURANSI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-warning-300 border-warning-300"
           />
         </div>
@@ -265,53 +425,61 @@ defineExpose({
           >
             <CustomSelect
               v-if="pageType == 'rawat-jalan'"
-              v-model="selectedJadwalPoli"
+              v-model="selectedPoli"
               label="Poli"
               placeHolder="Pilih Poli"
-              class=""
               optionLabel="name"
               optionValue="uuid"
               :showFilter="false"
               :options="filterPoliList"
               :disabled="isDetail"
+              :invalid="!!errors.selectedPoli" 
+              :invalidMessage="errors.selectedPoli"
             />
             <CustomSelect
-              v-model="practitionerUuid"
-              label="DPJP"
-              placeHolder="Pilih DPJP"
-              :class="{
-                'col-span-2': pageType == 'igd',
-              }"
-              optionLabel="pegawai.name"
-              optionValue="uuid"
-              :options="listDpjp"
-              :showFilter="false"
-              :disabled="isDetail"
-              :invalid="!!errors.practitionerUuid"
-              :invalidMessage="errors.practitionerUuid"
-            />
+                v-model="practitionerUuid"
+                label="DPJP"
+                placeHolder="Pilih DPJP"
+                :class="{ 'col-span-2': pageType == 'igd' }"
+                optionLabel="pegawai.name"
+                optionValue="uuid"
+                :options="
+                  pageType === 'igd'
+                    ? listDpjp
+                    : selectedPoli
+                      ? listDpjp.filter((dpjp: any) =>
+                          dpjp.poliPelayanan?.some(
+                            (p: any) =>
+                              String(p.lokasiUuid).toLowerCase() ===
+                              String(selectedPoli).toLowerCase()
+                          )
+                        )
+                      : []
+                "
+                :showFilter="false"
+                :disabled="isDetail || (pageType !== 'igd' && !selectedPoli)"
+                :invalid="!!errors.practitionerUuid"
+                :invalidMessage="errors.practitionerUuid"
+              />
             <!-- FIXME Dummy data -->
             <!-- NOTE Harus ada api baru untuk menampilkan data jadwal dengan filter dokter poli dan jam saat ini -->
             <CustomSelect
-              v-if="pageType == 'rawat-jalan'"
-              v-model="jadwalDokterUuid"
-              @update:model-value="setPoliDpjpJadwal"
-              label="Jadwal"
-              placeHolder="Pilih Jadwal"
-              class=""
-              optionLabel="practitioner.pegawai.nama"
-              optionValue="uuid"
-              :showFilter="false"
-              :options="listJadwalDokter"
-              :disabled="isDetail"
-              :invalid="!!errors.jadwalDokterUuid"
-              :invalidMessage="errors.jadwalDokterUuid"
-            >
-              <template #customOptions="{ option }">
-                {{ option.lokasi.name }} ({{ option.practitioner.pegawai.nama }}) | {{ option.day }} -
-                {{ option.startTime }}
-              </template>
-            </CustomSelect>
+                v-if="pageType == 'rawat-jalan'"
+                v-model="jadwalDokterUuid"
+                :options="listJadwalDokterFiltered"
+                optionValue="uuid"
+                optionLabel="label"
+                label="Jadwal" 
+                placeHolder="Pilih Jadwal"
+                :disabled="isDetail && !practitionerUuid"
+                :showFilter="false"
+                :invalid="!!errors.jadwalDokterUuid"
+                :invalidMessage="errors.jadwalDokterUuid"
+              >
+                <template #customOptions="{ option }">
+                  {{ option.day }} | {{ option.startTime }} - {{ option.endTime }}
+                </template>
+              </CustomSelect>
             <CustomTextfield
               v-if="pageType == 'igd'"
               v-model="complaint"
