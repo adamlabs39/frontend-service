@@ -69,6 +69,8 @@ const mapGender = (g?: string) => {
   return g;
 };
 
+const getTiketData = ref();
+
 onMounted(() => {
   // Log response dari apmSucces.txt
   if (route.query.data) {
@@ -77,38 +79,40 @@ onMounted(() => {
         decodeURIComponent(route.query.data as string)
       );
       console.log("APM Success Response (apmSucces.txt):", responseData);
+      getTiketData.value = responseData;
+      console.log(getTiketData.value);
 
-      // Update tiket antrian dengan data dari response
-      if (responseData) {
-        tiketAntrian.value = {
-          noRM: responseData.patient?.no_rm || "00-00-00",
-          noBooking: responseData.kode_booking || "63DJ83",
-          noRegistrasi: responseData.no_reg || "REG2407010049",
-          noBPJS: "", // Tidak ada di response
-          nik: responseData.patient?.no_identity || "327012371204102",
-          nama:
-            responseData.patient?.name || "Nama Lengkap Pasien Jika Panjang",
-          tanggalLahir:
-            formatDateId(responseData.patient?.birth_detail?.birth_date) ||
-            "01 Januari 2000",
-          gender: mapGender(responseData.patient?.gender) || "Laki-laki",
-          namaPoli: responseData.lokasi?.name || "Poli Anak",
-          dokter: `${
-            responseData.practitioner?.pegawai?.first_title || "dr."
-          } ${responseData.practitioner?.pegawai?.nama || "Nama Dokter"} ${
-            responseData.practitioner?.pegawai?.last_title || ""
-          }`.trim(),
-          jadwal: `${responseData.jadwal_dokter?.start_time || "07:00"} - ${
-            responseData.jadwal_dokter?.end_time || "10:00"
-          }`,
-          tanggal: new Date().toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }),
-          noAntri: responseData.no_antrian_poli || "PD-02-01",
-        };
-      }
+      // // Update tiket antrian dengan data dari response
+      // if (responseData) {
+      //   tiketAntrian.value = {
+      //     noRM: responseData.patient?.no_rm || "00-00-00",
+      //     noBooking: responseData.kode_booking || "63DJ83",
+      //     noRegistrasi: responseData.no_reg || "REG2407010049",
+      //     noBPJS: "", // Tidak ada di response
+      //     nik: responseData.patient?.no_identity || "327012371204102",
+      //     nama:
+      //       responseData.patient?.name || "Nama Lengkap Pasien Jika Panjang",
+      //     tanggalLahir:
+      //       formatDateId(responseData.patient?.birth_detail?.birth_date) ||
+      //       "01 Januari 2000",
+      //     gender: mapGender(responseData.patient?.gender) || "Laki-laki",
+      //     namaPoli: responseData.lokasi?.name || "Poli Anak",
+      //     dokter: `${
+      //       responseData.practitioner?.pegawai?.first_title || "dr."
+      //     } ${responseData.practitioner?.pegawai?.nama || "Nama Dokter"} ${
+      //       responseData.practitioner?.pegawai?.last_title || ""
+      //     }`.trim(),
+      //     jadwal: `${responseData.jadwal_dokter?.start_time || "07:00"} - ${
+      //       responseData.jadwal_dokter?.end_time || "10:00"
+      //     }`,
+      //     tanggal: new Date().toLocaleDateString("id-ID", {
+      //       day: "2-digit",
+      //       month: "short",
+      //       year: "numeric",
+      //     }),
+      //     noAntri: responseData.no_antrian_poli || "PD-02-01",
+      //   };
+      // }
     } catch (error) {
       console.error("Error parsing response data:", error);
     }
@@ -172,7 +176,7 @@ onMounted(() => {
           </div>
 
           <div class="flex justify-center items-center px-16">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="mt-14" />
+            <TiketAntrian :tiketAntrian="getTiketData" class="mt-14" />
           </div>
         </div>
       </div>
