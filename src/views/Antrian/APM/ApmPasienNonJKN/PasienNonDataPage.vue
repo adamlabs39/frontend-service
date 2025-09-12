@@ -116,15 +116,21 @@ const mapGender = (g?: string) => {
 };
 
 onMounted(() => {
-  const status = (route.query.status as string) || "";
+  // Baca dari 'status' (sumber utama), fallback ke 'patient_status' (saat datang dari Poli)
+  const status = ((route.query.status as string) ||
+    (route.query.patient_status as string) ||
+    "") as string;
   patientStatus.value = status;
 
-  if (status === "success" && route.query.data) {
-    // Pasien lama - tampilkan semua data
+  if (status === "success" && (route.query.data || route.query.patient_data)) {
+    // Bisa datang dalam 'data' (dari DaftarPasienNonPage atau saat kembali dari Poli)
+    // atau 'patient_data' (saat pergi ke Poli)
+    const raw =
+      (route.query.data as string) ||
+      (route.query.patient_data as string) ||
+      "";
     try {
-      const payload = JSON.parse(
-        decodeURIComponent(route.query.data as string)
-      );
+      const payload = JSON.parse(decodeURIComponent(raw));
       dataPasien.value = {
         noRM: payload.no_rm || "",
         nik: payload.no_identity || "",

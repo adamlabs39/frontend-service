@@ -52,8 +52,29 @@ const hasScheduleToday = (item: any) => {
 const isDoctorDisabled = (item: any) => !hasScheduleToday(item);
 
 const handleBack = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/data-pasien");
+  // Ambil data yang dibawa dari halaman sebelumnya
+  const status = (route.query.patient_status as string) || "";
+  const identity = (route.query.identity as string) || "";
+  const no_identity = (route.query.no_identity as string) || "";
+  const patient_data = route.query.patient_data as string | undefined;
+
+  // Siapkan query untuk kembali ke Data Pasien
+  const query: Record<string, string> = {
+    status: status === "success" ? "success" : "not_found",
+    identity,
+    no_identity,
+  };
+  if (status === "success" && patient_data) {
+    // Kirim ulang data encoded JSON agar PasienNonDataPage bisa menampilkan detail lengkap
+    query.data = patient_data;
+  }
+
+  router.push({
+    path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
+    query,
+  });
 };
+
 const handleBerhasil = async () => {
   try {
     useUtilsStore.setLoading(true);
