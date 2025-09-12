@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType, watch } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType, watch, nextTick } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -186,82 +186,53 @@ watch(selectedJadwalPoli, async (poliUuid) => {
 });
 
 
-// const setFormData = () => {
-//   if (Object.keys(props.doctorVisitData).length) {
-//     let tempDoctorVisitData = props.doctorVisitData;
-//     setPoliDpjpJadwal(tempDoctorVisitData.jadwalDokterUuid);
-//     if (tempDoctorVisitData.paymentMethod == 2) {
-//       const tempInsurance = listPenjamin.value.find(
-//         (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
-//       );
-//       if (tempInsurance) {
-//         tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
-//       } else tempDoctorVisitData.insurance.penjaminUuid = "";
-//     }
-
-//     setValues({
-//       ...tempDoctorVisitData,
-//     });
-//     onPaymentMethodSelect(
-//       tempDoctorVisitData.paymentMethod == "1" ? "TUNAI" : "ASURANSI"
-//     );
-//   }
-// };
-
 const setFormData = () => {
-  if (Object.keys(props.doctorVisitData).length && listPenjamin.value.length) {
-    const rawData = props.doctorVisitData;
-
-    const matchedPenjamin = listPenjamin.value.find(
-      (penjamin) => penjamin.code === rawData.insurance?.code
-    );
-    
-    if (rawData.practitioner && rawData.practitioner.pegawai) {
-        rawData.practitioner.pegawai.name = rawData.practitioner.pegawai.nama;
-    }
-
-    const formData = {
-      ...rawData,
-      selectedPoli: rawData.lokasi_uuid,
-      practitionerUuid: rawData.practitioner_uuid,
-      jadwalDokterUuid: rawData.jadwal_dokter_uuid,
-      paymentMethod: rawData.payment_method === 2 ? "ASURANSI" : "TUNAI",
-      insurance: {
-        penjaminUuid: matchedPenjamin ? matchedPenjamin.uuid : "",
-        accountNumber: rawData.insurance?.account_number,
-        classEntitle: rawData.insurance?.class_entitle,
-      },
-    };
-
-    setValues(formData);
-    
-    onPaymentMethodSelect(formData.paymentMethod);
-    setPoliDpjpJadwal(formData.jadwalDokterUuid);
+  if (!props.doctorVisitData || Object.keys(props.doctorVisitData).length === 0) {
+    resetForm(); 
+    selectedPaymentMethod.value = 'TUNAI';
+    return;
   }
-};
 
-// onMounted(() => {
-//   fetchUtils();
-//   setFormData();
-// });
+  const matchedPenjamin = listPenjamin.value.find(
+    (penjamin) => penjamin.code === props.doctorVisitData.insurance?.code
+  );
+  
+  if (props.doctorVisitData.practitioner && props.doctorVisitData.practitioner.pegawai) {
+      props.doctorVisitData.practitioner.pegawai.name = props.doctorVisitData.practitioner.pegawai.nama;
+  }
+
+  const formData = {
+    ...props.doctorVisitData,
+    selectedPoli: props.doctorVisitData.lokasiUuid,
+    practitionerUuid: props.doctorVisitData.practitionerUuid,
+    jadwalDokterUuid: props.doctorVisitData.jadwalDokterUuid,
+    paymentMethod: props.doctorVisitData.paymentMethod === 2 ? "ASURANSI" : "TUNAI",
+    insurance: {
+      penjaminUuid: matchedPenjamin ? matchedPenjamin.uuid : "",
+      accountNumber: props.doctorVisitData.insurance?.accountNumber,
+      classEntitle: props.doctorVisitData.insurance?.classEntitle,
+    },
+  };
+
+  setValues(formData);
+  onPaymentMethodSelect(formData.paymentMethod);
+  setPoliDpjpJadwal(formData.jadwalDokterUuid);
+};
 
 onMounted(async () => {
   await fetchUtils(); 
   setFormData();      
 });
 
-// onUpdated(() => {
-//   fetchUtils();
-//   setFormData();
-// });
 watch(() => props.doctorVisitData, (newData) => {
   if (newData && Object.keys(newData).length > 0) {
-    console.log("props.doctorVisitData berubah, form akan di-update.");
-    setFormData(); // Panggil setFormData hanya saat props ini berubah
+    nextTick(() => {
+      setFormData();
+    });
   }
 }, {
   deep: true,
-  immediate: false
+  immediate: true 
 });
 
 const selectedJadwalDpjp = ref("");
@@ -471,7 +442,7 @@ defineExpose({
                 optionLabel="label"
                 label="Jadwal" 
                 placeHolder="Pilih Jadwal"
-                :disabled="isDetail && !practitionerUuid"
+                :disabled="isDetail"
                 :showFilter="false"
                 :invalid="!!errors.jadwalDokterUuid"
                 :invalidMessage="errors.jadwalDokterUuid"

@@ -168,8 +168,12 @@ const handleLewati = async (uuid: string) => {
 };
 
 const handleProses = async (uuid: string) => {
-  await antrianCallStore.updateAntrianCall(uuid, 4);
+  await antrianCallStore.updateAntrianCall(uuid, 3);
 };
+
+const handleSelesai = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 4);
+}
 
 const userData = ref<userData>();
 const logout = async () => {
@@ -514,6 +518,7 @@ const isSuperAdmin = getUserRole() === "super admin";
         @panggil="handlePanggil"
         @lewati="handleLewati"
         @proses="handleProses"
+        @selesai="handleSelesai"
       />
       </div>
     </div>

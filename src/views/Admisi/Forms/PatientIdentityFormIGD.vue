@@ -43,7 +43,7 @@ const props = defineProps({
 
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi(); 
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {
@@ -57,7 +57,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId); 
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -74,7 +74,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -90,7 +90,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId); 
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -149,7 +149,7 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (filter: string) => {
+const searchPatientData = async (query: string = "") => {
   if (timer.value) {
     clearTimeout(timer.value);
     timer.value = null;
@@ -158,18 +158,32 @@ const searchPatientData = async (filter: string) => {
     loadingSearchPatient.value = true;
     try {
       const response = await masterPasienStore.getMasterPasien({
-        q: filter,
+        q: query,
+        limit: 9999, 
       });
       if (response && response.payload) {
-        listDataPatient.value = response.payload;
-      } else listDataPatient.value = [];
+        listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
+          return {
+            ...patient,
+            searchableText: `${patient.name} ${patient.noRm}`
+          };
+        });
+      } else {
+        listDataPatient.value = [];
+      }
     } catch (error) {
       console.error("Failed to fetch data", error);
-      return [];
+      listDataPatient.value = [];
     } finally {
+      loadingSearchPatient.value = false;
     }
-    loadingSearchPatient.value = false;
   }, 800);
+};
+
+const fetchInitialPatientList = () => {
+  if (listDataPatient.value.length === 0) {
+    searchPatientData("");
+  }
 };
 
 const setSelectedPatientData = async (data: any) => {
@@ -400,13 +414,14 @@ defineExpose({
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
-            optionLabel="name"
+            optionLabel="searchableText"
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
             :disabled="withoutIdentity || isNewBorn || isDetail"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
+            @click="fetchInitialPatientList"
           >
             <template #customOptions="{ option }">
               {{ option.name }} ~ {{ option.noRm }}

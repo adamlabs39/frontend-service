@@ -549,6 +549,9 @@ const setFilter = () => {
         : (visitTypeFilter.value == "Semua" || !visitTypeFilter.value
             ? ""
             : visitTypeFilter.value);
+    filter.penjamin =
+      filterParams.penjamin ||
+      (!penjaminFilter.value ? "" : penjaminFilter.value);
   } else if (pageType.value == "penjamin") {
     filter.practitionerUuid =
       filterParams.practitioner_uuid ||
@@ -908,7 +911,6 @@ defineExpose({
       </CustomAccordion>
     </template>
     <template #content>
-      <!-- {{ rekapData }} -->
       <div class =" flex flex-col gap-6" v-if="reportType === 'rekap-kunjungan'">
     <CustomAccordion
       v-if="rekapTabelFilter.includes('kunjungan')"
@@ -1038,7 +1040,7 @@ defineExpose({
               v-model="filterParams.dpjp"
               placeHolder="Pilih Dokter"
               :showLabel="false"
-              class="mr-5 grow"
+              class="w-full md:w-1/4"
               optionLabel="name"
               optionValue="uuid"
               :options="[
@@ -1195,6 +1197,7 @@ defineExpose({
         </div>
       </template>
     </CustomAccordion>
+     <NoData v-else title="No Data Available" class="h-96" />
   </div>
       <Tabs v-else-if="reportData.length" v-model:value="reportType">
         <TabPanels class="p-0">

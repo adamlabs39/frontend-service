@@ -74,13 +74,10 @@ const search = async () => {
 const getPatientList = async () => {
   if (pageType.value == "rawat-jalan") {
     patientData.value = await fetchRJPatient();
-    console.log("Data rawat jalan:", patientData.value);
   } else if (pageType.value == "rawat-inap") {
     patientDataRI.value = await fetchRIPatient();
-    console.log("Data rawat inap:", patientDataRI.value);
   } else if (pageType.value == "igd") {
     patientDataIGD.value = await fetchIGDPatient();
-    console.log("Data IGD:", patientDataIGD.value);
   }
 };
 const fetchRJPatient = async () => {
@@ -170,8 +167,15 @@ onMounted(() => {
 });
 
 const openedPatientData = ref<any>({});
+const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
+  
+  if (openedPatientData.value.payment_method == 2) {
+    selectedPaymentMethod.value = "ASURANSI"; 
+  } else {
+    selectedPaymentMethod.value = "TUNAI";
+  }
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
@@ -309,13 +313,12 @@ const handlePage = (event: any) => {
             <div class="text-center">
               <div
                 v-if="
-                  slotProps.data.no_antrian_admisi && pageType == 'rawat-jalan'
+                  slotProps.data.noAntrianAdmisi && pageType == 'rawat-jalan'
                 "
                 class="w-min mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] px-2 leading-5 text-SM font-semibold px-"
               >
-                {{ slotProps.data.noAntrianAdmisi }}
+                {{ slotProps.data.noAntrianAdmisi ?? " " }}
               </div>
-              <div class="text-SM">{{ slotProps.data.noAntrianAdmisi ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noRm ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
               <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>

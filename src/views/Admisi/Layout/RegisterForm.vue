@@ -109,9 +109,10 @@ const setDetailDoctorVisitData = (patientData: any) => {
       note: patientData.note,
       insurance: patientData.insurance,
       practitionerUuid: patientData.practitionerUuid,
+      lokasiUuid: patientData.lokasiUuid,
     };
     if (props.pageType == "rawat-jalan") {
-      delete tempOpenedDoctorVisit.practitionerUuid;
+      // delete tempOpenedDoctorVisit.practitionerUuid;
     } else {
       delete tempOpenedDoctorVisit.jadwalDokterUuid;
     }
@@ -128,7 +129,6 @@ const setDetailDoctorVisitData = (patientData: any) => {
       finalDataToPass.roomClassName = roomData.className;
       finalDataToPass.monitoringRoomUuid = patientData.monitoringRoom.uuid;
     }
-    console.log("PARENT (RegisterForm): Data yang AKAN DIKIRIM ke anak:", finalDataToPass);
     openedDoctorVisitData.value = finalDataToPass;
   }
 };
@@ -174,7 +174,6 @@ const handlePrintPatientVisit = async () => {
   const patientIdentityData = openedPatientData.value;
   const visitDetailData = fullVisitData.value;
 
-  console.log("isinya ini: ", visitDetailData.insurance)
 
   const completeVisitData = {
     queueNumber: visitDetailData.noAntrianPoli || '-',
@@ -322,8 +321,6 @@ const postRegisterPatient = async () => {
   } else {
     tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
   }
-  console.log("tempPatientData", tempPatientData);
-  console.log("tempDocterVisitData", tempDocterVisitData);
 
   if (tempPatientData && tempDocterVisitData) {
     let tempBirthDate = formatDate(
@@ -395,8 +392,10 @@ const registPatient = async (type: string) => {
   } else if (type == "setuju-simpan") {
     await onSubmitGeneralConsent();
   }
+  emit('back');
   confirmSaveDialog.value = false;
   inputGeneralConsentDialog.value = false;
+  storeUtils.setLoading(false);
 };
 
 // NOTE General Consent
@@ -717,7 +716,7 @@ const deleteGeneralConsent = async () => {
         :doctorVisitData="openedDoctorVisitData"
       />
     </div>
-    <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+    <Card class="h-min mt-[10px] absolute z-10 bottom-0 right-0 left-0">
       <template #content>
         <div v-if="isDetail()" class="flex">
           <CustomButton
