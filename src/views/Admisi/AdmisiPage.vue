@@ -74,13 +74,10 @@ const search = async () => {
 const getPatientList = async () => {
   if (pageType.value == "rawat-jalan") {
     patientData.value = await fetchRJPatient();
-    console.log("Data rawat jalan:", patientData.value);
   } else if (pageType.value == "rawat-inap") {
     patientDataRI.value = await fetchRIPatient();
-    console.log("Data rawat inap:", patientDataRI.value);
   } else if (pageType.value == "igd") {
     patientDataIGD.value = await fetchIGDPatient();
-    console.log("Data IGD:", patientDataIGD.value);
   }
 };
 const fetchRJPatient = async () => {
@@ -173,10 +170,6 @@ const openedPatientData = ref<any>({});
 const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
-
-  console.log("Data Pasien yang Diklik:", openedPatientData.value);
-  console.log("Nilai payment_method:", openedPatientData.value.payment_method);
-  console.log("Tipe data payment_method:", typeof openedPatientData.value.payment_method);
   
   if (openedPatientData.value.payment_method == 2) {
     selectedPaymentMethod.value = "ASURANSI"; 

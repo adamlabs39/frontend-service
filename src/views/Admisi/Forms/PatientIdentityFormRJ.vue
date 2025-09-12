@@ -137,7 +137,6 @@ const setFormData = async (data: any, uuid: string = "") => {
 onMounted(() => {
   setFormData(props.patientData);
   fetchProvinsi();
-  searchPatientData()
 });
 
 onUpdated(() => {
@@ -148,17 +147,21 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (event?: { query: string }) => {
-  const query = event?.query || "";
+const searchPatientData = async (query: string = "") => {
   
-  loadingSearchPatient.value = true;
+  loadingSearchPatient.value = true;  
   try {
     const response = await masterPasienStore.getMasterPasien({
       q: query,
       limit: 9999,
     });
     if (response && response.payload) {
-      listDataPatient.value = response.payload;
+      listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
+        return {
+          ...patient,
+          searchableText: `${patient.name} ${patient.noRm}` 
+        };
+      });
     } else {
       listDataPatient.value = [];
     }
@@ -167,6 +170,12 @@ const searchPatientData = async (event?: { query: string }) => {
     listDataPatient.value = [];
   } finally {
     loadingSearchPatient.value = false;
+  }
+};
+
+const fetchInitialPatientList = () => {
+  if (listDataPatient.value.length === 0) {
+    searchPatientData("");
   }
 };
 
@@ -329,13 +338,14 @@ defineExpose({
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
-            optionLabel="name"
+            optionLabel="searchableText"
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
             :disabled="isDetail"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
+            @click="fetchInitialPatientList"
           >
             <template #customOptions="{ option }">
               {{ option.name }} ~ {{ option.noRm }}

@@ -170,53 +170,6 @@ const fetchUtils = async () => {
   }
 };
 
-// const fetchUtils = async () => {
-//   try {
-//     // Ambil SEMUA DPJP yang aktif, biarkan template yang memfilternya
-//     const responseDpjp = await praktisiStore.getApi({
-//       limit: 9999,
-//       non_doctor: false,
-//     });
-//     if (responseDpjp && responseDpjp.payload) {
-//       listDpjp.value = responseDpjp.payload.filter(
-//         (praktisi: any) => praktisi.isDoctor && praktisi.status
-//       );
-//     }
-
-//     const responsePenjamin = await penjaminStore.getAktifApi();
-//     if (responsePenjamin && responsePenjamin.payload) {
-//       listPenjamin.value = responsePenjamin.payload
-//     }
-
-//     const responseJadwalDokter = await admisiRJStore.getListJadwalDokter();
-//     if (responseJadwalDokter && responseJadwalDokter.payload) {
-//       listJadwalDokter.value = responseJadwalDokter.payload
-//     }
-
-//     const responseLokasi = await lokasiStore.getApi(1,9999);
-//     if (responseLokasi && responseLokasi.payload) {
-//       filterPoliList.value = responseLokasi.payload
-//       .filter((lokasi: any) => {
-//         return (
-//           lokasi.locationType?.toLowerCase() === "ward" &&
-//           Boolean(lokasi.isPoli) === true
-//         );
-//       })
-//       .map((lokasi: any) => ({
-//         name: lokasi.name,
-//         uuid: lokasi.uuid
-//       }));
-//     }
-
-//     // BLOK WATCH YANG SEBELUMNYA ADA DI SINI, SEKARANG SUDAH DIHAPUS
-
-//   } catch (error) {
-//     console.error("Failed to fetch data", error);
-//   } finally {
-//     storeUtils.setLoading(false);
-//   }
-// };
-
 watch(selectedJadwalPoli, async (poliUuid) => {
   if (!poliUuid) {
     listDpjp.value = [];
@@ -235,13 +188,11 @@ watch(selectedJadwalPoli, async (poliUuid) => {
 
 const setFormData = () => {
   if (!props.doctorVisitData || Object.keys(props.doctorVisitData).length === 0) {
-    console.log("props.doctorVisitData kosong, tidak menjalankan setFormData untuk 'Mode Buat Baru'.");
     resetForm(); 
     selectedPaymentMethod.value = 'TUNAI';
     return;
   }
 
-  console.log("props.doctorVisitData ada, menjalankan setFormData untuk 'Mode Edit/Detail'.", props.doctorVisitData);
   const matchedPenjamin = listPenjamin.value.find(
     (penjamin) => penjamin.code === props.doctorVisitData.insurance?.code
   );
@@ -268,58 +219,14 @@ const setFormData = () => {
   setPoliDpjpJadwal(formData.jadwalDokterUuid);
 };
 
-// const setFormData = () => {
-//   if (Object.keys(props.doctorVisitData).length && listPenjamin.value.length) {
-//     const rawData = props.doctorVisitData;
-
-//     const matchedPenjamin = listPenjamin.value.find(
-//       (penjamin) => penjamin.code === rawData.insurance?.code
-//     );
-    
-//     if (rawData.practitioner && rawData.practitioner.pegawai) {
-//         rawData.practitioner.pegawai.name = rawData.practitioner.pegawai.nama;
-//     }
-
-//     const formData = {
-//       ...rawData,
-//       selectedPoli: rawData.lokasi.uuid,
-//       practitionerUuid: rawData.practitioner.uuid,
-//       jadwalDokterUuid: rawData.jadwalDokter.uuid,
-//       paymentMethod: rawData.paymentMethod === 2 ? "ASURANSI" : "TUNAI",
-//       insurance: {
-//         penjaminUuid: matchedPenjamin ? matchedPenjamin.uuid : "",
-//         accountNumber: rawData.insurance?.accountNumber,
-//         classEntitle: rawData.insurance?.classEntitle,
-//       },
-//     };
-
-//     setValues(formData);
-    
-//     onPaymentMethodSelect(formData.paymentMethod);
-//     setPoliDpjpJadwal(formData.jadwalDokterUuid);
-//   }
-// };
-
-// onMounted(() => {
-//   fetchUtils();
-//   setFormData();
-// });
-
 onMounted(async () => {
   await fetchUtils(); 
   setFormData();      
 });
 
-// onUpdated(() => {
-//   fetchUtils();
-//   setFormData();
-// });
 watch(() => props.doctorVisitData, (newData) => {
   if (newData && Object.keys(newData).length > 0) {
-    // Jangan panggil setFormData secara langsung
-    // Bungkus dengan nextTick
     nextTick(() => {
-      console.log("Menjalankan setFormData di dalam nextTick");
       setFormData();
     });
   }

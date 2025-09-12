@@ -100,7 +100,6 @@ onBeforeMount(async () => {
 });
 
 const setDetailDoctorVisitData = (patientData: any) => {
-  console.log("PARENT (RegisterForm): Data yang DITERIMA dari API:", patientData);
   if (props.pageType == "rawat-jalan" || props.pageType == "igd") {
     let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
@@ -130,7 +129,6 @@ const setDetailDoctorVisitData = (patientData: any) => {
       finalDataToPass.roomClassName = roomData.className;
       finalDataToPass.monitoringRoomUuid = patientData.monitoringRoom.uuid;
     }
-    console.log("PARENT (RegisterForm): Data yang AKAN DIKIRIM ke anak:", finalDataToPass);
     openedDoctorVisitData.value = finalDataToPass;
   }
 };
@@ -176,7 +174,6 @@ const handlePrintPatientVisit = async () => {
   const patientIdentityData = openedPatientData.value;
   const visitDetailData = fullVisitData.value;
 
-  console.log("isinya ini: ", visitDetailData.insurance)
 
   const completeVisitData = {
     queueNumber: visitDetailData.noAntrianPoli || '-',
@@ -324,11 +321,8 @@ const postRegisterPatient = async () => {
   } else {
     tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
   }
-  console.log("Hasil dari form identitas pasien:", tempPatientData);
-  console.log("Hasil dari form detail kunjungan:", tempDocterVisitData);
 
   if (tempPatientData && tempDocterVisitData) {
-  console.log("Kondisi IF terpenuhi, akan memproses dan mengirim API...");
     let tempBirthDate = formatDate(
       tempPatientData!.birthDetail.birthDate,
       true
@@ -346,7 +340,6 @@ const postRegisterPatient = async () => {
         if (props.formType == "add") {
           response = await admisiRJStore.registRJ(payload);
         } else {
-          console.log("Memanggil updateRJ dengan UUID:", props.patientData.uuid);
           response = await admisiRJStore.updateRJ(
             props.patientData.uuid,
             payload
@@ -388,7 +381,6 @@ const postRegisterPatient = async () => {
     } finally {
       storeUtils.setLoading(false);
     }
-    console.log("Memanggil updateRJ dengan UUID:", props.patientData.uuid)
   }
 };
 
