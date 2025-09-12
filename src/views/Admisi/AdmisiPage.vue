@@ -170,8 +170,19 @@ onMounted(() => {
 });
 
 const openedPatientData = ref<any>({});
+const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
+
+  console.log("Data Pasien yang Diklik:", openedPatientData.value);
+  console.log("Nilai payment_method:", openedPatientData.value.payment_method);
+  console.log("Tipe data payment_method:", typeof openedPatientData.value.payment_method);
+  
+  if (openedPatientData.value.payment_method == 2) {
+    selectedPaymentMethod.value = "ASURANSI"; 
+  } else {
+    selectedPaymentMethod.value = "TUNAI";
+  }
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
@@ -309,13 +320,12 @@ const handlePage = (event: any) => {
             <div class="text-center">
               <div
                 v-if="
-                  slotProps.data.no_antrian_admisi && pageType == 'rawat-jalan'
+                  slotProps.data.noAntrianAdmisi && pageType == 'rawat-jalan'
                 "
                 class="w-min mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] px-2 leading-5 text-SM font-semibold px-"
               >
-                {{ slotProps.data.noAntrianAdmisi }}
+                {{ slotProps.data.noAntrianAdmisi ?? " " }}
               </div>
-              <div class="text-SM">{{ slotProps.data.noAntrianAdmisi ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noRm ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
               <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>

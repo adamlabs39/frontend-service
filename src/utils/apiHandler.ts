@@ -469,7 +469,7 @@ const apiAdmisiDelete = async (url: string, data: object) => {
   }
 };
 export const apiAdmisiDownload = async (url: string) => {
-  const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
+  const fullUrl = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
   
   try {
     const token = localStorage.getItem("access_token");

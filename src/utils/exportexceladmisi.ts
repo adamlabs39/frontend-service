@@ -23,15 +23,13 @@ const getPeriodeTeksFromFilter = (filter?: any) => {
   const formattedStartDate = formatTanggalIndonesia(filter?.start_date);
   const formattedEndDate = formatTanggalIndonesia(filter?.end_date);
 
-  // Logika untuk menampilkan periode atau tanggal tunggal
   if (formattedStartDate && formattedEndDate) {
     if (formattedStartDate === formattedEndDate) {
       return `Tanggal : ${formattedStartDate}`;
     }
     return `Periode : ${formattedStartDate} - ${formattedEndDate}`;
   }
-  
-  // Teks default jika tidak ada filter tanggal
+
   const today = new Date().toLocaleDateString("id-ID", {
       day: "2-digit", month: "long", year: "numeric",
   });
@@ -424,7 +422,7 @@ export const downloadExportExcelKeperawatanInapPasien = async (
       namaPasien: row.patient.name ?? "-",
       noRm: row.noRm ?? "-",
       ruangan: row.monitoringRoom?.room?.name ?? "-",
-      kelas: row.monitoringRoom?.bedLokasi?.className ?? "-",
+      kelas: row.monitoringRoom?.room?.className ?? "-",
       noBed: row.monitoringRoom?.noBed ?? "-",
       tglMasuk: row.tanggalDirawat ? epochToDate(row.tanggalDirawat, "date") : "-",
       tglKeluar: row.dischargeDate ? epochToDate(row.dischargeDate, "date") : "-",
@@ -598,6 +596,7 @@ export const downloadExportExcelBayiBaruLahir = async (
   }
 };
 
+// REKAP KUNJUNGAN
 export const downloadExportExcelRekapKunjungan = async (
   filter: any,
   

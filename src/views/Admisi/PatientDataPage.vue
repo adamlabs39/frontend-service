@@ -28,6 +28,7 @@ import { createPatientCard } from "@/utils/PdfMake";
 import axios from "axios";
 import { useDistrictStore } from "@/stores/datamaster/district";
 import { useAdmisiReportStore } from "@/stores/admisi/laporan";
+import { useToast } from "primevue/usetoast";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -37,7 +38,7 @@ const generalConsentStore = useGeneralConsentStore();
 const admisiReportStore = useAdmisiReportStore();
 const dataBreadCrumb = ref<MenuItem[]>([]);
 
-
+const toast = useToast();
 const handleExport = async () => {
   try {
     const response = await admisiReportStore.DownloadLaporanAdmisiReport();
@@ -125,6 +126,42 @@ const propertiesHistory = ref({
   pageSize: 5,
   total: 0,
 });
+const fetchHistoryData = async () => {
+  if (!patientUuid.value) {
+    console.warn("Tidak ada UUID pasien yang dipilih untuk mengambil riwayat.");
+    listHistoryPatient.value = [];
+    return;
+  }
+
+  storeUtils.setLoading(true);
+  try {
+    const payload = {
+      page: propertiesHistory.value.page,
+      limit: propertiesHistory.value.pageSize,
+    };
+
+    const response = await masterPasienStore.getPasienHistory({
+      uuid: patientUuid.value,
+      page: propertiesHistory.value.page,
+      limit: propertiesHistory.value.pageSize,
+    });
+
+    if (response && response.payload) {
+      listHistoryPatient.value = response.payload; 
+      propertiesHistory.value.total = response.properties.totalData;
+    } else {
+      listHistoryPatient.value = [];
+      propertiesHistory.value.total = 0;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil riwayat pasien:", error);
+    listHistoryPatient.value = [];
+    propertiesHistory.value.total = 0;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
 const search = ref("");
 const resetFilter = () => {
   search.value = ""
@@ -498,9 +535,11 @@ const handlePage = (event: any) => {
 const handlePageHistory = (event: any) => {
   propertiesHistory.value.page = event.page + 1;
   propertiesHistory.value.pageSize = event.rows;
-  fetchData();
-};
+  properties.value.page = propertiesHistory.value.page;
+  properties.value.pageSize = propertiesHistory.value.pageSize;
 
+  fetchHistoryData();
+};
 const files = ref<File[]>([]);
 const customUploadCallback = async (files: File[], uuid: string) => {
   if (!files[0]) {
@@ -511,7 +550,12 @@ const customUploadCallback = async (files: File[], uuid: string) => {
   const file = files[0];
 
   if (file.type !== "application/pdf") {
-    alert("File harus bertipe PDF");
+    toast.add({
+      severity: "error",
+      summary: "Warning",
+      detail: "File harus bertipe PDF",
+      life: 3000,
+    });
     return;
   }
 
@@ -557,7 +601,6 @@ const customUploadCallback = async (files: File[], uuid: string) => {
 
   } catch (error) {
     console.error("Upload gagal:", error);
-    alert("Upload gagal");
   }
 };
 

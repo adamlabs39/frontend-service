@@ -231,11 +231,6 @@ watch(() => props.doctorVisitData, (newData) => {
     }
 }, { deep: true });
 
-// onUpdated(() => {
-//   fetchUtils();
-//   setFormData();
-// });
-
 const listKelasRuangan = ref([
   { label: "Kelas 1", value: "Kelas 1" },
   { label: "Kelas 2", value: "Kelas 2" },

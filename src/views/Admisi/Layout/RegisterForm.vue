@@ -100,6 +100,7 @@ onBeforeMount(async () => {
 });
 
 const setDetailDoctorVisitData = (patientData: any) => {
+  console.log("PARENT (RegisterForm): Data yang DITERIMA dari API:", patientData);
   if (props.pageType == "rawat-jalan" || props.pageType == "igd") {
     let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
@@ -109,9 +110,10 @@ const setDetailDoctorVisitData = (patientData: any) => {
       note: patientData.note,
       insurance: patientData.insurance,
       practitionerUuid: patientData.practitionerUuid,
+      lokasiUuid: patientData.lokasiUuid,
     };
     if (props.pageType == "rawat-jalan") {
-      delete tempOpenedDoctorVisit.practitionerUuid;
+      // delete tempOpenedDoctorVisit.practitionerUuid;
     } else {
       delete tempOpenedDoctorVisit.jadwalDokterUuid;
     }
@@ -322,10 +324,11 @@ const postRegisterPatient = async () => {
   } else {
     tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
   }
-  console.log("tempPatientData", tempPatientData);
-  console.log("tempDocterVisitData", tempDocterVisitData);
+  console.log("Hasil dari form identitas pasien:", tempPatientData);
+  console.log("Hasil dari form detail kunjungan:", tempDocterVisitData);
 
   if (tempPatientData && tempDocterVisitData) {
+  console.log("Kondisi IF terpenuhi, akan memproses dan mengirim API...");
     let tempBirthDate = formatDate(
       tempPatientData!.birthDetail.birthDate,
       true
@@ -343,6 +346,7 @@ const postRegisterPatient = async () => {
         if (props.formType == "add") {
           response = await admisiRJStore.registRJ(payload);
         } else {
+          console.log("Memanggil updateRJ dengan UUID:", props.patientData.uuid);
           response = await admisiRJStore.updateRJ(
             props.patientData.uuid,
             payload
@@ -384,6 +388,7 @@ const postRegisterPatient = async () => {
     } finally {
       storeUtils.setLoading(false);
     }
+    console.log("Memanggil updateRJ dengan UUID:", props.patientData.uuid)
   }
 };
 
@@ -395,8 +400,10 @@ const registPatient = async (type: string) => {
   } else if (type == "setuju-simpan") {
     await onSubmitGeneralConsent();
   }
+  emit('back');
   confirmSaveDialog.value = false;
   inputGeneralConsentDialog.value = false;
+  storeUtils.setLoading(false);
 };
 
 // NOTE General Consent
@@ -717,7 +724,7 @@ const deleteGeneralConsent = async () => {
         :doctorVisitData="openedDoctorVisitData"
       />
     </div>
-    <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+    <Card class="h-min mt-[10px] absolute z-10 bottom-0 right-0 left-0">
       <template #content>
         <div v-if="isDetail()" class="flex">
           <CustomButton
