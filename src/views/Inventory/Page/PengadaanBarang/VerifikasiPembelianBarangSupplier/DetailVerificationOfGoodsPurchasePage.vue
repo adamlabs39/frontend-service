@@ -1,25 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, type PropType } from "vue";
-import { usePurchasingOfSupplierStore } from "@/stores/inventory/purchasingOfSupplier";
+import { ref, onMounted } from "vue";
+import { useVerificationOfGoodsPurchaseStore } from "@/stores/inventory/verificationOfGoodsPurchase";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
-import type { MenuItem } from "primevue/menuitem";
 
 const props = defineProps({
   pageType: {
     type: String,
     required: true,
-  },
-  dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
   },
   selectedData: {
     type: Object,
@@ -27,24 +19,10 @@ const props = defineProps({
   },
 });
 
-// Title Label
-const pageType = ref("");
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const changeSection = (label: string) => {
-  if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
-  } else {
-    dataBreadCrumb.value.push({ label: label });
-  }
-};
-
 // State Management
-const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
+const VerificationStore = useVerificationOfGoodsPurchaseStore();
 const UseUtilsStore = utilsStore();
 const DetailPayload = ref<any>({});
-const alasanBatal = ref("");
-const batalDialog = ref(false);
 
 const emit = defineEmits(["back"]);
 
@@ -52,7 +30,7 @@ const emit = defineEmits(["back"]);
 const fetchDetail = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await PurchasingOfSupplierStore.getApiDetail(props.selectedData.uuid);
+    const response = await VerificationStore.getApiDetail(props.selectedData.uuid);
     if (response && response.payload) {
       DetailPayload.value = response.payload;
     } else {
@@ -65,28 +43,16 @@ const fetchDetail = async () => {
   }
 };
 
-const confirmDelete = async () => {
+const verification = async () => {  
   UseUtilsStore.setLoading(true);
   try {
-    await PurchasingOfSupplierStore.deleteApi(DetailPayload.value.uuid, 
-    {
-      alasan_batal: alasanBatal.value,
-    });
+    const response = await VerificationStore.putApi(props.selectedData.uuid);
   } catch (error) {
-    console.error("Failed to delete data", error);
+    console.error("Failed to fetch data", error);
   } finally {
     UseUtilsStore.setLoading(false);
-    batalDialog.value = false;
     emit("back");
   }
-};
-
-const edit = async () => {  
-  changeSection('Tambah Pembelian')
-};
-
-const closePurchaseOfSupplierPage = () => {
-  dataBreadCrumb.value.pop();
 };
 
 onMounted(() => {
@@ -96,7 +62,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
+    <Card pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
@@ -108,12 +74,11 @@ onMounted(() => {
                     label: 'Pengadaan Barang',
                     home: true,
                   }"
-                  :model="dataBreadCrumb"
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pembelian Barang Supplier
+                    Verifikasi Pembelian Barang Supplier
                   </p>
                 </div>
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
@@ -123,24 +88,6 @@ onMounted(() => {
                     :showCheckedIcon="false"
                     borderColor="border-adameds-300"
                     bgColor="bg-adameds-300" 
-                    textColor="text-white"
-                  />
-                </div>
-                <div v-if="props.selectedData.status == 'cancel'" class="ml-[10px] mt-[5px]">
-                  <CustomChip
-                    label="DIBATALKAN"
-                    :showCheckedIcon="false"
-                    borderColor="border-danger-300"
-                    bgColor="bg-danger-300" 
-                    textColor="text-white"
-                  />
-                </div>
-                <div v-if="props.selectedData.status == 'verifikasi'" class="ml-[10px] mt-[5px]">
-                  <CustomChip
-                    label="DIVERIFIKASI"
-                    :showCheckedIcon="false"
-                    borderColor="border-info-300"
-                    bgColor="bg-info-300" 
                     textColor="text-white"
                   />
                 </div>
@@ -203,7 +150,8 @@ onMounted(() => {
               <!-- Cito -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">Cito</p>
-                <p>{{ DetailPayload.cito }}</p>
+                <p v-if="DetailPayload.cito == true">Ya</p>
+                <p v-else>Tidak</p>
               </div>
               <!-- Catatan -->
               <div>
@@ -212,7 +160,7 @@ onMounted(() => {
               </div>
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
-            <div class="mt-[20px] h-[160px]">
+            <div class="mt-[20px] h-[260px]">
               <DataTable
                 :value="DetailPayload.items"
                 scrollable
@@ -305,31 +253,11 @@ onMounted(() => {
                   </p>
                   <p>{{ DetailPayload.petugasPembuatPo }}</p>
                 </div>
-                <div class="ml-[70px]" v-if="props.selectedData.status == 'cancel' || props.selectedData.status == 'verifikasi'">
-                  <p class="font-bold underline underline-offset-2">
-                    Petugas verifikasi
-                  </p>
-                  <p>{{ DetailPayload.petugasPenerima }}</p>
-                </div>
-                <div class="ml-[70px]" v-if="props.selectedData.status == 'cancel'">
-                  <p class="font-bold underline underline-offset-2">
-                    Alasan Batal
-                  </p>
-                  <p>{{ DetailPayload.alasanBatal }}</p>
-                </div>
               </div>
-              <div v-if="props.selectedData.status == 'pending'" class="flex mt-[5px]">
+              <div v-if="DetailPayload.status != 'verifikasi'" class="flex mt-[5px]">
                 <CustomButton
-                  @click="batalDialog = true"
-                  label="Batal Pembelian"
-                  class="w-[150px]"
-                  backgroundColor="bg-danger-300"
-                  borderColor="border-danger-300"
-                  textColor="text-white"
-                />
-                <CustomButton
-                  @click="edit"
-                  label="Ubah Pembelian"
+                  @click="verification"
+                  label="Verifikasi"
                   class="w-[150px] ml-[20px]"
                   backgroundColor="bg-adameds-300"
                   borderColor="border-adameds-300"
@@ -355,59 +283,5 @@ onMounted(() => {
         </CustomAccordion>
       </template>
     </Card>
-
-    <AddPurchaseOfSupplier
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      :DetailPayload="DetailPayload"
-      @back="closePurchaseOfSupplierPage"
-    />
-
-     <!-- Dialog Cancel -->
-     <CustomDialog v-model:visible="batalDialog" width="600px" headerBg="bg-danger-300">
-      <template #header>Batal Penjualan</template>
-      <template #body>
-        <div class="grid grid-cols-1">
-          <div>
-            <p class="mt-[20px] font-bold">
-              Alasan Pembatalan
-            </p>
-          </div>
-          <div class="mt-[15px]">
-            <CustomTextfield
-              v-model="alasanBatal"
-              :showLabel="false"
-              placeholder="Alasan Pembatalan"
-            />
-          </div>
-          <div class="mt-[10px]">
-            <p class="text-sm italic text-danger-300">
-              *Setelah membatalkan, riwayat permintaan akan masuk ke tab menu 
-              <span class="font-bold">DIBATALKAN</span>
-            </p>
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="flex justify-end">
-          <CustomButton
-            @click="batalDialog = false"
-            label="Tidak"
-            outlined
-            class="mr-[10px]"
-            borderColor="border-grey-200"
-            textColor="text-grey-300"
-          />
-          <CustomButton
-            @click="confirmDelete"
-            label="Iya, Batalkan"
-            backgroundColor="bg-danger-300"
-            borderColor="border-danger-300"
-            textColor="text-white"
-          />
-        </div>
-      </template>
-    </CustomDialog>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import { usePurchasingOfSupplierStore } from "@/stores/inventory/purchasingOfSupplier";
+import { usePurchaseAcceptanceStore } from "@/stores/inventory/purchaseAcceptance";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -11,8 +11,6 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
-import DetailPurchaseOfSupplierPage from "./DetailPurchaseOfSupplierPage.vue";
 
 // Filter
 const onSelected = ref<string>("pending");
@@ -36,10 +34,10 @@ const changeSection = (label: string) => {
 
 // State Management
 const searchQuery = ref<string>("");
-const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
+const PurchaseAcceptanceStore = usePurchaseAcceptanceStore();
 const UseUtilsStore = utilsStore();
-const PurchasingOfSupplierPayload = ref<any[]>([]);
-const PurchasingOfSupplierProperties = ref({
+const PurchaseAcceptancePayload = ref<any[]>([]);
+const PurchaseAcceptanceProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
@@ -47,29 +45,29 @@ const PurchasingOfSupplierProperties = ref({
 
 // Check if Data Exists
 const hasData = computed(
-  () => PurchasingOfSupplierPayload.value && PurchasingOfSupplierPayload.value.length > 0
+  () => PurchaseAcceptancePayload.value && PurchaseAcceptancePayload.value.length > 0
 );
 
 // Fetch Purchasing Of Supplier
 const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await PurchasingOfSupplierStore.getApi(
+    const response = await PurchaseAcceptanceStore.getApi(
       onSelected.value,
       searchQuery.value,
-      PurchasingOfSupplierProperties.value.page,
-      PurchasingOfSupplierProperties.value.page_size,
+      PurchaseAcceptanceProperties.value.page,
+      PurchaseAcceptanceProperties.value.page_size,
     );
 
     if (response && response.payload) {
-      PurchasingOfSupplierProperties.value.total = response.properties.total;
-      PurchasingOfSupplierPayload.value = response.payload;
+      PurchaseAcceptanceProperties.value.total = response.properties.total;
+      PurchaseAcceptancePayload.value = response.payload;
     } else {
-      PurchasingOfSupplierPayload.value = [];
+      PurchaseAcceptancePayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    PurchasingOfSupplierPayload.value = [];
+    PurchaseAcceptancePayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -85,8 +83,8 @@ watch(searchQuery, (newValue) => {
 
 // Handle Pagination
 const handlePage = (event: any) => {
-  PurchasingOfSupplierProperties.value.page = event.page + 1;
-  PurchasingOfSupplierProperties.value.page_size = event.rows;
+  PurchaseAcceptanceProperties.value.page = event.page + 1;
+  PurchaseAcceptanceProperties.value.page_size = event.rows;
   fetchPurchasingOfSupplier();
 };
 
@@ -105,7 +103,8 @@ const closePurchaseOfSupplierPage = () => {
 };
 
 const closeEditPage = async () => {
-  dataBreadCrumb.value = dataBreadCrumb.value.slice(0, -2);
+  dataBreadCrumb.value.pop();
+  dataBreadCrumb.value.pop();
   await fetchPurchasingOfSupplier();
 };
 
@@ -125,23 +124,17 @@ onMounted(() => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier"/>
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Pengadaan Barang',
+                    label: 'Penerimaan Barang',
                     home: true,
                   }"
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pembelian Barang Supplier
+                    Penerimaan Pembelian
                   </p>
                 </div>
               </div>
-              <CustomButton
-                @click="changeSection('Tambah Pembelian')"
-                icon="PhPlus"
-                label="Permintaan"
-                class="mr-[10px]"
-              />
             </div>
           </template>
           <template #content>
@@ -150,15 +143,15 @@ onMounted(() => {
                 v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari No. Pembelian / Supplier"
+                placeholder="Cari No. Pembelian"
               />
             </div>
 
             <!-- Filter -->
-            <div class="grid grid-cols-3 mt-[15px]">
+            <div class="grid grid-cols-2 mt-[15px]">
               <CustomButton
                 @click="funcOnSelected('pending')"
-                label="PENGAJUAN PEMBELIAN"
+                label="BELUM DITERIMA"
                 :outlined="onSelected != 'pending'"
                 borderColor="border-adameds-300"
                 :textColor="onSelected != 'pending' ? 'text-adameds-300' : 'text-white'"
@@ -167,21 +160,12 @@ onMounted(() => {
               />
               <CustomButton
                 @click="funcOnSelected('cancel')"
-                label="DIBATALKAN"
+                label="DITERIMA"
                 :outlined="onSelected != 'cancel'"
                 borderColor="border-adameds-300"
                 :textColor="onSelected != 'cancel' ? 'text-adameds-300' : 'text-white'"
                 :backgroundColor="onSelected != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold "
-              />
-              <CustomButton
-                @click="funcOnSelected('verifikasi')"
-                label="SUDAH DIVERIFIKASI"
-                :outlined="onSelected != 'verifikasi'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'verifikasi' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'verifikasi' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold"
               />
             </div>
           </template>
@@ -205,7 +189,7 @@ onMounted(() => {
         <NoData v-if="!hasData" />
         <DataTable
           v-else
-          :value="PurchasingOfSupplierPayload"
+          :value="PurchaseAcceptancePayload"
           v-model:selection="selectedData"
           :metaKeySelection="metaKey"
           @rowClick="onRowSelect"
@@ -308,25 +292,13 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-end">
           <CustomPaginator
-            :rows="PurchasingOfSupplierProperties.page_size"
-            :totalRecords="PurchasingOfSupplierProperties.total"
+            :rows="PurchaseAcceptanceProperties.page_size"
+            :totalRecords="PurchaseAcceptanceProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
             @page="handlePage"
           />
         </div>
       </template>
     </Card>
-    <AddPurchaseOfSupplier
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
-      @back="closePurchaseOfSupplierPage"
-      @backEdit="closeEditPage"
-    />
-    <DetailPurchaseOfSupplierPage
-      v-else-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      :selectedData="selectedData"
-      @back="closePurchaseOfSupplierPage"
-    />
   </div>
 </template>

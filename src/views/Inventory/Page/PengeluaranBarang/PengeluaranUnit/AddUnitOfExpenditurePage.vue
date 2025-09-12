@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, type PropType } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { useUnitOfExpenditureStore } from "@/stores/inventory/unitOfExpenditure";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
-import { useDrugSalesStore } from "@/stores/farmasi/DrugSales";
 import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
 import { useSupplierStore } from "@/stores/inventory/supplier";
 import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
@@ -17,24 +17,6 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import CustomSwitch from "@/components/Base/CustomSwitch.vue";
-import type { MenuItem } from "primevue/menuitem";
-
-const props = defineProps({
-  pageType: {
-    type: String,
-    required: true,
-  },
-  dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
-  },
-});
-
-function generateRandomNoPembelian() {
-  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
-  return `PO${randomNumber}`; // Gabungkan dengan "PO"
-}
 
 const optionKategori = ref([
   { name: "Medis", value: "medis" },
@@ -46,9 +28,10 @@ const optionJenis = ref([
   { name: "Alkes", value: "alkes" },
 ]);
 
-const optionPay = ref([
-  { name: "Tunai", value: "tunai" },
-  { name: "Kredit", value: "kredit" },
+const optionJenisPengeluaran = ref([
+  { name: "Pemakaian Unit", value: "pemakaian unit" },
+  { name: "Pengeluaran Tanpa Permintaan", value: "pengeluaran tanpa permintaan" },
+  { name: "Pemusnahan Barang", value: "pemusnahan barang" },
 ]);
 
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
@@ -56,29 +39,24 @@ const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 const schema = toTypedSchema(
   yup
     .object({
-      noPembelian: yup.string(),
-      lokasi: yup.string().required("Lokasi Penerima harus diisi"),
-      kategori: yup.string().required("Kategori Item harus diisi"),
+      jenisPengeluaran: yup.string().required("Jenis Pengeluaran harus diisi"),
+      tanggalPengeluaran: yup.date().default(new Date()).required("Tanggal Pengeluaran harus diisi"),
+      kategoriItem: yup.string().required("Kategori Item harus diisi"),
+      jenisStokUuid: yup.string().required("Jenis Stok harus diisi"),
       jenisItem: yup.string().required("Jenis Item harus diisi"),
-      jenisStok: yup.string().required("Jenis Stok harus diisi"),
-      supplier: yup.string().required("Supplier harus diisi"),
-      tanggalPembelian: yup
-        .date()
-        .default(new Date())
-        .required("Tanggal Pembelian harus diisi"),
-      cara: yup.string().required("Cara Bayar harus diisi"),
+      lokasiStokTujuanUuid: yup.string().required("Tujuan Pengeluaran harus diisi"),
       catatan: yup.string().required("Catatan harus diisi"),
-      cito: yup.bool(),
       items: yup.array().of(
         yup.object({
-          itemMedis: yup.string().required("Nama Item harus dipilih"),
-          qty: yup.number().required("Jumlah Beli harus diisi"),
+          stockUuid: yup.string().required("Nama Item harus dipilih"),
+          expDate: yup.string(),
           hargaSatuan: yup.number().required("Harga Satuan harus diisi"),
-          satuan: yup.string().required("Satuan Beli harus diisi"),
+          konversiUuid: yup.string().required("Satuan/Isi harus diisi"),
+          qty: yup.number(),
+          stokAwalLokasiPengirim: yup.number().required("Harga Satuan harus diisi"),
         })
       ),
-    })
-    .noUnknown()
+    }).noUnknown()
 );
 
 const { errors, handleSubmit, defineField } = useForm({
@@ -86,90 +64,65 @@ const { errors, handleSubmit, defineField } = useForm({
   initialValues: {
     items: [
       {
-        itemMedis: "",
-        qty: 0,
+        stockUuid: "",
+        expDate: "",
         hargaSatuan: 0,
-        satuan: "",
+        konversiUuid: "",
+        qty: 0,
+        stokAwalLokasiPengirim: 0,
       },
     ],
   },
 });
 
-const [noPembelian] = defineField("noPembelian");
-const [lokasi] = defineField("lokasi");
-const [kategori] = defineField("kategori");
+const [jenisPengeluaran] = defineField("jenisPengeluaran");
+const [tanggalPengeluaran] = defineField("tanggalPengeluaran");
+const [kategoriItem] = defineField("kategoriItem");
+const [jenisStokUuid] = defineField("jenisStokUuid");
 const [jenisItem] = defineField("jenisItem");
-const [jenisStok] = defineField("jenisStok");
-const [supplier] = defineField("supplier");
-const [tanggalPembelian] = defineField("tanggalPembelian");
-const [cara] = defineField("cara");
+const [lokasiStokTujuanUuid] = defineField("lokasiStokTujuanUuid");
 const [catatan] = defineField("catatan");
-const [cito] = defineField("cito");
 
-interface penjualanObat {
-  itemMedis: string;
-  qty: number;
+interface itemPengeluaran {
+  stockUuid: string;
+  expDate: string;
   hargaSatuan: number;
-  satuan: string;
+  konversiUuid: string;
+  qty: number;
+  stokAwalLokasiPengirim: number;
 }
 
-const {
-  remove,
-  push,
-  fields: filedsPenjualan,
-} = useFieldArray<penjualanObat>("items");
+const { remove, push, fields: fieldPengeluaran } = useFieldArray<itemPengeluaran>("items");
 
 const addRow = () => {
   push({
-    itemMedis: "",
-    qty: 0,
+    stockUuid: "",
+    expDate: "",
     hargaSatuan: 0,
-    satuan: "",
+    konversiUuid: "",
+    qty: 0,
+    stokAwalLokasiPengirim: 0,
   });
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
-  values.noTransaksi = DrugSalesCodePayload.value.code;
-  values.tanggalPembelian = dateToEpoch(values.tanggalPembelian);
+  values.tanggalPengeluaran = dateToEpoch(values.tanggalPengeluaran);
 
-  try {
-    const response = await DrugSalesStore.createApi(values);
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  } finally {
-    UseUtilsStore.setLoading(false);
-    emit("back");
-  }
+  // try {
+  //   const response = await DrugSalesStore.createApi(values);
+  // } catch (error) {
+  //   console.error("Failed to process the data:", error);
+  // } finally {
+  //   UseUtilsStore.setLoading(false);
+  //   emit("back");
+  // }
 });
-
-const updateNameItem = (index: number) => {
-  const newSatuan = WithoutPaginationPayload.value.find(
-    (item) => filedsPenjualan.value[index].value.itemMedis == item.uuid
-  );
-  filedsPenjualan.value[index].value.satuan = newSatuan.satuanPenggunaan.name;
-};
-
-const updateQty = (index: number) => {
-  grandTotal.value = 0;
-  totalItem.value = 0;
-  filedsPenjualan.value.forEach((item) => {
-    grandTotal.value += item.value.qty * item.value.hargaSatuan;
-  });
-  totalItem.value = filedsPenjualan.value.length;
-};
-
-const updateDiskon = (index: number) => {
-  grandTotal.value = 0;
-  filedsPenjualan.value.forEach((item) => {
-    grandTotal.value += item.value.qty * item.value.hargaSatuan;
-  });
-};
 
 const handleDelete = (index: number) => {
   grandTotal.value = 0;
   remove(index);
-  totalItem.value = filedsPenjualan.value.length;
-  filedsPenjualan.value.forEach((item) => {
+  totalItem.value = fieldPengeluaran.value.length;
+  fieldPengeluaran.value.forEach((item) => {
     grandTotal.value = item.value.qty * item.value.hargaSatuan;
   });
 };
@@ -197,26 +150,6 @@ const fetchStockLocation = async () => {
     StockLocationPayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
-  }
-};
-
-// State Management
-const DrugSalesStore = useDrugSalesStore();
-const DrugSalesCodePayload = ref<any>({});
-
-// Fetch Code Transaksi
-const fetchCode = async () => {
-  try {
-    const response = await DrugSalesStore.getCode();
-
-    if (response && response.payload) {
-      DrugSalesCodePayload.value = response.payload;
-    } else {
-      DrugSalesCodePayload.value = {};
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    DrugSalesCodePayload.value = {};
   }
 };
 
@@ -304,7 +237,7 @@ const fetchStockType = async () => {
 };
 
 // Watcher
-watch(lokasi, (newJenisStok) => {
+watch(jenisPengeluaran, (newJenisStok) => {
   if (newJenisStok) {
     fetchAvailableJenisStok(newJenisStok);
   }
@@ -332,8 +265,15 @@ onMounted(() => {
                     label: 'Pengeluaran Barang',
                     home: true,
                   }"
-                  :model="dataBreadCrumb"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Pengeluaran Unit</p>
+                </div>
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Tambah Pengeluaran</p>
+                </div>
               </div>
               <div class="flex">
                 <CustomButton
@@ -355,23 +295,23 @@ onMounted(() => {
                 <CustomSelect
                   label="Jenis Pengeluaran"
                   placeHolder="Pilih Lokasi Penerima"
-                  v-model="lokasi"
-                  :options="StockLocationPayload"
+                  v-model="jenisPengeluaran"
+                  :options="optionJenisPengeluaran"
                   optionLabel="name"
-                  optionValue="uuid"
-                  :invalid="!!errors.lokasi"
-                  :invalidMessage="errors.lokasi"
-                  :required="errors.lokasi ? true : false"
+                  optionValue="value"
+                  :invalid="!!errors.jenisPengeluaran"
+                  :invalidMessage="errors.jenisPengeluaran"
+                  :required="errors.jenisPengeluaran ? true : false"
                 />
               </div>
               <!-- Tanggal Pengeluaran -->
               <div>
                 <CustomDatePicker
-                  v-model="tanggalPembelian"
+                  v-model="tanggalPengeluaran"
                   label="Tanggal Pengeluaran"
-                  :invalid="!!errors.tanggalPembelian"
-                  :invalidMessage="errors.tanggalPembelian"
-                  :required="errors.tanggalPembelian ? true : false"
+                  :invalid="!!errors.tanggalPengeluaran"
+                  :invalidMessage="errors.tanggalPengeluaran"
+                  :required="errors.tanggalPengeluaran ? true : false"
                 />
               </div>
               <!-- Kategori Item -->
@@ -379,13 +319,13 @@ onMounted(() => {
                 <CustomSelect
                   label="Kategori Item"
                   placeHolder="Pilih Kategori Item"
-                  v-model="kategori"
+                  v-model="kategoriItem"
                   :options="optionKategori"
                   optionLabel="name"
                   optionValue="value"
-                  :invalid="!!errors.kategori"
-                  :invalidMessage="errors.kategori"
-                  :required="errors.kategori ? true : false"
+                  :invalid="!!errors.kategoriItem"
+                  :invalidMessage="errors.kategoriItem"
+                  :required="errors.kategoriItem ? true : false"
                 />
               </div>
               <!-- Jenis Stok -->
@@ -393,13 +333,13 @@ onMounted(() => {
                 <CustomSelect
                   label="Jenis Stok"
                   placeHolder="Pilih Jenis Stok"
-                  v-model="jenisStok"
+                  v-model="jenisStokUuid"
                   :options="StockTypePayload"
                   optionLabel="name"
                   optionValue="uuid"
-                  :invalid="!!errors.jenisStok"
-                  :invalidMessage="errors.jenisStok"
-                  :required="errors.jenisStok ? true : false"
+                  :invalid="!!errors.jenisStokUuid"
+                  :invalidMessage="errors.jenisStokUuid"
+                  :required="errors.jenisStokUuid ? true : false"
                 />
               </div>
               <!-- Jenis Item -->
@@ -420,14 +360,14 @@ onMounted(() => {
                <div>
                 <CustomSelect
                   label="Tujuan Pengeluaran"
-                  placeHolder="Pilih Lokasi Penerima"
-                  v-model="lokasi"
+                  placeHolder="Pilih Tujuan Pengeluaran"
+                  v-model="lokasiStokTujuanUuid"
                   :options="StockLocationPayload"
                   optionLabel="name"
                   optionValue="uuid"
-                  :invalid="!!errors.lokasi"
-                  :invalidMessage="errors.lokasi"
-                  :required="errors.lokasi ? true : false"
+                  :invalid="!!errors.lokasiStokTujuanUuid"
+                  :invalidMessage="errors.lokasiStokTujuanUuid"
+                  :required="errors.lokasiStokTujuanUuid ? true : false"
                 />
               </div>
               <!-- Catatan -->
@@ -446,7 +386,7 @@ onMounted(() => {
             <div class="mt-[20px]">
               <div class="relative overflow-y-auto" style="max-height: 200px">
                 <DataTable
-                  :value="filedsPenjualan"
+                  :value="fieldPengeluaran"
                   class="text-black"
                   stripedRows
                   scrollable
@@ -456,107 +396,95 @@ onMounted(() => {
                   <!-- No -->
                   <Column field="No." headerClass="bg-adameds-50">
                     <template #header>
-                      <div class="w-full font-semibold text-center">No.</div>
+                      <div class="w-full font-semibold">No.</div>
                     </template>
                     <template #body="slotProps">
-                      <div class="text-center">
-                        <div class="text-sm">{{ slotProps.index + 1 }}</div>
-                      </div>
+                      <div class="text-sm">{{ slotProps.index + 1 }}</div>
                     </template>
                   </Column>
-
                   <!-- Nama Item -->
-                  <Column
-                    header="Nama Item"
-                    headerClass="bg-adameds-50"
-                    style="width: 30%"
-                  >
+                  <Column header="Nama Item" headerClass="bg-adameds-50">
                     <template #body="slotProps">
                       <CustomSelect
-                        v-model="slotProps.data.value.itemMedis"
-                        @update:model-value="updateNameItem(slotProps.index)"
+                        v-model="slotProps.data.value.stockUuid"
+                        class="w-[250px]"
                         :showLabel="false"
                         prependIcon="PhMagnifyingGlass"
                         place-holder="Cari Item"
                         optionLabel="code"
                         optionValue="uuid"
                         :options="WithoutPaginationPayload"
-                        :invalid="(errors as any)[`items[${slotProps.index}].itemMedis`] ? true : false"
-                        :invalidMessage="(errors as any)[`items[${slotProps.index}].itemMedis`]"
+                        :invalid="(errors as any)[`items[${slotProps.index}].stockUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`items[${slotProps.index}].stockUuid`]"
                       />
                     </template>
                   </Column>
-
-                  <!-- Jumlah Beli -->
-                  <Column header="Jumlah Beli" headerClass="bg-adameds-50">
+                  <!-- EXP. Date -->
+                  <Column header="EXP. Date" headerClass="bg-adameds-50">
                     <template #body="slotProps">
-                      <CustomInputNumber
-                        class="w-[130px]"
-                        :showLabel="false"
-                        :show-buttons="true"
-                        v-model="slotProps.data.value.qty"
-                        @update:model-value="updateQty"
-                        :invalid="Boolean((errors as any)[`items[${slotProps.index}].qty`])"
-                        :invalidMessage="(errors as any)[`items[${slotProps.index}].qty`] || ''"
-                      />
-                    </template>
-                  </Column>
-
-                  <!-- Harga Satuan -->
-                  <Column header="Harga Satuan" headerClass="bg-adameds-50">
-                    <template #body="slotProps">
-                      <CustomInputNumber
-                        v-model="slotProps.data.value.hargaSatuan"
-                        @update:model-value="updateDiskon"
-                        :showLabel="false"
-                        placeholder="0"
-                        class="w-[150px]"
-                        :invalid="(errors as any)[`items[${slotProps.index}].hargaSatuan`] ? true : false"
-                        :invalidMessage="(errors as any)[`items[${slotProps.index}].hargaSatuan`]"
-                      >
-                        <template #prependText>
-                          <div
-                            class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                          >
-                            Rp.
-                          </div>
-                        </template>
-                      </CustomInputNumber>
-                    </template>
-                  </Column>
-
-                  <!-- Satuan Beli -->
-                  <Column header="Satuan Beli" headerClass="bg-adameds-50">
-                    <template #body="slotProps">
-                      <CustomSelect
-                        v-model="slotProps.data.value.satuan"
-                        :showLabel="false"
-                        place-holder="Pilih Satuan Beli"
-                        optionLabel="name"
-                        optionValue="uuid"
-                        :options="StockLocationPayload"
-                        :invalid="(errors as any)[`items[${slotProps.index}].satuan`] ? true : false"
-                        :invalidMessage="(errors as any)[`items[${slotProps.index}].satuan`]"
-                      />
-                    </template>
-                  </Column>
-
-                  <!-- Total -->
-                  <Column header="Total" headerClass="bg-adameds-50">
-                    <template #body="slotProps">
-                      <div class="text-center">
-                        <div class="text-sm">
-                          {{
-                            formatPrice(
-                              slotProps.data.value.qty *
-                                slotProps.data.value.hargaSatuan
-                            )
-                          }}
-                        </div>
+                      <div class="text-sm">
+                        {{ "10-10-2025" }}
                       </div>
                     </template>
                   </Column>
-
+                  <!-- Min. Stok -->
+                  <Column header="Min. Stok" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <div class="text-sm">{{ 0 }}</div>
+                    </template>
+                  </Column>
+                  <!-- Stok -->
+                  <Column header="Stok" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <div class="text-sm">{{ 0 }}</div>
+                    </template>
+                  </Column>
+                  <!-- Pengeluaran -->
+                  <Column header="Pengeluaran" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <CustomInputNumber
+                        v-model="slotProps.data.value.hargaSatuan"
+                        :showLabel="false"
+                        placeholder="0"
+                        class="w-[60px]"
+                        :invalid="(errors as any)[`items[${slotProps.index}].hargaSatuan`] ? true : false"
+                        :invalidMessage="(errors as any)[`items[${slotProps.index}].hargaSatuan`]"
+                      >
+                      </CustomInputNumber>
+                    </template>
+                  </Column>
+                  <!-- Satuan/Isi -->
+                  <Column header="Satuan/Isi" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <CustomSelect
+                        v-model="slotProps.data.value.konversiUuid"
+                        :showLabel="false"
+                        class="w-[150px]"
+                        place-holder="Pilih Satuan"
+                        optionLabel="satuanPembelian"
+                        optionValue="uuid"
+                        :options="[]"
+                        :invalid="(errors as any)[`items[${slotProps.index}].konversiUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`items[${slotProps.index}].konversiUuid`]"
+                      />
+                    </template>
+                  </Column>
+                  <!-- Harga Dasar -->
+                  <Column header="Harga Dasar" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <div class="text-sm">
+                        {{ formatPrice(slotProps.data.value.qty * slotProps.data.value.hargaSatuan) }}
+                      </div>
+                    </template>
+                  </Column>
+                  <!-- Total -->
+                  <Column header="Total" headerClass="bg-adameds-50">
+                    <template #body="slotProps">
+                      <div class="text-sm">
+                        {{ formatPrice(slotProps.data.value.qty * slotProps.data.value.hargaSatuan) }}
+                      </div>
+                    </template>
+                  </Column>
                   <!-- Action -->
                   <Column header="Action" headerClass="bg-adameds-50">
                     <template #body="slotProps">
@@ -574,9 +502,7 @@ onMounted(() => {
                   </Column>
                 </DataTable>
               </div>
-              <div
-                class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300"
-              >
+              <div class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300">
                 <CustomButton
                   icon="PhPlus"
                   label="Tambah Item"
@@ -585,71 +511,6 @@ onMounted(() => {
                   textColor="text-adameds-300"
                   @click="addRow"
                 />
-              </div>
-            </div>
-            <hr class="mt-[20px] border-1 border-grey-200" />
-            <!-- Diskon Materai PPN -->
-            <div class="flex justify-between w-full mt-[10px]">
-              <div class="flex">
-                <div>
-                  <p class="font-bold">Diskon</p>
-                  <CustomInputNumber
-                    :showLabel="false"
-                    placeholder="0"
-                    class="mt-[10px]"
-                  >
-                    <template #prependText>
-                      <div
-                        class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                      >
-                        Rp.
-                      </div>
-                    </template>
-                  </CustomInputNumber>
-                </div>
-                <div class="ml-[20px]">
-                  <p class="font-bold">Materai</p>
-                  <CustomInputNumber
-                    :showLabel="false"
-                    placeholder="0"
-                    class="mt-[10px]"
-                  >
-                    <template #prependText>
-                      <div
-                        class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                      >
-                        Rp.
-                      </div>
-                    </template>
-                  </CustomInputNumber>
-                </div>
-                <div class="ml-[20px]">
-                  <p class="font-bold">PPN</p>
-                  <CustomInputNumber
-                    placeholder="12"
-                    :show-label="false"
-                    class="w-[80px] bg-white rounded-xl mt-[10px]"
-                  >
-                    <template #appendText>
-                      <div
-                        class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]"
-                      >
-                        %
-                      </div>
-                    </template>
-                  </CustomInputNumber>
-                </div>
-              </div>
-              <div class="flex">
-                <div
-                  class="bg-adameds-300 w-[1.5px] h-[50px] mr-[20px] mt-[20px]"
-                ></div>
-                <div class="mt-[20px] mr-[60px]">
-                  <p class="font-bold underline underline-offset-2">
-                    Grand Total
-                  </p>
-                  <p>{{ totalItem }}</p>
-                </div>
               </div>
             </div>
             <hr class="mt-[20px] border-1 border-grey-200" />
@@ -664,7 +525,7 @@ onMounted(() => {
                 </div>
                 <div class="ml-[70px]">
                   <p class="font-bold underline underline-offset-2">
-                    Nama Petugas Pembelian
+                    Grand Total
                   </p>
                   <p>{{}}</p>
                 </div>
@@ -679,7 +540,7 @@ onMounted(() => {
                   class="mt-auto"
                 />
                 <CustomButton
-                  label="Simpan Pembelian"
+                  label="Simpan"
                   class="mt-auto ml-[10px]"
                   @click="onSubmit"
                 />
