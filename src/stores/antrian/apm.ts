@@ -1,0 +1,16 @@
+import { apiAdmisiPost, apiAntrianPost } from "@/utils/apiHandler";
+import { defineStore } from "pinia";
+
+export const useApmStore = defineStore({
+  id: "apm",
+  state: () => ({}),
+  getters: {},
+  actions: {
+    async checkPasien(payload: {}) {
+      return await apiAdmisiPost(`/patient/check-patient/apm`, payload);
+    },
+    async register(payload: {}) {
+      return await apiAntrianPost(`/antrian/apm/register`, payload);
+    },
+  },
+});
