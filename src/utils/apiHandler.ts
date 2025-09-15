@@ -469,8 +469,9 @@ const apiAdmisiDelete = async (url: string, data: object) => {
   }
 };
 export const apiAdmisiDownload = async (url: string) => {
-  const fullUrl = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
-  
+  const fullUrl = url === '/download' ? import.meta.env.VITE_BASE_ADMISI + url
+  : cekHost(import.meta.env.VITE_BASE_ADMISI, url);
+  console.log("fullUrl", fullUrl);
   try {
     const token = localStorage.getItem("access_token");
     if (!token) {

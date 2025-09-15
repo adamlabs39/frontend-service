@@ -911,294 +911,296 @@ defineExpose({
       </CustomAccordion>
     </template>
     <template #content>
-      <div class =" flex flex-col gap-6" v-if="reportType === 'rekap-kunjungan'">
-    <CustomAccordion
-      v-if="rekapTabelFilter.includes('kunjungan')"
-      :openWithHeader="true"
-      initialState="0"
-      headerClass="flex items-center justify-between bg-adameds-300 p-3"
-    >
-      <template #header>
-        <span class="font-semibold text-white">
-          Rekap Kunjungan
-        </span>
-      </template>
-
-      <template #collapseIcon>
-        <CustomButton
-          icon="PhCaretUp"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #expandIcon>
-        <CustomButton
-          icon="PhCaretDown"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #content>
-        <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-          <div class="flex items-center p-4 bg-adameds-50">
-              <label class="w-40 font-semibold">Jenis Kunjungan</label>
-              <CustomSelect
-              :showLabel="false"
-              v-model="filterParams.jenis_kunjungan"
-              class="w-full md:w-1/4"
-              placeHolder="Pilih Jenis Kunjungan"
-              :options="jenisKunjunganOptions"
-              optionLabel="label"
-              optionValue="value"
-            />
-            </div>
-          <DataTable
-            :value="rekapData"
-            tableStyle="min-width: 50rem"
-            scrollable
-            scrollHeight="flex"
-            :pt="{ headerRow: 'text-SM' }"
-            showGridlines
-          >
-            <Column
-              field="name"
-              header="Nama"
-              header-class="text-black bg-adameds-50"
-              style="width: 150px"
-              frozen
-              align-frozen="left"
+      <div class =" flex flex-col gap-6 h-full" v-if="reportType === 'rekap-kunjungan'">
+        <div v-if="rekapTabelFilter.length > 0" class="flex flex-col gap-6">
+          <CustomAccordion
+        v-if="rekapTabelFilter.includes('kunjungan')"
+        :openWithHeader="true"
+        initialState="0"
+        headerClass="flex items-center justify-between bg-adameds-300 p-3"
+      >
+        <template #header>
+          <span class="font-semibold text-white">
+            Rekap Kunjungan
+          </span>
+        </template>
+  
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-white"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-white"
+          />
+        </template>
+        <template #content>
+          <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+            <div class="flex items-center p-4 bg-adameds-50">
+                <label class="w-40 font-semibold">Jenis Kunjungan</label>
+                <CustomSelect
+                :showLabel="false"
+                v-model="filterParams.jenis_kunjungan"
+                class="w-full md:w-1/4"
+                placeHolder="Pilih Jenis Kunjungan"
+                :options="jenisKunjunganOptions"
+                optionLabel="label"
+                optionValue="value"
+              />
+              </div>
+            <DataTable
+              :value="rekapData"
+              tableStyle="min-width: 50rem"
+              scrollable
+              scrollHeight="flex"
+              :pt="{ headerRow: 'text-SM' }"
+              showGridlines
             >
-              <template #footer>
-                <span style="font-weight: bold;">Total Harian:</span>
-              </template>
-            </Column>
-
-            <Column
-              v-for="dateString in dateRangeColumns"
-              :key="dateString"
-              :field="dateString"
-              :header="formatDateHeader(dateString)"
-              header-class="text-black bg-adameds-50"
-              style="width: 55px; text-align: center"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ (totalKunjunganPerDay[dateString] || 0).toString() }}
-                </span>
-              </template>
-            </Column>
-
-            <Column
-              field="total"
-              header="Total"
-              header-class="text-black bg-adameds-50"
-              style="width: 60px; font-weight: bold; text-align: center"
-              frozen
-              align-frozen="right"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ grandTotalKunjungan.toString() }}
-                </span>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-      </template>
-    </CustomAccordion>
-    <CustomAccordion
-      v-if="rekapTabelFilter.includes('dpjp')"
-      :openWithHeader="true"
-      initialState="0"
-      headerClass="flex items-center justify-between bg-adameds-300 p-3"
-    >
-      <template #header>
-        <span class="font-semibold text-white">
-          Rekap DPJP
-        </span>
-      </template>
-
-      <template #collapseIcon>
-        <CustomButton
-          icon="PhCaretUp"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #expandIcon>
-        <CustomButton
-          icon="PhCaretDown"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #content>
-        <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-          <div class="flex items-center p-4 bg-adameds-50">
-              <label class="w-40 font-semibold">Dokter DPJP</label>
-              <CustomSelect
-              v-model="filterParams.dpjp"
-              placeHolder="Pilih Dokter"
-              :showLabel="false"
-              class="w-full md:w-1/4"
-              optionLabel="name"
-              optionValue="uuid"
-              :options="[
-                { name: 'Semua Dokter', uuid: null },
-                ...listDpjp,
-              ]"
-            />
-            </div>
-          <DataTable
-            :value="rekapDokterData"
-            tableStyle="min-width: 50rem"
-            scrollable
-            scrollHeight="flex"
-            :pt="{ headerRow: 'text-SM' }"
-            showGridlines
-          >
-            <Column
-              field="name"
-              header="Nama"
-              header-class="text-black bg-adameds-50"
-              style="width: 150px"
-              frozen
-              align-frozen="left"
-            >
-              <template #footer>
-                <span style="font-weight: bold;">Total Harian:</span>
-              </template>
-            </Column>
-
-            <Column
-              v-for="dateString in dateRangeColumns"
-              :key="dateString"
-              :field="dateString"
-              :header="formatDateHeader(dateString)"
-              header-class="text-black bg-adameds-50"
-              style="width: 55px; text-align: center"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ (totalDokterPerDay[dateString] || 0).toString() }}
-                </span>
-              </template>
-            </Column>
-
-            <Column
-              field="total"
-              header="Total"
-              header-class="text-black bg-adameds-50"
-              style="width: 60px; font-weight: bold; text-align: center"
-              frozen
-              align-frozen="right"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ grandTotalDokter.toString() }}
-                </span>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-      </template>
-    </CustomAccordion>
-    <CustomAccordion
-      v-if="rekapTabelFilter.includes('penjamin')"
-      :openWithHeader="true"
-      initialState="0"
-      headerClass="flex items-center justify-between bg-adameds-300 p-3"
-    >
-      <template #header>
-        <span class="font-semibold text-white">
-          Rekap Penjamin
-        </span>
-      </template>
-
-      <template #collapseIcon>
-        <CustomButton
-          icon="PhCaretUp"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #expandIcon>
-        <CustomButton
-          icon="PhCaretDown"
-          backgroundColor="bg-transparent"
-          textColor="text-white"
-        />
-      </template>
-      <template #content>
-        <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-          <div class="flex items-center p-4 bg-adameds-50">
-            <label class="w-40 font-semibold">Penjamin</label>
-              <CustomSelect
-              :showLabel="false"
-              v-model="filterParams.penjamin"
-              class="w-full md:w-1/4"
-              :options="penjaminOptions"
-              optionLabel="name"
-              optionValue="name"
-              placeHolder="Pilih Penjamin"
-            />
+              <Column
+                field="name"
+                header="Nama"
+                header-class="text-black bg-adameds-50"
+                style="width: 150px"
+                frozen
+                align-frozen="left"
+              >
+                <template #footer>
+                  <span style="font-weight: bold;">Total Harian:</span>
+                </template>
+              </Column>
+  
+              <Column
+                v-for="dateString in dateRangeColumns"
+                :key="dateString"
+                :field="dateString"
+                :header="formatDateHeader(dateString)"
+                header-class="text-black bg-adameds-50"
+                style="width: 55px; text-align: center"
+              >
+                <template #footer>
+                  <span style="font-weight: bold; text-align: center; display: block;">
+                    {{ (totalKunjunganPerDay[dateString] || 0).toString() }}
+                  </span>
+                </template>
+              </Column>
+  
+              <Column
+                field="total"
+                header="Total"
+                header-class="text-black bg-adameds-50"
+                style="width: 60px; font-weight: bold; text-align: center"
+                frozen
+                align-frozen="right"
+              >
+                <template #footer>
+                  <span style="font-weight: bold; text-align: center; display: block;">
+                    {{ grandTotalKunjungan.toString() }}
+                  </span>
+                </template>
+              </Column>
+            </DataTable>
           </div>
-          <DataTable
-            :value="rekapPenjaminData"
-            tableStyle="min-width: 50rem"
-            scrollable
-            scrollHeight="flex"
-            :pt="{ headerRow: 'text-SM' }"
-            showGridlines
+        </template>
+          </CustomAccordion>
+          <CustomAccordion
+            v-if="rekapTabelFilter.includes('dpjp')"
+            :openWithHeader="true"
+            initialState="0"
+            headerClass="flex items-center justify-between bg-adameds-300 p-3"
           >
-            <Column
-              field="name"
-              header="Nama"
-              header-class="text-black bg-adameds-50"
-              style="width: 150px"
-              frozen
-              align-frozen="left"
-            >
-              <template #footer>
-                <span style="font-weight: bold;">Total Harian:</span>
-              </template>
-            </Column>
-
-            <Column
-              v-for="dateString in dateRangeColumns"
-              :key="dateString"
-              :field="dateString"
-              :header="formatDateHeader(dateString)"
-              header-class="text-black bg-adameds-50"
-              style="width: 55px; text-align: center"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ (totalPenjaminPerDay[dateString] || 0).toString() }}
-                </span>
-              </template>
-            </Column>
-
-            <Column
-              field="total"
-              header="Total"
-              header-class="text-black bg-adameds-50"
-              style="width: 60px; font-weight: bold; text-align: center"
-              frozen
-              align-frozen="right"
-            >
-              <template #footer>
-                <span style="font-weight: bold; text-align: center; display: block;">
-                  {{ grandTotalPenjamin.toString() }}
-                </span>
-              </template>
-            </Column>
-          </DataTable>
+            <template #header>
+              <span class="font-semibold text-white">
+                Rekap DPJP
+              </span>
+            </template>
+  
+            <template #collapseIcon>
+              <CustomButton
+                icon="PhCaretUp"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #expandIcon>
+              <CustomButton
+                icon="PhCaretDown"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #content>
+              <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+                <div class="flex items-center p-4 bg-adameds-50">
+                    <label class="w-40 font-semibold">Dokter DPJP</label>
+                    <CustomSelect
+                    v-model="filterParams.dpjp"
+                    placeHolder="Pilih Dokter"
+                    :showLabel="false"
+                    class="w-full md:w-1/4"
+                    optionLabel="name"
+                    optionValue="uuid"
+                    :options="[
+                      { name: 'Semua Dokter', uuid: null },
+                      ...listDpjp,
+                    ]"
+                  />
+                  </div>
+                <DataTable
+                  :value="rekapDokterData"
+                  tableStyle="min-width: 50rem"
+                  scrollable
+                  scrollHeight="flex"
+                  :pt="{ headerRow: 'text-SM' }"
+                  showGridlines
+                >
+                  <Column
+                    field="name"
+                    header="Nama"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 150px"
+                    frozen
+                    align-frozen="left"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold;">Total Harian:</span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    v-for="dateString in dateRangeColumns"
+                    :key="dateString"
+                    :field="dateString"
+                    :header="formatDateHeader(dateString)"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 55px; text-align: center"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ (totalDokterPerDay[dateString] || 0).toString() }}
+                      </span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    field="total"
+                    header="Total"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 60px; font-weight: bold; text-align: center"
+                    frozen
+                    align-frozen="right"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ grandTotalDokter.toString() }}
+                      </span>
+                    </template>
+                  </Column>
+                </DataTable>
+              </div>
+            </template>
+          </CustomAccordion>
+          <CustomAccordion
+            v-if="rekapTabelFilter.includes('penjamin')"
+            :openWithHeader="true"
+            initialState="0"
+            headerClass="flex items-center justify-between bg-adameds-300 p-3"
+          >
+            <template #header>
+              <span class="font-semibold text-white">
+                Rekap Penjamin
+              </span>
+            </template>
+  
+            <template #collapseIcon>
+              <CustomButton
+                icon="PhCaretUp"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #expandIcon>
+              <CustomButton
+                icon="PhCaretDown"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #content>
+              <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+                <div class="flex items-center p-4 bg-adameds-50">
+                  <label class="w-40 font-semibold">Penjamin</label>
+                    <CustomSelect
+                    :showLabel="false"
+                    v-model="filterParams.penjamin"
+                    class="w-full md:w-1/4"
+                    :options="penjaminOptions"
+                    optionLabel="name"
+                    optionValue="name"
+                    placeHolder="Pilih Penjamin"
+                  />
+                </div>
+                <DataTable
+                  :value="rekapPenjaminData"
+                  tableStyle="min-width: 50rem"
+                  scrollable
+                  scrollHeight="flex"
+                  :pt="{ headerRow: 'text-SM' }"
+                  showGridlines
+                >
+                  <Column
+                    field="name"
+                    header="Nama"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 150px"
+                    frozen
+                    align-frozen="left"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold;">Total Harian:</span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    v-for="dateString in dateRangeColumns"
+                    :key="dateString"
+                    :field="dateString"
+                    :header="formatDateHeader(dateString)"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 55px; text-align: center"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ (totalPenjaminPerDay[dateString] || 0).toString() }}
+                      </span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    field="total"
+                    header="Total"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 60px; font-weight: bold; text-align: center"
+                    frozen
+                    align-frozen="right"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ grandTotalPenjamin.toString() }}
+                      </span>
+                    </template>
+                  </Column>
+                </DataTable>
+              </div>
+            </template>
+          </CustomAccordion>
         </div>
-      </template>
-    </CustomAccordion>
-     <NoData v-else title="No Data Available" class="h-96" />
-  </div>
+        <NoData v-else />
+      </div>
       <Tabs v-else-if="reportData.length" v-model:value="reportType">
         <TabPanels class="p-0">
           <TabPanel value="kunjungan">

@@ -328,6 +328,7 @@ defineExpose({
         <div class="flex">
           <CustomSelect
             v-if="
+              formType != 'Checkin' &&
               formType != 'Edit Data Pasien' &&
               formType != 'Detail Edit' &&
               formType != 'Detail'
