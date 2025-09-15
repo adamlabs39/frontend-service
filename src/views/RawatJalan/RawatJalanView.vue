@@ -5,7 +5,7 @@ import { utilsStore } from "@/stores/utils";
 import { linkType } from "@/utils/Enum";
 import type { SidebarBody } from "@/utils/Interface";
 import { computed } from "vue";
-import { onMounted, ref, watch } from "vue";
+import { onBeforeMount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -22,33 +22,79 @@ const lokasiProperties = ref({
 });
 
 // Fetch data dari API
+// const fetchLokasiData = async () => {
+//   UseUtilsStore.setLoading(true);
+//   try {
+//     const response = await lokasiStore.getApi(
+//       lokasiProperties.value.page,
+//       lokasiProperties.value.page_size
+//     );
+//     // console.log("API Response:", response);
+
+//     if (response && response.payload) {
+//       // console.log("Response contains payload:", response.payload);
+//       lokasiProperties.value.total = response.properties.total;
+
+//       // Gabungkan data baru ke dalam lokasiPayload
+//       lokasiPayload.value = [...response.payload];
+
+//       // Update sidebar body list setiap kali data baru diambil
+//       updateSidebarBodyList();
+
+//       // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
+//       if (response.payload.length === lokasiProperties.value.page_size) {
+//         lokasiProperties.value.page += 1;
+//         await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
+//       }
+//     } else {
+//       lokasiPayload.value = [];
+//     }
+//   } catch (error) {
+//     console.error("Failed to fetch data", error);
+//     lokasiPayload.value = [];
+//   } finally {
+//     UseUtilsStore.setLoading(false);
+//   }
+// };
+
 const fetchLokasiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await lokasiStore.getApi(
-      lokasiProperties.value.page,
-      lokasiProperties.value.page_size
-    );
-    // console.log("API Response:", response);
-
-    if (response && response.payload) {
-      // console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
-
-      // Gabungkan data baru ke dalam lokasiPayload
-      lokasiPayload.value = [...response.payload];
-
-      // Update sidebar body list setiap kali data baru diambil
-      updateSidebarBodyList();
-
-      // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
-      if (response.payload.length === lokasiProperties.value.page_size) {
-        lokasiProperties.value.page += 1;
-        await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
-      }
-    } else {
-      lokasiPayload.value = [];
+    const pageSize = 10;
+    
+    // 1. Ambil halaman pertama untuk mendapatkan total data
+    const firstPageResponse = await lokasiStore.getApi(1, pageSize);
+    if (!firstPageResponse || !firstPageResponse.payload) {
+      throw new Error("Gagal mengambil halaman pertama");
     }
+
+    const allLokasi = [...firstPageResponse.payload];
+    const totalData = firstPageResponse.properties.totalData; // Pastikan nama properti ini benar
+    const totalPages = Math.ceil(totalData / pageSize);
+
+    // 2. Siapkan semua promise untuk halaman sisa (jika ada)
+    if (totalPages > 1) {
+      const promises = [];
+      for (let page = 2; page <= totalPages; page++) {
+        promises.push(lokasiStore.getApi(page, pageSize));
+      }
+
+      // 3. Jalankan semua promise secara paralel
+      const remainingResponses = await Promise.all(promises);
+
+      // 4. Gabungkan hasilnya
+      remainingResponses.forEach(response => {
+        if (response && response.payload) {
+          allLokasi.push(...response.payload);
+        }
+      });
+    }
+
+    // Setelah semua data terkumpul
+    lokasiPayload.value = allLokasi;
+    lokasiProperties.value.total = allLokasi.length;
+    updateSidebarBodyList();
+
   } catch (error) {
     console.error("Failed to fetch data", error);
     lokasiPayload.value = [];
@@ -160,6 +206,12 @@ const updateSidebarBodyList = () => {
     // Update filter dengan objek { uuid, name }
     filter.value = { uuid: defaultFilter, name: defaultName };
 
+    // if (!route.query.filter) {
+    //   router.replace({
+    //     path: "/rawat-jalan/poli",
+    //     query: { filter: defaultName },
+    //   });
+    // }
     // Mengupdate URL dengan query filter sesuai nilai defaultFilter
     router.replace({
       path: "/rawat-jalan/poli",
@@ -211,6 +263,16 @@ const handleSearchPoli = (searchTerm: string) => {
     }, 300); // P
   }
 };
+
+
+// onBeforeMount(() => {
+//   fetchLokasiData();
+
+//   // Jika ada query filter pada URL saat halaman dimuat ulang, set filter ke nilai tersebut
+//   if (route.query.filter) {
+//     filter.value = { uuid: "", name: route.query.filter as string };
+//   }
+// });
 
 // Mengambil data API saat komponen di-mount
 onMounted(() => {

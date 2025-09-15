@@ -56,7 +56,7 @@ const handleExport = async () => {
     const link = document.createElement("a");
     link.href = url;
     
-    link.setAttribute("download", "laporan_admisi.xlsx"); 
+    link.setAttribute("download", "format_import_pasien.xlsx"); 
     
     document.body.appendChild(link);
     link.click();
