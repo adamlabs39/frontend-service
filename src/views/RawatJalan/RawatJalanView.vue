@@ -160,6 +160,12 @@ const updateSidebarBodyList = () => {
     // Update filter dengan objek { uuid, name }
     filter.value = { uuid: defaultFilter, name: defaultName };
 
+    // if (!route.query.filter) {
+    //   router.replace({
+    //     path: "/rawat-jalan/poli",
+    //     query: { filter: defaultName },
+    //   });
+    // }
     // Mengupdate URL dengan query filter sesuai nilai defaultFilter
     router.replace({
       path: "/rawat-jalan/poli",
@@ -211,6 +217,7 @@ const handleSearchPoli = (searchTerm: string) => {
     }, 300); // P
   }
 };
+
 
 // Mengambil data API saat komponen di-mount
 onMounted(() => {

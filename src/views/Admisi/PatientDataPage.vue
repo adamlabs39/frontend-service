@@ -56,7 +56,7 @@ const handleExport = async () => {
     const link = document.createElement("a");
     link.href = url;
     
-    link.setAttribute("download", "laporan_admisi.xlsx"); 
+    link.setAttribute("download", "format_import_pasien.xlsx"); 
     
     document.body.appendChild(link);
     link.click();
@@ -369,7 +369,6 @@ const editFile = async (rowData: any) => {
 
       const fileUuid = rowData.uuid;
       const response = await masterPasienStore.uploadBerkasApi(fileUuid, file);
-      console.log("File berhasil diupdate:", response);
 
       const pasienUuid = patientUuid.value; 
       if (!pasienUuid) {
@@ -1007,7 +1006,6 @@ onMounted(() => {
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"
-              :maxFileSize="1000000"
               label="Import"
               chooseLabel="Import"
               auto
@@ -1113,8 +1111,9 @@ onMounted(() => {
           :patientData="openedPatientData"
         />
       </div>
-      <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+      <Card class="h-min mt-[10px] z-10 absolute bottom-0 right-0 left-0">
         <template #content>
+          <!-- button simpan dan reset -->
           <div class="flex justify-end">
             <CustomButton
               @click="resetForm"

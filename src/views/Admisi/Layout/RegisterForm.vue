@@ -104,7 +104,7 @@ const setDetailDoctorVisitData = (patientData: any) => {
     let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
       jadwalDokterUuid: patientData.jadwalDokterUuid,
-      maternity: patientData.maternity,
+      maternity: patientData.maternity ?? false,
       complaint: patientData.complaint,
       note: patientData.note,
       insurance: patientData.insurance,
@@ -392,7 +392,6 @@ const registPatient = async (type: string) => {
   } else if (type == "setuju-simpan") {
     await onSubmitGeneralConsent();
   }
-  emit('back');
   confirmSaveDialog.value = false;
   inputGeneralConsentDialog.value = false;
   storeUtils.setLoading(false);

@@ -170,7 +170,7 @@ const openedPatientData = ref<any>({});
 const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
-  
+
   if (openedPatientData.value.payment_method == 2) {
     selectedPaymentMethod.value = "ASURANSI"; 
   } else {
@@ -252,7 +252,9 @@ const cancelVisit = async () => {
       await admisiIGDStore.cancelVisitIGD(payload);
     }
     showCancelVisit.value = false;
-    cancelReason.value = undefined;
+    cancelReason.value = '';
+    selectedPatient.value = [];
+    
     await getPatientList();
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -645,7 +647,7 @@ const handlePage = (event: any) => {
     :patientData="openedPatientData"
     :formType="formType"
     @back="closeRegistrationForm"
-    @goToDetail="dataBreadCrumb[0].label = 'Detail'"
+    @goToDetail="(dataBreadCrumb[0].label = 'Detail'), (formType = 'detail')"
     @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>

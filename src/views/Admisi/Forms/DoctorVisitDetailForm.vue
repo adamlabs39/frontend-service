@@ -269,7 +269,7 @@ const schema = computed(() =>
           props.pageType == "rawat-jalan"
             ? yup.string().required("Jadwal harus dipilih")
             : yup.string(),
-        maternity: yup.boolean(),
+        maternity: yup.boolean().nullable(),
         complaint: yup.string().default(""),
         note: yup.string().default(""),
         insurance: yup
@@ -326,7 +326,6 @@ const [practitionerUuid] = defineField("practitionerUuid");
 
 const onSubmit = handleSubmit(async (values) => {
   if (props.pageType == "rawat-jalan") {
-    delete values.practitionerUuid;
   }
   return values;
 });
@@ -465,7 +464,6 @@ defineExpose({
           <CustomSwitch
             v-model="maternity"
             label="Pasien Maternitas"
-            sideLabel="Iya"
             :disabled="isDetail"
           />
           <CustomTextfield
