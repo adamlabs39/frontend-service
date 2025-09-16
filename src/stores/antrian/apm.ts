@@ -1,4 +1,8 @@
-import { apiAdmisiPost, apiAntrianPost } from "@/utils/apiHandler";
+import {
+  apiAdmisiPost,
+  apiAntrianLokalPost,
+  apiAntrianPost,
+} from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 export const useApmStore = defineStore({
@@ -11,6 +15,9 @@ export const useApmStore = defineStore({
     },
     async printPasien(payload: {}) {
       return await apiAntrianPost(`/antrian/apm/print-antrian`, payload);
+    },
+    async AntrianObat(payload: {}) {
+      return await apiAntrianPost(`/antrian/apm/antrian-farmasi`, payload);
     },
     async register(payload: {}) {
       return await apiAntrianPost(`/antrian/apm/register`, payload);
