@@ -465,7 +465,6 @@ defineExpose({
           <CustomSwitch
             v-model="maternity"
             label="Pasien Maternitas"
-            sideLabel="Iya"
             :disabled="isDetail"
           />
           <CustomTextfield
