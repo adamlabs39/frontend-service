@@ -3,13 +3,15 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
-import { ref } from "vue";
+import { onActivated, ref, watch } from "vue";
 import AddPrint from "@/components/icons/AddPrint.vue";
 import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
+const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -44,6 +46,32 @@ const tiketAntrian = ref({
   jadwal: "07:00 - 10:00",
   tanggal: "10 Jan 2024",
   noAntri: "PD-02-01",
+});
+
+const getTiketData = ref();
+
+watch(
+  () => apmFlow.patientData,
+  (val) => {
+    if (val != null) {
+      getTiketData.value = val;
+      console.log("APM Success Response (from store):", getTiketData.value);
+    } else {
+      console.warn("Tidak ada data success di store.");
+    }
+  },
+  { immediate: true }
+);
+
+onActivated(() => {
+  const val = apmFlow.patientData;
+  if (val != null) {
+    getTiketData.value = val;
+    console.log(
+      "APM Success Response (from store) [activated]:",
+      getTiketData.value
+    );
+  }
 });
 </script>
 
@@ -83,28 +111,30 @@ const tiketAntrian = ref({
             </div>
 
             <!-- Title Container (Center) -->
+            <!-- Title Container (Center) -->
             <div
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
-              <div class="pr-2">Checkin Berhasil</div>
+              <div class="pr-2">Data Ditemukan</div>
               <CheckCircleIcon class="text-adameds-300" :size="30" />
             </div>
 
             <!-- Button Container (Right) -->
             <div class="flex col-span-1 justify-end items-center mr-6">
+              <!-- <HouseFill class="text-adameds-300" :size="20"/> -->
               <CustomButton
-                label="< &nbsp Kembali"
+                label="< &nbsp Halaman Utama"
                 outlined
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
-                class="w-[120px]"
-                @click="handleBack"
+                class="w-fit"
+                @click="handleHome"
               />
             </div>
           </div>
 
-          <div class="flex justify-center items-center">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="mt-14 w-10/12" />
+          <div class="flex justify-center items-center px-16">
+            <TiketAntrian :tiketAntrian="getTiketData" class="mt-14" />
           </div>
         </div>
       </div>
