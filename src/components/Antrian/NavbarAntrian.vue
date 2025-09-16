@@ -1,4 +1,42 @@
-<script setup></script>
+<script setup>
+import { onMounted, onUnmounted, ref } from "vue";
+
+const timeNow = ref("");
+const dateNow = ref("");
+
+let timerId;
+function updateDateTime() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Jakarta",
+  });
+  timeNow.value = `${time} WIB`;
+
+  const date = now.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  });
+  dateNow.value = date;
+}
+
+onMounted(() => {
+  updateDateTime();
+  timerId = window.setInterval(updateDateTime, 1000);
+});
+
+onUnmounted(() => {
+  if (timerId) {
+    clearInterval(timerId);
+  }
+});
+</script>
 
 <template>
   <div
@@ -33,8 +71,8 @@
     <!-- Clock and Date -->
     <div class="flex flex-col my-auto ml-auto text-right">
       <!-- Align text to the right -->
-      <div class="text-lg font-bold">09:00 AM</div>
-      <div class="text-sm">Senin, 01 Jan 2024</div>
+      <div class="text-lg font-bold">{{ timeNow }}</div>
+      <div class="text-sm">{{ dateNow }}</div>
     </div>
   </div>
 </template>

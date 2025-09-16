@@ -4,15 +4,56 @@ import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import AddPrint from "@/components/icons/AddPrint.vue";
+import { useApmStore } from "@/stores/antrian/apm";
+import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+const useUtilsStore = utilsStore();
+const apmStore = useApmStore();
+const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
 const handleData = () => {
   router.push("/antrian/apm/aktif/print/data");
+};
+
+const noIdentity = ref("");
+
+// Submit handler
+const onSubmit = async () => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    const payload = {
+      kode_booking: noIdentity.value,
+    };
+
+    const response = await apmStore.printPasien(payload);
+
+    if (response?.payload && response.payload.uuid) {
+      // Simpan ke store, lalu navigasi tanpa query sensitif
+      apmFlow.setPatientStatus("success");
+      apmFlow.setPatientData(response.payload);
+
+      router.push({
+        path: "/antrian/apm/aktif/print/data",
+      });
+    } else {
+      throw new Error("Patient not found");
+    }
+  } catch (error) {
+    // Pasien baru (not_found)
+    apmFlow.setPatientStatus("not_found");
+    apmFlow.setPatientData(null);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 
 const props = defineProps({
@@ -93,8 +134,9 @@ const props = defineProps({
               :label="`No. Kode Booking`"
               :placeholder="`Masukkan No. Kode Booking`"
               class="w-2/5"
+              v-model="noIdentity"
             ></CustomTextfield>
-            <CustomButton label="Print" class="w-2/5" @click="handleData" />
+            <CustomButton label="Print" class="w-2/5" @click="onSubmit" />
           </div>
         </div>
       </div>

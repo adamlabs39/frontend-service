@@ -127,14 +127,16 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
       <div class="my-auto w-1 h-28 rounded-md bg-adameds-300"></div>
       <div class="w-[180px] mx-8 my-10">
         <CardAktivitas
-          :cardAktivitas="cardAktivitasCheckIn"
+          :cardAktivitas="cardAktivitasCheckIn.keterangan"
+          icon="checkin"
           @click="handleCheckin"
           class="transition-transform duration-300 hover:scale-95"
         />
       </div>
       <div class="w-[180px] my-10">
         <CardAktivitas
-          :cardAktivitas="cardAktivitasPrint"
+          :cardAktivitas="cardAktivitasPrint.keterangan"
+          icon="print"
           @click="handlePrint"
           class="transition-transform duration-300 hover:scale-95"
         />

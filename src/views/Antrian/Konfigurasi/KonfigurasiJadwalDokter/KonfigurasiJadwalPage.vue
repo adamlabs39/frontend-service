@@ -243,6 +243,24 @@ const filterCriteria = ref({
   isValidSearch: true,
 });
 
+const paginatorKey = ref(0);
+
+function handleHeaderSearch(payload: {
+  dokterUuid?: string;
+  poliUuid?: string;
+  aktif?: boolean | undefined;
+  isValidSearch?: boolean;
+}) {
+  filterCriteria.value = payload as any;
+
+  if (payload.isValidSearch !== false) {
+    // Reset ke halaman pertama lalu fetch ulang
+    jadwalDokterProperties.value.page = 1;
+    paginatorKey.value++; // paksa paginator kembali ke page 1
+    fetchJadwalDokter();
+  }
+}
+
 const displayedJadwalDokter = computed(() => {
   // Jika pencarian ditandai tidak valid (contoh: teks filter poli tidak cocok dengan opsi),
   // kembalikan data kosong agar tabel menampilkan "No data available".
@@ -279,12 +297,7 @@ onMounted(() => {
         ref="headerFilterRef"
         :excludedDoctorUuids="existingDoctorUuids"
         :excludedDoctorUuidsByPoli="excludedDoctorUuidsByPoli"
-        @search="
-          filterCriteria = $event;
-          if ($event.isValidSearch !== false) {
-            fetchJadwalDokter();
-          }
-        "
+        @search="handleHeaderSearch"
         :dokterOptions="dokterOptions"
         :poliOptions="poliOptions"
         :jadwalDokterData="jadwalDokterPayload"
@@ -545,6 +558,7 @@ onMounted(() => {
       <div class="flex justify-between px-5 py-2.5">
         <CustomPaginator
           class="ml-auto"
+          :key="`paginator-${paginatorKey}`"
           :rows="jadwalDokterProperties.page_size"
           :totalRecords="jadwalDokterProperties.total"
           :rowsPerPageOptions="[10, 20, 30]"

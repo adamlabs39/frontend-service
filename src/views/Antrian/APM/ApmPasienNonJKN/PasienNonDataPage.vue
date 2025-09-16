@@ -2,13 +2,17 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
-import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
+const route = useRoute();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -16,8 +20,12 @@ const handleHome = () => {
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
-const handlePoli = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/poli-umum");
+const handlePoli = (poli: any) => {
+  // Simpan pilihan poli di store, jangan kirim query sensitif
+  apmFlow.setSelectedPoli(poli?.uuid || "", poli?.name || "");
+  router.push({
+    path: "/antrian/apm/aktif/pasien/non-jkn/poli",
+  });
 };
 
 const props = defineProps({
@@ -35,25 +43,92 @@ const props = defineProps({
   },
 });
 
-const dataPasien = ref({
-  noRM: "001827",
-  nik: "327012371204102",
-  nama: "Nama Lengkap Pasien Jika",
-  tanggalLahir: "01 Januari 2000",
-  gender: "Laki-laki",
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+const apmFlow = useApmFlowStore();
+
+const jadwalPoliPayload = ref<any[]>([]);
+const jadwalPoliProperties = ref({
+  name: "",
 });
 
-const cardAktivitasUmum = ref({
-  keterangan: "Umum",
+const fetchGetPoli = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiPoli(
+      jadwalPoliProperties.value.name
+    );
+    console.log("Hasil dari response poli:", response);
+    if (response && response.payload) {
+      jadwalPoliPayload.value = response.payload;
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalPoliPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const dataPasien = ref({
+  noRM: "",
+  nik: "",
+  nama: "",
+  tanggalLahir: "",
+  gender: "",
 });
-const cardAktivitasAnak = ref({
-  keterangan: "Anak",
-});
-const cardAktivitasMata = ref({
-  keterangan: "Mata",
-});
-const cardAktivitasKandungan = ref({
-  keterangan: "Kandungan",
+
+const patientStatus = ref<string>("");
+
+// Helper functions
+const formatDateId = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(d);
+  } catch {
+    return iso;
+  }
+};
+
+const mapGender = (g?: string) => {
+  if (!g) return "";
+  const m = g.toLowerCase();
+  if (m === "male") return "Laki-laki";
+  if (m === "female") return "Perempuan";
+  return g;
+};
+
+onMounted(() => {
+  // Ambil status & data dari store, bukan dari route.query
+  const status = apmFlow.patientStatus || "";
+  patientStatus.value = status;
+
+  if (status === "success" && apmFlow.patientData) {
+    const payload = apmFlow.patientData;
+    dataPasien.value = {
+      noRM: payload.no_rm || "",
+      nik: payload.no_identity || "",
+      nama: payload.name || "",
+      tanggalLahir: formatDateId(payload?.birth_detail?.birth_date),
+      gender: mapGender(payload.gender),
+    };
+  } else if (status === "not_found") {
+    dataPasien.value = {
+      noRM: "",
+      nik: apmFlow.noIdentity || "",
+      nama: "",
+      tanggalLahir: "",
+      gender: "",
+    };
+  }
+
+  fetchGetPoli();
 });
 </script>
 
@@ -72,7 +147,7 @@ const cardAktivitasKandungan = ref({
           <!-- Header -->
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-fit h-10 bg-white rounded-xl shadow-md"
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
                 class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
@@ -116,37 +191,40 @@ const cardAktivitasKandungan = ref({
             <div
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
-              <div class="font-bold whitespace-nowrap">NIK</div>
+              <div class="font-bold whitespace-nowrap">No. Identitas</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.nik }}</div>
 
+              <!-- Hanya tampilkan No. RM jika pasien lama -->
+              <template v-if="patientStatus === 'success'">
+                <div class="font-bold whitespace-nowrap">No. RM</div>
+                <div class="text-center">:</div>
+                <div>{{ dataPasien.noRM }}</div>
+              </template>
+            </div>
+
+            <!-- Hanya tampilkan kolom kedua jika pasien lama -->
+            <div
+              v-if="patientStatus === 'success'"
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
               <div class="font-bold whitespace-nowrap">Nama</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.nama }}</div>
-            </div>
 
-            <div
-              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
-            >
-              <div class="font-bold whitespace-nowrap">Tanggal Lahir</div>
+              <div class="font-bold whitespace-nowrap">Tgl. Lahir</div>
               <div class="text-center">:</div>
               <div>{{ dataPasien.tanggalLahir }}</div>
-
-              <div class="font-bold whitespace-nowrap">Gender</div>
-              <div class="text-center">:</div>
-              <div>{{ dataPasien.gender }}</div>
             </div>
 
+            <!-- Hanya tampilkan kolom ketiga jika pasien lama -->
             <div
+              v-if="patientStatus === 'success'"
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
-              <div class="font-bold whitespace-nowrap">No RM</div>
+              <div class="font-bold whitespace-nowrap">Jenis Kelamin</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.noRM }}</div>
-
-              <div class="font-bold whitespace-nowrap">No BPJS</div>
-              <div class="text-center">:</div>
-              <div>{{ dataPasien.noBPJS }}</div>
+              <div>{{ dataPasien.gender }}</div>
             </div>
           </div>
 
@@ -166,29 +244,15 @@ const cardAktivitasKandungan = ref({
               <div class="flex flex-col items-center h-[220px] justify-center">
                 <div>
                   <div class="grid grid-cols-4 gap-x-6 gap-y-6 w-full">
-                    <div class="w-[220px] h-[120px]">
+                    <div
+                      v-for="item in jadwalPoliPayload"
+                      :key="item.uuid || item.id"
+                      class="w-[220px] h-[120px]"
+                    >
                       <CardAktivitas
-                        :cardAktivitas="cardAktivitasUmum"
+                        :cardAktivitas="item.name"
                         class="transition-transform duration-300 hover:scale-95"
-                        @click="handlePoli"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasAnak"
-                        class="transition-transform duration-300 hover:scale-95"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasMata"
-                        class="transition-transform duration-300 hover:scale-95"
-                      />
-                    </div>
-                    <div class="w-[220px]">
-                      <CardAktivitas
-                        :cardAktivitas="cardAktivitasKandungan"
-                        class="transition-transform duration-300 hover:scale-95"
+                        @click="handlePoli(item)"
                       />
                     </div>
                   </div>
