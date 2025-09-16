@@ -49,7 +49,7 @@ function closeDialog() {
 }
 
 const cardPasienJKN = ref({
-  keterangan: "Pasien JKN",
+  keterangan: "Antrian Obat",
 });
 const cardPasienNonJKN = ref({
   keterangan: "Pasien Non-JKN",
@@ -113,29 +113,8 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
       <div class="w-[350px] my-10">
         <CardPasien
           :cardPasien="cardPasienJKN"
+          :showPillIcon="true"
           @click="handlePasienJKN"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="w-[350px] mx-8 my-10">
-        <CardPasien
-          :cardPasien="cardPasienNonJKN"
-          @click="handlePasienNonJKN"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="my-auto w-1 h-28 rounded-md bg-adameds-300"></div>
-      <div class="w-[180px] mx-8 my-10">
-        <CardAktivitas
-          :cardAktivitas="cardAktivitasCheckIn"
-          @click="handleCheckin"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="w-[180px] my-10">
-        <CardAktivitas
-          :cardAktivitas="cardAktivitasPrint"
-          @click="handlePrint"
           class="transition-transform duration-300 hover:scale-95"
         />
       </div>
