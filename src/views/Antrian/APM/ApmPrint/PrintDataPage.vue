@@ -3,14 +3,17 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
-import { ref } from "vue";
+import { onActivated, ref } from "vue";
 import AddPrint from "@/components/icons/AddPrint.vue";
 import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
 import HouseFill from "@/components/icons/HouseFill.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { watch } from "vue";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
+const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -42,6 +45,32 @@ const tiketAntrian = ref({
   jadwal: "07:00 - 10:00",
   tanggal: "10 Jan 2024",
   noAntri: "PD-02-01",
+});
+
+const getTiketData = ref();
+
+watch(
+  () => apmFlow.apmSuccessResponse,
+  (val) => {
+    if (val != null) {
+      getTiketData.value = val;
+      console.log("APM Success Response (from store):", getTiketData.value);
+    } else {
+      console.warn("Tidak ada data success di store.");
+    }
+  },
+  { immediate: true }
+);
+
+onActivated(() => {
+  const val = apmFlow.apmSuccessResponse;
+  if (val != null) {
+    getTiketData.value = val;
+    console.log(
+      "APM Success Response (from store) [activated]:",
+      getTiketData.value
+    );
+  }
 });
 </script>
 
