@@ -13,8 +13,8 @@ const handleBackAntrian = () => {
   router.push("/antrian/apm");
 };
 
-const handlePasienJKN = () => {
-  router.push("/antrian/apm/aktif/pasien/jkn");
+const handleFarmasi = () => {
+  router.push("/antrian/apm/aktif/pasien/farmasi/daftar");
 };
 const handlePasienNonJKN = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn");
@@ -114,7 +114,7 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
         <CardPasien
           :cardPasien="cardPasienJKN"
           :showPillIcon="true"
-          @click="handlePasienJKN"
+          @click="handleFarmasi"
           class="transition-transform duration-300 hover:scale-95"
         />
       </div>
