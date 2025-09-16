@@ -9,6 +9,7 @@ import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
 const route = useRoute();
@@ -20,23 +21,10 @@ const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
 };
 const handlePoli = (poli: any) => {
-  // Kirim data pasien dan status ke halaman poli
-  const queryData = {
-    poli_uuid: poli?.uuid || "",
-    poli_name: poli?.name || "",
-    patient_status: patientStatus.value,
-    identity: (route.query.identity as string) || "",
-    no_identity: (route.query.no_identity as string) || "",
-  };
-
-  // Jika pasien lama, kirim juga data lengkap
-  if (patientStatus.value === "success" && route.query.data) {
-    queryData.patient_data = route.query.data as string;
-  }
-
+  // Simpan pilihan poli di store, jangan kirim query sensitif
+  apmFlow.setSelectedPoli(poli?.uuid || "", poli?.name || "");
   router.push({
     path: "/antrian/apm/aktif/pasien/non-jkn/poli",
-    query: queryData,
   });
 };
 
@@ -57,6 +45,7 @@ const props = defineProps({
 
 const jadwalDokterStore = useJadwalDokterStore();
 const useUtilsStore = utilsStore();
+const apmFlow = useApmFlowStore();
 
 const jadwalPoliPayload = ref<any[]>([]);
 const jadwalPoliProperties = ref({
@@ -116,36 +105,23 @@ const mapGender = (g?: string) => {
 };
 
 onMounted(() => {
-  // Baca dari 'status' (sumber utama), fallback ke 'patient_status' (saat datang dari Poli)
-  const status = ((route.query.status as string) ||
-    (route.query.patient_status as string) ||
-    "") as string;
+  // Ambil status & data dari store, bukan dari route.query
+  const status = apmFlow.patientStatus || "";
   patientStatus.value = status;
 
-  if (status === "success" && (route.query.data || route.query.patient_data)) {
-    // Bisa datang dalam 'data' (dari DaftarPasienNonPage atau saat kembali dari Poli)
-    // atau 'patient_data' (saat pergi ke Poli)
-    const raw =
-      (route.query.data as string) ||
-      (route.query.patient_data as string) ||
-      "";
-    try {
-      const payload = JSON.parse(decodeURIComponent(raw));
-      dataPasien.value = {
-        noRM: payload.no_rm || "",
-        nik: payload.no_identity || "",
-        nama: payload.name || "",
-        tanggalLahir: formatDateId(payload?.birth_detail?.birth_date),
-        gender: mapGender(payload.gender),
-      };
-    } catch (error) {
-      console.error("Error parsing patient data:", error);
-    }
+  if (status === "success" && apmFlow.patientData) {
+    const payload = apmFlow.patientData;
+    dataPasien.value = {
+      noRM: payload.no_rm || "",
+      nik: payload.no_identity || "",
+      nama: payload.name || "",
+      tanggalLahir: formatDateId(payload?.birth_detail?.birth_date),
+      gender: mapGender(payload.gender),
+    };
   } else if (status === "not_found") {
-    // Pasien baru - hanya tampilkan nomor identitas
     dataPasien.value = {
       noRM: "",
-      nik: (route.query.no_identity as string) || "",
+      nik: apmFlow.noIdentity || "",
       nama: "",
       tanggalLahir: "",
       gender: "",

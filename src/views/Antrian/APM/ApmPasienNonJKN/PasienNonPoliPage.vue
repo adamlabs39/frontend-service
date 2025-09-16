@@ -13,9 +13,11 @@ import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { watch } from "vue";
 import { useApmStore } from "@/stores/antrian/apm";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
 const route = useRoute();
+const apmFlow = useApmFlowStore();
 
 const apmStore = useApmStore();
 
@@ -52,26 +54,8 @@ const hasScheduleToday = (item: any) => {
 const isDoctorDisabled = (item: any) => !hasScheduleToday(item);
 
 const handleBack = () => {
-  // Ambil data yang dibawa dari halaman sebelumnya
-  const status = (route.query.patient_status as string) || "";
-  const identity = (route.query.identity as string) || "";
-  const no_identity = (route.query.no_identity as string) || "";
-  const patient_data = route.query.patient_data as string | undefined;
-
-  // Siapkan query untuk kembali ke Data Pasien
-  const query: Record<string, string> = {
-    status: status === "success" ? "success" : "not_found",
-    identity,
-    no_identity,
-  };
-  if (status === "success" && patient_data) {
-    // Kirim ulang data encoded JSON agar PasienNonDataPage bisa menampilkan detail lengkap
-    query.data = patient_data;
-  }
-
   router.push({
     path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
-    query,
   });
 };
 
@@ -79,60 +63,51 @@ const handleBerhasil = async () => {
   try {
     useUtilsStore.setLoading(true);
 
-    // Ambil data dari query
-    const patientStatus = (route.query.patient_status as string) || "";
-    const identity = (route.query.identity as string) || "";
-    const no_identity = (route.query.no_identity as string) || "";
+    console.log("[Apm] handleBerhasil: start", {
+      selectedTime: selectedTime.value,
+    });
+    if (!selectedTime.value) {
+      console.warn(
+        "[Apm] handleBerhasil: selectedTime kosong, batalkan submit"
+      );
+      return;
+    }
+
+    const patientStatus = apmFlow.patientStatus || "";
+    const identity = apmFlow.identity || "";
+    const no_identity = apmFlow.noIdentity || "";
 
     let payload: any;
-
-    if (patientStatus === "success" && route.query.patient_data) {
-      // Pasien Lama
-      try {
-        const patientData = JSON.parse(
-          decodeURIComponent(route.query.patient_data as string)
-        );
-        payload = {
-          patient_data: {
-            identity: identity,
-            no_identity: no_identity,
-          },
-          jadwal_dokter_uuid: selectedTime.value,
-        };
-      } catch (error) {
-        console.error("Error parsing patient data:", error);
-        return;
-      }
-    } else {
-      // Pasien Baru
+    if (patientStatus === "success" && apmFlow.patientData) {
       payload = {
-        patient_data: {
-          patient_uuid: "", // Akan diisi dari response checkPasien jika ada
-          identity: identity,
-          no_identity: no_identity,
-        },
+        patient_data: { identity, no_identity },
+        jadwal_dokter_uuid: selectedTime.value,
+      };
+    } else {
+      payload = {
+        patient_data: { patient_uuid: "", identity, no_identity },
         jadwal_dokter_uuid: selectedTime.value,
       };
     }
 
-    console.log("Register payload:", payload);
-
+    console.log("[Apm] handleBerhasil: payload", payload);
     const response = await apmStore.register(payload);
+    console.log("[Apm] handleBerhasil: raw response", response);
 
-    if (response) {
-      console.log("Register response (apmSucces.txt):", response);
+    // Ambil data aman dari respons (prioritaskan response.data > response.payload > response)
+    const safeResponse =
+      (response && (response.data || response.payload)) || response;
+    // Opsional: pastikan benar2 plain object
+    const cloned = JSON.parse(JSON.stringify(safeResponse || {}));
 
-      // Kirim data ke halaman berhasil
-      const dataParam = encodeURIComponent(JSON.stringify(response));
-      router.push({
-        path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
-        query: {
-          data: dataParam,
-        },
-      });
-    }
+    apmFlow.setApmSuccessResponse(cloned);
+    console.log("[Apm] handleBerhasil: saved to store", cloned);
+
+    await router.push({
+      path: "/antrian/apm/aktif/pasien/non-jkn/berhasil",
+    });
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.error("[Apm] handleBerhasil: error", error);
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -241,8 +216,10 @@ const fetchJadwalDokter = async () => {
 };
 
 onMounted(() => {
-  getDokterProperties.value.poliUuid = (route.query.poli_uuid as string) || "";
-  poliName.value = (route.query.poli_name as string) || "";
+  // Ambil poli terpilih dari store, bukan dari route.query
+  const sel = apmFlow.selectedPoli;
+  getDokterProperties.value.poliUuid = sel?.uuid || "";
+  poliName.value = sel?.name || "";
   fetchJadwalDokter();
 });
 

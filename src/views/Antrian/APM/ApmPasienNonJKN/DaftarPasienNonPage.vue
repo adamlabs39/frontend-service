@@ -12,6 +12,7 @@ import { useRouter } from "vue-router";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
 
@@ -21,6 +22,7 @@ const isDisabled = computed(() => !selectedType.value);
 const useUtilsStore = utilsStore();
 const apmStore = useApmStore();
 const authStore = useAuthStore();
+const apmFlow = useApmFlowStore();
 
 const faskesUuid = computed(() => authStore.getFaskesUuid);
 
@@ -76,30 +78,25 @@ const onSubmit = handleSubmit(async (values) => {
     const response = await apmStore.checkPasien(payload);
 
     if (response?.payload && response.payload.uuid) {
-      // Sukses: pasien sudah terdaftar (postman.txt)
-      const dataParam = encodeURIComponent(JSON.stringify(response.payload));
+      // Simpan ke store, lalu navigasi tanpa query sensitif
+      apmFlow.setPatientStatus("success");
+      apmFlow.setIdentity(selectedType.value || "", values.no_identity);
+      apmFlow.setPatientData(response.payload);
+
       router.push({
         path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
-        query: {
-          status: "success",
-          data: dataParam,
-          identity: selectedType.value || "",
-          no_identity: values.no_identity,
-        },
       });
     } else {
-      // Anggap gagal jika tidak ada uuid
       throw new Error("Patient not found");
     }
   } catch (error) {
-    // Gagal: pasien belum terdaftar (console.txt)
+    // Pasien baru (not_found)
+    apmFlow.setPatientStatus("not_found");
+    apmFlow.setIdentity(selectedType.value || "", values.no_identity);
+    apmFlow.setPatientData(null);
+
     router.push({
       path: "/antrian/apm/aktif/pasien/non-jkn/data-pasien",
-      query: {
-        status: "not_found",
-        identity: selectedType.value || "",
-        no_identity: no_identity.value || "",
-      },
     });
   } finally {
     useUtilsStore.setLoading(false);
