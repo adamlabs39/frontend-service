@@ -380,20 +380,24 @@ const checkDuplicateSchedule = (schedules: any[]) => {
   return duplicates;
 };
 
-const onSubmit = handleSubmit(async (values: any) => {
-  const hasEmptyFields = data.value.some((item) => {
+// Helper untuk validasi field wajib pada item jadwal
+const isMissing = (val: any) => !val;
+const isMissingOrZeroString = (val: any) => !val || val === "0";
+
+const hasEmptyRequiredFields = (items: Array<any>) =>
+  items.some((item) => {
     return (
-      !item.day ||
-      !item.startTime ||
-      !item.endTime ||
-      !item.durasiPelayanan ||
-      item.durasiPelayanan === "0" ||
-      !item.kuotaJkn ||
-      item.kuotaJkn === "0" ||
-      !item.kuotaNonJkn ||
-      item.kuotaNonJkn === "0"
+      isMissing(item.day) ||
+      isMissing(item.startTime) ||
+      isMissing(item.endTime) ||
+      isMissingOrZeroString(item.durasiPelayanan) ||
+      isMissingOrZeroString(item.kuotaJkn) ||
+      isMissingOrZeroString(item.kuotaNonJkn)
     );
   });
+
+const onSubmit = handleSubmit(async (values: any) => {
+  const hasEmptyFields = hasEmptyRequiredFields(data.value);
   if (hasEmptyFields) {
     toast.add({
       severity: "error",
