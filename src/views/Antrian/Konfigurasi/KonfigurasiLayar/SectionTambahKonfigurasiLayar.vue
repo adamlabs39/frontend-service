@@ -336,9 +336,12 @@ watch(
               <div class="mt-4 block font-semibold mb-[5px] text-normal">
                 Flash Text
               </div>
-              <Chips
+              <AutoComplete
                 v-model="flashText"
                 class="w-full whitespace-pre-wrap break-all"
+                fluid
+                multiple
+                :typeahead="false"
               />
               <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
                 {{ errors.flashText }}
