@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { PropType } from "vue";
 import AddPrint from "../icons/AddPrint.vue";
 import SolarUserCheckIcon from "../icons/SolarUserCheckIcon.vue";
 import Stethoscop from "../icons/Stethoscop.vue";
@@ -9,6 +10,10 @@ const props = defineProps({
   cardAktivitas: {
     type: String,
     default: "",
+  },
+  icon: {
+    type: String as PropType<"checkin" | "print" | "poli">,
+    default: "poli",
   },
 });
 </script>
@@ -23,13 +28,18 @@ const props = defineProps({
       ><div
         class="rounded-b-3xl w-full h-[80px] flex items-center justify-center bg-adameds-50"
       >
-        <!-- <img
-          v-if="cardAktivitas.keterangan === 'Umum'"
-          src="@/assets/icons/solar_user-check-bold.svg"
-          alt=""
-          class="w-[40px] h-[40px]"
-        /> -->
-        <Stethoscop class="text-adameds-300" :size="40" />
+        <!-- Render ikon berdasarkan varian -->
+        <SolarUserCheckIcon
+          v-if="icon === 'checkin'"
+          class="text-adameds-300"
+          :size="50"
+        />
+        <AddPrint
+          v-else-if="icon === 'print'"
+          class="text-adameds-300"
+          :size="50"
+        />
+        <Stethoscop v-else class="text-adameds-300" :size="40" />
       </div>
     </template>
     <template #content>
