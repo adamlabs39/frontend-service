@@ -136,8 +136,12 @@ onActivated(() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-center">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="w-10/12 mt-14" />
+          <div class="flex justify-center items-center px-16">
+            <TiketAntrian
+              :tiketAntrian="getTiketData"
+              :showPrintButton="true"
+              class="mt-14"
+            />
           </div>
         </div>
       </div>
