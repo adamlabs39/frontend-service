@@ -103,7 +103,6 @@ const generateDateRangeColumns = (start: Date, end: Date) => {
 watch(
   [startDateFilter, endDateFilter],
   ([newStart, newEnd]) => {
-    console.log("Watch terpicu dengan tanggal:", newStart, newEnd);
     generateDateRangeColumns(newStart, newEnd);
   },
   { 
@@ -367,7 +366,6 @@ const updatePageType = async (path: string) => {
     const responseDpjp = await praktisiStore.getApi({ limit: 9999, isDoctor: true });
     if (responseDpjp && responseDpjp.payload) {
       const filteredList = responseDpjp.payload.filter((practitioner: { isDoctor: any; }) => practitioner.isDoctor);
-      console.log('filteredList', filteredList);
       
       if (filteredList?.length > 0) {
           const mappedList = filteredList.map((practitioner: { pegawai: { name: any; }; uuid: any; }) => {

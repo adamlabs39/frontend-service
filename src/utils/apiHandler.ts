@@ -474,8 +474,6 @@ export const apiAdmisiDownload = async (url: string) => {
     if (fullUrl === '/download') {
     fullUrl = import.meta.env.VITE_BASE_ADMISI + url;
   }
-
-  console.log( fullUrl);
   try {
     const token = localStorage.getItem("access_token");
     if (!token) {

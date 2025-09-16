@@ -326,7 +326,6 @@ const [practitionerUuid] = defineField("practitionerUuid");
 
 const onSubmit = handleSubmit(async (values) => {
   if (props.pageType == "rawat-jalan") {
-    // delete values.practitionerUuid;
   }
   return values;
 });

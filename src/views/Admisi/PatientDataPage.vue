@@ -369,7 +369,6 @@ const editFile = async (rowData: any) => {
 
       const fileUuid = rowData.uuid;
       const response = await masterPasienStore.uploadBerkasApi(fileUuid, file);
-      console.log("File berhasil diupdate:", response);
 
       const pasienUuid = patientUuid.value; 
       if (!pasienUuid) {
