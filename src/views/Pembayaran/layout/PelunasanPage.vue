@@ -9,8 +9,8 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
-import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice";
-import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakKuitansi";
+import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakTagihan";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import { useRouter, useRoute } from "vue-router";
@@ -239,8 +239,6 @@ const submitPelunasan = async () => {
             note: note.value,
             information: information.value,
         };
-
-
         const paymentResponse: any = await closeBillStore.payDebtOnClosedBill(billUuid, payload);
         if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
             // Ambil nilai kembalian dari response API
@@ -255,6 +253,33 @@ const submitPelunasan = async () => {
         storeUtils.setLoading(false);
     }
 };
+
+//logic refresh textfiled pembayaran
+const initializePelunasanDialog = () => {
+    // Reset semua input
+    amount.value = undefined;
+    payment_method.value = "";
+    note.value = "";
+    information.value = "";
+    kembalian.value = 0;
+
+    // Logika untuk mengisi otomatis 'Cara Bayar'
+    if (kasirData.value && kasirData.value.paymentType) {
+        const defaultPaymentType = optionCaraBayar.value.find(
+            option => option.label.toUpperCase() === kasirData.value.paymentType.toUpperCase()
+        );
+        payment_type.value = defaultPaymentType ? defaultPaymentType.value : "";
+    } else {
+        payment_type.value = "";
+    }
+};
+
+// Watcher untuk memicu fungsi di atas saat dialog dibuka
+watch(pembayaranDialog, (isOpening) => {
+    if (isOpening) {
+        initializePelunasanDialog();
+    }
+});
 
 //maks 15 digit amount
 watch(amount, (newValue) => {
@@ -352,9 +377,9 @@ onMounted(() => {
                         <div class="flex justify-between">
                             <p class="text-base font-bold font-poppins">Total Pembayaran</p>
                             <div class="flex">
-                                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice"
+                                <CustomButton label="Cetak Kuitansi" @click="handleCetakInvoice"
                                     class="mt-[-10px] mr-[10px]" />
-                                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya"
+                                <CustomButton label="Cetak Tagihan" @click="handleCetakRincianBiaya"
                                     class="mt-[-10px]" />
                             </div>
                         </div>
@@ -370,6 +395,10 @@ onMounted(() => {
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Obat/Alkes</div>
                             <div class="text-sm">Rp {{ kasirData.totalObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <div class="text-sm">Retur Obat/Alkes</div>
+                            <div class="text-sm">Rp {{ kasirData.returObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Kamar</div>
@@ -400,17 +429,15 @@ onMounted(() => {
                             </div>
                         </div>
                         <template v-if="paymentHistoryList.length > 0">
-                            <div v-for="history in paymentHistoryList" :key="history.createdAt">
+                            <div>
                                 <div class="flex justify-between mt-4">
-                                    <div class="text-sm font-bold">Jumlah Terbayar - {{
-                                        formatDateCustom(history.createdAt) }}</div>
-                                    <div class="text-sm font-bold">Rp {{ history.amount?.toLocaleString('id-ID') || 0 }}
-                                    </div>
+                                    <div class="text-sm font-bold">Jumlah Terbayar</div>
+                                    <div class="text-sm font-bold">Rp {{ kasirData.totalPaid?.toLocaleString('id-ID') ||0 }}</div>
                                 </div>
-                                <div class="flex justify-between mt-2 ">
-                                    <div class="text-sm font-bold text-danger-300">Hutang</div>
-                                    <div class="text-sm font-bold text-danger-300">-Rp {{ history.debtAfter?.
-                                        toLocaleString ('id-ID') || 0 }}</div>
+                                <hr class="mt-6 mb-2 border-slate-300 border-1" />
+                                <div class="flex justify-between mt-2">
+                                    <div class="text-sm font-bold text-danger-300">Sisa Bayar</div>
+                                    <div class="text-sm font-bold text-danger-300">-Rp {{kasirData.remainingDebt?.toLocaleString('id-ID') || 0 }}</div>
                                 </div>
                             </div>
                         </template>
@@ -429,10 +456,10 @@ onMounted(() => {
                     <template #body>
                         <div class="flex justify-between">
                             <div>
-                                <p class="font-bold mt-[20px]">Sisa Hutang</p>
+                                <p class="font-bold mt-[20px]">Grand Total</p>
                             </div>
                             <div>
-                                <p class="font-bold mt-[20px]">Rp. {{ currentDebt }}</p>
+                                <p class="font-bold mt-[20px]">Rp {{ currentDebt?.toLocaleString('id-ID') || 0 }}</p>
                             </div>
                         </div>
                         <hr class="mt-6 border-1 border-grey-200" />
@@ -480,7 +507,8 @@ onMounted(() => {
                         <div class="flex mt-[20px] gap-4">
                             <div>
                                 <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value"
-                                    :options="optionCaraBayar" v-model="payment_type" />
+                                    :disabled="true" :clearable="false" :options="optionCaraBayar"
+                                    v-model="payment_type" />
                             </div>
                             <div v-if="payment_type !== 'INSURANCE'">
                                 <CustomSelect label="Metode Pembayaran" class="flex-1" optionLabel="label"
@@ -566,7 +594,7 @@ onMounted(() => {
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ (slotProps.data.qty *
-                                                slotProps.data.price)?.toLocaleString ('id-ID') || 0 }}</div>
+                                                slotProps.data.price)?.toLocaleString('id-ID') || 0 }}</div>
                                         </template>
                                     </Column>
                                 </DataTable>

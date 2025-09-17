@@ -10,8 +10,8 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useApsOtcTransaction as useApsOtcStore } from "@/stores/pembayaran/apsotc";
 import { useTagihanStore } from "@/stores/pembayaran/findBill";
-import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice";
-import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakKuitansi";
+import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakTagihan";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import type { DataTableRowClickEvent } from "primevue/datatable";
@@ -56,10 +56,12 @@ const payment_method = ref("");
 const note = ref("");
 const information = ref("");
 const kembalian = ref<number>(0);
+const confirmDiscountDialog = ref(false);
+const confirmVoucherDialog = ref(false);
 
 // STATE DISKON & VOUCHER 
 const codeVoucher = ref("");
-const codeDiscount = ref<number>();
+const codeDiscount = ref<string>();
 const discountDisabled = ref(false);
 const voucherDisabled = ref(false);
 
@@ -201,10 +203,11 @@ const submitDiscount = async () => {
     storeUtils.setLoading(true);
     try {
         const payload = {
-            value: codeDiscount.value,
+            value: parseFloat(String(codeDiscount.value).replace(',', '.'))
         };
         await tagihanStore.postDiscount(props.billUuid, payload);
         await fetchDetailBill();
+        confirmDiscountDialog.value = false;
     } catch (error) {
         console.error("Gagal memakai diskon:", error);
     } finally {
@@ -221,6 +224,7 @@ const submitVoucher = async () => {
         };
         await tagihanStore.postVoucher(props.billUuid, payload);
         await fetchDetailBill();
+        confirmVoucherDialog.value = false; // <-- TAMBAHKAN INI
     } catch (error) {
         console.error("Gagal memakai voucher:", error);
     } finally {
@@ -313,6 +317,33 @@ const handleCetakRincianBiaya = async () => {
     }
 };
 
+// Fungsi untuk mereset dan mengisi otomatis state dialog pembayaran
+const initializePaymentDialog = () => {
+    // Reset semua input
+    amount.value = undefined;
+    payment_method.value = "";
+    note.value = "";
+    information.value = "";
+    kembalian.value = 0;
+
+    // Logika untuk mengisi otomatis 'Cara Bayar'
+    if (detailData.value && detailData.value.paymentType) {
+        const defaultPaymentType = optionCaraBayar.value.find(
+            option => option.label.toUpperCase() === detailData.value.paymentType.toUpperCase()
+        );
+        payment_type.value = defaultPaymentType ? defaultPaymentType.value : "";
+    } else {
+        payment_type.value = "";
+    }
+};
+
+// Watcher untuk memicu fungsi di atas saat dialog dibuka
+watch(pembayaranDialog, (isOpening) => {
+    if (isOpening) {
+        initializePaymentDialog();
+    }
+});
+
 watch(amount, (newValue) => {
     if (newValue) {
         const digitsOnly = String(newValue).replace(/\D/g, '');
@@ -321,6 +352,30 @@ watch(amount, (newValue) => {
         if (digitsOnly.length > maxLength) {
             const truncatedDigits = digitsOnly.slice(0, maxLength);
             amount.value = Number(truncatedDigits);
+        }
+    }
+});
+
+watch(codeDiscount, (newValue, oldValue) => {
+    if (newValue === undefined || newValue === null) return;
+
+    let valueStr = String(newValue);
+
+    // Ganti titik dengan koma untuk konsistensi
+    valueStr = valueStr.replace('.', ',');
+
+    // Hanya izinkan angka dan satu koma di awal
+    const validRegex = /^[0-9]*\,?[0-9]*$/;
+
+    if (!validRegex.test(valueStr)) {
+        // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
+        codeDiscount.value = oldValue ? String(oldValue) : '';
+    } else {
+        const numericValue = parseFloat(valueStr.replace(',', '.'));
+        if (numericValue > 100) {
+            codeDiscount.value = '100';
+        } else {
+            codeDiscount.value = valueStr;
         }
     }
 });
@@ -335,7 +390,11 @@ onMounted(() => {
 });
 
 const optionCaraBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Asuransi", value: "INSURANCE" }]);
-const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Transfer", value: "TRANSFER" }, { label: "Debit", value: "DEBIT" }, { label: "Kredit", value: "CREDIT" }]);
+const optionMetodeBayar = ref([
+    { label: "Tunai", value: "CASH" },
+    { label: "Transfer", value: "TRANSFER" },
+    { label: "Debit/Kredit", value: "DEBIT/KREDIT" },
+]);
 </script>
 
 <template>
@@ -391,6 +450,11 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                                     <template #body="slotProps">
                                         <div class="flex">
                                             <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
+                                            <CustomChip v-if="detailData.paymentType" class="ml-2"
+                                                :showCheckedIcon="false" :label="detailData.paymentType"
+                                                :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                                                :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                                                :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
                                         </div>
                                         <div class="flex">
                                             <UserDoctorIcon class="mt-2" />
@@ -413,9 +477,9 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         <div class="flex justify-between">
                             <p class="text-base font-bold font-poppins">Total Pembayaran</p>
                             <div class="flex">
-                                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice"
-                                    class="mt-[-10px] mr-[10px]" />
-                                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya"
+                                <CustomButton v-if="detailData?.isPaid" label="Cetak Kuitansi"
+                                    @click="handleCetakInvoice" class="mt-[-10px] mr-[10px]" />
+                                <CustomButton label="Cetak Tagihan" @click="handleCetakRincianBiaya"
                                     class="mt-[-10px]" />
                             </div>
                         </div>
@@ -429,8 +493,8 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                             <div class="text-sm">Rp {{ detailData.totalTindakan?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
-                            <div class="text-sm">Biaya Obat/Alkes</div>
-                            <div class="text-sm">Rp {{ detailData.totalObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
+                            <div class="text-sm">Retur Obat/Alkes</div>
+                            <div class="text-sm">Rp {{ detailData.returObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
                         </div>
                         <div class="flex justify-between mt-4">
                             <div class="text-sm">Biaya Kamar</div>
@@ -442,7 +506,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         </div>
                         <div class="flex justify-between mt-6">
                             <div class="text-sm">Voucher</div>
-                            <div class="text-sm">Rp {{ formattedVoucherValue }} </div>
+                            <div class="text-sm"> {{ formattedVoucherValue }} </div>
                         </div>
                         <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
                         <div class="flex justify-between mt-6">
@@ -462,22 +526,22 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                         </div>
 
                         <div class="flex mt-[30px]">
-                            <CustomInputNumber v-model="codeDiscount" placeholder="5" :show-label="false"
-                                class="w-[80px]  rounded-xl" :disabled="discountDisabled">
+                            <CustomTextfield v-model="codeDiscount" placeholder="5" :showLabel="false"
+                                class="w-[80px] bg-white rounded-xl" :disable="discountDisabled">
                                 <template #appendText>
                                     <div
-                                        class="font-semibold text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
+                                        class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
                                         %
                                     </div>
                                 </template>
-                            </CustomInputNumber>
-                            <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="submitDiscount"
+                            </CustomTextfield>
+                            <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="confirmDiscountDialog = true"
                                 :disabled="discountDisabled" />
 
                             <CustomTextfield v-model="codeVoucher" :showLabel="false"
                                 placeholder="Masukkan Kode Voucher" class="w-[30%] ml-[50px] mr-[10px]"
                                 :disabled="voucherDisabled" />
-                            <CustomButton label="Pakai Voucher" class="" @click="submitVoucher"
+                            <CustomButton label="Pakai Voucher" class="" @click="confirmVoucherDialog = true"
                                 :disabled="voucherDisabled" />
                         </div>
 
@@ -492,6 +556,48 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                 </div>
             </template>
         </Card>
+
+        <!-- Dialog konfirmasi Dialog-->
+        <CustomDialog v-model:visible="confirmDiscountDialog" width="500px">
+            <template #header>Pakai Diskon</template>
+            <template #body>
+                <div class="mt-6 text-base">
+                    <p>Apakah anda yakin menggunakan <strong>Diskon</strong>?</p>
+                </div>
+                <div class="text-sm">
+                    <p class="mt-4 italic text-danger-300">*Diskon akan mempengaruhi <strong>Grand Total</strong></p>
+                </div>
+            </template>
+            <template #footer>
+                <div class="flex justify-end">
+                    <CustomButton @click="confirmDiscountDialog = false" label="Tidak" outlined
+                        borderColor="border-grey-200" textColor="text-grey-300" />
+                    <CustomButton @click="submitDiscount" label="Iya, Pakai" class="ml-2"
+                        backgroundColor="bg-adameds-300" />
+                </div>
+            </template>
+        </CustomDialog>
+
+        <!--Dialog Konfirmasi Voucher-->
+        <CustomDialog v-model:visible="confirmVoucherDialog" width="500px">
+            <template #header>Pakai Voucher</template>
+            <template #body>
+                <div class="mt-6 text-base">
+                    <p>Apakah anda yakin menggunakan <strong>Voucher</strong>?</p>
+                </div>
+                <div class="text-sm">
+                    <p class="mt-4 italic text-danger-300">*Voucher akan mempengaruhi <strong>Grand Total</strong></p>
+                </div>
+            </template>
+            <template #footer>
+                <div class="flex justify-end">
+                    <CustomButton @click="confirmVoucherDialog = false" label="Tidak" outlined
+                        borderColor="border-grey-200" textColor="text-grey-300" />
+                    <CustomButton @click="submitVoucher" label="Iya, Pakai" class="ml-2"
+                        backgroundColor="bg-adameds-300" />
+                </div>
+            </template>
+        </CustomDialog>
 
         <CustomDialog v-model:visible="pembayaranDialog" width="600px">
             <template #header>Pembayaran</template>
@@ -529,7 +635,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                 <div class="flex mt-[20px] gap-4">
                     <div>
                         <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value"
-                            :options="optionCaraBayar" v-model="payment_type" />
+                            :options="optionCaraBayar" v-model="payment_type" :disabled="true" :clearable="false" />
                     </div>
                     <div v-if="payment_type !== 'INSURANCE'">
                         <CustomSelect label="Metode Pembayaran" class="flex-1" optionLabel="label" optionValue="value"
@@ -553,8 +659,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
             <template #body>
                 <div class="mt-6 text-sm">
                     <p>
-                        Pastikan semua biaya dan tagihan sudah tercantum dan terbayarkan
-                        hingga lunas, <strong>Close Bill</strong> pasien?
+                        Pastikan semua biaya dan tagihan sudah tercantum <strong>Close Bill</strong> pasien?
                     </p>
                 </div>
                 <div class="text-sm">
@@ -581,6 +686,11 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                     <div class="pt-5">
                         <div class="flex">
                             <p class="font-bold">{{ openedData.layanan }}</p>
+                            <CustomChip v-if="detailData.paymentType" class="ml-2" :showCheckedIcon="false"
+                                :label="detailData.paymentType"
+                                :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                                :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                                :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
                         </div>
                         <div class="flex">
                             <UserDoctorIcon class="mt-2" />

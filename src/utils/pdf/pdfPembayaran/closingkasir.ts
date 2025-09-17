@@ -1,7 +1,7 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import { customVfs } from "@/utils/customVfs";
-import { convertImageToBase64, epochToDate, generateQRCode, formatPrice } from "@/utils/Helpers";
+import { convertImageToBase64, epochToDate, generateQRCode } from "@/utils/Helpers";
 import { defaultHeader } from "../HeaderPrint"; 
 import logoUrl from "@/assets/images/adameds-square.png";
 
@@ -52,8 +52,7 @@ export async function createSlipTutupShiftPdf({ data }: { data: any }) {
         }
 
         const safeData = data || {};
-        safeData.actual = safeData.actual || {};
-        safeData.system = safeData.system || {};
+        safeData.finalReport = safeData.finalReport || {};
 
         const qrCodeImage = await generateQRCode(safeData.cashierName || 'Nama Kasir');
         const shiftMapping: { [key: string]: string } = { "1": "Pagi", "2": "Siang", "3": "Malam" };        
@@ -94,19 +93,18 @@ export async function createSlipTutupShiftPdf({ data }: { data: any }) {
                     table: {
                         widths: ['*', 'auto'],
                         body: [
-                            ['Transaksi (nett)', { text: formatPrice(safeData.system.total || 0), alignment: 'right' }],
+                            [{text:'Saldo Awal (Kas)',bold:true,margin:[2,2]}, { text: `Rp ${(safeData.finalReport.beginningBalance || 0).toLocaleString('id-ID')}`, alignment: 'right',bold:true ,margin:[2,2],}],
                             lightLineRow,
-                            ['PPN', { text: formatPrice(safeData.system.ppnValue || 0), alignment: 'right' }],
-                            lightLineRow,
-                            [{ text: 'Total', bold: true, fillColor: greyBg, margin: [0, 2] }, { text: formatPrice(safeData.system.grandTotal || 0), alignment: 'right', bold: true, fillColor: greyBg, margin: [0, 2] }],
+                            [{ text: 'Total Transaksi', margin: [2, 2] }, { text: `Rp ${(safeData.finalReport.total || 0).toLocaleString('id-ID')}`, alignment: 'right', margin:[2,2],}],
+                            lightLineRow,                           
                             ['\n', ''],
-                            ['TUNAI', { text: formatPrice(safeData.actual.cash || 0), alignment: 'right' }],
+                            [{ text: 'TUNAI', margin: [2, 2] }, { text: `Rp ${(safeData.finalReport.cash || 0).toLocaleString('id-ID')}`, alignment: 'right',margin:[2,2], }],
                             lightLineRow,
-                            ['DEBIT', { text: formatPrice(safeData.actual.debit || 0), alignment: 'right' }],
+                            [{ text: 'DEBIT/KREDIT', margin: [2, 2] }, { text: `Rp ${(safeData.finalReport.debitKredit || 0).toLocaleString('id-ID')}`, alignment: 'right' ,margin:[2,2],}],
                             lightLineRow,
-                            ['KREDIT (Insuransi/Piutang)', { text: formatPrice(safeData.actual.insurance || 0), alignment: 'right' }],
+                            [{ text: 'TRANSFER', margin: [2, 2] }, { text: `Rp ${(safeData.finalReport.transfer || 0).toLocaleString('id-ID')}`, alignment: 'right',margin:[2,2], }],
                             lightLineRow,
-                            [{ text: 'Total Pemasukan', bold: true, fillColor: greyBg, margin: [0, 2] }, { text: formatPrice(safeData.actual.totalPayment || 0), alignment: 'right', bold: true, fillColor: greyBg, margin: [0, 2] }],
+                            [{ text: 'Total Pemasukan', bold: true, fillColor: greyBg, margin: [2, 2] }, { text: `Rp ${(safeData.finalReport.total || 0).toLocaleString('id-ID')}`, alignment: 'right', bold: true, fillColor: greyBg, margin: [2, 2] }],
                         ]
                     }
                 },
@@ -121,8 +119,8 @@ export async function createSlipTutupShiftPdf({ data }: { data: any }) {
                                 '', 
                                 {
                                     stack: [
-                                        { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 20, 0, 0] },
-                                        { text: 'Kasir', margin: [0, 10, 0, 0] },
+                                        { text: `${faskesProfile?.address?.city || 'Surabaya'}, ${epochToDate(Date.now() / 1000, "date")}`, margin: [0, 20, 0, 0],bold:true },
+                                        { text: 'Kasir', margin: [0, 10, 0, 0] ,bold:true},
                                         { image: qrCodeImage, width: 60, margin: [0, 5, 0, 5] },
                                         { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 120, y2: 0, lineWidth: 0.5 }] },
                                         { text: safeData.cashierName, bold: true, margin: [0, 2, 0, 0] },

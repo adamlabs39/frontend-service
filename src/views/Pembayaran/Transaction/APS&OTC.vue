@@ -394,8 +394,8 @@ onMounted(() => {
                         </template>
                         <template #body="slotProps">
                             <div class="text-center">
-                                <div class="text-SM">{{ slotProps.data.noRm }}</div>
-                                <div class="text-SM">{{ slotProps.data.noReg }}</div>
+                                <!-- <div class="text-SM">{{ slotProps.data.noRm }}</div>
+                                <div class="text-SM">{{ slotProps.data.noReg }}</div> -->
                                 <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
                             </div>
                         </template>
