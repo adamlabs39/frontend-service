@@ -40,16 +40,45 @@ const schema = toTypedSchema(
     no_identity: yup
       .string()
       .required("Nomor identitas wajib diisi")
-      .test("len-by-type", "Panjang nomor tidak sesuai dengan tipe", (val) => {
+      .test("by-type", "", function (val) {
         const type = selectedType.value;
-        if (!type) return false;
-        const expected: Record<string, number> = {
-          RM: 8,
-          KTP: 16,
-          Passport: 8,
-          Lainnya: 8,
-        };
-        return !!val && val.trim().length === expected[type];
+        const value = (val ?? "").trim();
+
+        switch (type) {
+          case "KTP":
+            // 16 digit angka
+            return (
+              /^\d{16}$/.test(value) ||
+              this.createError({
+                message: "Nomor KTP harus terdiri dari 16 digit angka",
+              })
+            );
+
+          case "Passport":
+            // diawali huruf besar, diikuti angka (contoh: E1230887)
+            return (
+              /^[A-Z][0-9]+$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor Passport harus diawali huruf besar diikuti angka (contoh: E1230887)",
+              })
+            );
+
+          case "RM":
+            // format 01-02-10 => 8 karakter dengan 2 tanda dash
+            return (
+              /^\d{2}-\d{2}-\d{2}$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor RM harus terdiri dari 8 karakter dengan format 01-02-10 (2 tanda dash)",
+              })
+            );
+
+          case "Lainnya":
+          default:
+            // bebas (tidak ada validasi panjang/format)
+            return true;
+        }
       }),
   })
 );
