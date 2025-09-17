@@ -10,8 +10,8 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { usePelayananTransaction } from "@/stores/pembayaran/pelayanan";
 import { useTagihanStore } from "@/stores/pembayaran/findBill";
-import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice"; 
-import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakKuitansi";
+import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakTagihan";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import type { DataTableRowClickEvent } from "primevue/datatable";
@@ -34,7 +34,7 @@ const emit = defineEmits(["back"]);
 
 // STORE 
 const pelayananStore = usePelayananTransaction();
-const tagihanStore = useTagihanStore(); 
+const tagihanStore = useTagihanStore();
 const storeUtils = utilsStore();
 
 //  STATE UTAMA 
@@ -57,36 +57,39 @@ const note = ref("");
 const information = ref("");
 const kembalian = ref<number>(0);
 
+const confirmDiscountDialog = ref(false);
+const confirmVoucherDialog = ref(false);
+
 const codeVoucher = ref("");
-const codeDiscount = ref<number>();
+const codeDiscount = ref<string>();
 const discountDisabled = ref(false);
 const voucherDisabled = ref(false);
 
 //format price lokal(khusus kunjungan)
 const formatPriceLokal = (price: number) => {
-    if (typeof price !== 'number') return 'Rp 0';
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0, 
-    }).format(price);
+  if (typeof price !== 'number') return 'Rp 0';
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(price);
 };
 
 //Flexibilitas Format Voucher
 const formattedVoucherValue = computed(() => {
-    if (!detailData.value || !detailData.value.voucherValue) {
-        return 'Rp 0';
-    }
+  if (!detailData.value || !detailData.value.voucherValue) {
+    return 'Rp 0';
+  }
 
-    const type = detailData.value.voucherType;
-    const value = detailData.value.voucherValue;
-    if (type === 'persentase') {
-        return `${value} %`;
-    } 
-    else if (type === 'potongan') {
-        return formatPriceLokal(value);
-    }
+  const type = detailData.value.voucherType;
+  const value = detailData.value.voucherValue;
+  if (type === 'persentase') {
+    return `${value} %`;
+  }
+  else if (type === 'potongan') {
     return formatPriceLokal(value);
+  }
+  return formatPriceLokal(value);
 });
 
 // Mengambil data detail tagihan utama
@@ -151,7 +154,7 @@ const submitPayment = async () => {
       note: note.value,
       information: information.value,
     };
-    
+
     const paymentResponse: any = await pelayananStore.postPayment(props.billUuid, payload);
     if (paymentResponse && paymentResponse.data && paymentResponse.data.payload) {
       const billUuid = props.billUuid;
@@ -200,16 +203,41 @@ const submitDiscount = async () => {
   storeUtils.setLoading(true);
   try {
     const payload = {
-      value: codeDiscount.value,
+      value: parseFloat(String(codeDiscount.value).replace(',', '.'))
     };
     await tagihanStore.postDiscount(props.billUuid, payload);
     await fetchDetailBill();
+    confirmDiscountDialog.value = false; // <-- TAMBAHKAN INI
   } catch (error) {
     console.error("Gagal memakai diskon:", error);
   } finally {
     storeUtils.setLoading(false);
   }
 };
+
+watch(codeDiscount, (newValue, oldValue) => {
+  if (newValue === undefined || newValue === null) return;
+
+  let valueStr = String(newValue);
+
+  // Ganti titik dengan koma untuk konsistensi
+  valueStr = valueStr.replace('.', ',');
+
+  // Hanya izinkan angka dan satu koma di awal
+  const validRegex = /^[0-9]*\,?[0-9]*$/;
+
+  if (!validRegex.test(valueStr)) {
+    // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
+    codeDiscount.value = oldValue ? String(oldValue) : '';
+  } else {
+    const numericValue = parseFloat(valueStr.replace(',', '.'));
+    if (numericValue > 100) {
+      codeDiscount.value = '100';
+    } else {
+      codeDiscount.value = valueStr;
+    }
+  }
+});
 
 //fungsi untuk cetak invoice
 const handleCetakInvoice = async () => {
@@ -305,6 +333,7 @@ const submitVoucher = async () => {
     };
     await tagihanStore.postVoucher(props.billUuid, payload);
     await fetchDetailBill();
+    confirmVoucherDialog.value = false; // <-- TAMBAHKAN INI
   } catch (error) {
     console.error("Gagal memakai voucher:", error);
   } finally {
@@ -312,11 +341,38 @@ const submitVoucher = async () => {
   }
 };
 
+// Fungsi untuk mereset dan mengisi otomatis state dialog pembayaran
+const initializePaymentDialog = () => {
+  // Reset semua input
+  amount.value = undefined;
+  payment_method.value = "";
+  note.value = "";
+  information.value = "";
+  kembalian.value = 0;
+
+  // Logika untuk mengisi otomatis 'Cara Bayar'
+  if (detailData.value && detailData.value.paymentType) {
+    const defaultPaymentType = optionCaraBayar.value.find(
+      option => option.label.toUpperCase() === detailData.value.paymentType.toUpperCase()
+    );
+    payment_type.value = defaultPaymentType ? defaultPaymentType.value : "";
+  } else {
+    payment_type.value = "";
+  }
+};
+
+// Watcher untuk memicu fungsi di atas saat dialog dibuka
+watch(pembayaranDialog, (isOpening) => {
+  if (isOpening) {
+    initializePaymentDialog();
+  }
+});
+
 //maks 15 digit amount 
 watch(amount, (newValue) => {
   if (newValue) {
     const digitsOnly = String(newValue).replace(/\D/g, '');
-    
+
     const maxLength = 15;
     if (digitsOnly.length > maxLength) {
       const truncatedDigits = digitsOnly.slice(0, maxLength);
@@ -335,7 +391,11 @@ onMounted(() => {
 
 // DATA STATIS UNTUK DROPDOWN 
 const optionCaraBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Asuransi", value: "INSURANCE" }]);
-const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Transfer", value: "TRANSFER" }, { label: "Debit", value: "DEBIT" }, { label: "Kredit", value: "CREDIT" }]);
+const optionMetodeBayar = ref([
+  { label: "Tunai", value: "CASH" },
+  { label: "Transfer", value: "TRANSFER" },
+  { label: "Debit/Kredit", value: "DEBIT/KREDIT" },
+]); 
 </script>
 
 <template>
@@ -388,23 +448,23 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
                     <div class="w-full font-bold">List Tagihan Pelayanan</div>
                   </template>
                   <template #body="slotProps">
-                      <div class="flex">
-                          <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
-                          <CustomChip v-if="detailData.paymentType" class="ml-2" :showCheckedIcon="false"
-                              :label="detailData.paymentType"
-                              :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
-                              :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
-                              :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
-                      </div>
-                      <div class="flex">
-                          <UserDoctorIcon class="mt-2" />
-                          <p class="mt-2 text-sm text-grey-400">{{ slotProps.data.doctor }}</p>
-                      </div>
-                      <div v-if="detailData.scheduleTime" class="flex">
-                        <p class="text-sm">Tanggal</p>
-                        <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
-                        <p class="ml-2 text-sm">{{ detailData.scheduleTime }}</p>
-                        <p class="ml-2 text-sm">{{ detailData.scheduleTime }}</p>
+                    <div class="flex">
+                      <p class="font-bold text-normal">{{ slotProps.data.layanan }}</p>
+                      <CustomChip v-if="detailData.paymentType" class="ml-2" :showCheckedIcon="false"
+                        :label="detailData.paymentType"
+                        :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                        :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                        :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
+                    </div>
+                    <div class="flex">
+                      <UserDoctorIcon class="mt-2" />
+                      <p class="mt-2 text-sm text-grey-400">{{ slotProps.data.doctor }}</p>
+                    </div>
+                    <div v-if="detailData.scheduleTime" class="flex">
+                      <p class="text-sm">Tanggal</p>
+                      <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
+                      <p class="ml-2 text-sm">{{ detailData.scheduleTime }}</p>
+                      <p class="ml-2 text-sm">{{ detailData.scheduleTime }}</p>
                     </div>
                   </template>
                 </Column>
@@ -416,8 +476,9 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
             <div class="flex justify-between">
               <p class="text-base font-bold font-poppins">Total Pembayaran</p>
               <div class="flex">
-                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice" class="mt-[-10px] mr-[10px]" />
-                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
+                <CustomButton v-if="detailData?.isPaid" label="Cetak Kuitansi" @click="handleCetakInvoice"
+                  class="mt-[-10px] mr-[10px]" />
+                <CustomButton label="Cetak Tagihan" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
               </div>
             </div>
             <hr class="mt-2 mb-2 border border-slate-300" />
@@ -434,6 +495,10 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
               <div class="text-sm">Rp {{ detailData.totalObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
             </div>
             <div class="flex justify-between mt-4">
+              <div class="text-sm">Retur Obat/Alkes</div>
+              <div class="text-sm">Rp {{ detailData.returObatAlkes?.toLocaleString('id-ID') || 0 }}</div>
+            </div>
+            <div class="flex justify-between mt-4">
               <div class="text-sm">Biaya Kamar</div>
               <div class="text-sm">Rp {{ detailData.totalRuangan?.toLocaleString('id-ID') || 0 }}</div>
             </div>
@@ -443,7 +508,7 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
             </div>
             <div class="flex justify-between mt-6">
               <div class="text-sm">Voucher</div>
-              <div class="text-sm">Rp {{ formattedVoucherValue }} </div>
+              <div class="text-sm"> {{ formattedVoucherValue }} </div>
             </div>
             <hr class="mt-4 border-dashed border-[1px] border-slate-300" />
             <div class="flex justify-between mt-6">
@@ -461,45 +526,27 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
             </div>
 
             <div class="flex mt-[30px]">
-              <CustomInputNumber 
-                v-model="codeDiscount" 
-                placeholder="5" 
-                :show-label="false"
-                class="w-[80px]  rounded-xl" 
-                :disabled="discountDisabled"
-              >
+              <CustomTextfield v-model="codeDiscount" placeholder="5" :showLabel="false"
+                class="w-[80px] bg-white rounded-xl" :disable="discountDisabled">
                 <template #appendText>
-                  <div class="font-semibold text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
+                  <div
+                    class="font-semibold bg-white text-sm text-adameds-300 ml-[10px] mt-[10px] rounded-r-xl w-[20px]">
                     %
                   </div>
                 </template>
-              </CustomInputNumber>
-              <CustomButton 
-                label="Pakai Diskon" 
-                class="ml-[10px]" 
-                @click="submitDiscount"
-                :disabled="discountDisabled" 
-              />
-
-              <CustomTextfield 
-                v-model="codeVoucher" 
-                :showLabel="false" 
-                placeholder="Masukkan Kode Voucher"
-                class="w-[30%] ml-[50px] mr-[10px]" 
-                :disabled="voucherDisabled" 
-              />
-              <CustomButton 
-                label="Pakai Voucher" 
-                class="" 
-                @click="submitVoucher" 
-                :disabled="voucherDisabled" 
-              />
+              </CustomTextfield>
+              <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="confirmDiscountDialog = true"
+                :disabled="discountDisabled" />
+              <CustomTextfield v-model="codeVoucher" :showLabel="false" placeholder="Masukkan Kode Voucher"
+                class="w-[30%] ml-[50px] mr-[10px]" :disabled="voucherDisabled" />
+              <CustomButton label="Pakai Voucher" class="" @click="confirmVoucherDialog = true"
+                :disabled="voucherDisabled" />
             </div>
 
             <div class="mt-[60px]">
               <CustomButton v-if="!isPaid" @click="pembayaranDialog = true" label="Bayar" class="w-full" />
-              <CustomButton v-else-if="!isBillClosed" @click="kasirCloseBillDialog = true" label="Close Bill" class="w-full"
-                backgroundColor="bg-danger-300" />
+              <CustomButton v-else-if="!isBillClosed" @click="kasirCloseBillDialog = true" label="Close Bill"
+                class="w-full" backgroundColor="bg-danger-300" />
               <CustomButton v-else label="Bill Telah Ditutup" class="w-full" :disabled="true" />
             </div>
           </div>
@@ -542,8 +589,8 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
         </div>
         <div class="flex mt-[20px] gap-4">
           <div>
-            <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value"
-              :options="optionCaraBayar" v-model="payment_type" />
+            <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value" :disabled="true"
+              :clearable="false" :options="optionCaraBayar" v-model="payment_type" />
           </div>
           <div v-if="payment_type !== 'INSURANCE'">
             <CustomSelect label="Metode Pembayaran" class="flex-1" optionLabel="label" optionValue="value"
@@ -559,15 +606,14 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
       </template>
     </CustomDialog>
 
-    
+
     <!-- Close Bill -->
     <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px">
       <template #header class="text-white bg-danger-300">Closing Bill</template>
       <template #body>
         <div class="mt-6 text-sm">
           <p>
-            Pastikan semua biaya dan tagihan sudah tercantum dan terbayarkan
-            hingga lunas, <strong>Close Bill</strong> pasien?
+            Pastikan semua biaya dan tagihan sudah tercantum <strong>Close Bill</strong> pasien?
           </p>
         </div>
         <div class="text-sm">
@@ -586,30 +632,70 @@ const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Tran
       </template>
     </CustomDialog>
 
+    <!-- Dialog Pakai Diskon-->
+    <CustomDialog v-model:visible="confirmDiscountDialog" width="500px">
+      <template #header>Pakai Diskon</template>
+      <template #body>
+        <div class="mt-6 text-base">
+          <p>Apakah anda yakin menggunakan <strong>Diskon</strong>?</p>
+        </div>
+        <div class="text-sm">
+          <p class="mt-4 italic text-danger-300">*Diskon akan mempengaruhi <strong>Grand Total</strong></p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton @click="confirmDiscountDialog = false" label="Tidak" outlined borderColor="border-grey-200"
+            textColor="text-grey-300" />
+          <CustomButton @click="submitDiscount" label="Iya, Pakai" class="ml-2" backgroundColor="bg-adameds-300" />
+        </div>
+      </template>
+    </CustomDialog>
+
+    <!--Dialog Pakai Voucher-->>
+    <CustomDialog v-model:visible="confirmVoucherDialog" width="500px">
+      <template #header>Pakai Voucher</template>
+      <template #body>
+        <div class="mt-6 text-base">
+          <p>Apakah anda yakin menggunakan <strong>Voucher</strong>?</p>
+        </div>
+        <div class="text-sm">
+          <p class="mt-4 italic text-danger-300">*Voucher akan mempengaruhi <strong>Grand Total</strong></p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton @click="confirmVoucherDialog = false" label="Tidak" outlined borderColor="border-grey-200"
+            textColor="text-grey-300" />
+          <CustomButton @click="submitVoucher" label="Iya, Pakai" class="ml-2" backgroundColor="bg-adameds-300" />
+        </div>
+      </template>
+    </CustomDialog>
+
     <CustomDialog v-model:visible="listTagihanRIDialog" width="1000px">
       <template #header>Detail Tagihan Pelayanan</template>
       <template #body>
         <div v-if="openedData && itemTagihan">
           <div class="pt-5">
             <div class="flex">
-                <p class="font-bold">{{ openedData.layanan }}</p>
-                <CustomChip v-if="detailData.paymentType" class="ml-2" :showCheckedIcon="false"
-                    :label="detailData.paymentType"
-                    :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
-                    :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
-                    :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
+              <p class="font-bold">{{ openedData.layanan }}</p>
+              <CustomChip v-if="detailData.paymentType" class="ml-2" :showCheckedIcon="false"
+                :label="detailData.paymentType"
+                :bgColor="detailData.paymentType === 'ASURANSI' ? 'bg-warning-50' : 'bg-adameds-50'"
+                :textColor="detailData.paymentType === 'ASURANSI' ? 'text-warning-300' : 'text-adameds-300'"
+                :borderColor="detailData.paymentType === 'ASURANSI' ? 'border-warning-300' : 'border-adameds-300'" />
             </div>
             <div class="flex">
-                <UserDoctorIcon class="mt-2" />
-                <p class="mt-2 text-sm text-grey-400">{{ openedData.doctor }}</p>
+              <UserDoctorIcon class="mt-2" />
+              <p class="mt-2 text-sm text-grey-400">{{ openedData.doctor }}</p>
             </div>
             <div v-if="detailData.scheduleTime" class="flex">
-                <p class="text-sm">Tanggal</p>
-                <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
-                <p class="ml-2 text-sm">{{ epochToDate(detailData.scheduleTime, "date") }}</p>
-                <p class="ml-2 text-sm">{{ epochToDate(detailData.scheduleTime, "time") }}</p>
+              <p class="text-sm">Tanggal</p>
+              <PhArrowRight :size="18" class="my-auto ml-2 text-success-300" weight="bold" />
+              <p class="ml-2 text-sm">{{ epochToDate(detailData.scheduleTime, "date") }}</p>
+              <p class="ml-2 text-sm">{{ epochToDate(detailData.scheduleTime, "time") }}</p>
             </div>
-        </div>
+          </div>
 
           <div class="pt-5 shadow-md rounded-xl" v-if="itemTagihan?.item?.ruangan?.list?.length > 0">
             <DataTable :value="itemTagihan.item.ruangan.list" class="overflow-hidden rounded-t-[10px]"
