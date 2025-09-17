@@ -81,7 +81,7 @@ const props = defineProps({
         <div class="bg-white bg-opacity-30 w-full h-[540px] space-y-16">
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-fit h-10 bg-white rounded-xl shadow-md"
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
                 class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
@@ -104,7 +104,7 @@ const props = defineProps({
             <div
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
-              Checkin Pendaftarn
+              Konfirmasi Kode Booking
             </div>
 
             <!-- Button Container (Right) -->
@@ -127,7 +127,7 @@ const props = defineProps({
               class="mb-4 w-2/5"
               v-model="noIdentity"
             ></CustomTextfield>
-            <CustomButton label="Checkin" class="w-2/5" @click="onSubmit" />
+            <CustomButton label="Lanjutkan" class="w-2/5" @click="onSubmit" />
           </div>
         </div>
       </div>

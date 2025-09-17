@@ -116,10 +116,15 @@ onActivated(() => {
 
             <!-- Title Container (Center) -->
             <div
-              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
+              class="flex flex-col justify-center items-center justify-self-center mx-auto text-center text-2xl font-extrabold text-adameds-300"
             >
-              <div class="pr-2">Data Ditemukan</div>
-              <CheckCircleIcon class="text-adameds-300" :size="30" />
+              <div class="flex">
+                <div class="pr-2">Konfirmasi Obat Berhasil</div>
+                <CheckCircleIcon class="text-adameds-300" :size="30" />
+              </div>
+              <div class="text-grey-400 text-subHeading">
+                Silahkan menunggu panggilan antrian
+              </div>
             </div>
 
             <!-- Button Container (Right) -->
@@ -137,7 +142,11 @@ onActivated(() => {
           </div>
 
           <div class="flex justify-center items-center px-16">
-            <TiketAntrian :tiketAntrian="getTiketData" class="mt-14" />
+            <TiketAntrian
+              :showPrintButton="true"
+              :tiketAntrian="getTiketData"
+              class="mt-14"
+            />
           </div>
         </div>
       </div>

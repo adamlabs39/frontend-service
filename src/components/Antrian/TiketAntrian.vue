@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { epochToDate, formatStringDate } from "@/utils/Helpers";
-import {
-  createAntrianTicketPdf,
-  createTiketAntrianPDF,
-} from "@/utils/pdf/pdfAntrian/TiketAntrian";
+import { createTiketAntrianPDF } from "@/utils/pdf/pdfAntrian/TiketAntrian";
 
 const props = defineProps({
   tiketAntrian: {
@@ -260,7 +257,7 @@ function epochToDateShortMonth(epochTime: number): string {
               <div
                 :class="[
                   'text-[34px] text-center mt-8 font-bold leading-10 text-white',
-                  { 'mt-12': !showPrintButton },
+                  { 'mt-12': !showPrintButton, 'mt-0': shouldShowFarmasiLabel },
                 ]"
               >
                 <!-- Kondisional untuk label Farmasi -->
