@@ -465,6 +465,28 @@ const removeFile = async (rowData: any) => {
   }
 };
 
+const nonaktifkanPasien = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const listUuid = selectedPatient.value.map(pasien => pasien.uuid);
+
+    const payload = {
+      list_uuid: listUuid
+    };
+
+    await masterPasienStore.deletePasienApi(payload);
+
+    showConfirmNonaktifDialog.value = false;
+    selectedPatient.value = [];
+    
+    await fetchData();
+
+  } catch (error) {
+    console.error("Gagal menon-aktifkan pasien:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const patientIdentityForm = ref<InstanceType<
   typeof PatientIdentityForm
@@ -618,9 +640,10 @@ const onUpload = async (event: any) => {
   }
 };
 
-const showDeletePasien = ref(false);
+const showDeletePasien = ref(true);
 const deleteReason = ref<string>();
 const selectedPatient = ref<any[]>([]);
+const showConfirmNonaktifDialog = ref(false); 
 // FIXME Ada perubahan dari sisi BE
 const deletePatient = async () => {
   try {
@@ -933,7 +956,14 @@ onMounted(() => {
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
           @rowClick="showDetailPatient"
-        >
+          >
+          <Column
+            v-if="showDeletePasien"
+            selectionMode="multiple"
+            headerStyle="width: 3rem"
+            headerClass="bg-adameds-50"
+            class="custom-checkbox"
+          ></Column>
           <Column
             field="nomor"
             headerClass="bg-adameds-50"
@@ -990,13 +1020,19 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column
-            v-if="showDeletePasien"
-            selectionMode="multiple"
-            headerStyle="width: 3rem"
-            headerClass="bg-adameds-50"
-            class="custom-checkbox"
-          ></Column>
+          <Column field="status" header="Status" headerClass="bg-adameds-50">
+            <template #body="{ data }">
+              <CustomChip
+                :showCheckedIcon="data.status"
+                :label="data.status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="data.status ? 'text-white' : 'text-[#80868d]'"
+                :bgColor="data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="data.status ? 'border-transparent' : 'border-[#80868d]'"
+                :icon-color="data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5"
+              />
+            </template>
+          </Column>
         </DataTable>
         <NoData v-else />
       </template>
@@ -1023,7 +1059,7 @@ onMounted(() => {
                 <FileImportIcon />
               </template>
             </FileUpload>
-            <CustomButton style=" margin-left: 11px; margin-top: 3px; margin-right: -4px;"
+            <CustomButton style=" margin-left: 11px; margin-right: -4px;"
                 @click="handleExport"
                 icon="PhDownload"
                 label="Download"
@@ -1032,34 +1068,48 @@ onMounted(() => {
             />
             <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
             <CustomButton
-              v-if="!showDeletePasien"
-              @click="showDeletePasien = true"
+              v-if="showDeletePasien"
+              @click="showConfirmNonaktifDialog = true"
               class="my-auto bg-danger-300"
-              label="Hapus Data Pasien"
+              label="Non-Aktifkan"
             />
-            <CustomButton
-              v-if="showDeletePasien"
-              @click="showDeletePasien = false"
-              class="my-auto mr-[10px]"
-              label="Batal"
-              outlined
-              borderColor="border-grey-200"
-              textColor="text-grey-300"
-            />
-            <CustomButton
-              v-if="showDeletePasien"
-              @click="deletePatient"
-              class="my-auto mr-5 bg-danger-300"
-              label="Iya, Hapus"
-              :disabled="!deleteReason || selectedPatient.length == 0"
-            />
-            <CustomTextfield
-              v-if="showDeletePasien"
-              v-model="deleteReason"
-              :showLabel="false"
-              class="my-auto w-[400px]"
-              placeholder="Alasan Hapus Data Pasien"
-            />
+            <CustomDialog v-model:visible="showConfirmNonaktifDialog" width="600px" :pt="{
+                header: { class: 'bg-danger-300 text-white' }
+              }">
+              <template #header>
+                Non-Aktif
+              </template>
+              <template #body>
+                <div class="mt-5">
+                  <div class="mb-4">
+                    Anda yakin ingin menon-aktifkan data pasien No. RM
+                  </div>
+                  <ul>
+                    <li v-for="pasien in selectedPatient" :key="pasien.uuid" class="ml-5 font-semibold list-disc">
+                      {{ pasien.noRm }}
+                    </li>
+                  </ul>
+                </div>
+              </template>
+              <template #footer>
+                <div class="flex justify-end">
+                  <CustomButton
+                    @click="showConfirmNonaktifDialog = false"
+                    label="Tidak"
+                    outlined
+                    class="mr-[10px]"
+                    borderColor="border-grey-200"
+                    textColor="text-grey-300"
+                  />
+                  <CustomButton
+                    @click="nonaktifkanPasien"
+                    label="Iya, Non-aktifkan"
+                    class=""
+                    backgroundColor="bg-danger-300"
+                  />
+                </div>
+              </template>
+            </CustomDialog>
           </div>
           <CustomPaginator
             :rows="properties.pageSize"

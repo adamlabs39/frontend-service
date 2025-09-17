@@ -54,5 +54,11 @@ export const useAdmisiMasterPasienStore = defineStore({
     async deleteBerkasApi(pasienUuid = "", fileUuid = "") {
       return apiAdmisiDelete(`/file/${pasienUuid}`, { uuid: fileUuid });
     },
+    // async deletePasienApi(uuid = "", payload = {}) {
+    //   return apiAdmisiDelete(`/patient/cancel/${uuid}`, payload);
+    // }
+    async deletePasienApi(payload = {}) {
+      return apiAdmisiDelete(`/patient/cancel`, payload);
+    }
   },
 });
