@@ -116,6 +116,8 @@ import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilP
 import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
 import FarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiPage.vue";
+import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/DaftarFarmasiPage.vue";
+import FarmasiBerhasilPage from "@/views/Antrian/APM/APMFarmasi/FarmasiBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -721,10 +723,22 @@ const router = createRouter({
       component: PasienPoliPage,
     },
     {
-      path: "/antrian/apm/aktif/pasien/jkn/farmasi",
-      name: "antrian-apm-aktif-pasien-jkn-farmasi",
+      path: "/antrian/apm/aktif/pasien/farmasi",
+      name: "antrian-apm-aktif-pasien-farmasi",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: FarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/daftar",
+      name: "antrian-apm-aktif-pasien-farmasi-daftar",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: DaftarFarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/berhasil",
+      name: "antrian-apm-aktif-pasien-farmasi-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiBerhasilPage,
     },
     {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",
