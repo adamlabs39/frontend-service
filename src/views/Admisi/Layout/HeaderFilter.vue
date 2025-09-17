@@ -423,7 +423,7 @@ defineExpose({
       <div class="font-semibold text-SM text-grey-300">
         <div v-if="pageType == 'rawat-jalan'">
           <div class="flex mb-[10px] mt-5">
-            <div class="w-[15%]">Filter Poli</div>
+            <div class="w-[15%] shrink-0">Filter Poli</div>
             <div class="flex flex-wrap grow">
               <div class="h-5 my-auto border border-grey-300"></div>
               <CustomChip
@@ -459,8 +459,8 @@ defineExpose({
         </div>
         <div v-else-if="pageType == 'rawat-inap'">
           <div class="flex mb-[10px] mt-5">
-            <div class="w-[15%]">Filter Ruangan</div>
-            <div class="flex">
+            <div class="w-[15%] shrink-0">Filter Ruangan</div>
+            <div class="flex flex-wrap grow">
               <div class="h-5 my-auto border border-grey-300"></div>
               <!-- <CustomChip
                 v-for="(room, index) in [
@@ -477,7 +477,7 @@ defineExpose({
                   v-for="(room, index) in filterRoomList"
                   :key="room.uuid + index"
                   :label="room.label"
-                  class="ml-[10px]"
+                  class="ml-[10px] mb-1"
                   :isSelected="selectedFilterRoom.includes(room.label)"
                   @selected="onFilterRoomSelect"
                 />
