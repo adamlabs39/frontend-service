@@ -70,6 +70,32 @@ const handlePrint = async () => {
     window.print();
   }
 };
+
+const formatDateShortMonth = (date: Date) => {
+  const monthsShort = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = monthsShort[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+};
+
+function epochToDateShortMonth(epochTime: number): string {
+  const date = new Date(epochTime * 1000);
+  return formatDateShortMonth(date);
+}
 </script>
 <template>
   <Card class="overflow-hidden w-full h-[350px]">
@@ -213,7 +239,12 @@ const handlePrint = async () => {
               <div
                 class="flex justify-center items-center w-48 border-b-2 border-dashed"
               >
-                <div class="mx-5 my-4 text-center">
+                <div
+                  :class="[
+                    'mx-5 my-1 text-center',
+                    { 'my-4': !showPrintButton },
+                  ]"
+                >
                   <div class="font-bold leading-8 text-white text-subheading">
                     No. Antrian
                     <span v-if="tiketAntrian.noAntrianAdmisi">loket</span>
@@ -222,12 +253,15 @@ const handlePrint = async () => {
                   <div
                     class="mt-1 text-sm font-normal leading-7 text-white opacity-85"
                   >
-                    {{ epochToDate(tiketAntrian.tanggalCheckin, "dateTime") }}
+                    {{ epochToDateShortMonth(tiketAntrian.tanggalCheckin) }}
                   </div>
                 </div>
               </div>
               <div
-                class="text-[34px] text-center font-bold leading-10 text-white"
+                :class="[
+                  'text-[34px] text-center mt-8 font-bold leading-10 text-white',
+                  { 'mt-12': !showPrintButton },
+                ]"
               >
                 <!-- Kondisional untuk label Farmasi -->
                 <div v-if="shouldShowFarmasiLabel" class="text-[20px]">
