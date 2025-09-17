@@ -337,7 +337,7 @@ const postRegisterPatient = async () => {
     try {
       let response;
       if (props.pageType == "rawat-jalan") {
-        if (props.formType == "add") {
+      if (props.formType == "add" && props.dataBreadCrumb[0].label !== 'Checkin') {
           response = await admisiRJStore.registRJ(payload);
         } else {
           response = await admisiRJStore.updateRJ(
