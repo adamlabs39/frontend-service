@@ -105,7 +105,7 @@ const props = defineProps({
             <div
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
-              Checkin Pendaftarn
+              Checkin Pendaftaran
             </div>
 
             <!-- Button Container (Right) -->

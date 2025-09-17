@@ -115,7 +115,7 @@ onActivated(() => {
             <div
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
-              <div class="pr-2">Data Ditemukan</div>
+              <div class="pr-2">Checkin Berhasil</div>
               <CheckCircleIcon class="text-adameds-300" :size="30" />
             </div>
 
