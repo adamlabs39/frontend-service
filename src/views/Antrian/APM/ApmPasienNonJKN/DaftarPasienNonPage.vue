@@ -7,7 +7,7 @@ import PlusIcon from "@/components/icons/PlusIcon.vue";
 import { useApmStore } from "@/stores/antrian/apm";
 import { utilsStore } from "@/stores/utils";
 import { useAuthStore } from "@/stores/auth";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -83,11 +83,23 @@ const schema = toTypedSchema(
   })
 );
 
-const { errors, handleSubmit, defineField } = useForm({
-  validationSchema: schema,
-});
+const { errors, handleSubmit, defineField, validateField, setFieldError } =
+  useForm({
+    validationSchema: schema,
+  });
 
 const [no_identity] = defineField("no_identity");
+
+watch(selectedType, async () => {
+  // Hapus pesan error lama (mis. dari Passport) saat pindah tipe
+  setFieldError("no_identity", undefined);
+
+  // Jika ada nilai yang sudah diinput, validasi ulang dengan aturan tipe baru
+  const current = (no_identity.value ?? "").toString().trim();
+  if (current) {
+    await validateField("no_identity");
+  }
+});
 
 const identityLabel = computed(() =>
   selectedType.value ? `No. ${selectedType.value}` : "No."
