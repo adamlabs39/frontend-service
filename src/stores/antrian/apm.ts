@@ -1,8 +1,4 @@
-import {
-  apiAdmisiPost,
-  apiAntrianLokalPost,
-  apiAntrianPost,
-} from "@/utils/apiHandler";
+import { apiAdmisiPost, apiAntrianPost } from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 export const useApmStore = defineStore({
