@@ -179,6 +179,7 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
+      formType.value = "add";
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
       formType.value = "detail";
