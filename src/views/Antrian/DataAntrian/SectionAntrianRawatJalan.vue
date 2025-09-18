@@ -248,7 +248,7 @@ const getStatusStyle = (status: string | undefined) => {
     :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
     :pt="dataTablePt"
-    class="flex text-xs"
+    class="w-full text-xs"
     stripedRows
     dataKey="id"
     scrollable
@@ -276,35 +276,37 @@ const getStatusStyle = (status: string | undefined) => {
       class="p-0 w-auto"
     >
       <template #body="slotProps">
-        <div class="space-y-2 text-SM">
-          <div class="flex gap-2">
-            <div>Daftar</div>
+        <div class="space-y-1 text-SM">
+          <!-- Baris Daftar -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Daftar</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken.svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
+            <div class="whitespace-nowrap">
               {{ dateTimeFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
-          <div class="flex gap-2">
-            <div>Jadwal</div>
+          <!-- Baris Jadwal -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Jadwal</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken (1).svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
+            <div class="whitespace-nowrap">
               {{ dateTimeFormat(slotProps.data.patientData.tanggalCheckin) }}
             </div>
           </div>
         </div>
       </template>
     </Column>
-    <Column header="Nomor" header-class="text-black bg-adameds-50" class="p-0">
+    <Column header="Nomor" header-class="text-black bg-adameds-50" class="p-1">
       <template #body="slotProps">
-        <div class="text-SM max-w-[190px] space-y-2">
+        <div class="text-SM max-w-[190px] space-y-2 text-nowrap">
           <div class="grid grid-cols-3">
             <div>Book</div>
             <div class="flex gap-5">
@@ -337,7 +339,7 @@ const getStatusStyle = (status: string | undefined) => {
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0">
       <template #body="slotProps">
         <div class="items-center space-y-0.5">
-          <div class="flex items-center font-semibold">
+          <div class="flex items-center font-semibold max-w-64">
             {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
@@ -359,7 +361,7 @@ const getStatusStyle = (status: string | undefined) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex gap-1 items-center">
+        <div class="flex gap-1 items-center text-nowrap">
           <div>
             {{ slotProps.data.patientData?.jadwalDokter?.namaDokter ?? "N/A" }}
           </div>
