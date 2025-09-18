@@ -179,9 +179,10 @@ const searchPatientData = async (query: string = "") => {
   timer.value = setTimeout(async () => {
     loadingSearchPatient.value = true;
     try {
-      const response = await masterPasienStore.getMasterPasienAktif({
+      const response = await masterPasienStore.getMasterPasien({
         q: query,
-        limit: 9999, 
+        limit: 9999,
+        status: 'aktif'
       });
       if (response && response.payload) {
         listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
