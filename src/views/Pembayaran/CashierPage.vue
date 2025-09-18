@@ -675,6 +675,7 @@ const submitKasirCloseBill = async () => {
       payload
     );
     kasirCloseBillDialog.value = false;
+    await setSelectedPatientData(kasirData.value.uuid);
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {
@@ -708,6 +709,13 @@ const formatDateCustom = (epochTime: number) => {
 
   return `${day} ${month} ${year}`;
 };
+
+//pengecekan pembayaran kurang
+const isAmountInsufficient = computed(() => {
+  const grandTotal = kasirData.value?.grandTotal || 0;
+  const paidAmount = amount.value || 0;
+  return paidAmount > 0 && paidAmount < grandTotal;
+});
 
 //untuk max 18 digit amount
 watch(amount, (newValue) => {
@@ -963,7 +971,8 @@ onUnmounted(() => {
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Retur Obat/Alkes</div>
-              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.returObat || "Data Not Available") }}</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.returObat || "Data Not Available") }}
+              </div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
@@ -1016,9 +1025,11 @@ onUnmounted(() => {
             <!-- Button Bayar -->
             <div class="mt-[60px]">
               <div class="flex">
-                <CustomButton v-if="!isBillClosed" @click="pembayaranBPJSDialog = true" label="Bayar" class="w-full" />
-                <CustomButton v-else @click="kasirCloseBillDialog = true" label="Close Bill" class="w-full"
-                  backgroundColor="bg-danger-300" borderColor="border-danger-300" textColor="text-white" />
+                <CustomButton v-if="!kasirData.isPaid" @click="pembayaranBPJSDialog = true" label="Bayar"
+                  class="w-full" />
+                <CustomButton v-else-if="!kasirData.closeBill" @click="kasirCloseBillDialog = true" label="Close Bill"
+                  class="w-full" backgroundColor="bg-danger-300" />
+                <CustomButton v-else label="Bill Telah Ditutup" class="w-full" :disabled="true" />
               </div>
             </div>
           </div>
@@ -1117,7 +1128,7 @@ onUnmounted(() => {
     </CustomDialog>
 
     <!-- Close Bill -->
-    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px">
+    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px" headerBg="bg-danger-300">
       <template #header class="text-white bg-danger-300">Closing Bill</template>
       <template #body>
         <div class="mt-6 text-sm">
@@ -1230,7 +1241,7 @@ onUnmounted(() => {
     </CustomDialog>
 
     <!-- Pembayaran -->
-    <CustomDialog v-model:visible="pembayaranBPJSDialog" width="600px">
+    <CustomDialog v-model:visible="pembayaranBPJSDialog" width="700px">
       <template #header>Pembayaran</template>
       <template #body>
         <div class="flex justify-between">
@@ -1239,7 +1250,7 @@ onUnmounted(() => {
           </div>
           <div>
             <p class="font-bold mt-[20px]">
-              <span>Rp {{ kasirData.grandTotal ?.toLocaleString('id-ID') || 0 }}</span>
+              <span>Rp {{ kasirData.grandTotal?.toLocaleString('id-ID') || 0 }}</span>
             </p>
           </div>
         </div>
@@ -1252,15 +1263,20 @@ onUnmounted(() => {
             </div>
             <div>
               <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0" maxlength="18"
-                :pt="{ root: { class: 'border !border-danger-300 rounded-lg' } }">
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
                 <template #prependText>
                   <div
-                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
               </CustomInputNumber>
             </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan status
+              piutang?</p>
           </div>
 
           <div class="flex justify-between">
@@ -1269,13 +1285,12 @@ onUnmounted(() => {
             </div>
             <div>
               <CustomInputNumber :model-value="kembalian" :show-label="false" class="mt-[15px]" placeholder="0"
-                :disabled="true" :pt="{
-                  root: { class: 'border !border-danger-300 rounded-lg' },
-                  input: { class: '!text-danger-300' }
-                }">
+                :disabled="true"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' }, input: { class: isAmountInsufficient ? '!text-danger-300' : '' } }">
                 <template #prependText>
                   <div
-                    class="font-semibold text-MD leading-7 bg-adameds-300 text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md">
+                    class="font-semibold text-MD text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
@@ -1292,15 +1307,22 @@ onUnmounted(() => {
               <p class="font-bold mt-[30px] text-sm">Dijamin</p>
             </div>
             <div>
-              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0">
+              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
                 <template #prependText>
                   <div
-                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
               </CustomInputNumber>
             </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan status
+              piutang?
+            </p>
           </div>
           <hr class="mt-6 border-1 border-grey-200" />
         </div>

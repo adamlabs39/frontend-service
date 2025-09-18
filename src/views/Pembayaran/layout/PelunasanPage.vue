@@ -432,12 +432,14 @@ onMounted(() => {
                             <div>
                                 <div class="flex justify-between mt-4">
                                     <div class="text-sm font-bold">Jumlah Terbayar</div>
-                                    <div class="text-sm font-bold">Rp {{ kasirData.totalPaid?.toLocaleString('id-ID') ||0 }}</div>
+                                    <div class="text-sm font-bold">Rp {{ kasirData.totalPaid?.toLocaleString('id-ID')
+                                        || 0 }}</div>
                                 </div>
                                 <hr class="mt-6 mb-2 border-slate-300 border-1" />
                                 <div class="flex justify-between mt-2">
                                     <div class="text-sm font-bold text-danger-300">Sisa Bayar</div>
-                                    <div class="text-sm font-bold text-danger-300">-Rp {{kasirData.remainingDebt?.toLocaleString('id-ID') || 0 }}</div>
+                                    <div class="text-sm font-bold text-danger-300">-Rp
+                                        {{ kasirData.remainingDebt?.toLocaleString('id-ID') || 0 }}</div>
                                 </div>
                             </div>
                         </template>
@@ -451,7 +453,7 @@ onMounted(() => {
                     <p>Memuat data pelunasan...</p>
                 </div>
 
-                <CustomDialog v-model:visible="pembayaranDialog" width="600px">
+                <CustomDialog v-model:visible="pembayaranDialog" width="700px">
                     <template #header>Pembayaran</template>
                     <template #body>
                         <div class="flex justify-between">
@@ -472,9 +474,13 @@ onMounted(() => {
                                     placeholder="0"
                                     :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
                                     <template #prependText>
-                                        <div
-                                            class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD bg-adameds-300 rounded-l-md">
-                                            Rp.</div>
+                                        <div class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                                            :class="{
+                                                'bg-danger-300': isAmountInsufficient,
+                                                'bg-adameds-300': !isAmountInsufficient
+                                            }">
+                                            Rp.
+                                        </div>
                                     </template>
                                 </CustomInputNumber>
                             </div>
@@ -492,9 +498,13 @@ onMounted(() => {
                                     placeholder="0" :disabled="true"
                                     :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' }, input: { class: isAmountInsufficient ? '!text-danger-300' : '' } }">
                                     <template #prependText>
-                                        <div
-                                            class="font-semibold text-MD bg-adameds-300 text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md">
-                                            Rp.</div>
+                                        <div class="font-semibold text-MD text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md"
+                                            :class="{
+                                                'bg-danger-300': isAmountInsufficient,
+                                                'bg-adameds-300': !isAmountInsufficient
+                                            }">
+                                            Rp.
+                                        </div>
                                     </template>
                                 </CustomInputNumber>
                             </div>
