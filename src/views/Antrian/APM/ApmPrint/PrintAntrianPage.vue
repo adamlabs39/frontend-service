@@ -70,25 +70,25 @@ const props = defineProps({
 </script>
 
 <template #body>
-  <div class="py-5 w-full min-h-screen flex flex-col">
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
       class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
       <NavbarAntrian />
     </div>
-    <div class="relative mx-36 flex-1 flex items-center justify-center">
+    <div class="flex relative flex-1 justify-center items-center mx-36">
       <div
-        class="flex flex-col justify-center w-full overflow-hidden rounded-3xl"
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
           class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
         >
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between h-10 bg-white shadow-md w-28 rounded-xl"
+              class="flex justify-between w-28 h-10 bg-white rounded-xl shadow-md"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
                 <!-- Logo Container -->
                 <div
@@ -111,13 +111,13 @@ const props = defineProps({
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               Print Antrian
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Kembali"
                 outlined
@@ -129,7 +129,7 @@ const props = defineProps({
             </div>
           </div>
 
-          <div class="flex flex-col items-center gap-2 mt-28">
+          <div class="flex flex-col gap-4 items-center mt-28">
             <CustomTextfield
               :label="`No. Kode Booking`"
               :placeholder="`Masukkan No. Kode Booking`"

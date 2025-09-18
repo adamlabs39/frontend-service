@@ -116,8 +116,9 @@ import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
 import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
 import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
-import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
+import FarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiPage.vue";
 import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/DaftarFarmasiPage.vue";
+import FarmasiBerhasilPage from "@/views/Antrian/APM/APMFarmasi/FarmasiBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -203,7 +204,7 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
-// import APSOTC from "@/views/Pembayaran/Transaction/APS&OTC.vue";
+import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -729,10 +730,22 @@ const router = createRouter({
       component: PasienPoliPage,
     },
     {
-      path: "/antrian/apm/aktif/pasien/jkn/farmasi",
-      name: "antrian-apm-aktif-pasien-jkn-farmasi",
+      path: "/antrian/apm/aktif/pasien/farmasi",
+      name: "antrian-apm-aktif-pasien-farmasi",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/daftar",
+      name: "antrian-apm-aktif-pasien-farmasi-daftar",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: DaftarFarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/berhasil",
+      name: "antrian-apm-aktif-pasien-farmasi-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiBerhasilPage,
     },
     {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",

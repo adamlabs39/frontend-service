@@ -3,15 +3,56 @@ import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { useApmStore } from "@/stores/antrian/apm";
+import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+const useUtilsStore = utilsStore();
+const apmStore = useApmStore();
+const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/checkin/berhasil");
+};
+
+const noIdentity = ref("");
+
+// Submit handler
+const onSubmit = async () => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    const payload = {
+      kode_booking: noIdentity.value,
+    };
+
+    const response = await apmStore.AntrianCheckIn(payload);
+
+    if (response?.payload && response.payload.uuid) {
+      // Simpan ke store, lalu navigasi tanpa query sensitif
+      apmFlow.setPatientStatus("success");
+      apmFlow.setPatientData(response.payload);
+
+      router.push({
+        path: "/antrian/apm/aktif/checkin/berhasil",
+      });
+    } else {
+      throw new Error("Patient not found");
+    }
+  } catch (error) {
+    // Pasien baru (not_found)
+    apmFlow.setPatientStatus("not_found");
+    apmFlow.setPatientData(null);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 
 const props = defineProps({
@@ -64,7 +105,7 @@ const props = defineProps({
             <div
               class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
-              Checkin Pendaftarn
+              Checkin Pendaftaran
             </div>
 
             <!-- Button Container (Right) -->
@@ -85,12 +126,9 @@ const props = defineProps({
               label="No. Kode Booking"
               placeholder="Masukkan No. Kode Booking"
               class="mb-4 w-2/5"
+              v-model="noIdentity"
             ></CustomTextfield>
-            <CustomButton
-              label="Checkin"
-              class="w-2/5"
-              @click="handleBerhasil"
-            />
+            <CustomButton label="Checkin" class="w-2/5" @click="onSubmit" />
           </div>
         </div>
       </div>

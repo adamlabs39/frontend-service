@@ -3,11 +3,13 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
-import { onActivated, ref, watch } from "vue";
+import { onActivated, ref } from "vue";
 import AddPrint from "@/components/icons/AddPrint.vue";
 import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
+import HouseFill from "@/components/icons/HouseFill.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { watch } from "vue";
 import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
@@ -15,9 +17,6 @@ const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
-};
-const handleBack = () => {
-  router.push("/antrian/apm/aktif/checkin");
 };
 
 const props = defineProps({
@@ -91,7 +90,7 @@ onActivated(() => {
         >
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-36 h-10 bg-white rounded-xl shadow-md"
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
                 class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
@@ -100,23 +99,32 @@ onActivated(() => {
                 <div
                   class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
                 >
-                  <SolarUserCheckIcon class="text-white" :size="30" />
+                  <!-- <img
+                    loading="lazy"
+                    src="@/assets/icons/icon-park-solid_add-print.svg"
+                    class="shrink-0 w-[30px] h-[30px] p-[2px] filter invert"
+                  /> -->
+                  <PillFillIcon class="text-white" :size="30" />
                 </div>
 
                 <!-- Text Container with Background -->
                 <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
-                  Checkin
+                  Antrian Obat
                 </div>
               </div>
             </div>
 
             <!-- Title Container (Center) -->
-            <!-- Title Container (Center) -->
             <div
-              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
+              class="flex flex-col justify-center items-center justify-self-center mx-auto text-center text-2xl font-extrabold text-adameds-300"
             >
-              <div class="pr-2">Checkin Berhasil</div>
-              <CheckCircleIcon class="text-adameds-300" :size="30" />
+              <div class="flex">
+                <div class="pr-2">Konfirmasi Obat Berhasil</div>
+                <CheckCircleIcon class="text-adameds-300" :size="30" />
+              </div>
+              <div class="text-grey-400 text-subHeading">
+                Silahkan menunggu panggilan antrian
+              </div>
             </div>
 
             <!-- Button Container (Right) -->
@@ -134,7 +142,11 @@ onActivated(() => {
           </div>
 
           <div class="flex justify-center items-center px-16">
-            <TiketAntrian :tiketAntrian="getTiketData" class="mt-14" />
+            <TiketAntrian
+              :showPrintButton="true"
+              :tiketAntrian="getTiketData"
+              class="mt-14"
+            />
           </div>
         </div>
       </div>

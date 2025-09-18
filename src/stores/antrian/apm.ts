@@ -12,6 +12,12 @@ export const useApmStore = defineStore({
     async printPasien(payload: {}) {
       return await apiAntrianPost(`/antrian/apm/print-antrian`, payload);
     },
+    async AntrianObat(payload: {}) {
+      return await apiAntrianPost(`/antrian/apm/antrian-farmasi`, payload);
+    },
+    async AntrianCheckIn(payload: {}) {
+      return await apiAntrianPost(`/antrian/apm/check-in`, payload);
+    },
     async register(payload: {}) {
       return await apiAntrianPost(`/antrian/apm/register`, payload);
     },
