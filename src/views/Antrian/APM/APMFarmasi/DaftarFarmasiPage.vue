@@ -16,7 +16,7 @@ const apmStore = useApmStore();
 const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
-  router.push("/antrian/apm/aktif");
+  router.push("/antrian/apm/aktif/pasien/farmasi");
 };
 const handleBerhasil = () => {
   router.push("/antrian/apm/aktif/checkin/berhasil");
