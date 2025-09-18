@@ -179,7 +179,7 @@ const searchPatientData = async (query: string = "") => {
   timer.value = setTimeout(async () => {
     loadingSearchPatient.value = true;
     try {
-      const response = await masterPasienStore.getMasterPasien({
+      const response = await masterPasienStore.getMasterPasienAktif({
         q: query,
         limit: 9999, 
       });
