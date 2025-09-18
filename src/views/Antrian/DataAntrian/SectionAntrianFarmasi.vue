@@ -4,6 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
+import { formatDate, formatTime } from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -17,6 +18,8 @@ const props = defineProps<{
     pelayanan: string;
   };
 }>();
+
+const dataTablePt = Object.freeze({ headerRow: "bg-blue-500 text-white" });
 
 const emit = defineEmits<{
   updateTotalData: [totalData: number];
@@ -92,18 +95,16 @@ watch(
   { deep: true }
 );
 
-const dateFormat = (timestamp: number | string) => {
-  // Konversi timestamp dari detik ke milliseconds
-  const timestampMs =
+const dateTimeFormat = (timestamp: number | string): string => {
+  if (timestamp === null || timestamp === undefined || timestamp === "")
+    return "-";
+  const epoch =
     typeof timestamp === "string"
-      ? parseInt(timestamp) * 1000
-      : timestamp * 1000;
-
-  const newDate = new Date(timestampMs);
-  const day = newDate.getDate();
-  const month = newDate.getMonth() + 1;
-  const year = newDate.getFullYear();
-  return `${day}-${month}-${year}`;
+      ? parseInt(timestamp as string, 10)
+      : (timestamp as number);
+  if (Number.isNaN(epoch)) return "-";
+  const date = new Date(epoch * 1000);
+  return `${formatDate(date)} ${formatTime(date)}`;
 };
 
 onMounted(() => {
@@ -203,7 +204,7 @@ const getStatusStyle = (status: string | undefined) => {
     :value="dataAntrianFarmasiPayload"
     v-if="dataAntrianFarmasiPayload.length > 0"
     tableStyle="min-width: 50rem"
-    :pt="{ headerRow: 'bg-blue-500 text-white' }"
+    :pt="dataTablePt"
     class="flex text-xs"
     stripedRows
     dataKey="id"
@@ -240,7 +241,7 @@ const getStatusStyle = (status: string | undefined) => {
               class=""
             />
             <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -251,7 +252,7 @@ const getStatusStyle = (status: string | undefined) => {
               class=""
             />
             <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalCheckin) }}
             </div>
           </div>
         </div>
