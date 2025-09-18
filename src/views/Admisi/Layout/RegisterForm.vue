@@ -341,7 +341,7 @@ const postRegisterPatient = async () => {
           response = await admisiRJStore.registRJ(payload);
         } else {
           response = await admisiRJStore.updateRJ(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -352,7 +352,7 @@ const postRegisterPatient = async () => {
           response = await admisiRIStore.registNewBorn(payload);
         } else {
           response = await admisiRIStore.updateRI(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -364,7 +364,7 @@ const postRegisterPatient = async () => {
           response = await admisiIGDStore.registIGD(payload);
         } else {
           response = await admisiIGDStore.updateIGD(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
