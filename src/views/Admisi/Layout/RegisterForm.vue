@@ -364,7 +364,7 @@ const postRegisterPatient = async () => {
           response = await admisiIGDStore.registIGD(payload);
         } else {
           response = await admisiIGDStore.updateIGD(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
