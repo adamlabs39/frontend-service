@@ -7,7 +7,7 @@ import PlusIcon from "@/components/icons/PlusIcon.vue";
 import { useApmStore } from "@/stores/antrian/apm";
 import { utilsStore } from "@/stores/utils";
 import { useAuthStore } from "@/stores/auth";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -40,25 +40,66 @@ const schema = toTypedSchema(
     no_identity: yup
       .string()
       .required("Nomor identitas wajib diisi")
-      .test("len-by-type", "Panjang nomor tidak sesuai dengan tipe", (val) => {
+      .test("by-type", "", function (val) {
         const type = selectedType.value;
-        if (!type) return false;
-        const expected: Record<string, number> = {
-          RM: 8,
-          KTP: 16,
-          Passport: 8,
-          Lainnya: 8,
-        };
-        return !!val && val.trim().length === expected[type];
+        const value = (val ?? "").trim();
+
+        switch (type) {
+          case "KTP":
+            // 16 digit angka
+            return (
+              /^\d{16}$/.test(value) ||
+              this.createError({
+                message: "Nomor KTP harus terdiri dari 16 digit angka",
+              })
+            );
+
+          case "Passport":
+            // diawali huruf besar, diikuti angka (contoh: E1230887)
+            return (
+              /^[A-Z][0-9]+$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor Passport harus diawali huruf besar diikuti angka (contoh: E1230887)",
+              })
+            );
+
+          case "RM":
+            // format 01-02-10 => 8 karakter dengan 2 tanda dash
+            return (
+              /^\d{2}-\d{2}-\d{2}$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor RM harus terdiri dari 8 karakter dengan format 01-02-10 (2 tanda dash)",
+              })
+            );
+
+          case "Lainnya":
+          default:
+            // bebas (tidak ada validasi panjang/format)
+            return true;
+        }
       }),
   })
 );
 
-const { errors, handleSubmit, defineField } = useForm({
-  validationSchema: schema,
-});
+const { errors, handleSubmit, defineField, validateField, setFieldError } =
+  useForm({
+    validationSchema: schema,
+  });
 
 const [no_identity] = defineField("no_identity");
+
+watch(selectedType, async () => {
+  // Hapus pesan error lama (mis. dari Passport) saat pindah tipe
+  setFieldError("no_identity", undefined);
+
+  // Jika ada nilai yang sudah diinput, validasi ulang dengan aturan tipe baru
+  const current = (no_identity.value ?? "").toString().trim();
+  if (current) {
+    await validateField("no_identity");
+  }
+});
 
 const identityLabel = computed(() =>
   selectedType.value ? `No. ${selectedType.value}` : "No."

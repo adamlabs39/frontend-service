@@ -1,29 +1,57 @@
 <script lang="ts" setup>
-import { ref } from "vue";
-import CustomDialog from "@/components/Base/CustomDialog.vue";
-import CardPasien from "@/components/Antrian/CardPasien.vue";
-import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
-import { useRouter } from "vue-router";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { useApmStore } from "@/stores/antrian/apm";
+import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const handleBackAntrian = () => {
-  router.push("/antrian/apm");
+const useUtilsStore = utilsStore();
+const apmStore = useApmStore();
+const apmFlow = useApmFlowStore();
+
+const handleHome = () => {
+  router.push("/antrian/apm/aktif/pasien/farmasi");
+};
+const handleBerhasil = () => {
+  router.push("/antrian/apm/aktif/checkin/berhasil");
 };
 
-const handlePasienJKN = () => {
-  router.push("/antrian/apm/aktif/pasien/jkn");
-};
-const handlePasienNonJKN = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn");
-};
-const handleCheckin = () => {
-  router.push("/antrian/apm/aktif/checkin");
-};
-const handlePrint = () => {
-  router.push("/antrian/apm/aktif/print");
+const noIdentity = ref("");
+
+const onSubmit = async () => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    const payload = {
+      kode_booking: noIdentity.value,
+    };
+
+    const response = await apmStore.AntrianObat(payload);
+
+    if (response?.payload && response.payload.uuid) {
+      // Simpan ke store, lalu navigasi tanpa query sensitif
+      apmFlow.setPatientStatus("success");
+      apmFlow.setPatientData(response.payload);
+
+      router.push({
+        path: "/antrian/apm/aktif/pasien/farmasi/berhasil",
+      });
+    } else {
+      throw new Error("Patient not found");
+    }
+  } catch (error) {
+    // Pasien baru (not_found)
+    apmFlow.setPatientStatus("not_found");
+    apmFlow.setPatientData(null);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 
 const props = defineProps({
@@ -37,107 +65,71 @@ const props = defineProps({
     type: String,
   },
 });
-
-const emit = defineEmits(["update:isDialogVisible", "close"]);
-
-function updateVisibility(value: any) {
-  emit("update:isDialogVisible", value);
-}
-
-function closeDialog() {
-  emit("close");
-}
-
-const cardPasienJKN = ref({
-  keterangan: "Pasien JKN",
-});
-const cardPasienNonJKN = ref({
-  keterangan: "Pasien Non-JKN",
-});
-const cardAktivitasCheckIn = ref({
-  keterangan: "Checkin",
-});
-const cardAktivitasPrint = ref({
-  keterangan: "Print",
-});
-
-const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
 </script>
 
-<template>
-  <div class="py-5 w-full min-h-screen">
+<template #body>
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
       class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
-      @click="handleBackAntrian"
     >
       <NavbarAntrian />
     </div>
-    <!-- Carousel Section -->
-    <Carousel
-      :value="device"
-      circular
-      :showNavigators="false"
-      :autoplayInterval="3000"
-      class="relative z-10"
-    >
-      <template #item="slotProps">
-        <div class="flex relative justify-center items-center mx-36 mt-16 mb-4">
-          <div class="overflow-hidden w-full rounded-xl">
-            <div class="flex transition-transform duration-300">
+    <div class="flex relative flex-1 justify-center items-center mx-36">
+      <div
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
+      >
+        <div class="bg-white bg-opacity-30 w-full h-[540px] space-y-16">
+          <div class="grid grid-cols-3 gap-4 pt-10">
+            <div
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
+            >
               <div
-                class="bg-adameds-300 w-full h-[330px] flex items-center justify-center"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
-                <div class="text-center text-white">
-                  <div class="mb-2 text-5xl">#Improving</div>
-                  <div class="text-5xl font-extrabold">Healthcare</div>
+                <!-- Logo Container -->
+                <div
+                  class="flex items-center px-2.5 py-2.5 rounded-r-lg bg-adameds-300"
+                >
+                  <PillFillIcon class="text-white" :size="30" />
+                </div>
+
+                <!-- Text Container with Background -->
+                <div class="px-2 py-1 font-bold rounded-xl text-adameds-300">
+                  Antrian Obat
                 </div>
               </div>
+            </div>
 
-              <div class="relative w-2/5">
-                <img
-                  loading="lazy"
-                  src="@/assets/images/APM/image-pharmacy.svg"
-                  class="h-[330px] object-cover w-full"
-                />
-                <div
-                  class="absolute w-full inset-y-0 left-0 h-[330px] bg-gradient-to-r from-adameds-300 to-transparent to-70%"
-                ></div>
-              </div>
+            <!-- Title Container (Center) -->
+            <div
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
+            >
+              Konfirmasi Kode Booking
+            </div>
+
+            <!-- Button Container (Right) -->
+            <div class="flex col-span-1 justify-end items-center mr-6">
+              <CustomButton
+                label="< &nbsp Kembali"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="w-[120px]"
+                @click="handleHome"
+              />
             </div>
           </div>
-        </div>
-      </template>
-    </Carousel>
 
-    <div class="flex relative z-10 justify-center">
-      <div class="w-[350px] my-10">
-        <CardPasien
-          :cardPasien="cardPasienJKN"
-          @click="handlePasienJKN"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="w-[350px] mx-8 my-10">
-        <CardPasien
-          :cardPasien="cardPasienNonJKN"
-          @click="handlePasienNonJKN"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="my-auto w-1 h-28 rounded-md bg-adameds-300"></div>
-      <div class="w-[180px] mx-8 my-10">
-        <CardAktivitas
-          :cardAktivitas="cardAktivitasCheckIn"
-          @click="handleCheckin"
-          class="transition-transform duration-300 hover:scale-95"
-        />
-      </div>
-      <div class="w-[180px] my-10">
-        <CardAktivitas
-          :cardAktivitas="cardAktivitasPrint"
-          @click="handlePrint"
-          class="transition-transform duration-300 hover:scale-95"
-        />
+          <div class="flex flex-col items-center">
+            <CustomTextfield
+              label="Kode Booking"
+              placeholder="Masukkan Kode Booking"
+              class="mb-4 w-2/5"
+              v-model="noIdentity"
+            ></CustomTextfield>
+            <CustomButton label="Lanjutkan" class="w-2/5" @click="onSubmit" />
+          </div>
+        </div>
       </div>
     </div>
     <OrnamentAntrian />

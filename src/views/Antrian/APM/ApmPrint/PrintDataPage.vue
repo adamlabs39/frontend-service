@@ -50,11 +50,14 @@ const tiketAntrian = ref({
 const getTiketData = ref();
 
 watch(
-  () => apmFlow.apmSuccessResponse,
+  () => apmFlow.patientData,
   (val) => {
     if (val != null) {
       getTiketData.value = val;
-      console.log("APM Success Response (from store):", getTiketData.value);
+      console.log(
+        "APM Success Response print (from store):",
+        getTiketData.value
+      );
     } else {
       console.warn("Tidak ada data success di store.");
     }
@@ -63,11 +66,11 @@ watch(
 );
 
 onActivated(() => {
-  const val = apmFlow.apmSuccessResponse;
+  const val = apmFlow.patientData;
   if (val != null) {
     getTiketData.value = val;
     console.log(
-      "APM Success Response (from store) [activated]:",
+      "APM Success Response print (from store) [activated]:",
       getTiketData.value
     );
   }
@@ -136,8 +139,12 @@ onActivated(() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-center">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="w-10/12 mt-14" />
+          <div class="flex justify-center items-center px-16">
+            <TiketAntrian
+              :tiketAntrian="getTiketData"
+              :showPrintButton="true"
+              class="mt-14"
+            />
           </div>
         </div>
       </div>
