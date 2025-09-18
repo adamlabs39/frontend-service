@@ -7,9 +7,11 @@ import type { SidebarBody } from "@/utils/Interface";
 import { onBeforeMount } from "vue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar.ts";
 
 const route = useRoute();
 const router = useRouter();
+const monitoringKamarStore = useMonitoringKamarStore();
 // Filter state
 const filter = ref<{ uuid: string; name: string }>({ uuid: "", name: "" });
 
@@ -26,7 +28,7 @@ const fetchRuangan = async () => {
   // Fetch data ruangan dari API
   UseUtilsStore.setLoading(true);
   try {
-    const response = await ruanganStore.getAktifApi();
+    const response = await monitoringKamarStore.getMonitoringKamar({ page: 1, limit: 9999 });
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
       console.log("Ruangan Payload:", ruanganPayload.value);
@@ -127,7 +129,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.LINK,
             url: "/rawat-inap/ruangan",
           },
-        ], // Ini akan diupdate dengan data dari API
+        ],
       },
     ],
   },
