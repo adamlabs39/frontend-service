@@ -7,6 +7,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useDebounceFn } from "@vueuse/core";
+import { epochToDate } from "@/utils/Helpers";
 
 const props = defineProps({
   title: {
@@ -81,14 +82,17 @@ const emit = defineEmits<{
   dateRange: [start_date?: number | null, end_date?: number | null];
 }>();
 
-// Helper konversi epoch seconds <-> Date
-const epochToDate = (epoch?: number | null): Date | null => {
-  if (epoch === undefined || epoch === null) return null;
-  return new Date(epoch * 1000);
-};
-const dateToEpoch = (date?: Date | null): number | null => {
+const dateToEpochStartOfDay = (date?: Date | null): number | null => {
   if (!date) return null;
-  return Math.floor(date.getTime() / 1000);
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return Math.floor(d.getTime() / 1000);
+};
+const dateToEpochEndOfDay = (date?: Date | null): number | null => {
+  if (!date) return null;
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return Math.floor(d.getTime() / 1000);
 };
 
 // Fallback tanggal untuk tampilan (display purpose only)
@@ -103,12 +107,12 @@ const syncDatepickerWithProps = () => {
   if (["0", "1", "2"].includes(props.activeTab)) {
     startDateFilter.value =
       props.startDateEpoch !== undefined && props.startDateEpoch !== null
-        ? epochToDate(props.startDateEpoch)
+        ? (epochToDate(props.startDateEpoch) as Date)
         : getThirtyDaysAgoDate();
 
     endDateFilter.value =
       props.endDateEpoch !== undefined && props.endDateEpoch !== null
-        ? epochToDate(props.endDateEpoch)
+        ? (epochToDate(props.endDateEpoch) as Date)
         : getNowDate();
   } else {
     startDateFilter.value = null;
@@ -160,8 +164,8 @@ const onClickSearch = () => {
     emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
     emit(
       "dateRange",
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value)
+      dateToEpochStartOfDay(startDateFilter.value),
+      dateToEpochEndOfDay(endDateFilter.value)
     );
   }
 };
@@ -177,8 +181,8 @@ const onClickReset = () => {
     // Kirim juga rentang tanggal default: 30 hari ke belakang sampai hari ini
     emit(
       "dateRange",
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value)
+      dateToEpochStartOfDay(startDateFilter.value),
+      dateToEpochEndOfDay(endDateFilter.value)
     );
   } else {
     startDateFilter.value = null;
