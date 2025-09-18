@@ -126,6 +126,13 @@ function epochToDateShortMonth(epochTime: number): string {
               {{ tiketAntrian.noReg }}
             </div>
           </div>
+          <div class="grid p-0 grid-cols-[140px_auto_1fr]">
+            <div class="font-semibold leading-5 text-normal">No. BPJS</div>
+            <div class="px-3">:</div>
+            <div class="font-normal leading-5 text-normal">
+              {{ tiketAntrian?.noBPJS || "-" }}
+            </div>
+          </div>
           <div
             class="grid p-0 grid-cols-[140px_auto_1fr]"
             v-if="tiketAntrian.noBPJS"
