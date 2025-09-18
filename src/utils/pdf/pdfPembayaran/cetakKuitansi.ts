@@ -57,7 +57,7 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
             ['No. RM', { text: `: ${safePatient.noRm || safeBill.noRm || '-'}`, bold: true }],
             ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
             ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
-            ['No. Kuitansi', { text: `: ${safePatient.receiptNumbers || safeBill.receiptNumbers || '-'}`, bold: true }],
+            ['No. Kuitansi', { text: `: ${safePatient.receiptNumber || safeBill.receiptNumber || '-'}`, bold: true }],
             ['Cara Bayar', { text: `: ${normalizedPaymentType === 'CASH' || normalizedPaymentType === 'TUNAI' ? 'Tunai' : 'Asuransi'}`, bold: true }],
         ];
 

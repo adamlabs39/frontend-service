@@ -11,7 +11,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import Paginator from 'primevue/paginator';
-import TransactionDetailPage from "@/views/Pembayaran/layout/TransactionDetailPage.vue";
+import TransactionDetailPage from "@/views/Pembayaran/layout/TransactionPelayanan.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";

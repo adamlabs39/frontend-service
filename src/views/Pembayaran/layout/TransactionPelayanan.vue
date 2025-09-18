@@ -75,6 +75,12 @@ const formatPriceLokal = (price: number) => {
   }).format(price);
 };
 
+//Mapping PaymentType
+const paymentTypeMap: { [key: string]: string } = {
+  'TUNAI': 'Tunai',
+  'ASURANSI': 'Asuransi'
+};
+
 //Flexibilitas Format Voucher
 const formattedVoucherValue = computed(() => {
   if (!detailData.value || !detailData.value.voucherValue) {
@@ -361,6 +367,13 @@ const initializePaymentDialog = () => {
   }
 };
 
+//checking jumlah input bayar
+const isAmountInsufficient = computed(() => {
+  const grandTotal = detailData.value?.grandTotal || 0;
+  const paidAmount = amount.value || 0;
+  return paidAmount > 0 && paidAmount < grandTotal;
+});
+
 // Watcher untuk memicu fungsi di atas saat dialog dibuka
 watch(pembayaranDialog, (isOpening) => {
   if (isOpening) {
@@ -542,12 +555,25 @@ const optionMetodeBayar = ref([
               <CustomButton label="Pakai Voucher" class="" @click="confirmVoucherDialog = true"
                 :disabled="voucherDisabled" />
             </div>
+            <hr class="mt-6 mb-2 border-slate-300 border-1" />
 
-            <div class="mt-[60px]">
+            <div class="mt-[0px]">
               <CustomButton v-if="!isPaid" @click="pembayaranDialog = true" label="Bayar" class="w-full" />
               <CustomButton v-else-if="!isBillClosed" @click="kasirCloseBillDialog = true" label="Close Bill"
                 class="w-full" backgroundColor="bg-danger-300" />
-              <CustomButton v-else label="Bill Telah Ditutup" class="w-full" :disabled="true" />
+
+              <div v-else class="p-4  ">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p class="font-semibold underline underline-offset-2">Metode Pembayaran</p>
+                    <p>{{ paymentTypeMap[detailData.paymentType] || detailData.paymentType }}</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold underline underline-offset-2">No. Referensi</p>
+                    <p>{{ detailData.noReferensi || '-' }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -562,28 +588,77 @@ const optionMetodeBayar = ref([
           <p class="font-bold mt-[20px]">Rp. {{ detailData?.grandTotal?.toLocaleString('id-ID') }}</p>
         </div>
         <hr class="mt-6 border-1 border-grey-200" />
-        <div class="flex justify-between">
-          <p class="font-bold mt-[30px] text-sm">Jumlah Bayar</p>
-          <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0">
-            <template #prependText>
-              <div
-                class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD bg-adameds-300 rounded-l-md">
-                Rp.</div>
-            </template>
-          </CustomInputNumber>
+        <div v-if="payment_type !== 'INSURANCE'">
+          <div class="flex justify-between">
+            <div>
+              <p class="font-bold mt-[30px] text-sm">Jumlah Bayar</p>
+            </div>
+            <div>
+              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0" maxlength="18"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan
+              status piutang?
+            </p>
+          </div>
+
+          <div class="flex justify-between">
+            <div>
+              <p class="font-bold mt-[30px] text-sm">Kembalian</p>
+            </div>
+            <div>
+              <CustomInputNumber :model-value="kembalian" :show-label="false" class="mt-[15px]" placeholder="0"
+                :disabled="true"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' }, input: { class: isAmountInsufficient ? '!text-danger-300' : '' } }">
+                <template #prependText>
+                  <div
+                    class="font-semibold text-MD text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </div>
+          </div>
+          <hr class="mt-6 border-1 border-grey-200" />
         </div>
-        <div class="flex justify-between">
-          <p class="font-bold mt-[30px] text-sm">Kembalian</p>
-          <CustomInputNumber :model-value="kembalian" :show-label="false" class="mt-[15px]" placeholder="0"
-            :disabled="true">
-            <template #prependText>
-              <div
-                class="font-semibold text-MD bg-adameds-300 text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md">
-                Rp.</div>
-            </template>
-          </CustomInputNumber>
+
+        <div v-else>
+          <div class="flex justify-between">
+            <div>
+              <p class="font-bold mt-[30px] text-sm">Dijamin</p>
+            </div>
+            <div>
+              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
+                    Rp.
+                  </div>
+                </template>
+              </CustomInputNumber>
+            </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan
+              status
+              piutang?</p>
+          </div>
+          <hr class="mt-6 border-1 border-grey-200" />
         </div>
-        <hr class="mt-6 border-1 border-grey-200" />
+
         <div>
           <CustomTextfield v-model="note" class="mt-[30px]" label="Catatan" placeholder="Keterangan" />
         </div>
@@ -608,7 +683,7 @@ const optionMetodeBayar = ref([
 
 
     <!-- Close Bill -->
-    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px">
+    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px" headerBg="bg-danger-300">
       <template #header class="text-white bg-danger-300">Closing Bill</template>
       <template #body>
         <div class="mt-6 text-sm">
