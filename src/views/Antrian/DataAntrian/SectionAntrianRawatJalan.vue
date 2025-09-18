@@ -34,7 +34,7 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
     case 1:
       return "Tunai";
     case 2:
-      return "Asuransi";
+      return "BPJS";
     default:
       return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
   }
@@ -167,7 +167,7 @@ const getMetodeBayarStyle = (paymentMethod: number) => {
       textColor: "text-adameds-300",
       borderColor: "border-adameds-300",
     };
-  } else if (convertedMethod === "asuransi") {
+  } else if (convertedMethod === "bpjs") {
     return {
       bgColor: "bg-warning-50",
       textColor: "text-warning-300",

@@ -27,13 +27,13 @@ const useUtilsStore = utilsStore();
 
 const dataAntrianAdmisiPayload = ref([]);
 
-const convertPaymentMethod = (jenisPasien: string | undefined): string => {
-  const jp = (jenisPasien ?? "").toUpperCase();
+const convertPaymentMethod = (jenisPasien: number | undefined): string => {
+  const jp = jenisPasien ?? "";
   switch (jp) {
-    case "JKN":
-      return "BPJS";
-    case "NON-JKN":
+    case 1:
       return "TUNAI";
+    case 2:
+      return "BPJS";
     default:
       return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
   }
@@ -110,7 +110,7 @@ onMounted(() => {
 });
 
 // Fungsi untuk mendapatkan style metode bayar
-const getMetodeBayarStyle = (jenisPasien: string | undefined) => {
+const getMetodeBayarStyle = (jenisPasien: number | undefined) => {
   const convertedMethod = convertPaymentMethod(jenisPasien).toLowerCase();
 
   if (convertedMethod === "tunai") {
@@ -321,16 +321,23 @@ const getStatusStyle = (status: string | undefined) => {
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.jenisPasien).bgColor"
+            :bgColor="
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .bgColor
+            "
             :textColor="
-              getMetodeBayarStyle(slotProps.data.jenisPasien).textColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.jenisPasien).borderColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .borderColor
             "
             customClass="h-5"
             :label="
-              convertPaymentMethod(slotProps.data.jenisPasien).toUpperCase()
+              convertPaymentMethod(
+                slotProps.data.patientData.paymentMethod
+              ).toUpperCase()
             "
           />
         </div> </template
