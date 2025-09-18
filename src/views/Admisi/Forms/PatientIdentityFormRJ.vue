@@ -154,6 +154,7 @@ const searchPatientData = async (query: string = "") => {
     const response = await masterPasienStore.getMasterPasien({
       q: query,
       limit: 9999,
+      status: 'aktif'
     });
     if (response && response.payload) {
       listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
