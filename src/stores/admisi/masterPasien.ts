@@ -8,7 +8,7 @@ export const useAdmisiMasterPasienStore = defineStore({
   actions: {
     async getMasterPasien({ page = 1, limit = 10, q = "" }, payload = {}) {
       return apiAdmisiGet(
-        `/patient?page=${page}&limit=${limit}&q=${q}`,
+        `/patient?page=${page}&limit=${limit}&q=${q}&status=aktif`,
         payload
       );
     },
