@@ -24,7 +24,19 @@ const apmStore = useApmStore();
 const authStore = useAuthStore();
 const apmFlow = useApmFlowStore();
 
-const faskesUuid = computed(() => authStore.getFaskesUuid);
+// const faskesUuid = computed(() => authStore.getFaskesUuid);
+
+const faskesProfile = localStorage.getItem("user");
+let faskesUuid = "";
+
+if (faskesProfile) {
+  try {
+    const parsed = JSON.parse(faskesProfile);
+    faskesUuid = parsed.faskesUuid; // atau parsed.faskesUuid tergantung field mana yg kamu mau
+  } catch (e) {
+    console.error("Gagal parse faskes_profile:", e);
+  }
+}
 
 const selectType = (type: string) => {
   selectedType.value = type;
@@ -111,7 +123,7 @@ const onSubmit = handleSubmit(async (values) => {
     useUtilsStore.setLoading(true);
 
     const payload = {
-      faskes_uuid: faskesUuid.value,
+      faskes_uuid: faskesUuid,
       no_identity: values.no_identity,
       identity: selectedType.value,
     };
