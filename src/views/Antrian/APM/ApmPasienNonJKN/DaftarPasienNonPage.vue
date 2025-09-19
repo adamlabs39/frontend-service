@@ -306,14 +306,9 @@ const props = defineProps({
               :label="identityLabel"
               :placeholder="`Masukkan ${identityLabel}`"
               class="mb-4 w-2/5"
+              :invalid="!!errors.no_identity"
+              :invalidMessage="errors.no_identity"
             ></CustomTextfield>
-            <!-- Error message -->
-            <div
-              v-if="errors.no_identity"
-              class="mb-3 w-2/5 text-xs text-red-500"
-            >
-              {{ errors.no_identity }}
-            </div>
             <CustomButton
               :disabled="isDisabled"
               label="Lanjutkan"
