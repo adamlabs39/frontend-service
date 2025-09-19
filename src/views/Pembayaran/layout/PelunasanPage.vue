@@ -295,7 +295,11 @@ watch(amount, (newValue) => {
 });
 
 const optionCaraBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Asuransi", value: "INSURANCE" }]);
-const optionMetodeBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Transfer", value: "TRANSFER" }, { label: "Debit", value: "DEBIT" }, { label: "Kredit", value: "CREDIT" }]);
+const optionMetodeBayar = ref([
+    { label: "Tunai", value: "CASH" },
+    { label: "Transfer", value: "TRANSFER" },
+    { label: "Debit/Kredit", value: "DEBIT_KREDIT" },
+]);
 
 onMounted(() => {
     fetchPelunasanData();
@@ -333,7 +337,7 @@ onMounted(() => {
                             <div class="mt-[30px] mr-[40px]">
                                 <p class="text-xs font-bold underline underline-offset-2">Umur</p>
                                 <p class="">{{ kasirData.ageYear }}Thn {{ kasirData.ageMonth }}Bln {{ kasirData.ageDay
-                                    }}Hr</p>
+                                }}Hr</p>
                             </div>
                         </div>
 
@@ -597,7 +601,7 @@ onMounted(() => {
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0
-                                                }}</div>
+                                            }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
@@ -641,7 +645,7 @@ onMounted(() => {
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0
-                                                }}</div>
+                                            }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
@@ -685,7 +689,7 @@ onMounted(() => {
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0
-                                                }}</div>
+                                            }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"
@@ -733,7 +737,7 @@ onMounted(() => {
                                         style="width: 10%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0
-                                                }}</div>
+                                            }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Jasa" headerClass="bg-adameds-50 text-right" bodyClass="text-left"
@@ -785,7 +789,7 @@ onMounted(() => {
                                         style="width: 15%">
                                         <template #body="slotProps">
                                             <div class="text-SM">{{ slotProps.data.price?.toLocaleString('id-ID') || 0
-                                                }}</div>
+                                            }}</div>
                                         </template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-left" bodyClass="text-left"

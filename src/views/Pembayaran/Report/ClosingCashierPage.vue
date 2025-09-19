@@ -190,6 +190,12 @@ const handleExport = async () => {
   }
 };
 
+//Refresh Button
+const handleRefresh = () => {
+  // Cukup panggil ulang fungsi fetch utama
+  fetchCloseCashier();
+};
+
 onMounted(() => {
   fetchCloseCashier();
 });
@@ -207,7 +213,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
