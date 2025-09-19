@@ -79,14 +79,24 @@ const handleBerhasil = async () => {
     const no_rm = apmFlow.patientData?.noRm || "";
 
     let payload: any;
-    if (patientStatus === "success" && apmFlow.patientData) {
+    if (
+      patientStatus === "success" &&
+      (apmFlow.identity === "Passport" ||
+        apmFlow.identity === "KTP" ||
+        apmFlow.identity === "Lainnya")
+    ) {
       payload = {
-        patient_data: { identity, no_identity, no_rm },
+        patient_data: { identity, no_identity },
+        jadwal_dokter_uuid: selectedTime.value,
+      };
+    } else if (patientStatus === "success" && apmFlow.identity === "RM") {
+      payload = {
+        patient_data: { no_rm: no_identity },
         jadwal_dokter_uuid: selectedTime.value,
       };
     } else {
       payload = {
-        patient_data: { patient_uuid: "", identity, no_identity },
+        patient_data: { identity, no_identity },
         jadwal_dokter_uuid: selectedTime.value,
       };
     }

@@ -122,11 +122,24 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     useUtilsStore.setLoading(true);
 
-    const payload = {
-      faskes_uuid: faskesUuid,
-      no_identity: values.no_identity,
-      identity: selectedType.value,
-    };
+    let payload: Record<string, any> = {};
+
+    if (
+      selectedType.value === "KTP" ||
+      selectedType.value === "Lainnya" ||
+      selectedType.value === "Passport"
+    ) {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_identity: values.no_identity,
+        identity: selectedType.value,
+      };
+    } else if (selectedType.value === "RM") {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_rm: values.no_identity,
+      };
+    }
 
     const response = await apmStore.checkPasien(payload);
 
@@ -292,7 +305,7 @@ const props = defineProps({
               v-model="no_identity"
               :label="identityLabel"
               :placeholder="`Masukkan ${identityLabel}`"
-              class="mb-1 w-2/5"
+              class="mb-4 w-2/5"
             ></CustomTextfield>
             <!-- Error message -->
             <div
