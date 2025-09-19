@@ -278,9 +278,9 @@ const selectedDoctorDetail = computed(() => {
         class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
+          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center relative"
         >
-          <div class="grid grid-cols-3 gap-4 pt-10">
+          <div class="grid grid-cols-3 gap-4 pt-10 relative">
             <div
               class="flex justify-between w-48 h-10 bg-white rounded-xl shadow-md"
             >
@@ -377,7 +377,7 @@ const selectedDoctorDetail = computed(() => {
 
                 <!-- Daftar Jam sesuai Figma -->
                 <!-- Ganti kontainer menjadi pembungkus lebar + area scroll di dalamnya -->
-                <div class="w-[280px]">
+                <div class="w-[280px] relative">
                   <!-- Area daftar yang dibatasi tinggi dan bisa scroll -->
                   <div
                     class="grid overflow-y-auto grid-cols-1 gap-4 pr-2 max-h-64"
