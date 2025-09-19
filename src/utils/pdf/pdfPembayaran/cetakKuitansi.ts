@@ -26,6 +26,12 @@ const reversePoliMapping: { [key: string]: string } = {
     "OTC": "OTC"
 };
 
+const paymentMethodMap: { [key: string]: string } = {
+    'DEBIT_KREDIT': 'Debit/Kredit',
+    'TRANSFER': 'Transfer',
+    'CASH': 'Cash'
+};
+
 export async function createInvoicePdf({ detailBill, paymentResult }: { detailBill: any, paymentResult?: any }) {
     try {
         const faskesProfile = JSON.parse(
@@ -37,11 +43,14 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
             logo = faskesProfile.logo;
         }
         const lunasStampBase64 = await convertImageToBase64(lunasStampUrl);
-        const belumLunasStampBase64 = await convertImageToBase64(belumLunasStampUrl);
+        // const belumLunasStampBase64 = await convertImageToBase64(belumLunasStampUrl);
 
         const safeBill = detailBill?.bill || detailBill || {};
         const safePatient = detailBill?.patient || safeBill;
         const safePayment = paymentResult || {};
+
+        const paymentMethodRaw = safeBill.paymentMethod || safePayment.paymentMethod || 'CASH'; // Ambil data dari detail tagihan, fallback ke CASH
+        const paymentMethodDisplay = paymentMethodMap[paymentMethodRaw] || paymentMethodRaw;
 
         const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
 
@@ -65,8 +74,8 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
             // Jika Asuransi, tambahkan baris "Penjamin"
             patientInfoBody.push(['Penjamin', { text: ': -', bold: true }]);
         } else {
-            // Jika Tunai/Cash, tambahkan baris "Metode Pembayaran"
-            patientInfoBody.push(['Metode Pembayaran', { text: `: ${safePayment.paymentMethod || 'CASH'}`, bold: true }]);
+            // Terjemahkan
+            patientInfoBody.push(['Metode Pembayaran', { text: `: ${paymentMethodDisplay}`, bold: true }]);
         }
 
         const docDefinition: TDocumentDefinitions = {
@@ -131,13 +140,13 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                         body: [
                             [
                                 { text: 'Keterangan', style: 'tableHeader' },
-                                { text: 'Diterima', style: 'tableHeader', alignment: 'right'},
+                                { text: 'Diterima', style: 'tableHeader', alignment: 'right' },
                                 { text: 'Digunakan', style: 'tableHeader', alignment: 'right' },
                                 { text: 'Dikembalikan', style: 'tableHeader', alignment: 'right' },
                                 { text: 'Nama Petugas', style: 'tableHeader', alignment: 'center' }
                             ],
                             [
-                                { text: (safeBill.invoiceCode || '-') , alignment: 'left',margin: [5,0] },
+                                { text: (safeBill.invoiceCode || '-'), alignment: 'left', margin: [5, 0] },
                                 { text: `Rp ${(safeBill.totalPaid || 0).toLocaleString('id-ID')}`, alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
                                 { text: `Rp ${(safeBill.grandTotal || 0).toLocaleString('id-ID')}`, alignment: 'right' },
                                 { text: `Rp ${(safePayment.change || 0).toLocaleString('id-ID')}`, alignment: 'right' },

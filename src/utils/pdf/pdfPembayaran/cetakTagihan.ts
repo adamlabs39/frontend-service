@@ -25,6 +25,11 @@ const reversePoliMapping: { [key: string]: string } = {
     "OTC": "OTC"
 };
 
+const paymentMethodMap: { [key: string]: string } = {
+    'DEBIT_KREDIT': 'Debit/Kredit',
+    'TRANSFER': 'Transfer',
+    'CASH': 'Cash'
+};
 
 export async function createRincianPdf({ detailBill, itemBill, paymentResult }: { detailBill: any, itemBill: any, paymentResult?: any }) {
     try {
@@ -45,6 +50,9 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
 
+        const paymentMethodRaw = safeBill.paymentMethod || safePayment.paymentMethod || 'CASH'; 
+        const paymentMethodDisplay = paymentMethodMap[paymentMethodRaw] || paymentMethodRaw;
+
 
         const totalDiterima = safeBill.totalPaid || 0;
         const total = safeBill.grandTotal || 0;
@@ -59,7 +67,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
 
         const patientInfoBody = [
             ['No. RM', { text: `: ${safeBill.noRm || '-'}`, bold: true }],
-            ['No. Invoice', { text: `: ${safeBill.invoiceCode || '-'}`, bold: true }], // <-- No. Invoice sudah ada di sini
+            ['No. Invoice', { text: `: ${safeBill.invoiceCode || '-'}`, bold: true }], 
             ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
             ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
             ['Cara Bayar', { text: `: ${normalizedPaymentType === 'CASH' || normalizedPaymentType === 'TUNAI' ? 'Tunai' : 'Asuransi'}`, bold: true }],
@@ -68,7 +76,7 @@ export async function createRincianPdf({ detailBill, itemBill, paymentResult }: 
         if (normalizedPaymentType === 'INSURANCE' || normalizedPaymentType === 'ASURANSI') {
             patientInfoBody.push(['Penjamin', { text: ': -', bold: true }]);
         } else {
-            patientInfoBody.push(['Metode Pembayaran', { text: `: ${safePayment.paymentMethod || 'CASH'}`, bold: true }]);
+             patientInfoBody.push(['Metode Pembayaran', { text: `: ${paymentMethodDisplay}`, bold: true }]);
         }
 
         // Helper function untuk membuat tabel per kategori

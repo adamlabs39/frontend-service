@@ -406,7 +406,7 @@ const optionCaraBayar = ref([{ label: "Tunai", value: "CASH" }, { label: "Asuran
 const optionMetodeBayar = ref([
     { label: "Tunai", value: "CASH" },
     { label: "Transfer", value: "TRANSFER" },
-    { label: "Debit/Kredit", value: "DEBIT/KREDIT" },
+    { label: "Debit/Kredit", value: "DEBIT_KREDIT" },
 ]);
 </script>
 

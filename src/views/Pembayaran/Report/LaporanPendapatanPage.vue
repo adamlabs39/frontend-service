@@ -87,6 +87,12 @@ const handleExport = () => {
       );
 };
 
+//Refresh Button
+const handleRefresh = () => {
+  // Cukup panggil ulang fungsi fetch utama
+  fetchLaporanPendapatan();
+};
+
 
 onBeforeRouteLeave((to, from) => {
   updatePageType(to.path);
@@ -115,7 +121,7 @@ watch([startDateFilter, endDateFilter], () => {
     <template #header>
       <div class="flex justify-between w-full p-4 align-middle">
         <div class="flex items-center">
-          <CustomButton icon="PhArrowClockwise" class="mr-5" />
+          <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
           <CustomBreadCrumb
             :home="{
               label: 'Laporan',

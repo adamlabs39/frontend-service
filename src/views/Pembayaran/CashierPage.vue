@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, computed, type PropType, type Ref } from "vue";
-import { useRoute } from 'vue-router';
-import { useReportCloseBillStore } from "@/stores/pembayaran/closeBill";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useTagihanStore } from "@/stores/pembayaran/findBill";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -124,23 +122,23 @@ const openDynamicDialog = async (dialogRef: Ref<boolean>) => {
 };
 
 //Counting Selisih Saldo closingkasir
-const selisihKasirMessage = computed(() => {
-  const systemTunai = kasirCheckData.value.pendapatanSystem?.cash ?? 0;
-  const aktualTunai = cash.value ?? 0;
+// const selisihKasirMessage = computed(() => {
+//   const systemTunai = kasirCheckData.value.pendapatanSystem?.cash ?? 0;
+//   const aktualTunai = cash.value ?? 0;
 
-  // Hitung selisihnya
-  const selisih = aktualTunai - systemTunai;
-  if (!cash.value || selisih === 0) {
-    return ""; // Kembalikan string kosong
-  }
-  if (selisih < 0) {
-    return `Saldo aktual kurang ${formatPriceLokal(-selisih)}`;
-  }
-  if (selisih > 0) {
-    return `Saldo aktual lebih ${formatPriceLokal(selisih)}`;
-  }
-  return "";
-});
+//   // Hitung selisihnya
+//   const selisih = aktualTunai - systemTunai;
+//   if (!cash.value || selisih === 0) {
+//     return ""; // Kembalikan string kosong
+//   }
+//   if (selisih < 0) {
+//     return `Saldo aktual kurang ${formatPriceLokal(-selisih)}`;
+//   }
+//   if (selisih > 0) {
+//     return `Saldo aktual lebih ${formatPriceLokal(selisih)}`;
+//   }
+//   return "";
+// });
 
 //kembalian
 const getKembalian = () => {
@@ -172,7 +170,7 @@ const tagihanStore = useTagihanStore();
 const searchQuery = ref("");
 
 const timer = ref<any>();
-const listDataPatient = ref([]);
+// const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
 const snakeToCamel = (str: string) => str.replace(/([-_]\w)/g, (g) => g[1].toUpperCase());
 const searchPatientData = async (event: any) => {
@@ -339,7 +337,7 @@ const submitVoucher = async () => {
     if (responseDetailBill && responseDetailBill.payload) {
       kasirData.value = responseDetailBill.payload;
       processBillData(responseDetailBill.payload.serviceBill);
-      confirmVoucherDialog.value = false; // <-- TAMBAHKAN INI UNTUK MENUTUP DIALOG
+      confirmVoucherDialog.value = false; 
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
@@ -412,7 +410,7 @@ const optionCaraBayar = ref([
 const optionMetodeBayar = ref([
   { label: "Tunai", value: "CASH" },
   { label: "Transfer", value: "TRANSFER" },
-  { label: "Debit/Kredit", value: "DEBIT/KREDIT" },
+  { label: "Debit/Kredit", value: "DEBIT_KREDIT" },
 ]);
 
 const submitOpenKasir = async () => {
@@ -590,7 +588,7 @@ const submitCloseKasir = async () => {
 
   try {
     const payload = {
-      cash: kasirCheckData.value.pendapatanSystem?.cash,
+      cash: cash.value,
       debit: kasirCheckData.value.pendapatanSystem?.debitKredit,
       transfer: kasirCheckData.value.pendapatanSystem?.transfer,
     };
@@ -730,6 +728,21 @@ watch(amount, (newValue) => {
   }
 });
 
+//Refresh Page
+const handleRefresh = () => {
+  // Reset data pasien yang sedang dipilih
+  selectedPatient.value = null;
+  kasirData.value = null;
+  
+  // Kosongkan hasil dropdown pencarian sebelumnya
+  searchQuery.value = "";
+  kasirPayload.value = [];
+  
+  //  Reset input diskon & voucher
+  codeDiscount.value = '';
+  codeVoucher.value = '';
+};
+
 onMounted(() => {
   startShortPolling();
 }
@@ -748,7 +761,7 @@ onUnmounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb :home="{
                   label: 'Kasir',
                   home: true,
@@ -1225,9 +1238,9 @@ onUnmounted(() => {
       <template #footer>
         <div class="flex justify-between items-center w-full">
           <div>
-            <p v-if="selisihKasirMessage" class="text-sm text-danger-300 italic">
+            <!-- <p v-if="selisihKasirMessage" class="text-sm text-danger-300 italic">
               {{ selisihKasirMessage }}
-            </p>
+            </p> -->
           </div>
 
           <div class="flex">
