@@ -375,7 +375,7 @@ const postRegisterPatient = async () => {
 
         setDetailDoctorVisitData(response.payload);
       }
-      emit("goToDetail");
+       emit("goToDetail", response.payload);
     } catch (error) {
       console.error("Failed to process the data:", error);
     } finally {

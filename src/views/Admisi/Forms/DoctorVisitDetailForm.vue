@@ -402,7 +402,7 @@ defineExpose({
               optionValue="uuid"
               :showFilter="false"
               :options="filterPoliList"
-              :disabled="isDetail"
+              :disabled="isDetail || formType === 'Detail Edit'"
               :invalid="!!errors.selectedPoli" 
               :invalidMessage="errors.selectedPoli"
             />
@@ -427,7 +427,7 @@ defineExpose({
                       : []
                 "
                 :showFilter="false"
-                :disabled="isDetail || (pageType !== 'igd' && !selectedPoli)"
+                :disabled="isDetail || formType === 'Detail Edit' || (pageType !== 'igd' && !selectedPoli)"
                 :invalid="!!errors.practitionerUuid"
                 :invalidMessage="errors.practitionerUuid"
               />
@@ -441,7 +441,7 @@ defineExpose({
                 optionLabel="label"
                 label="Jadwal" 
                 placeHolder="Pilih Jadwal"
-                :disabled="isDetail"
+                :disabled="isDetail || formType === 'Detail Edit'"
                 :showFilter="false"
                 :invalid="!!errors.jadwalDokterUuid"
                 :invalidMessage="errors.jadwalDokterUuid"
