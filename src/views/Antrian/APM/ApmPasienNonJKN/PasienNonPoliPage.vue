@@ -76,11 +76,12 @@ const handleBerhasil = async () => {
     const patientStatus = apmFlow.patientStatus || "";
     const identity = apmFlow.identity || "";
     const no_identity = apmFlow.noIdentity || "";
+    const no_rm = apmFlow.patientData?.noRm || "";
 
     let payload: any;
     if (patientStatus === "success" && apmFlow.patientData) {
       payload = {
-        patient_data: { identity, no_identity },
+        patient_data: { identity, no_identity, no_rm },
         jadwal_dokter_uuid: selectedTime.value,
       };
     } else {
