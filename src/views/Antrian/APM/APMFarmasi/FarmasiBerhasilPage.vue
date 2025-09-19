@@ -16,7 +16,7 @@ const router = useRouter();
 const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
-  router.push("/antrian/apm/aktif");
+  router.push("/antrian/apm/aktif/pasien/farmasi");
 };
 
 const props = defineProps({
