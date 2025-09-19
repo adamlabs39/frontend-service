@@ -6,6 +6,10 @@ import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import { useRouter } from "vue-router";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 
 const router = useRouter();
 
@@ -73,14 +77,21 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
       <NavbarAntrian />
     </div>
     <!-- Carousel Section -->
-    <Carousel
-      :value="device"
-      circular
-      :showNavigators="false"
-      :autoplayInterval="3000"
+    <Swiper
+      :modules="[Autoplay, Pagination]"
+      :slides-per-view="1"
+      :loop="true"
+      :allow-touch-move="true"
+      :autoplay="{
+        delay: 3000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      }"
+      :pagination="{ clickable: true }"
+      grab-cursor
       class="relative z-10"
     >
-      <template #item="slotProps">
+      <SwiperSlide v-for="(item, idx) in device" :key="idx">
         <div class="flex relative justify-center items-center mx-36 mt-16 mb-4">
           <div class="overflow-hidden w-full rounded-xl">
             <div class="flex transition-transform duration-300">
@@ -106,8 +117,8 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
             </div>
           </div>
         </div>
-      </template>
-    </Carousel>
+      </SwiperSlide>
+    </Swiper>
 
     <div class="flex relative z-10 justify-center">
       <div class="w-[350px] my-10">
@@ -145,3 +156,12 @@ const device = ref(["Carousel 1", "Carousel 2", "Carousel 3"]);
     <OrnamentAntrian />
   </div>
 </template>
+
+<style lang="postcss">
+.swiper-pagination-horizontal {
+  @apply pb-5;
+}
+.swiper-pagination-bullet {
+  @apply border-white bg-white p-2;
+}
+</style>

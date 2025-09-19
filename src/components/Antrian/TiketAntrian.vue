@@ -263,8 +263,12 @@ function epochToDateShortMonth(epochTime: number): string {
               </div>
               <div
                 :class="[
-                  'text-[34px] text-center mt-8 font-bold leading-10 text-white',
-                  { 'mt-12': !showPrintButton, 'mt-0': shouldShowFarmasiLabel },
+                  'text-[34px] text-center font-bold leading-10 text-white',
+                  shouldShowFarmasiLabel
+                    ? 'mt-0'
+                    : showPrintButton
+                    ? 'mt-8'
+                    : 'mt-12',
                 ]"
               >
                 <!-- Kondisional untuk label Farmasi -->
