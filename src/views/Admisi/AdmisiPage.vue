@@ -269,6 +269,13 @@ watch(formType, (newValue, oldValue) => {
   }
 });
 
+const handleGoToDetail = (newData: any) => {
+  openedPatientData.value = newData;
+
+  dataBreadCrumb.value[0].label = 'Detail';
+  formType.value = 'detail';
+};
+
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.pageSize = event.rows;
@@ -648,7 +655,7 @@ const handlePage = (event: any) => {
     :patientData="openedPatientData"
     :formType="formType"
     @back="closeRegistrationForm"
-    @goToDetail="(dataBreadCrumb[0].label = 'Detail'), (formType = 'detail')"
+    @goToDetail="handleGoToDetail"
     @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>

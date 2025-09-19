@@ -13,6 +13,7 @@ import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
 import { useDistrictStore } from "@/stores/datamaster/district";
 import { countAge } from "@/utils/Helpers";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -242,6 +243,7 @@ const schema = toTypedSchema(
       language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
       maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
       motherName: yup.string().required("Nama ibu kandung harus diisi"),
+      status: yup.boolean().default(true),
       address: yup
         .object({
           prov: yup.string().required("Provinsi harus dipilih"),
@@ -293,6 +295,7 @@ const [addressFullAddress] = defineField("address.fullAddress");
 const [addressCountry] = defineField("address.country");
 const [addressVillage] = defineField("address.village");
 const [addressPostalCode] = defineField("address.postalCode");
+const [status] = defineField("status");
 
 const onSubmit = handleSubmit(async (values) => {
   return values;
@@ -646,6 +649,15 @@ defineExpose({
             :invalidMessage="errors['address.fullAddress']"
           />
         </div>
+        <hr class="my-[30px]" />
+          <CustomSwitch
+          v-if="formType == 'Edit Data Pasien'"
+          v-model="status"
+          label="Status Data Pasien"
+          sideLabel="Non-Aktif"
+          sideLabelTrue="Aktif"
+          :disabled="isDetail"
+          />
       </div>
     </template>
     <template #collapseIcon>
