@@ -24,7 +24,19 @@ const apmStore = useApmStore();
 const authStore = useAuthStore();
 const apmFlow = useApmFlowStore();
 
-const faskesUuid = computed(() => authStore.getFaskesUuid);
+// const faskesUuid = computed(() => authStore.getFaskesUuid);
+
+const faskesProfile = localStorage.getItem("user");
+let faskesUuid = "";
+
+if (faskesProfile) {
+  try {
+    const parsed = JSON.parse(faskesProfile);
+    faskesUuid = parsed.faskesUuid; // atau parsed.faskesUuid tergantung field mana yg kamu mau
+  } catch (e) {
+    console.error("Gagal parse faskes_profile:", e);
+  }
+}
 
 const selectType = (type: string) => {
   selectedType.value = type;
@@ -110,11 +122,24 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     useUtilsStore.setLoading(true);
 
-    const payload = {
-      faskes_uuid: faskesUuid.value,
-      no_identity: values.no_identity,
-      identity: selectedType.value,
-    };
+    let payload: Record<string, any> = {};
+
+    if (
+      selectedType.value === "KTP" ||
+      selectedType.value === "Lainnya" ||
+      selectedType.value === "Passport"
+    ) {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_identity: values.no_identity,
+        identity: selectedType.value,
+      };
+    } else if (selectedType.value === "RM") {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_rm: values.no_identity,
+      };
+    }
 
     const response = await apmStore.checkPasien(payload);
 
@@ -280,15 +305,10 @@ const props = defineProps({
               v-model="no_identity"
               :label="identityLabel"
               :placeholder="`Masukkan ${identityLabel}`"
-              class="mb-1 w-2/5"
+              class="mb-4 w-2/5"
+              :invalid="!!errors.no_identity"
+              :invalidMessage="errors.no_identity"
             ></CustomTextfield>
-            <!-- Error message -->
-            <div
-              v-if="errors.no_identity"
-              class="mb-3 w-2/5 text-xs text-red-500"
-            >
-              {{ errors.no_identity }}
-            </div>
             <CustomButton
               :disabled="isDisabled"
               label="Lanjutkan"

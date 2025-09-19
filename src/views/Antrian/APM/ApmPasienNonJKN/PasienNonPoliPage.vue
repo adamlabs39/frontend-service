@@ -76,16 +76,27 @@ const handleBerhasil = async () => {
     const patientStatus = apmFlow.patientStatus || "";
     const identity = apmFlow.identity || "";
     const no_identity = apmFlow.noIdentity || "";
+    const no_rm = apmFlow.patientData?.noRm || "";
 
     let payload: any;
-    if (patientStatus === "success" && apmFlow.patientData) {
+    if (
+      patientStatus === "success" &&
+      (apmFlow.identity === "Passport" ||
+        apmFlow.identity === "KTP" ||
+        apmFlow.identity === "Lainnya")
+    ) {
       payload = {
         patient_data: { identity, no_identity },
         jadwal_dokter_uuid: selectedTime.value,
       };
+    } else if (patientStatus === "success" && apmFlow.identity === "RM") {
+      payload = {
+        patient_data: { no_rm: no_identity },
+        jadwal_dokter_uuid: selectedTime.value,
+      };
     } else {
       payload = {
-        patient_data: { patient_uuid: "", identity, no_identity },
+        patient_data: { identity, no_identity },
         jadwal_dokter_uuid: selectedTime.value,
       };
     }
@@ -267,9 +278,9 @@ const selectedDoctorDetail = computed(() => {
         class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
+          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center relative"
         >
-          <div class="grid grid-cols-3 gap-4 pt-10">
+          <div class="grid grid-cols-3 gap-4 pt-10 relative">
             <div
               class="flex justify-between w-48 h-10 bg-white rounded-xl shadow-md"
             >
@@ -366,7 +377,7 @@ const selectedDoctorDetail = computed(() => {
 
                 <!-- Daftar Jam sesuai Figma -->
                 <!-- Ganti kontainer menjadi pembungkus lebar + area scroll di dalamnya -->
-                <div class="w-[280px]">
+                <div class="w-[280px] relative">
                   <!-- Area daftar yang dibatasi tinggi dan bisa scroll -->
                   <div
                     class="grid overflow-y-auto grid-cols-1 gap-4 pr-2 max-h-64"

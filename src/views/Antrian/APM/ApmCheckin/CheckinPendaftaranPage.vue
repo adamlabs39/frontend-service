@@ -121,7 +121,7 @@ const props = defineProps({
             </div>
           </div>
 
-          <div class="flex flex-col items-center">
+          <div class="flex flex-col items-center mt-28">
             <CustomTextfield
               label="No. Kode Booking"
               placeholder="Masukkan No. Kode Booking"

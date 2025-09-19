@@ -3,7 +3,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
 import { useRouter, useRoute } from "vue-router";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
@@ -52,13 +52,17 @@ const jadwalPoliProperties = ref({
   name: "",
 });
 
+const pasienDataPayload = ref();
+
+const inputNoIdentity = computed(() => apmFlow.noIdentity || "");
+
 const fetchGetPoli = async () => {
   useUtilsStore.setLoading(true);
   try {
     const response = await jadwalDokterStore.getApiPoli(
       jadwalPoliProperties.value.name
     );
-    console.log("Hasil dari response poli:", response);
+    console.log("Hasil dari response Daftar Pasien:", response);
     if (response && response.payload) {
       jadwalPoliPayload.value = response.payload;
     }
@@ -69,14 +73,6 @@ const fetchGetPoli = async () => {
     useUtilsStore.setLoading(false);
   }
 };
-
-const dataPasien = ref({
-  noRM: "",
-  nik: "",
-  nama: "",
-  tanggalLahir: "",
-  gender: "",
-});
 
 const patientStatus = ref<string>("");
 
@@ -110,22 +106,9 @@ onMounted(() => {
   patientStatus.value = status;
 
   if (status === "success" && apmFlow.patientData) {
-    const payload = apmFlow.patientData;
-    dataPasien.value = {
-      noRM: payload.no_rm || "",
-      nik: payload.no_identity || "",
-      nama: payload.name || "",
-      tanggalLahir: formatDateId(payload?.birth_detail?.birth_date),
-      gender: mapGender(payload.gender),
-    };
+    pasienDataPayload.value = apmFlow.patientData;
   } else if (status === "not_found") {
-    dataPasien.value = {
-      noRM: "",
-      nik: apmFlow.noIdentity || "",
-      nama: "",
-      tanggalLahir: "",
-      gender: "",
-    };
+    console.log("Data pasien tidak ditemukan");
   }
 
   fetchGetPoli();
@@ -193,38 +176,38 @@ onMounted(() => {
             >
               <div class="font-bold whitespace-nowrap">No. Identitas</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.nik }}</div>
+              <div>{{ pasienDataPayload?.noIdentity || inputNoIdentity }}</div>
+              <!-- ... existing code ... -->
 
-              <!-- Hanya tampilkan No. RM jika pasien lama -->
-              <template v-if="patientStatus === 'success'">
-                <div class="font-bold whitespace-nowrap">No. RM</div>
-                <div class="text-center">:</div>
-                <div>{{ dataPasien.noRM }}</div>
-              </template>
+              <div class="font-bold whitespace-nowrap">No. RM</div>
+              <div class="text-center">:</div>
+              <div>{{ pasienDataPayload?.noRm || "-" }}</div>
             </div>
 
             <!-- Hanya tampilkan kolom kedua jika pasien lama -->
             <div
-              v-if="patientStatus === 'success'"
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
               <div class="font-bold whitespace-nowrap">Nama</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.nama }}</div>
+              <div>{{ pasienDataPayload?.name || "-" }}</div>
 
               <div class="font-bold whitespace-nowrap">Tgl. Lahir</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.tanggalLahir }}</div>
+              <div>
+                {{
+                  formatDateId(pasienDataPayload?.birthDetail?.birthDate) || "-"
+                }}
+              </div>
             </div>
 
             <!-- Hanya tampilkan kolom ketiga jika pasien lama -->
             <div
-              v-if="patientStatus === 'success'"
               class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
             >
               <div class="font-bold whitespace-nowrap">Jenis Kelamin</div>
               <div class="text-center">:</div>
-              <div>{{ dataPasien.gender }}</div>
+              <div>{{ mapGender(pasienDataPayload?.gender) || "-" }}</div>
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { utilsStore } from "@/stores/utils";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import NoData from "@/components/section/NoData.vue";
+import { formatDate, formatTime } from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -18,6 +19,8 @@ const props = defineProps<{
   };
 }>();
 
+const dataTablePt = Object.freeze({ headerRow: "bg-blue-500 text-white" });
+
 const emit = defineEmits<{
   updateTotalData: [totalData: number];
 }>();
@@ -27,13 +30,13 @@ const useUtilsStore = utilsStore();
 
 const dataAntrianAdmisiPayload = ref([]);
 
-const convertPaymentMethod = (jenisPasien: string | undefined): string => {
-  const jp = (jenisPasien ?? "").toUpperCase();
+const convertPaymentMethod = (jenisPasien: number | undefined): string => {
+  const jp = jenisPasien ?? "";
   switch (jp) {
-    case "JKN":
-      return "BPJS";
-    case "NON-JKN":
+    case 1:
       return "TUNAI";
+    case 2:
+      return "BPJS";
     default:
       return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
   }
@@ -91,18 +94,16 @@ const fetchGetDataAntrianAdmisi = async () => {
   }
 };
 
-const dateFormat = (timestamp: number | string) => {
-  // Konversi timestamp dari detik ke milliseconds
-  const timestampMs =
+const dateTimeFormat = (timestamp: number | string): string => {
+  if (timestamp === null || timestamp === undefined || timestamp === "")
+    return "-";
+  const epoch =
     typeof timestamp === "string"
-      ? parseInt(timestamp) * 1000
-      : timestamp * 1000;
-
-  const newDate = new Date(timestampMs);
-  const day = newDate.getDate();
-  const month = newDate.getMonth() + 1;
-  const year = newDate.getFullYear();
-  return `${day}-${month}-${year}`;
+      ? parseInt(timestamp as string, 10)
+      : (timestamp as number);
+  if (Number.isNaN(epoch)) return "-";
+  const date = new Date(epoch * 1000);
+  return `${formatDate(date)} ${formatTime(date)}`;
 };
 
 onMounted(() => {
@@ -110,7 +111,7 @@ onMounted(() => {
 });
 
 // Fungsi untuk mendapatkan style metode bayar
-const getMetodeBayarStyle = (jenisPasien: string | undefined) => {
+const getMetodeBayarStyle = (jenisPasien: number | undefined) => {
   const convertedMethod = convertPaymentMethod(jenisPasien).toLowerCase();
 
   if (convertedMethod === "tunai") {
@@ -200,8 +201,8 @@ const getStatusStyle = (status: string | undefined) => {
     v-model:expandedRows="expandedRows"
     :value="dataAntrianAdmisiPayload"
     tableStyle="min-width: 50rem"
-    :pt="{ headerRow: 'bg-blue-500 text-white' }"
-    class="flex text-xs"
+    :pt="dataTablePt"
+    class="w-full text-xs"
     stripedRows
     dataKey="id"
     scrollable
@@ -229,27 +230,29 @@ const getStatusStyle = (status: string | undefined) => {
       class="p-0 w-auto"
     >
       <template #body="slotProps">
-        <div class="space-y-2 text-SM">
-          <div class="flex gap-2">
-            <div>Daftar</div>
+        <div class="space-y-1 text-SM">
+          <!-- Baris Daftar -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Daftar</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken.svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+            <div class="whitespace-nowrap">
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
-          <div class="flex gap-2">
-            <div>Jadwal</div>
+          <!-- Baris Kunjungan -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Kunjungan</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken (1).svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+            <div class="whitespace-nowrap">
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalCheckin) }}
             </div>
           </div>
         </div>
@@ -258,10 +261,10 @@ const getStatusStyle = (status: string | undefined) => {
     <Column
       header="Nomor"
       header-class="text-black bg-adameds-50"
-      class="p-0 py-2"
+      class="p-1 py-2"
     >
       <template #body="slotProps">
-        <div class="text-SM max-w-[190px] space-y-2">
+        <div class="text-SM max-w-[190px] space-y-2 text-nowrap">
           <div class="grid grid-cols-3">
             <div>Book</div>
             <div class="flex gap-5">
@@ -296,7 +299,7 @@ const getStatusStyle = (status: string | undefined) => {
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0"
       ><template #body="slotProps">
         <div class="items-center space-y-0.5">
-          <div class="flex items-center font-semibold">
+          <div class="flex items-center font-semibold max-w-64">
             {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
@@ -321,16 +324,23 @@ const getStatusStyle = (status: string | undefined) => {
         <div class="flex items-center">
           <CustomChip
             :showCheckedIcon="false"
-            :bgColor="getMetodeBayarStyle(slotProps.data.jenisPasien).bgColor"
+            :bgColor="
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .bgColor
+            "
             :textColor="
-              getMetodeBayarStyle(slotProps.data.jenisPasien).textColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .textColor
             "
             :border-color="
-              getMetodeBayarStyle(slotProps.data.jenisPasien).borderColor
+              getMetodeBayarStyle(slotProps.data.patientData.paymentMethod)
+                .borderColor
             "
             customClass="h-5"
             :label="
-              convertPaymentMethod(slotProps.data.jenisPasien).toUpperCase()
+              convertPaymentMethod(
+                slotProps.data.patientData.paymentMethod
+              ).toUpperCase()
             "
           />
         </div> </template
