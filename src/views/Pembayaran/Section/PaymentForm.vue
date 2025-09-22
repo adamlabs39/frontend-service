@@ -42,6 +42,18 @@ const translatePaymentMethod = (method: string | null) => {
       return method;
   }
 };
+
+//formating Nominal IDR
+const formatPriceLokal = (price: number) => {
+    if (typeof price !== 'number') return 'Rp 0';
+    const roundedPrice = Math.ceil(price);
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(roundedPrice);
+};
+
 const fetchPaymentHistory = async () => {
   if (!props.billUuid) return;
   storeUtils.setLoading(true);
@@ -99,7 +111,7 @@ onMounted(() => {
         </div>
         <div class="flex justify-between mt-4">
           <p class="text-base font-bold">Grand Total</p>
-          <p class="text-base font-bold">Rp {{ paymentData.grandTotal?.toLocaleString('id-ID') || 0 }}</p>
+          <p class="text-base font-bold">{{ formatPriceLokal(paymentData.grandTotal) || 0 }}</p>
         </div>
 
         <div class="flex justify-between mt-4">

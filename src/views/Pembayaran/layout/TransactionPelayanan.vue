@@ -68,11 +68,12 @@ const voucherDisabled = ref(false);
 //format price lokal(khusus kunjungan)
 const formatPriceLokal = (price: number) => {
   if (typeof price !== 'number') return 'Rp 0';
+  const roundedPrice = Math.ceil(price);
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(roundedPrice);
 };
 
 //Mapping PaymentType
@@ -97,6 +98,7 @@ const formattedVoucherValue = computed(() => {
   }
   return formatPriceLokal(value);
 });
+
 
 // Mengambil data detail tagihan utama
 const fetchDetailBill = async () => {
@@ -195,7 +197,7 @@ const submitCloseBill = async () => {
 
 // Menghitung kembalian saat pembayaran
 const getKembalian = () => {
-  const requiredAmount = detailData.value?.grandTotal || 0;
+  const requiredAmount = Math.ceil(detailData.value?.grandTotal || 0);
   const paidAmount = amount.value || 0;
   if (paidAmount >= requiredAmount) {
     kembalian.value = paidAmount - requiredAmount;
@@ -203,6 +205,7 @@ const getKembalian = () => {
     kembalian.value = 0;
   }
 };
+
 
 const submitDiscount = async () => {
   if (!props.billUuid) return;
@@ -535,7 +538,7 @@ const optionMetodeBayar = ref([
             <hr class="mt-6 mb-2 border-slate-300 border-1" />
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold">Grand Total</div>
-              <div class="text-sm font-bold">Rp {{ detailData.grandTotal?.toLocaleString('id-ID') || 0 }}</div>
+              <div class="text-sm font-bold"> {{ formatPriceLokal(detailData.grandTotal)}}</div>
             </div>
 
             <div class="flex mt-[30px]">
@@ -585,7 +588,7 @@ const optionMetodeBayar = ref([
       <template #body>
         <div class="flex justify-between">
           <p class="font-bold mt-[20px]">Grand Total</p>
-          <p class="font-bold mt-[20px]">Rp. {{ detailData?.grandTotal?.toLocaleString('id-ID') }}</p>
+          <p class="font-bold mt-[20px]"> {{ formatPriceLokal(detailData.grandTotal) }}</p>
         </div>
         <hr class="mt-6 border-1 border-grey-200" />
         <div v-if="payment_type !== 'INSURANCE'">

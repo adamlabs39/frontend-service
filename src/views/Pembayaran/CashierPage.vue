@@ -59,11 +59,12 @@ const selectedServiceBillUuid = ref<string | null>(null);
 //format price lokal(khusus kunjungan)
 const formatPriceLokal = (price: number) => {
   if (typeof price !== 'number') return 'Rp 0';
+  const roundedPrice = Math.ceil(price);
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(roundedPrice);
 };
 
 //Flexibilitas Format Voucher
@@ -142,7 +143,7 @@ const openDynamicDialog = async (dialogRef: Ref<boolean>) => {
 
 //kembalian
 const getKembalian = () => {
-  const requiredAmount = kasirData.value?.grandTotal || 0;
+  const requiredAmount = Math.ceil(kasirData.value?.grandTotal || 0);
   const paidAmount = amount.value || 0;
 
   if (paidAmount >= requiredAmount) {
@@ -1263,7 +1264,7 @@ onUnmounted(() => {
           </div>
           <div>
             <p class="font-bold mt-[20px]">
-              <span>Rp {{ kasirData.grandTotal?.toLocaleString('id-ID') || 0 }}</span>
+              <span> {{ formatPriceLokal(kasirData.grandTotal)}}</span>
             </p>
           </div>
         </div>
