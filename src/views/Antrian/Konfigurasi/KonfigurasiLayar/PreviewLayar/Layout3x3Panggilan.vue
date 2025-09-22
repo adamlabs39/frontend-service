@@ -54,7 +54,7 @@ watch(
 <template>
   <!-- Header Panggilan -->
   <div
-    class="flex gap-2 justify-center items-center py-1 my-1 w-full text-white rounded-lg bg-adameds-300"
+    class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
   >
     <div>
       <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -161,8 +161,8 @@ watch(
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   grid-auto-flow: column;
-  gap: 4px;
-  height: calc(100% - 40px); /* Kurangi tinggi header */
+  gap: 12px;
+  height: calc(100% - 57px); /* Kurangi tinggi header */
   min-height: 400px;
 }
 </style>

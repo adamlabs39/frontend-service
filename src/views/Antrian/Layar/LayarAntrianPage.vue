@@ -2,7 +2,7 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import HeaderFilter from "../Layout/LayarHeader.vue";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, onUnmounted } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
@@ -224,6 +224,42 @@ const previewProps = computed(() => {
 const previewFlashText = computed<string[]>(() => {
   const row = previewRow.value || {};
   return Array.isArray(row.flashText) ? row.flashText : [];
+});
+
+const timeNow = ref("");
+const dateNow = ref("");
+
+let timerId;
+function updateDateTime() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Jakarta",
+  });
+  timeNow.value = `${time} WIB`;
+
+  const date = now.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  });
+  dateNow.value = date;
+}
+
+onMounted(() => {
+  updateDateTime();
+  timerId = window.setInterval(updateDateTime, 1000);
+});
+
+onUnmounted(() => {
+  if (timerId) {
+    clearInterval(timerId);
+  }
 });
 </script>
 
@@ -449,12 +485,12 @@ const previewFlashText = computed<string[]>(() => {
           >
             <!-- Logo -->
             <div
-              class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg"
+              class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg h-full"
             >
               <img
                 loading="lazy"
                 :src="adamedsLogo"
-                class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-[50px]"
+                class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-full"
               />
               <div
                 class="bg-adameds-300 w-[3px] h-[50px] my-auto rounded-md"
@@ -468,8 +504,8 @@ const previewFlashText = computed<string[]>(() => {
             <!-- Komponen di sebelah Logo -->
             <div class="">Klinik Adameds</div>
             <div class="mr-3 ml-auto font-semibold text-right">
-              <div class="text-subHeading">09:00 AM</div>
-              <div class="text-XS">Senin, 01 Jan 2024</div>
+              <div class="text-2xl font-black">{{ timeNow }}</div>
+              <div class="text-sm">{{ dateNow }}</div>
             </div>
           </div>
 
@@ -484,7 +520,7 @@ const previewFlashText = computed<string[]>(() => {
           </div>
 
           <!-- Running Text -->
-          <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+          <div class="mt-3 rounded-tl-lg rounded-tr-lg bg-adameds-300">
             <Vue3Marquee>
               <span
                 v-for="(item, index) in previewFlashText"
