@@ -231,7 +231,7 @@ const previewFlashText = computed<string[]>(() => {
   <Card
     v-if="dataBreadCrumb.length == 0"
     pt:body:class="overflow-auto pt-0 h-full"
-    pt:content:class="overflow-auto h-full w-full"
+    pt:content:class="overflow-auto w-full h-full"
     class="w-full"
   >
     <template #header>
@@ -279,7 +279,7 @@ const previewFlashText = computed<string[]>(() => {
         <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
-            <div class="flex items-center flex-wrap">
+            <div class="flex flex-wrap items-center">
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.judul"
@@ -348,7 +348,7 @@ const previewFlashText = computed<string[]>(() => {
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex items-center flex-wrap">
+            <div class="flex flex-wrap items-center">
               <div class="flex flex-wrap">
                 <div
                   v-if="
@@ -398,7 +398,6 @@ const previewFlashText = computed<string[]>(() => {
           field="action"
           header="action"
           headerClass="bg-adameds-50 justify-center"
-          title="Lihat layar"
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 items-center">
@@ -407,6 +406,7 @@ const previewFlashText = computed<string[]>(() => {
                 icon="PhScreencast"
                 customClass="bg-adameds-300 rounded-full p-0 flex"
                 @click="openPreview(slotProps.data)"
+                title="Lihat layar"
               >
               </CustomButton>
             </div>
@@ -438,7 +438,7 @@ const previewFlashText = computed<string[]>(() => {
       {{ previewTitle }}
     </template>
     <template #body>
-      <div class="h-full pt-5">
+      <div class="pt-5 h-full">
         <!-- Wrapper Preview: meniru struktur SectionTambahKonfigurasiLayar -->
         <div
           class="w-full h-full flex flex-col bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
