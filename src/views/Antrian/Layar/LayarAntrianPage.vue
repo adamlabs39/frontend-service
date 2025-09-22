@@ -279,20 +279,20 @@ const previewFlashText = computed<string[]>(() => {
         <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
-            <div class="flex flex-wrap items-center">
+            <div class="flex flex-wrap gap-1 items-center">
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.judul"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 border-none mr-[5px]"
+                customClass="h-5 border-none"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="convertLayarType(slotProps.data.tipeLayar)"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 border-none mr-[5px]"
+                customClass="h-5 border-none"
               />
             </div>
           </template>
