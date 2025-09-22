@@ -100,19 +100,33 @@ const selectedPaymentMethod = ref<string[]>([]);
 
 // Fungsi untuk melakukan pencarian
 const performSearch = () => {
+  // Validasi: jika ada teks filter poli tapi tidak ada opsi yang cocok,
+  const q = poliFilterText.value?.trim().toLowerCase() ?? "";
+  const hasPoliQuery = q.length > 0;
+  const poliQueryMatches = props.poliOptions.some((p: any) =>
+    p?.name?.toLowerCase().includes(q)
+  );
+  const isValidSearch = !(hasPoliQuery && !poliQueryMatches);
+
   console.log("Debug performSearch:", {
+    q,
+    hasPoliQuery,
+    poliQueryMatches,
+    isValidSearch,
     selectedDokter: selectedDokter.value,
     selectedPoli: selectedPoli.value,
   });
 
   emit("search", {
-    dokterUuid: selectedDokter.value ?? "",
-    poliUuid: selectedPoli.value ?? "",
+    // Mengirim parameter yang akan digunakan langsung oleh backend API
+    dokterUuid: isValidSearch ? selectedDokter.value ?? "" : "",
+    poliUuid: isValidSearch ? selectedPoli.value ?? "" : "",
     aktif:
       selectedPaymentMethod.value.length === 1
         ? selectedPaymentMethod.value[0] === "AKTIF"
         : undefined,
-    isValidSearch: true,
+    // kirim flag validasi untuk dipakai di halaman
+    isValidSearch,
   });
 };
 
