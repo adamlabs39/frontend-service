@@ -790,3 +790,11 @@ const confirmDeleteRow = () => {
     </template>
   </CustomDialog>
 </template>
+
+<style lang="postcss">
+small.text-red-500.text-XS {
+  @apply -mt-0.5 block;
+  position: relative;
+  /* top: px; */
+}
+</style>
