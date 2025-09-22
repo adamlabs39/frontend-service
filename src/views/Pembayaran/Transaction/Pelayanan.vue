@@ -121,7 +121,7 @@ const fetchPelayanan = async () => {
         practitionerName: item.practitionerName,
         scheduleStartTime: item.scheduleStartTime,
         scheduleEndTime: item.scheduleEndTime,
-        polyclinicName: item.polyclinicName,
+        poliName: item.poliName,
         mainServiceCategory: item.mainServiceCategory, // e.g., "RJ", "RI"
         paymentType: item.paymentType,
         completenessStatus: item.completenessStatus, // e.g., "Data Lengkap"
@@ -557,15 +557,15 @@ onMounted(() => {
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.completenessStatus === 'Data Lengkap'"
-                  :showCheckedIcon="false"
-                  label="Data Lengkap"
-                  customClass="h-5 pr-[5px] mr-[5px]"
+                    v-if="slotProps.data.completenessStatus && slotProps.data.mainServiceCategory === 'IGD'"
+                    :showCheckedIcon="false"
+                    :label="slotProps.data.completenessStatus"
+                    customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.polyclinicName"
+                  v-if="slotProps.data.poliName && slotProps.data.mainServiceCategory === 'RJ'"
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinicName"
+                  :label="slotProps.data.poliName"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip

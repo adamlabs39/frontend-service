@@ -62,6 +62,17 @@ const formatDateCustom = (epochTime: number) => {
     return `${day} ${month} ${year}`;
 };
 
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+    if (typeof price !== 'number') return 'Rp 0';
+    const roundedPrice = Math.ceil(price);
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(roundedPrice);
+};
+
 const dataBreadCrumb = ref<MenuItem[]>([
     { label: "Detail Transaksi Pasien" },
     { label: "Pelunasan" }
@@ -132,7 +143,7 @@ const detailTagihan = async (event: DataTableRowClickEvent) => {
 
 // Fungsi untuk menghitung kembalian
 const getKembalian = () => {
-    const requiredAmount = currentDebt.value || 0;
+    const requiredAmount = Math.ceil(currentDebt.value || 0);
     const paidAmount = amount.value || 0;
     kembalian.value = paidAmount - requiredAmount;
 };
@@ -429,7 +440,7 @@ onMounted(() => {
                         <hr class="mt-6 mb-2 border-slate-300 border-1" />
                         <div class="flex justify-between mt-6">
                             <div class="text-sm font-bold">Grand Total</div>
-                            <div class="text-sm font-bold">Rp {{ kasirData.grandTotal?.toLocaleString('id-ID') || 0 }}
+                            <div class="text-sm font-bold">{{formatPriceLokal(kasirData.grandTotal) || 0 }}
                             </div>
                         </div>
                         <template v-if="paymentHistoryList.length > 0">
@@ -442,8 +453,8 @@ onMounted(() => {
                                 <hr class="mt-6 mb-2 border-slate-300 border-1" />
                                 <div class="flex justify-between mt-2">
                                     <div class="text-sm font-bold text-danger-300">Sisa Bayar</div>
-                                    <div class="text-sm font-bold text-danger-300">-Rp
-                                        {{ kasirData.remainingDebt?.toLocaleString('id-ID') || 0 }}</div>
+                                    <div class="text-sm font-bold text-danger-300">-
+                                        {{ formatPriceLokal(kasirData.remainingDebt) || 0 }}</div>
                                 </div>
                             </div>
                         </template>
@@ -465,7 +476,7 @@ onMounted(() => {
                                 <p class="font-bold mt-[20px]">Grand Total</p>
                             </div>
                             <div>
-                                <p class="font-bold mt-[20px]">Rp {{ currentDebt?.toLocaleString('id-ID') || 0 }}</p>
+                                <p class="font-bold mt-[20px]">{{ formatPriceLokal(currentDebt) }}</p>
                             </div>
                         </div>
                         <hr class="mt-6 border-1 border-grey-200" />
