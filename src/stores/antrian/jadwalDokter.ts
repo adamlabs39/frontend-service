@@ -33,12 +33,18 @@ export const useJadwalDokterStore = defineStore({
       page: number = 1,
       page_size: number = 10,
       aktif?: boolean,
+      poli_uuid?: string,
+      doctor_uuid?: string,
 
       payload = {}
     ) {
       const statusQuery = aktif === undefined ? "" : `&aktif=${aktif}`;
+      const poliQuery =
+        poli_uuid === undefined ? "" : `&poli_uuid=${poli_uuid}`;
+      const doctorQuery =
+        doctor_uuid === undefined ? "" : `&doctor_uuid=${doctor_uuid}`;
       return apiAntrianGet(
-        `/antrian/jadwal-dokter?page=${page}&page_size=${page_size}${statusQuery}`,
+        `/antrian/jadwal-dokter?page=${page}&page_size=${page_size}${statusQuery}${poliQuery}${doctorQuery}`,
         payload
       );
     },
