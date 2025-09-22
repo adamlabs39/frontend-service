@@ -108,7 +108,7 @@ onMounted(() => {
         </div>
 
         <div v-if="!paymentData.isPaid" class="flex justify-between mt-4">
-          <p class="text-base font-bold text-danger-300">Sisa Tagihan</p>
+          <p class="text-base font-bold text-danger-300">Sisa Bayar</p>
           <p class="text-base font-bold text-danger-300">- Rp {{ paymentData.debt?.toLocaleString('id-ID') || 0 }}</p>
         </div>
 

@@ -86,7 +86,7 @@ onMounted(() => {
                                 {{ slotProps.data.receiptNumber }}
                             </template>
                         </Column>
-                        <Column header="Hutang" headerClass="bg-adameds-50" style="width: 35%">
+                        <Column header="Cara Bayar " headerClass="bg-adameds-50" style="width: 35%">
                             <template #body="slotProps">
                                 {{ paymentTypeMap[slotProps.data.paymentType] || slotProps.data.paymentType }}
                             </template>
