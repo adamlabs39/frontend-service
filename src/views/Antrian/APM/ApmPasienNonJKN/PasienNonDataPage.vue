@@ -15,11 +15,9 @@ const router = useRouter();
 const route = useRoute();
 
 const handleHome = () => {
-  router.push("/antrian/apm/aktif");
+  router.push("/antrian/apm/aktif/pasien/non-jkn");
 };
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
-};
+
 const handlePoli = (poli: any) => {
   // Simpan pilihan poli di store, jangan kirim query sensitif
   apmFlow.setSelectedPoli(poli?.uuid || "", poli?.name || "");
