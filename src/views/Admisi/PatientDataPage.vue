@@ -556,8 +556,6 @@ const handlePage = (event: any) => {
 const handlePageHistory = (event: any) => {
   propertiesHistory.value.page = event.page + 1;
   propertiesHistory.value.pageSize = event.rows;
-  properties.value.page = propertiesHistory.value.page;
-  properties.value.pageSize = propertiesHistory.value.pageSize;
 
   fetchHistoryData();
 };
