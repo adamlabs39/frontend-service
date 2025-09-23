@@ -504,7 +504,7 @@ onUnmounted(() => {
             <!-- Komponen di sebelah Logo -->
             <div class="">Klinik Adameds</div>
             <div class="mr-3 ml-auto font-semibold text-right">
-              <div class="text-2xl font-black">{{ timeNow }}</div>
+              <div class="text-2xl font-semibold">{{ timeNow }}</div>
               <div class="text-sm">{{ dateNow }}</div>
             </div>
           </div>
