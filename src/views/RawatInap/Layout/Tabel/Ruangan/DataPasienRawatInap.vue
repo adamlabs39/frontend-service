@@ -1,9 +1,13 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
-import { epochToDate } from "@/utils/Helpers";
+import { epochToDate, formatDate } from "@/utils/Helpers";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { onMounted, ref, watch } from "vue";
+import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { useToast } from "primevue/usetoast";
 
 const props = defineProps({
   showCancelVisit: {
@@ -17,8 +21,28 @@ const props = defineProps({
     type: Array,
     required: true,
   },
- 
 });
+
+interface PatientDataRI {
+  uuid?: string;
+  rekamMedisUuid?: string;
+  noRm?: string;
+  noReg?: string;
+  noPelayanan?: string;
+  paymentMethod?: string | number;
+  patient?: {
+    uuid: string;
+    noRm: string;
+    name: string;
+  };
+  monitoringRoom?: {
+    room: {
+      uuid: string;
+      name: string;
+      code: string;
+    };
+  };
+}
 
 const emit = defineEmits([
   "handleSelectedPatient",
@@ -29,14 +53,101 @@ const emit = defineEmits([
 ]);
 
 const medicalRecord = ref<any>();
+const selectedPatientForRM = ref<PatientDataRI>({});
+const rekamMedisStore = useRekamMedisStore();
+const admisiRIStore = useAdmisiRIStore();
+const storeUtils = utilsStore();
+const toast = useToast();
 
 const handleSelectionChange = () => {
   emit("handleSelectedPatient", selectedPatient.value);
 };
 
-const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM();
+// const openDialogRM = () => {
+//   medicalRecord.value?.showDialogRM();
+// };
+
+const openDialogRM = async (event: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const responseDetailPelayanan = await admisiRIStore.getDetailRI(
+      event.data.uuid
+    );
+
+    if (!responseDetailPelayanan || !responseDetailPelayanan.payload) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal mendapatkan detail data pelayanan.",
+        life: 3000,
+      });
+      return;
+    }
+
+    selectedPatientForRM.value = responseDetailPelayanan.payload;
+    selectedPatientForRM.value.rekamMedisUuid = event.data.rekamMedisUuid;
+
+    let responseRekamMedis: any;
+    const rekamMedisUuid = selectedPatientForRM.value.rekamMedisUuid;
+
+    if (rekamMedisUuid) {
+      responseRekamMedis = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: rekamMedisUuid,
+      });
+    } else {
+      const dataPasien = selectedPatientForRM.value;
+      const lokasiUuid = dataPasien?.monitoringRoom?.room?.uuid;
+
+      if (!lokasiUuid) {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Data lokasi ruangan tidak ditemukan pada pasien ini.",
+          life: 3000,
+        });
+        return;
+      }
+
+      responseRekamMedis = await rekamMedisStore.createRekamMedis({
+        noRm: dataPasien?.patient?.noRm,
+        noReg: dataPasien.noReg,
+        date: formatDate(new Date(), true),
+        pelayanan: "ri",
+        lokasiUuid: lokasiUuid,
+        noPelayanan: dataPasien.noPelayanan,
+        paymentMethod: dataPasien.paymentMethod,
+      });
+    }
+
+    if (responseRekamMedis && responseRekamMedis.payload) {
+      selectedPatientForRM.value.rekamMedisUuid =
+        responseRekamMedis.payload.meta.rekamMedisUuid;
+      
+      rekamMedisStore.setOpenedRekamMedisData(responseRekamMedis.payload);
+      
+      medicalRecord.value?.showDialogRM();
+    } else {
+       toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal memproses data rekam medis pasien.",
+        life: 3000,
+      });
+    }
+
+  } catch (error) {
+    console.error("Gagal membuka rekam medis:", error);
+    toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Terjadi kesalahan saat memuat rekam medis.",
+        life: 3000,
+      });
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
+
 
 const handleRowUnselect = () => {
   emit("handleUnselectedPatient", selectedPatient.value);
@@ -79,7 +190,7 @@ const resetSelection = () => {
     scrollable
     scrollHeight="flex"
     class=""
-    @row-click="openDialogRM"
+    @row-click="openDialogRM($event)"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"
     @row-select="handleSelectionChange"
@@ -314,7 +425,7 @@ const resetSelection = () => {
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="{}" />
+  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="selectedPatientForRM" />
 </template>
 
 <style>

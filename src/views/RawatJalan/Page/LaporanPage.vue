@@ -99,24 +99,9 @@ const fetchPraktisiData = async () => {
 const fetchLokasiData = async () => {
   useUtilsStore.setLoading(true);
   try {
-    const response = await lokasiStore.getApi(
-      lokasiProperties.value.page,
-      lokasiProperties.value.page_size
-    );
-    // console.log("API Response:", response);
-
+    const response = await lokasiStore.getApi(0, 9999);
     if (response && response.payload) {
-      // console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
-
-      // Gabungkan data baru ke dalam lokasiPayload
-      lokasiPayload.value = [...response.payload];
-
-      // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
-      if (response.payload.length === lokasiProperties.value.page_size) {
-        lokasiProperties.value.page += 1;
-        await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
-      }
+      lokasiPayload.value = response.payload;
     } else {
       lokasiPayload.value = [];
     }
@@ -127,7 +112,6 @@ const fetchLokasiData = async () => {
     useUtilsStore.setLoading(false);
   }
 };
-
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
 const pageType = ref("");
@@ -257,15 +241,34 @@ const handleBulan = (bulan: any) => {
 };
 const resetFormRef = ref();
 
+// const resetForm = () => {
+//   valueSearchRM.value = "";
+//   searchPoliklinikFilter.value = ""
+//   searchPraktisiFilter.value = ""
+//   valueBulan.value = 0;
+//   valueSearchDPJP.value = "";
+//   valueStartedDate.value = new Date();
+//   valueEndedDate.value = new Date();
+//   resetFormRef.value.resetForm();
+// };
+
 const resetForm = () => {
   valueSearchRM.value = "";
-  searchPoliklinikFilter.value = ""
-  searchPraktisiFilter.value = ""
+  searchPoliklinikFilter.value = "";
+  searchPraktisiFilter.value = "";
   valueBulan.value = 0;
   valueSearchDPJP.value = "";
-  valueStartedDate.value = new Date();
-  valueEndedDate.value = new Date();
-  resetFormRef.value.resetForm();
+  searchDokterDPJPFilter.value = "";
+
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+  valueStartedDate.value = new Date(y, m, 1);
+  valueEndedDate.value = new Date(y, m + 1, 0);
+
+  if (resetFormRef.value) {
+    resetFormRef.value.resetForm();
+  }
 };
 
 // Reset filter fields
@@ -280,18 +283,12 @@ const handleRefreshPage = () => {
 </script>
 
 <template>
-  <!-- {{ searchPraktisiFilter }} -->
-  <!-- {{ pageType}} -->
-    <!-- {{ reportData }} -->
-      <!-- {{ lokasiPayload }} -->
-      <!-- {{ praktisiPayload }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <!-- {{ pageType }} -->
       <DataLaporanHeader
         @update:value-r-m-filter="handleSearchRM"
         @update:selected-dokter-d-p-j-p="handleSearchDPJP"
@@ -352,7 +349,6 @@ const handleRefreshPage = () => {
       </DataLaporanHeader>
     </template>
     <template #content>
-      <!-- <NoData /> -->
       <DataKunjunganRawatJalan
         v-if="pageType === 'kunjungan-rawat-jalan'"
         :kunjunganData="reportData"
