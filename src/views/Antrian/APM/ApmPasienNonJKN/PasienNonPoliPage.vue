@@ -51,7 +51,14 @@ const hasScheduleToday = (item: any) => {
   const list = item?.jadwalDokter || [];
   return list.some((j: any) => j?.day === todayName.value);
 };
-const isDoctorDisabled = (item: any) => !hasScheduleToday(item);
+const isAllSchedulesDisabledToday = (item: any) => {
+  const list = item?.jadwalDokter || [];
+  const todayList = list.filter((j: any) => j?.day === todayName.value);
+  if (todayList.length === 0) return true; // treat as disabled when no schedule today
+  return todayList.every((j: any) => isScheduleDisabled(j));
+};
+const isDoctorDisabled = (item: any) =>
+  !hasScheduleToday(item) || isAllSchedulesDisabledToday(item);
 
 const handleBack = () => {
   router.push({
@@ -280,7 +287,7 @@ const selectedDoctorDetail = computed(() => {
         <div
           class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center relative"
         >
-          <div class="grid grid-cols-3 gap-4 pt-10 relative">
+          <div class="grid relative grid-cols-3 gap-4 pt-10">
             <div
               class="flex justify-between w-48 h-10 bg-white rounded-xl shadow-md"
             >
@@ -337,6 +344,7 @@ const selectedDoctorDetail = computed(() => {
                     :cardDokter="{
                       namaDokter: dokter?.doctor?.name || 'Dokter',
                     }"
+                    :active="selectedDokter === dokter?.doctor?.uuid"
                     class="w-full transition-transform duration-300 hover:scale-95"
                     :class="{
                       'opacity-50 pointer-events-none':

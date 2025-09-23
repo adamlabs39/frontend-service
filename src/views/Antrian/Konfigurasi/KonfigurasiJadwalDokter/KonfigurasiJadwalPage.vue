@@ -108,7 +108,9 @@ const fetchJadwalDokter = async () => {
     const response = await jadwalDokterStore.getApi(
       jadwalDokterProperties.value.page,
       jadwalDokterProperties.value.page_size,
-      filterCriteria.value.aktif
+      filterCriteria.value.aktif,
+      filterCriteria.value.poliUuid || undefined,
+      filterCriteria.value.dokterUuid || undefined
     );
     if (response && response.payload) {
       jadwalDokterPayload.value = response.payload;
@@ -267,15 +269,8 @@ const displayedJadwalDokter = computed(() => {
   if (filterCriteria.value.isValidSearch === false) {
     return [];
   }
-  return jadwalDokterPayload.value.filter((item) => {
-    const doctorOk =
-      !filterCriteria.value.dokterUuid ||
-      item.doctor.uuid === filterCriteria.value.dokterUuid;
-    const poliOk =
-      !filterCriteria.value.poliUuid ||
-      item.poli.uuid === filterCriteria.value.poliUuid;
-    return doctorOk && poliOk;
-  });
+  // Karena filtering sekarang dilakukan di backend, langsung return semua data
+  return jadwalDokterPayload.value;
 });
 
 onMounted(() => {

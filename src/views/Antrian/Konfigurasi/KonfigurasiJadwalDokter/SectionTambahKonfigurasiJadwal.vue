@@ -390,7 +390,7 @@ const hasEmptyRequiredFields = (items: Array<any>) =>
       isMissing(item.day) ||
       isMissing(item.startTime) ||
       isMissing(item.endTime) ||
-      isMissingOrZeroString(item.durasiPelayanan) ||
+      isMissing(item.durasiPelayanan) ||
       isMissingOrZeroString(item.kuotaJkn) ||
       isMissingOrZeroString(item.kuotaNonJkn)
     );
@@ -415,6 +415,22 @@ const onSubmit = handleSubmit(async (values: any) => {
       severity: "error",
       summary: "Validasi Error",
       detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
+      life: 5000,
+    });
+    return;
+  }
+
+  // Validasi durasi per pasien minimal 1 menit
+  const invalidDurasiIndexes = data.value
+    .map((item, idx) => ({ idx, val: Number(item.durasiPelayanan) }))
+    .filter((x) => !x.val || x.val < 1)
+    .map((x) => x.idx + 1);
+
+  if (invalidDurasiIndexes.length > 0) {
+    toast.add({
+      severity: "error",
+      summary: "Validasi Durasi",
+      detail: "Durasi per pasien minimal 1 menit",
       life: 5000,
     });
     return;
