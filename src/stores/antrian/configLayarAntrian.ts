@@ -1,6 +1,7 @@
 import {
   apiAntrianDelete,
   apiAntrianGet,
+  apiAntrianGetNoMessage,
   apiAntrianPost,
   apiAntrianPut,
 } from "@/utils/apiHandler";
@@ -34,7 +35,7 @@ export const useConfigLayarAntrianStore = defineStore({
         params.append("aktif", aktif ? "true" : "false");
       }
 
-      return apiAntrianGet(
+      return apiAntrianGetNoMessage(
         `/antrian/layar-antrian?${params.toString()}`,
         payload
       );

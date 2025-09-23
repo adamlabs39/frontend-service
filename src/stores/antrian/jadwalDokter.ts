@@ -5,6 +5,7 @@ import {
   apiAntrianPost,
   apiAntrianPut,
   apiAntrianGetDatamaster,
+  apiAntrianGetNoMessage,
 } from "@/utils/apiHandler";
 
 interface JadwalItem {
@@ -43,7 +44,7 @@ export const useJadwalDokterStore = defineStore({
         poli_uuid === undefined ? "" : `&poli_uuid=${poli_uuid}`;
       const doctorQuery =
         doctor_uuid === undefined ? "" : `&doctor_uuid=${doctor_uuid}`;
-      return apiAntrianGet(
+      return apiAntrianGetNoMessage(
         `/antrian/jadwal-dokter?page=${page}&page_size=${page_size}${statusQuery}${poliQuery}${doctorQuery}`,
         payload
       );

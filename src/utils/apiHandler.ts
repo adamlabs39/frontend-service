@@ -739,6 +739,16 @@ const apiAntrianGet = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+const apiAntrianGetNoMessage = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    const response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    // Suppress global error toast; let caller handle empty state
+    throw error;
+  }
+};
 const apiAntrianDelete = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
   try {
@@ -836,4 +846,5 @@ export {
   apiAntrianPost,
   apiAntrianPut,
   apiAntrianGetDatamaster,
+  apiAntrianGetNoMessage,
 };
