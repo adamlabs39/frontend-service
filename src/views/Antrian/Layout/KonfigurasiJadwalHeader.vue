@@ -118,8 +118,7 @@ const performSearch = () => {
   });
 
   emit("search", {
-    // Jika pencarian tidak valid, jangan kirim dokterUuid dan poliUuid
-    // agar filter menampilkan data kosong
+    // Mengirim parameter yang akan digunakan langsung oleh backend API
     dokterUuid: isValidSearch ? selectedDokter.value ?? "" : "",
     poliUuid: isValidSearch ? selectedPoli.value ?? "" : "",
     aktif:

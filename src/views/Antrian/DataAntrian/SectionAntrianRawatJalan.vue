@@ -339,7 +339,7 @@ const getStatusStyle = (status: string | undefined) => {
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0">
       <template #body="slotProps">
         <div class="items-center space-y-0.5">
-          <div class="flex items-center font-semibold max-w-64">
+          <div class="flex items-center font-semibold">
             {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">

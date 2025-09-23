@@ -54,7 +54,7 @@ watch(
 <template>
   <!-- Header Panggilan -->
   <div
-    class="flex gap-2 justify-center items-center py-1 my-1 w-full text-white rounded-lg bg-adameds-300"
+    class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
   >
     <div>
       <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -70,7 +70,9 @@ watch(
           v-for="item in 3"
           class="grid grid-rows-2 h-full bg-white rounded-lg"
         >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
+          <div
+            class="flex justify-center items-center text-4xl font-extrabold text-adameds-300"
+          >
             {{ poliAt(item)?.codeAntrianPoli ?? poliAt(item)?.code ?? "" }}00{{
               item
             }}
@@ -84,9 +86,9 @@ watch(
                 <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
               </div>
               <div class="px-3 w-full">
-                <div class="text-3xl font-black">Poli</div>
+                <div class="text-3xl font-extrabold">Poli</div>
                 <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">Ini Dokter</div>
+                <div class="text-xl font-semibold">Ini Dokter</div>
               </div>
             </div>
           </div>
@@ -99,7 +101,9 @@ watch(
           v-for="item in 3"
           class="grid grid-rows-2 h-full bg-white rounded-lg"
         >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
+          <div
+            class="flex justify-center items-center text-4xl font-extrabold text-adameds-300"
+          >
             A00{{ item }}
           </div>
           <div class="flex rounded-b-lg bg-adameds-50">
@@ -111,9 +115,9 @@ watch(
                 <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
               </div>
               <div class="px-3 w-full">
-                <div class="text-3xl font-black">Loket 1</div>
+                <div class="text-3xl font-extrabold">Loket 1</div>
                 <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">Admisi</div>
+                <div class="text-xl font-semibold">Admisi</div>
               </div>
             </div>
           </div>
@@ -126,7 +130,9 @@ watch(
           v-for="item in 3"
           class="grid grid-rows-2 h-full bg-white rounded-lg"
         >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
+          <div
+            class="flex justify-center items-center text-4xl font-extrabold text-adameds-300"
+          >
             F00{{ item }}
           </div>
           <div class="flex rounded-b-lg bg-adameds-50">
@@ -138,9 +144,9 @@ watch(
                 <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
               </div>
               <div class="px-3 w-full">
-                <div class="text-3xl font-black">Loket Farmasi</div>
+                <div class="text-3xl font-extrabold">Loket Farmasi</div>
                 <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">Farmasi</div>
+                <div class="text-xl font-semibold">Farmasi</div>
               </div>
             </div>
           </div>
@@ -161,8 +167,8 @@ watch(
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   grid-auto-flow: column;
-  gap: 4px;
-  height: calc(100% - 40px); /* Kurangi tinggi header */
+  gap: 12px;
+  height: calc(100% - 57px); /* Kurangi tinggi header */
   min-height: 400px;
 }
 </style>

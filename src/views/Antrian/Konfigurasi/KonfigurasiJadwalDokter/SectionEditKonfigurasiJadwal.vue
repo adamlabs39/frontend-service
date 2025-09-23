@@ -379,90 +379,106 @@ const checkDuplicateSchedule = (schedules: any[]) => {
 };
 
 // Submit handler
-const onSubmit = handleSubmit(async (formValues: any) => {
-  UseUtilsStore.setLoading(true);
-  try {
-    const doctorUuid = props.editData.doctor?.uuid;
-    const poliUuid = props.editData.poli?.uuid;
+const onSubmit = handleSubmit(
+  async (formValues: any) => {
+    UseUtilsStore.setLoading(true);
+    try {
+      const doctorUuid = props.editData.doctor?.uuid;
+      const poliUuid = props.editData.poli?.uuid;
 
-    if (!doctorUuid || !poliUuid) {
-      throw new Error("Doctor UUID atau Poli UUID tidak ditemukan");
-    }
-
-    // Prepare payload berdasarkan format yang dibutuhkan API
-    const existingJadwal = props.editData.jadwalDokter || [];
-    const newJadwalData = formValues.jadwalData || [];
-
-    // Validasi duplikasi jam praktek
-    const duplicates = checkDuplicateSchedule(newJadwalData);
-    if (duplicates.length > 0) {
-      toast.add({
-        severity: "error",
-        summary: "Validasi Error",
-        detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
-        life: 5000,
-      });
-      return;
-    }
-
-    const payload = {
-      deleted: [] as string[],
-      updated: [] as any[],
-      added: [] as any[],
-    };
-
-    // Identifikasi jadwal yang dihapus
-    existingJadwal.forEach((existing: any) => {
-      const stillExists = newJadwalData.find(
-        (newJadwal: any) =>
-          newJadwal.jadwalDokterUuid === existing.jadwalDokterUuid
-      );
-      if (!stillExists && existing.jadwalDokterUuid) {
-        payload.deleted.push(existing.jadwalDokterUuid);
+      if (!doctorUuid || !poliUuid) {
+        throw new Error("Doctor UUID atau Poli UUID tidak ditemukan");
       }
-    });
 
-    // Identifikasi jadwal yang diupdate atau ditambah
-    newJadwalData.forEach((jadwal: any) => {
-      const jadwalPayload = {
-        day: Number(jadwal.day),
-        start_time: formatTimeToString(jadwal.startTime),
-        end_time: formatTimeToString(jadwal.endTime),
-        kuota_jkn: Number(jadwal.kuotaJkn),
-        kuota_non_jkn: Number(jadwal.kuotaNonJkn),
-        aktif: jadwal.status,
+      // Prepare payload berdasarkan format yang dibutuhkan API
+      const existingJadwal = props.editData.jadwalDokter || [];
+      const newJadwalData = formValues.jadwalData || [];
+
+      // Validasi duplikasi jam praktek
+      const duplicates = checkDuplicateSchedule(newJadwalData);
+      if (duplicates.length > 0) {
+        toast.add({
+          severity: "error",
+          summary: "Validasi Error",
+          detail: `Terdapat duplikasi jam praktek: ${duplicates.join(", ")}`,
+          life: 5000,
+        });
+        return;
+      }
+
+      const payload = {
+        deleted: [] as string[],
+        updated: [] as any[],
+        added: [] as any[],
       };
 
-      if (jadwal.jadwalDokterUuid) {
-        // Update existing(Update)
-        payload.updated.push({
-          jadwalDokterUuid: jadwal.jadwalDokterUuid,
-          ...jadwalPayload,
-        });
-      } else {
-        // Add new(Tambah)
-        payload.added.push(jadwalPayload);
-      }
-    });
+      // Identifikasi jadwal yang dihapus
+      existingJadwal.forEach((existing: any) => {
+        const stillExists = newJadwalData.find(
+          (newJadwal: any) =>
+            newJadwal.jadwalDokterUuid === existing.jadwalDokterUuid
+        );
+        if (!stillExists && existing.jadwalDokterUuid) {
+          payload.deleted.push(existing.jadwalDokterUuid);
+        }
+      });
 
-    console.log("Payload yang akan dikirim:", payload);
+      // Identifikasi jadwal yang diupdate atau ditambah
+      newJadwalData.forEach((jadwal: any) => {
+        const jadwalPayload = {
+          day: Number(jadwal.day),
+          start_time: formatTimeToString(jadwal.startTime),
+          end_time: formatTimeToString(jadwal.endTime),
+          kuota_jkn: Number(jadwal.kuotaJkn),
+          kuota_non_jkn: Number(jadwal.kuotaNonJkn),
+          aktif: jadwal.status,
+        };
 
-    // Call API
-    await jadwalDokterStore.updateJadwalDoctor(doctorUuid, poliUuid, payload);
+        if (jadwal.jadwalDokterUuid) {
+          // Update existing(Update)
+          payload.updated.push({
+            jadwalDokterUuid: jadwal.jadwalDokterUuid,
+            ...jadwalPayload,
+          });
+        } else {
+          // Add new(Tambah)
+          payload.added.push(jadwalPayload);
+        }
+      });
 
-    // Emit refresh untuk update data di parent
-    emit("refresh");
+      console.log("Payload yang akan dikirim:", payload);
 
-    // Close dialog
-    closeDialog();
+      // Call API
+      await jadwalDokterStore.updateJadwalDoctor(doctorUuid, poliUuid, payload);
 
-    console.log("Data berhasil disimpan");
-  } catch (error) {
-    console.error("Gagal menyimpan data:", error);
-  } finally {
-    UseUtilsStore.setLoading(false);
+      // Emit refresh untuk update data di parent
+      emit("refresh");
+
+      // Close dialog
+      closeDialog();
+
+      console.log("Data berhasil disimpan");
+    } catch (error) {
+      console.error("Gagal menyimpan data:", error);
+    } finally {
+      UseUtilsStore.setLoading(false);
+    }
+  },
+  ({ errors, values }: any) => {
+    const hasDurasiErrorKey = Object.keys(errors || {}).some((key) =>
+      key.includes(".durasiPelayanan")
+    );
+
+    if (hasDurasiErrorKey) {
+      toast.add({
+        severity: "error",
+        summary: "Validasi Durasi",
+        detail: "Durasi per pasien minimal 1 menit",
+        life: 6000,
+      });
+    }
   }
-});
+);
 
 // Reset handler
 const handleReset = () => {
@@ -790,3 +806,11 @@ const confirmDeleteRow = () => {
     </template>
   </CustomDialog>
 </template>
+
+<style lang="postcss">
+small.text-red-500.text-XS {
+  @apply -mt-0.5 block;
+  position: relative;
+  /* top: px; */
+}
+</style>

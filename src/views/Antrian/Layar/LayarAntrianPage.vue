@@ -2,7 +2,7 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import HeaderFilter from "../Layout/LayarHeader.vue";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, onUnmounted } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import AntrianFooter from "../Layout/AntrianFooter.vue";
@@ -225,13 +225,49 @@ const previewFlashText = computed<string[]>(() => {
   const row = previewRow.value || {};
   return Array.isArray(row.flashText) ? row.flashText : [];
 });
+
+const timeNow = ref("");
+const dateNow = ref("");
+
+let timerId;
+function updateDateTime() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Jakarta",
+  });
+  timeNow.value = `${time} WIB`;
+
+  const date = now.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  });
+  dateNow.value = date;
+}
+
+onMounted(() => {
+  updateDateTime();
+  timerId = window.setInterval(updateDateTime, 1000);
+});
+
+onUnmounted(() => {
+  if (timerId) {
+    clearInterval(timerId);
+  }
+});
 </script>
 
 <template>
   <Card
     v-if="dataBreadCrumb.length == 0"
     pt:body:class="overflow-auto pt-0 h-full"
-    pt:content:class="overflow-auto h-full w-full"
+    pt:content:class="overflow-auto w-full h-full"
     class="w-full"
   >
     <template #header>
@@ -279,20 +315,20 @@ const previewFlashText = computed<string[]>(() => {
         <Column field="Layar" header="Layar" headerClass="bg-adameds-50">
           <template #body="slotProps">
             <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
-            <div class="flex items-center flex-wrap">
+            <div class="flex flex-wrap gap-1 items-center">
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.judul"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 border-none mr-[5px]"
+                customClass="h-5 border-none"
               />
               <CustomChip
                 :showCheckedIcon="false"
                 :label="convertLayarType(slotProps.data.tipeLayar)"
                 bgColor="bg-adameds-300"
                 textColor="text-white"
-                customClass="h-5 border-none mr-[5px]"
+                customClass="h-5 border-none"
               />
             </div>
           </template>
@@ -348,7 +384,7 @@ const previewFlashText = computed<string[]>(() => {
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="flex items-center flex-wrap">
+            <div class="flex flex-wrap items-center">
               <div class="flex flex-wrap">
                 <div
                   v-if="
@@ -398,7 +434,6 @@ const previewFlashText = computed<string[]>(() => {
           field="action"
           header="action"
           headerClass="bg-adameds-50 justify-center"
-          title="Lihat layar"
         >
           <template #body="slotProps">
             <div class="flex gap-2.5 items-center">
@@ -407,6 +442,7 @@ const previewFlashText = computed<string[]>(() => {
                 icon="PhScreencast"
                 customClass="bg-adameds-300 rounded-full p-0 flex"
                 @click="openPreview(slotProps.data)"
+                title="Lihat layar"
               >
               </CustomButton>
             </div>
@@ -438,7 +474,7 @@ const previewFlashText = computed<string[]>(() => {
       {{ previewTitle }}
     </template>
     <template #body>
-      <div class="h-full pt-5">
+      <div class="pt-5 h-full">
         <!-- Wrapper Preview: meniru struktur SectionTambahKonfigurasiLayar -->
         <div
           class="w-full h-full flex flex-col bg-adameds-75 overflow-hidden rounded-[10px] px-1 pt-1"
@@ -449,12 +485,12 @@ const previewFlashText = computed<string[]>(() => {
           >
             <!-- Logo -->
             <div
-              class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg"
+              class="flex bg-white w-[180px] justify-center items-center gap-1 rounded-lg h-full"
             >
               <img
                 loading="lazy"
                 :src="adamedsLogo"
-                class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-[50px]"
+                class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[50px] h-full"
               />
               <div
                 class="bg-adameds-300 w-[3px] h-[50px] my-auto rounded-md"
@@ -468,8 +504,8 @@ const previewFlashText = computed<string[]>(() => {
             <!-- Komponen di sebelah Logo -->
             <div class="">Klinik Adameds</div>
             <div class="mr-3 ml-auto font-semibold text-right">
-              <div class="text-subHeading">09:00 AM</div>
-              <div class="text-XS">Senin, 01 Jan 2024</div>
+              <div class="text-2xl font-semibold">{{ timeNow }}</div>
+              <div class="text-sm">{{ dateNow }}</div>
             </div>
           </div>
 
@@ -484,7 +520,7 @@ const previewFlashText = computed<string[]>(() => {
           </div>
 
           <!-- Running Text -->
-          <div class="mt-1 rounded-tl-lg rounded-tr-lg bg-adameds-300">
+          <div class="mt-3 rounded-tl-lg rounded-tr-lg bg-adameds-300">
             <Vue3Marquee>
               <span
                 v-for="(item, index) in previewFlashText"
