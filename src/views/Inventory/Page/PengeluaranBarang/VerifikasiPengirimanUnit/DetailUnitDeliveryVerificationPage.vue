@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, type PropType } from "vue";
-import { usePurchasingOfSupplierStore } from "@/stores/inventory/purchasingOfSupplier";
+import { useUnitDeliveryVerificationStore } from "@/stores/inventory/unitDeliveryVerification";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -9,7 +9,6 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
 import type { MenuItem } from "primevue/menuitem";
 
 const props = defineProps({
@@ -40,7 +39,7 @@ const changeSection = (label: string) => {
 };
 
 // State Management
-const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
+const UnitDeliveryVerificationStore = useUnitDeliveryVerificationStore();
 const UseUtilsStore = utilsStore();
 const DetailPayload = ref<any>({});
 const alasanBatal = ref("");
@@ -52,7 +51,7 @@ const emit = defineEmits(["back"]);
 const fetchDetail = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await PurchasingOfSupplierStore.getApiDetail(props.selectedData.uuid);
+    const response = await UnitDeliveryVerificationStore.getApiDetail(props.selectedData.uuid);
     if (response && response.payload) {
       DetailPayload.value = response.payload;
     } else {
@@ -68,7 +67,7 @@ const fetchDetail = async () => {
 const confirmDelete = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    await PurchasingOfSupplierStore.deleteApi(DetailPayload.value.uuid, 
+    await UnitDeliveryVerificationStore.deleteApi(DetailPayload.value.uuid, 
     {
       alasan_batal: alasanBatal.value,
     });
@@ -79,14 +78,6 @@ const confirmDelete = async () => {
     batalDialog.value = false;
     emit("back");
   }
-};
-
-const edit = async () => {  
-  changeSection('Tambah Pembelian')
-};
-
-const closePurchaseOfSupplierPage = () => {
-  dataBreadCrumb.value.pop();
 };
 
 onMounted(() => {
@@ -105,7 +96,7 @@ onMounted(() => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Pengadaan Barang',
+                    label: 'Pengeluaran Barang',
                     home: true,
                   }"
                   :model="dataBreadCrumb"
@@ -113,7 +104,7 @@ onMounted(() => {
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pembelian Barang Supplier
+                    Verifikasi & Pengiriman Unit
                   </p>
                 </div>
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
@@ -212,7 +203,7 @@ onMounted(() => {
               </div>
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
-            <div class="mt-[20px] h-[160px]">
+            <div class="mt-[20px] h-[260px]">
               <DataTable
                 :value="DetailPayload.items"
                 scrollable
@@ -318,7 +309,7 @@ onMounted(() => {
                   <p>{{ DetailPayload.alasanBatal }}</p>
                 </div>
               </div>
-              <div v-if="props.selectedData.status == 'pending'" class="flex mt-[5px]">
+              <div class="flex mt-[5px]">
                 <CustomButton
                   @click="batalDialog = true"
                   label="Batal Pembelian"
@@ -328,7 +319,6 @@ onMounted(() => {
                   textColor="text-white"
                 />
                 <CustomButton
-                  @click="edit"
                   label="Ubah Pembelian"
                   class="w-[150px] ml-[20px]"
                   backgroundColor="bg-adameds-300"
@@ -355,14 +345,6 @@ onMounted(() => {
         </CustomAccordion>
       </template>
     </Card>
-
-    <AddPurchaseOfSupplier
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      :DetailPayload="DetailPayload"
-      @back="closePurchaseOfSupplierPage"
-    />
 
      <!-- Dialog Cancel -->
      <CustomDialog v-model:visible="batalDialog" width="600px" headerBg="bg-danger-300">

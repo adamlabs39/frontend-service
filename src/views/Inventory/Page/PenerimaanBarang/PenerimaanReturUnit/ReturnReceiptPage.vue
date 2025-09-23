@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import { usePurchasingOfSupplierStore } from "@/stores/inventory/purchasingOfSupplier";
+import { useReturnReceipteStore } from "@/stores/inventory/returnReceipt";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -10,17 +10,9 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
-import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
-import DetailPurchaseOfSupplierPage from "./DetailPurchaseOfSupplierPage.vue";
-
-// Filter
-const onSelected = ref<string>("pending");
-
-const funcOnSelected = (label: string) => {
-  onSelected.value = label;
-  fetchPurchasingOfSupplier()
-};
+import DetailReturnReceipt from "./DetailReturnReceiptPage.vue";
 
 // Title Label
 const pageType = ref("");
@@ -34,12 +26,20 @@ const changeSection = (label: string) => {
   }
 };
 
+const reason = ref("");
+const optionReason = ref([
+  { name: "Rusak", value: "Rusak" },
+  { name: "Kadaluarsa", value: "Kadaluarsa" },
+  { name: "Salah/Ingin diganti", value: "Salah/Ingin diganti" },
+  { name: "Sisa Pemakaian Ruangan", value: "Sisa Pemakaian Ruangan" },
+]);
+
 // State Management
 const searchQuery = ref<string>("");
-const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
+const ReturnReceiptStore = useReturnReceipteStore();
 const UseUtilsStore = utilsStore();
-const PurchasingOfSupplierPayload = ref<any[]>([]);
-const PurchasingOfSupplierProperties = ref({
+const ReturnReceiptPayload = ref<any[]>([]);
+const ReturnReceiptProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
@@ -47,29 +47,30 @@ const PurchasingOfSupplierProperties = ref({
 
 // Check if Data Exists
 const hasData = computed(
-  () => PurchasingOfSupplierPayload.value && PurchasingOfSupplierPayload.value.length > 0
+  () => ReturnReceiptPayload.value && ReturnReceiptPayload.value.length > 0
 );
 
 // Fetch Purchasing Of Supplier
-const fetchPurchasingOfSupplier = async () => {
+const fetchReturnReceipt = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await PurchasingOfSupplierStore.getApi(
-      onSelected.value,
+    const response = await ReturnReceiptStore.getApi(
+      '0196a8ca-1fda-71ca-a133-7383413ef200',
+      reason.value,
       searchQuery.value,
-      PurchasingOfSupplierProperties.value.page,
-      PurchasingOfSupplierProperties.value.page_size,
+      ReturnReceiptProperties.value.page,
+      ReturnReceiptProperties.value.page_size,
     );
 
     if (response && response.payload) {
-      PurchasingOfSupplierProperties.value.total = response.properties.total;
-      PurchasingOfSupplierPayload.value = response.payload;
+      ReturnReceiptProperties.value.total = response.properties.total;
+      ReturnReceiptPayload.value = response.payload;
     } else {
-      PurchasingOfSupplierPayload.value = [];
+      ReturnReceiptPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    PurchasingOfSupplierPayload.value = [];
+    ReturnReceiptPayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -79,15 +80,15 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    fetchPurchasingOfSupplier();
+    fetchReturnReceipt();
   }, 500);
 });
 
 // Handle Pagination
 const handlePage = (event: any) => {
-  PurchasingOfSupplierProperties.value.page = event.page + 1;
-  PurchasingOfSupplierProperties.value.page_size = event.rows;
-  fetchPurchasingOfSupplier();
+  ReturnReceiptProperties.value.page = event.page + 1;
+  ReturnReceiptProperties.value.page_size = event.rows;
+  fetchReturnReceipt();
 };
 
 // Selected Row
@@ -96,21 +97,16 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Detail');
 };
 
-const closePurchaseOfSupplierPage = () => {
+const closePage = () => {
   dataBreadCrumb.value.pop();
-  fetchPurchasingOfSupplier();
-};
-
-const closeEditPage = async () => {
-  dataBreadCrumb.value = dataBreadCrumb.value.slice(0, -2);
-  await fetchPurchasingOfSupplier();
+  fetchReturnReceipt();
 };
 
 onMounted(() => {
-  fetchPurchasingOfSupplier();
+  fetchReturnReceipt();
 });
 </script>
 
@@ -122,66 +118,51 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier"/>
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchReturnReceipt"/>
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Pengadaan Barang',
+                    label: 'Penerimaan Barang',
                     home: true,
                   }"
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pembelian Barang Supplier
+                    Penerimaan Retur Unit
                   </p>
                 </div>
               </div>
-              <CustomButton
-                @click="changeSection('Tambah Pembelian')"
-                icon="PhPlus"
-                label="Permintaan"
-                class="mr-[10px]"
-              />
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari No. Pembelian / Supplier"
+                placeholder="Cari No. Retur / Asal Retur"
+                class="w-[60%] mr-[10px]"
               />
-            </div>
-
-            <!-- Filter -->
-            <div class="grid grid-cols-3 mt-[15px]">
-              <CustomButton
-                @click="funcOnSelected('pending')"
-                label="PENGAJUAN PEMBELIAN"
-                :outlined="onSelected != 'pending'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'pending' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'pending' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="font-semibold"
+              <CustomSelect
+                v-model="reason"
+                place-holder="Pilih Alasan"
+                label="Alasan"
+                class="w-[25%] mr-[10px]"
+                optionLabel="name"
+                optionValue="value"
+                :options="optionReason"
               />
               <CustomButton
-                @click="funcOnSelected('cancel')"
-                label="DIBATALKAN"
-                :outlined="onSelected != 'cancel'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'cancel' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold "
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                class="mt-auto"
               />
               <CustomButton
-                @click="funcOnSelected('verifikasi')"
-                label="SUDAH DIVERIFIKASI"
-                :outlined="onSelected != 'verifikasi'"
+                label="Reset"
+                outlined
                 borderColor="border-adameds-300"
-                :textColor="onSelected != 'verifikasi' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'verifikasi' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold"
+                textColor="text-adameds-300"
+                class="mt-auto ml-[10px]"
               />
             </div>
           </template>
@@ -205,7 +186,7 @@ onMounted(() => {
         <NoData v-if="!hasData" />
         <DataTable
           v-else
-          :value="PurchasingOfSupplierPayload"
+          :value="ReturnReceiptPayload"
           v-model:selection="selectedData"
           :metaKeySelection="metaKey"
           @rowClick="onRowSelect"
@@ -222,22 +203,22 @@ onMounted(() => {
             rowStripedBackground: '#F8F8F8',
           }"
         > 
-          <!-- Tanggal Pembelian -->
+          <!-- Tanggal -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
               <div class="">Tanggal</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ epochToDate(slotProps.data.tanggalPembelian, "date") }}</div>
+              <div class="">{{ epochToDate(slotProps.data.tanggalRetur, "date") }}</div>
             </template>
           </Column>
-          <!-- No. Pembelian -->
+          <!-- No. Permintaan -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="">No. Pembelian</div>
+              <div class="">No. Permintaan</div>
             </template>
             <template #body="slotProps">
-              <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
+              <div class="mb-[5px]">{{ slotProps.data.noRetur }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
                   v-if="slotProps.data.kategoriItem == 'medis'"
@@ -255,78 +236,55 @@ onMounted(() => {
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
                 />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                />
               </div>
             </template>
           </Column>
-          <!-- Supplier -->
+          <!-- Asal Pengirim -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="">Supplier</div>
+              <div class="">Asal Pengirim</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.lokasiStokAwal.name }}</div>
             </template>
           </Column>
+          <!-- Alasan Retur -->
+          <Column field="alasanRetur" header="Alasan Retur" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <!-- Petugas -->
-          <Column field="petugasPembuatPo" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <!-- Status -->
-          <Column field="status" headerClass="bg-adameds-50">
-            <template #header="">
-              <div class="w-full font-semibold text-center text-SM">Status</div>
-            </template>
-            <template #body="slotProps">
-              <div class="flex items-center justify-center">
-                <CustomChip
-                  v-if="slotProps.data.status == 'pending'"
-                  label="PENGAJUAN"
-                  :showCheckedIcon="false"
-                  borderColor="border-grey-300"
-                  bgColor="bg-grey-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'cancel'"
-                  label="DIBATALKAN"
-                  :showCheckedIcon="false"
-                  borderColor="border-danger-300"
-                  bgColor="bg-danger-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'verifikasi'"
-                  label="DIVERIFIKASI"
-                  :showCheckedIcon="false"
-                  borderColor="border-info-300"
-                  bgColor="bg-info-300" 
-                  textColor="text-white"
-                />
-              </div>
-            </template>
-          </Column>
+          <Column field="petugasRetur" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
         </DataTable>
       </template>
       <template #footer>
         <div class="flex justify-end">
           <CustomPaginator
-            :rows="PurchasingOfSupplierProperties.page_size"
-            :totalRecords="PurchasingOfSupplierProperties.total"
+            :rows="ReturnReceiptProperties.page_size"
+            :totalRecords="ReturnReceiptProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
             @page="handlePage"
           />
         </div>
       </template>
     </Card>
-    <AddPurchaseOfSupplier
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
-      @back="closePurchaseOfSupplierPage"
-      @backEdit="closeEditPage"
-    />
-    <DetailPurchaseOfSupplierPage
-      v-else-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
+    <DetailReturnReceipt
+      v-else-if="dataBreadCrumb[0].label == 'Detail'"
       :selectedData="selectedData"
-      @back="closePurchaseOfSupplierPage"
+      @back="closePage"
     />
   </div>
 </template>

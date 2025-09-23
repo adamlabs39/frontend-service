@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import { useStokAdjustmentStore } from "@/stores/inventory/stokAdjustment";
+import { useRateHistoryStore } from "@/stores/inventory/rateHistory";
 import { useStockTypeStore } from "@/stores/datamasterFarmasi/StockType";
-import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { utilsStore } from "@/stores/utils";
-import { epochToDate, dateToEpoch } from "@/utils/Helpers";
+import { epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -28,9 +27,6 @@ const optionJenis = ref([
   { name: "Obat", value: "obat" },
   { name: "Alkes", value: "alkes" },
 ]);
-
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
 
 // State Management Stock Type
 const jenisStokUuid = ref<string>("");
@@ -56,26 +52,6 @@ const fetchStockType = async () => {
   }
 };
 
-// State Management Stock Location
-const StockLocationStore = useStockLocationStore();
-const StockLocationPayload = ref<any[]>([]);
-
-// Fetch Stock Location
-const fetchStockLocation = async () => {
-  try {
-    const response = await StockLocationStore.getApi();
-
-    if (response && response.payload) {
-      StockLocationPayload.value = response.payload;
-    } else {
-      StockLocationPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    StockLocationPayload.value = [];
-  }
-};
-
 // Title Label
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -88,83 +64,96 @@ const changeSection = (label: string) => {
   }
 };
 
-// ------------------------------------------------------------------------------------------
-
-// State Management Stok Adjustment
-const searchStok = ref<string>("");
-const StokAdjustmentStore = useStokAdjustmentStore();
+// State Management
+const searchQuery = ref<string>("");
+const RateHistoryStore = useRateHistoryStore();
 const UseUtilsStore = utilsStore();
-const StockPayload = ref<any[]>([]);
-const StockProperties = ref({
+const RateHistoryPayload = ref<any[]>([]);
+const RateHistoryProperties = ref({
   page: 1,
   page_size: 10,
   total: 0,
 });
 
 // Check if Data Exists
-const hasDataStok = computed(
-  () => StockPayload.value && StockPayload.value.length > 0
+const hasData = computed(
+  () => RateHistoryPayload.value && RateHistoryPayload.value.length > 0
 );
 
-// Fetch Stock
-const fetchStokAdjustment = async () => {
+// Fetch
+const fetchRateHistory = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await StokAdjustmentStore.getApi(
-      "0196a8ca-1fda-71ca-a133-7383413ef200",
+    const response = await RateHistoryStore.getApi(
+      "0196ccc5-2ccf-7040-bddd-5e84647682a2",
       jenisStokUuid.value,
       kategoriItem.value,
       jenisItem.value,
-      searchStok.value,
-      StockProperties.value.page,
-      StockProperties.value.page_size
+      searchQuery.value,
+      RateHistoryProperties.value.page,
+      RateHistoryProperties.value.page_size
     );
 
     if (response && response.payload) {
-      StockProperties.value.total = response.properties.total;
-      StockPayload.value = response.payload;
+      RateHistoryProperties.value.total = response.properties.total;
+      RateHistoryPayload.value = response.payload;
     } else {
-      StockPayload.value = [];
+      RateHistoryPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    StockPayload.value = [];
+    RateHistoryPayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
   }
 };
 
-let searchTimeoutStok: ReturnType<typeof setTimeout> | null = null;
-watch(searchStok, (newValue) => {
-  if (searchTimeoutStok) clearTimeout(searchTimeoutStok);
-  searchTimeoutStok = setTimeout(() => {
-    fetchStokAdjustment();
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchRateHistory();
   }, 500);
 });
 
 // Handle Pagination
-const handleStok = (event: any) => {
-  StockProperties.value.page = event.page + 1;
-  StockProperties.value.page_size = event.rows;
-  fetchStokAdjustment();
+const handlePage = (event: any) => {
+  RateHistoryProperties.value.page = event.page + 1;
+  RateHistoryProperties.value.page_size = event.rows;
+  fetchRateHistory();
 };
 
-// Filter Reset Stok
-const resetStok = () => {
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  changeSection("Pembelian Barang Supplier");
+};
+
+// Filter Reset Data
+const resetData = () => {
   jenisStokUuid.value = "";
   kategoriItem.value = "";
   jenisItem.value = "";
-  searchStok.value = "";
-  fetchStokAdjustment();
+  searchQuery.value = "";
+  fetchRateHistory();
 };
 
-const Adjustment = (rowData: any) => {
-  console.log("Adjustment data:", rowData);
+const closePurchaseOfSupplierPage = () => {
+  dataBreadCrumb.value.pop();
+  fetchRateHistory();
+};
+
+const closeEditPage = async () => {
+  dataBreadCrumb.value.pop();
+  dataBreadCrumb.value.pop();
+  await fetchRateHistory();
 };
 
 onMounted(() => {
-  fetchStokAdjustment();
-  fetchStockLocation();
+  fetchRateHistory();
   fetchStockType();
 });
 </script>
@@ -177,10 +166,14 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchStokAdjustment"/>
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchRateHistory"
+                />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Stock Adjustment',
+                    label: 'Riwayat Tarif',
                     home: true,
                   }"
                 />
@@ -188,7 +181,7 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-4 gap-4 mt-[10px]">
+            <div class="grid grid-cols-3 gap-3 mt-[10px]">
               <CustomSelect
                 label="Kategori"
                 placeHolder="Pilih Kategori"
@@ -213,26 +206,19 @@ onMounted(() => {
                 optionLabel="name"
                 optionValue="value"
               />
-              <CustomSelect
-                label="Lokasi Stok"
-                placeHolder="Pilih Lokasi"
-                :options="StockLocationPayload"
-                optionLabel="name"
-                optionValue="uuid"
-              />
             </div>
-            <div class="grid grid-cols-[85%,7%,5%] gap-3 mt-[10px]">
+            <div class="grid grid-cols-[83%,10%,5%] gap-3 mt-[10px]">
               <CustomTextfield
                 label="Pencarian (Nama Item / Kode Item)"
-                v-model="searchStok"
+                v-model="searchQuery"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Item / Kode Item"
               />
               <CustomButton
                 icon="PhMagnifyingGlass"
-                label="Cari"
+                label="Tampilkan"
                 class="mt-auto"
-                @click="fetchStokAdjustment"
+                @click="fetchRateHistory"
               />
               <CustomButton
                 label="Reset"
@@ -240,7 +226,7 @@ onMounted(() => {
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
                 class="mt-auto"
-                @click="resetStok"
+                @click="resetData"
               />
             </div>
           </template>
@@ -261,52 +247,43 @@ onMounted(() => {
         </CustomAccordion>
       </template>
       <template #content>
-        <NoData v-if="!hasDataStok" />
+        <NoData v-if="!hasData" />
         <DataTable
           v-else
-          :value="StockPayload"
+          :value="RateHistoryPayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
+          tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
           scrollable
           scrollHeight="flex"
+          :dt="{
+            rowSelectedColor: '#000000',
+            rowSelectedBackground: 'transparent',
+            bodyCellSelectedBorderColor: 'transparent',
+            bodyCellBorderColor: 'transparent',
+            rowStripedBackground: '#F8F8F8',
+          }"
         >
-          <!-- No -->
-          <Column headerClass="bg-adameds-50" class="w-[50px]">
+           <!-- Nama Item -->
+           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="font-semibold">No</div>
+              <div class="">Nama Item</div>
             </template>
             <template #body="slotProps">
-              <div class="text-center">{{ slotProps.index + 1 }}</div>
-            </template>
-          </Column>
-          <!-- Nama Item -->
-          <Column headerClass="bg-adameds-50">
-            <template #header>
-              <div class="font-semibold">Nama Item</div>
-            </template>
-            <template #body="slotProps">
-              <div class="mb-[5px]">{{ slotProps.data.nama }}</div>
+              <div class="mb-[5px]">{{ slotProps.data.name }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  v-if="slotProps.data.kategori == 'Medis'"
-                  label="MEDIS"
+                  :label="slotProps.data.kategoriItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
                 />
                 <CustomChip
-                  v-if="slotProps.data.kategori == 'Non-medis'"
-                  label="NON-MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisStok == 'BPJS'"
-                  label="BPJS"
+                  :label="slotProps.data.jenisStok.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"
@@ -314,34 +291,7 @@ onMounted(() => {
                   class="ml-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.jenisStok == 'Umum'"
-                  label="UMUM"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItem == 'obat'"
-                  label="OBAT"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItem == 'alkes'"
-                  label="ALKES"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  :label="slotProps.data.kategoriObat"
+                  :label="slotProps.data.jenisItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"
@@ -351,49 +301,46 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <!-- Min Stok -->
-          <Column headerClass="bg-adameds-50">
+          <!-- Exp. Date -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="font-semibold">Min. Stok</div>
+              <div class="">Exp. Date</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.minStok }}</div>
-              <div class="text-[10px] text-adameds-300">Tablet</div>
-            </template>
-          </Column>
-          <!-- Max. Stok -->
-          <Column headerClass="bg-adameds-50">
-            <template #header>
-              <div class="font-semibold">Max. Stok</div>
-            </template>
-            <template #body="slotProps">
-              <div class="">{{ slotProps.data.maxStok }}</div>
-              <div class="text-[10px] text-adameds-300">Tablet</div>
-            </template>
-          </Column>
-          <!-- Sisa Stok -->
-          <Column headerClass="bg-adameds-50">
-            <template #header>
-              <div class="font-semibold">Sisa Stok</div>
-            </template>
-            <template #body="slotProps">
-              <div class="">{{ slotProps.data.sisaStok }}</div>
-              <div class="text-[10px] text-adameds-300">Tablet</div>
-            </template>
-          </Column>
-          <!-- Action -->
-          <Column field="action" headerClass="bg-adameds-50">
-            <template #header>
-              <div class="w-full font-semibold text-center">Action</div>
-            </template>
-            <template #body="slotProps">
-              <div class="flex items-center justify-center">
-                <CustomButton
-                  label="Adjustment"
-                  class="my-auto bg-adameds-300"
-                  @click="Adjustment(slotProps.data)"
-                />
+              <div class="">
+                {{ epochToDate(slotProps.data.tanggalPembelian, "date") }}
               </div>
+            </template>
+          </Column>
+          <!-- Stok -->
+          <Column field="stok" header="Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Satuan Jual -->
+          <Column field="satuanPembelian" header="Satuan Jual" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <!-- Harga Dasar -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">Harga Dasar</div>
+            </template>
+            <template #body="slotProps">
+              <div class="">{{ slotProps.data.spplr?.name }}</div>
+            </template>
+          </Column>
+          <!-- HNA -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">HNA</div>
+            </template>
+            <template #body="slotProps">
+              <div class="">{{ slotProps.data.spplr?.name }}</div>
+            </template>
+          </Column>
+          <!-- HPP -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">HPP</div>
+            </template>
+            <template #body="slotProps">
+              <div class="">{{ slotProps.data.spplr?.name }}</div>
             </template>
           </Column>
         </DataTable>
@@ -401,10 +348,10 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-end">
           <CustomPaginator
-            :rows="StockProperties.page_size"
-            :totalRecords="StockProperties.total"
+            :rows="RateHistoryProperties.page_size"
+            :totalRecords="RateHistoryProperties.total"
             :rowsPerPageOptions="[10, 20, 30]"
-            @page="handleStok"
+            @page="handlePage"
           />
         </div>
       </template>

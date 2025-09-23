@@ -1,28 +1,105 @@
 <script setup lang="ts">
+import type { MenuItem } from "primevue/menuitem";
+import { ref, onMounted, computed, watch } from "vue";
+import { useSupplierReturnsStore } from "@/stores/inventory/supplierReturns";
+import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { ref } from "vue";
-import { onMounted } from "vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
     default: false,
   },
+  method: {
+    type: String,
+  },
 });
 
-const faktur = ref<any[]>([]);
-const selectedFaktur = ref<any[]>([]);
+function formatDate(date: any) {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
 
-const tglFaktur = ref(new Date());
-const cariNoFaktur = ref("")
+  return `${day}-${month}-${year}`;
+}
 
-onMounted(() => {
+// Title Label
+const pageType = ref("");
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
+
+// State Management
+const SupplierReturnsStore = useSupplierReturnsStore();
+const UseUtilsStore = utilsStore();
+const InvoicePayload = ref<any[]>([]);
+const InvoiceProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
 });
 
-const emit = defineEmits(["update:isDialogVisible", "close", "sendToTambahRetur"]);
+// Check if Data Exists
+const hasData = computed(
+  () => InvoicePayload.value && InvoicePayload.value.length > 0
+);
+
+// Fetch Supplier Returns
+const fetchAvailable = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await SupplierReturnsStore.getApiAvailable(
+      formatDate(date.value),
+      InvoiceProperties.value.page,
+      InvoiceProperties.value.page_size
+    );
+
+    if (response && response.payload) {
+      InvoiceProperties.value.total = response.properties.total;
+      InvoicePayload.value = response.payload;
+    } else {
+      InvoicePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    InvoicePayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  InvoiceProperties.value.page = event.page + 1;
+  InvoiceProperties.value.page_size = event.rows;
+  fetchAvailable();
+};
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  changeSection("Retur & Penggantian Barang Supplier");
+};
+
+const date = ref<Date>(new Date());
+const noInvoice = ref("");
+
+const emit = defineEmits(["update:isDialogVisible", "close"]);
 
 const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
@@ -32,20 +109,14 @@ const closeDialog = () => {
   emit("update:isDialogVisible", false);
 };
 
-const sendToTambahRetur = (values: any) => {
-  emit("sendToTambahRetur", values.data)
-  closeDialog()
-}
+onMounted(() => {
+  fetchAvailable();
+});
 </script>
 
 <template>
-  <CustomDialog
-    width="1000px"
-    :visible="isDialogVisible"
-    @update:visible="updateVisibility"
-    headerBg="bg-adameds-300"
-  >
-    <template #header>Faktur Penerimaan </template>
+  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="1000px">
+    <template #header>Faktur Penerimaan</template>
     <template #body>
       <div class="flex items-center py-4">
         <div class="flex flex-col justify-center">
@@ -56,12 +127,12 @@ const sendToTambahRetur = (values: any) => {
         <div class="flex items-end gap-5">
           <CustomTextfield
             label="Cari No. Faktur"
-            v-model="cariNoFaktur"
+            v-model="noInvoice"
             prepend-icon="PhMagnifyingGlass"
             placeholder="Cari Berdasarkan No. Faktur"
             class="w-[360px]"
           />
-          <CustomDatePicker label="Tgl. Faktur" v-model="tglFaktur" />
+          <CustomDatePicker label="Tgl. Faktur" v-model="date" />
           <div class="flex gap-2.5">
             <CustomButton
               class="my-auto"
@@ -77,14 +148,25 @@ const sendToTambahRetur = (values: any) => {
           </div>
         </div>
       </div>
+      <NoData v-if="!hasData" />
       <DataTable
-        v-model:selection="selectedFaktur"
-        :value="faktur"
-        @row-click="sendToTambahRetur"
+        v-else
+        :value="InvoicePayload"
+        v-model:selection="selectedData"
+        :metaKeySelection="metaKey"
+        @rowClick="onRowSelect"
         tableStyle="min-width: 50rem"
+        stripedRows
+        class="text-xs"
         scrollable
-        scrollHeight="240px"
-        :pt="{ headerRow: 'text-SM' }"
+        scrollHeight="flex"
+        :dt="{
+          rowSelectedColor: '#000000',
+          rowSelectedBackground: 'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
+          bodyCellBorderColor: 'transparent',
+          rowStripedBackground: '#F8F8F8',
+        }"
       >
         <Column headerClass="bg-adameds-50" class="w-[40px]">
           <template #header>
@@ -127,19 +209,15 @@ const sendToTambahRetur = (values: any) => {
           </template>
         </Column>
       </DataTable>
-      <!-- <div>   </div> UNTUK TABEL -->
     </template>
     <template #footer>
       <div class="flex justify-end">
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
+        <CustomPaginator
+          :rows="InvoiceProperties.page_size"
+          :totalRecords="InvoiceProperties.total"
           :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
-        >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
+          @page="handlePage"
+        />
       </div>
     </template>
   </CustomDialog>

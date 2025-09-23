@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, type PropType } from "vue";
+import { ref, onMounted } from "vue";
 import { useUnitOfExpenditureStore } from "@/stores/inventory/unitOfExpenditure";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
@@ -66,14 +66,14 @@ onMounted(() => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Pengeluaran Barang',
+                    label: 'Penerimaan Barang',
                     home: true,
                   }"
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pengeluaran Unit
+                    Penerimaan Retur Unit
                   </p>
                 </div>
                 <PhCaretRight :size="25"  weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
@@ -120,55 +120,46 @@ onMounted(() => {
           </template>
           <template #content>
             <div class="grid grid-cols-4 gap-4 mt-[20px]">
-              <!-- Jenis Pengeluaran -->
+              <!-- Tgl. Retur -->
               <div>
-                <p class="text-xs font-bold underline underline-offset-2">Jenis Pengeluaran</p>
+                <p class="text-xs font-bold underline underline-offset-2">Tgl. Retur</p>
                 <p>{{ DetailPayload.jenisPengeluaran }}</p>
-              </div>
-              <!-- Tgl. Permintaan -->
-              <div>
-                <p class="text-xs font-bold underline underline-offset-2">Lokasi Penerima</p>
-                <p>{{ epochToDate(DetailPayload.tanggalPengeluaran, "date") }}</p>
               </div>
               <!-- Kategori Item -->
               <div>
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Kategori Item
-                </p>
-                <p>{{ DetailPayload.kategoriItem }}</p>
+                <p class="text-xs font-bold underline underline-offset-2">Kategori Item</p>
+                <p>{{ epochToDate(DetailPayload.tanggalPengeluaran, "date") }}</p>
               </div>
               <!-- Jenis Stok -->
               <div>
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Jenis Stok
-                </p>
-                <p>{{ DetailPayload.jenisStok }}</p>
+                <p class="text-xs font-bold underline underline-offset-2">Jenis Stok</p>
+                <p>{{ DetailPayload.kategoriItem }}</p>
               </div>
               <!-- Jenis Item -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">
                   Jenis Item
                 </p>
-                <p>{{ DetailPayload.jenisItem }}</p>
+                <p>{{ DetailPayload.jenisStok }}</p>
               </div>
-              <!-- Tujuan Pengeluaran -->
-              <div v-if="DetailPayload.jenisPengeluaran == 'pengeluaran tanpa permintaan'">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Tujuan Pengeluaran
-                </p>
-                <p>{{ DetailPayload.jenisItem }}</p>
-              </div>
-              <!-- Jenis Pemusnahan -->
-              <div v-if="DetailPayload.jenisPengeluaran == 'pemusnahan barang'">
-                <p class="text-xs font-bold underline underline-offset-2">
-                  Jenis Pemusnahan
-                </p>
-                <p>{{ DetailPayload.jenisItem }}</p>
-              </div>
-              <!-- Petugas Pengeluaran -->
+              <!-- Asal Retur -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">
-                  Petugas Pengeluaran
+                    Asal Retur
+                </p>
+                <p>{{ DetailPayload.jenisItem }}</p>
+              </div>
+              <!-- Tujuan Retur -->
+              <div>
+                <p class="text-xs font-bold underline underline-offset-2">
+                  Tujuan Retur
+                </p>
+                <p>{{ DetailPayload.jenisItem }}</p>
+              </div>
+              <!-- Petugas Retur -->
+              <div>
+                <p class="text-xs font-bold underline underline-offset-2">
+                  Petugas Retur
                 </p>
                 <p>{{ DetailPayload.petugasPengeluaran }}</p>
               </div>
@@ -203,63 +194,21 @@ onMounted(() => {
                     <div class="text-sm">{{ slotProps.data.nama }}</div>
                   </template>
                 </Column>
-                <!-- Exp. Date -->
-                <Column header="Exp. Date" headerClass="bg-adameds-50">
-                  <template #body="slotProps">
-                    <div class="text-sm">
-                      {{ formatDate(slotProps.data.expDate) }}
-                    </div>
-                  </template>
-                </Column>
                 <!-- Min. Stok -->
                 <Column field="stok" header="Min. Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-                <!-- Stok -->
-                <Column field="qty" header="Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-                <!-- Pengeluaran -->
-                <Column field="pengeluaran" header="Pengeluaran" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-                <!-- Satuan/Isi -->
-                <Column field="satuan" header="Satuan/Isi" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-                <!-- Harga Dasar -->
-                <Column header="Harga Dasar" headerClass="bg-adameds-50">
-                  <template #body="slotProps">
-                    <div class="text-sm">
-                      {{ formatPrice(slotProps.data.hargaSatuan) }}
-                    </div>
-                  </template>
-                </Column>
-                <!-- Total -->
-                <Column header="Total" headerClass="bg-adameds-50">
-                  <template #body="slotProps">
-                    <div class="text-sm">
-                      {{ formatPrice(slotProps.data.totalHarga) }}
-                    </div>
-                  </template>
-                </Column>
+                <!-- Max. Stok -->
+                <Column field="stok" header="Max. Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+                <!-- Retur -->
+                <Column field="qty" header="Retur" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+                <!-- Penerimaan -->
+                <Column field="pengeluaran" header="Penerimaan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
               </DataTable>
             </div>
           </template>
           <template #footer>
               <div class="flex">
-                <div>
-                    <CustomButton background-color="bg-adameds-300 rounded-lg">
-                        <div class="flex items-center gap-2">
-                            <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
-                            <div class="text-sm">Cetak</div>
-                        </div>
-                    </CustomButton>
-                </div>
-                <div class="ml-[30px]">
-                  <p class="font-bold underline underline-offset-2">
-                    Total Item
-                  </p>
-                  <p>{{ DetailPayload.totalItem }}</p>
-                </div>
-                <div class="ml-[30px]">
-                  <p class="font-bold underline underline-offset-2">
-                    Grand Total
-                  </p>
-                  <p>{{ DetailPayload.totalHarga }}</p> 
-                </div>
+                <p class="font-bold underline underline-offset-2">Total Item</p>
+                <p>{{ DetailPayload.totalItem }}</p>
               </div>
           </template>
           <template #collapseIcon>
