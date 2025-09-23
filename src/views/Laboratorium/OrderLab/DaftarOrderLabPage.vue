@@ -78,6 +78,10 @@ const postRegisterPatient = async () => {
     storeUtils.setLoading(false);
   }
 };
+
+const resetForm = async () => {
+  console.log("reset form => ", patientIdentityForm.value);
+};
 </script>
 
 <template>
@@ -146,6 +150,7 @@ const postRegisterPatient = async () => {
             outlined
             borderColor="border-grey-200"
             textColor="text-grey-300"
+            @click="resetForm"
           />
           <CustomButton
             label="Simpan"
