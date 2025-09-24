@@ -39,8 +39,17 @@ const properties = ref({
 const filterData = ref<FilterAdmisi>({});
 
 const search = async () => {
-  filterData.value = headerPoliBPJSRef.value?.searchData();
-  console.log(`HABIS DI SEARCH`, filterData.value);
+  const headerFilters = headerPoliBPJSRef.value?.searchData() ?? {};
+
+  filterData.value = {
+    ...headerFilters,
+    poly: filterData.value.poly,
+    page: properties.value.page,
+    limit: properties.value.page_size,
+  };
+
+  console.log(`FILTER FINAL YANG DIKIRIM KE API:`, filterData.value);
+
   if (currentRouteName.value == "rawat-jalan-poli") {
     patientData.value = await fetchRJPatient();
   }

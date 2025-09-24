@@ -119,6 +119,7 @@ const resetFilter = () => {
 
   startDateFilter.value = new Date(y, m, 1);
   endDateFilter.value = new Date(y, m + 1, 0);
+  emit("search");
 
   switch (props.currentRouteName) {
     case "rawat-jalan-poli":

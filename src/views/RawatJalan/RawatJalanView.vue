@@ -10,7 +10,8 @@ import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
-
+const isSidebarReady = ref(false);
+const filterPoliList = ref<any[]>([]);
 // State Management
 const lokasiStore = useLokasiStore();
 const UseUtilsStore = utilsStore();
@@ -24,36 +25,38 @@ const lokasiProperties = ref({
 // Fetch data dari API
 const fetchLokasiData = async () => {
   UseUtilsStore.setLoading(true);
+
+  lokasiPayload.value = [];
+  filterPoliList.value = [];
+
   try {
-    const response = await lokasiStore.getApi(
-      lokasiProperties.value.page,
-      lokasiProperties.value.page_size
-    );
-    // console.log("API Response:", response);
+    const response = await lokasiStore.getApi(0, 9999);
 
     if (response && response.payload) {
-      // console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
+      lokasiPayload.value = response.payload;
 
-      // Gabungkan data baru ke dalam lokasiPayload
-      lokasiPayload.value = [...response.payload];
+      filterPoliList.value = response.payload
+        .filter((lokasi: any) => lokasi.isPoli && lokasi.status)
+        .map((lokasi: any) => {
+          return {
+            name: lokasi.name,
+            faskesUuid: lokasi.uuid,
+          };
+        });
 
-      // Update sidebar body list setiap kali data baru diambil
       updateSidebarBodyList();
 
-      // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
-      if (response.payload.length === lokasiProperties.value.page_size) {
-        lokasiProperties.value.page += 1;
-        await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
-      }
     } else {
       lokasiPayload.value = [];
+      filterPoliList.value = [];
     }
   } catch (error) {
-    console.error("Failed to fetch data", error);
+    console.error("Gagal mengambil data lokasi:", error);
     lokasiPayload.value = [];
+    filterPoliList.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
+    isSidebarReady.value = true;
   }
 };
 
@@ -247,6 +250,7 @@ onMounted(() => {
       @update:searchPoli="handleSearchPoli"
     />
     <component
+      v-if="isSidebarReady"
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
       :filter="filter"

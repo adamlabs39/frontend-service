@@ -7,7 +7,7 @@ import type { SidebarBody } from "@/utils/Interface";
 import { onBeforeMount } from "vue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar.ts";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 
 const route = useRoute();
 const router = useRouter();
