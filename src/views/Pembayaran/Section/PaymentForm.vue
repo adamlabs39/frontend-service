@@ -98,15 +98,15 @@ onMounted(() => {
           <p class="text-base font-bold">Rp {{ paymentData.subTotal?.toLocaleString('id-ID') || 0 }}</p>
         </div>
         <div class="flex justify-between mt-4">
-          <p class="text-base font-bold">Admin Fee</p>
+          <p class="text-base font-bold">Biaya Administrasi</p>
           <p class="text-base font-bold">Rp {{ paymentData.adminFee?.toLocaleString('id-ID') || 0 }}</p>
         </div>
         <div class="flex justify-between mt-4">
-          <p class="text-base font-bold">Diskon</p>
+          <p class="text-base font-bold">Diskon ({{ paymentData.discount?.percentage || 0 }}%)</p>
           <p class="text-base font-bold">Rp {{ paymentData.discount.amount?.toLocaleString('id-ID') || 0 }}</p>
         </div>
         <div class="flex justify-between mt-4">
-          <p class="text-base font-bold">PPN</p>
+          <p class="text-base font-bold">PPN ({{ paymentData.ppn?.percentage || 0 }}%)</p>
           <p class="text-base font-bold">Rp {{ paymentData.ppn.amount?.toLocaleString('id-ID') || 0 }}</p>
         </div>
         <div class="flex justify-between mt-4">
