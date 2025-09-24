@@ -4,7 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
-import { formatDate, formatTime } from "@/utils/Helpers";
+import { dateToEpoch, formatDate, formatTime } from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -19,6 +19,9 @@ const props = defineProps<{
   };
 }>();
 
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
+
 const dataTablePt = Object.freeze({ headerRow: "bg-blue-500 text-white" });
 
 const emit = defineEmits<{
@@ -27,8 +30,6 @@ const emit = defineEmits<{
 
 const dataAntrianStore = useDataAntrianStore();
 const useUtilsStore = utilsStore();
-
-const dataAntrianRjPayload = ref([]);
 
 const convertPaymentMethod = (paymentMethod: number | string): string => {
   const method = Number(paymentMethod);
@@ -50,8 +51,11 @@ const fetchDataAntrianAdmisi = async () => {
   // Kosongkan data terlebih dahulu agar tidak menampilkan data lama saat loading/error
   dataAntrianAdmisiPayload.value = [];
   try {
-    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
-    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+    const startEpoch =
+      props.paginationProperties.start_date ??
+      dateToEpoch(startDateFilter.value);
+    const endEpoch =
+      props.paginationProperties.end_date ?? dateToEpoch(endDateFilter.value);
 
     const statusQuery =
       props.paginationProperties.status_panggilan &&

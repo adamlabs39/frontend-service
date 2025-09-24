@@ -7,7 +7,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useDebounceFn } from "@vueuse/core";
-import { epochToDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 
 const props = defineProps({
   title: {
@@ -72,8 +72,8 @@ const isChipSelected = (value: string) => {
   return chipValues.value.includes(value);
 };
 
-const startDateFilter = ref<Date | null>(new Date());
-const endDateFilter = ref<Date | null>(new Date());
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
 const searchPatientFilter = ref<string>("");
 
 // emit event pencarian dan rentang tanggal
@@ -82,49 +82,8 @@ const emit = defineEmits<{
   dateRange: [start_date?: number | null, end_date?: number | null];
 }>();
 
-const dateToEpochStartOfDay = (date?: Date | null): number | null => {
-  if (!date) return null;
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return Math.floor(d.getTime() / 1000);
-};
-const dateToEpochEndOfDay = (date?: Date | null): number | null => {
-  if (!date) return null;
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return Math.floor(d.getTime() / 1000);
-};
-
 // Fallback tanggal untuk tampilan (display purpose only)
-const getNowDate = () => new Date(); // kanan (end)
-const getThirtyDaysAgoDate = () => {
-  const d = new Date();
-  d.setDate(d.getDate() - 30);
-  return d; // kiri (start)
-};
-
-const syncDatepickerWithProps = () => {
-  if (["0", "1", "2"].includes(props.activeTab)) {
-    startDateFilter.value =
-      props.startDateEpoch !== undefined && props.startDateEpoch !== null
-        ? (epochToDate(props.startDateEpoch) as Date)
-        : getThirtyDaysAgoDate();
-
-    endDateFilter.value =
-      props.endDateEpoch !== undefined && props.endDateEpoch !== null
-        ? (epochToDate(props.endDateEpoch) as Date)
-        : getNowDate();
-  } else {
-    startDateFilter.value = null;
-    endDateFilter.value = null;
-  }
-};
-
-watch(
-  () => [props.activeTab, props.startDateEpoch, props.endDateEpoch],
-  () => syncDatepickerWithProps(),
-  { immediate: true }
-);
+const today = new Date();
 
 const getSelectedStatusCodes = (): string[] => {
   if (chipValues.value.includes("SEMUA")) return [];
@@ -164,8 +123,8 @@ const onClickSearch = () => {
     emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
     emit(
       "dateRange",
-      dateToEpochStartOfDay(startDateFilter.value),
-      dateToEpochEndOfDay(endDateFilter.value)
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
     );
   }
 };
@@ -175,14 +134,14 @@ const onClickReset = () => {
   searchPatientFilter.value = "";
   chipValues.value = ["SEMUA"];
   if (["0", "1", "2"].includes(props.activeTab)) {
-    startDateFilter.value = getThirtyDaysAgoDate();
-    endDateFilter.value = getNowDate();
+    startDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
+    endDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
     emit("search", "", getSelectedStatusCodes());
     // Kirim juga rentang tanggal default: 30 hari ke belakang sampai hari ini
     emit(
       "dateRange",
-      dateToEpochStartOfDay(startDateFilter.value),
-      dateToEpochEndOfDay(endDateFilter.value)
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value)
     );
   } else {
     startDateFilter.value = null;
@@ -200,8 +159,23 @@ watch(
     chipValues.value = ["SEMUA"];
 
     if (["0", "1", "2"].includes(props.activeTab)) {
+      // Reset pencarian dan tanggal ke hari ini saat kembali ke tab antrian
       searchPatientFilter.value = "";
+      startDateFilter.value = new Date(
+        Math.floor(today.getTime() / 1000) * 1000
+      );
+      endDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
       emit("search", "");
+      emit(
+        "dateRange",
+        dateToEpoch(startDateFilter.value),
+        dateToEpoch(endDateFilter.value)
+      );
+    } else {
+      // Kosongkan tanggal jika keluar dari tab antrian
+      startDateFilter.value = null;
+      endDateFilter.value = null;
+      emit("dateRange", null, null);
     }
   }
 );
