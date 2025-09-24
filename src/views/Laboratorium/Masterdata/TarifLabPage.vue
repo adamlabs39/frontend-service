@@ -31,9 +31,33 @@ const tarifPemeriksaanProperties = ref({
   total: 0,
 });
 const searchQuery = ref<string>("");
+const selectedUnit = ref();
+const selectedPenjamin = ref("");
+
 const handleSearchQuery = (searchValue: string) => {
   searchQuery.value = searchValue;
 };
+const handleSelectedUnit = (selectedValue: any) => {
+  selectedUnit.value = selectedValue;
+};
+const handleSelectedPenjamin = (selectedValue: any) => {
+  selectedPenjamin.value = selectedValue;
+};
+
+// Filter Search Data
+const searchData = () => {
+  searchQuery.value;
+  fetchTarifPemeriksaan();
+};
+
+// Filter Reset Data
+const resetData = () => {
+  searchQuery.value = "";
+  selectedUnit.value = [];
+  selectedPenjamin.value = "";
+  fetchTarifPemeriksaan();
+};
+
 const utils = utilsStore();
 
 // Fetch Tarif
@@ -481,12 +505,28 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Cari Tarif Lab"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Tarif Lab"
-                class=""
+                class="mr-5 grow"
+              />
+              <CustomButton
+                @click="searchData"
+                icon="PhMagnifyingGlass"
+                label="Cari"
+                borderColor="border-adameds-300"
+                class="ml-5 mr-[10px] mt-auto"
+              />
+              <CustomButton
+                @click="resetData"
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                class="mt-auto"
               />
             </div>
             <div
@@ -583,6 +623,11 @@ onMounted(() => {
           v-model:selection="selectedData"
           :metaKeySelection="metaKey"
           @rowClick="onRowSelect"
+          @update:valueSearch="handleSearchQuery"
+          @update:selectedFilter="handleSelectedUnit"
+          @update:selectedFilterSecond="handleSelectedPenjamin"
+          @reload-data="fetchTarifPemeriksaan()"
+          @search="fetchTarifPemeriksaan()"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
