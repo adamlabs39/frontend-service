@@ -67,12 +67,12 @@ const schema = toTypedSchema(
             );
 
           case "Passport":
-            // diawali huruf besar, diikuti angka (contoh: E1230887)
+            // Must be 9 characters: 1 uppercase letter followed by 8 digits
             return (
-              /^[A-Z][0-9]+$/.test(value) ||
+              /^[A-Z]\d{8}$/.test(value) ||
               this.createError({
                 message:
-                  "Nomor Passport harus diawali huruf besar diikuti angka (contoh: E1230887)",
+                  "Nomor Passport harus terdiri dari 1 huruf besar diikuti 8 angka (contoh: A12345678)",
               })
             );
 
