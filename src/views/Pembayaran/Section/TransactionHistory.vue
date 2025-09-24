@@ -131,7 +131,7 @@ const props = defineProps({
               <div class="flex justify-between">
                 <p class="text-base font-bold">Total Keseluruhan</p>
                 <p class="text-base font-bold">
-                Rp {{ Number(service.items.total) .toLocaleString('id-ID') || 0 }}
+                Rp {{ Number(service.items.item.totalKeseluruhan) .toLocaleString('id-ID') || 0 }}
                 </p>
               </div>
             </template>

@@ -101,10 +101,10 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             table: {
                                 widths: ['auto', '*'],
                                 body: [
-                                    ['Nomer Kunjungan', { text: `: ${safeBill.noReg || '-'}`, bold: true }],
+                                    ['No.Registrasi', { text: `: ${safeBill.noReg || '-'}`, bold: true }],
                                     ['Pelayanan', { text: `: ${reversePoliMapping[safeBill.serviceBill && safeBill.serviceBill[0]?.type] || (safeBill.serviceBill && safeBill.serviceBill[0]?.type) || '-'}`, bold: true }],
-                                    ['Tanggal Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
-                                    ['Tanggal Discharge', { text: ': -', bold: true }]
+                                    ['Tgl.Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
+                                    ['Tgl.Discharge', { text: ': -', bold: true }]
                                 ]
                             }
                         }

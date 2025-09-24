@@ -376,15 +376,17 @@ watch(codeDiscount, (newValue, oldValue) => {
   if (newValue === undefined || newValue === null) return;
 
   let valueStr = String(newValue);
+  
+  // Secara eksplisit hapus semua karakter minus '-'
+  valueStr = valueStr.replace(/-/g, ''); 
 
-  // Ganti titik dengan koma untuk konsistensi
+  //titik dengan koma untuk konsistensi
   valueStr = valueStr.replace('.', ',');
 
-  // Hanya izinkan angka dan satu koma di awal
+  // Regex untuk memblokir karakter non-angka
   const validRegex = /^[0-9]*\,?[0-9]*$/;
 
   if (!validRegex.test(valueStr)) {
-    // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
     codeDiscount.value = oldValue ? String(oldValue) : '';
   } else {
     const numericValue = parseFloat(valueStr.replace(',', '.'));
