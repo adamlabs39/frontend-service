@@ -437,7 +437,7 @@ const selectedDoctorDetail = computed(() => {
                     v-show="selectedTime"
                     label="Lanjutkan"
                     class="w-[280px] mt-2"
-                    backgroundColor="bg-adameds-100"
+                    backgroundColor="bg-adameds-300 hover:bg-adameds-400"
                     textColor="text-white"
                     @click="handleBerhasil"
                   />
