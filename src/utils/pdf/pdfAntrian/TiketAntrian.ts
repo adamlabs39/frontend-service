@@ -34,9 +34,27 @@ export async function createTiketAntrianPDF(data: any) {
   // Generate QR Code for booking code
   const qrCodeData = await generateQRCode(data.kodeBooking || "");
 
-  // Determine nomor antrian priority: farmasi > admisi > poli
-  const nomorAntrian =
-    data.noAntrianFarmasi || data.noAntrianAdmisi || data.noAntrianPoli || "";
+  // Determine nomor antrian based on selected number from UI first
+  let nomorAntrian = data.__selectedNoAntrian as string;
+  const hasVal = (v?: any) =>
+    !(
+      v === null ||
+      v === undefined ||
+      (typeof v === "string" && v.trim() === "")
+    );
+  if (!hasVal(nomorAntrian)) {
+    // If no explicit selection from UI, fallback based on page source
+    if (data?.__printSource === "farmasi") {
+      nomorAntrian =
+        data.noAntrianFarmasi ||
+        data.noAntrianPoli ||
+        data.noAntrianAdmisi ||
+        "";
+    } else {
+      // Non-Farmasi (e.g., Print page): prioritize Poli then Admisi; ignore Farmasi
+      nomorAntrian = data.noAntrianPoli || data.noAntrianAdmisi || "";
+    }
+  }
 
   // Helper lokal untuk format tanggal Indonesia seperti Figma: "01 Januari 2000"
   const MONTHS_ID = [
@@ -179,7 +197,10 @@ export async function createTiketAntrianPDF(data: any) {
 
       // Title
       {
-        text: "TIKET ANTRIAN POLIKLINIK",
+        text:
+          data?.__printSource === "farmasi"
+            ? "TIKET ANTRIAN FARMASI"
+            : "TIKET ANTRIAN POLIKLINIK",
         style: "title",
         alignment: "left",
         margin: [0, 0, 0, 8],
