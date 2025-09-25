@@ -225,27 +225,23 @@ const submitDiscount = async () => {
 };
 
 watch(codeDiscount, (newValue, oldValue) => {
-  if (newValue === undefined || newValue === null) return;
+  // Jika nilai baru kosong atau null, hentikan proses.
+  if (newValue === null || newValue === undefined) return;
 
   let valueStr = String(newValue);
-  valueStr = valueStr.replace(/-/g, ''); 
+  valueStr = valueStr.replace(/\./g, ',');
+  let cleaned = valueStr.replace(/[^0-9,]/g, '');
 
-  // Ganti titik dengan koma untuk konsistensi
-  valueStr = valueStr.replace('.', ',');
-
-  // Hanya izinkan angka dan satu koma di awal
-  const validRegex = /^-?[0-9]*\,?[0-9]*$/;
-
-  if (!validRegex.test(valueStr)) {
-    // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
-    codeDiscount.value = oldValue ? String(oldValue) : '';
-  } else {
-    const numericValue = parseFloat(valueStr.replace(',', '.'));
-    if (numericValue > 100) {
-      codeDiscount.value = '100';
-    } else {
-      codeDiscount.value = valueStr;
-    }
+  const parts = cleaned.split(',');
+  if (parts.length > 2) {
+    cleaned = parts[0] + ',' + parts.slice(1).join('');
+  }
+  const numericValue = parseFloat(cleaned.replace(',', '.'));
+  if (!isNaN(numericValue) && numericValue > 100) {
+    cleaned = '100';
+  }
+  if (cleaned !== newValue) {
+    codeDiscount.value = cleaned;
   }
 });
 
@@ -539,7 +535,7 @@ const optionMetodeBayar = ref([
             <hr class="mt-6 mb-2 border-slate-300 border-1" />
             <div class="flex justify-between mt-6">
               <div class="text-sm font-bold">Grand Total</div>
-              <div class="text-sm font-bold"> {{ formatPriceLokal(detailData.grandTotal)}}</div>
+              <div class="text-sm font-bold"> {{ formatPriceLokal(detailData.grandTotal) }}</div>
             </div>
 
             <div class="flex mt-[30px]">
