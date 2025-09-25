@@ -48,7 +48,6 @@ const search = async () => {
     limit: properties.value.page_size,
   };
 
-  console.log(`FILTER FINAL YANG DIKIRIM KE API:`, filterData.value);
 
   if (currentRouteName.value == "rawat-jalan-poli") {
     patientData.value = await fetchRJPatient();
@@ -85,7 +84,6 @@ const props = defineProps<{
 watch(
   () => props.filter,
   async (newFilter) => {
-    console.log(`Filter anyar`, newFilter);
     resetFilter();
     statusPelayanan.value = ""; // Reset statusPelayanan
     filterData.value = {
@@ -111,11 +109,9 @@ const currentRouteName = ref("");
 onMounted(() => {
   currentRouteName.value = route.name ? String(route.name) : "";
   // search();
-  console.log("Current Route Name:", currentRouteName.value);
 });
 
 const updateSelectedPatient = (patient: any) => {
-  console.log("Selected Patient:", patient);
   patient.length > 0
     ? (selectedPatient.value = patient)
     : (selectedPatient.value = []);
@@ -150,7 +146,6 @@ const handleResetPatient = () => {
 };
 
 const confirmCancel = async () => {
-  console.log(selectedPatient.value);
   try {
     storeUtils.setLoading(true);
     let payload = {
@@ -160,9 +155,7 @@ const confirmCancel = async () => {
     selectedPatient.value.forEach((patient) => {
       payload.listUuid.push(patient.uuid);
     });
-    console.log("Payload:", payload);
     const response = await admisiRJStore.cancelVisitRJ(payload);
-    console.log("Response:", response);
     showCancelVisit.value = false;
     if (response) {
       resetCancelVisit();
@@ -190,8 +183,6 @@ const filterStatus = async (status: string) => {
     ...filterData.value,
     status: statusPelayanan.value,
   };
-  console.log(status);
-  console.log(filterData.value);
   // console.log(`filter paling baru`, filterData.value);
   // search();
   patientData.value = await fetchRJPatient();

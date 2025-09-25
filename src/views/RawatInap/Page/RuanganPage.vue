@@ -220,7 +220,6 @@ const updatePageType = async (path: string) => {
 
   let filter = {} as FilterAdmisi;
   filter = setFilter();
-  // console.log(currentRouteName.value);
   patientData.value = await fetchRIPatient(filter);
 };
 
@@ -235,9 +234,6 @@ onMounted(() => {
   // isDataFetched.value = true;
 });
 
-// onMounted(() => {
-//   fetchRIPatient()
-// });
 </script>
 <template>
   <!-- {{ patientData }} -->
@@ -448,8 +444,9 @@ onMounted(() => {
                     ? 'Cancel'
                     : slotProps.data.statusRi == 1
                       ? 'Waiting'
-                      : slotProps.data.statusRi == 2 ?
-                        'Transfer' : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
+                      : slotProps.data.statusRi == 2 
+                      ? 'Transfer' 
+                      : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
                 "
                 customClass="h-5 pr-[5px] mr-[5px] border-none"
                 :bgColor="
