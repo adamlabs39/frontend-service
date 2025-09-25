@@ -234,7 +234,7 @@ watch(codeDiscount, (newValue, oldValue) => {
   valueStr = valueStr.replace('.', ',');
 
   // Hanya izinkan angka dan satu koma di awal
-  const validRegex = /^[0-9]*\,?[0-9]*$/;
+  const validRegex = /^-?[0-9]*\,?[0-9]*$/;
 
   if (!validRegex.test(valueStr)) {
     // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)

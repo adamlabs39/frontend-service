@@ -384,7 +384,7 @@ watch(codeDiscount, (newValue, oldValue) => {
   valueStr = valueStr.replace('.', ',');
 
   // Regex untuk memblokir karakter non-angka
-  const validRegex = /^[0-9]*\,?[0-9]*$/;
+  const validRegex = /^-?[0-9]*\,?[0-9]*$/;
 
   if (!validRegex.test(valueStr)) {
     codeDiscount.value = oldValue ? String(oldValue) : '';
