@@ -32,7 +32,9 @@ export async function createTiketAntrianPDF(data: any) {
   }
 
   // Generate QR Code for booking code
-  const qrCodeData = await generateQRCode(data.kodeBooking || "");
+  const qrCodeData = await generateQRCode(
+    `${data.patient.name || ""}-${data.patient.noRm || ""}`
+  );
 
   // Determine nomor antrian based on selected number from UI first
   let nomorAntrian = data.__selectedNoAntrian as string;
