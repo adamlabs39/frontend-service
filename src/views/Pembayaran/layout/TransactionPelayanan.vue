@@ -228,6 +228,7 @@ watch(codeDiscount, (newValue, oldValue) => {
   if (newValue === undefined || newValue === null) return;
 
   let valueStr = String(newValue);
+  valueStr = valueStr.replace(/-/g, ''); 
 
   // Ganti titik dengan koma untuk konsistensi
   valueStr = valueStr.replace('.', ',');
