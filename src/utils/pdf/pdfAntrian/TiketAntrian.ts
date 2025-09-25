@@ -51,8 +51,8 @@ export async function createTiketAntrianPDF(data: any) {
         data.noAntrianAdmisi ||
         "";
     } else {
-      // Non-Farmasi (e.g., Print page): prioritize Poli then Admisi; ignore Farmasi
-      nomorAntrian = data.noAntrianPoli || data.noAntrianAdmisi || "";
+      // Non-Farmasi (e.g., Print page): prioritize Admisi then Poli; ignore Farmasi
+      nomorAntrian = data.noAntrianAdmisi || data.noAntrianPoli || "";
     }
   }
 

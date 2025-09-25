@@ -51,7 +51,7 @@ const displayNoAntrian = computed(() => {
   }
 
   // Halaman selain Farmasi (mis. Print): tampilkan Poli jika ada, jika tidak ada tampilkan Admisi
-  return hasValue(poli) ? poli : hasValue(adm) ? adm : "";
+  return hasValue(adm) ? adm : hasValue(poli) ? poli : "";
 });
 
 const shouldShowFarmasiLabel = computed(() => {
