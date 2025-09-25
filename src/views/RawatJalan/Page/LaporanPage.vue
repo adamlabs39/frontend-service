@@ -85,7 +85,6 @@ const fetchPraktisiData = async () => {
     const response = await praktisiStore.getAktifApi();
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
-      console.log(praktisiPayload.value)
     } else {
       praktisiPayload.value = [];
     }

@@ -174,7 +174,6 @@ const searchData = (dataString: any) => {
 
   // FIXME Belum bisa multiple
 
-  console.log("test", props.filterMenu);
   filter.poly = [props.filterMenu.uuid ?? ""];
   filter.dpjp = searchDokterFilter.value ?? "";
 

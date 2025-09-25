@@ -17,6 +17,7 @@ import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { useRIStore } from "@/stores/rawatInap/laporanranap";
 
 // Filter 
 interface Filter {
@@ -43,6 +44,7 @@ const properties = ref({
 });
 
 // STORE
+const RIStore = useRIStore();
 const useUtilsStore = utilsStore();
 const rekapTindakanPasienStore = useRekapTindakanStore()
 const kunjunganRawatInap = useAdmisiReportStore()
@@ -60,21 +62,23 @@ const fetchLaporanData = async (filter: Filter = {}) => {
   let response;
   try {
   if (pageType.value === "kunjungan-rawat-inap") {
-    response = await kunjunganRawatInap.getKunjunganReport(filter)
+    response = await RIStore.getKunjunganRanap(filter);
   } else if (pageType.value === "perpindahan-pasien") {
   } else if (pageType.value === "pembatalan-dirawat") {
-    response = await kunjunganRawatInap.getBatalKunjunganReport(filter)
+    response = await RIStore.getBatalRawat(filter)
   } else {
     response = await rekapTindakanPasienStore.getTindakanPasien(filter)
   }
-   if(response && response.payload){
-     properties.value.total = response.properties.totalData;
-     return response.payload
+   if(response && response.payload.data){
+    properties.value.total = response.payload.pagination.totalData;
+    //  properties.value.total = response.properties.totalData;
+     return response.payload.data
    } else {
-    return []
+    return [];
    }
   } catch (error) {
     console.error("Failed to fetch data", error);
+    return [];
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -324,7 +328,7 @@ onMounted(() => {
       <div v-if="reportData.length">
         <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" :payload="reportData"/>
         <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
-        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
+        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" :payload="reportData" />
         <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
       </div>
       <NoData v-else/>
