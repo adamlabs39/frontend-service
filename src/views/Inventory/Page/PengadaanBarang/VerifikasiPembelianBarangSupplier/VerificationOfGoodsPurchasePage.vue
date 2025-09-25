@@ -11,6 +11,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
+import DetailVerificationOfGoodsPurchasePage from "./DetailVerificationOfGoodsPurchasePage.vue";
 
 // Filter
 const onSelected = ref<string>("pending");
@@ -94,7 +95,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Verifikasi');
 };
 
 const closePurchaseOfSupplierPage = () => {
@@ -289,5 +290,12 @@ onMounted(() => {
         </div>
       </template>
     </Card>
+    <DetailVerificationOfGoodsPurchasePage
+      v-else-if="dataBreadCrumb[0].label == 'Verifikasi'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :selectedData="selectedData"
+      @back="closePurchaseOfSupplierPage"
+    />
   </div>
 </template>

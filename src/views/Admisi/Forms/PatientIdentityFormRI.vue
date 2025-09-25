@@ -370,7 +370,9 @@ const maxBirthTime = computed(() => {
   normalizedSelectedDate.setHours(0, 0, 0, 0);
 
   if (normalizedSelectedDate.getTime() === today.getTime()) {
-    return new Date();
+    const maxTime = new Date();
+    maxTime.setSeconds(59, 999); 
+    return maxTime;
   } else {
     return undefined;
   }

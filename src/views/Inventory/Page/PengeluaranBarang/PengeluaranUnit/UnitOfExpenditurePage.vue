@@ -11,7 +11,8 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-import AddUnitOfExpenditurePage from "./AddUnitOfExpenditurePage.vue";
+import AddUnitOfExpenditure from "./AddUnitOfExpenditurePage.vue";
+import DetailUnitOfExpenditure from "./DetailUnitOfExpenditurePage.vue";
 
 // Title Label
 const pageType = ref("");
@@ -46,7 +47,10 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await UnitOfExpenditureStore.getApi(
-      searchQuery.value
+      '0192b31f-365d-731c-8b16-3a4565c9475e',
+      searchQuery.value,
+      PurchasingOfSupplierProperties.value.page,
+      PurchasingOfSupplierProperties.value.page_size,
     );
 
     if (response && response.payload) {
@@ -84,7 +88,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Detail');
 };
 
 const closePurchaseOfSupplierPage = () => {
@@ -114,13 +118,11 @@ onMounted(() => {
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Pengeluaran Unit
-                  </p>
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Pengeluaran Unit</p>
                 </div>
               </div>
               <CustomButton
-                @click="changeSection('Tambah Pengeluaran')"
+                @click="changeSection('Tambah')"
                 icon="PhPlus"
                 label="Pengeluaran"
                 class="mr-[10px]"
@@ -180,24 +182,52 @@ onMounted(() => {
               <div class="">Tanggal</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ epochToDate(slotProps.data.tanggalPembelian, "date") }}</div>
+              <div class="">{{ epochToDate(slotProps.data.tanggalPengeluaran, "date") }}</div>
             </template>
           </Column>
           <!-- No. Pengeluaran -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="">No. Pembelian</div>
+              <div class="">No. Pengeluaran</div>
             </template>
             <template #body="slotProps">
-              <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
+              <div class="mb-[5px]">{{ slotProps.data.noPengeluaran }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.kategoriItem"
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  customClass="h-5"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
                 />
               </div>
             </template>
@@ -208,11 +238,11 @@ onMounted(() => {
               <div class="">Jenis Pengeluaran</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.jenisPengeluaran }}</div>
             </template>
           </Column>
           <!-- Petugas -->
-          <Column field="petugasPembuatPo" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="petugasPengeluaran" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
         </DataTable>
       </template>
       <template #footer>
@@ -226,16 +256,15 @@ onMounted(() => {
         </div>
       </template>
     </Card>
-    <AddUnitOfExpenditurePage
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Pengeluaran'"
+    <AddUnitOfExpenditure
+      v-else-if="dataBreadCrumb[0].label == 'Tambah'"
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
       @back="closePurchaseOfSupplierPage"
     />
-    <DetailPurchaseOfSupplierPage
-      v-else-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
+    <DetailUnitOfExpenditure
+      v-else-if="dataBreadCrumb[0].label == 'Detail'"
+      :selectedData="selectedData"
       @back="closePurchaseOfSupplierPage"
     />
   </div>

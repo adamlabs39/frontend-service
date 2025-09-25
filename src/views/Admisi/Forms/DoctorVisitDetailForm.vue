@@ -269,7 +269,7 @@ const schema = computed(() =>
           props.pageType == "rawat-jalan"
             ? yup.string().required("Jadwal harus dipilih")
             : yup.string(),
-        maternity: yup.boolean(),
+        maternity: yup.boolean().nullable(),
         complaint: yup.string().default(""),
         note: yup.string().default(""),
         insurance: yup
@@ -326,7 +326,6 @@ const [practitionerUuid] = defineField("practitionerUuid");
 
 const onSubmit = handleSubmit(async (values) => {
   if (props.pageType == "rawat-jalan") {
-    delete values.practitionerUuid;
   }
   return values;
 });
@@ -403,7 +402,7 @@ defineExpose({
               optionValue="uuid"
               :showFilter="false"
               :options="filterPoliList"
-              :disabled="isDetail"
+              :disabled="isDetail || formType === 'Detail Edit'"
               :invalid="!!errors.selectedPoli" 
               :invalidMessage="errors.selectedPoli"
             />
@@ -428,7 +427,7 @@ defineExpose({
                       : []
                 "
                 :showFilter="false"
-                :disabled="isDetail || (pageType !== 'igd' && !selectedPoli)"
+                :disabled="isDetail || formType === 'Detail Edit' || (pageType !== 'igd' && !selectedPoli)"
                 :invalid="!!errors.practitionerUuid"
                 :invalidMessage="errors.practitionerUuid"
               />
@@ -442,7 +441,7 @@ defineExpose({
                 optionLabel="label"
                 label="Jadwal" 
                 placeHolder="Pilih Jadwal"
-                :disabled="isDetail"
+                :disabled="isDetail || formType === 'Detail Edit'"
                 :showFilter="false"
                 :invalid="!!errors.jadwalDokterUuid"
                 :invalidMessage="errors.jadwalDokterUuid"
@@ -465,7 +464,6 @@ defineExpose({
           <CustomSwitch
             v-model="maternity"
             label="Pasien Maternitas"
-            sideLabel="Iya"
             :disabled="isDetail"
           />
           <CustomTextfield

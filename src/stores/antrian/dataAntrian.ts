@@ -1,4 +1,8 @@
-import { apiAdmisiGet, apiAntrianGet } from "@/utils/apiHandler";
+import {
+  apiAdmisiGet,
+  apiAntrianGet,
+  apiAntrianGetNoMessage,
+} from "@/utils/apiHandler";
 import { defineStore } from "pinia";
 
 export const useDataAntrianStore = defineStore({
@@ -49,7 +53,7 @@ export const useDataAntrianStore = defineStore({
         ? `/antrian/admisi-antrian?${query}`
         : `/antrian/admisi-antrian`;
 
-      return apiAntrianGet(url, payload);
+      return apiAntrianGetNoMessage(url, payload);
       // ... existing code ...
     },
   },

@@ -26,6 +26,12 @@ const reversePoliMapping: { [key: string]: string } = {
     "OTC": "OTC"
 };
 
+const paymentMethodMap: { [key: string]: string } = {
+    'DEBIT_KREDIT': 'Debit/Kredit',
+    'TRANSFER': 'Transfer',
+    'CASH': 'Cash'
+};
+
 export async function createInvoicePdf({ detailBill, paymentResult }: { detailBill: any, paymentResult?: any }) {
     try {
         const faskesProfile = JSON.parse(
@@ -37,11 +43,14 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
             logo = faskesProfile.logo;
         }
         const lunasStampBase64 = await convertImageToBase64(lunasStampUrl);
-        const belumLunasStampBase64 = await convertImageToBase64(belumLunasStampUrl);
+        // const belumLunasStampBase64 = await convertImageToBase64(belumLunasStampUrl);
 
         const safeBill = detailBill?.bill || detailBill || {};
         const safePatient = detailBill?.patient || safeBill;
         const safePayment = paymentResult || {};
+
+        const paymentMethodRaw = safeBill.paymentMethod || safePayment.paymentMethod || 'CASH'; // Ambil data dari detail tagihan, fallback ke CASH
+        const paymentMethodDisplay = paymentMethodMap[paymentMethodRaw] || paymentMethodRaw;
 
         const kasirName = safePayment.cashierName || (Array.isArray(safeBill.cashierName) ? safeBill.cashierName.join(', ') : '-');
 
@@ -50,12 +59,31 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
         const qrCodePasien = await generateQRCode(safeBill.patientName || 'Pasien');
         const qrCodeKasir = await generateQRCode(kasirName || 'Kasir');
 
+        //logic payment method / penjamin
+        const normalizedPaymentType = (safeBill.paymentType || '').toUpperCase();
+
+        const patientInfoBody = [
+            ['No. RM', { text: `: ${safePatient.noRm || safeBill.noRm || '-'}`, bold: true }],
+            ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
+            ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
+            ['No. Kuitansi', { text: `: ${safePatient.receiptNumber || safeBill.receiptNumber || '-'}`, bold: true }],
+            ['Cara Bayar', { text: `: ${normalizedPaymentType === 'CASH' || normalizedPaymentType === 'TUNAI' ? 'Tunai' : 'Asuransi'}`, bold: true }],
+        ];
+
+        if (normalizedPaymentType === 'INSURANCE' || normalizedPaymentType === 'ASURANSI') {
+            // Jika Asuransi, tambahkan baris "Penjamin"
+            patientInfoBody.push(['Penjamin', { text: ': -', bold: true }]);
+        } else {
+            // Terjemahkan
+            patientInfoBody.push(['Metode Pembayaran', { text: `: ${paymentMethodDisplay}`, bold: true }]);
+        }
+
         const docDefinition: TDocumentDefinitions = {
             pageSize: 'A4',
             pageMargins: [40, 110, 40, 60],
             defaultStyle: { font: 'Arial', fontSize: 9, lineHeight: 1.1 },
 
-            header: defaultHeader("invoice", "INVOINCE", logo, faskesProfile, { invoiceCode: safeBill.invoiceCode || '-' }),
+            header: defaultHeader("invoice", "KUITANSI", logo, faskesProfile, { invoiceCode: safeBill.invoiceCode || '-' }),
             content: [
 
                 //Biodata Pasien
@@ -65,14 +93,7 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             layout: 'noBorders',
                             table: {
                                 widths: ['auto', '*'],
-                                body: [
-                                    ['No. RM', { text: `: ${safePatient.noRm || safeBill.noRm || '-'}`, bold: true }],
-                                    ['No. Invoice', { text: `: ${safePatient.invoiceCode || safeBill.invoiceCode || '-'}`, bold: true }],
-                                    ['Nama Pasien', { text: `: ${safeBill.patientName || '-'}`, bold: true }],
-                                    ['Alamat', { text: `: ${safeBill.alamat || '-'}`, bold: true }],
-                                    ['Metode Pembayaran', { text: `: ${safeBill.paymentType || '-'}`, bold: true }],
-                                    ['Penjamin', { text: ': -', bold: true }]
-                                ]
+                                body: patientInfoBody
                             }
                         },
                         {
@@ -80,36 +101,35 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                             table: {
                                 widths: ['auto', '*'],
                                 body: [
-                                    ['Nomer Kunjungan', { text: `: ${safeBill.noReg || '-'}`, bold: true }],
+                                    ['No.Registrasi', { text: `: ${safeBill.noReg || '-'}`, bold: true }],
                                     ['Pelayanan', { text: `: ${reversePoliMapping[safeBill.serviceBill && safeBill.serviceBill[0]?.type] || (safeBill.serviceBill && safeBill.serviceBill[0]?.type) || '-'}`, bold: true }],
-                                    ['Tanggal Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
-                                    ['Tanggal Discharge', { text: ': -', bold: true }]
+                                    ['Tgl.Kunjungan', { text: `: ${safeBill.visitDate ? epochToDate(safeBill.visitDate, "date") : '-'}`, bold: true }],
+                                    ['Tgl.Discharge', { text: ': -', bold: true }]
                                 ]
                             }
                         }
                     ],
-                    margin: [0, 0, 0, 10]
+                    margin: [0, 0, 0, 5]
+                },
+
+                {
+                    canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 0.5 }],
+                    margin: [0, 5, 0, 5],
+                    fillColor: '#EEEEEE',
                 },
 
                 //Kuitansi Pembayaran 
-                {
-                    table: {
-                        widths: ['*'],
-                        body: [
-                            [{ text: 'KUITANSI PEMBAYARAN', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }]
-                        ]
-                    },
-                    layout: 'noBorders',
-                    margin: [0, 0, 0, 5]
-                },
-                {
-                    layout: 'noBorders',
-                    table: {
-                        widths: ['auto', '*', 'auto', '*'],
-                        body: [['No. Kuitansi', ': -', 'No. Faktur', ': -'], ['Tanggal', ': -', 'Tanggal', ': -']]
-                    },
-                    margin: [0, 0, 0, 15]
-                },
+                // {
+                //     table: {
+                //         widths: ['*'],
+                //         body: [
+                //             [{ text: 'KUITANSI PEMBAYARAN', bold: true, fillColor: '#EEEEEE', margin: [5, 2] }]
+                //         ]
+                //     },
+                //     layout: 'noBorders',
+                //     margin: [0, 0, 0, 5]
+                // },
+
 
                 //  Pembayaran
                 {
@@ -126,7 +146,7 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                                 { text: 'Nama Petugas', style: 'tableHeader', alignment: 'center' }
                             ],
                             [
-                                safeBill.paymentType || '-',
+                                { text: (safeBill.invoiceCode || '-'), alignment: 'left', margin: [5, 0] },
                                 { text: `Rp ${(safeBill.totalPaid || 0).toLocaleString('id-ID')}`, alignment: 'right' },                                // Kolom DIGUNAKAN -> dari grandTotal
                                 { text: `Rp ${(safeBill.grandTotal || 0).toLocaleString('id-ID')}`, alignment: 'right' },
                                 { text: `Rp ${(safePayment.change || 0).toLocaleString('id-ID')}`, alignment: 'right' },
@@ -155,23 +175,14 @@ export async function createInvoicePdf({ detailBill, paymentResult }: { detailBi
                     margin: [0, 10, 0, 0]
                 },
                 (safeBill.totalPaid >= safeBill.grandTotal && safeBill.grandTotal > 0)
-                    ? { 
+                    ? {
                         image: lunasStampBase64,
                         width: 90,
                         opacity: 1,
                         alignment: 'right',
                         margin: [0, 20, 25, 20]
                     }
-                        
-                    : (safeBill.totalPaid < safeBill.grandTotal && safeBill.totalPaid > 0)
-                        ? { 
-                            image: belumLunasStampBase64, 
-                            width: 150, 
-                            opacity: 0.8,
-                            alignment: 'right',
-                            margin: [0, 20, 25, 20]
-                        }
-                        : { text: '', margin: [0, 150, 0, 0] },
+                    : { text: '', margin: [0, 150, 0, 0] },
                 //QR code dan ttd
                 {
                     columns: [

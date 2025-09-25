@@ -104,7 +104,7 @@ const setDetailDoctorVisitData = (patientData: any) => {
     let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
       jadwalDokterUuid: patientData.jadwalDokterUuid,
-      maternity: patientData.maternity,
+      maternity: patientData.maternity ?? false,
       complaint: patientData.complaint,
       note: patientData.note,
       insurance: patientData.insurance,
@@ -337,11 +337,11 @@ const postRegisterPatient = async () => {
     try {
       let response;
       if (props.pageType == "rawat-jalan") {
-        if (props.formType == "add") {
+      if (props.formType == "add" && props.dataBreadCrumb[0].label !== 'Checkin') {
           response = await admisiRJStore.registRJ(payload);
         } else {
           response = await admisiRJStore.updateRJ(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -352,7 +352,7 @@ const postRegisterPatient = async () => {
           response = await admisiRIStore.registNewBorn(payload);
         } else {
           response = await admisiRIStore.updateRI(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -364,7 +364,7 @@ const postRegisterPatient = async () => {
           response = await admisiIGDStore.registIGD(payload);
         } else {
           response = await admisiIGDStore.updateIGD(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -375,7 +375,7 @@ const postRegisterPatient = async () => {
 
         setDetailDoctorVisitData(response.payload);
       }
-      emit("goToDetail");
+       emit("goToDetail", response.payload);
     } catch (error) {
       console.error("Failed to process the data:", error);
     } finally {
@@ -392,7 +392,6 @@ const registPatient = async (type: string) => {
   } else if (type == "setuju-simpan") {
     await onSubmitGeneralConsent();
   }
-  emit('back');
   confirmSaveDialog.value = false;
   inputGeneralConsentDialog.value = false;
   storeUtils.setLoading(false);

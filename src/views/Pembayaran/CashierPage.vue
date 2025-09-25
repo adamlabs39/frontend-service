@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, computed, type PropType, type Ref } from "vue";
-import { useRoute } from 'vue-router';
-import { useReportCloseBillStore } from "@/stores/pembayaran/closeBill";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import { useTagihanStore } from "@/stores/pembayaran/findBill";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
@@ -15,8 +13,8 @@ import { utilsStore } from "@/stores/utils";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import { createSlipTutupShiftPdf } from "@/utils/pdf/pdfPembayaran/closingkasir";
 import { createSlipTutupHarianPdf } from "@/utils/pdf/pdfPembayaran/closingdays";
-import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakInvoice";
-import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakRincian";
+import { createInvoicePdf } from "@/utils/pdf/pdfPembayaran/cetakKuitansi";
+import { createRincianPdf } from "@/utils/pdf/pdfPembayaran/cetakTagihan";
 import { epochToDate, dateToEpoch } from "@/utils/Helpers";
 
 
@@ -24,6 +22,8 @@ const emits = defineEmits(["update:rows", "update:current-page"]);
 const storeUtils = utilsStore();
 const closeHarianDialog = ref(false);
 const kasirCloseBillDialog = ref(false);
+const confirmDiscountDialog = ref(false);
+const confirmVoucherDialog = ref(false);
 const closeKasirDialog = ref(false);
 const isKasirOpen = ref(false);
 const saldoAwalDisabled = ref(false);
@@ -38,8 +38,8 @@ const codeDiscount = ref<string>();
 const saldoAwal = ref<number>();
 const selectShift = ref("");
 const cash = ref<number>();
-const debit = ref<number>();
-const insurance = ref<number>();
+// const debit = ref<number>();
+// const insurance = ref<number>();
 const kasirPayload = ref<any[]>([]);
 const pembayaranBPJSDialog = ref(false);
 const isBillClosed = ref(false);
@@ -59,11 +59,12 @@ const selectedServiceBillUuid = ref<string | null>(null);
 //format price lokal(khusus kunjungan)
 const formatPriceLokal = (price: number) => {
   if (typeof price !== 'number') return 'Rp 0';
+  const roundedPrice = Math.ceil(price);
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(roundedPrice);
 };
 
 //Flexibilitas Format Voucher
@@ -121,9 +122,28 @@ const openDynamicDialog = async (dialogRef: Ref<boolean>) => {
   }
 };
 
+//Counting Selisih Saldo closingkasir
+// const selisihKasirMessage = computed(() => {
+//   const systemTunai = kasirCheckData.value.pendapatanSystem?.cash ?? 0;
+//   const aktualTunai = cash.value ?? 0;
+
+//   // Hitung selisihnya
+//   const selisih = aktualTunai - systemTunai;
+//   if (!cash.value || selisih === 0) {
+//     return ""; // Kembalikan string kosong
+//   }
+//   if (selisih < 0) {
+//     return `Saldo aktual kurang ${formatPriceLokal(-selisih)}`;
+//   }
+//   if (selisih > 0) {
+//     return `Saldo aktual lebih ${formatPriceLokal(selisih)}`;
+//   }
+//   return "";
+// });
+
 //kembalian
 const getKembalian = () => {
-  const requiredAmount = kasirData.value?.grandTotal || 0;
+  const requiredAmount = Math.ceil(kasirData.value?.grandTotal || 0);
   const paidAmount = amount.value || 0;
 
   if (paidAmount >= requiredAmount) {
@@ -151,7 +171,7 @@ const tagihanStore = useTagihanStore();
 const searchQuery = ref("");
 
 const timer = ref<any>();
-const listDataPatient = ref([]);
+// const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
 const snakeToCamel = (str: string) => str.replace(/([-_]\w)/g, (g) => g[1].toUpperCase());
 const searchPatientData = async (event: any) => {
@@ -308,7 +328,7 @@ const submitVoucher = async () => {
     const payload = {
       code: codeVoucher.value,
     };
-    const response = await tagihanStore.postVoucher(
+    await tagihanStore.postVoucher(
       kasirData.value.uuid,
       payload
     );
@@ -317,8 +337,8 @@ const submitVoucher = async () => {
     );
     if (responseDetailBill && responseDetailBill.payload) {
       kasirData.value = responseDetailBill.payload;
-
       processBillData(responseDetailBill.payload.serviceBill);
+      confirmVoucherDialog.value = false; 
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
@@ -329,12 +349,11 @@ const submitVoucher = async () => {
 
 const submitDiscount = async () => {
   storeUtils.setLoading(true);
-
   try {
     const payload = {
       value: parseFloat(String(codeDiscount.value).replace(',', '.'))
     };
-    const response = await tagihanStore.postDiscount(
+    await tagihanStore.postDiscount(
       kasirData.value.uuid,
       payload
     );
@@ -343,8 +362,8 @@ const submitDiscount = async () => {
     );
     if (responseDetailBill && responseDetailBill.payload) {
       kasirData.value = responseDetailBill.payload;
-
       processBillData(responseDetailBill.payload.serviceBill);
+      confirmDiscountDialog.value = false; // <-- TAMBAHKAN INI UNTUK MENUTUP DIALOG
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
@@ -357,20 +376,22 @@ watch(codeDiscount, (newValue, oldValue) => {
   if (newValue === undefined || newValue === null) return;
 
   let valueStr = String(newValue);
+  
+  // Secara eksplisit hapus semua karakter minus '-'
+  valueStr = valueStr.replace(/-/g, ''); 
 
-  // Ganti titik dengan koma untuk konsistensi
+  //titik dengan koma untuk konsistensi
   valueStr = valueStr.replace('.', ',');
 
-  // Hanya izinkan angka dan satu koma di awal
+  // Regex untuk memblokir karakter non-angka
   const validRegex = /^[0-9]*\,?[0-9]*$/;
 
   if (!validRegex.test(valueStr)) {
-    // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
     codeDiscount.value = oldValue ? String(oldValue) : '';
   } else {
     const numericValue = parseFloat(valueStr.replace(',', '.'));
     if (numericValue > 100) {
-      codeDiscount.value = '100'; // <-- PERUBAHAN 2: Kirim sebagai string
+      codeDiscount.value = '100';
     } else {
       codeDiscount.value = valueStr;
     }
@@ -392,8 +413,7 @@ const optionCaraBayar = ref([
 const optionMetodeBayar = ref([
   { label: "Tunai", value: "CASH" },
   { label: "Transfer", value: "TRANSFER" },
-  { label: "Debit", value: "DEBIT" },
-  { label: "Kredit", value: "CREDIT" },
+  { label: "Debit/Kredit", value: "DEBIT_KREDIT" },
 ]);
 
 const submitOpenKasir = async () => {
@@ -450,7 +470,7 @@ const startShortPolling = () => {
     } catch (error) {
       console.error("Error during polling:", error);
     }
-  }, 50000);
+  }, 30000);
 };
 
 const stopShortPolling = () => {
@@ -572,8 +592,8 @@ const submitCloseKasir = async () => {
   try {
     const payload = {
       cash: cash.value,
-      debit: debit.value,
-      insurance: insurance.value,
+      debit: kasirCheckData.value.pendapatanSystem?.debitKredit,
+      transfer: kasirCheckData.value.pendapatanSystem?.transfer,
     };
 
     const response: any = await tagihanStore.postCloseKasir(payload);
@@ -656,6 +676,7 @@ const submitKasirCloseBill = async () => {
       payload
     );
     kasirCloseBillDialog.value = false;
+    await setSelectedPatientData(kasirData.value.uuid);
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {
@@ -690,6 +711,13 @@ const formatDateCustom = (epochTime: number) => {
   return `${day} ${month} ${year}`;
 };
 
+//pengecekan pembayaran kurang
+const isAmountInsufficient = computed(() => {
+  const grandTotal = kasirData.value?.grandTotal || 0;
+  const paidAmount = amount.value || 0;
+  return paidAmount > 0 && paidAmount < grandTotal;
+});
+
 //untuk max 18 digit amount
 watch(amount, (newValue) => {
   if (newValue) {
@@ -702,6 +730,21 @@ watch(amount, (newValue) => {
     }
   }
 });
+
+//Refresh Page
+const handleRefresh = () => {
+  // Reset data pasien yang sedang dipilih
+  selectedPatient.value = null;
+  kasirData.value = null;
+  
+  // Kosongkan hasil dropdown pencarian sebelumnya
+  searchQuery.value = "";
+  kasirPayload.value = [];
+  
+  //  Reset input diskon & voucher
+  codeDiscount.value = '';
+  codeVoucher.value = '';
+};
 
 onMounted(() => {
   startShortPolling();
@@ -721,7 +764,7 @@ onUnmounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb :home="{
                   label: 'Kasir',
                   home: true,
@@ -737,7 +780,7 @@ onUnmounted(() => {
                 @filter="searchPatientData" filter>
               </CustomSelect>
               <div class="bg-adameds-300 w-[2px] h-[35px] mt-[30px] mr-[15px]"></div>
-              <CustomInputNumber v-model="saldoAwal" label="Saldo Awal" placeholder="0" class="basis-[15%]"
+              <CustomInputNumber v-model="saldoAwal" label="Saldo Awal (kas)" placeholder="0" class="basis-[15%]"
                 :disabled="saldoAwalDisabled">
                 <template #prependText>
                   <div
@@ -801,6 +844,11 @@ onUnmounted(() => {
             <!-- Biaya Obat -->
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat/Alkes</div>
+              <div class="text-sm font-poppins">Rp 0</div>
+            </div>
+            <!-- Retur Obat/Alkes -->
+            <div class="flex justify-between mt-4">
+              <div class="text-sm font-poppins">Retur Obat/Alkes</div>
               <div class="text-sm font-poppins">Rp 0</div>
             </div>
             <!-- Biaya Kamar -->
@@ -914,8 +962,9 @@ onUnmounted(() => {
             <div class="flex justify-between">
               <p class="text-base font-bold font-poppins">Total Pembayaran</p>
               <div class="flex">
-                <CustomButton label="Cetak Invoice" @click="handleCetakInvoice" class="mt-[-10px] mr-[10px]" />
-                <CustomButton label="Cetak Rincian Biaya" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
+                <CustomButton v-if="kasirData?.isPaid" label="Cetak Kuitansi" @click="handleCetakInvoice"
+                  class="mt-[-10px] mr-[10px]" />
+                <CustomButton label="Cetak Tagihan" @click="handleCetakRincianBiaya" class="mt-[-10px]" />
               </div>
             </div>
             <hr class="mt-2 mb-2 border border-slate-300" />
@@ -935,6 +984,11 @@ onUnmounted(() => {
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Obat/Alkes</div>
               <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.totalObatAlkes) }}</div>
+            </div>
+            <div class="flex justify-between mt-4">
+              <div class="text-sm font-poppins">Retur Obat/Alkes</div>
+              <div class="text-sm font-poppins"> {{ formatPriceLokal(kasirData.returObat || "Data Not Available") }}
+              </div>
             </div>
             <div class="flex justify-between mt-4">
               <div class="text-sm font-poppins">Biaya Kamar</div>
@@ -975,26 +1029,77 @@ onUnmounted(() => {
                   </div>
                 </template>
               </CustomTextfield>
-              <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="submitDiscount"
+              <CustomButton label="Pakai Diskon" class="ml-[10px]" @click="confirmDiscountDialog = true"
                 :disabled="discountDisabled" />
 
               <CustomTextfield v-model="codeVoucher" :showLabel="false" placeholder="Masukkan Kode Voucher"
                 class="w-[30%] ml-[50px] mr-[10px]" :disable="voucherDisabled" />
-              <CustomButton label="Pakai Voucher" class="" @click="submitVoucher" :disabled="voucherDisabled" />
+              <CustomButton label="Pakai Voucher" class="" @click="confirmVoucherDialog = true"
+                :disabled="voucherDisabled" />
             </div>
 
             <!-- Button Bayar -->
             <div class="mt-[60px]">
               <div class="flex">
-                <CustomButton v-if="!isBillClosed" @click="pembayaranBPJSDialog = true" label="Bayar" class="w-full" />
-                <CustomButton v-else @click="kasirCloseBillDialog = true" label="Close Bill" class="w-full"
-                  backgroundColor="bg-danger-300" borderColor="border-danger-300" textColor="text-white" />
+                <CustomButton v-if="!kasirData.isPaid" @click="pembayaranBPJSDialog = true" label="Bayar"
+                  class="w-full" />
+                <CustomButton v-else-if="!kasirData.closeBill" @click="kasirCloseBillDialog = true" label="Close Bill"
+                  class="w-full" backgroundColor="bg-danger-300" />
+                <CustomButton v-else label="Bill Telah Ditutup" class="w-full" :disabled="true" />
               </div>
             </div>
           </div>
         </div>
       </template>
     </Card>
+
+    <!-- Pakai Diskon-->
+    <CustomDialog v-model:visible="confirmDiscountDialog" width="500px">
+      <template #header>Pakai Diskon</template>
+      <template #body>
+        <div class="mt-6 text-base">
+          <p>
+            Apakah anda yakin menggunakan <strong>Diskon</strong>?
+          </p>
+        </div>
+        <div class="text-sm">
+          <p class="mt-4 italic text-danger-300">
+            *Diskon akan mempengaruhi <strong>Grand Total</strong>
+          </p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton @click="confirmDiscountDialog = false" label="Tidak" outlined borderColor="border-grey-200"
+            textColor="text-grey-300" />
+          <CustomButton @click="submitDiscount" label="Iya, Pakai" class="ml-2" backgroundColor="bg-adameds-300" />
+        </div>
+      </template>
+    </CustomDialog>
+
+    <!-- Pakai Voucher-->
+    <CustomDialog v-model:visible="confirmVoucherDialog" width="500px">
+      <template #header>Pakai Voucher</template>
+      <template #body>
+        <div class="mt-6 text-base">
+          <p>
+            Apakah anda yakin menggunakan <strong>Voucher</strong>?
+          </p>
+        </div>
+        <div class="text-sm">
+          <p class="mt-4 italic text-danger-300">
+            *Voucher akan mempengaruhi <strong>Grand Total</strong>
+          </p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomButton @click="confirmVoucherDialog = false" label="Tidak" outlined borderColor="border-grey-200"
+            textColor="text-grey-300" />
+          <CustomButton @click="submitVoucher" label="Iya, Pakai" class="ml-2" backgroundColor="bg-adameds-300" />
+        </div>
+      </template>
+    </CustomDialog>
 
     <!-- Closing Harian -->
     <CustomDialog v-model:visible="closeHarianDialog" width="600px">
@@ -1039,13 +1144,12 @@ onUnmounted(() => {
     </CustomDialog>
 
     <!-- Close Bill -->
-    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px">
+    <CustomDialog v-model:visible="kasirCloseBillDialog" width="600px" headerBg="bg-danger-300">
       <template #header class="text-white bg-danger-300">Closing Bill</template>
       <template #body>
         <div class="mt-6 text-sm">
           <p>
-            Pastikan semua biaya dan tagihan sudah tercantum dan terbayarkan
-            hingga lunas, <strong>Close Bill</strong> pasien?
+            Pastikan semua biaya dan tagihan sudah tercantum <strong>Close Bill</strong> pasien?
           </p>
         </div>
         <div class="text-sm">
@@ -1064,112 +1168,96 @@ onUnmounted(() => {
       </template>
     </CustomDialog>
 
-    <!-- Kasir Harian -->
-    <CustomDialog v-model:visible="closeKasirDialog" width="600px">
+    <!-- Closing kasir/shift -->
+    <CustomDialog v-model:visible="closeKasirDialog" width="800px">
       <template #header>Closing Kasir</template>
       <template #body>
-        <div class="grid grid-flow-col grid-rows-1">
+        <div class="grid grid-flow-col grid-rows-1 items-center">
           <div class="row-span-1">
-            <img src="../../assets/icons/profil.svg" class="w-[50px] h-[50px] mt-[20px]" />
+            <img src="../../assets/icons/profil.svg" class="w-[50px] h-[50px]" />
           </div>
-          <div class="mr-[250px]">
+          <div class="ml-[-330px]">
             <p class="font-bold mt-[20px]">{{ kasirCheckData.namaAkun }}</p>
             <p class="text-sm text-grey-300">
               Terakhir login {{ epochToDate(kasirCheckData.terakhirLogin, "dateTime") }}
             </p>
           </div>
         </div>
-        <div class="grid grid-cols-[15%_15%_40%_30%]">
-          <div>
-            <p class="mt-[30px] text-sm font-bold">Shift</p>
-          </div>
-          <div>
-            <p class="mt-[30px] text-sm">: {{ kasirCheckData.shift }}</p>
-          </div>
-          <div>
-            <p class="mt-[30px] ml-[30px] text-sm font-bold">
-              Tanggal & Jam Closing
-            </p>
-          </div>
-          <div>
-            <p class="mt-[30px] ml-[10px] text-sm">: {{ epochToDate(kasirCheckData.tanggalJamClosing, "dateTime") }}</p>
-          </div>
-        </div>
-        <hr class="mt-8 border-1 border-grey-200" />
 
-        <!-- Saldo Awal -->
-        <div class="flex justify-between">
-          <div>
-            <p class="mt-6 text-sm font-bold">Saldo Awal (Kas)</p>
+        <div class="grid grid-cols-2 gap-4 mt-6">
+          <div class="flex">
+            <p class="text-sm font-bold w-24">Shift</p>
+            <p class="text-sm">: {{ kasirCheckData.shift }}</p>
           </div>
-          <div>
-            <p class="mt-6 text-sm">{{ formatPriceLokal(saldoAwal || 0) }}</p>
+          <div class="flex">
+            <p class="text-sm font-bold w-40">Tanggal & Jam Closing</p>
+            <p class="text-sm">: {{ epochToDate(kasirCheckData.tanggalJamClosing, "dateTime") }}</p>
           </div>
         </div>
 
-        <!-- Tunai -->
-        <div class="flex justify-between">
+        <hr class="mt-4 border-1 border-grey-200" />
+
+        <div class="flex justify-between items-center mt-4">
           <div>
-            <p class="mt-6 text-sm font-bold">Tunai</p>
+            <p class="text-sm font-bold">Saldo Awal (Kas)</p>
           </div>
           <div>
-            <CustomInputNumber v-model="cash" :show-label="false" class="mt-[15px]" placeholder="">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
+            <p class="text-sm font-bold">{{ formatPriceLokal(saldoAwal || 0) }}</p>
           </div>
         </div>
 
-        <!-- Debit -->
-        <div class="flex justify-between">
+        <div class="grid grid-cols-2 gap-10 mt-4">
           <div>
-            <p class="mt-6 text-sm font-bold">Debit</p>
+            <p class="font-bold text-sm text-left underline underline-offset-4 mb-5">Pendapatan System</p>
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-bold w-1/3">Tunai</p>
+              <CustomInputNumber :model-value="kasirCheckData.pendapatanSystem?.cash" :show-label="false"
+                class="flex-grow" :disabled="true">
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    Rp.</div>
+                </template>
+              </CustomInputNumber>
+            </div>
           </div>
-          <div>
-            <CustomInputNumber v-model="debit" :show-label="false" class="mt-[15px]" placeholder="0">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
-          </div>
-        </div>
 
-        <!-- Kredit -->
-        <div class="flex justify-between">
           <div>
-            <p class="mt-6 text-sm font-bold">Kredit (Asuransi)</p>
-          </div>
-          <div>
-            <CustomInputNumber v-model="insurance" :show-label="false" class="mt-[15px]" placeholder="0">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
+            <p class="font-bold text-left text-sm underline underline-offset-4 mb-5">Pendapatan Aktual</p>
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-bold w-1/3">Tunai</p>
+              <CustomInputNumber v-model="cash" :show-label="false" class="flex-grow" placeholder="0">
+                <template #prependText>
+                  <div
+                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    Rp.</div>
+                </template>
+              </CustomInputNumber>
+            </div>
           </div>
         </div>
-        <hr class="mt-6 border-1 border-grey-200" />
+        <!-- <hr class="mt-6 border-1 border-grey-200" /> -->
       </template>
       <template #footer>
-        <div class="flex justify-end">
-          <CustomButton @click="closeKasirDialog = false" label="Batal" outlined class="" borderColor="border-grey-200"
-            textColor="text-grey-300" />
-          <CustomButton @click="submitCloseKasir" label="Closing Kasir" class="ml-2" backgroundColor="bg-adameds-300" />
+        <div class="flex justify-between items-center w-full">
+          <div>
+            <!-- <p v-if="selisihKasirMessage" class="text-sm text-danger-300 italic">
+              {{ selisihKasirMessage }}
+            </p> -->
+          </div>
+
+          <div class="flex">
+            <CustomButton @click="closeKasirDialog = false" label="Batal" outlined class=""
+              borderColor="border-grey-200" textColor="text-grey-300" />
+            <CustomButton @click="submitCloseKasir" label="Closing Kasir" class="ml-2"
+              backgroundColor="bg-adameds-300" />
+          </div>
         </div>
       </template>
     </CustomDialog>
 
     <!-- Pembayaran -->
-    <CustomDialog v-model:visible="pembayaranBPJSDialog" width="600px">
+    <CustomDialog v-model:visible="pembayaranBPJSDialog" width="700px">
       <template #header>Pembayaran</template>
       <template #body>
         <div class="flex justify-between">
@@ -1178,7 +1266,7 @@ onUnmounted(() => {
           </div>
           <div>
             <p class="font-bold mt-[20px]">
-              <span>Rp. {{ kasirData.grandTotal }}</span>
+              <span> {{ formatPriceLokal(kasirData.grandTotal)}}</span>
             </p>
           </div>
         </div>
@@ -1191,15 +1279,20 @@ onUnmounted(() => {
             </div>
             <div>
               <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0" maxlength="18"
-                :pt="{ root: { class: 'border !border-danger-300 rounded-lg' } }">
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
                 <template #prependText>
                   <div
-                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
               </CustomInputNumber>
             </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan status
+              piutang?</p>
           </div>
 
           <div class="flex justify-between">
@@ -1208,13 +1301,12 @@ onUnmounted(() => {
             </div>
             <div>
               <CustomInputNumber :model-value="kembalian" :show-label="false" class="mt-[15px]" placeholder="0"
-                :disabled="true" :pt="{
-                  root: { class: 'border !border-danger-300 rounded-lg' },
-                  input: { class: '!text-danger-300' }
-                }">
+                :disabled="true"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' }, input: { class: isAmountInsufficient ? '!text-danger-300' : '' } }">
                 <template #prependText>
                   <div
-                    class="font-semibold text-MD leading-7 bg-adameds-300 text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md">
+                    class="font-semibold text-MD text-white w-[53.34px] flex items-center justify-center border-r rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
@@ -1231,15 +1323,22 @@ onUnmounted(() => {
               <p class="font-bold mt-[30px] text-sm">Dijamin</p>
             </div>
             <div>
-              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0">
+              <CustomInputNumber v-model="amount" :show-label="false" class="mt-[15px]" placeholder="0"
+                :pt="{ root: { class: isAmountInsufficient ? 'border !border-danger-300 rounded-lg' : '' } }">
                 <template #prependText>
                   <div
-                    class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md">
+                    class="flex items-center justify-center px-3 font-semibold text-white border-r text-MD rounded-l-md"
+                    :class="{ 'bg-danger-300': isAmountInsufficient, 'bg-adameds-300': !isAmountInsufficient }">
                     Rp.
                   </div>
                 </template>
               </CustomInputNumber>
             </div>
+          </div>
+          <div class="flex justify-end mt-1" v-if="isAmountInsufficient">
+            <p class="text-xs text-danger-300">*Pembayaran kurang dari Grand Total, tetap melanjutkan dengan status
+              piutang?
+            </p>
           </div>
           <hr class="mt-6 border-1 border-grey-200" />
         </div>
@@ -1252,8 +1351,8 @@ onUnmounted(() => {
         <!-- Metode Pembayaran -->
         <div class="flex mt-[20px] gap-4">
           <div>
-            <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value"
-              :options="optionCaraBayar" v-model="payment_type" />
+            <CustomSelect label="Cara Bayar" class="flex-1" optionLabel="label" optionValue="value" :clearable="false"
+              :disabled="true" :options="optionCaraBayar" v-model="payment_type" />
           </div>
           <div v-if="payment_type !== 'INSURANCE'">
             <CustomSelect label="Metode Pembayaran" class="flex-1" optionLabel="label" optionValue="value"

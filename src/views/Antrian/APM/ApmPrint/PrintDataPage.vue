@@ -3,14 +3,17 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { useRouter } from "vue-router";
 import TiketAntrian from "@/components/Antrian/TiketAntrian.vue";
-import { ref } from "vue";
+import { onActivated, ref } from "vue";
 import AddPrint from "@/components/icons/AddPrint.vue";
 import CheckCircleIcon from "@/components/icons/CheckCircleIcon.vue";
 import HouseFill from "@/components/icons/HouseFill.vue";
 import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import { watch } from "vue";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
+const apmFlow = useApmFlowStore();
 
 const handleHome = () => {
   router.push("/antrian/apm/aktif");
@@ -42,6 +45,35 @@ const tiketAntrian = ref({
   jadwal: "07:00 - 10:00",
   tanggal: "10 Jan 2024",
   noAntri: "PD-02-01",
+});
+
+const getTiketData = ref();
+
+watch(
+  () => apmFlow.patientData,
+  (val) => {
+    if (val != null) {
+      getTiketData.value = val;
+      console.log(
+        "APM Success Response print (from store):",
+        getTiketData.value
+      );
+    } else {
+      console.warn("Tidak ada data success di store.");
+    }
+  },
+  { immediate: true }
+);
+
+onActivated(() => {
+  const val = apmFlow.patientData;
+  if (val != null) {
+    getTiketData.value = val;
+    console.log(
+      "APM Success Response print (from store) [activated]:",
+      getTiketData.value
+    );
+  }
 });
 </script>
 
@@ -107,8 +139,12 @@ const tiketAntrian = ref({
             </div>
           </div>
 
-          <div class="flex items-center justify-center">
-            <TiketAntrian :tiketAntrian="tiketAntrian" class="w-10/12 mt-14" />
+          <div class="flex justify-center items-center px-16">
+            <TiketAntrian
+              :tiketAntrian="getTiketData"
+              :showPrintButton="true"
+              class="mt-14"
+            />
           </div>
         </div>
       </div>

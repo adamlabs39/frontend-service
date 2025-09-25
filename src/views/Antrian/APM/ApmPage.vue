@@ -12,7 +12,7 @@ const router = useRouter();
 
 const goToApmAktif = () => router.push({ name: "antrian-apm-aktif" });
 const goToFarmasi = () =>
-  router.push({ name: "antrian-apm-aktif-pasien-jkn-farmasi" });
+  router.push({ name: "antrian-apm-aktif-pasien-farmasi" });
 
 // Util: tentukan apakah APM adalah jenis "Antrian Obat"
 const isFarmasi = (apm: { ucapan: string[] | string }) => {

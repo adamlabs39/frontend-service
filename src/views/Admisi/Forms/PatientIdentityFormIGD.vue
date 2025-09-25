@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -108,6 +108,27 @@ const kabupatenPayload = ref<any[]>([]);
 const kecamatanPayload = ref<any[]>([]);
 const kelurahanPayload = ref<any[]>([]);
 
+const maxBirthTime = computed(() => {
+  const selectedDate = birthDetailDate.value;
+  if (!selectedDate) {
+    return new Date();
+  }
+
+  const today = new Date();
+  
+  today.setHours(0, 0, 0, 0);
+  const normalizedSelectedDate = new Date(selectedDate);
+  normalizedSelectedDate.setHours(0, 0, 0, 0);
+
+  if (normalizedSelectedDate.getTime() === today.getTime()) {
+    const maxTime = new Date();
+    maxTime.setSeconds(59, 999); 
+    return maxTime;
+  } else {
+    return undefined;
+  }
+});
+
 const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
@@ -124,6 +145,7 @@ const setFormData = async (data: any, uuid: string = "") => {
       let tempBirthTime = setTimeToDate(tempPatientData.newBorn.birthTimeBaby);
 
       tempPatientData.birthTime = tempBirthTime;
+      tempPatientData.multipleBirth = tempPatientData.newBorn.multipleBirth;
     }
 
     if (uuid || data.uuid) {
@@ -159,7 +181,8 @@ const searchPatientData = async (query: string = "") => {
     try {
       const response = await masterPasienStore.getMasterPasien({
         q: query,
-        limit: 9999, 
+        limit: 9999,
+        status: 'aktif'
       });
       if (response && response.payload) {
         listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
@@ -585,6 +608,7 @@ defineExpose({
             :disabled="isDetail"
             :invalid="!!errors.birthTime"
             :invalidMessage="errors.birthTime"
+            :maxDate="maxBirthTime"
           />
           <CustomTextfield
             v-if="!withoutIdentity && !isNewBorn"

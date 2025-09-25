@@ -11,7 +11,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import Paginator from 'primevue/paginator';
-import TransactionDetailPage from "@/views/Pembayaran/layout/TransactionDetailPage.vue";
+import TransactionDetailPage from "@/views/Pembayaran/layout/TransactionPelayanan.vue";
 import type { DataTableRowClickEvent } from "primevue/datatable";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
@@ -121,7 +121,7 @@ const fetchPelayanan = async () => {
         practitionerName: item.practitionerName,
         scheduleStartTime: item.scheduleStartTime,
         scheduleEndTime: item.scheduleEndTime,
-        polyclinicName: item.polyclinicName,
+        poliName: item.poliName,
         mainServiceCategory: item.mainServiceCategory, // e.g., "RJ", "RI"
         paymentType: item.paymentType,
         completenessStatus: item.completenessStatus, // e.g., "Data Lengkap"
@@ -557,15 +557,15 @@ onMounted(() => {
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.completenessStatus === 'Data Lengkap'"
-                  :showCheckedIcon="false"
-                  label="Data Lengkap"
-                  customClass="h-5 pr-[5px] mr-[5px]"
+                    v-if="slotProps.data.completenessStatus && slotProps.data.mainServiceCategory === 'IGD'"
+                    :showCheckedIcon="false"
+                    :label="slotProps.data.completenessStatus"
+                    customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.polyclinicName"
+                  v-if="slotProps.data.poliName && slotProps.data.mainServiceCategory === 'RJ'"
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinicName"
+                  :label="slotProps.data.poliName"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip

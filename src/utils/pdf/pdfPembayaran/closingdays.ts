@@ -61,17 +61,15 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
         
         // Kalkulasi Transaksi Total
         const transaksiNett = safeData.total || 0;
-        const ppn = safeData.ppn || 0;
-        const total = transaksiNett + ppn;
         const greyBg = '#EAECEF';
         
         const tableBody: TableCell[][] = [
             [
-                { text: 'SHIFT', bold: true, fillColor: greyBg, margin: [5, 5] }, 
-                { text: 'TUNAI', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 5] }, 
-                { text: 'ASURANSI/BPJS', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 5] }, 
-                { text: 'DEBIT', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 5] }, 
-                { text: 'SUBTOTAL', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 5] }
+                { text: 'SHIFT', bold: true, fillColor: greyBg, margin: [5, 2] }, 
+                { text: 'TUNAI', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 2] }, 
+                { text: 'DEBIT/KREDIT', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 2] }, 
+                { text: 'TRANSFER', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 2] }, 
+                { text: 'SUBTOTAL', bold: true, alignment: 'right', fillColor: greyBg, margin: [5, 2] }
             ]
         ];
 
@@ -79,10 +77,10 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
             const subtotal = shiftItem.ballance || 0;
             tableBody.push([
                 shiftMapping[shiftItem.shiftType] || 'N/A',
-                { text: formatPrice(shiftItem.cash || 0), alignment: 'right' },
-                { text: formatPrice(shiftItem.debit || 0), alignment: 'right' },
-                { text: formatPrice(shiftItem.insurance || 0), alignment: 'right' },
-                { text: formatPrice(subtotal), alignment: 'right' }
+                { text: `Rp ${(shiftItem.cash || 0).toLocaleString ('id-ID')}`, alignment: 'right' },
+                { text: `Rp ${(shiftItem.debitKredit || 0).toLocaleString ('id-ID')}`, alignment: 'right' },
+                { text: `Rp ${(shiftItem.transfer || 0).toLocaleString ('id-ID')}`, alignment: 'right' },
+                { text: `Rp ${(subtotal || 0).toLocaleString ('id-ID')}`, alignment: 'right' }
             ]);
         });
 
@@ -100,7 +98,7 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
                         widths: ['auto', '*'],
                         body: [
                             ['Tanggal', { text: `: ${formatTanggalShift(safeData.timeClosed)}`, bold: true }],
-                            ['Total Transaksi', { text: `: ${safeData.transactionTotal || 0} Transaksi`, bold: true }],
+                            ['Transaksi Pasien', { text: `: ${safeData.transactionTotal || 0} Transaksi`, bold: true }],
                         ]
                     },
                     margin: [0, 0, 0, 10]
@@ -109,7 +107,7 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
                 // Garis Pembatas
                 {
                     canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1, lineColor: '#000000' }],
-                    margin: [0, 5, 0, 10]
+                    margin: [0, 5, 0, 5]
                 },
                 
                 // Total Pendapatan Sistem
@@ -118,14 +116,11 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
                     table: {
                         widths: ['*', 'auto'],
                         body: [
-                            ['Transaksi (Nett)', { text: formatPrice(transaksiNett), alignment: 'right' }],
+                            ['Total Transaksi', { text: `Rp ${(transaksiNett).toLocaleString ('id-ID') || 0}`, alignment: 'right',margin:[2,0] }],
                             lightLineRow,
-                            ['PPN', { text: formatPrice(ppn), alignment: 'right' }],
-                            lightLineRow,
-                            [{ text: 'Total', bold: true, fillColor: greyBg, margin: [0, 2] }, { text: formatPrice(total), alignment: 'right', bold: true, fillColor: greyBg, margin: [0, 2] }],
                         ]
                     },
-                    margin: [0, 0, 0, 15]
+                    margin: [0, 0, 0, 30]
                 },
 
                 //  Rincian per Shift
@@ -139,18 +134,18 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
                     margin: [0, 0, 0, 15]
                 },
 
-                //  Total Penerimaan Aktual
+                //  Total Penerimaan system
                 {
                     layout: 'noBorders',
                     table: {
                         widths: ['*', 'auto'],
                         body: [
-                            ['TUNAI', { text: formatPrice(safeData.cash || 0), alignment: 'right' }],
+                            [{ text: 'TUNAI', margin: [2,0] }, { text: `Rp ${(safeData.cash || 0).toLocaleString ('id-ID')}`, alignment: 'right' ,margin:[2,0]}],
                             lightLineRow,
-                            ['DEBIT', { text: formatPrice(safeData.debit || 0), alignment: 'right' }],
+                            [{ text: 'DEBIT/KREDIT', margin: [2,0] }, { text: `Rp ${(safeData.debitKredit || 0).toLocaleString ('id-ID')}`, alignment: 'right',margin:[2,0] }],
                             lightLineRow,
-                            ['ASURANSI', { text: formatPrice(safeData.insurance || 0), alignment: 'right' }],
-                            [{ text: 'Total Pemasukan', bold: true, fillColor: greyBg, margin: [0, 2] }, { text: formatPrice(transaksiNett), alignment: 'right', bold: true, fillColor: greyBg, margin: [0, 2] }],
+                            [{ text: 'TRANSFER', margin: [2,0] }, { text: `Rp ${(safeData.transfer || 0).toLocaleString ('id-ID')}`, alignment: 'right',margin:[2,0] }],
+                            [{ text: 'Total Pemasukan', bold: true, fillColor: greyBg, margin: [2,0] }, { text: `Rp ${(transaksiNett || 0).toLocaleString ('id-ID')}`, alignment: 'right', bold: true, fillColor: greyBg, margin: [2,0] }],
                         ]
                     }
                 },
@@ -178,12 +173,12 @@ export async function createSlipTutupHarianPdf({ data }: { data: any }) {
                     }
                 }                
             ],
-            footer: function (currentPage, pageCount) {
-                return {
-                    margin: [40, 10, 40, 0],
-                    columns: [ ]
-                };
-            },
+            // footer: function (currentPage, pageCount) {
+            //     return {
+            //         margin: [40, 10, 40, 0],
+            //         columns: [ ]
+            //     };
+            // },
         };
 
         pdfMake.createPdf(docDefinition).open();

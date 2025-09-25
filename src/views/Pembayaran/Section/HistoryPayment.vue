@@ -17,6 +17,11 @@ const store = useReportCloseBillStore();
 const storeUtils = utilsStore();
 const paymentHistory = ref<any[]>([]);
 
+const paymentTypeMap: { [key: string]: string } = {
+    'CASH': 'TUNAI',
+    'INSURANCE': 'ASURANSI'
+};
+
 // Computed property untuk memeriksa status lunas
 const shouldDisplayHistory = computed(() => {
     const history = paymentHistory.value;
@@ -62,7 +67,7 @@ onMounted(() => {
                 <div class="flex justify-between w-full align-middle">
                     <div class="flex">
                         <span class="leading-10 text-adameds-300 text-heading">
-                            Riwayat Pembayaran Hutang
+                            Riwayat Pembayaran 
                         </span>
                     </div>
                 </div>
@@ -76,19 +81,19 @@ onMounted(() => {
                                 {{ epochToDate(slotProps.data.createdAt, "date") }}
                             </template>
                         </Column>
-                        <Column header="Hutang" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="No.Kuitansi" headerClass="bg-adameds-50" style="width: 25%">
                             <template #body="slotProps">
-                                Rp. {{ Number(slotProps.data.debtBefore).toLocaleString('id-ID') }}
+                                {{ slotProps.data.receiptNumber }}
                             </template>
                         </Column>
-                        <Column header="Hutang Terbayar" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="Cara Bayar " headerClass="bg-adameds-50" style="width: 35%">
                             <template #body="slotProps">
-                                Rp. {{ Number(slotProps.data.amount).toLocaleString('id-ID')     }}
+                                {{ paymentTypeMap[slotProps.data.paymentType] || slotProps.data.paymentType }}
                             </template>
                         </Column>
-                        <Column header="Catatan" field="note" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="Jumlah Terbayar" headerClass="bg-adameds-50" style="width: 15%">
                             <template #body="slotProps">
-                                {{ slotProps.data.information }}
+                                Rp. {{ Number(slotProps.data.amount).toLocaleString('id-ID') }}
                             </template>
                         </Column>
                     </DataTable>

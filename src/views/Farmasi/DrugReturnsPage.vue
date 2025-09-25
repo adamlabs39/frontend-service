@@ -178,7 +178,7 @@ const onRowSelectAlkes = (event: any) => {
 
 onMounted(() => {
   fetchStockLocation();
-  fetchDrugRetur();
+  fetchDrugRetur(); 
 });
 </script>
 

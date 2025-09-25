@@ -117,7 +117,8 @@ const fetchClosedBills = async (searchUuid: string | null = null) => {
         bedNumber: item.bedNumber,
         roomName: item.roomName,
         phone: item.noHandphone ,
-        polyclinic_name: item.polyclinicName,
+        poliName: item.poliName,
+        mainServiceCategory:item.mainServiceCategory,
         scheduleStartTime: item.scheduleStartTime|| "",
         scheduleEndTime: item.scheduleEndTime|| ""
       }));
@@ -283,6 +284,12 @@ watch(endDateFilter, (newDate) => {
   }
 }, { immediate: true });
 
+//Refresh button
+const handleRefresh = () => {
+  // Cukup panggil ulang fungsi fetch utama
+  fetchClosedBills();
+};
+
 onMounted(() => {
   updatePageType(route.path);
   fetchClosedBills();
@@ -302,7 +309,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Closed Bill',
@@ -508,15 +515,15 @@ onMounted(() => {
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.completenessStatus === 'Data Lengkap'"
+                  v-if="slotProps.data.completenessStatus && slotProps.data.mainServiceCategory === 'IGD'"
                   :showCheckedIcon="false"
-                  label="Data Lengkap"
+                  :label="slotProps.data.completenessStatus "
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip
-                  v-if="slotProps.data.polyclinic_name "
+                  v-if="slotProps.data.poliName && slotProps.data.mainServiceCategory === 'RJ'"
                   :showCheckedIcon="false"
-                  :label="slotProps.data.polyclinic_name"
+                  :label="slotProps.data.poliName"
                   customClass="h-5 pr-[5px] mr-[5px]"
                 />
                 <CustomChip

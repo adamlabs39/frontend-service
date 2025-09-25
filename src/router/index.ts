@@ -108,6 +108,7 @@ import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/K
 import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalDokter/KonfigurasiJadwalPage.vue";
 import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
 import PasienDataPage from "@/views/Antrian/APM/ApmPasienJKN/PasienDataPage.vue";
+import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
 import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
 import PasienNonDataPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonDataPage.vue";
 import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
@@ -117,8 +118,9 @@ import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
 import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
 import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
-import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
+import FarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiPage.vue";
 import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/DaftarFarmasiPage.vue";
+import FarmasiBerhasilPage from "@/views/Antrian/APM/APMFarmasi/FarmasiBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
@@ -172,14 +174,14 @@ import VerificationOfGoodsPurchasePage from "@/views/Inventory/Page/PengadaanBar
 import SupplierReturnsPage from "@/views/Inventory/Page/PengadaanBarang/ReturPenggantian/SupplierReturnsPage.vue";
 import UnitDeliveryVerificationPage from "@/views/Inventory/Page/PengeluaranBarang/VerifikasiPengirimanUnit/UnitDeliveryVerificationPage.vue";
 import UnitOfExpenditurePage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnit/UnitOfExpenditurePage.vue";
-import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
-import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
+import PurchaseAcceptancePage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelian/PurchaseAcceptancePage.vue"
+import ReturnReceiptPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnit/ReturnReceiptPage.vue"
 import SupplierPage from "@/views/Inventory/Page/Datamaster/SupplierPage.vue";
-import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
+import RateHistoryPage from "@/views/Inventory/Page/RiwayatTarif/RateHistoryPage.vue";
 import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
 import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
-import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
+import StockAndMutationCardsPage from "@/views/Inventory/Page/KartustokMutasi/StockAndMutationCardsPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
 import InventoryView from "@/views/Inventory/InventoryView.vue";
 
@@ -204,7 +206,6 @@ import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
-// import APSOTC from "@/views/Pembayaran/Transaction/APS&OTC.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -730,10 +731,22 @@ const router = createRouter({
       component: PasienPoliPage,
     },
     {
-      path: "/antrian/apm/aktif/pasien/jkn/farmasi",
-      name: "antrian-apm-aktif-pasien-jkn-farmasi",
+      path: "/antrian/apm/aktif/pasien/farmasi",
+      name: "antrian-apm-aktif-pasien-farmasi",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/daftar",
+      name: "antrian-apm-aktif-pasien-farmasi-daftar",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: DaftarFarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/berhasil",
+      name: "antrian-apm-aktif-pasien-farmasi-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiBerhasilPage,
     },
     {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",
@@ -1448,7 +1461,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-pembelian",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanPembelianPage,
+        page: PurchaseAcceptancePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1458,7 +1471,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-retur-unit",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanReturUnitPage,
+        page: ReturnReceiptPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1478,7 +1491,7 @@ const router = createRouter({
       name: "inventory-riwayat-tarif",
       meta: {
         layout: SidebarLayout,
-        page: RiwayatTarifPage,
+        page: RateHistoryPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1488,7 +1501,7 @@ const router = createRouter({
       name: "inventory-kartustok-mutasi",
       meta: {
         layout: SidebarLayout,
-        page: KartustokMutasiPage,
+        page: StockAndMutationCardsPage,
         requiresAuth: true,
       },
       component: InventoryView,

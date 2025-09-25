@@ -170,7 +170,7 @@ const openedPatientData = ref<any>({});
 const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
-  
+
   if (openedPatientData.value.payment_method == 2) {
     selectedPaymentMethod.value = "ASURANSI"; 
   } else {
@@ -179,6 +179,7 @@ const showPatientDetail = (event: DataTableRowClickEvent) => {
 
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
+      formType.value = "add";
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
       formType.value = "detail";
@@ -252,7 +253,9 @@ const cancelVisit = async () => {
       await admisiIGDStore.cancelVisitIGD(payload);
     }
     showCancelVisit.value = false;
-    cancelReason.value = undefined;
+    cancelReason.value = '';
+    selectedPatient.value = [];
+    
     await getPatientList();
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -265,6 +268,13 @@ watch(formType, (newValue, oldValue) => {
   if (newValue === 'edit' && oldValue !== 'edit') {
   }
 });
+
+const handleGoToDetail = (newData: any) => {
+  openedPatientData.value = newData;
+
+  dataBreadCrumb.value[0].label = 'Detail';
+  formType.value = 'detail';
+};
 
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
@@ -645,7 +655,7 @@ const handlePage = (event: any) => {
     :patientData="openedPatientData"
     :formType="formType"
     @back="closeRegistrationForm"
-    @goToDetail="dataBreadCrumb[0].label = 'Detail'"
+    @goToDetail="handleGoToDetail"
     @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>

@@ -21,13 +21,9 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import type { MenuItem } from "primevue/menuitem";
 
 const props = defineProps({
-  pageType: {
-    type: String,
-    required: true,
-  },
-  dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
+  DetailPayload: {
+    type: Object,
+    default: null,
   },
 });
 
@@ -51,19 +47,19 @@ const optionPay = ref([
   { name: "Kredit", value: "kredit" },
 ]);
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const emit = defineEmits(["back", "backEdit", "goToDetail", "goToEdit"]);
 
 const schema = toTypedSchema(
   yup
     .object({
-      lokasi: yup.string().required("Lokasi Penerima harus diisi"),
+      lokasiStokUuid: yup.string().required("Lokasi Penerima harus diisi"),
       kategoriItem: yup.string().required("Kategori Item harus diisi"),
       jenisItem: yup.string().required("Jenis Item harus diisi"),
       jenisStokUuid: yup.string().required("Jenis Stok harus diisi"),
       supplierUuid: yup.string().required("Supplier harus diisi"),
       tanggalPembelian: yup.date().default(new Date()).required("Tanggal Pembelian harus diisi"),
       metodePembelian: yup.string().required("Cara Bayar harus diisi"),
-      catatan: yup.string().required("Catatan harus diisi"),
+      catatanPo: yup.string().required("Catatan harus diisi"),
       isCito: yup.bool().default(false),
       items: yup.array().of(
         yup.object({
@@ -76,7 +72,7 @@ const schema = toTypedSchema(
     }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField } = useForm({
+const { errors, handleSubmit, defineField, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
     items: [
@@ -90,14 +86,14 @@ const { errors, handleSubmit, defineField } = useForm({
   },
 });
 
-const [lokasi] = defineField("lokasi");
+const [lokasiStokUuid] = defineField("lokasiStokUuid");
 const [kategoriItem] = defineField("kategoriItem");
 const [jenisItem] = defineField("jenisItem");
 const [jenisStokUuid] = defineField("jenisStokUuid");
 const [supplierUuid] = defineField("supplierUuid");
 const [tanggalPembelian] = defineField("tanggalPembelian");
 const [metodePembelian] = defineField("metodePembelian");
-const [catatan] = defineField("catatan");
+const [catatanPo] = defineField("catatanPo");
 const [isCito] = defineField("isCito");
 
 interface penjualanObat {
@@ -234,16 +230,29 @@ const fetchSatuanItem = async (uuid: string) => {
 const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
 
 const onSubmit = handleSubmit(async (values: any) => {
-  values.tanggalPembelian = dateToEpoch(values.tanggalPembelian);
+  if (values.tanggalPembelian instanceof Date && !isNaN(values.tanggalPembelian.getTime())) {
+    values.tanggalPembelian = dateToEpoch(values.tanggalPembelian);
+  } else {
+    values.tanggalPembelian = null;
+  }
+
   values.totalItem = totalItem.value;
   values.grandTotal = grandTotal.value;
+
   try {
-    const response = await PurchasingOfSupplierStore.postApi(values);
+    let response;
+    
+    if (props.DetailPayload !== null) {
+      response = await PurchasingOfSupplierStore.putApi(props.DetailPayload.uuid, values);
+      emit("backEdit");
+    } else {
+      response = await PurchasingOfSupplierStore.postApi(values);
+      emit("back");
+    }
   } catch (error) {
     console.error("Failed to process the data:", error);
   } finally {
     UseUtilsStore.setLoading(false);
-    emit("back");
   }
 });
 
@@ -281,6 +290,26 @@ onMounted(() => {
   fetchStockType();
   fetchItemMedis();
   noPembelian.value = generateRandomNoPembelian();
+  if (props.DetailPayload !== null) {
+    setValues({
+      lokasiStokUuid: props.DetailPayload.lokasiStokUuid,
+      kategoriItem: props.DetailPayload.kategoriItem,
+      jenisItem: props.DetailPayload.jenisItem,
+      jenisStokUuid: props.DetailPayload.jenisStokUuid,
+      supplierUuid: props.DetailPayload.supplierUuid,
+      tanggalPembelian: new Date(props.DetailPayload.tanggalPembelian * 1000),
+      metodePembelian: props.DetailPayload.paymentMethod,
+      catatanPo: props.DetailPayload.catatan,
+      isCito: props.DetailPayload.cito,
+      items: props.DetailPayload.items.map((item: any) => ({
+        itemUuid: item.itemUuid,
+        qtyOrder: item.qtyOrder,
+        hargaSatuan: item.hargaSatuan,
+        konversiUuid: item.konversiUuid
+      }))
+    })
+    grandTotal.value = props.DetailPayload.grandTotal
+  }
 });
 </script>
 
@@ -298,8 +327,19 @@ onMounted(() => {
                     label: 'Pengadaan Barang',
                     home: true,
                   }"
-                  :model="dataBreadCrumb"
                 />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
+                    Pembelian Barang Supplier
+                  </p>
+                </div>
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
+                    Tambah Pembelian
+                  </p>
+                </div>
               </div>
               <div class="flex">
                 <CustomButton
@@ -328,14 +368,14 @@ onMounted(() => {
                 <CustomSelect
                   label="Lokasi Penerima"
                   placeHolder="Pilih Lokasi Penerima"
-                  v-model="lokasi"
+                  v-model="lokasiStokUuid"
                   :options="StockLocationPayload"
                   class="w-[270px]"
                   optionLabel="name"
                   optionValue="uuid"
-                  :invalid="!!errors.lokasi"
-                  :invalidMessage="errors.lokasi"
-                  :required="errors.lokasi ? true : false"
+                  :invalid="!!errors.lokasiStokUuid"
+                  :invalidMessage="errors.lokasiStokUuid"
+                  :required="errors.lokasiStokUuid ? true : false"
                 />
                 <!-- Kategori Item -->
                 <CustomSelect
@@ -418,10 +458,10 @@ onMounted(() => {
                   label="Catatan"
                   placeholder="Catatan"
                   class="grow"
-                  v-model="catatan"
-                  :invalid="!!errors.catatan"
-                  :invalidMessage="errors.catatan"
-                  :required="errors.catatan ? true : false"
+                  v-model="catatanPo"
+                  :invalid="!!errors.catatanPo"
+                  :invalidMessage="errors.catatanPo"
+                  :required="errors.catatanPo ? true : false"
                 />
                 <!-- Cito -->
                 <CustomSwitch label="Cito" v-model="isCito" />
@@ -495,9 +535,7 @@ onMounted(() => {
                         :invalidMessage="(errors as any)[`items[${slotProps.index}].hargaSatuan`]"
                       >
                         <template #prependText>
-                          <div
-                            class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                          >
+                          <div class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r">
                             Rp.
                           </div>
                         </template>
@@ -574,9 +612,7 @@ onMounted(() => {
                     class="mt-[10px]"
                   >
                     <template #prependText>
-                      <div
-                        class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                      >
+                      <div class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r">
                         Rp.
                       </div>
                     </template>
@@ -590,9 +626,7 @@ onMounted(() => {
                     class="mt-[10px]"
                   >
                     <template #prependText>
-                      <div
-                        class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
-                      >
+                      <div class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r">
                         Rp.
                       </div>
                     </template>
@@ -642,7 +676,14 @@ onMounted(() => {
                   class="mt-auto"
                 />
                 <CustomButton
+                  v-show="DetailPayload == null"
                   label="Simpan Pembelian"
+                  class="mt-auto ml-[10px]"
+                  @click="onSubmit"
+                />
+                <CustomButton
+                  v-show="DetailPayload !== null"
+                  label="Ubah Pembelian"
                   class="mt-auto ml-[10px]"
                   @click="onSubmit"
                 />

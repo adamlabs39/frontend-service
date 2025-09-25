@@ -11,9 +11,12 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
+import DialogInvoice from "./DialogInvoice.vue"
+import AddSupplierReturns from "./AddSupplierReturnsPage.vue";
+import DetailSupplierReturns from "./DetailSupplierReturnsPage.vue";
 
 // Filter
-const onSelected = ref<string>("pending");
+const onSelected = ref<string>("retur");
 
 const funcOnSelected = (label: string) => {
   onSelected.value = label;
@@ -53,6 +56,7 @@ const fetchSupplierReturns = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await SupplierReturnsStore.getApi(
+      '0196a8ca-1fda-71ca-a133-7383413ef200',
       onSelected.value,
       searchQuery.value,
       SupplierReturnsProperties.value.page,
@@ -93,11 +97,24 @@ const metaKey = ref(true);
 const selectedData = ref();
 
 const onRowSelect = (event: any) => {
-  selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  selectedData.value = event.data;  
+  changeSection('Retur & Penggantian Barang Supplier');
 };
 
-const closePurchaseOfSupplierPage = () => {
+// Dialog Management
+const InvoiceDialog = ref(false);
+const DeleteSupplierDialog = ref(false);
+
+const dialogConfig = ref<any>({
+  method: "add",
+});
+
+const openDialog = (method: string) => {
+  dialogConfig.value = { method };
+  InvoiceDialog.value = true;
+};
+
+const closeSupplierReturns = () => {
   dataBreadCrumb.value.pop();
   fetchSupplierReturns();
 };
@@ -125,12 +142,12 @@ onMounted(() => {
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                    Retur & Pengganti Barang Supplier
+                    Retur & Penggantian Barang Supplier
                   </p>
                 </div>
               </div>
               <CustomButton
-                @click="changeSection('Tambah Pembelian')"
+                @click="openDialog('add')"
                 icon="PhPlus"
                 label="Retur"
                 class="mr-[10px]"
@@ -146,25 +163,24 @@ onMounted(() => {
                 placeholder="Cari No. Retur / Tujuan Retur"
               />
             </div>
-
             <!-- Filter -->
             <div class="grid grid-cols-2 mt-[15px]">
               <CustomButton
-                @click="funcOnSelected('pending')"
+                @click="funcOnSelected('retur')"
                 label="RETUR SUPPLIER"
-                :outlined="onSelected != 'pending'"
+                :outlined="onSelected != 'retur'"
                 borderColor="border-adameds-300"
-                :textColor="onSelected != 'pending' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'pending' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="onSelected != 'retur' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'retur' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="font-semibold"
               />
               <CustomButton
-                @click="funcOnSelected('cancel')"
+                @click="funcOnSelected('terima')"
                 label="TERIMA PENGGANTI"
-                :outlined="onSelected != 'cancel'"
+                :outlined="onSelected != 'terima'"
                 borderColor="border-adameds-300"
-                :textColor="onSelected != 'cancel' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="onSelected != 'terima' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'terima' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold "
               />
             </div>
@@ -212,7 +228,7 @@ onMounted(() => {
               <div class="">Tanggal</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ epochToDate(slotProps.data.tanggalPembelian, "date") }}</div>
+              <div class="">{{ epochToDate(slotProps.data.tanggalRetur, "date") }}</div>
             </template>
           </Column>
           <!-- No. Pembelian -->
@@ -221,15 +237,43 @@ onMounted(() => {
               <div class="">No. Pembelian</div>
             </template>
             <template #body="slotProps">
-              <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
+              <div class="mb-[5px]">{{ slotProps.data.noReturSupplier }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.kategoriItem"
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  customClass="h-5"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
                 />
               </div>
             </template>
@@ -240,49 +284,42 @@ onMounted(() => {
               <div class="">Supplier</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.supplier }}</div>
             </template>
           </Column>
           <!-- Petugas -->
-          <Column field="petugasPembuatPo" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="petugas" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <!-- Status -->
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="">
-              <div class="w-full font-semibold text-center text-SM">Status</div>
+              <div class="font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
                 <CustomChip
-                  v-if="slotProps.data.status == 'pending'"
-                  label="PENGAJUAN"
+                  v-if="slotProps.data.status == 'retur'"
+                  label="RETUR"
                   :showCheckedIcon="false"
-                  borderColor="border-grey-300"
-                  bgColor="bg-grey-300" 
+                  borderColor="border-lavender-300"
+                  bgColor="bg-lavender-300" 
                   textColor="text-white"
-                  customClass="h-6"
                 />
                 <CustomChip
-                  v-if="slotProps.data.status == 'cancel'"
-                  label="DIBATALKAN"
-                  :showCheckedIcon="false"
-                  borderColor="border-danger-300"
-                  bgColor="bg-danger-300" 
-                  textColor="text-white"
-                  customClass="h-6"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'verifikasi'"
-                  label="DIVERIFIKASI"
+                  v-if="slotProps.data.status == 'diterima'"
+                  label="RETUR"
                   :showCheckedIcon="false"
                   borderColor="border-success-300"
                   bgColor="bg-success-300" 
                   textColor="text-white"
-                  customClass="h-6"
                 />
               </div>
             </template>
           </Column>
         </DataTable>
+        <DialogInvoice
+          v-model:isDialogVisible="InvoiceDialog"
+          :method="dialogConfig.method"
+        />
       </template>
       <template #footer>
         <div class="flex justify-end">
@@ -295,5 +332,18 @@ onMounted(() => {
         </div>
       </template>
     </Card>
+    <AddSupplierReturns
+      v-else-if="dataBreadCrumb[0].label == 'Tambah Retur'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      @back="closeSupplierReturns"
+    />
+    <DetailSupplierReturns
+      v-else-if="dataBreadCrumb[0].label == 'Retur & Penggantian Barang Supplier'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :selectedData="selectedData"
+      @back="closeSupplierReturns"
+    />
   </div>
 </template>

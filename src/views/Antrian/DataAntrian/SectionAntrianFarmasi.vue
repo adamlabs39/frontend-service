@@ -4,6 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
+import { formatDate, formatTime } from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -17,6 +18,8 @@ const props = defineProps<{
     pelayanan: string;
   };
 }>();
+
+const dataTablePt = Object.freeze({ headerRow: "bg-blue-500 text-white" });
 
 const emit = defineEmits<{
   updateTotalData: [totalData: number];
@@ -33,7 +36,7 @@ const convertPaymentMethod = (paymentMethod: number | string): string => {
     case 1:
       return "Tunai";
     case 2:
-      return "Asuransi";
+      return "BPJS";
     default:
       return "Tidak Diketahui"; // Default untuk nilai yang tidak valid
   }
@@ -92,18 +95,16 @@ watch(
   { deep: true }
 );
 
-const dateFormat = (timestamp: number | string) => {
-  // Konversi timestamp dari detik ke milliseconds
-  const timestampMs =
+const dateTimeFormat = (timestamp: number | string): string => {
+  if (timestamp === null || timestamp === undefined || timestamp === "")
+    return "-";
+  const epoch =
     typeof timestamp === "string"
-      ? parseInt(timestamp) * 1000
-      : timestamp * 1000;
-
-  const newDate = new Date(timestampMs);
-  const day = newDate.getDate();
-  const month = newDate.getMonth() + 1;
-  const year = newDate.getFullYear();
-  return `${day}-${month}-${year}`;
+      ? parseInt(timestamp as string, 10)
+      : (timestamp as number);
+  if (Number.isNaN(epoch)) return "-";
+  const date = new Date(epoch * 1000);
+  return `${formatDate(date)} ${formatTime(date)}`;
 };
 
 onMounted(() => {
@@ -123,7 +124,7 @@ const getMetodeBayarStyle = (paymentMethod: number) => {
       textColor: "text-adameds-300",
       borderColor: "border-adameds-300",
     };
-  } else if (convertedMethod === "asuransi") {
+  } else if (convertedMethod === "bpjs") {
     return {
       bgColor: "bg-warning-50",
       textColor: "text-warning-300",
@@ -203,8 +204,8 @@ const getStatusStyle = (status: string | undefined) => {
     :value="dataAntrianFarmasiPayload"
     v-if="dataAntrianFarmasiPayload.length > 0"
     tableStyle="min-width: 50rem"
-    :pt="{ headerRow: 'bg-blue-500 text-white' }"
-    class="flex text-xs"
+    :pt="dataTablePt"
+    class="w-full text-xs"
     stripedRows
     dataKey="id"
     scrollable
@@ -231,35 +232,37 @@ const getStatusStyle = (status: string | undefined) => {
       class="p-0 w-auto"
     >
       <template #body="slotProps">
-        <div class="space-y-2 text-SM">
-          <div class="flex gap-2">
-            <div>Daftar</div>
+        <div class="space-y-1 text-SM">
+          <!-- Baris Daftar -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Daftar</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken.svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+            <div class="whitespace-nowrap">
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalDaftar) }}
             </div>
           </div>
-          <div class="flex gap-2">
-            <div>Jadwal</div>
+          <!-- Baris Jadwal -->
+          <div class="grid grid-cols-[auto_16px_1fr] items-center gap-2">
+            <div class="whitespace-nowrap">Jadwal</div>
             <img
               src="@/assets/icons/solar_arrow-left-broken (1).svg"
               alt="Arrow Icon"
-              class=""
+              class="mx-1 w-4 h-4"
             />
-            <div>
-              {{ dateFormat(slotProps.data.patientData.tanggalDaftar) }}
+            <div class="whitespace-nowrap">
+              {{ dateTimeFormat(slotProps.data.patientData.tanggalCheckin) }}
             </div>
           </div>
         </div>
       </template>
     </Column>
-    <Column header="Nomor" header-class="text-black bg-adameds-50" class="p-0">
+    <Column header="Nomor" header-class="text-black bg-adameds-50" class="p-1">
       <template #body="slotProps">
-        <div class="text-SM max-w-[190px] space-y-2">
+        <div class="text-SM max-w-[190px] space-y-2 text-nowrap">
           <div class="grid grid-cols-3">
             <div>Book</div>
             <div class="flex gap-5">
@@ -292,7 +295,7 @@ const getStatusStyle = (status: string | undefined) => {
     <Column header="Pasien" header-class="text-black bg-adameds-50" class="p-0">
       <template #body="slotProps">
         <div class="items-center space-y-0.5">
-          <div class="flex items-center font-semibold">
+          <div class="flex items-center font-semibold max-w-64">
             {{ slotProps.data.patientData?.name ?? "N/A" }}
           </div>
           <div class="flex items-center">
@@ -314,7 +317,7 @@ const getStatusStyle = (status: string | undefined) => {
       header-class="text-black bg-adameds-50"
     >
       <template #body="slotProps">
-        <div class="flex gap-1 items-center">
+        <div class="flex gap-1 items-center text-nowrap">
           <div>
             {{ slotProps.data.patientData?.jadwalDokter?.namaDokter ?? "N/A" }}
           </div>
