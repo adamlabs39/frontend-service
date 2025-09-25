@@ -291,7 +291,9 @@ const getStatusStyle = (status: string | undefined) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.patientData.antrian.noAntrianPoli ?? "N/A" }}
+                {{
+                  slotProps.data.patientData.antrian.noAntrianFarmasi ?? "N/A"
+                }}
               </div>
             </div>
           </div>
