@@ -44,7 +44,15 @@ const nowMinutes = computed(
 const isScheduleDisabled = (j: any) => {
   // Disable jika waktu sekarang sudah melewati atau tepat sama dengan endTime
   const end = toMinutes(j?.endTime);
-  return nowMinutes.value >= end;
+  const isTimeExpired = nowMinutes.value >= end;
+
+  // Disable jika kuota sudah habis (sisa_kuota <= 0)
+  const isQuotaFull = (j?.sisaKuota || 0) <= 0;
+
+  // Disable jika status tidak aktif
+  const isInactive = j?.status !== "aktif";
+
+  return isTimeExpired || isQuotaFull || isInactive;
 };
 
 const hasScheduleToday = (item: any) => {
@@ -209,9 +217,10 @@ const fetchJadwalDokter = async () => {
               day: j?.day,
               startTime: j?.startTime,
               endTime: j?.endTime,
-              kuota: j?.kuota,
               kuotaJkn: j?.kuotaJkn,
               kuotaNonJkn: j?.kuotaNonJkn,
+              totalKuota: j?.totalKuota,
+              sisaKuota: j?.sisaKuota,
               durasiPelayanan: j?.durasiPelayanan,
               status: j?.status,
             }))
