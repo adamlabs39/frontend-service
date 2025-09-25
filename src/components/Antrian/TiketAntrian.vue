@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { epochToDate, formatStringDate } from "@/utils/Helpers";
+import {
+  epochToDate,
+  formatStringDate,
+  formatTime,
+  setTimeToDate,
+} from "@/utils/Helpers";
 import { createTiketAntrianPDF } from "@/utils/pdf/pdfAntrian/TiketAntrian";
 import { useRoute } from "vue-router";
 
@@ -247,8 +252,21 @@ const mapGenderId = (g?: string) => {
                 Jadwal
               </div>
               <div class="font-bold leading-8 text-subheading text-adameds-300">
-                {{ tiketAntrian.jadwalDokter.startTime }} -
-                {{ tiketAntrian.jadwalDokter.endTime }}
+                {{
+                  tiketAntrian.jadwalDokter?.startTime
+                    ? formatTime(
+                        setTimeToDate(tiketAntrian.jadwalDokter.startTime)
+                      )
+                    : "-"
+                }}
+                -
+                {{
+                  tiketAntrian.jadwalDokter?.endTime
+                    ? formatTime(
+                        setTimeToDate(tiketAntrian.jadwalDokter.endTime)
+                      )
+                    : "-"
+                }}
               </div>
             </div>
           </div>
