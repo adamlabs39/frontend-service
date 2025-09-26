@@ -214,7 +214,10 @@ const previewProps = computed(() => {
         isAdmisi: isAdmisi(row),
         isFarmasi: isFarmasi(row),
       };
-    // 2 list & 2 panggilan dan 1 list 1 panggilan 1 gambar tidak butuh props khusus
+    case 5: // 1 list & 1 panggilan & Youtube
+      return {
+        media: (row?.media ?? row?.payload?.media ?? "") || "",
+      };
     default:
       return {};
   }
