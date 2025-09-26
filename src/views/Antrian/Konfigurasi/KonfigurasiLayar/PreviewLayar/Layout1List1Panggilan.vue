@@ -12,7 +12,7 @@ const panggilanText = ref("");
     <div class="flex flex-col flex-1">
       <!-- Header Informasi Antrian -->
       <div
-        class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
+        class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
       >
         <PhInfo :size="18" weight="fill" />
         <span>Informasi Antrian</span>
@@ -45,7 +45,7 @@ const panggilanText = ref("");
     <div class="flex flex-col w-1/3 h-full">
       <!-- Header Panggilan -->
       <div
-        class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
+        class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
       >
         <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
         <span>Panggilan</span>
@@ -72,6 +72,6 @@ const panggilanText = ref("");
 
 <style scoped>
 .content-area {
-  height: calc(100% - 40px); /* Mengurangi tinggi header internal (≈40px) */
+  height: calc(100% - 57px); /* Mengurangi tinggi header internal (≈57px) */
 }
 </style>
