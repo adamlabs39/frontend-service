@@ -414,7 +414,7 @@ watch(
                   <layout-2-list-2-panggilan />
                 </template>
                 <template v-else-if="tipeLayar === 5">
-                  <layout-1-list-1-panggilan />
+                  <layout-1-list-1-panggilan :media="media" />
                 </template>
               </div>
               <div class="mt-3 rounded-tl-lg rounded-tr-lg bg-adameds-300">

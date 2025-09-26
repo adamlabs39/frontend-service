@@ -1,5 +1,33 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+
+/* Props */
+const props = defineProps<{ media?: any }>();
+
+/* Helper: convert various YouTube URLs to embed URL */
+const toEmbedUrl = (url?: string) => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    // youtu.be/<id>
+    if (u.hostname.includes("youtu.be")) {
+      const id = u.pathname.replace("/", "");
+      return id ? `https://www.youtube.com/embed/${id}` : "";
+    }
+    // youtube.com/watch?v=<id>
+    if (u.hostname.includes("youtube.com")) {
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      // youtube.com/embed/<id>
+      if (u.pathname.startsWith("/embed/")) return url;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+};
+
+const embedUrl = computed(() => toEmbedUrl(props.media));
 
 /* Data dummy */
 const antrianData = ref(["-", "-", "-", "-", "-", "-"]); // 6 baris
@@ -63,7 +91,16 @@ const panggilanText = ref("");
         <div
           class="flex-1 bg-adameds-300 border-2 border-adameds-300 rounded-lg flex items-center justify-center text-white font-bold min-h-[80px]"
         >
-          Youtube
+          <iframe
+            v-if="embedUrl"
+            :src="embedUrl"
+            title="YouTube video"
+            class="w-full h-full rounded-lg"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+          <span v-else>Youtube</span>
         </div>
       </div>
     </div>
