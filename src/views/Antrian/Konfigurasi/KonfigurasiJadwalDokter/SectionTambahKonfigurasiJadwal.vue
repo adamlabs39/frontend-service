@@ -122,8 +122,8 @@ const defaultData = [
     day: undefined,
     startTime: new Date(),
     endTime: new Date(),
-    kuotaJkn: "0",
-    kuotaNonJkn: "0",
+    kuotaJkn: 0,
+    kuotaNonJkn: 0,
     durasiPelayanan: "0",
     aktif: true,
   },
@@ -141,12 +141,12 @@ const endDateFilter = ref<Date>(new Date());
 endDateFilter.value.setHours(0, 0, 0, 0);
 
 const addRow = () => {
-  data.value.push({
+  push({
     day: undefined,
     startTime: new Date(startDateFilter.value),
     endTime: new Date(endDateFilter.value),
-    kuotaJkn: "0",
-    kuotaNonJkn: "0",
+    kuotaJkn: 0,
+    kuotaNonJkn: 0,
     durasiPelayanan: "0",
     aktif: true,
   });
@@ -229,7 +229,7 @@ const calculateDurasiPelayanan = (
   kuotaJkn: any,
   kuotaNonJkn: any
 ) => {
-  const totalKuota = (parseInt(kuotaJkn) || 0) + (parseInt(kuotaNonJkn) || 0);
+  const totalKuota = (Number(kuotaJkn) || 0) + (Number(kuotaNonJkn) || 0);
 
   if (totalKuota > 0 && startTime && endTime) {
     const totalMenit = toMinutes(endTime) - toMinutes(startTime);
@@ -283,8 +283,14 @@ const schema = toTypedSchema(
               }
             ),
           durasiPelayanan: yup.string().required(" harus diisi"),
-          kuotaJkn: yup.string().required("harus diisi"),
-          kuotaNonJkn: yup.string().required("harus diisi"),
+          kuotaJkn: yup
+            .number()
+            .required("Kuota JKN harus diisi")
+            .min(1, "Kuota tidak boleh nol"),
+          kuotaNonJkn: yup
+            .number()
+            .required("Kuota Non-JKN harus diisi")
+            .min(1, "Kuota tidak boleh nol"),
           aktif: yup.boolean().required("Status harus dipilih"),
         })
       )
@@ -382,7 +388,8 @@ const checkDuplicateSchedule = (schedules: any[]) => {
 
 // Helper untuk validasi field wajib pada item jadwal
 const isMissing = (val: any) => !val;
-const isMissingOrZeroString = (val: any) => !val || val === "0";
+const isMissingOrZeroString = (val: any) =>
+  val === undefined || val === null || val === "" || Number(val) === 0;
 
 const hasEmptyRequiredFields = (items: Array<any>) =>
   items.some((item) => {
@@ -397,8 +404,8 @@ const hasEmptyRequiredFields = (items: Array<any>) =>
   });
 
 const onSubmit = handleSubmit(async (values: any) => {
-  const hasEmptyFields = hasEmptyRequiredFields(data.value);
-  if (hasEmptyFields) {
+  const schedules = (fields as any).value.map((f: any) => f.value);
+  if (hasEmptyRequiredFields(schedules)) {
     toast.add({
       severity: "error",
       summary: "Validasi Error",
@@ -409,7 +416,7 @@ const onSubmit = handleSubmit(async (values: any) => {
   }
 
   // Validasi duplikasi jam praktek
-  const duplicates = checkDuplicateSchedule(data.value);
+  const duplicates = checkDuplicateSchedule(schedules);
   if (duplicates.length > 0) {
     toast.add({
       severity: "error",
@@ -420,9 +427,19 @@ const onSubmit = handleSubmit(async (values: any) => {
     return;
   }
 
-  // Validasi durasi per pasien minimal 1 menit
-  const invalidDurasiIndexes = data.value
-    .map((item, idx) => ({ idx, val: Number(item.durasiPelayanan) }))
+  // Validasi durasi per pasien minimal 1 menit (hitung dinamis)
+  const invalidDurasiIndexes = schedules
+    .map((item, idx) => ({
+      idx,
+      val: Number(
+        calculateDurasiPelayanan(
+          item.startTime,
+          item.endTime,
+          item.kuotaJkn,
+          item.kuotaNonJkn
+        )
+      ),
+    }))
     .filter((x) => !x.val || x.val < 1)
     .map((x) => x.idx + 1);
 
@@ -440,12 +457,12 @@ const onSubmit = handleSubmit(async (values: any) => {
   const payload = {
     dokter_uuid: dokterUuid.value,
     poliklinik_uuid: poliUuid.value,
-    jadwal: data.value.map((item) => ({
+    jadwal: schedules.map((item: any) => ({
       day: Number(item.day), //  number
       start_time: formatTime(item.startTime),
       end_time: formatTime(item.endTime),
-      kuota_jkn: parseInt(item.kuotaJkn),
-      kuota_non_jkn: parseInt(item.kuotaNonJkn),
+      kuota_jkn: Number(item.kuotaJkn),
+      kuota_non_jkn: Number(item.kuotaNonJkn),
       aktif: item.aktif ?? true,
     })),
   };
@@ -541,20 +558,21 @@ function handleReset() {
   endDateFilter.value = new Date();
   endDateFilter.value.setHours(0, 0, 0, 0);
 
-  // Reset DataTable data
-  data.value = [...defaultData];
-  replace(defaultData);
+  // Reset DataTable to single default row
+  data.value = [
+    {
+      day: undefined,
+      startTime: new Date(startDateFilter.value),
+      endTime: new Date(endDateFilter.value),
+      kuotaJkn: 0,
+      kuotaNonJkn: 0,
+      durasiPelayanan: "0",
+      aktif: true,
+    },
+  ];
 
-  data.value.forEach((item) => {
-    item.day = undefined;
-    item.startTime = new Date();
-    item.startTime.setHours(0, 0, 0, 0);
-    item.endTime = new Date();
-    item.endTime.setHours(0, 0, 0, 0);
-    item.kuotaJkn = "0";
-    item.kuotaNonJkn = "0";
-    item.durasiPelayanan = "0";
-  });
+  // Replace field array with single default row
+  replace(data.value);
 }
 
 // Function untuk menghapus row
@@ -625,7 +643,7 @@ const selectedPatient = ref([]);
         <div class="overflow-y-auto relative">
           <DataTable
             v-model:selection="selectedPatient"
-            :value="data"
+            :value="fields"
             tableStyle="min-width: 50rem"
             class="text-black"
             stripedRows
@@ -647,14 +665,14 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <CustomSelect
                   place-holder="Pilih Hari"
-                  v-model="slotProps.data.day"
+                  v-model="slotProps.data.value.day"
                   :options="itemsHari"
                   optionValue="code"
                   optionLabel="name"
                   class="text-sm text-black"
                   label=""
-                  :invalid="!slotProps.data.day"
-                  invalidMessage="Hari harus dipilih"
+                  :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].day`]"
+                  :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].day`]"
                 />
               </template>
             </Column>
@@ -669,20 +687,21 @@ const selectedPatient = ref([]);
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.startTime"
+                    v-model="slotProps.data.value.startTime"
                     label=""
                     class="w-[120px] text-xs text-grey-400"
-                    :invalid="!slotProps.data.startTime"
+                    :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].startTime`]"
+                    :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].startTime`]"
                   />
                   <PhMinus class="mx-[5px] text-black" />
                   <CustomDatePicker
                     place-holder="00:00"
                     timeOnly
-                    v-model="slotProps.data.endTime"
+                    v-model="slotProps.data.value.endTime"
                     label=""
                     class="w-[120px] text-grey-400 text-sm"
-                    :invalid="isEndTimeInvalid(slotProps.data)"
-                    invalidMessage="Jam selesai harus lebih besar dari jam mulai"
+                    :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].endTime`]"
+                    :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].endTime`]"
                   />
                 </div>
               </template>
@@ -701,13 +720,11 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.kuotaJkn"
+                    v-model:modelValue="slotProps.data.value.kuotaJkn"
                     type="number"
                     :showLabel="false"
-                    :invalid="
-                      !slotProps.data.kuotaJkn ||
-                      slotProps.data.kuotaJkn === '0'
-                    "
+                    :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].kuotaJkn`]"
+                    :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].kuotaJkn`]"
                   >
                     <template #appendText>
                       <div class="flex items-center mr-2">Slot</div>
@@ -729,13 +746,11 @@ const selectedPatient = ref([]);
                   <CustomInputNumber
                     class="w-[120px] h-[40px]"
                     placeholder="0"
-                    v-model:modelValue="slotProps.data.kuotaNonJkn"
+                    v-model:modelValue="slotProps.data.value.kuotaNonJkn"
                     type="number"
                     :showLabel="false"
-                    :invalid="
-                      !slotProps.data.kuotaNonJkn ||
-                      slotProps.data.kuotaNonJkn === '0'
-                    "
+                    :invalid="!!(errors as any)[`jadwalData[${slotProps.index}].kuotaNonJkn`]"
+                    :invalidMessage="(errors as any)[`jadwalData[${slotProps.index}].kuotaNonJkn`]"
                   >
                     <template #appendText>
                       <div class="flex items-center mr-2">Slot</div>
@@ -760,8 +775,8 @@ const selectedPatient = ref([]);
                   class="flex justify-center items-center whitespace-nowrap text-SM"
                 >
                   {{
-                    (parseInt(slotProps.data.kuotaJkn) || 0) +
-                    (parseInt(slotProps.data.kuotaNonJkn) || 0)
+                    (Number(slotProps.data.value.kuotaJkn) || 0) +
+                    (Number(slotProps.data.value.kuotaNonJkn) || 0)
                   }}
                   Pasien
                 </div>
@@ -782,7 +797,15 @@ const selectedPatient = ref([]);
                 <div
                   class="flex justify-center items-center whitespace-nowrap text-SM"
                 >
-                  {{ slotProps.data.durasiPelayanan }} menit
+                  {{
+                    calculateDurasiPelayanan(
+                      slotProps.data.value.startTime,
+                      slotProps.data.value.endTime,
+                      slotProps.data.value.kuotaJkn,
+                      slotProps.data.value.kuotaNonJkn
+                    )
+                  }}
+                  menit
                 </div>
               </template>
             </Column>
@@ -797,7 +820,7 @@ const selectedPatient = ref([]);
               <template #body="slotProps">
                 <div class="flex justify-center items-center w-full">
                   <CustomSwitch
-                    v-model="slotProps.data.aktif"
+                    v-model="slotProps.data.value.aktif"
                     :showLabel="false"
                     sideLabelTrue="Aktif"
                     sideLabel="Non - Aktif"

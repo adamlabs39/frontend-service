@@ -456,7 +456,7 @@ const selectedPatient = ref([]);
           headerClass="bg-adameds-50"
         >
           <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.namaLayar }}</div>
+            <div class="text-SM max-w-28">{{ slotProps.data.namaLayar }}</div>
           </template>
         </Column>
         <Column

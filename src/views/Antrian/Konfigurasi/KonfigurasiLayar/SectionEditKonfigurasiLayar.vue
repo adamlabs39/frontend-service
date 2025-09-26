@@ -405,7 +405,7 @@ watch(
                 </template>
               </div>
               <div
-                class="mt-1 text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
+                class="mt-3 text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
               >
                 <Vue3Marquee>
                   <span v-for="item in flashText" :key="item" class="mx-2">{{

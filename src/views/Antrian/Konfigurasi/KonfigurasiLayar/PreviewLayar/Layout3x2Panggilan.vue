@@ -53,7 +53,7 @@ const columns = computed<Array<"poli" | "admisi" | "farmasi" | "placeholder">>(
 <template>
   <!-- Header Panggilan -->
   <div
-    class="flex gap-2 justify-center items-center py-1 my-1 w-full text-white rounded-lg bg-adameds-300"
+    class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
   >
     <div>
       <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -186,8 +186,8 @@ const columns = computed<Array<"poli" | "admisi" | "farmasi" | "placeholder">>(
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 8px;
-  height: calc(100% - 40px); /* Kurangi tinggi header */
+  gap: 12px;
+  height: calc(100% - 57px); /* Kurangi tinggi header */
   grid-auto-flow: column;
   min-height: 300px;
   width: 100%;

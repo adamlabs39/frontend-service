@@ -4,7 +4,7 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
-import { formatDate, formatTime } from "@/utils/Helpers";
+import { dateToEpoch, formatDate, formatTime } from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -18,6 +18,9 @@ const props = defineProps<{
     pelayanan: string;
   };
 }>();
+
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
 
 const dataTablePt = Object.freeze({ headerRow: "bg-blue-500 text-white" });
 
@@ -47,8 +50,11 @@ const fetchDataAntrianFarmasi = async () => {
   // Kosongkan data terlebih dahulu agar tidak menampilkan data lama saat loading/error
   dataAntrianFarmasiPayload.value = [];
   try {
-    const startEpoch = props.paginationProperties.start_date ?? 1128557830;
-    const endEpoch = props.paginationProperties.end_date ?? 1999999999;
+    const startEpoch =
+      props.paginationProperties.start_date ??
+      dateToEpoch(startDateFilter.value);
+    const endEpoch =
+      props.paginationProperties.end_date ?? dateToEpoch(endDateFilter.value);
 
     const statusQuery =
       props.paginationProperties.status_panggilan &&
@@ -285,7 +291,9 @@ const getStatusStyle = (status: string | undefined) => {
                 class=""
               />
               <div>
-                {{ slotProps.data.patientData.antrian.noAntrianPoli ?? "N/A" }}
+                {{
+                  slotProps.data.patientData.antrian.noAntrianFarmasi ?? "N/A"
+                }}
               </div>
             </div>
           </div>

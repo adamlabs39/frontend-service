@@ -15,13 +15,13 @@ const panggilanData = ref([
 </script>
 
 <template>
-  <div class="flex h-full gap-2 pt-1">
+  <div class="flex gap-2 pt-1 h-full">
     <!-- Bagian Kiri: Informasi Antrian (3 Kolom List) -->
-    <div class="flex-1 flex gap-2">
+    <div class="flex flex-1 gap-2">
       <!-- Header Informasi Antrian -->
       <div class="w-full">
         <div
-          class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300 mb-2"
+          class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
         >
           <div>
             <PhInfo :size="18" weight="fill" />
@@ -30,27 +30,27 @@ const panggilanData = ref([
         </div>
 
         <!-- 3 Kolom List -->
-        <div class="content-area flex gap-2">
+        <div class="flex gap-3 content-area">
           <div
             v-for="(data, index) in antrianData"
             :key="index"
-            class="flex-1 flex flex-col"
+            class="flex flex-col flex-1"
           >
             <!-- Header Lokasi -->
             <div
-              class="bg-adameds-300 text-white text-center py-2 rounded-t-lg font-semibold text-sm"
+              class="py-2 text-sm font-semibold text-center text-white rounded-t-lg bg-adameds-300"
             >
               {{ data.lokasi }}
             </div>
 
             <!-- List Antrian -->
             <div
-              class="flex-1 bg-white border-2 border-adameds-300 border-t-0 rounded-b-lg flex flex-col overflow-hidden"
+              class="flex overflow-hidden flex-col flex-1 bg-white rounded-b-lg border-2 border-t-0 border-adameds-300"
             >
               <div
                 v-for="(item, itemIndex) in data.antrian"
                 :key="itemIndex"
-                class="flex-1 border-b border-gray-200 last:border-b-0 px-3 text-center text-gray-600 flex items-center justify-center"
+                class="flex flex-1 justify-center items-center px-3 text-center text-gray-600 border-b border-gray-200 last:border-b-0"
                 :class="{
                   'bg-gray-50': itemIndex % 2 === 1,
                 }"
@@ -64,10 +64,10 @@ const panggilanData = ref([
     </div>
 
     <!-- Bagian Kanan: Panggilan (3 Kotak) -->
-    <div class="w-1/3 flex flex-col h-full">
+    <div class="flex flex-col w-1/3 h-full">
       <!-- Header Panggilan -->
       <div
-        class="flex gap-2 justify-center items-center py-1 w-full text-white rounded-lg bg-adameds-300 mb-2"
+        class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
       >
         <div>
           <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -76,7 +76,7 @@ const panggilanData = ref([
       </div>
 
       <!-- 3 Kotak Panggilan -->
-      <div class="content-area flex flex-col gap-2">
+      <div class="flex flex-col gap-3 content-area">
         <div
           v-for="(panggilan, index) in panggilanData"
           :key="panggilan.id"
@@ -92,6 +92,6 @@ const panggilanData = ref([
 
 <style scoped>
 .content-area {
-  height: calc(100% - 40px); /* 40px = tinggi header internal */
+  height: calc(100% - 57px); /* 40px = tinggi header internal */
 }
 </style>

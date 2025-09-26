@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { epochToDate, formatStringDate } from "@/utils/Helpers";
+import {
+  epochToDate,
+  formatStringDate,
+  formatTime,
+  setTimeToDate,
+} from "@/utils/Helpers";
 import { createTiketAntrianPDF } from "@/utils/pdf/pdfAntrian/TiketAntrian";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
   tiketAntrian: {
@@ -17,6 +23,15 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
+
+const isFarmasiPage = computed(() => {
+  return (
+    route.name === "antrian-apm-aktif-pasien-farmasi-berhasil" ||
+    String(route.path || "").includes("/antrian/apm/aktif/pasien/farmasi")
+  );
+});
+
 const displayNoAntrian = computed(() => {
   const farmasi = props.tiketAntrian?.noAntrianFarmasi;
   const adm = props.tiketAntrian?.noAntrianAdmisi;
@@ -29,19 +44,24 @@ const displayNoAntrian = computed(() => {
       (typeof v === "string" && v.trim() === "")
     );
 
-  // Prioritaskan nomor antrian Farmasi bila tersedia
-  return hasValue(farmasi)
-    ? farmasi
-    : hasValue(adm)
-    ? adm
-    : hasValue(poli)
-    ? poli
-    : "";
+  if (isFarmasiPage.value) {
+    // Halaman Farmasi: tampilkan Farmasi (fallback ke Poli lalu Admisi)
+    return hasValue(farmasi)
+      ? farmasi
+      : hasValue(poli)
+      ? poli
+      : hasValue(adm)
+      ? adm
+      : "";
+  }
+
+  // Halaman selain Farmasi (mis. Print): tampilkan Poli jika ada, jika tidak ada tampilkan Admisi
+  return hasValue(adm) ? adm : hasValue(poli) ? poli : "";
 });
 
 const shouldShowFarmasiLabel = computed(() => {
   const val = props.tiketAntrian?.noAntrianFarmasi;
-  return typeof val === "string" && val.trim() !== "";
+  return isFarmasiPage.value && typeof val === "string" && val.trim() !== "";
 });
 
 // Jika noAntrianFarmasi berisi "NR" => Non-Racikan, jika hanya "R" => Racikan
@@ -54,8 +74,17 @@ const isNonRacikan = computed(() => {
 
 const handlePrint = async () => {
   try {
-    // Generate PDF menggunakan data tiket antrian
-    const pdf = await createTiketAntrianPDF(props.tiketAntrian);
+    // Tentukan sumber klik berdasarkan route
+    const isFarmasi =
+      route.name === "antrian-apm-aktif-pasien-farmasi-berhasil" ||
+      String(route.path || "").includes("/antrian/apm/aktif/pasien/farmasi");
+
+    // Generate PDF menggunakan data tiket antrian, sertakan sumber
+    const pdf = await createTiketAntrianPDF({
+      ...props.tiketAntrian,
+      __printSource: isFarmasi ? "farmasi" : "poli",
+      __selectedNoAntrian: displayNoAntrian.value,
+    });
 
     // Download PDF
     pdf.download(
@@ -93,6 +122,12 @@ function epochToDateShortMonth(epochTime: number): string {
   const date = new Date(epochTime * 1000);
   return formatDateShortMonth(date);
 }
+const mapGenderId = (g?: string) => {
+  const val = String(g || "").toLowerCase();
+  if (val === "male") return "Laki-laki";
+  if (val === "female") return "Perempuan";
+  return g || "";
+};
 </script>
 <template>
   <Card class="overflow-hidden w-full h-[350px]">
@@ -173,7 +208,7 @@ function epochToDateShortMonth(epochTime: number): string {
             <div class="font-semibold leading-5 text-normal">Jenis Kelamin</div>
             <div class="px-3">:</div>
             <div class="font-normal leading-5 text-normal">
-              {{ tiketAntrian.patient.gender }}
+              {{ mapGenderId(tiketAntrian.patient.gender) }}
             </div>
           </div>
         </div>
@@ -217,8 +252,21 @@ function epochToDateShortMonth(epochTime: number): string {
                 Jadwal
               </div>
               <div class="font-bold leading-8 text-subheading text-adameds-300">
-                {{ tiketAntrian.jadwalDokter.startTime }} -
-                {{ tiketAntrian.jadwalDokter.endTime }}
+                {{
+                  tiketAntrian.jadwalDokter?.startTime
+                    ? formatTime(
+                        setTimeToDate(tiketAntrian.jadwalDokter.startTime)
+                      )
+                    : "-"
+                }}
+                -
+                {{
+                  tiketAntrian.jadwalDokter?.endTime
+                    ? formatTime(
+                        setTimeToDate(tiketAntrian.jadwalDokter.endTime)
+                      )
+                    : "-"
+                }}
               </div>
             </div>
           </div>
