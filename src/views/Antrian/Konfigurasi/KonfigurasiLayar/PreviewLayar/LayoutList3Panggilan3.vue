@@ -35,7 +35,7 @@ const poliAt = (idx: number) => {
       <!-- Header Informasi Antrian -->
       <div class="w-full">
         <div
-          class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
+          class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
         >
           <div>
             <PhInfo :size="18" weight="fill" />
@@ -44,7 +44,7 @@ const poliAt = (idx: number) => {
         </div>
 
         <!-- 3 Kolom List -->
-        <div class="flex gap-2 content-area">
+        <div class="flex gap-3 content-area">
           <!-- Kolom 1: Admisi atau Placeholder -->
           <div
             class="flex overflow-hidden flex-col w-full h-full bg-white rounded-lg"
@@ -170,7 +170,7 @@ const poliAt = (idx: number) => {
     <div class="flex flex-col w-1/3 h-full">
       <!-- Header Panggilan -->
       <div
-        class="flex gap-2 justify-center items-center py-1 mb-2 w-full text-white rounded-lg bg-adameds-300"
+        class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
       >
         <div>
           <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
@@ -226,6 +226,6 @@ const poliAt = (idx: number) => {
 
 <style scoped>
 .content-area {
-  height: calc(100% - 40px); /* 40px = tinggi header internal */
+  height: calc(100% - 57px); /* 40px = tinggi header internal */
 }
 </style>
