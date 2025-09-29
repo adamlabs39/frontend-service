@@ -13,7 +13,6 @@ import {
   baseInstanceRawatInap,
   baseInstanceInventory,
   baseInstanceAntrian,
-  baseInstancePelayananRI,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
@@ -403,16 +402,6 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
   }
 };
 
-//Pelayanan RI
-const apiPelayananRIGet = async (url: string, data: object) => {
-  url = cekHost(import.meta.env.VITE_BASE_RAWAT_INAP, url);
-  try {
-    let response = await baseInstancePelayananRI.get(url, data);
-    return response.data;
-  } catch (error) {
-    errorApiHandler(error);
-  }
-};
 
 //Admisi
 const apiAdmisiGet = async (url: string, data: object) => {
@@ -888,5 +877,4 @@ export {
     apiAntrianPut,
     apiAntrianGetDatamaster, 
     apiAntrianGetNoMessage,
-    apiPelayananRIGet,
 };

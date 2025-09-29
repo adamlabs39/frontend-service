@@ -16,6 +16,7 @@ import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useRJStore } from "@/stores/rawatJalan/laporanrajal";
 
 
 const properties = ref({
@@ -40,6 +41,7 @@ const lokasiProperties = ref({
 
 
 // STORE
+const RJStore = useRJStore();
 const useUtilsStore = utilsStore();
 const rekapTindakanPasienStore = useRekapTindakanStore();
 const kunjunganRawatJalanStore = useAdmisiReportStore();
@@ -52,21 +54,23 @@ const reportData = ref([]);
 const praktisiPayload = ref<any[]>([]);
 const lokasiPayload = ref<any[]>([]);
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const fetchLaporanData = async (filter: Filter = {
+  polyclinic: ""
+  }) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
     if (pageType.value == "kunjungan-rawat-jalan") {
-      response = await kunjunganRawatJalanStore.getKunjunganReport(filter);
+      response = await RJStore.getKunjunganRajal(filter);
     } else if (pageType.value == "pembatalan-poli") {
-      response = await kunjunganRawatJalanStore.getBatalKunjunganReport(filter);
+      response = await RJStore.getBatalPoli(filter);
     } else if (pageType.value == "rekap-tindakan-pasien") {
       response = await rekapTindakanPasienStore.getTindakanPasien(filter);
     }
 
     if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
-      return response.payload;
+      properties.value.total = response.payload.pagination.totalData;
+      return response.payload.data;
     } else return [];
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -99,11 +103,16 @@ const fetchLokasiData = async () => {
   useUtilsStore.setLoading(true);
   try {
     const response = await lokasiStore.getApi(0, 9999);
-    if (response && response.payload) {
-      lokasiPayload.value = response.payload;
-    } else {
-      lokasiPayload.value = [];
-    }
+  if (response && response.payload) {
+    lokasiPayload.value = response.payload.filter((lokasi: any) => {
+      return (
+        lokasi.locationType?.toLowerCase() === "ward" &&
+        Boolean(lokasi.isPoli) === true
+      );
+    });
+  } else {
+    lokasiPayload.value = [];
+  }
   } catch (error) {
     console.error("Failed to fetch data", error);
     lokasiPayload.value = [];
@@ -148,6 +157,7 @@ onMounted(() => {
 });
 
 interface Filter {
+  polyclinic: string;
   page?: number;
   limit?: number;
   q?: string;
@@ -197,6 +207,7 @@ const setFilter = () => {
   } else if (pageType.value == "pembatalan-poli") {
     filter.practitionerUuid = searchDokterDPJPFilter.value ?? "";
     filter.pelayanan = "RJ"
+    filter.polyclinic = searchPoliklinikFilter.value ?? ""; 
   } else if (pageType.value == "rekap-tindakan-pasien") {
     filter.practitionerUuid = searchPraktisiFilter.value ?? "";
     filter.pelayanan = "rj"
@@ -240,16 +251,6 @@ const handleBulan = (bulan: any) => {
 };
 const resetFormRef = ref();
 
-// const resetForm = () => {
-//   valueSearchRM.value = "";
-//   searchPoliklinikFilter.value = ""
-//   searchPraktisiFilter.value = ""
-//   valueBulan.value = 0;
-//   valueSearchDPJP.value = "";
-//   valueStartedDate.value = new Date();
-//   valueEndedDate.value = new Date();
-//   resetFormRef.value.resetForm();
-// };
 
 const resetForm = () => {
   valueSearchRM.value = "";

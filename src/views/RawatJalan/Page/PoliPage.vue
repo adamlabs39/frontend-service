@@ -222,14 +222,14 @@ const filterStatus = async (status: string) => {
               icon="PhListBullets"
               class="w-[60px]"
               :text-color="
-                statusPelayanan === '' ? 'text-white' : 'text-adameds-300'
+                statusPelayanan === '2' ? 'text-white' : 'text-adameds-300'
               "
               :border-color="
-                statusPelayanan === '' ? 'border-none' : 'border-adameds-300'
+                statusPelayanan === '2' ? 'border-none' : 'border-adameds-300'
               "
-              :class="statusPelayanan === '' ? 'bg-adameds-300' : 'bg-white'"
-              @click="filterStatus('')"
-              :outlined="statusPelayanan !== ''"
+              :class="statusPelayanan === '2' ? 'bg-adameds-300' : 'bg-white'"
+              @click="filterStatus('2')"
+              :outlined="statusPelayanan !== '2'"
             />
             <!-- Filter = {{ props.filter }} -->
             <CustomButton
