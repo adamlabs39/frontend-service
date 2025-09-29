@@ -38,6 +38,11 @@ const jadwalLayarAntrianProperties = ref({
   aktif: undefined as boolean | undefined,
 });
 
+const antrianCallPayload = ref();
+const antrianCallProperties = ref({
+  status_panggilan: 0,
+});
+
 const fetchLayarAntrian = async () => {
   useUtilsStore.setLoading(true);
   try {
@@ -68,6 +73,22 @@ const handlePage = (event: any) => {
   fetchLayarAntrian();
 };
 
+const fetchAntrianCall = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const res = await configLayarAntrianStore.getAntrianCall(
+      antrianCallProperties.value.status_panggilan
+    );
+    console.log("antrian call sebelum:", res);
+    antrianCallPayload.value = res.payload;
+    console.log("antrian call:", antrianCallPayload.value);
+  } catch (error) {
+    console.log("error fetch antrian call:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
 const headerFilterRef = ref<typeof HeaderFilter>();
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -82,6 +103,7 @@ const changeSection = (label: string) => {
 
 onMounted(() => {
   fetchLayarAntrian();
+  fetchAntrianCall();
 });
 
 const selectedPatient = ref([]);
@@ -435,7 +457,7 @@ onUnmounted(() => {
         </Column>
         <Column
           field="action"
-          header="action"
+          header="Action"
           headerClass="bg-adameds-50 justify-center"
         >
           <template #body="slotProps">
