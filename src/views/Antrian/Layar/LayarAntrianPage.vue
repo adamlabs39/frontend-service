@@ -38,6 +38,11 @@ const jadwalLayarAntrianProperties = ref({
   aktif: undefined as boolean | undefined,
 });
 
+const antrianCallPayload = ref();
+const antrianCallProperties = ref({
+  status_panggilan: 0,
+});
+
 const fetchLayarAntrian = async () => {
   useUtilsStore.setLoading(true);
   try {
@@ -68,6 +73,22 @@ const handlePage = (event: any) => {
   fetchLayarAntrian();
 };
 
+const fetchAntrianCall = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const res = await configLayarAntrianStore.getAntrianCall(
+      antrianCallProperties.value.status_panggilan
+    );
+    console.log("antrian call sebelum:", res);
+    antrianCallPayload.value = res.payload;
+    console.log("antrian call:", antrianCallPayload.value);
+  } catch (error) {
+    console.log("error fetch antrian call:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
 const headerFilterRef = ref<typeof HeaderFilter>();
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -82,6 +103,7 @@ const changeSection = (label: string) => {
 
 onMounted(() => {
   fetchLayarAntrian();
+  fetchAntrianCall();
 });
 
 const selectedPatient = ref([]);
@@ -95,17 +117,6 @@ const convertLayarType = (type: number): string => {
     5: "Layar 1 List, 1 Panggilan, 1 Gambar",
   };
   return layarTypes[type as keyof typeof layarTypes] || "Unknown Type";
-};
-
-const getLayarTypeNumber = (description: string): number => {
-  const reverseLayarTypes = {
-    "Layar 3 x 3 Panggilan": 1,
-    "Layar 3 x 2 Panggilan": 2,
-    "Layar 3 List & 3 Panggilan": 3,
-    "Layar 2 List & 2 Panggilan": 4,
-    "Layar 1 List, 1 Panggilan, 1 Gambar": 5,
-  };
-  return reverseLayarTypes[description as keyof typeof reverseLayarTypes] || 0;
 };
 
 const isAdmisi = (row: any) =>
@@ -214,7 +225,10 @@ const previewProps = computed(() => {
         isAdmisi: isAdmisi(row),
         isFarmasi: isFarmasi(row),
       };
-    // 2 list & 2 panggilan dan 1 list 1 panggilan 1 gambar tidak butuh props khusus
+    case 5: // 1 list & 1 panggilan & Youtube
+      return {
+        media: (row?.media ?? row?.payload?.media ?? "") || "",
+      };
     default:
       return {};
   }
@@ -432,7 +446,7 @@ onUnmounted(() => {
         </Column>
         <Column
           field="action"
-          header="action"
+          header="Action"
           headerClass="bg-adameds-50 justify-center"
         >
           <template #body="slotProps">
