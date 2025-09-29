@@ -1,8 +1,49 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+
+/* Props */
+const props = defineProps<{ media?: any }>();
+
+/* Helper: convert various YouTube URLs to embed URL */
+const toEmbedUrl = (url?: string) => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    // youtu.be/<id>
+    if (u.hostname.includes("youtu.be")) {
+      const id = u.pathname.replace("/", "");
+      return id ? `https://www.youtube.com/embed/${id}` : "";
+    }
+    // youtube.com/watch?v=<id>
+    if (u.hostname.includes("youtube.com")) {
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      // youtube.com/embed/<id>
+      if (u.pathname.startsWith("/embed/")) return url;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+};
+
+const embedUrl = computed(() => toEmbedUrl(props.media));
 
 /* Data dummy */
-const antrianData = ref(["-", "-", "-", "-", "-", "-"]); // 6 baris
+const antrianData = ref([
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+  "-",
+]); // 6 baris
 const panggilanText = ref("");
 </script>
 
@@ -20,7 +61,7 @@ const panggilanText = ref("");
 
       <!-- List Antrian -->
       <div
-        class="flex overflow-hidden flex-col bg-white rounded-b-lg border-2 content-area border-adameds-300"
+        class="flex overflow-hidden flex-col bg-white rounded-lg border-2 content-area border-adameds-300"
       >
         <!-- Header Lokasi -->
         <div
@@ -28,14 +69,15 @@ const panggilanText = ref("");
         >
           Lokasi Pelayanan 1
         </div>
-        <div class="grid flex-1 grid-cols-3 divide-x divide-gray-200">
-          <div
-            v-for="(item, idx) in antrianData"
-            :key="idx"
-            class="flex justify-center items-center px-3 text-gray-600 border-b border-gray-200 last:border-b-0"
-            :class="{ 'bg-gray-50': idx % 2 === 1 }"
-          >
-            {{ item }}
+        <div class="flex-1">
+          <div class="grid grid-cols-3 h-full">
+            <div
+              v-for="(item, idx) in antrianData"
+              :key="idx"
+              class="flex justify-center items-center text-gray-600 bg-gray-50 border border-gray-200 min-h-[60px]"
+            >
+              <span class="text-lg font-medium">{{ item }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -63,7 +105,16 @@ const panggilanText = ref("");
         <div
           class="flex-1 bg-adameds-300 border-2 border-adameds-300 rounded-lg flex items-center justify-center text-white font-bold min-h-[80px]"
         >
-          Youtube
+          <iframe
+            v-if="embedUrl"
+            :src="embedUrl"
+            title="YouTube video"
+            class="w-full h-full rounded-lg"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+          <span v-else>Youtube</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import {
+  apiAdmisiGet,
   apiAntrianDelete,
   apiAntrianGet,
   apiAntrianGetNoMessage,
@@ -48,6 +49,12 @@ export const useConfigLayarAntrianStore = defineStore({
     },
     async updateLayarAntrian(uuid: string, payload: {}) {
       return apiAntrianPut(`/antrian/layar-antrian/${uuid}`, payload);
+    },
+    async getAntrianCall(statusPanggilan: number, payload = {}) {
+      return apiAdmisiGet(
+        `/antrian-call?status_panggilan=${statusPanggilan}`,
+        payload
+      );
     },
   },
 });
