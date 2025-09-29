@@ -294,7 +294,7 @@ const selectedDoctorDetail = computed(() => {
         class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
       >
         <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center relative"
+          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center relative z-10"
         >
           <div class="grid relative grid-cols-3 gap-4 pt-10">
             <div
