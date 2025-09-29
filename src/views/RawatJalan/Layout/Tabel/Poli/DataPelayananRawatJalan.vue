@@ -184,7 +184,7 @@ const resetSelection = () => {
     :value="dataPatient"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="flex"
+    scrollHeight="70vh"
     class=""
     @row-click="openDialogRM($event)"
     @row-select-all="handleSelectedAll"

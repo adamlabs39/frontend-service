@@ -18,9 +18,11 @@ import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { useRIStore } from "@/stores/rawatInap/laporanranap";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 
 // Filter 
 interface Filter {
+  kelas: string;
   page?: number;
   limit?: number;
   q?: string;
@@ -50,14 +52,16 @@ const rekapTindakanPasienStore = useRekapTindakanStore()
 const kunjunganRawatInap = useAdmisiReportStore()
 const dokterStore = usePraktisiStore()
 const ruanganStore = useRuanganStore();
-
+const monitoringKamarStore = useMonitoringKamarStore();
 
 // Data From API
 const reportData = ref([])
 const dokterPayload = ref<any[]>([])
 const ruanganPayload = ref<any[]>([])
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const fetchLaporanData = async (filter: Filter = {
+  kelas: ""
+}) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
@@ -91,7 +95,6 @@ const fetchDokterData = async () => {
     const response = await dokterStore.getAktifApi();
     if (response && response.payload) {
       dokterPayload.value = response.payload.filter((item: { isDoctor: boolean }) => item.isDoctor)
-      console.log("Dokter Payload:", dokterPayload.value);
     } else {
       dokterPayload.value = [];
     }
@@ -108,10 +111,9 @@ const fetchRuangan = async () => {
   // Fetch data ruangan dari API
   useUtilsStore.setLoading(true);
   try {
-    const response = await ruanganStore.getAktifApi();
+    const response = await monitoringKamarStore.getMonitoringKamar({ page: 1, limit: 9999 });
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
-      console.log("Ruangan Payload:", ruanganPayload.value);
     } else {
       ruanganPayload.value = [];
     }
@@ -125,11 +127,11 @@ const fetchRuangan = async () => {
 
 // Kelas
 const optionsKelas = ref([
-  { label: "kelas 1", value: 1 },
-  { label: "kelas 2", value: 2 },
-  { label: "kelas 3", value: 3 },
-  { label: "VIP", value: 4 },
-  { label: "VVIP", value: 5 },
+  { label: "Kelas 1", value: "Kelas 1" },
+  { label: "Kelas 2", value: "Kelas 2" },
+  { label: "Kelas 3", value: "Kelas 3" },
+  { label: "VIP", value: "VIP" },
+  { label: "VVIP", value: "VVIP" },
 ]);
 
 // Function to search data
@@ -150,6 +152,7 @@ const setFilter = () => {
   if (pageType.value === "kunjungan-rawat-inap") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
     filter.jenisKunjungan = "RI";
+    filter.kelas = searchKelasFilter.value ?? "";
   } else if (pageType.value === "perpindahan-pasien") {
      filter.pelayanan = "RI";
   }

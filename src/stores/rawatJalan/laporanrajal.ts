@@ -1,20 +1,19 @@
 import { defineStore } from "pinia";
 import {
-    apiPelayananRIGet
+    apiPelayananRJGet
 } from "@/utils/apiHandler";
 
-export const useRIStore = defineStore({
-    id: "PelayananRI",
+export const useRJStore = defineStore({
+    id: "PelayananRJ",
     state: () => ({}),
     getters: {},
     actions: {
-        async getKunjunganRanap(
+        async getKunjunganRajal(
             {
                 q = "",
                 page = 1,
                 limit = 10,
                 room = "",
-                kelas = "",
                 practitionerUuid = "",
                 jenisKunjungan = "",
                 startDate = "",
@@ -22,18 +21,18 @@ export const useRIStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananRIGet(
-                `/ranap/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+            return apiPelayananRJGet(
+                `/rajal/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );
         },
-        async getBatalRawat(
+        async getBatalPoli(
             {
                 q = "",
                 page = 1,
                 limit = 10,
                 room = "",
-                kelas = "",
+                polyclinic = "",
                 practitionerUuid = "",
                 jenisKunjungan = "",
                 startDate = "",
@@ -41,8 +40,8 @@ export const useRIStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananRIGet(
-                `/ranap/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+            return apiPelayananRJGet(
+                `/rajal/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );
         },

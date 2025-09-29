@@ -282,6 +282,47 @@ baseInstanceLaboratorium.interceptors.response.use(
   }
 );
 
+//Pelayanan RJ
+const baseInstancePelayananRJ = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_RAWAT_JALAN,
+});
+
+baseInstancePelayananRJ.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = token;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstancePelayananRJ.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 //Pelayanan RI
 const baseInstancePelayananRI = axios.create({
   headers: {
@@ -312,6 +353,47 @@ baseInstancePelayananRI.interceptors.request.use(
 );
 
 baseInstancePelayananRI.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Pelayanan IGD
+const baseInstancePelayananIGD = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_IGD,
+});
+
+baseInstancePelayananIGD.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = token;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstancePelayananIGD.interceptors.response.use(
   (response: AxiosResponse) => {
     if (response.data) {
       response.data = toCamelCase(response.data);
@@ -659,4 +741,6 @@ export {
   baseInstanceInventory,
   baseInstanceAntrian,
   baseInstancePelayananRI,
+  baseInstancePelayananRJ,
+  baseInstancePelayananIGD,
 };

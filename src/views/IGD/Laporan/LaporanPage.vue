@@ -133,15 +133,15 @@ const fetchLaporanData = async (filter: Filter = {}) => {
   let response;
   try {
     if (pageType.value == "kunjungan-igd") {
-      response = await admisiLaporanStore.getKunjunganReport(filter);
+      response = await IgdLaporanStore.getKunjunganIGD(filter);
     } else if (pageType.value == "pembatalan-dirawat") {
-      response = await admisiLaporanStore.getBatalKunjunganReport(filter);
+      response = await IgdLaporanStore.getBatalIGD(filter);
     } else if (pageType.value == "rekap-tindakan-pasien") {
       response = await IgdLaporanStore.getLaporanTindakan(filter);
     }
     if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
-      return response.payload;
+      properties.value.total = response.payload.pagination.totalData;
+      return response.payload.data;
     } else return [];
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -174,14 +174,6 @@ const fetchPraktisi = async () => {
     praktisiPayload.value = [];
   }
 };
-const dokterDJP = ref([
-  {
-    uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
-    name: "Rudi tabuti",
-  },
-  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6089", name: "dr. Ali" },
-  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
-]);
 
 const reloadData = async () => {
   let filter = {} as Filter;
@@ -208,11 +200,9 @@ const reloadData = async () => {
         @reset="handleReset()"
         @update:startDateFilter="handleStartDate"
         @update:endDateFilter="handleEndDate"
-        :filterSelect="
-          pageType === 'rekap-tindakan-pasien' ? praktisiPayload : dokterDJP
-        "
+        :filterSelect="praktisiPayload"
         ref="resetFormRef"
-      />
+        />
     </template>
     <template #content>
       <!-- has data true -->

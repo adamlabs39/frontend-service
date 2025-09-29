@@ -14,6 +14,8 @@ import {
   baseInstanceInventory,
   baseInstanceAntrian,
   baseInstancePelayananRI,
+  baseInstancePelayananRJ,
+  baseInstancePelayananIGD,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
@@ -403,11 +405,31 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
   }
 };
 
+//Pelayanan RJ
+const apiPelayananRJGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_RAWAT_JALAN, url);
+  try {
+    let response = await baseInstancePelayananRJ.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 //Pelayanan RI
 const apiPelayananRIGet = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_RAWAT_INAP, url);
   try {
     let response = await baseInstancePelayananRI.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+//Pelayanan IGD
+const apiPelayananIGDGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_IGD, url);
+  try {
+    let response = await baseInstancePelayananIGD.get(url, data);
     return response.data;
   } catch (error) {
     errorApiHandler(error);
@@ -889,4 +911,6 @@ export {
     apiAntrianGetDatamaster, 
     apiAntrianGetNoMessage,
     apiPelayananRIGet,
+    apiPelayananRJGet,
+    apiPelayananIGDGet,
 };
