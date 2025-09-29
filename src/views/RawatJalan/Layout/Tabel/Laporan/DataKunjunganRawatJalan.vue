@@ -120,32 +120,32 @@ const expandedRows = ref<any[]>([]);
             header-class="text-black bg-adameds-50"
           ></Column>
           <Column
-            field="statusKeluarPasien" 
+            field="kondisiPasienPulang" 
             header="Status Keluar Pasien"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           >
             <template #body="{ data }">
-              <span v-if="data.statusKeluarPasien === '359746009'">Stabil</span>
-              <span v-else-if="data.statusKeluarPasien === '162668006'">Tidak Stabil</span>
-              <span v-else-if="data.statusKeluarPasien === '268910001'">Perbaikan</span>
-              <span v-else>{{ data.statusKeluarPasien }}</span>
+              <span v-if="data.kondisiPasienPulang === '359746009'">Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '162668006'">Tidak Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '268910001'">Perbaikan</span>
+              <span v-else>{{ data.kondisiPasienPulang }}</span>
             </template>
           </Column>
           <Column
-            field="kondisiKeluar" 
+            field="statusPulang" 
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           >
             <template #body="{ data }">
-              <span v-if="data.kondisiKeluar === 'home'">Pulang atas persetujuan dokter</span>
-              <span v-else-if="data.kondisiKeluar === 'aadvice'">Pulang atas permintaan sendiri</span>
-              <span v-else-if="data.kondisiKeluar === 'other-hcf'">Dirujuk</span>
-              <span v-else-if="data.kondisiKeluar === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
-              <span v-else-if="data.kondisiKeluar === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
-              <span v-else-if="data.kondisiKeluar === 'oth'">Lain-lain</span>
-              <span v-else>{{ data.kondisiKeluar }}</span>
+              <span v-if="data.statusPulang === 'home'">Pulang atas persetujuan dokter</span>
+              <span v-else-if="data.statusPulang === 'aadvice'">Pulang atas permintaan sendiri</span>
+              <span v-else-if="data.statusPulang === 'other-hcf'">Dirujuk</span>
+              <span v-else-if="data.statusPulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'oth'">Lain-lain</span>
+              <span v-else>{{ data.statusPulang }}</span>
             </template>
           </Column>
         </DataTable>

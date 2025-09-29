@@ -180,6 +180,17 @@ const reloadData = async () => {
   filter = setFilter();
   reportData.value = await fetchLaporanData(filter);
 };
+
+
+const dokterDJP = ref([
+  {
+    uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
+    name: "Rudi tabuti",
+  },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6089", name: "dr. Ali" },
+  { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
+]);
+
 </script>
 
 <template>
@@ -203,6 +214,7 @@ const reloadData = async () => {
         :filterSelect="praktisiPayload"
         ref="resetFormRef"
         />
+        <!-- :filterSelect="pageType === 'rekap-tindakan-pasien' ? praktisiPayload : dokterDJP" -->
     </template>
     <template #content>
       <!-- has data true -->

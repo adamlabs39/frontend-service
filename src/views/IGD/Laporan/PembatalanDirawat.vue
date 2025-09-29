@@ -31,25 +31,25 @@ const expandedRows = ref<any[]>([]);
       ><template #body="{ index }">{{ index + 1 }}</template>
     </Column>
     <Column
-      field="tanggalDaftar"
+      field="tanggal_daftar"
       header="Tgl. Registrasi"
       header-class="text-black bg-adameds-50 "
       class="text-black text-SM"
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.tanggalDaftar, "dateTime") }}
+        {{ epochToDate(data.tanggal_daftar, "dateTime") }}
       </template>
     </Column>
     <Column
-      field="noReg"
+      field="no_reg"
       header="No. Registrasi"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
     />
     <Column
-      field="patient.noRm"
+      field="patient.no_rm"
       header="No. RM"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
@@ -97,7 +97,7 @@ const expandedRows = ref<any[]>([]);
             style="width: 300px"
           ></Column>
           <Column
-            field="alasanBatal"
+            field="alasan_batal"
             header="Alasan Batal"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"

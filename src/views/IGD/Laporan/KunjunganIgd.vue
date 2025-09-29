@@ -30,25 +30,25 @@ const expandedRows = ref<any[]>([]);
       <template #body="{ index }">{{ index + 1 }}</template>
     </Column>
     <Column
-      field="tanggalDaftar"
+      field="tanggal_daftar"
       header="Tgl. Registrasi"
       header-class="text-black bg-adameds-50 "
       class="text-black text-SM"
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.tanggalDaftar, "dateTime") }}
+        {{ epochToDate(data.tanggal_daftar, "dateTime") }}
       </template>
     </Column>
     <Column
-      field="noReg"
+      field="no_reg"
       header="No. Registrasi"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
     />
     <Column
-      field="patient.noRm"
+      field="patient.no_rm"
       header="No. RM"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
@@ -86,13 +86,13 @@ const expandedRows = ref<any[]>([]);
             </template>
           </Column>
           <Column
-            field="patient.birthDetail.birthDate"
+            field="patient.birth_detail.birth_date"
             header="Tgl. Lahir"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           >
              <template #body="{ data }">
-               {{ data.patient.birthDetail.birthDate.split('T')[0] }}
+               {{ data.patient.birth_detail.birth_date.split('T')[0] }}
              </template>
           </Column>
           <Column
@@ -102,43 +102,43 @@ const expandedRows = ref<any[]>([]);
           >
             <template #body="{ data }">
               {{
-                `${data.patient.birthDetail.ageYear} Tahun ${data.patient.birthDetail.ageMonth} Bulan ${data.patient.birthDetail.ageDay} Hari`
+                `${data.patient.birth_detail.age_year} Tahun ${data.patient.birth_detail.age_month} Bulan ${data.patient.birth_detail.age_day} Hari`
               }}
             </template>
           </Column>
           <Column
-            field="patient.address.fullAddress"
+            field="patient.address.full_address"
             header="Alamat"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           />
           <Column
-            field="kondisiPasienPulang" 
-            header="Status Keluar Pasien"
+            field="kondisi_pasien_pulang" 
+            header="Status Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           >
             <template #body="{ data }">
-              <span v-if="data.kondisiPasienPulang === '359746009'">Stabil</span>
-              <span v-else-if="data.kondisiPasienPulang === '162668006'">Tidak Stabil</span>
-              <span v-else-if="data.kondisiPasienPulang === '268910001'">Perbaikan</span>
-              <span v-else>{{ data.kondisiPasienPulang }}</span>
+              <span v-if="data.kondisi_pasien_pulang === '359746009'">Stabil</span>
+              <span v-else-if="data.kondisi_pasien_pulang === '162668006'">Tidak Stabil</span>
+              <span v-else-if="data.kondisi_pasien_pulang === '268910001'">Perbaikan</span>
+              <span v-else>{{ data.kondisi_pasien_pulang }}</span>
             </template>
           </Column>
           <Column
-            field="statusPulang" 
+            field="status_pulang" 
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
           >
             <template #body="{ data }">
-              <span v-if="data.statusPulang === 'home'">Pulang atas persetujuan dokter</span>
-              <span v-else-if="data.statusPulang === 'aadvice'">Pulang atas permintaan sendiri</span>
-              <span v-else-if="data.statusPulang === 'other-hcf'">Dirujuk</span>
-              <span v-else-if="data.statusPulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
-              <span v-else-if="data.statusPulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
-              <span v-else-if="data.statusPulang === 'oth'">Lain-lain</span>
-              <span v-else>{{ data.statusPulang }}</span>
+              <span v-if="data.status_pulang === 'home'">Pulang atas persetujuan dokter</span>
+              <span v-else-if="data.status_pulang === 'aadvice'">Pulang atas permintaan sendiri</span>
+              <span v-else-if="data.status_pulang === 'other-hcf'">Dirujuk</span>
+              <span v-else-if="data.status_pulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
+              <span v-else-if="data.status_pulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
+              <span v-else-if="data.status_pulang === 'oth'">Lain-lain</span>
+              <span v-else>{{ data.status_pulang }}</span>
             </template>
           </Column>
         </DataTable>

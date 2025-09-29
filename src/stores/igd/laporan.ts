@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { apiIgdGet, apiPelayananIGDGet } from "@/utils/apiHandler";
+import { apiIgdGet } from "@/utils/apiHandler";
 
 
 export const useIgdLaporanStore = defineStore({
@@ -37,7 +37,7 @@ export const useIgdLaporanStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananIGDGet(
+            return apiIgdGet(
                 `/igd/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );
@@ -56,7 +56,7 @@ export const useIgdLaporanStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananIGDGet(
+            return apiIgdGet(
                 `/igd/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );

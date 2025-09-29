@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import {
-    apiPelayananRIGet
+    apiRawatInapGet
 } from "@/utils/apiHandler";
 
 export const useRIStore = defineStore({
@@ -22,7 +22,7 @@ export const useRIStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananRIGet(
+            return apiRawatInapGet(
                 `/ranap/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );
@@ -41,7 +41,7 @@ export const useRIStore = defineStore({
             },
             payload = {}
         ) {
-            return apiPelayananRIGet(
+            return apiRawatInapGet(
                 `/ranap/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
                 payload
             );

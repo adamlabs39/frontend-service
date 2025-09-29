@@ -147,17 +147,34 @@ const expandedRows = ref<any[]>([]);
             class="text-black text-SM"
           ></Column>
           <Column
-            field="kondisiPasienPulang"
+            field="kondisiPasienPulang" 
             header="Status Keluar Pasien"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.kondisiPasienPulang === '359746009'">Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '162668006'">Tidak Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '268910001'">Perbaikan</span>
+              <span v-else>{{ data.kondisiPasienPulang }}</span>
+            </template>
+          </Column>
           <Column
-            field="statusPulang"
+            field="statusPulang" 
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.statusPulang === 'home'">Pulang atas persetujuan dokter</span>
+              <span v-else-if="data.statusPulang === 'aadvice'">Pulang atas permintaan sendiri</span>
+              <span v-else-if="data.statusPulang === 'other-hcf'">Dirujuk</span>
+              <span v-else-if="data.statusPulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'oth'">Lain-lain</span>
+              <span v-else>{{ data.statusPulang }}</span>
+            </template>
+          </Column>
           <Column
             field="noBed"
             header="No. Bed"
