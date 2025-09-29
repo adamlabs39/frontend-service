@@ -119,17 +119,6 @@ const convertLayarType = (type: number): string => {
   return layarTypes[type as keyof typeof layarTypes] || "Unknown Type";
 };
 
-const getLayarTypeNumber = (description: string): number => {
-  const reverseLayarTypes = {
-    "Layar 3 x 3 Panggilan": 1,
-    "Layar 3 x 2 Panggilan": 2,
-    "Layar 3 List & 3 Panggilan": 3,
-    "Layar 2 List & 2 Panggilan": 4,
-    "Layar 1 List, 1 Panggilan, 1 Gambar": 5,
-  };
-  return reverseLayarTypes[description as keyof typeof reverseLayarTypes] || 0;
-};
-
 const isAdmisi = (row: any) =>
   row?.is_admisi === true || row?.isAdmisi === true;
 const isPoli = (row: any) => row?.is_poli === true || row?.isPoli === true;
