@@ -148,16 +148,6 @@ const expandedRows = ref<any[]>([]);
               <span v-else>{{ data.kondisiKeluar }}</span>
             </template>
           </Column>
-          <Column
-            field="statusKeluarPasien"
-            header="Status Keluar Pasien"
-            header-class="text-black bg-adameds-50"
-          ></Column>
-          <Column
-            field="kondisiKeluar"
-            header="Kondisi Keluar"
-            header-class="text-black bg-adameds-50"
-          ></Column>
         </DataTable>
       </div>
     </template>
