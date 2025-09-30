@@ -235,6 +235,41 @@ watch(
   },
   { immediate: true, deep: true }
 );
+
+const flashTextSchema = yup.string().max(100, "Panjang maksimal 100 karakter");
+const flashTextRealtimeError = ref<string | null>(null);
+const validateFlashTextDraft = (val: string) => {
+  try {
+    flashTextSchema.validateSync(val.trim());
+    flashTextRealtimeError.value = null;
+  } catch (err: any) {
+    flashTextRealtimeError.value =
+      err?.message ?? "Panjang maksimal 100 karakter";
+  }
+};
+
+const onFlashTextComplete = (e: any) => validateFlashTextDraft(e?.query ?? "");
+const onFlashTextKeyup = (e: any) =>
+  validateFlashTextDraft(e?.target?.value ?? "");
+
+const onFlashTextKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Enter") {
+    const draft = (e.target as HTMLInputElement)?.value ?? "";
+    const len = draft.trim().length;
+    if (len > 100) {
+      e.preventDefault();
+      e.stopImmediatePropagation?.();
+      e.stopPropagation();
+      flashTextRealtimeError.value = "Panjang maksimal 100 karakter";
+      return;
+    }
+    flashTextRealtimeError.value = null;
+  }
+};
+
+watch(flashText, () => {
+  flashTextRealtimeError.value = null;
+});
 </script>
 
 <template>
@@ -341,9 +376,16 @@ watch(
                   fluid
                   multiple
                   :typeahead="false"
+                  :invalid="!!(flashTextRealtimeError || errors.flashText)"
+                  @complete="onFlashTextComplete"
+                  @keyup="onFlashTextKeyup"
+                  @keydown.capture="onFlashTextKeydown"
                 />
-                <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
-                  {{ errors.flashText }}
+                <p
+                  v-if="flashTextRealtimeError || errors.flashText"
+                  class="mt-1 text-xs text-red-500"
+                >
+                  {{ flashTextRealtimeError || errors.flashText }}
                 </p>
               </div>
             </div>
