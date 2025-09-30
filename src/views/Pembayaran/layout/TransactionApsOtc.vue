@@ -371,26 +371,23 @@ watch(amount, (newValue) => {
 });
 
 watch(codeDiscount, (newValue, oldValue) => {
-    if (newValue === undefined || newValue === null) return;
+    // Jika nilai baru kosong atau null, hentikan proses.
+    if (newValue === null || newValue === undefined) return;
 
     let valueStr = String(newValue);
+    valueStr = valueStr.replace(/\./g, ',');
+    let cleaned = valueStr.replace(/[^0-9,]/g, '');
 
-    // Ganti titik dengan koma untuk konsistensi
-    valueStr = valueStr.replace('.', ',');
-
-    // Hanya izinkan angka dan satu koma di awal
-    const validRegex = /^[0-9]*\,?[0-9]*$/;
-
-    if (!validRegex.test(valueStr)) {
-        // Jika format tidak valid, kembalikan ke nilai sebelumnya (pastikan string)
-        codeDiscount.value = oldValue ? String(oldValue) : '';
-    } else {
-        const numericValue = parseFloat(valueStr.replace(',', '.'));
-        if (numericValue > 100) {
-            codeDiscount.value = '100';
-        } else {
-            codeDiscount.value = valueStr;
-        }
+    const parts = cleaned.split(',');
+    if (parts.length > 2) {
+        cleaned = parts[0] + ',' + parts.slice(1).join('');
+    }
+    const numericValue = parseFloat(cleaned.replace(',', '.'));
+    if (!isNaN(numericValue) && numericValue > 100) {
+        cleaned = '100';
+    }
+    if (cleaned !== newValue) {
+        codeDiscount.value = cleaned;
     }
 });
 
@@ -535,7 +532,7 @@ const optionMetodeBayar = ref([
                         <hr class="mt-6 mb-2 border-slate-300 border-1" />
                         <div class="flex justify-between mt-6">
                             <div class="text-sm font-bold">Grand Total</div>
-                            <div class="text-sm font-bold">{{ formatPriceLokal(detailData.grandTotal)}}
+                            <div class="text-sm font-bold">{{ formatPriceLokal(detailData.grandTotal) }}
                             </div>
                         </div>
 
@@ -821,7 +818,7 @@ const optionMetodeBayar = ref([
                         <div class="flex justify-between p-2 font-bold bg-white rounded-b-[10px]">
                             <p class="text-base font-bold ">Total kamar</p>
                             <p class="text-base font-bold">Rp {{ itemTagihan.item.ruangan.total?.toLocaleString('id-ID')
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
 
@@ -936,7 +933,7 @@ const optionMetodeBayar = ref([
                             <Column header="Jasa" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 10%">
                                 <template #body="slotProps">
                                     <div class="text-SM">Rp {{ (slotProps.data.serviceFee ?? 0).toLocaleString('id-ID')
-                                    }}</div>
+                                        }}</div>
                                 </template>
                             </Column>
                             <Column header="Total" headerClass="bg-adameds-50" bodyClass="text-left" style="width: 15%">
@@ -989,7 +986,7 @@ const optionMetodeBayar = ref([
                         <div class="flex justify-between p-3 font-bold bg-white rounded-b-[10px]">
                             <p class="text-base font-bold ">Total alkes</p>
                             <p class="text-base font-bold">Rp {{ itemTagihan.item.alkes.total?.toLocaleString('id-ID')
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
 
@@ -999,7 +996,7 @@ const optionMetodeBayar = ref([
                                 <div class="flex justify-between">
                                     <p class="text-base font-bold">Total Keseluruhan Item</p>
                                     <p class="text-base font-bold">Rp {{ itemTagihan.total?.toLocaleString('id-ID') || 0
-                                    }}</p>
+                                        }}</p>
                                 </div>
                             </template>
                         </card>

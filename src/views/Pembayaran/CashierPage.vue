@@ -338,7 +338,7 @@ const submitVoucher = async () => {
     if (responseDetailBill && responseDetailBill.payload) {
       kasirData.value = responseDetailBill.payload;
       processBillData(responseDetailBill.payload.serviceBill);
-      confirmVoucherDialog.value = false; 
+      confirmVoucherDialog.value = false;
     }
   } catch (error) {
     console.error("Failed to process the data:", error);
@@ -373,28 +373,23 @@ const submitDiscount = async () => {
 };
 
 watch(codeDiscount, (newValue, oldValue) => {
-  if (newValue === undefined || newValue === null) return;
+  // Jika nilai baru kosong atau null, hentikan proses.
+  if (newValue === null || newValue === undefined) return;
 
   let valueStr = String(newValue);
-  
-  // Secara eksplisit hapus semua karakter minus '-'
-  valueStr = valueStr.replace(/-/g, ''); 
+  valueStr = valueStr.replace(/\./g, ',');
+  let cleaned = valueStr.replace(/[^0-9,]/g, '');
 
-  //titik dengan koma untuk konsistensi
-  valueStr = valueStr.replace('.', ',');
-
-  // Regex untuk memblokir karakter non-angka
-  const validRegex = /^[0-9]*\,?[0-9]*$/;
-
-  if (!validRegex.test(valueStr)) {
-    codeDiscount.value = oldValue ? String(oldValue) : '';
-  } else {
-    const numericValue = parseFloat(valueStr.replace(',', '.'));
-    if (numericValue > 100) {
-      codeDiscount.value = '100';
-    } else {
-      codeDiscount.value = valueStr;
-    }
+  const parts = cleaned.split(',');
+  if (parts.length > 2) {
+    cleaned = parts[0] + ',' + parts.slice(1).join('');
+  }
+  const numericValue = parseFloat(cleaned.replace(',', '.'));
+  if (!isNaN(numericValue) && numericValue > 100) {
+    cleaned = '100';
+  }
+  if (cleaned !== newValue) {
+    codeDiscount.value = cleaned;
   }
 });
 
@@ -736,11 +731,11 @@ const handleRefresh = () => {
   // Reset data pasien yang sedang dipilih
   selectedPatient.value = null;
   kasirData.value = null;
-  
+
   // Kosongkan hasil dropdown pencarian sebelumnya
   searchQuery.value = "";
   kasirPayload.value = [];
-  
+
   //  Reset input diskon & voucher
   codeDiscount.value = '';
   codeVoucher.value = '';
@@ -764,7 +759,7 @@ onUnmounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh" />
                 <CustomBreadCrumb :home="{
                   label: 'Kasir',
                   home: true,
@@ -1266,7 +1261,7 @@ onUnmounted(() => {
           </div>
           <div>
             <p class="font-bold mt-[20px]">
-              <span> {{ formatPriceLokal(kasirData.grandTotal)}}</span>
+              <span> {{ formatPriceLokal(kasirData.grandTotal) }}</span>
             </p>
           </div>
         </div>
