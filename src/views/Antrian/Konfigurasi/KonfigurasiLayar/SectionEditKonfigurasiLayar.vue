@@ -85,7 +85,7 @@ const schema = toTypedSchema(
     isFarmasi: yup.boolean(),
     flashText: yup
       .array()
-      .of(yup.string())
+      .of(yup.string().max(100, "Panjang maksimal 100 karakter"))
       .default(["Selamat Datang di Klinik Adameds"]),
     media: yup
       .string()
