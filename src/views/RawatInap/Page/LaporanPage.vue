@@ -19,6 +19,7 @@ import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { useRIStore } from "@/stores/rawatInap/laporanranap";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap } from "@/stores/rawatInap/exportexcelranap";
 
 // Filter 
 interface Filter {
@@ -125,6 +126,15 @@ const fetchRuangan = async () => {
   }
 };
 
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-inap') {
+    downloadExportExcelKunjunganRanap(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalRawatRanap(filter);
+  }
+};
+
 // Kelas
 const optionsKelas = ref([
   { label: "Kelas 1", value: "Kelas 1" },
@@ -149,7 +159,7 @@ const setFilter = () => {
   filter.q = valueSearchRM.value;
   filter.room = searchRuanganFilter.value;
 
-  if (pageType.value === "kunjungan-rawat-inap") {
+  if (pageType.value === "kunjungan-rawat-inap" || pageType.value === "pembatalan-dirawat") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
     filter.jenisKunjungan = "RI";
     filter.kelas = searchKelasFilter.value ?? "";
@@ -345,6 +355,7 @@ onMounted(() => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
        <CustomPaginator
           :rows="properties.page_size"

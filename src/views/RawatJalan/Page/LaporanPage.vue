@@ -17,6 +17,7 @@ import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRJStore } from "@/stores/rawatJalan/laporanrajal";
+import { downloadExportExcelKunjunganRajal, downloadExportExcelBatalRawatJalan } from "@/stores/rawatJalan/exportexcelrajal";
 
 
 const properties = ref({
@@ -120,6 +121,16 @@ const fetchLokasiData = async () => {
     useUtilsStore.setLoading(false);
   }
 };
+
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-jalan') {
+    downloadExportExcelKunjunganRajal(filter);
+  } else if (pageType.value === 'pembatalan-poli') {
+    downloadExportExcelBatalRawatJalan(filter);
+  }
+};
+
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
 const pageType = ref("");
@@ -367,6 +378,7 @@ const handleRefreshPage = () => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
         <CustomPaginator
           :rows="properties.page_size"

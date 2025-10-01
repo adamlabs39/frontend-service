@@ -277,28 +277,17 @@ defineExpose({
           label=""
           icon="PhListBullets"
           class="w-[60px]"
-          :text-color="selectedTab === '' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = ''))"
-          :outlined="selectedTab !== ''"
+          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '2'))"
+          :outlined="selectedTab !== '2'"
         />
         <!-- Filter = {{ props.filter }} -->
         <CustomButton
           label="PELAYANAN"
-          class="grow"
-          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
-          :border-color="
-            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
-          "
-          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '0'))"
-          :outlined="selectedTab !== '0'"
-        />
-        <CustomButton
-          label="DISCHARGE"
           class="grow"
           :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
           :border-color="
@@ -307,6 +296,17 @@ defineExpose({
           :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
           @click="$emit('selectedTab', (selectedTab = '1'))"
           :outlined="selectedTab !== '1'"
+        />
+        <CustomButton
+          label="DISCHARGE"
+          class="grow"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
         />
       </div>
       <div

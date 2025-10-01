@@ -13,6 +13,10 @@ import PembatalanDirawat from "./PembatalanDirawat.vue";
 import RekapTindakanPasien from "./RekapTindakanPasien.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import NoData from "@/components/section/NoData.vue";
+import {
+  downloadExportExcelKunjunganIGD,
+  downloadExportExcelBatalIGD
+} from "@/stores/igd/exportexceligd";
 
 //Bread Crumb
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -93,6 +97,15 @@ const handleReset = () => {
   reloadData();
 };
 
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-igd') {
+    downloadExportExcelKunjunganIGD(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalIGD(filter);
+  }
+};
+
 const handleSelectedPraktisi = (value: any) => {
   selectedFilterValue.value = value;
 };
@@ -140,7 +153,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
       response = await IgdLaporanStore.getLaporanTindakan(filter);
     }
     if (response && response.payload) {
-      properties.value.total = response.payload.pagination.totalData;
+      properties.value.total = response.payload.pagination.total_data;
       return response.payload.data;
     } else return [];
   } catch (error) {
@@ -240,6 +253,7 @@ const dokterDJP = ref([
         :rows="properties.page_size"
         :totalRecords="properties.total"
         @page="handlePage"
+        @export="handleExport"
       />
     </template>
   </Card>

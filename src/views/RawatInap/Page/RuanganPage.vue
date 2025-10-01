@@ -424,7 +424,7 @@ onMounted(() => {
               :size="18"
               class="mx-[5px] my-auto text-blueJeans-300"
             />
-            {{ slotProps.data.lamaHari || '-' }}
+            {{ slotProps.data.lamaDirawat || '-' }}
           </div>
         </div>
       </template>
