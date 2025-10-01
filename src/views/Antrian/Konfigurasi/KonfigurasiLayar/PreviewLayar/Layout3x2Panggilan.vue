@@ -14,6 +14,29 @@ const props = defineProps({
     type: Array as () => Array<"poli" | "admisi" | "farmasi">,
     default: () => [],
   },
+  admisiCallsActive: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const activeNos = computed<string[]>(() =>
+  (Array.isArray(props.admisiCallsActive) ? props.admisiCallsActive : [])
+    .map(
+      (x: any) =>
+        x?.patient_data?.antrian?.no_antrian_admisi ??
+        x?.patientData?.antrian?.noAntrianAdmisi ??
+        null
+    )
+    .filter((v: any) => !!v)
+);
+
+const activeName = computed<string | undefined>(() => {
+  const arr = Array.isArray(props.admisiCallsActive)
+    ? props.admisiCallsActive
+    : [];
+  if (!arr.length) return undefined;
+  return arr[0]?.patientData?.name ?? arr[0]?.patientData?.name ?? undefined;
 });
 
 const poliAt = (idx: number) => {
@@ -28,156 +51,143 @@ const poliAt = (idx: number) => {
 // - Kolom berikutnya mengisi ke kiri
 // - Jika isPoli = false, buang 'poli' dari activeOrder
 // - Jika tidak ada yang aktif, tampilkan 3 placeholder
-const columns = computed<Array<"poli" | "admisi" | "farmasi" | "placeholder">>(
-  () => {
-    // filter poli jika tidak diaktifkan
-    const filtered = (props.activeOrder || []).filter(
-      (k) => k !== "poli" || props.isPoli
-    );
-    // siapkan 3 kolom default placeholder
-    const cols: Array<"poli" | "admisi" | "farmasi" | "placeholder"> = [
-      "placeholder",
-      "placeholder",
-      "placeholder",
-    ];
-    // tempatkan dari kanan ke kiri
-    for (let i = 0; i < Math.min(filtered.length, 3); i++) {
-      const rightIndex = 2 - i;
-      cols[rightIndex] = filtered[i] as "poli" | "admisi" | "farmasi";
-    }
-    return cols;
+const columns = computed(() => {
+  const cols: Array<"placeholder" | "poli" | "admisi" | "farmasi"> = [
+    "placeholder",
+    "placeholder",
+    "placeholder",
+  ];
+  let pos = 2; // isi dari kanan sesuai toggle
+  for (const key of props.activeOrder) {
+    if (pos < 0) break;
+    if (key === "poli" && !props.isPoli) continue;
+    cols[pos] = key;
+    pos--;
   }
-);
+  return cols;
+});
 </script>
 
 <template>
   <!-- Header Panggilan -->
-  <div
-    class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
-  >
-    <div>
-      <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
+  <div class="flex flex-col h-full">
+    <div
+      class="flex gap-2 justify-center items-center py-1 my-3 w-full text-white rounded-lg bg-adameds-300"
+    >
+      <div>
+        <PhMegaphone :size="18" class="scale-x-[-1]" weight="fill" />
+      </div>
+      <div>Panggilan</div>
     </div>
-    <div>Panggilan</div>
-  </div>
 
-  <div class="grid-container">
-    <!-- Loop kolom: kanan ke kiri sudah diatur oleh computed 'columns' -->
-    <template v-for="(col, colIdx) in columns" :key="'col-' + colIdx">
-      <!-- Kolom POLI -->
-      <template v-if="col === 'poli'">
-        <div
-          v-for="item in 2"
-          :key="'poli-' + item"
-          class="grid grid-rows-2 h-full bg-white rounded-lg"
-        >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
-            {{ poliAt(item)?.codeAntrianPoli }}00{{ item }}
-          </div>
-          <div class="flex rounded-b-lg bg-adameds-50">
-            <div class="flex items-center w-full">
-              <div
-                class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
-                dir="rtl"
-              >
-                <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
-              </div>
-              <div class="px-3 w-full">
-                <div class="text-3xl font-black">Poli</div>
-                <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">Ini Dokter</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- Kolom ADMISI -->
-      <template v-else-if="col === 'admisi'">
-        <div
-          v-for="item in 2"
-          :key="'admisi-' + item"
-          class="grid grid-rows-2 h-full bg-white rounded-lg"
-        >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
-            A00{{ item }}
-          </div>
-          <div class="flex rounded-b-lg bg-adameds-50">
-            <div class="flex items-center w-full">
-              <div
-                class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
-                dir="rtl"
-              >
-                <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
-              </div>
-              <div class="px-3 w-full">
-                <div class="text-3xl font-black">Udin Bin Wahab</div>
-                <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">00-03-42</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- Kolom FARMASI -->
-      <template v-else-if="col === 'farmasi'">
-        <div
-          v-for="item in 2"
-          :key="'farmasi-' + item"
-          class="grid grid-rows-2 h-full bg-white rounded-lg"
-        >
-          <div class="flex justify-center items-center text-4xl font-extrabold">
-            F00{{ item }}
-          </div>
-          <div class="flex rounded-b-lg bg-adameds-50">
-            <div class="flex items-center w-full">
-              <div
-                class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
-                dir="rtl"
-              >
-                <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
-              </div>
-              <div class="px-3 w-full">
-                <div class="text-3xl font-black">Loket Farmasi</div>
-                <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">Farmasi</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- Kolom PLACEHOLDER (tidak ada toggle aktif) -->
-      <template v-else>
-        <div
-          v-for="i in 2"
-          :key="'placeholder-' + i"
-          class="grid grid-rows-2 h-full rounded-lg bg-adameds-50"
-        >
+    <!-- gunakan utilitas grid tailwind + content-area agar tinggi proporsional -->
+    <div class="grid grid-cols-3 grid-rows-2 grid-flow-col gap-2 content-area">
+      <template v-for="(colType, colIdx) in columns" :key="colIdx">
+        <!-- Kolom Poli -->
+        <template v-if="colType === 'poli'">
           <div
-            class="flex justify-center items-center text-4xl font-extrabold text-transparent"
+            v-for="item in 2"
+            class="grid grid-rows-2 h-full bg-white rounded-lg"
           >
-            —
-          </div>
-          <div class="flex rounded-b-lg bg-adameds-50">
-            <div class="flex items-center w-full opacity-0">
-              <div
-                class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
-                dir="rtl"
-              >
-                <PhCaretDoubleRight :size="44" color="#ffffff" weight="bold" />
-              </div>
-              <div class="px-3 w-full">
-                <div class="text-3xl font-black">Placeholder</div>
-                <hr class="border-adameds-300" />
-                <div class="text-xl font-bold">—</div>
+            <div
+              class="flex justify-center items-center text-5xl font-extrabold text-adameds-300"
+            >
+              -
+            </div>
+            <div class="flex rounded-b-lg bg-adameds-50">
+              <div class="flex items-center w-full">
+                <div
+                  class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
+                  dir="rtl"
+                >
+                  <PhCaretDoubleRight
+                    :size="44"
+                    color="#ffffff"
+                    weight="bold"
+                  />
+                </div>
+                <div class="px-3 w-full">
+                  <div class="text-3xl font-black">Poli</div>
+                  <hr class="border-adameds-300" />
+                  <div class="text-xl font-bold">Ini Dokter</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </template>
+
+        <!-- Kolom Admisi -->
+        <template v-else-if="colType === 'admisi'">
+          <div
+            v-for="item in 2"
+            class="grid grid-rows-2 h-full bg-white rounded-lg"
+          >
+            <div
+              class="flex justify-center items-center text-5xl font-extrabold text-adameds-300"
+            >
+              {{ activeNos[item - 1] ?? "-" }}
+            </div>
+            <div class="flex rounded-b-lg bg-adameds-50">
+              <div class="flex items-center w-full">
+                <div
+                  class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
+                  dir="rtl"
+                >
+                  <PhCaretDoubleRight
+                    :size="44"
+                    color="#ffffff"
+                    weight="bold"
+                  />
+                </div>
+                <div class="px-3 w-full">
+                  <div class="text-3xl font-black">{{ activeName }}</div>
+                  <hr class="border-adameds-300" />
+                  <div class="text-xl font-bold">Admisi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Kolom Farmasi -->
+        <template v-else-if="colType === 'farmasi'">
+          <div
+            v-for="item in 2"
+            class="grid grid-rows-2 h-full bg-white rounded-lg"
+          >
+            <div
+              class="flex justify-center items-center text-5xl font-extrabold text-adameds-300"
+            >
+              -
+            </div>
+            <div class="flex rounded-b-lg bg-adameds-50">
+              <div class="flex items-center w-full">
+                <div
+                  class="flex justify-center items-center p-6 h-full rounded-bl-lg bg-adameds-300 rounded-s-lg"
+                  dir="rtl"
+                >
+                  <PhCaretDoubleRight
+                    :size="44"
+                    color="#ffffff"
+                    weight="bold"
+                  />
+                </div>
+                <div class="px-3 w-full">
+                  <div class="text-3xl font-black">Loket Farmasi</div>
+                  <hr class="border-adameds-300" />
+                  <div class="text-xl font-bold">Farmasi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Kolom Placeholder -->
+        <template v-else>
+          <div v-for="item in 2" class="h-full rounded-lg bg-adameds-50"></div>
+        </template>
       </template>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -191,6 +201,10 @@ const columns = computed<Array<"poli" | "admisi" | "farmasi" | "placeholder">>(
   grid-auto-flow: column;
   min-height: 300px;
   width: 100%;
+}
+
+.content-area {
+  height: calc(100% - 57px); /* Mengurangi tinggi header internal (≈57px) */
 }
 
 .grid-item {
