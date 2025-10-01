@@ -45,5 +45,43 @@ export const useRJStore = defineStore({
                 payload
             );
         },
+        async DownloadKunjunganRajal(
+            {
+                q = "",
+                page = 1,
+                limit = 10,
+                room = "",
+                polyclinic = "",
+                practitionerUuid = "",
+                jenisKunjungan = "",
+                startDate = "",
+                endDate = "",
+            },
+            payload = {}
+        ) {
+            return apiRawatJalanGet(
+                `/rajal/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
+                payload
+            );
+        },
+        async DownloadBatalPoli(
+            {
+                q = "",
+                page = 1,
+                limit = 10,
+                room = "",
+                polyclinic = "",
+                practitionerUuid = "",
+                jenisKunjungan = "",
+                startDate = "",
+                endDate = "",
+            },
+            payload = {}
+        ) {
+            return apiRawatJalanGet(
+                `/rajal/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
+                payload
+            );
+        },
     },
 });

@@ -1,115 +1,121 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
+import { epochToDate } from "@/utils/Helpers";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 import { ref } from "vue";
 
+const props = defineProps({
+  dataPatient: {
+    type: Array,
+    required: true,
+  },
+});
 
 const medicalRecord = ref<any>();
 const openDialogRM = () => {
   medicalRecord.value?.showDialogRM();
 };
-const itemsPasien = ref([
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    tanggalDischarge: "10-10-2024 12:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-01",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DISCHARGE",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    tanggalDischarge: "10-10-2024 12:00",
-    no_SEP: "",
-    insuranceAccountName: "TUNAI",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-02",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "DISCHARGE",
-    statusPembayaran: "Belum Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Spesialis Sp. A",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    tanggalDischarge: "10-10-2024 12:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI ANAK",
-    gender: "L",
-    phone: "082112341234",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-03",
-    noREG: "REG2407010049",
-    newPatient: true,
-    statusPelayanan: "DISCHARGE",
-    statusPembayaran: "Lunas",
-  },
-  {
-    noPendaftaran: "00-00-00",
-    name: "Nama Pasien Lengkap",
-    address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
-    doctor: "dr. Nama Dokter Sp. M",
-    practicHour: "08:00 - 10:00",
-    tanggalDaftar: "10-10-2024 09:00",
-    tanggalJadwal: "10-10-2024 10:00",
-    tanggalDischarge: "10-10-2024 12:00",
-    no_SEP: "9999999999999999",
-    insuranceAccountName: "BPJS",
-    polyclinic: "POLI MATA",
-    gender: "P", // Perempuan
-    phone: "081234567890",
-    ageYear: 20,
-    ageMonth: 3,
-    ageDay: 5,
-    noMT: "MT-01-04",
-    noREG: "REG2407010049",
-    newPatient: false,
-    statusPelayanan: "DISCHARGE",
-    statusPembayaran: "Lunas",
-  },
-]);
+// const itemsPasien = ref([
+//   // {
+//   //   noPendaftaran: "00-00-00",
+//   //   name: "Nama Pasien Lengkap",
+//   //   address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+//   //   doctor: "dr. Spesialis Sp. A",
+//   //   practicHour: "08:00 - 10:00",
+//   //   tanggalDaftar: "10-10-2024 09:00",
+//   //   tanggalJadwal: "10-10-2024 10:00",
+//   //   tanggalDischarge: "10-10-2024 12:00",
+//   //   no_SEP: "",
+//   //   insuranceAccountName: "TUNAI",
+//   //   polyclinic: "POLI ANAK",
+//   //   gender: "L",
+//   //   phone: "082112341234",
+//   //   ageYear: 20,
+//   //   ageMonth: 3,
+//   //   ageDay: 5,
+//   //   noMT: "MT-01-01",
+//   //   noREG: "REG2407010049",
+//   //   newPatient: true,
+//   //   statusPelayanan: "DISCHARGE",
+//   //   statusPembayaran: "Belum Lunas",
+//   // },
+//   // {
+//   //   noPendaftaran: "00-00-00",
+//   //   name: "Nama Pasien Lengkap",
+//   //   address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+//   //   doctor: "dr. Nama Dokter Sp. M",
+//   //   practicHour: "08:00 - 10:00",
+//   //   tanggalDaftar: "10-10-2024 09:00",
+//   //   tanggalJadwal: "10-10-2024 10:00",
+//   //   tanggalDischarge: "10-10-2024 12:00",
+//   //   no_SEP: "",
+//   //   insuranceAccountName: "TUNAI",
+//   //   polyclinic: "POLI MATA",
+//   //   gender: "P", // Perempuan
+//   //   phone: "081234567890",
+//   //   ageYear: 20,
+//   //   ageMonth: 3,
+//   //   ageDay: 5,
+//   //   noMT: "MT-01-02",
+//   //   noREG: "REG2407010049",
+//   //   newPatient: false,
+//   //   statusPelayanan: "DISCHARGE",
+//   //   statusPembayaran: "Belum Lunas",
+//   // },
+//   // {
+//   //   noPendaftaran: "00-00-00",
+//   //   name: "Nama Pasien Lengkap",
+//   //   address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+//   //   doctor: "dr. Spesialis Sp. A",
+//   //   practicHour: "08:00 - 10:00",
+//   //   tanggalDaftar: "10-10-2024 09:00",
+//   //   tanggalJadwal: "10-10-2024 10:00",
+//   //   tanggalDischarge: "10-10-2024 12:00",
+//   //   no_SEP: "9999999999999999",
+//   //   insuranceAccountName: "BPJS",
+//   //   polyclinic: "POLI ANAK",
+//   //   gender: "L",
+//   //   phone: "082112341234",
+//   //   ageYear: 20,
+//   //   ageMonth: 3,
+//   //   ageDay: 5,
+//   //   noMT: "MT-01-03",
+//   //   noREG: "REG2407010049",
+//   //   newPatient: true,
+//   //   statusPelayanan: "DISCHARGE",
+//   //   statusPembayaran: "Lunas",
+//   // },
+//   // {
+//   //   noPendaftaran: "00-00-00",
+//   //   name: "Nama Pasien Lengkap",
+//   //   address: "Jl. Dipatiukur, Lebak Gede, Bandung City, West Java",
+//   //   doctor: "dr. Nama Dokter Sp. M",
+//   //   practicHour: "08:00 - 10:00",
+//   //   tanggalDaftar: "10-10-2024 09:00",
+//   //   tanggalJadwal: "10-10-2024 10:00",
+//   //   tanggalDischarge: "10-10-2024 12:00",
+//   //   no_SEP: "9999999999999999",
+//   //   insuranceAccountName: "BPJS",
+//   //   polyclinic: "POLI MATA",
+//   //   gender: "P", // Perempuan
+//   //   phone: "081234567890",
+//   //   ageYear: 20,
+//   //   ageMonth: 3,
+//   //   ageDay: 5,
+//   //   noMT: "MT-01-04",
+//   //   noREG: "REG2407010049",
+//   //   newPatient: false,
+//   //   statusPelayanan: "DISCHARGE",
+//   //   statusPembayaran: "Lunas",
+//   // },
+// ]);
 </script>
 
 <template>
   <DataTable
-    v-if="itemsPasien.length"
-    :value="itemsPasien"
-   
+  v-if="props.dataPatient && props.dataPatient.length"
+  :value="props.dataPatient"
     scrollable
     class=""
      scrollHeight="240px"
@@ -128,7 +134,7 @@ const itemsPasien = ref([
           >
             {{ slotProps.data.noMT }}
           </div>
-          <div class="text-SM">{{ slotProps.data.noREG }}</div>
+          <div class="text-SM">{{ slotProps.data.noReg }}</div>
         </div>
       </template>
     </Column>
@@ -140,13 +146,13 @@ const itemsPasien = ref([
     >
       <template #body="slotProps">
         <div class="text-SM">
-          <span class="font-semibold">{{ slotProps.data.name }}</span>
+          <span class="font-semibold">{{ slotProps.data.patient.name }}</span>
           <span class="text-grey-300">
             ({{ slotProps.data.ageYear }}Th {{ slotProps.data.ageMonth }}Bln
             {{ slotProps.data.ageDay }}Hr)
           </span>
         </div>
-        <div class="text-XS">{{ slotProps.data.address }}</div>
+        <div class="text-XS">{{ slotProps.data?.address?.fullAddress }}</div>
         <div class="flex flex-wrap">
           <PhUserCirclePlus
             v-if="slotProps.data.newPatient"
@@ -167,7 +173,7 @@ const itemsPasien = ref([
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.phone"
+            :label="slotProps.data.patient.phone"
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -183,34 +189,22 @@ const itemsPasien = ref([
     >
       <template #body="slotProps">
         <div class="flex gap-1.5">
-          <div class="text-SM">{{ slotProps.data.doctor }}</div>
+          <div class="text-SM">{{ slotProps.data.practitioner.nama }}</div>
           <hr class="w-px min-h-5 bg-adameds-300" />
-          <div class="text-SM">{{ slotProps.data.practicHour }}</div>
+          <div class="text-SM">{{ slotProps.data.schedule.startTime }} - {{ slotProps.data.schedule.endTime }}</div>
         </div>
         <div class="flex flex-wrap mt-1">
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.polyclinic"
+            :label="slotProps.data.polyclinic.name"
             customClass="h-5 pr-[5px] mr-[5px]"
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.insuranceAccountName"
-            :bgColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
-                ? 'bg-adameds-50'
-                : 'bg-warning-50'
-            "
-            :textColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
-                ? 'text-adameds-300'
-                : 'text-warning-300'
-            "
-            :borderColor="
-              slotProps.data.insuranceAccountName == 'TUNAI'
-                ? 'border-adameds-300'
-                : 'border-warning-300'
-            "
+            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'BPJS'"
+            :bgColor="slotProps.data.paymentMethod == '1' ? 'bg-adameds-50' : 'bg-warning-50'"
+            :textColor="slotProps.data.paymentMethod == '1' ? 'text-adameds-300' : 'text-warning-300'"
+            :borderColor="slotProps.data.paymentMethod == '1' ? 'border-adameds-300' : 'border-warning-300'"
             customClass="h-5 pr-[6px] mr-[5px]"
           />
           <CustomChip
@@ -242,18 +236,18 @@ const itemsPasien = ref([
               class="my-auto mr-5 text-grey-300"
               weight="bold"
             />
-            {{ slotProps.data.tanggalDaftar }}
+            {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
           </div>
           <div
             class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
           >
-            Jadwal
+            Diperiksa
             <PhArrowRight
               :size="18"
               class="my-auto mr-5 text-blueJeans-300"
               weight="bold"
             />
-            {{ slotProps.data.tanggalJadwal }}
+            {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
           </div>
           <div
             class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
@@ -264,7 +258,7 @@ const itemsPasien = ref([
               class="my-auto mr-5 text-mint-300"
               weight="bold"
             />
-            {{ slotProps.data.tanggalDischarge }}
+            {{ epochToDate(slotProps.data.dischargeDate, "dateTime") }}
           </div>
         </div>
       </template>
@@ -274,17 +268,28 @@ const itemsPasien = ref([
         <div>
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.statusPelayanan"
+            :label="
+              slotProps.data.statusRj == '0' ? 'DIBATALKAN'
+              : slotProps.data.statusRj == '1' ? 'BOOKING'
+              : slotProps.data.statusRj == '2' ? 'ANTRI'
+              : slotProps.data.statusRj == '3' ? 'ANTRIAN'
+              : slotProps.data.statusRj == '4' ? 'DIPERIKSA'
+              : 'DISCHARGE'
+            "
             customClass="h-5 pr-[5px] mr-[5px] border-none"
             :bgColor="
-                slotProps.data.statusPelayanan == 'DISCHARGE'
-                ? 'bg-mint-75'
-                : 'bg-danger-75'
+              slotProps.data.statusRj == '0' ? 'bg-danger-75'
+              : slotProps.data.statusRj == '1' ? 'bg-orange-75'
+              : slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3' ? 'bg-grey-75'
+              : slotProps.data.statusRj == '4' ? 'bg-blueJeans-75'
+              : 'bg-mint-75'
             "
             :textColor="
-               slotProps.data.statusPelayanan == 'DISCHARGE'
-                ? 'text-mint-300'
-                : 'text-danger-300'
+              slotProps.data.statusRj == '0' ? 'text-danger-300'
+              : slotProps.data.statusRj == '1' ? 'text-orange-300'
+              : slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3' ? 'text-grey-400'
+              : slotProps.data.statusRj == '4' ? 'text-blueJeans-300'
+              : 'text-mint-300'
             "
           />
         </div>

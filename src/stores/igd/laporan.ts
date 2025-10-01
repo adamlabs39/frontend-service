@@ -42,13 +42,31 @@ export const useIgdLaporanStore = defineStore({
                 payload
             );
         },
-        async getBatalIGD(
+    async getBatalIGD(
+        {
+            q = "",
+            page = 1,
+            limit = 10,
+            room = "",
+            polyclinic = "",
+            practitionerUuid = "",
+            jenisKunjungan = "",
+            startDate = "",
+            endDate = "",
+        },
+        payload = {}
+      ) {
+          return apiIgdGet(
+            `/igd/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+            payload
+        );
+     },
+     async downloadKunjunganIGD(
             {
                 q = "",
                 page = 1,
                 limit = 10,
                 room = "",
-                polyclinic = "",
                 practitionerUuid = "",
                 jenisKunjungan = "",
                 startDate = "",
@@ -57,7 +75,25 @@ export const useIgdLaporanStore = defineStore({
             payload = {}
         ) {
             return apiIgdGet(
-                `/igd/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&polyclinic=${polyclinic}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}`,
+                `/igd/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
+                payload
+            );
+        },
+        async downloadBatalKunjunganIGD(
+            {
+                q = "",
+                page = 1,
+                limit = 10,
+                room = "",
+                practitionerUuid = "",
+                jenisKunjungan = "",
+                startDate = "",
+                endDate = "",
+            },
+            payload = {}
+        ) {
+            return apiIgdGet(
+                `/igd/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
                 payload
             );
         },

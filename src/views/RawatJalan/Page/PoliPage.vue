@@ -7,7 +7,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import Discharge from "../Layout/Tabel/Poli/DataDischargeRawatJalan.vue";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
-
+import DataAllPasienRawatJalan from "../Layout/Tabel/Poli/DataAllPasienRawatJalan.vue";
 import type { FilterAdmisi } from "@/utils/Interface";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
@@ -177,7 +177,7 @@ const handlePage = (event: any) => {
 
 // FIlter Status
 const filterStatus = async (status: string) => {
-  resetFilter();
+  // resetFilter();
   statusPelayanan.value = status;
   filterData.value = {
     ...filterData.value,
@@ -265,6 +265,9 @@ const filterStatus = async (status: string) => {
     <template #content>
       <Tabs v-model:value="statusPelayanan" class="h-full overflow-hidden">
         <TabPanels class="flex flex-col w-full h-full p-0">
+          <TabPanel value="2" class="flex-1">
+            <DataAllPasienRawatJalan :data-patient="patientData" />
+          </TabPanel>
           <TabPanel value="1" class="flex-1">
             <Pelayanan
               :data-patient="patientData"
@@ -278,7 +281,7 @@ const filterStatus = async (status: string) => {
             />
           </TabPanel>
           <TabPanel value="0" class="flex-1">
-            <Discharge />
+            <Discharge :data-patient="patientData" />
           </TabPanel>
           <TabPanel value="" class="flex-1">
             <NoData class="w-full h-full" />
