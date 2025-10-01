@@ -169,7 +169,7 @@ const statusStyles = {
     bgColor: "bg-gray-50",
     textColor: "text-gray-500",
     borderColor: "border-gray-300",
-    label: "UNKNOWN",
+    label: "-",
   },
 } as const;
 
@@ -188,7 +188,7 @@ const convertStatusRj = (statusRj: number): string => {
     case 5:
       return "verifikasi obat";
     default:
-      return "unknown";
+      return "-";
   }
 };
 
