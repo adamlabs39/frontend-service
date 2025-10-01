@@ -20,9 +20,10 @@ import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { useToast } from "primevue/usetoast";
 import Chips from "primevue/chips";
-import { Vue3Marquee } from "vue3-marquee";
 
 const toast = useToast();
+
+const marqueeDuration = ref(20); // durasi dalam detik
 
 const props = defineProps({
   isDialogVisible: {
@@ -447,13 +448,21 @@ watch(flashText, () => {
                 </template>
               </div>
               <div
-                class="mt-3 text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
+                class="mt-3 text-white font-semibold rounded-tl-lg rounded-tr-lg bg-adameds-300"
               >
-                <Vue3Marquee>
-                  <span v-for="item in flashText" :key="item" class="mx-2">{{
-                    item
-                  }}</span>
-                </Vue3Marquee>
+                <div class="marquee" aria-label="Running text">
+                  <div
+                    class="marquee__track"
+                    :style="{ '--duration': marqueeDuration + 's' }"
+                  >
+                    <span
+                      v-for="(item, idx) in flashText"
+                      :key="`${idx}-${item}`"
+                      class="mx-2"
+                      >{{ item }}</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -506,5 +515,29 @@ watch(flashText, () => {
 
 .multiselect-wrap :deep(.p-multiselect-token) {
   @apply mb-1 mr-1;
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  position: relative;
+}
+.marquee__track {
+  padding: 6px 0;
+  will-change: transform;
+  display: inline-block; /* width mengikuti konten */
+  width: max-content; /* cegah melar mengikuti kontainer */
+  padding-left: 100%; /* mulai dari luar kanan */
+  animation: marquee var(--duration, 20s) linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 </style>

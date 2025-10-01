@@ -16,12 +16,13 @@ import PreviewLayout3x2 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/Previ
 import PreviewLayoutList3Panggilan3 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/LayoutList3Panggilan3.vue";
 import PreviewLayout2List2Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout2List2Panggilan.vue";
 import PreviewLayout1List1Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout1List1Panggilan.vue";
-import { Vue3Marquee } from "vue3-marquee";
 import adamedsLogo from "@/assets/images/adameds-logo.png";
 import adamedsText from "@/assets/images/adameds.png";
 
 const pageType = ref("");
 const route = useRoute();
+
+const marqueeDuration = ref(20); // durasi dalam detik
 
 const searchQuery = ref("");
 const selectedStatus = ref<string[]>([]);
@@ -565,16 +566,22 @@ onUnmounted(() => {
           </div>
 
           <!-- Running Text -->
-          <div class="mt-3 rounded-tl-lg rounded-tr-lg bg-adameds-300">
-            <Vue3Marquee>
-              <span
-                v-for="(item, index) in previewFlashText"
-                :key="index"
-                class="mx-2"
+          <div
+            class="mt-3 font-semibold rounded-tl-lg rounded-tr-lg bg-adameds-300 text-white"
+          >
+            <div class="marquee" aria-label="Running text">
+              <div
+                class="marquee__track"
+                :style="{ '--duration': marqueeDuration + 's' }"
               >
-                {{ item }}
-              </span>
-            </Vue3Marquee>
+                <span
+                  v-for="(item, idx) in previewFlashText"
+                  :key="`${idx}-${item}`"
+                  class="mx-2"
+                  >{{ item }}</span
+                >
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -599,5 +606,29 @@ onUnmounted(() => {
 
 :deep(.p-datatable-table) {
   width: 100%;
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  position: relative;
+}
+.marquee__track {
+  padding: 6px 0;
+  will-change: transform;
+  display: inline-block; /* width mengikuti konten */
+  width: max-content; /* cegah melar mengikuti kontainer */
+  padding-left: 100%; /* mulai dari luar kanan */
+  animation: marquee var(--duration, 20s) linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 </style>
