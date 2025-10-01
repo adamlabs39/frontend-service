@@ -535,7 +535,7 @@ const selectedPatient = ref([]);
                   :label="konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
+                  customClass="h-auto min-h-[20px] mr-[5px] max-w-[320px] whitespace-normal break-words leading-tight px-2 py-1 border-none"
                 />
               </div>
               <div v-else class="flex justify-center items-center">

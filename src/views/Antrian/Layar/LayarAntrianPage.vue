@@ -16,12 +16,13 @@ import PreviewLayout3x2 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/Previ
 import PreviewLayoutList3Panggilan3 from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/LayoutList3Panggilan3.vue";
 import PreviewLayout2List2Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout2List2Panggilan.vue";
 import PreviewLayout1List1Panggilan from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/PreviewLayar/Layout1List1Panggilan.vue";
-import { Vue3Marquee } from "vue3-marquee";
 import adamedsLogo from "@/assets/images/adameds-logo.png";
 import adamedsText from "@/assets/images/adameds.png";
 
 const pageType = ref("");
 const route = useRoute();
+
+const marqueeDuration = ref(20); // durasi dalam detik
 
 const searchQuery = ref("");
 const selectedStatus = ref<string[]>([]);
@@ -42,6 +43,9 @@ const antrianCallPayload = ref();
 const antrianCallProperties = ref({
   status_panggilan: 0,
 });
+
+const admisiCallsActive = ref<any[]>([]);
+const admisiCallsWaiting = ref<any[]>([]);
 
 const fetchLayarAntrian = async () => {
   useUtilsStore.setLoading(true);
@@ -76,14 +80,26 @@ const handlePage = (event: any) => {
 const fetchAntrianCall = async () => {
   useUtilsStore.setLoading(true);
   try {
-    const res = await configLayarAntrianStore.getAntrianCall(
-      antrianCallProperties.value.status_panggilan
-    );
-    console.log("antrian call sebelum:", res);
-    antrianCallPayload.value = res.payload;
-    console.log("antrian call:", antrianCallPayload.value);
+    // Ambil kedua status sekaligus sesuai kebutuhan layout
+    const [resActive, resWaiting] = await Promise.all([
+      configLayarAntrianStore.getAntrianCall(1),
+      configLayarAntrianStore.getAntrianCall(0),
+    ]);
+    admisiCallsActive.value = Array.isArray(resActive.payload)
+      ? resActive.payload
+      : [];
+    admisiCallsWaiting.value = Array.isArray(resWaiting.payload)
+      ? resWaiting.payload
+      : [];
+
+    // Backward-compatible: masih simpan payload lama jika diperlukan
+    antrianCallPayload.value = resActive.payload;
+    console.log("antrian call aktif (status=1):", admisiCallsActive.value);
+    console.log("antrian call menunggu (status=0):", admisiCallsWaiting.value);
   } catch (error) {
     console.log("error fetch antrian call:", error);
+    admisiCallsActive.value = [];
+    admisiCallsWaiting.value = [];
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -206,17 +222,19 @@ const previewProps = computed(() => {
   const row = previewRow.value || {};
   const payload = Array.isArray(row?.payload) ? row.payload : [];
   switch (previewType.value) {
-    case 1: // 3x3 panggilan
+    case 1: // 3x3 panggilan -> gunakan Admisi status_panggilan=1 jika isAdmisi=true
       return {
         payload,
         isPoli: isPoli(row),
         activeOrder: activeOrderForRow(row),
+        admisiCallsActive: admisiCallsActive.value,
       };
-    case 2: // 3x2 panggilan
+    case 2: // 3x2 panggilan -> gunakan Admisi status_panggilan=1 jika isAdmisi=true
       return {
         payload,
         isPoli: isPoli(row),
         activeOrder: activeOrderForRow(row),
+        admisiCallsActive: admisiCallsActive.value,
       };
     case 3: // 3 list & 3 panggilan
       return {
@@ -224,10 +242,24 @@ const previewProps = computed(() => {
         isPoli: isPoli(row),
         isAdmisi: isAdmisi(row),
         isFarmasi: isFarmasi(row),
+        // Informasi Antrian (kiri) -> status_panggilan=0
+        admisiCallsWaiting: admisiCallsWaiting.value,
+        // Panggilan (kanan) -> status_panggilan=1
+        admisiCallsActive: admisiCallsActive.value,
       };
-    case 5: // 1 list & 1 panggilan & Youtube
+    case 4: // 2 list & 2 panggilan
+      return {
+        isPoli: isPoli(row),
+        isAdmisi: isAdmisi(row),
+        isFarmasi: isFarmasi(row),
+        admisiCallsWaiting: admisiCallsWaiting.value, // Informasi Antrian
+        admisiCallsActive: admisiCallsActive.value, // Panggilan
+      };
+    case 5: // 1 list, 1 panggilan, 1 Youtube
       return {
         media: (row?.media ?? row?.payload?.media ?? "") || "",
+        admisiCallsWaiting: admisiCallsWaiting.value, // Informasi Antrian
+        admisiCallsActive: admisiCallsActive.value, // Panggilan
       };
     default:
       return {};
@@ -413,7 +445,7 @@ onUnmounted(() => {
                     :label="konten"
                     bgColor="bg-adameds-300"
                     textColor="text-white"
-                    customClass="h-5 border-none mr-[5px]"
+                    customClass="h-auto min-h-[20px] mr-[5px] max-w-[320px] whitespace-normal break-words leading-tight px-2 py-1 border-none"
                   />
                 </div>
                 <div v-else class="flex justify-center items-center">
@@ -534,16 +566,22 @@ onUnmounted(() => {
           </div>
 
           <!-- Running Text -->
-          <div class="mt-3 rounded-tl-lg rounded-tr-lg bg-adameds-300">
-            <Vue3Marquee>
-              <span
-                v-for="(item, index) in previewFlashText"
-                :key="index"
-                class="mx-2"
+          <div
+            class="mt-3 font-semibold rounded-tl-lg rounded-tr-lg bg-adameds-300 text-white"
+          >
+            <div class="marquee" aria-label="Running text">
+              <div
+                class="marquee__track"
+                :style="{ '--duration': marqueeDuration + 's' }"
               >
-                {{ item }}
-              </span>
-            </Vue3Marquee>
+                <span
+                  v-for="(item, idx) in previewFlashText"
+                  :key="`${idx}-${item}`"
+                  class="mx-2"
+                  >{{ item }}</span
+                >
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -568,5 +606,29 @@ onUnmounted(() => {
 
 :deep(.p-datatable-table) {
   width: 100%;
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  position: relative;
+}
+.marquee__track {
+  padding: 6px 0;
+  will-change: transform;
+  display: inline-block; /* width mengikuti konten */
+  width: max-content; /* cegah melar mengikuti kontainer */
+  padding-left: 100%; /* mulai dari luar kanan */
+  animation: marquee var(--duration, 20s) linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 </style>

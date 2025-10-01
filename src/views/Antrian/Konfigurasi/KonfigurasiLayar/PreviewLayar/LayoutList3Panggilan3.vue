@@ -18,7 +18,44 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  admisiCallsActive: {
+    type: Array,
+    default: () => [],
+  },
+  admisiCallsWaiting: {
+    type: Array,
+    default: () => [],
+  },
 });
+
+// Informasi antrian
+const admisiWaitingNoAt = (idx: number) => {
+  const arr = Array.isArray(props.admisiCallsWaiting)
+    ? props.admisiCallsWaiting
+    : [];
+  if (arr.length === 0 || idx - 1 >= arr.length) return null;
+  const item = arr[idx - 1];
+  return item?.patientData?.antrian?.noAntrianAdmisi ?? null;
+};
+
+// Panggilan
+const admisiActiveNoAt = (idx: number) => {
+  const arr = Array.isArray(props.admisiCallsActive)
+    ? props.admisiCallsActive
+    : [];
+  if (arr.length === 0 || idx - 1 >= arr.length) return null;
+  const item = arr[idx - 1];
+  return item?.patientData?.antrian?.noAntrianAdmisi ?? null;
+};
+
+const admisiActiveName = (idx: number) => {
+  const arr = Array.isArray(props.admisiCallsActive)
+    ? props.admisiCallsActive
+    : [];
+  if (arr.length === 0 || idx - 1 >= arr.length) return null;
+  const item = arr[idx - 1];
+  return item?.patientData?.name ?? null;
+};
 
 const poliAt = (idx: number) => {
   const arr = Array.isArray(props.payload) ? props.payload : [];
@@ -57,10 +94,10 @@ const poliAt = (idx: number) => {
                 <div
                   v-for="i in 6"
                   :key="'admisi-' + i"
-                  class="flex justify-center items-center px-4 text-2xl font-extrabold"
+                  class="flex justify-center items-center px-4 text-5xl font-extrabold text-black"
                   :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
                 >
-                  A00{{ i }}
+                  {{ admisiWaitingNoAt(i) ?? "-" }}
                 </div>
               </div>
             </template>
@@ -87,7 +124,7 @@ const poliAt = (idx: number) => {
           >
             <template v-if="isPoli">
               <div class="py-2 font-bold text-center text-white bg-adameds-300">
-                Poli
+                Lokasi 2
               </div>
               <div class="grid flex-1 grid-rows-6">
                 <div
@@ -96,7 +133,7 @@ const poliAt = (idx: number) => {
                   class="flex justify-center items-center px-4 text-2xl font-extrabold"
                   :class="i % 2 === 0 ? 'bg-adameds-50' : 'bg-white'"
                 >
-                  {{ poliAt(i)?.codeAntrianPoli }}00{{ i }}
+                  -
                 </div>
               </div>
             </template>
@@ -179,7 +216,7 @@ const poliAt = (idx: number) => {
       </div>
 
       <!-- 3 Kotak Panggilan -->
-      <div class="flex flex-col gap-2 content-area">
+      <div class="grid grid-rows-3 gap-2 content-area">
         <template v-if="isAdmisi">
           <div
             v-for="item in 3"
@@ -187,9 +224,9 @@ const poliAt = (idx: number) => {
             class="grid grid-rows-2 h-full bg-white rounded-lg"
           >
             <div
-              class="flex justify-center items-center text-4xl font-extrabold"
+              class="flex justify-center items-center text-5xl font-extrabold text-adameds-300"
             >
-              A00{{ item }}
+              {{ admisiActiveNoAt(item) ?? "-" }}
             </div>
             <div class="flex rounded-b-lg bg-adameds-50">
               <div class="flex items-center w-full">
@@ -204,7 +241,9 @@ const poliAt = (idx: number) => {
                   />
                 </div>
                 <div class="px-3 w-full">
-                  <div class="text-3xl font-black">Loket 1</div>
+                  <div class="text-3xl font-black">
+                    {{ admisiActiveName(item) ?? "-" }}
+                  </div>
                   <hr class="border-adameds-300" />
                   <div class="text-xl font-bold">Admisi</div>
                 </div>
