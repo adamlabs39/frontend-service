@@ -5,7 +5,6 @@ import HeaderFilter from "../Layout/LayarHeader.vue";
 import { onMounted, ref, computed, onUnmounted } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
-import AntrianFooter from "../Layout/AntrianFooter.vue";
 import NoData from "@/components/section/NoData.vue";
 import { utilsStore } from "@/stores/utils";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
@@ -568,7 +567,7 @@ onUnmounted(() => {
 
           <!-- Running Text -->
           <div
-            class="mt-3 font-semibold rounded-tl-lg rounded-tr-lg bg-adameds-300 text-white"
+            class="mt-3 font-semibold text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
           >
             <div class="marquee" aria-label="Running text">
               <div
