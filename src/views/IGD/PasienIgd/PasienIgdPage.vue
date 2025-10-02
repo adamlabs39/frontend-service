@@ -129,6 +129,7 @@ const resetFilter = () => {
   searchQuery.value = "";
   selectedFilterPayment.value = [];
   selectedFilterPatient.value = [];
+  selectedTab.value = "2";
   let date = new Date(),
     y = date.getFullYear(),
     m = date.getMonth();
@@ -159,7 +160,7 @@ const fetchIGDPatient = async (filter: FilterAdmisi = {}) => {
 const selectedPatient = ref<any[]>([]);
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
-const selectedTab = ref("1");
+const selectedTab = ref("2");
 const selectedFilterPatient = ref<string[]>([]);
 const selectedFilterPayment = ref<string[]>([]);
 const selectedFilterValue = ref("");
@@ -191,6 +192,7 @@ const confirmCancel = async () => {
     console.log("response data", response);
     showCancelVisit.value = false;
     cancelReason.value = undefined;
+    selectedPatient.value = [];
     await reloadData();
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -345,6 +347,7 @@ const fetchPraktisiData = async () => {
             <div class="text-center">
               <div class="text-SM">{{ slotProps.data.noRm }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
+              <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
             </div>
           </template>
         </Column>
@@ -392,7 +395,7 @@ const fetchPraktisiData = async () => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.patient.phone ?? '-'"
-                bgColor="bg-adameds-75"
+                bgColor="bg-adameds-50"
                 textColor="text-adameds-300"
                 customClass="h-5 border-none mr-[5px]"
               />
@@ -474,7 +477,7 @@ const fetchPraktisiData = async () => {
                   class="my-auto mr-5 text-male-300"
                   weight="bold"
                 />
-                30 Juli 2024
+                {{ slotProps.data.dischargeDate ? epochToDate(slotProps.data.dischargeDate, "dateTime") : "-" }}
               </div>
             </div>
           </template>
@@ -491,30 +494,24 @@ const fetchPraktisiData = async () => {
                 :showCheckedIcon="false"
                 :label="
                   slotProps.data.statusIgd == 0
-                    ? 'Cancle'
+                    ? 'DIBATALKAN'
                     : slotProps.data.statusIgd == 1
-                    ? 'Dirawat'
-                    : 'Discharge'
+                    ? 'DIRAWAT'
+                    : 'DISCHARGE'
                 "
                 customClass="h-5 mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusIgd == 0
-                    ? 'bg-danger-75'
+                    ? 'bg-danger-300'
                     : slotProps.data.statusIgd == 1
-                    ? 'bg-blueJeans-75'
+                    ? 'bg-blueJeans-300'
                     : 'bg-mint-75'
                 "
-                :textColor="
-                  slotProps.data.statusIgd == 0
-                    ? 'text-danger-300'
-                    : slotProps.data.statusIgd == 1
-                    ? 'text-blueJeans-300'
-                    : 'text-mint-300'
-                "
+                :textColor="'text-white'"
               />
             </div>
             <div>
-              <CustomChip
+              <!-- <CustomChip
                 :showCheckedIcon="false"
                 label="Lunas"
                 customClass="h-5 mr-[5px] border-none"
@@ -528,7 +525,7 @@ const fetchPraktisiData = async () => {
                     ? 'text-grey-400'
                     : 'text-success-300'
                 "
-              />
+              /> -->
             </div>
           </template>
         </Column>

@@ -32,7 +32,15 @@ const props = defineProps({
   },
 });
 
-const selectedTab = ref("");
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 9999,
+  total: 0,
+});
+
+const searchDoctor = ref<string>("");
+
+const selectedTab = ref("2");
 // Emit for Search and Payment
 const emit = defineEmits([
   "selectedTab",
@@ -58,7 +66,13 @@ const praktisiPayload = ref<any[]>([]);
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
 
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
@@ -109,7 +123,7 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
-  selectedTab.value = "";
+  selectedTab.value = "2";
 };
 
 defineExpose({
@@ -236,6 +250,7 @@ onMounted(() => {
             label="Tanggal"
             class="w-[200px]"
             @update:modelValue="$emit('update:valueStartDate', startDateFilter)"
+            :max-date="endDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -243,6 +258,7 @@ onMounted(() => {
             :showLabel="false"
             class="mt-auto w-[200px]"
             @update:modelValue="$emit('update:valueEndDate', endDateFilter)"
+            :min-date="startDateFilter"
           />
         </div>
         <CustomButton

@@ -4,19 +4,24 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import DataPoliBPJSHeader from "../Layout/Header/DataPoliBPJSHeader.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { FilterAdmisi } from "@/utils/Interface";
-import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, formatDate, setTimeForDate } from "@/utils/Helpers";
 import { utilsStore } from "@/stores/utils";
 import { useAdmisiRIStore } from "@/stores/admisi/rawatInap";
 import DataPelayananRawatJalan from "@/views/RawatJalan/Layout/Tabel/Poli/DataPelayananRawatJalan.vue";
 import NoData from "@/components/section/NoData.vue";
 import DataPasienRawatInap from "../Layout/Tabel/Ruangan/DataPasienRawatInap.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
+import { useToast } from "primevue/usetoast";
+import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
 
 // STORE
 const storeUtils = utilsStore();
+const toast = useToast();
 const admisiRIStore = useAdmisiRIStore();
+const rekamMedisStore = useRekamMedisStore();
 // ROUTE
 const route = useRoute();
 const currentRouteName = ref("");
@@ -44,7 +49,7 @@ const isDataFetched = ref(false);
 const patientData = ref<any[]>([]);
 const selectedPatient = ref<any[]>([]);
 // DIRAWAT / DISCHARGE
-const selectedTab = ref("");
+const selectedTab = ref("2");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
@@ -55,6 +60,8 @@ const dokter = ref("");
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
 const selectedFilterPayment = ref<string[]>([]);
+const medicalRecord = ref<any>();
+const openedPatientData = ref<any>({});
 
 // Event emit FROM HEADER
 const handleSelectedTab = (newTab: string) => {
@@ -84,6 +91,88 @@ const handleChipPayment = (filters: string[]) => {
 
 // Filter Data
 const filterData = ref<FilterAdmisi>({});
+
+// TAMBAHKAN FUNGSI BARU INI
+const openDialogRM = async (event: any) => {
+  try {
+    storeUtils.setLoading(true);
+    const responseDetailPelayanan = await admisiRIStore.getDetailRI(
+      event.data.uuid
+    );
+
+    if (!responseDetailPelayanan || !responseDetailPelayanan.payload) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal mendapatkan detail data pelayanan.",
+        life: 3000,
+      });
+      return;
+    }
+
+    openedPatientData.value = responseDetailPelayanan.payload;
+    openedPatientData.value.rekamMedisUuid = event.data.rekamMedisUuid;
+
+    let responseRekamMedis: any;
+    const rekamMedisUuid = openedPatientData.value.rekamMedisUuid;
+
+    if (rekamMedisUuid) {
+      responseRekamMedis = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: rekamMedisUuid,
+      });
+    } else {
+      const dataPasien = openedPatientData.value;
+      const lokasiUuid = dataPasien?.monitoringRoom?.room?.uuid;
+
+      if (!lokasiUuid) {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Data lokasi ruangan tidak ditemukan pada pasien ini.",
+          life: 3000,
+        });
+        return;
+      }
+
+      responseRekamMedis = await rekamMedisStore.createRekamMedis({
+        noRm: dataPasien?.patient?.noRm,
+        noReg: dataPasien.noReg,
+        date: formatDate(new Date(), true),
+        pelayanan: "ri",
+        lokasiUuid: lokasiUuid,
+        noPelayanan: dataPasien.noPelayanan,
+        paymentMethod: dataPasien.paymentMethod,
+      });
+    }
+
+    if (responseRekamMedis && responseRekamMedis.payload) {
+      openedPatientData.value.rekamMedisUuid =
+        responseRekamMedis.payload.meta.rekamMedisUuid;
+      
+      rekamMedisStore.setOpenedRekamMedisData(responseRekamMedis.payload);
+      
+      medicalRecord.value?.showDialogRM();
+    } else {
+       toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal memproses data rekam medis pasien.",
+        life: 3000,
+      });
+    }
+
+  } catch (error) {
+    console.error("Gagal membuka rekam medis:", error);
+    toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Terjadi kesalahan saat memuat rekam medis.",
+        life: 3000,
+      });
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 // Ambil dari RI
 const fetchRIPatient = async (filter: FilterAdmisi = {}) => {
@@ -151,7 +240,7 @@ const resetFilter = () => {
   resetFormRef.value.resetForm();
   dokter.value = "";
   selectedFilterPayment.value = [];
-  selectedTab.value = "";
+  selectedTab.value = "2";
 };
 
 // PAGINATION
@@ -257,6 +346,7 @@ onMounted(() => {
         :filter-menu="filterRuangan"
         :filter-data="filterData"
         :current-route-name="currentRouteName"
+        :active-status="selectedTab"
       >
       </DataPoliBPJSHeader>
     </template>
@@ -269,6 +359,7 @@ onMounted(() => {
         scrollable
         scrollHeight="flex"
         :pt="{ headerRow: 'text-SM' }"
+        @row-click="openDialogRM($event)"
       >
         <Column field="nomor" headerClass="bg-adameds-50">
           <template #header>
@@ -278,6 +369,7 @@ onMounted(() => {
             <div class="text-center">
                <div class="text-SM">{{ slotProps.data.noRm }}</div>
              <div class="text-SM">{{ slotProps.data.noReg }}</div>
+             <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
             </div>
           </template>
         </Column>
@@ -325,7 +417,7 @@ onMounted(() => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.patient.noIdentity ?? '-'"
-                bgColor="bg-adameds-75"
+                bgColor="bg-adameds-50"
                 textColor="text-adameds-300"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
               />
@@ -403,7 +495,7 @@ onMounted(() => {
               :size="18"
               class="mx-[5px] my-auto text-grey-300"
             />
-            {{ epochToDate(slotProps.data.tanggalDirawat, "dateTime") }}
+            {{ slotProps.data.dischargeDate ? epochToDate(slotProps.data.dischargeDate, "dateTime") : "-" }}
           </div>
           <div
             class="flex content-center mt-[5px]"
@@ -441,30 +533,23 @@ onMounted(() => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="slotProps.data.statusRi == 0
-                    ? 'Cancel'
+                    ? 'DIBATALKAN'
                     : slotProps.data.statusRi == 1
-                      ? 'Waiting'
-                      : slotProps.data.statusRi == 2 
-                      ? 'Transfer' 
-                      : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
+                      ? 'WAITING'
+                      : slotProps.data.statusRi == 2
+                      ? 'TRANSFER'
+                      : slotProps.data.statusRi == 3 ? 'DIRAWAT' : 'DISCHARGE'
                 "
-                customClass="h-5 pr-[5px] mr-[5px] border-none"
+                customClass="h-5 pr-[8px] mr-[5px] border-none"
                 :bgColor="
                   slotProps.data.statusRi == 0
-                    ? 'bg-danger-75'
+                    ? 'bg-danger-300'
                     : slotProps.data.statusRi == 1
-                      ? 'bg-grey-75'
+                      ? 'bg-warning-300'
                       : slotProps.data.statusRi == 2 ?
-                        'bg-blue-300' : slotProps.data.statusRi == 3 ? 'bg-blueJeans-75' : 'bg-mint-75'
+                        'bg-blue-300' : slotProps.data.statusRi == 3 ? 'bg-blueJeans-300' : 'bg-mint-300'
                 "
-                :textColor="
-                  slotProps.data.statusRi == 0
-                    ? 'text-danger-300'
-                    : slotProps.data.statusRi == 1
-                    ? 'text-grey-300'
-                    : slotProps.data.statusRi == 2 ?
-                        'text-blue-300' : slotProps.data.statusRi == 3 ? 'text-blueJeans-300' : 'text-mint-300'
-                "
+                :textColor="'text-white'"
               />
             </div>
             
@@ -479,6 +564,11 @@ onMounted(() => {
         ></Column>
       </DataTable>
       <NoData v-else />
+       <MedicalRecord 
+        ref="medicalRecord" 
+        rmType="rawat-inap" 
+        :patientData="openedPatientData" 
+      />
     </template>
     <template #footer>
       <div class="flex justify-between">

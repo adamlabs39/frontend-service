@@ -99,6 +99,7 @@ defineExpose({
             "
             label="Tanggal"
             class="w-[130px]"
+            :max-date="valueEndDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -108,6 +109,7 @@ defineExpose({
             "
             :showLabel="false"
             class="mt-auto w-[130px]"
+            :min-date="valueStartDateFilter"
           />
         </div>
 
