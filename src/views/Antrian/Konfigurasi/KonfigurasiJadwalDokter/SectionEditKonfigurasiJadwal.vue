@@ -12,7 +12,7 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
 import { useToast } from "primevue/usetoast";
 import { formatTime } from "@/utils/Helpers";
 

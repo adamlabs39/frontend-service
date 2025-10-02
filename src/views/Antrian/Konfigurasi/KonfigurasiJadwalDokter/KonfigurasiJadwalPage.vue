@@ -9,7 +9,7 @@ import NoData from "@/components/section/NoData.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
 
 const headerFilterRef = ref<typeof KonfigurasiJadwalHeader>();
 const resetFilter = () => {

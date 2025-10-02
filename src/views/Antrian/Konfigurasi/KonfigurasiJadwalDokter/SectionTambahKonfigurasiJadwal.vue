@@ -13,7 +13,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
 import { formatTime } from "@/utils/Helpers";
 
 const toast = useToast();
