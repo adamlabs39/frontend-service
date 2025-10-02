@@ -6,15 +6,19 @@ export const useAdmisiMasterPasienStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getMasterPasien({ page = 1, limit = 10, q = "" }, payload = {}) {
+    async getMasterPasien({ page = 1, limit = 10, q = "", status = "" }, payload = {}) {
       return apiAdmisiGet(
-        `/patient?page=${page}&limit=${limit}&q=${q}`,
+        `/patient?page=${page}&limit=${limit}&q=${q}&status=${status}`,
         payload
       );
     },
 
     async getDetailMasterPasien(uuid = "", payload = {}) {
       return apiAdmisiGet(`/patient/${uuid}`, payload);
+    },
+
+    async getPasienHistory({ uuid = "", page = 1, limit = 5 }, payload = {}) {
+      return apiAdmisiGet(`/patient/history/${uuid}?page=${page}&limit=${limit}`, payload);
     },
 
     async createMasterPasien(payload = {}) {
@@ -50,5 +54,11 @@ export const useAdmisiMasterPasienStore = defineStore({
     async deleteBerkasApi(pasienUuid = "", fileUuid = "") {
       return apiAdmisiDelete(`/file/${pasienUuid}`, { uuid: fileUuid });
     },
+    // async deletePasienApi(uuid = "", payload = {}) {
+    //   return apiAdmisiDelete(`/patient/cancel/${uuid}`, payload);
+    // }
+    async deletePasienApi(payload = {}) {
+      return apiAdmisiDelete(`/patient/cancel`, payload);
+    }
   },
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -42,7 +42,7 @@ const props = defineProps({
 
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi();
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {
@@ -56,7 +56,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId); 
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -73,7 +73,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -89,7 +89,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId);
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -357,6 +357,35 @@ const onResetForm = () => {
   resetForm();
 };
 
+const maxBirthTime = computed(() => {
+  const selectedDate = birthDetailDate.value;
+  if (!selectedDate) {
+    return new Date();
+  }
+
+  const today = new Date();
+  
+  today.setHours(0, 0, 0, 0);
+  const normalizedSelectedDate = new Date(selectedDate);
+  normalizedSelectedDate.setHours(0, 0, 0, 0);
+
+  if (normalizedSelectedDate.getTime() === today.getTime()) {
+    const maxTime = new Date();
+    maxTime.setSeconds(59, 999); 
+    return maxTime;
+  } else {
+    return undefined;
+  }
+});
+
+watch(maxBirthTime, (newMaxTime) => {
+  if (newMaxTime && birthTime.value) {
+    if (birthTime.value.getTime() > newMaxTime.getTime()) {
+      birthTime.value = undefined;
+    }
+  }
+});
+
 const getAge = (date: Date) => {
   const { tahun, bulan, hari } = countAge(date);
   patientAge.value = `${tahun} Tahun, ${bulan} Bulan, ${hari} Hari`;
@@ -513,7 +542,7 @@ defineExpose({
             :disabled="isDetail"
             :invalid="!!errors.birthTime"
             :invalidMessage="errors.birthTime"
-            :maxDate="new Date()"
+            :maxDate="maxBirthTime"
           />
           <CustomTextfield
             v-else

@@ -16,42 +16,39 @@ const expandedRows = ref<any[]>([]);
   <DataTable
     :value="props.payload"
     responsiveLayout="scroll"
-    dataKey="id"
-    :expandedRows="expandedRows"
+    dataKey="uuid" 
+    v-model:expandedRows="expandedRows"
     scrollable
     scrollHeight="flex"
     class="p-datatable-sm"
   >
-    <Column expander style="width: 2em" header-class="text-black bg-adameds-50">
-    </Column>
+    <Column expander style="width: 2em" header-class="text-black bg-adameds-50" />
     <Column
-      field="id"
-      header="No"
-      header-class="text-black bg-adameds-50"
+      header="No" header-class="text-black bg-adameds-50"
       class="w-10 p-5 text-center text-black text-SM"
     >
       <template #body="{ index }">{{ index + 1 }}</template>
     </Column>
     <Column
-      field="tglRegistrasi"
+      field="tanggal_daftar"
       header="Tgl. Registrasi"
       header-class="text-black bg-adameds-50 "
       class="text-black text-SM"
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.tglRegistrasi, "dateTime") }}
+        {{ epochToDate(data.tanggal_daftar, "dateTime") }}
       </template>
     </Column>
     <Column
-      field="noreg"
+      field="no_reg"
       header="No. Registrasi"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
     />
     <Column
-      field="patient.noRm"
+      field="patient.no_rm"
       header="No. RM"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
@@ -63,16 +60,14 @@ const expandedRows = ref<any[]>([]);
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
-    >
-    </Column>
+    />
     <Column
-      field="practitioner.nama"
+      field="practitioner.name"
       header="Dokter"
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
-    >
-    </Column>
+    />
 
     <template #expansion="slotProps">
       <div class="p-3 -mx-2 -my-1.5 bg-adameds-75">
@@ -81,50 +76,71 @@ const expandedRows = ref<any[]>([]);
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
           <Column
-            field="gender"
             header="Jenis Kelamin"
             header-class="text-black bg-adameds-50"
             class="p-5 text-black text-SM"
             style="width: 100px"
-          ><template #body="{ data }">
-                        {{ data.patient.gender == "Male" ? "L" : "P" }}
-                      </template>
-                    </Column>
+          >
+            <template #body="{ data }">
+              {{ data.patient.gender == "Male" ? "L" : "P" }}
+            </template>
+          </Column>
           <Column
-            field="patient.birthDetail.birthDate"
+            field="patient.birth_detail.birth_date"
             header="Tgl. Lahir"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+             <template #body="{ data }">
+               {{ data.patient.birth_detail.birth_date.split('T')[0] }}
+             </template>
+          </Column>
           <Column
-           field="patient.birthDetail.birthDate"
             header="Umur"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          > <template #body="{ data }">
-                        {{
-                          `${data.patient.birthDetail.ageYear} Tahun ${data.patient.birthDetail.ageMonth} Bulan ${data.patient.birthDetail.ageDay} Hari`
-                        }}
-                      </template>
-                    </Column>
+          >
+            <template #body="{ data }">
+              {{
+                `${data.patient.birth_detail.age_year} Tahun ${data.patient.birth_detail.age_month} Bulan ${data.patient.birth_detail.age_day} Hari`
+              }}
+            </template>
+          </Column>
           <Column
-            field="patient.address.fullAddress"
+            field="patient.address.full_address"
             header="Alamat"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          />
           <Column
-            field="patient.address.fullAddress"
-            header="Status Keluar Pasien"
+            field="kondisi_pasien_pulang" 
+            header="Status Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.kondisi_pasien_pulang === '359746009'">Stabil</span>
+              <span v-else-if="data.kondisi_pasien_pulang === '162668006'">Tidak Stabil</span>
+              <span v-else-if="data.kondisi_pasien_pulang === '268910001'">Perbaikan</span>
+              <span v-else>{{ data.kondisi_pasien_pulang }}</span>
+            </template>
+          </Column>
           <Column
-            field="patient.address.fullAddress"
+            field="status_pulang" 
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.status_pulang === 'home'">Pulang atas persetujuan dokter</span>
+              <span v-else-if="data.status_pulang === 'aadvice'">Pulang atas permintaan sendiri</span>
+              <span v-else-if="data.status_pulang === 'other-hcf'">Dirujuk</span>
+              <span v-else-if="data.status_pulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
+              <span v-else-if="data.status_pulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
+              <span v-else-if="data.status_pulang === 'oth'">Lain-lain</span>
+              <span v-else>{{ data.status_pulang }}</span>
+            </template>
+          </Column>
         </DataTable>
       </div>
     </template>

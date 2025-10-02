@@ -6,20 +6,23 @@ export const useSupplierReturnsStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi( filter: String = "", name: String = "", page: number = 1, limit: number = 10, payload = {} ) {
-      return apiInventoryGet(`/inventory/pengadaan/retur&penggantian?filter=${filter}&name=${name}&page=${page}&limit=${limit}`, payload);
+    async getApi( lokasiStok: String= "", status: String = "", search: String = "", page: number = 1, limit: number = 10, payload = {} ) {
+      return apiInventoryGet(`/inventory/retur-supplier?lokasi_stok_uuid=${lokasiStok}&status=${status}&search=${search}&page=${page}&limit=${limit}`, payload);
     },
     async getApiDetail(uuid: string, payload = {}) {
-      return apiInventoryGet(`/inventory/pengadaan/retur&penggantian/${uuid}`, payload);
+      return apiInventoryGet(`/inventory/retur-supplier/${uuid}`, payload);
+    },
+    async getApiAvailable(date: String= "", page: number = 1, limit: number = 10, payload = {}) {
+      return apiInventoryGet(`/inventory/retur-supplier/available-faktur?date=${date}&page=${page}&limit=${limit}`, payload);
+    },
+    async getApiAvailableDetail(uuid: string, payload = {}) {
+      return apiInventoryGet(`/inventory/retur-supplier/available-faktur/${uuid}`, payload);
     },
     async postApi(payload = {}) {
-      return apiInventoryPost("/inventory/pengadaan/retur&penggantian", payload);
+      return apiInventoryPost("/inventory/retur-supplier", payload);
     },
     async putApi(uuid: string, payload = {}) {
-      return apiInventoryPut(`/inventory/pengadaan/retur&penggantian/${uuid}`, payload);
+      return apiInventoryPut(`/inventory/retur-supplier/${uuid}`, payload);
     },
-    async deleteApi(uuid: string, payload = {}) {
-      return apiInventoryDelete(`/inventory/pengadaan/retur&penggantian/${uuid}`, payload);
-    }
   },
 });

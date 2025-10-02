@@ -13,6 +13,10 @@ import PembatalanDirawat from "./PembatalanDirawat.vue";
 import RekapTindakanPasien from "./RekapTindakanPasien.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import NoData from "@/components/section/NoData.vue";
+import {
+  downloadExportExcelKunjunganIGD,
+  downloadExportExcelBatalIGD
+} from "@/stores/igd/exportexceligd";
 
 //Bread Crumb
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -93,6 +97,15 @@ const handleReset = () => {
   reloadData();
 };
 
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-igd') {
+    downloadExportExcelKunjunganIGD(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalIGD(filter);
+  }
+};
+
 const handleSelectedPraktisi = (value: any) => {
   selectedFilterValue.value = value;
 };
@@ -133,15 +146,15 @@ const fetchLaporanData = async (filter: Filter = {}) => {
   let response;
   try {
     if (pageType.value == "kunjungan-igd") {
-      response = await admisiLaporanStore.getKunjunganReport(filter);
+      response = await IgdLaporanStore.getKunjunganIGD(filter);
     } else if (pageType.value == "pembatalan-dirawat") {
-      response = await admisiLaporanStore.getBatalKunjunganReport(filter);
+      response = await IgdLaporanStore.getBatalIGD(filter);
     } else if (pageType.value == "rekap-tindakan-pasien") {
       response = await IgdLaporanStore.getLaporanTindakan(filter);
     }
     if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
-      return response.payload;
+      properties.value.total = response.payload.pagination.total_data;
+      return response.payload.data;
     } else return [];
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -174,6 +187,14 @@ const fetchPraktisi = async () => {
     praktisiPayload.value = [];
   }
 };
+
+const reloadData = async () => {
+  let filter = {} as Filter;
+  filter = setFilter();
+  reportData.value = await fetchLaporanData(filter);
+};
+
+
 const dokterDJP = ref([
   {
     uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a60f9",
@@ -183,11 +204,6 @@ const dokterDJP = ref([
   { uuid: "0191a18a-22e4-79f7-9da5-a10a6e1a6067", name: "dr. Doom" },
 ]);
 
-const reloadData = async () => {
-  let filter = {} as Filter;
-  filter = setFilter();
-  reportData.value = await fetchLaporanData(filter);
-};
 </script>
 
 <template>
@@ -208,11 +224,10 @@ const reloadData = async () => {
         @reset="handleReset()"
         @update:startDateFilter="handleStartDate"
         @update:endDateFilter="handleEndDate"
-        :filterSelect="
-          pageType === 'rekap-tindakan-pasien' ? praktisiPayload : dokterDJP
-        "
+        :filterSelect="praktisiPayload"
         ref="resetFormRef"
-      />
+        />
+        <!-- :filterSelect="pageType === 'rekap-tindakan-pasien' ? praktisiPayload : dokterDJP" -->
     </template>
     <template #content>
       <!-- has data true -->
@@ -238,6 +253,7 @@ const reloadData = async () => {
         :rows="properties.page_size"
         :totalRecords="properties.total"
         @page="handlePage"
+        @export="handleExport"
       />
     </template>
   </Card>

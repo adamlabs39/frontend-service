@@ -11,9 +11,10 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
+import DetailUnitDeliveryVerification from "./DetailUnitDeliveryVerificationPage.vue";
 
 // Filter
-const onSelected = ref<string>("pending");
+const onSelected = ref<string>("request");
 
 const funcOnSelected = (label: string) => {
   onSelected.value = label;
@@ -53,6 +54,7 @@ const fetchUnitDeliveryVerification = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await UnitDeliveryVerificationStore.getApi(
+      '0192b31f-365d-731c-8b16-3a4565c9475e',
       onSelected.value,
       searchQuery.value,
       UnitDeliveryVerificationProperties.value.page,
@@ -94,10 +96,10 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Verifikasi & Pengiriman Unit');
 };
 
-const closePurchaseOfSupplierPage = () => {
+const closeUnitDeliveryVerification = () => {
   dataBreadCrumb.value.pop();
   fetchUnitDeliveryVerification();
 };
@@ -146,37 +148,37 @@ onMounted(() => {
               <CustomButton
                 @click="funcOnSelected('request')"
                 label="PERMINTAAN"
-                :outlined="onSelected != 'pending'"
+                :outlined="onSelected != 'request'"
                 borderColor="border-adameds-300"
-                :textColor="onSelected != 'pending' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'pending' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="onSelected != 'request' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'request' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="font-semibold"
               />
               <CustomButton
-                @click="funcOnSelected('cancel')"
+                @click="funcOnSelected('verified')"
                 label="VERIFIKASI"
+                :outlined="onSelected != 'verified'"
+                borderColor="border-adameds-300"
+                :textColor="onSelected != 'verified' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'verified' ? 'bg-transparent' : 'bg-adameds-300'"
+                class="ml-[20px] font-semibold "
+              />
+              <CustomButton
+                @click="funcOnSelected('dikirim')"
+                label="DIKIRIM"
+                :outlined="onSelected != 'dikirim'"
+                borderColor="border-adameds-300"
+                :textColor="onSelected != 'dikirim' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'dikirim' ? 'bg-transparent' : 'bg-adameds-300'"
+                class="ml-[20px] font-semibold"
+              />
+              <CustomButton
+                @click="funcOnSelected('cancel')"
+                label="DITOLAK"
                 :outlined="onSelected != 'cancel'"
                 borderColor="border-adameds-300"
                 :textColor="onSelected != 'cancel' ? 'text-adameds-300' : 'text-white'"
                 :backgroundColor="onSelected != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold "
-              />
-              <CustomButton
-                @click="funcOnSelected('verifikasi')"
-                label="DIKIRIM"
-                :outlined="onSelected != 'verifikasi'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'verifikasi' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'verifikasi' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold"
-              />
-              <CustomButton
-                @click="funcOnSelected('verifikasi')"
-                label="DITOLAK"
-                :outlined="onSelected != 'verifikasi'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'verifikasi' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'verifikasi' ? 'bg-transparent' : 'bg-adameds-300'"
                 class="ml-[20px] font-semibold"
               />
             </div>
@@ -224,39 +226,76 @@ onMounted(() => {
               <div class="">Tanggal</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ epochToDate(slotProps.data.tanggalPembelian, "date") }}</div>
+              <div class="">{{ epochToDate(slotProps.data.tanggalPermintaan, "date") }}</div>
             </template>
           </Column>
-          <!-- No. Pembelian -->
+          <!-- No. Pengeluaran -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
               <div class="">No. Pengeluaran</div>
             </template>
             <template #body="slotProps">
-              <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
+              <div class="mb-[5px]">{{ slotProps.data.noPermintaan }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.kategoriItem"
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  customClass="h-5"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.cito == true"
+                  label="CITO"
+                  :showCheckedIcon="false"
+                  borderColor="border-danger-300"
+                  bgColor="bg-danger-300" 
+                  textColor="text-white"
+                  class="mr-[5px]"
                 />
               </div>
             </template>
           </Column>
-          <!-- Supplier -->
+          <!-- Tujuan Permintaan -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
               <div class="">Tujuan Permintaan</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.lokasiStokTujuan }}</div>
             </template>
           </Column>
           <!-- Petugas -->
-          <Column field="petugasPembuatPo" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column field="petugasPermintaan" header="Petugas" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
           <!-- Status -->
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="">
@@ -307,5 +346,12 @@ onMounted(() => {
         </div>
       </template>
     </Card>
+    <DetailUnitDeliveryVerification
+      v-else-if="dataBreadCrumb[0].label == 'Verifikasi & Pengiriman Unit'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :selectedData="selectedData"
+      @back="closeUnitDeliveryVerification"
+    />
   </div>
 </template>

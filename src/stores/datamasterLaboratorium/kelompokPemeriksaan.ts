@@ -46,5 +46,8 @@ export const useKelompokPemeriksaanStore = defineStore({
     async importApi(payload: any) {
       return apiLaboratoriumPost("/lab/kelompok-pemeriksaan/import", payload);
     },
+    async getActive(payload = {}) {
+      return apiLaboratoriumGet(`/lab/kelompok-pemeriksaan/active`, payload);
+    }
   },
 });

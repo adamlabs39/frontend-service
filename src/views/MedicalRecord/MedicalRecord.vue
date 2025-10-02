@@ -522,7 +522,7 @@ defineExpose({ showDialogRM });
             >
               {{ patientData.noRm }}
             </div>
-            {{ patientData.patient.name }}
+            {{ patientData.patient?.name }}
           </div>
           <CustomButton
             @click="() => {}"

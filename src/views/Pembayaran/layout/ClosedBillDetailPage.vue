@@ -1,8 +1,7 @@
-// ClosedBillDetailPage.vue
-
 <script setup lang="ts">
 import { onMounted, ref, type PropType } from "vue";
 import type { MenuItem } from "primevue/menuitem";
+import { useRouter } from "vue-router";
 import { useReportCloseBillStore } from "@/stores/pembayaran/closeBill";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -10,8 +9,8 @@ import PatientIdentityForm from "../Section/PatientIdentityForm.vue";
 import TransactionHistory from "../Section/TransactionHistory.vue";
 import PaymentForm from "../Section/PaymentForm.vue";
 import HistoryPayment from "../Section/HistoryPayment.vue";
+import PelunasanPage from "../layout/PelunasanPage.vue";
 import { utilsStore } from "@/stores/utils";
-import { useRouter } from 'vue-router';
 
 const props = defineProps({
   billUuid: {
@@ -36,31 +35,35 @@ const router = useRouter();
 
 const patientDetailData = ref<any>(null);
 const isPaidStatus = ref<boolean>(true);
-
-const wasEverUnpaid = ref<boolean>(false); // <-- [DITAMBAHKAN] State baru untuk melacak status piutang
+const showPelunasanPage = ref<boolean>(false);
+const wasEverUnpaid = ref<boolean>(false);
+const breadcrumbItems = ref<MenuItem[]>([...props.dataBreadCrumb]);
 
 const handlePaymentStatusUpdate = (isPaid: boolean) => {
   isPaidStatus.value = isPaid;
-  // Jika tagihan pernah berstatus 'false' (piutang), tandai wasEverUnpaid menjadi true
   if (isPaid === false) {
     wasEverUnpaid.value = true;
   }
 };
 
-const goToPelunasan = () => {
-  if (props.billUuid) {
-    router.push({
-      path: '/pembayaran/kasir', // Pastikan path ini sesuai dengan route ke CashierPage.vue
-      query: {
-        bill_uuid: props.billUuid,
-        mode: 'pelunasan' 
-      }
-    });
+const handleBack = () => {
+  if (showPelunasanPage.value) {
+    showPelunasanPage.value = false;
+    breadcrumbItems.value.pop();
+  } else {
+    emit('back');
   }
 };
 
-
-
+const goToPelunasan = () => {
+  if (props.billUuid) {
+    const targetPath = `/pembayaran/closed-bill/${props.billUuid}/pelunasan`;
+    console.log("Navigating to:", targetPath); 
+    router.push(targetPath);
+  } else {
+    console.error("Gagal navigasi: billUuid tidak ditemukan.");
+  }
+};
 const fetchPatientDetails = async () => {
   if (!props.billUuid) return;
   storeUtils.setLoading(true);
@@ -77,6 +80,8 @@ const fetchPatientDetails = async () => {
   }
 };
 
+
+
 onMounted(() => {
   fetchPatientDetails();
 });
@@ -88,16 +93,11 @@ onMounted(() => {
       <template #content>
         <div class="flex justify-between">
           <CustomBreadCrumb
-            :home="{
-              label: 'Closed Bill',
-              home: true,
-            }"
-            :model="dataBreadCrumb"
-            class=""
-          />
+            :home="{ label: 'Closed Bill', home: true }"
+            :model="breadcrumbItems" />
           <div class="flex">
             <CustomButton
-              @click="emit('back')"
+              @click="handleBack"lkhjgvcbx
               icon="PhCaretLeft"
               label="Kembali"
               outlined
@@ -110,28 +110,29 @@ onMounted(() => {
     </Card>
     
     <div class="relative h-full overflow-auto top-[90px] pb-[180px]">
-      <PatientIdentityForm class="mt-2" :patient-data="patientDetailData" />
-      <TransactionHistory class="mt-4" :service-bills="patientDetailData?.serviceBill" /> 
+      <PelunasanPage v-if="showPelunasanPage" :bill-uuid="billUuid" />
       
-      <PaymentForm
-        class="mt-4"
-        :bill-uuid="billUuid"
-        @update:payment-status="handlePaymentStatusUpdate"
-      />
-      <HistoryPayment
-        class="mt-4"
-        :bill-uuid="billUuid"
-        @update:payment-status="handlePaymentStatusUpdate"
-      />
+      <template v-else>
+        <PatientIdentityForm class="mt-2" :patient-data="patientDetailData" />
+        <TransactionHistory class="mt-4" :service-bills="patientDetailData?.serviceBill" /> 
+        <PaymentForm
+          class="mt-4"
+          :bill-uuid="billUuid"
+          @update:payment-status="handlePaymentStatusUpdate"
+        />
+        <HistoryPayment
+          class="mt-4"
+          :bill-uuid="billUuid"
+        />
+      </template>
     </div>
 
-    <Card class="absolute inset-x-0 bottom-0">
+    <Card v-if="!showPelunasanPage" class="absolute inset-x-0 bottom-0">
       <template #content>
         <div class="flex justify-end">
           <CustomButton
             v-if="!isPaidStatus"
             label="Lunaskan"
-            class=""
             backgroundColor="bg-adameds-300"
             @click="goToPelunasan"
           />

@@ -54,6 +54,21 @@ const hasData = computed(
     pembayaranKunjunganPayload.value.length > 0
 );
 
+const paymentTypeMapping: { [key: string]: string } = {
+  'CASH' : 'Tunai',
+  'INSURANCE' : 'Asuransi'
+}
+
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+  if (typeof price !== 'number') return 'Rp 0';
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0, 
+  }).format(price);
+};
+
 watch(startDateFilter, (newDate) => {
   if (newDate) {
     newDate.setHours(0, 0, 0, 0);
@@ -149,10 +164,19 @@ const handleExport = async () => {
 //optionlabel
 const dynamicOptionLabelKey = computed(() => {
   const query = searchQuery.value;
+  const queryUC = query.toUpperCase();
+  const addressKeywords = ["JL", "DS", "DSN", "RT", "RW", "NO", "GG", "BLOK"];
+  const isAddressQuery = addressKeywords.some(keyword => queryUC.includes(keyword));
+
+  // Pola untuk No. RM
   const isRmPattern = /^\d{2}-/.test(query);
+
 
   if (isRmPattern) {
     return 'noRm'; 
+  }
+  if (isAddressQuery) {
+    return 'patientAddress';
   }
   return 'patientName';
 });
@@ -235,6 +259,12 @@ const findTransactionsForDropdown = async (filter: string) => {
   }, 500); // Debounce 500ms
 };
 
+//Refresh Button
+const handleRefresh = () => {
+  // Cukup panggil ulang fungsi fetch utama
+  fetchPembayaranKunjungan();
+};
+
 onMounted(() => {
   fetchPembayaranKunjungan();
 });
@@ -252,7 +282,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
@@ -278,9 +308,9 @@ onMounted(() => {
             <div class="flex mt-[10px]">
               <CustomSelect
                 v-model="selectedPatientUuid"
-                label="Pencarian Transaksi"
+                label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                place-holder="Cari Nama / No. RM"
+                place-holder="Cari Nama / Alamat / No. RM"
                 class="mr-5 grow"
                 :options="searchResults"
                 :optionLabel="dynamicOptionLabelKey"
@@ -362,21 +392,21 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
-          <Column header="Nomor" headerClass="bg-adameds-50">
+          <Column  header="Nomor" headerClass="bg-adameds-50 pl-10">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.noRm }}</div>
+              <div class="text-SM pl-4">{{ slotProps.data.noRm }}</div>
               <div class="text-SM">{{ slotProps.data.billCode }}</div>
               <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
             </template>
           </Column>
-          <Column header="Nama Pasien" headerClass="bg-adameds-50">
+          <Column header="Nama Pasien" headerClass="bg-adameds-50 pl-8">
             <template #body="slotProps">
               <div class="text-SM">
                 {{ slotProps.data.patientName }}
               </div>
             </template>
           </Column>
-          <Column header="Waktu Bayar" headerClass="bg-adameds-50">
+          <Column header="Waktu Bayar" headerClass="bg-adameds-50 pl-6">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
@@ -387,12 +417,12 @@ onMounted(() => {
           </Column>
           <Column header="Cara Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.paymentType }}</div>
+              <div class="text-SM">{{ paymentTypeMapping[slotProps.data.paymentType] || slotProps.data.paymentType }}</div>
             </template>
           </Column>
           <Column header="Total Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">Rp {{ slotProps.data.amount }}</div>
+              <div class="text-SM">{{  formatPriceLokal (slotProps.data.amount) }}</div>
             </template>
           </Column>
           <Column header="Kasir" headerClass="bg-adameds-50">
@@ -400,7 +430,7 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.data.cashierName }}</div>
             </template>
           </Column>
-          <Column header="Keterangan" headerClass="bg-adameds-50">
+          <Column header="Keterangan" headerClass="bg-adameds-50 " style="max-width: 250px" class="break-words">
             <template #body="slotProps">
               <div class="text-SM">{{ slotProps.data.note }}</div>
             </template>
@@ -426,7 +456,7 @@ onMounted(() => {
         currentPageReportTemplate="{currentPage}"
       >
         <template #start>
-          <span class="font-semibold mr-4">Total Data: {{ pembayaranKunjunganProperties.total }}</span>
+          <span class="font-md mr-4">Total Data: {{ pembayaranKunjunganProperties.total }}</span>
         </template>
       </Paginator>
   </div>

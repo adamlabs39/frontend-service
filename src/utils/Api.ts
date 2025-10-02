@@ -282,6 +282,7 @@ baseInstanceLaboratorium.interceptors.response.use(
   }
 );
 
+
 //Admisi
 const baseInstanceAdmisi = axios.create({
   headers: {

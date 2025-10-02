@@ -16,19 +16,24 @@ import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { usePenjaminStore } from "@/stores/datamaster/penjamin";
 import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar, downloadExportExcelKeperawatanInapPasien, downloadExportExcelBayiBaruLahir } from "@/utils/exportexceladmisi";
+import { downloadExportExcelKunjungan, downloadExportExcelBatalKunjungan, downloadExportExcelStatusKamar, downloadExportExcelKeperawatanInapPasien, downloadExportExcelBayiBaruLahir, downloadExportExcelRekapKunjungan } from "@/utils/exportexceladmisi";
 import axios from "axios";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 
 const penjaminStore = usePenjaminStore();
 const storeUtils = utilsStore();
 const admisiLaporanStore = useAdmisiReportStore();
 const praktisiStore = usePraktisiStore();
 const lokasiStore = useLokasiStore();
+const monitoringKamarStore = useMonitoringKamarStore();
 const emit = defineEmits(["search"]);
 const route = useRoute();
 const pageType = ref("");
+const listJenisKunjungan = ref<any[]>([]);
 const listPenjamin = ref<any[]>([]);
+const startDateFilter = ref<Date>(new Date());
+const endDateFilter = ref<Date>(new Date());
 const penjaminOptions = computed(() => {
   return listPenjamin.value;
 });
@@ -38,7 +43,6 @@ const properties = ref({
   pageSize: 10,
   total: 0,
 });
-
 const jenisKunjunganOptions = [
   { label: "Semua", value: null },
   { label: "RJ", value: "RJ" },
@@ -65,51 +69,84 @@ const grandTotalDokter = ref(0);
 const rekapPenjaminData = ref<any[]>([]);
 const totalPenjaminPerDay = ref<{ [key: string]: number }>({});
 const grandTotalPenjamin = ref(0);
+const totalKunjunganPerDay = ref<{ [key: string]: number }>({});
+const grandTotalKunjungan = ref(0);
+const dateRangeColumns = ref<string[]>([]);
+const admisiReportStore = useAdmisiReportStore();
 
-const totalPerDay = computed(() => {
-  const totals: { [key: string]: number } = {};
-  for (let day = 1; day <= 31; day++) {
-    const key = day.toString().padStart(2, "0");
-    totals[key] = rekapData.value.reduce(
-      (sum, row) => sum + (Number(row[key]) || 0),
-      0
-    );
+const formatDateHeader = (fullDate: string) => {
+  if (!fullDate) return '';
+  const parts = fullDate.split('-');
+  return `${parts[2]}/${parts[1]}`;
+};
+
+const generateDateRangeColumns = (start: Date, end: Date) => {
+  if (!start || !end) return;
+  const dates = [];
+  let currentDate = new Date(start);
+  currentDate.setHours(0, 0, 0, 0);
+
+  const finalDate = new Date(end);
+  finalDate.setHours(0, 0, 0, 0);
+
+  while (currentDate <= finalDate) {
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = currentDate.getDate().toString().padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
+    currentDate.setDate(currentDate.getDate() + 1);
   }
-  return totals;
-});
+
+  dateRangeColumns.value = dates;
+};
+
+watch(
+  [startDateFilter, endDateFilter],
+  ([newStart, newEnd]) => {
+    generateDateRangeColumns(newStart, newEnd);
+  },
+  { 
+    immediate: true,
+    deep: true
+  } 
+);
 
 
-const grandTotal = computed(() => {
-  return rekapData.value.reduce(
-    (sum, row) => sum + (row.total || 0),
-    0
-  );
-});
+const fetchAllReportData = async () => {
+  if (pageType.value.startsWith('rekap-')) {
+    storeUtils.setLoading(true);
+    try {
+      await Promise.all([
+        fetchRekapData(),
+        fetchRekapDokter(),
+        fetchRekapPenjamin()
+      ]);
+    } catch (error) {
+      console.error("Gagal memuat semua data rekap:", error);
+    } finally {
+      storeUtils.setLoading(false);
+    }
+  }
+};
 
 const fetchRekapData = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/rekap/jenis-kunjungan`;
-    
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+    const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      jenisKunjungan: filterParams.jenis_kunjungan ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload && response.data.payload.kunjungan) {
-      const selectedDate = startDateFilter.value;
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth();
-      processRekapData(response.data.payload.kunjungan, year, month);
+    const response = await admisiLaporanStore.getJenisKunjunganReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapData(response.payload);
     } else {
       rekapData.value = [];
     }
@@ -121,60 +158,69 @@ const fetchRekapData = async () => {
   }
 };
 
-const processRekapData = (apiData: any[], year: number, month: number) => {
-  daysInMonth.value = new Date(year, month + 1, 0).getDate();
-  const groupedData: { [key: string]: any } = {};
-  for (const item of apiData) {
-    const jenis = item.jenis_kunjungan;
-    if (!groupedData[jenis]) {
-      groupedData[jenis] = { name: jenis };
+const processRekapData = (payload: any) => {
+  const dailyTotals: { [key: string]: number } = {};
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
+      dailyTotals[item.tanggal] = item.total;
     }
-    const day = item.tanggal.split('-')[2];
-    groupedData[jenis][day] = Number(item.total_harian);
   }
+  totalKunjunganPerDay.value = dailyTotals;
+  grandTotalKunjungan.value = payload.totalKeseluruhan || 0;
+
   const finalData: RekapRow[] = [];
-  const visitTypes = ["IGD", "RI", "RJ"]; 
-  for (const key of visitTypes) {
-    if (groupedData[key]) {
-      const rowData: RekapRow = { name: key, total: 0 };
-      let totalKeseluruhan = 0;
-      for (let day = 1; day <= daysInMonth.value; day++) {
-        const dayKey = day.toString().padStart(2, '0');
-        const value = groupedData[key][dayKey] || 0;
-        rowData[dayKey] = value;
-        totalKeseluruhan += value;
-      }
-      rowData.total = totalKeseluruhan;
-      finalData.push(rowData);
+  const kunjunganData = payload.kunjungan;
+
+  const totalsMap: { [key: string]: number } = {};
+  if (payload.totalJenisKunjungan && Array.isArray(payload.totalJenisKunjungan)) {
+    for (const item of payload.totalJenisKunjungan) {
+      totalsMap[item.jenisKunjungan] = item.total;
     }
   }
+
+  for (const jenisKunjungan in kunjunganData) {
+    const dailyDataArray = kunjunganData[jenisKunjungan];
+    const rowData: RekapRow = {
+      name: jenisKunjungan,
+      total: totalsMap[jenisKunjungan] || 0,
+    };
+
+    if (Array.isArray(dailyDataArray)) {
+      for (const dailyItem of dailyDataArray) {
+        rowData[dailyItem.tanggal] = dailyItem.total;
+      }
+    }
+
+    for (const dateKey of dateRangeColumns.value) {
+      if (!rowData.hasOwnProperty(dateKey)) {
+        rowData[dateKey] = 0;
+      }
+    }
+
+    finalData.push(rowData);
+  }
+
   rekapData.value = finalData;
 };
 
 const fetchRekapDokter = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/rekap/dokter`;
-
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+     const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      practitionerUuid: filterParams.dpjp ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload) {
-      const selectedDate = startDateFilter.value;
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth();
-      processRekapDokter(response.data.payload, year, month);
+    const response = await admisiLaporanStore.getDpjpReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapDokter(response.payload);
     } else {
       rekapDokterData.value = [];
       totalDokterPerDay.value = {};
@@ -190,68 +236,70 @@ const fetchRekapDokter = async () => {
   }
 };
 
-const processRekapDokter = (payload: any, year: number, month: number) => {
+const processRekapDokter = (payload: any) => {
   const dailyTotals: { [key: string]: number } = {};
-  for (const item of payload.total_harian) {
-    const day = item.tanggal.split('-')[2];
-    dailyTotals[day] = item.total;
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
+      dailyTotals[item.tanggal] = item.total;
+    }
   }
   totalDokterPerDay.value = dailyTotals;
-
-  grandTotalDokter.value = payload.total_keseluruhan;
-
-  daysInMonth.value = new Date(year, month + 1, 0).getDate();
-  const groupedData: { [key: string]: any } = {};
-
-  for (const item of payload.dokter) {
-    const dokterName = item.nama_dokter;
-    if (!groupedData[dokterName]) {
-      groupedData[dokterName] = { name: dokterName };
-    }
-    const day = item.tanggal.split('-')[2];
-    groupedData[dokterName][day] = Number(item.total_harian);
-  }
+  grandTotalDokter.value = payload.totalKeseluruhan || 0;
 
   const finalData: RekapRow[] = [];
-  for (const dokterTotal of payload.total_dokter) {
-    const dokterName = dokterTotal.nama_dokter;
-    if (groupedData[dokterName]) {
-      const rowData: RekapRow = { name: dokterName, total: dokterTotal.total };
-      for (let day = 1; day <= daysInMonth.value; day++) {
-        const dayKey = day.toString().padStart(2, '0');
-        rowData[dayKey] = groupedData[dokterName][dayKey] || 0;
-      }
-      finalData.push(rowData);
+  const dokterData = payload.dokter;
+
+  const doctorTotals: { [key: string]: number } = {};
+  if (payload.totalDokter && Array.isArray(payload.totalDokter)) {
+    for (const item of payload.totalDokter) {
+      doctorTotals[item.namaDokter] = item.total;
     }
   }
-  
+
+  for (const dokterName in dokterData) {
+    const dailyDataArray = dokterData[dokterName];
+    const rowData: RekapRow = {
+      name: dokterName,
+      total: doctorTotals[dokterName] || 0,
+    };
+
+    if (Array.isArray(dailyDataArray)) {
+      for (const dailyItem of dailyDataArray) {
+        rowData[dailyItem.tanggal] = dailyItem.total;
+      }
+    }
+
+    for (const dateKey of dateRangeColumns.value) {
+      if (!rowData.hasOwnProperty(dateKey)) {
+        rowData[dateKey] = 0;
+      }
+    }
+
+    finalData.push(rowData);
+  }
+
   rekapDokterData.value = finalData;
 };
 
 const fetchRekapPenjamin = async () => {
   storeUtils.setLoading(true);
   try {
-    const token = localStorage.getItem("access_token");
-    const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/rekap/penjamin`;
-
     const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-    const response = await axios.get(apiUrl, {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-      },
-      headers: {
-        Authorization: token,
-      },
-    });
+    const reportParams = {
+      startDate: String(startDate),
+      endDate: String(endDate),
+      penjamin: filterParams.penjamin ?? "",
+      limit: 99999,
+      page: 1,
+    };
 
-    if (response && response.data.payload) {
-      const selectedDate = startDateFilter.value;
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth();
-      processRekapPenjamin(response.data.payload, year, month);
+
+    const response = await admisiLaporanStore.getPenjaminReport(reportParams);
+
+    if (response && response.payload) {
+      processRekapPenjamin(response.payload);
     } else {
       rekapPenjaminData.value = [];
       totalPenjaminPerDay.value = {};
@@ -267,67 +315,84 @@ const fetchRekapPenjamin = async () => {
   }
 };
 
-const processRekapPenjamin = (payload: any, year: number, month: number) => {
+const processRekapPenjamin = (payload: any) => {
   const dailyTotals: { [key: string]: number } = {};
-  for (const item of payload.total_harian) {
-    const day = item.tanggal.split('-')[2];
-    dailyTotals[day] = item.total;
+  if (payload.totalHarian && Array.isArray(payload.totalHarian)) {
+    for (const item of payload.totalHarian) {
+      dailyTotals[item.tanggal] = item.total;
+    }
   }
   totalPenjaminPerDay.value = dailyTotals;
-
-  grandTotalPenjamin.value = payload.total_keseluruhan;
-
-  daysInMonth.value = new Date(year, month + 1, 0).getDate();
-  const groupedData: { [key: string]: any } = {};
-
-  for (const item of payload.penjamin) {
-    const penjaminName = item.nama_penjamin;
-    if (!groupedData[penjaminName]) {
-      groupedData[penjaminName] = { name: penjaminName };
-    }
-    const day = item.tanggal.split('-')[2];
-    groupedData[penjaminName][day] = Number(item.total_harian);
-  }
+  grandTotalPenjamin.value = payload.totalKeseluruhan || 0;
 
   const finalData: RekapRow[] = [];
-  for (const penjaminTotal of payload.total_penjamin) {
-    const penjaminName = penjaminTotal.nama_penjamin;
-    if (groupedData[penjaminName]) {
-      const rowData: RekapRow = { name: penjaminName, total: penjaminTotal.total };
-      for (let day = 1; day <= daysInMonth.value; day++) {
-        const dayKey = day.toString().padStart(2, '0');
-        rowData[dayKey] = groupedData[penjaminName][dayKey] || 0;
-      }
-      finalData.push(rowData);
+  const penjaminData = payload.penjamin;
+
+  const penjaminTotals: { [key: string]: number } = {};
+  if (payload.totalPenjamin && Array.isArray(payload.totalPenjamin)) {
+    for (const item of payload.totalPenjamin) {
+      penjaminTotals[item.namaPenjamin] = item.total;
     }
   }
-  
+
+  for (const penjaminName in penjaminData) {
+    const dailyDataArray = penjaminData[penjaminName];
+    const rowData: RekapRow = {
+      name: penjaminName,
+      total: penjaminTotals[penjaminName] || 0,
+    };
+
+    if (Array.isArray(dailyDataArray)) {
+      for (const dailyItem of dailyDataArray) {
+        rowData[dailyItem.tanggal] = dailyItem.total;
+      }
+    }
+
+    for (const dateKey of dateRangeColumns.value) {
+      if (!rowData.hasOwnProperty(dateKey)) {
+        rowData[dateKey] = 0;
+      }
+    }
+
+    finalData.push(rowData);
+  }
+
   rekapPenjaminData.value = finalData;
 };
 
 const updatePageType = async (path: string) => {
   resetFilter();
   try {
-    const responseDpjp = await praktisiStore.getApi({
-      limit: 9999,
-      non_doctor: false,
-    });
+    const responseDpjp = await praktisiStore.getApi({ limit: 9999, isDoctor: true });
     if (responseDpjp && responseDpjp.payload) {
-      listDpjp.value = responseDpjp.payload.filter(
-        (praktisi: any) => praktisi.isDoctor && praktisi.status
-      );
+      const filteredList = responseDpjp.payload.filter((practitioner: { isDoctor: any; }) => practitioner.isDoctor);
+      
+      if (filteredList?.length > 0) {
+          const mappedList = filteredList.map((practitioner: { pegawai: { name: any; }; uuid: any; }) => {
+            return {
+              name: practitioner.pegawai.name, 
+              uuid: practitioner.uuid       
+            };
+          });
+          listDpjp.value = mappedList;
+      } else {
+          listDpjp.value = [];
+      }
+
     }
-    const responseRuangan = await lokasiStore.getApi(1,9999);
+    const responseRuangan = await monitoringKamarStore.getMonitoringKamar({});
     if (responseRuangan && responseRuangan.payload) {
-      listRuangan.value = responseRuangan.payload.filter(
-        (lokasi: any) => lokasi.locationType === "Room"
-      );
+      listRuangan.value = responseRuangan.payload;
     }
     const responsePenjamin = await penjaminStore.getAktifApi();
     if (responsePenjamin && responsePenjamin.payload) {
       listPenjamin.value = responsePenjamin.payload;
     }
-
+    listJenisKunjungan.value = [
+      { label: 'Rawat Jalan', value: 'RJ' },
+      { label: 'Rawat Inap', value: 'RI' },
+      { label: 'IGD', value: 'IGD' }
+    ];
   } catch (error) {
     console.error("Failed to fetch dropdown data", error);
   } finally {
@@ -347,40 +412,34 @@ const updatePageType = async (path: string) => {
   reportType.value = pageType.value;
   
   if (pageType.value === "rekap-kunjungan") {
-    storeUtils.setLoading(true);
-    try {
-      const token = localStorage.getItem("access_token");
-      const apiUrl = `${import.meta.env.VITE_BASE_ADMISI}/rekap/jenis-kunjungan`;
+  storeUtils.setLoading(true);
+  try {
+    const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
+    const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
-      const startDate = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
-      const endDate = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
-      
-      const response = await axios.get(apiUrl, {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-        },
-        headers: {
-          Authorization: token,
-        },
-      });
+    const params = {
+      startDate: startDate.toString(),
+      endDate: endDate.toString(),
+      practitionerUuid: filterParams.dpjp ?? "",
+      penjamin: filterParams.penjamin ?? "",
+      jenisKunjungan: filterParams.jenis_kunjungan ?? "",
+    };
 
-      if (response && response.data.payload && response.data.payload.kunjungan) {
-        const selectedDate = startDateFilter.value;
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth();
-        processRekapData(response.data.payload.kunjungan, year, month);
-      } else {
-        rekapData.value = [];
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data rekap:", error);
+    const response = await admisiReportStore.getRekapJenisKunjunganReport(params);
+
+    if (response && response.data.payload && response.data.payload.kunjungan) {
+      processRekapData(response.data.payload.kunjungan);
+    } else {
       rekapData.value = [];
-    } finally {
-      storeUtils.setLoading(false);
     }
-    return;
+  } catch (error) {
+    console.error("Gagal mengambil data rekap:", error);
+    rekapData.value = [];
+  } finally {
+    storeUtils.setLoading(false);
   }
+  return;
+}
   
   let filter = {} as Filter;
   filter = setFilter();
@@ -400,11 +459,9 @@ onMounted(async () => {
 
 const search = ref("");
 const dpjpFilter = ref("Semua");
-const visitTypeFilter = ref("Semua");
+const visitTypeFilter = ref(null);
 const penjaminFilter = ref(null);
 const ruanganFilter = ref("Semua");
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
 const rekapTabelFilter = ref(['kunjungan', 'dpjp', 'penjamin']);
 const rekapTabelOptions = ref([
   { label: 'Rekap Kunjungan', value: 'kunjungan' },
@@ -428,12 +485,17 @@ watch(startDateFilter, (newDate) => {
 
 const resetFilter = () => {
   search.value = "";
+  filterParams.q = "";
   dpjpFilter.value = "Semua";
   filterParams.jenis_kunjungan = "";
-  filterParams.penjamin_uuid = "";
+  filterParams.penjamin = "";
+  filterParams.ruangan = "";
   ruanganFilter.value = "Semua";
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+      y = date.getFullYear(),
+      m = date.getMonth();
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   if (pageType.value === 'rekap-kunjungan') {
     rekapTabelFilter.value = ['kunjungan', 'dpjp', 'penjamin'];
   }
@@ -445,7 +507,7 @@ const onSelectJenisKunjungan = (val: string | null) => {
 };
 
 const onSelectPenjamin = (val: string | null) => {
-  filterParams.penjamin_uuid = val ?? "";
+  filterParams.penjamin = val ?? "";
 };
 
 interface Filter {
@@ -458,7 +520,6 @@ interface Filter {
   ruangan?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  penjamin_uuid?: string | null;
   jenis_kunjungan?: string | null;
 };
 
@@ -467,7 +528,7 @@ const setFilter = () => {
 
   filter.page = properties.value.page;
   filter.limit = properties.value.pageSize;
-  filter.q = search.value;
+  filter.q = filterParams.q || "";
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
   )}`;
@@ -486,6 +547,9 @@ const setFilter = () => {
         : (visitTypeFilter.value == "Semua" || !visitTypeFilter.value
             ? ""
             : visitTypeFilter.value);
+    filter.penjamin =
+      filterParams.penjamin ||
+      (!penjaminFilter.value ? "" : penjaminFilter.value);
   } else if (pageType.value == "penjamin") {
     filter.practitionerUuid =
       filterParams.practitioner_uuid ||
@@ -499,7 +563,7 @@ const setFilter = () => {
             : visitTypeFilter.value);
 
     filter.penjamin =
-      filterParams.penjamin_uuid ||
+      filterParams.penjamin ||
       (!penjaminFilter.value ? "" : penjaminFilter.value);
   } else if (
     pageType.value == "batal-kunjungan" ||
@@ -517,7 +581,7 @@ const setFilter = () => {
     pageType.value == "keperawatan-inap-pasien"
   ) {
     filter.ruangan =
-      filterParams.room ||
+      filterParams.ruangan ||
       (ruanganFilter.value == "Semua" || !ruanganFilter.value
         ? ""
         : ruanganFilter.value);
@@ -527,19 +591,6 @@ const setFilter = () => {
 };
 
 const fetchReportData = async (filter: Filter = {}) => {
-  filter = {
-    ...filter,
-    penjamin_uuid: filterParams.penjamin_uuid || "",
-    jenis_kunjungan:
-      filterParams.jenis_kunjungan && filterParams.jenis_kunjungan !== "Semua"
-        ? filterParams.jenis_kunjungan
-        : "",
-    start_date: startDateFilter.value || "",
-    end_date: endDateFilter.value || "",
-    room: filter.ruangan || "",
-    practitioner_uuid: filter.practitionerUuid || "",
-  };
-
   storeUtils.setLoading(true);
   let response;
   try {
@@ -568,6 +619,7 @@ const fetchReportData = async (filter: Filter = {}) => {
     storeUtils.setLoading(false);
   }
 };
+
 
 const searchData = async () => {
   if (pageType.value === 'rekap-kunjungan') {
@@ -598,7 +650,7 @@ const filters = ref({
   dpjp: '',
   status: '',
   jenis_kunjungan: '',
-  penjamin_uuid: '',
+  penjamin: '',
   q: ''
 });
 
@@ -608,27 +660,56 @@ const filterParams = reactive({
   q: '', 
   practitioner_uuid: '',
   jenis_kunjungan: '',
-  room: '',
-  penjamin_uuid: '',
+  ruangan: '',
+  dpjp: '',
+  penjamin: '',
   page: 1,
   limit: 10,
 });
 
+let debounceTimer: ReturnType<typeof setTimeout>;
+
+watch(filterParams, () => {
+  if (pageType.value === 'rekap-kunjungan') {
+    clearTimeout(debounceTimer);
+    
+    debounceTimer = setTimeout(() => {
+      fetchAllReportData(); 
+    }, 500);
+  }
+}, {
+  deep: true 
+});
+
 
 const handleExport = () => {
-  const filterCamelCase = setFilter();
-  delete filterCamelCase.page;
-  delete filterCamelCase.limit;
-
   const filterSnakeCase: any = {};
+  if (filterParams.q) filterSnakeCase.q = filterParams.q;
+  if (startDateFilter.value) {
+    filterSnakeCase.start_date = dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
+  }
+  if (endDateFilter.value) {
+    filterSnakeCase.end_date = dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
+  }
+  if (filterParams.practitioner_uuid) {
+    filterSnakeCase.practitioner_uuid = filterParams.practitioner_uuid;
+  }
+  if (filterParams.jenis_kunjungan) {
+    filterSnakeCase.jenis_kunjungan = filterParams.jenis_kunjungan;
+  }
+  if (filterParams.penjamin) {
+    filterSnakeCase.penjamin = filterParams.penjamin;
+  }
+  if (filterParams.ruangan) {
+    filterSnakeCase.ruangan = filterParams.ruangan;
+  }
+  filterSnakeCase.practitioner_uuid = 
+    filterParams.practitioner_uuid || 
+    (dpjpFilter.value == "Semua" || !dpjpFilter.value ? "" : dpjpFilter.value);
 
-  if (filterCamelCase.q) filterSnakeCase.q = filterCamelCase.q;
-  if (filterCamelCase.startDate) filterSnakeCase.start_date = filterCamelCase.startDate;
-  if (filterCamelCase.endDate) filterSnakeCase.end_date = filterCamelCase.endDate;
-  if (filterCamelCase.practitionerUuid) filterSnakeCase.practitioner_uuid = filterCamelCase.practitionerUuid;
-  if (filterCamelCase.jenisKunjungan) filterSnakeCase.jenis_kunjungan = filterCamelCase.jenisKunjungan;
-  if (filterCamelCase.penjamin) filterSnakeCase.penjamin_uuid = filterCamelCase.penjamin; 
-  if (filterCamelCase.ruangan) filterSnakeCase.room = filterCamelCase.ruangan; 
+  if (!filterSnakeCase.practitioner_uuid) {
+    delete filterSnakeCase.practitioner_uuid;
+  }
 
   switch (route.path) {
     case "/admisi/laporan/kunjungan":
@@ -645,6 +726,25 @@ const handleExport = () => {
       break;
     case "/admisi/laporan/bayi-baru-lahir":
       downloadExportExcelBayiBaruLahir(filterSnakeCase);
+      break;
+      case "/admisi/laporan/rekap-kunjungan":
+      downloadExportExcelRekapKunjungan(
+        filterSnakeCase,
+        rekapTabelFilter.value,
+        dateRangeColumns.value,
+    
+        rekapData.value,
+        totalKunjunganPerDay.value,
+        grandTotalKunjungan.value,
+    
+        rekapDokterData.value,
+        totalDokterPerDay.value,
+        grandTotalDokter.value,
+    
+        rekapPenjaminData.value,
+        totalPenjaminPerDay.value,
+        grandTotalPenjamin.value
+      );
       break;
     default:
       console.warn("Fungsi export belum diatur untuk halaman ini.");
@@ -689,7 +789,7 @@ defineExpose({
             class="grid grid-cols-2 mt-[10px] gap-5"
           >
             <CustomTextfield
-              v-model="search"
+              v-model="filterParams.q"
               label="Cari Pasien"
               placeholder="Cari Nama / Alamat / No. RM"
               class="grow"
@@ -698,14 +798,12 @@ defineExpose({
               v-model="dpjpFilter"
               label="DPJP"
               class="grow"
-              optionLabel="pegawai.name"
+              optionLabel="name"
               optionValue="uuid"
               :options="[
                 {
                   uuid: 'Semua',
-                  detailPegawai: {
-                    name: 'Semua',
-                  },
+                  name: 'Semua',
                 },
                 ...listDpjp,
               ]"
@@ -718,7 +816,7 @@ defineExpose({
                 v-if="pageType === 'rekap-kunjungan'"
                 v-model="rekapTabelFilter"
                 :options="rekapTabelOptions"
-                label="Tampilkan Tabel"
+                label="Data Rekap"
                 placeHolder="Pilih satu atau lebih tabel"
                 optionLabel="label"
                 optionValue="value"
@@ -734,28 +832,27 @@ defineExpose({
               />
               <CustomSelect
                 v-if="pageType == 'status-kamar' || pageType == 'keperawatan-inap-pasien'"
-                v-model="filterParams.room"
+                v-model="filterParams.ruangan"
                 label="Ruangan"
+                placeHolder="Pilih Ruangan"
                 class="mr-5 grow"
                 optionLabel="name"
                 optionValue="name"
-                :options="[
-                  { name: 'Semua' },
-                  ...listRuangan,
-                ]"
+                :options="listRuangan"
               />
               <CustomSelect
-                v-if="pageType !== 'bayi-baru-lahir' && pageType !== 'batal-kunjungan' && pageType !== 'keperawatan-inap-pasien' && pageType !== 'status-kamar'"
-                v-model="filterParams.penjamin_uuid" label="Penjamin"
+                v-if="pageType !== 'bayi-baru-lahir' && pageType !== 'batal-kunjungan' && pageType !== 'keperawatan-inap-pasien' && pageType !== 'status-kamar' && pageType !== 'rekap-kunjungan'"
+                v-model="filterParams.penjamin" 
+                label="Penjamin"
                 @update:model-value="onSelectPenjamin"
                 placeHolder="Pilih Penjamin"
                 class="mr-5 grow"
                 optionLabel="name"
-                optionValue="uuid"
+                optionValue="name"
                 :options="penjaminOptions"
               />
               <CustomSelect
-                v-if="pageType != 'status-kamar' && pageType != 'keperawatan-inap-pasien'"
+                v-if="pageType != 'status-kamar' && pageType != 'keperawatan-inap-pasien' && pageType !== 'rekap-kunjungan'"
                 v-model="filterParams.jenis_kunjungan"
                 placeHolder="Pilih Jenis Kunjungan"
                 @update:model-value="onSelectJenisKunjungan"
@@ -812,376 +909,295 @@ defineExpose({
       </CustomAccordion>
     </template>
     <template #content>
-      <!-- <div v-if="reportType === 'rekap-kunjungan'">
-            <CustomAccordion
-              class="max-w-[1000px] mx-auto"
-              :openWithHeader="true"
-              initialState="0"
-              headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
-            >
-              <template #header>
-                <span class="font-semibold text-white">Rekap Kunjungan</span>
-              </template>
-
-              <template #collapseIcon>
-                <CustomButton
-                  icon="PhCaretUp"
-                  backgroundColor="bg-transparent"
-                  textColor="text-white"
-                />
-              </template>
-              <template #expandIcon>
-                <CustomButton
-                  icon="PhCaretDown"
-                  backgroundColor="bg-transparent"
-                  textColor="text-white"
-                />
-              </template>
-              <template #content>
-                <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-                  <div class="flex items-center p-4 bg-adameds-50">
-                    <label class="w-40 font-semibold">Jenis Kunjungan</label>
-                    <CustomSelect
-                      :showLabel="false"
-                      v-model="visitTypeFilter"
-                      class="w-full md:w-1/4"
-                    />
-                  </div>
-                  <DataTable
-                    :value="rekapData"
-                    tableStyle="min-width: 50rem"
-                    scrollable
-                    scrollHeight="flex"
-                    :pt="{ headerRow: 'text-SM' }"
-                    showGridlines
-                  >
-                    <Column
-                      field="name"
-                      header="Nama"
-                      header-class="text-black bg-adameds-50"
-                      style="width: 150px"
-                      frozen
-                      align-frozen="left"
-                    >
-                      <template #footer>
-                        <span style="font-weight: bold;">Total Harian:</span>
-                      </template>
-                    </Column>
-
-                    <Column
-                      v-for="day in daysInMonth"
-                      :key="day"
-                      :field="day.toString().padStart(2, '0')"
-                      :header="day.toString().padStart(2, '0')"
-                      header-class="text-black bg-adameds-50"
-                      style="width: 40px; text-align: center"
-                      :body="(row: any) => row[day.toString().padStart(2, '0')] || 0"
-                    >
-                      <template #footer>
-                        <span style="font-weight: bold; text-align: center; display: block;">
-                          {{ (totalPerDay[day.toString().padStart(2, '0')] || 0).toString() }}
-                        </span>
-                      </template>
-                    </Column>
-
-                    <Column
-                      field="total"
-                      header="Total"
-                      header-class="text-black bg-adameds-50"
-                      style="width: 60px; font-weight: bold; text-align: center"
-                      frozen
-                      align-frozen="right"
-                    >
-                      <template #footer>
-                        <span style="font-weight: bold; text-align: center; display: block;">
-                          {{ grandTotal.toString() }}
-                        </span>
-                      </template>
-                    </Column>
-                  </DataTable>
-                </div>
-              </template> 
-            </CustomAccordion>
-      </div> -->
-      <div class =" flex flex-col gap-6" v-if="reportType === 'rekap-kunjungan'">
-        <CustomAccordion
-          v-if="rekapTabelFilter.includes('kunjungan')"
-          class="max-w-[1000px] mx-auto min-w-[1000px]"
-          :openWithHeader="true"
-          initialState="0"
-          headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
-        >
-          <template #header>
-            <span class="font-semibold text-white">
-              Rekap Kunjungan 
-            </span>
-          </template>
-          
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #content>
-            <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-              <div class="flex items-center p-4 bg-adameds-50">
-                  <label class="w-40 font-semibold">Jenis Kunjungan</label>
-                  <CustomSelect
-                    :showLabel="false"
-                    v-model="visitTypeFilter"
-                    class="w-full md:w-1/4"
-                  />
-                </div>
-              <DataTable
-                :value="rekapData"
-                tableStyle="min-width: 50rem"
-                scrollable
-                scrollHeight="flex"
-                :pt="{ headerRow: 'text-SM' }"
-                showGridlines
-              >
-                <Column
-                  field="name"
-                  header="Nama"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 150px"
-                  frozen
-                  align-frozen="left"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold;">Total Harian:</span>
-                  </template>
-                </Column>
-
-                <Column
-                  v-for="day in daysInMonth"
-                  :key="day"
-                  :field="day.toString().padStart(2, '0')"
-                  :header="day.toString().padStart(2, '0')"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 40px; text-align: center"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ (totalPerDay[day.toString().padStart(2, '0')] || 0).toString() }}
-                    </span>
-                  </template>
-                </Column>
-
-                <Column
-                  field="total"
-                  header="Total"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 60px; font-weight: bold; text-align: center"
-                  frozen
-                  align-frozen="right"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ grandTotal.toString() }}
-                    </span>
-                  </template>
-                </Column>
-              </DataTable>
-            </div>
-            
-          </template> 
-        </CustomAccordion>
-        <CustomAccordion
-          v-if="rekapTabelFilter.includes('dpjp')"
-          class="max-w-[1000px] mx-auto min-w-[1000px]"
-          :openWithHeader="true"
-          initialState="0"
-          headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
-        >
-          <template #header>
-            <span class="font-semibold text-white">
-              Rekap DPJP 
-            </span>
-          </template>
-          
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #content>
-            <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-              <div class="flex items-center p-4 bg-adameds-50">
-                <label class="w-40 font-semibold">Dokter DPJP</label>
-                <CustomMultiSelect
-                  :showLabel="false"
-                  v-model="nameFilter"
-                  :options="nameOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Pilih satu atau lebih nama untuk ditampilkan"
-                  class="w-full md:w-2/4"
+      <div class =" flex flex-col gap-6 h-full" v-if="reportType === 'rekap-kunjungan'">
+        <div v-if="rekapTabelFilter.length > 0" class="flex flex-col gap-6">
+          <CustomAccordion
+        v-if="rekapTabelFilter.includes('kunjungan')"
+        :openWithHeader="true"
+        initialState="0"
+        headerClass="flex items-center justify-between bg-adameds-300 p-3"
+      >
+        <template #header>
+          <span class="font-semibold text-white">
+            Rekap Kunjungan
+          </span>
+        </template>
+  
+        <template #collapseIcon>
+          <CustomButton
+            icon="PhCaretUp"
+            backgroundColor="bg-transparent"
+            textColor="text-white"
+          />
+        </template>
+        <template #expandIcon>
+          <CustomButton
+            icon="PhCaretDown"
+            backgroundColor="bg-transparent"
+            textColor="text-white"
+          />
+        </template>
+        <template #content>
+          <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+            <div class="flex items-center p-4 bg-adameds-50">
+                <label class="w-40 font-semibold">Jenis Kunjungan</label>
+                <CustomSelect
+                :showLabel="false"
+                v-model="filterParams.jenis_kunjungan"
+                class="w-full md:w-1/4"
+                placeHolder="Pilih Jenis Kunjungan"
+                :options="jenisKunjunganOptions"
+                optionLabel="label"
+                optionValue="value"
               />
               </div>
-              <DataTable
-                :value="rekapDokterData"
-                tableStyle="min-width: 50rem"
-                scrollable
-                scrollHeight="flex"
-                :pt="{ headerRow: 'text-SM' }"
-                showGridlines
+            <DataTable
+              :value="rekapData"
+              tableStyle="min-width: 50rem"
+              scrollable
+              scrollHeight="flex"
+              :pt="{ headerRow: 'text-SM' }"
+              showGridlines
+            >
+              <Column
+                field="name"
+                header="Nama"
+                header-class="text-black bg-adameds-50"
+                style="width: 150px"
+                frozen
+                align-frozen="left"
               >
-                <Column
-                  field="name"
-                  header="Nama"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 150px"
-                  frozen
-                  align-frozen="left"
+                <template #footer>
+                  <span style="font-weight: bold;">Total Harian:</span>
+                </template>
+              </Column>
+  
+              <Column
+                v-for="dateString in dateRangeColumns"
+                :key="dateString"
+                :field="dateString"
+                :header="formatDateHeader(dateString)"
+                header-class="text-black bg-adameds-50"
+                style="width: 55px; text-align: center"
+              >
+                <template #footer>
+                  <span style="font-weight: bold; text-align: center; display: block;">
+                    {{ (totalKunjunganPerDay[dateString] || 0).toString() }}
+                  </span>
+                </template>
+              </Column>
+  
+              <Column
+                field="total"
+                header="Total"
+                header-class="text-black bg-adameds-50"
+                style="width: 60px; font-weight: bold; text-align: center"
+                frozen
+                align-frozen="right"
+              >
+                <template #footer>
+                  <span style="font-weight: bold; text-align: center; display: block;">
+                    {{ grandTotalKunjungan.toString() }}
+                  </span>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </template>
+          </CustomAccordion>
+          <CustomAccordion
+            v-if="rekapTabelFilter.includes('dpjp')"
+            :openWithHeader="true"
+            initialState="0"
+            headerClass="flex items-center justify-between bg-adameds-300 p-3"
+          >
+            <template #header>
+              <span class="font-semibold text-white">
+                Rekap DPJP
+              </span>
+            </template>
+  
+            <template #collapseIcon>
+              <CustomButton
+                icon="PhCaretUp"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #expandIcon>
+              <CustomButton
+                icon="PhCaretDown"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #content>
+              <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+                <div class="flex items-center p-4 bg-adameds-50">
+                    <label class="w-40 font-semibold">Dokter DPJP</label>
+                    <CustomSelect
+                    v-model="filterParams.dpjp"
+                    placeHolder="Pilih Dokter"
+                    :showLabel="false"
+                    class="w-full md:w-1/4"
+                    optionLabel="name"
+                    optionValue="uuid"
+                    :options="[
+                      { name: 'Semua Dokter', uuid: null },
+                      ...listDpjp,
+                    ]"
+                  />
+                  </div>
+                <DataTable
+                  :value="rekapDokterData"
+                  tableStyle="min-width: 50rem"
+                  scrollable
+                  scrollHeight="flex"
+                  :pt="{ headerRow: 'text-SM' }"
+                  showGridlines
                 >
-                  <template #footer>
-                    <span style="font-weight: bold;">Total Harian:</span>
-                  </template>
-                </Column>
-
-                <Column
-                  v-for="day in daysInMonth"
-                  :key="day"
-                  :field="day.toString().padStart(2, '0')"
-                  :header="day.toString().padStart(2, '0')"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 40px; text-align: center"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ (totalDokterPerDay[day.toString().padStart(2, '0')] || 0).toString() }}
-                    </span>
-                  </template>
-                </Column>
-
-                <Column
-                  field="total"
-                  header="Total"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 60px; font-weight: bold; text-align: center"
-                  frozen
-                  align-frozen="right"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ grandTotalDokter.toString() }}
-                    </span>
-                  </template>
-                </Column>
-              </DataTable>
-            </div>
-          </template> 
-        </CustomAccordion>
-        <CustomAccordion
-          v-if="rekapTabelFilter.includes('penjamin')"
-          class="max-w-[1000px] mx-auto min-w-[1000px]"
-          :openWithHeader="true"
-          initialState="0"
-          headerClass="flex w-full items-center justify-between rounded-lg bg-adameds-300 p-3"
-        >
-          <template #header>
-            <span class="font-semibold text-white">
-              Rekap Penjamin 
-            </span>
-          </template>
-          
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-transparent"
-              textColor="text-white"
-            />
-          </template>
-          <template #content>
-            <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
-              <div class="flex items-center p-4 bg-adameds-50">
-                <label class="w-40 font-semibold">Penjamin</label>
-                <CustomSelect
-                  :showLabel="false"
-                  v-model="penjaminFilter" 
-                  class="w-full md:w-1/4"
-                />
+                  <Column
+                    field="name"
+                    header="Nama"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 150px"
+                    frozen
+                    align-frozen="left"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold;">Total Harian:</span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    v-for="dateString in dateRangeColumns"
+                    :key="dateString"
+                    :field="dateString"
+                    :header="formatDateHeader(dateString)"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 55px; text-align: center"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ (totalDokterPerDay[dateString] || 0).toString() }}
+                      </span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    field="total"
+                    header="Total"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 60px; font-weight: bold; text-align: center"
+                    frozen
+                    align-frozen="right"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ grandTotalDokter.toString() }}
+                      </span>
+                    </template>
+                  </Column>
+                </DataTable>
               </div>
-              <DataTable
-                :value="rekapPenjaminData"
-                tableStyle="min-width: 50rem"
-                scrollable
-                scrollHeight="flex"
-                :pt="{ headerRow: 'text-SM' }"
-                showGridlines
-              >
-                <Column
-                  field="name"
-                  header="Nama"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 150px"
-                  frozen
-                  align-frozen="left"
+            </template>
+          </CustomAccordion>
+          <CustomAccordion
+            v-if="rekapTabelFilter.includes('penjamin')"
+            :openWithHeader="true"
+            initialState="0"
+            headerClass="flex items-center justify-between bg-adameds-300 p-3"
+          >
+            <template #header>
+              <span class="font-semibold text-white">
+                Rekap Penjamin
+              </span>
+            </template>
+  
+            <template #collapseIcon>
+              <CustomButton
+                icon="PhCaretUp"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #expandIcon>
+              <CustomButton
+                icon="PhCaretDown"
+                backgroundColor="bg-transparent"
+                textColor="text-white"
+              />
+            </template>
+            <template #content>
+              <div class="border-x border-b rounded-b-lg overflow-hidden bg-white mt-2">
+                <div class="flex items-center p-4 bg-adameds-50">
+                  <label class="w-40 font-semibold">Penjamin</label>
+                    <CustomSelect
+                    :showLabel="false"
+                    v-model="filterParams.penjamin"
+                    class="w-full md:w-1/4"
+                    :options="penjaminOptions"
+                    optionLabel="name"
+                    optionValue="name"
+                    placeHolder="Pilih Penjamin"
+                  />
+                </div>
+                <DataTable
+                  :value="rekapPenjaminData"
+                  tableStyle="min-width: 50rem"
+                  scrollable
+                  scrollHeight="flex"
+                  :pt="{ headerRow: 'text-SM' }"
+                  showGridlines
                 >
-                  <template #footer>
-                    <span style="font-weight: bold;">Total Harian:</span>
-                  </template>
-                </Column>
-
-                <Column
-                  v-for="day in daysInMonth"
-                  :key="day"
-                  :field="day.toString().padStart(2, '0')"
-                  :header="day.toString().padStart(2, '0')"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 40px; text-align: center"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ (totalPenjaminPerDay[day.toString().padStart(2, '0')] || 0).toString() }}
-                    </span>
-                  </template>
-                </Column>
-
-                <Column
-                  field="total"
-                  header="Total"
-                  header-class="text-black bg-adameds-50"
-                  style="width: 60px; font-weight: bold; text-align: center"
-                  frozen
-                  align-frozen="right"
-                >
-                  <template #footer>
-                    <span style="font-weight: bold; text-align: center; display: block;">
-                      {{ grandTotalPenjamin.toString() }}
-                    </span>
-                  </template>
-                </Column>
-              </DataTable>
-            </div>
-          </template> 
-        </CustomAccordion>
+                  <Column
+                    field="name"
+                    header="Nama"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 150px"
+                    frozen
+                    align-frozen="left"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold;">Total Harian:</span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    v-for="dateString in dateRangeColumns"
+                    :key="dateString"
+                    :field="dateString"
+                    :header="formatDateHeader(dateString)"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 55px; text-align: center"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ (totalPenjaminPerDay[dateString] || 0).toString() }}
+                      </span>
+                    </template>
+                  </Column>
+  
+                  <Column
+                    field="total"
+                    header="Total"
+                    header-class="text-black bg-adameds-50"
+                    style="width: 60px; font-weight: bold; text-align: center"
+                    frozen
+                    align-frozen="right"
+                  >
+                    <template #footer>
+                      <span style="font-weight: bold; text-align: center; display: block;">
+                        {{ grandTotalPenjamin.toString() }}
+                      </span>
+                    </template>
+                  </Column>
+                </DataTable>
+              </div>
+            </template>
+          </CustomAccordion>
+        </div>
+        <NoData v-else />
       </div>
       <Tabs v-else-if="reportData.length" v-model:value="reportType">
         <TabPanels class="p-0">
@@ -1480,12 +1496,12 @@ defineExpose({
                 header-class="text-black bg-adameds-50"
               ></Column>
               <Column
-                field="monitoringRoom.bedLokasi.name"
+                field="monitoringRoom.room.name"
                 header="Ruangan"
                 header-class="text-black bg-adameds-50"
               ></Column>
               <Column
-                field="monitoringRoom.bedLokasi.className"
+                field="monitoringRoom.room.className"
                 header="Kelas"
                 header-class="text-black bg-adameds-50"
               ></Column>
@@ -1577,6 +1593,11 @@ defineExpose({
                 header="Jam Lahir"
                 header-class="text-black bg-adameds-50"
               ></Column>
+              <Column header="Jenis Kunjungan" header-class="text-black bg-adameds-50">
+                  <template #body="slotProps">
+                      {{ slotProps.data.birthDetail?.patient?.logPelayanan?.jenisKunjungan }}
+                  </template>
+              </Column>
               <template #expansion="slotProps">
                 <div class="p-3 -mx-3 -my-1.5 bg-adameds-75">
                   <DataTable
@@ -1599,7 +1620,7 @@ defineExpose({
                       header-class="text-black bg-adameds-50"
                     ></Column>
                     <Column
-                      field="nameMom"
+                      field="birthDetail.patient.noIdentity"
                       header="Identitas Ibu"
                       header-class="text-black bg-adameds-50"
                     ></Column>
