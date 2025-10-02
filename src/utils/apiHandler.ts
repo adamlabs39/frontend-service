@@ -481,13 +481,14 @@ export const apiAdmisiDownload = async (url: string) => {
     const response = await axios.get(fullUrl, {
       responseType: "blob",
       headers: {
-        Authorization: token,
-        Accept:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
+        'Authorization': token,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+
     });
 
     return response;
+    
   } catch (error) {
     console.error("Error di apiAdmisiDownload:", error);
     throw error;
