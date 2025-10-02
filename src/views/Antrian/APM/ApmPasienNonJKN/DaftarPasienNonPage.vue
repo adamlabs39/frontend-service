@@ -143,8 +143,16 @@ const onSubmit = handleSubmit(async (values) => {
 
     const response = await apmStore.checkPasien(payload);
 
+    if (selectedType.value === "RM") {
+      const msg = typeof response?.message === "string" ? response.message : "";
+      const noRmNull = response?.payload?.noRm == null;
+      if (msg === "Pasien belum terdaftar" || noRmNull) {
+        setFieldError("no_identity", "Pasien belum terdaftar");
+        return;
+      }
+    }
+
     if (response?.payload && response.payload.uuid) {
-      // Simpan ke store, lalu navigasi tanpa query sensitif
       apmFlow.setPatientStatus("success");
       apmFlow.setIdentity(selectedType.value || "", values.no_identity);
       apmFlow.setPatientData(response.payload);
@@ -155,8 +163,12 @@ const onSubmit = handleSubmit(async (values) => {
     } else {
       throw new Error("Patient not found");
     }
-  } catch (error) {
-    // Pasien baru (not_found)
+  } catch (error: any) {
+    if (selectedType.value === "RM") {
+      setFieldError("no_identity", error?.message || "Pasien belum terdaftar");
+      return;
+    }
+
     apmFlow.setPatientStatus("not_found");
     apmFlow.setIdentity(selectedType.value || "", values.no_identity);
     apmFlow.setPatientData(null);
