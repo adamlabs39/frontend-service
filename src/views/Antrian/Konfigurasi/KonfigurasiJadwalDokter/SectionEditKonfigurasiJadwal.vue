@@ -14,6 +14,7 @@ import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
 import { useToast } from "primevue/usetoast";
+import { formatTime } from "@/utils/Helpers";
 
 const toast = useToast();
 
@@ -34,7 +35,7 @@ const props = defineProps({
 });
 
 const jadwalDokterStore = useJadwalDokterStore();
-const UseUtilsStore = utilsStore();
+const utils = utilsStore();
 
 const itemsHari = ref([
   { name: "Senin", code: 1 },
@@ -123,28 +124,7 @@ const schema = toTypedSchema(
             "Jam selesai harus lebih besar dari jam mulai",
             function (value) {
               const { startTime } = this.parent;
-              // Lewati jika salah satu belum diisi
               if (!startTime || !value) return true;
-
-              const toMinutes = (t: any) => {
-                // Jika sudah HH:mm
-                if (typeof t === "string" && /^\d{2}:\d{2}$/.test(t)) {
-                  const [h, m] = t.split(":").map(Number);
-                  return h * 60 + m;
-                }
-                // Jika Date string panjang atau Date object
-                const dateObj =
-                  t instanceof Date
-                    ? t
-                    : typeof t === "string"
-                    ? new Date(t)
-                    : null;
-                if (dateObj && !isNaN(dateObj.getTime())) {
-                  return dateObj.getHours() * 60 + dateObj.getMinutes();
-                }
-                return 0;
-              };
-
               return toMinutes(value) > toMinutes(startTime);
             }
           ),
@@ -212,29 +192,6 @@ const defaultTime = () => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d;
-};
-
-// Function untuk format Date object ke string waktu
-const formatTimeToString = (date: any) => {
-  if (!date) return "";
-  // Jika sudah berupa string "HH:mm", langsung kembalikan
-  if (typeof date === "string" && /^\d{2}:\d{2}$/.test(date)) {
-    return date;
-  }
-  // Tangani apabila string adalah representasi Date panjang
-  let dateObj: Date;
-  if (date instanceof Date) {
-    dateObj = date;
-  } else if (typeof date === "string") {
-    const parsed = new Date(date);
-    if (isNaN(parsed.getTime())) return ""; // format tak dikenal
-    dateObj = parsed;
-  } else {
-    return "";
-  }
-  const hours = dateObj.getHours().toString().padStart(2, "0");
-  const minutes = dateObj.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
 };
 
 // Watch untuk data dari parent
@@ -340,48 +297,41 @@ watchEffect(() => {
 // Function untuk mengecek duplikasi jam praktek
 const checkDuplicateSchedule = (schedules: any[]) => {
   const duplicates: string[] = [];
-
   for (let i = 0; i < schedules.length; i++) {
     for (let j = i + 1; j < schedules.length; j++) {
-      const schedule1 = schedules[i];
-      const schedule2 = schedules[j];
-
-      // Cek jika hari sama
-      if (schedule1.day === schedule2.day) {
-        const start1 = toMinutes(schedule1.startTime);
-        const end1 = toMinutes(schedule1.endTime);
-        const start2 = toMinutes(schedule2.startTime);
-        const end2 = toMinutes(schedule2.endTime);
-
-        // Cek jika ada overlap waktu
+      const s1 = schedules[i];
+      const s2 = schedules[j];
+      if (Number(s1.day) === Number(s2.day)) {
+        const start1 = toMinutes(s1.startTime);
+        const end1 = toMinutes(s1.endTime);
+        const start2 = toMinutes(s2.startTime);
+        const end2 = toMinutes(s2.endTime);
         const hasOverlap =
-          (start1 >= start2 && start1 < end2) || // start1 di dalam range schedule2
-          (end1 > start2 && end1 <= end2) || // end1 di dalam range schedule2
-          (start1 <= start2 && end1 >= end2); // schedule1 mencakup schedule2
-
+          (start1 >= start2 && start1 < end2) ||
+          (end1 > start2 && end1 <= end2) ||
+          (start1 <= start2 && end1 >= end2);
         if (hasOverlap) {
           const dayName =
-            itemsHari.value.find((h) => h.code === schedule1.day.toString())
+            itemsHari.value.find((h) => Number(h.code) === Number(s1.day))
               ?.name || "Hari tidak diketahui";
-          const timeRange1 = `${formatTimeToString(
-            schedule1.startTime
-          )}-${formatTimeToString(schedule1.endTime)}`;
-          const timeRange2 = `${formatTimeToString(
-            schedule2.startTime
-          )}-${formatTimeToString(schedule2.endTime)}`;
+          const timeRange1 = `${formatTime(s1.startTime)}-${formatTime(
+            s1.endTime
+          )}`;
+          const timeRange2 = `${formatTime(s2.startTime)}-${formatTime(
+            s2.endTime
+          )}`;
           duplicates.push(`${dayName}: ${timeRange1} dengan ${timeRange2}`);
         }
       }
     }
   }
-
   return duplicates;
 };
 
 // Submit handler
 const onSubmit = handleSubmit(
   async (formValues: any) => {
-    UseUtilsStore.setLoading(true);
+    utils.setLoading(true);
     try {
       const doctorUuid = props.editData.doctor?.uuid;
       const poliUuid = props.editData.poli?.uuid;
@@ -427,8 +377,8 @@ const onSubmit = handleSubmit(
       newJadwalData.forEach((jadwal: any) => {
         const jadwalPayload = {
           day: Number(jadwal.day),
-          start_time: formatTimeToString(jadwal.startTime),
-          end_time: formatTimeToString(jadwal.endTime),
+          start_time: formatTime(jadwal.startTime),
+          end_time: formatTime(jadwal.endTime),
           kuota_jkn: Number(jadwal.kuotaJkn),
           kuota_non_jkn: Number(jadwal.kuotaNonJkn),
           aktif: jadwal.status,
@@ -461,7 +411,7 @@ const onSubmit = handleSubmit(
     } catch (error) {
       console.error("Gagal menyimpan data:", error);
     } finally {
-      UseUtilsStore.setLoading(false);
+      utils.setLoading(false);
     }
   },
   ({ errors, values }: any) => {

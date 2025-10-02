@@ -18,7 +18,7 @@ const resetFilter = () => {
 };
 
 const jadwalDokterStore = useJadwalDokterStore();
-const UseUtilsStore = utilsStore();
+const utils = utilsStore();
 
 const jadwalDokterPayload = ref<any[]>([]);
 const allPoliData = ref<any[]>([]);
@@ -103,7 +103,7 @@ const excludedDoctorUuidsByPoli = computed(() => {
 });
 
 const fetchJadwalDokter = async () => {
-  UseUtilsStore.setLoading(true);
+  utils.setLoading(true);
   try {
     const response = await jadwalDokterStore.getApi(
       jadwalDokterProperties.value.page,
@@ -116,7 +116,6 @@ const fetchJadwalDokter = async () => {
       jadwalDokterPayload.value = response.payload;
       jadwalDokterProperties.value.total = response.properties.total;
 
-      // Isi referensi poli/dokter hanya jika belum ada, gunakan builder utilities
       if (allPoliData.value.length === 0) {
         allPoliData.value = buildPoliOptionsFromPayload(response.payload);
       }
@@ -128,7 +127,7 @@ const fetchJadwalDokter = async () => {
     console.error("Failed to fetch data", error);
     jadwalDokterPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false);
+    utils.setLoading(false);
   }
 };
 
@@ -169,7 +168,7 @@ const closeDeleteModal = () => {
 
 // Fungsi untuk konfirmasi penghapusan
 const confirmDelete = async () => {
-  UseUtilsStore.setLoading(true);
+  utils.setLoading(true);
   try {
     const response = await jadwalDokterStore.deleteDoctor(
       deleteModalData.value.doctorUuid,
@@ -180,7 +179,7 @@ const confirmDelete = async () => {
   } catch (error) {
     console.error("Failed to delete doctor", error);
   } finally {
-    UseUtilsStore.setLoading(false);
+    utils.setLoading(false);
   }
 };
 
@@ -274,8 +273,7 @@ const displayedJadwalDokter = computed(() => {
 });
 
 onMounted(() => {
-  fetchAllPoliData();
-  fetchAllDokterData();
+  fetchAllReferenceData();
   fetchJadwalDokter();
 });
 </script>
