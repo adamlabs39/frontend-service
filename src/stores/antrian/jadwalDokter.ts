@@ -4,8 +4,8 @@ import {
   apiAntrianDelete,
   apiAntrianPost,
   apiAntrianPut,
-  apiAntrianGetDatamaster,
   apiAntrianGetNoMessage,
+  apiDatamasterGet,
 } from "@/utils/apiHandler";
 
 interface JadwalItem {
@@ -81,13 +81,13 @@ export const useJadwalDokterStore = defineStore({
       );
     },
     async getApiPoli(name: string, payload = {}) {
-      return apiAntrianGetDatamaster(
+      return apiDatamasterGet(
         `/datamaster/lokasi/poli/aktif?name=${name}`,
         payload
       );
     },
     async getApiListDokter(poliUuid: string, name: string, payload = {}) {
-      return apiAntrianGetDatamaster(
+      return apiDatamasterGet(
         `/datamaster/practitioner/poli/aktif?poli_uuid=${poliUuid}&name=${name}`,
         payload
       );

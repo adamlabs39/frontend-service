@@ -36,7 +36,6 @@ export const useDataAntrianStore = defineStore({
       pelayanan?: string,
       payload = {}
     ) {
-      // ... existing code ...
       const params = new URLSearchParams();
       if (start_date !== undefined)
         params.set("start_date", String(start_date));
@@ -54,7 +53,6 @@ export const useDataAntrianStore = defineStore({
         : `/antrian/admisi-antrian`;
 
       return apiAntrianGetNoMessage(url, payload);
-      // ... existing code ...
     },
   },
 });

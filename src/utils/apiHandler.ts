@@ -470,7 +470,7 @@ const apiAdmisiDelete = async (url: string, data: object) => {
 };
 export const apiAdmisiDownload = async (url: string) => {
   const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
-  
+
   try {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -481,13 +481,13 @@ export const apiAdmisiDownload = async (url: string) => {
     const response = await axios.get(fullUrl, {
       responseType: "blob",
       headers: {
-        'Authorization': token,
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      }
+        Authorization: token,
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
     });
-    
-    return response;
 
+    return response;
   } catch (error) {
     console.error("Error di apiAdmisiDownload:", error);
     throw error;
@@ -807,15 +807,6 @@ const apiAntrianPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-const apiAntrianGetDatamaster = async (url: string, data: object) => {
-  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
-  try {
-    let response = await baseInstanceDatamaster.get(url, data);
-    return response.data;
-  } catch (error) {
-    errorApiHandler(error);
-  }
-};
 export {
   apiBasePost,
   apiBaseGet,
@@ -871,6 +862,5 @@ export {
   apiAntrianDelete,
   apiAntrianPost,
   apiAntrianPut,
-  apiAntrianGetDatamaster,
   apiAntrianGetNoMessage,
 };
