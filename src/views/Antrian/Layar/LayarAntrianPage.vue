@@ -428,6 +428,7 @@ onUnmounted(() => {
           field="flash-text"
           header="Flash Text"
           headerClass="bg-adameds-50"
+          class="max-w-[520px]"
         >
           <template #body="slotProps">
             <div class="flex flex-wrap items-center">
