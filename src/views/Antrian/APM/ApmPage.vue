@@ -5,7 +5,6 @@ import HeaderFilter from "../Layout/ApmHeader.vue";
 import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
-import AntrianFooter from "../Layout/AntrianFooter.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -36,6 +35,7 @@ const handleAktif = (apm: { ucapan: string[] | string }) => {
   handleNavigate(apm);
 };
 import NoData from "@/components/section/NoData.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const pageType = ref("");
 const route = useRoute();
@@ -119,8 +119,8 @@ const selectedPatient = ref([]);
 <template>
   <Card
     v-if="dataBreadCrumb.length == 0"
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
+    pt:body:class="overflow-auto pt-0 h-full"
+    pt:content:class="overflow-auto h-full"
     class=""
   >
     <template #header>
@@ -204,7 +204,7 @@ const selectedPatient = ref([]);
           <template #body="slotProps">
             <div class="flex justify-center items-center">
               <div
-                class="p-1.5 bg-adameds-300 rounded-lg"
+                class="p-1.5 rounded-lg bg-adameds-300"
                 @click="handleAktif(slotProps.data)"
               >
                 <PhScreencast :size="26" color="#ffffff" weight="fill" />
@@ -224,7 +224,9 @@ const selectedPatient = ref([]);
       />
     </template>
     <template #footer>
-      <AntrianFooter />
+      <div class="flex justify-between px-5 py-2.5">
+        <CustomPaginator class="ml-auto" />
+      </div>
     </template>
   </Card>
 </template>

@@ -13,7 +13,8 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { utilsStore } from "@/stores/utils";
 import { useToast } from "primevue/usetoast";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
+import { formatTime } from "@/utils/Helpers";
 
 const toast = useToast();
 
@@ -38,7 +39,7 @@ const props = defineProps({
 });
 
 const jadwalDokterStore = useJadwalDokterStore();
-const useUtilsStore = utilsStore();
+const utils = utilsStore();
 
 const jadwalPoliPayload = ref<any[]>([]);
 const jadwalPoliProperties = ref({
@@ -69,7 +70,7 @@ const selectedDokterCode = computed(() => {
 });
 
 const fetchGetPoli = async () => {
-  useUtilsStore.setLoading(true);
+  utils.setLoading(true);
   try {
     const response = await jadwalDokterStore.getApiPoli(
       jadwalPoliProperties.value.name
@@ -82,7 +83,7 @@ const fetchGetPoli = async () => {
     console.log("Error:", error);
     jadwalPoliPayload.value = [];
   } finally {
-    useUtilsStore.setLoading(false);
+    utils.setLoading(false);
   }
 };
 
@@ -92,7 +93,7 @@ const fetchGetDokter = async (poliUuid: string) => {
     return;
   }
 
-  useUtilsStore.setLoading(true);
+  utils.setLoading(true);
   try {
     const response = await jadwalDokterStore.getApiListDokter(
       poliUuid,
@@ -113,7 +114,7 @@ const fetchGetDokter = async (poliUuid: string) => {
     console.log("Error:", error);
     jadwalDokterPayload.value = [];
   } finally {
-    useUtilsStore.setLoading(false);
+    utils.setLoading(false);
   }
 };
 
@@ -185,13 +186,6 @@ const itemsHari = ref([
   { name: "Jumat", code: "5" },
 ]);
 
-// Helper format Jam -> "HH:mm"
-const formatTime = (date: Date) => {
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
-
 /**
  * Converts time format "HH:mm" or Date object to total minutes from midnight
  * @param {string|Date} time - Example: "09:30" or Date object
@@ -258,27 +252,7 @@ const schema = toTypedSchema(
               "Jam selesai harus lebih besar dari jam mulai",
               function (value) {
                 const { startTime } = this.parent;
-                // Lewati jika salah satu belum diisi
                 if (!startTime || !value) return true;
-
-                // Helper untuk konversi Date/string → menit
-                const toMinutes = (t: any) => {
-                  if (typeof t === "string" && /^\d{2}:\d{2}$/.test(t)) {
-                    const [h, m] = t.split(":").map(Number);
-                    return h * 60 + m;
-                  }
-                  const dateObj =
-                    t instanceof Date
-                      ? t
-                      : typeof t === "string"
-                      ? new Date(t)
-                      : null;
-                  if (dateObj && !isNaN(dateObj.getTime())) {
-                    return dateObj.getHours() * 60 + dateObj.getMinutes();
-                  }
-                  return 0;
-                };
-
                 return toMinutes(value) > toMinutes(startTime);
               }
             ),
@@ -297,11 +271,6 @@ const schema = toTypedSchema(
       .min(1, "Minimal harus ada 1 jadwal"),
   })
 );
-
-const isEndTimeInvalid = (row: any) => {
-  if (!row.startTime || !row.endTime) return !row.endTime;
-  return toMinutes(row.endTime) <= toMinutes(row.startTime);
-};
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
@@ -348,41 +317,34 @@ const { remove, push, replace, fields } = useFieldArray("jadwalData");
 // Function untuk mengecek duplikasi jam praktek
 const checkDuplicateSchedule = (schedules: any[]) => {
   const duplicates: string[] = [];
-
   for (let i = 0; i < schedules.length; i++) {
     for (let j = i + 1; j < schedules.length; j++) {
-      const schedule1 = schedules[i];
-      const schedule2 = schedules[j];
-
-      // Cek jika hari sama
-      if (schedule1.day === schedule2.day) {
-        const start1 = toMinutes(schedule1.startTime);
-        const end1 = toMinutes(schedule1.endTime);
-        const start2 = toMinutes(schedule2.startTime);
-        const end2 = toMinutes(schedule2.endTime);
-
-        // Cek jika ada overlap waktu
+      const s1 = schedules[i];
+      const s2 = schedules[j];
+      if (Number(s1.day) === Number(s2.day)) {
+        const start1 = toMinutes(s1.startTime);
+        const end1 = toMinutes(s1.endTime);
+        const start2 = toMinutes(s2.startTime);
+        const end2 = toMinutes(s2.endTime);
         const hasOverlap =
-          (start1 >= start2 && start1 < end2) || // start1 di dalam range schedule2
-          (end1 > start2 && end1 <= end2) || // end1 di dalam range schedule2
-          (start1 <= start2 && end1 >= end2); // schedule1 mencakup schedule2
-
+          (start1 >= start2 && start1 < end2) ||
+          (end1 > start2 && end1 <= end2) ||
+          (start1 <= start2 && end1 >= end2);
         if (hasOverlap) {
           const dayName =
-            itemsHari.value.find((h) => h.code === schedule1.day.toString())
+            itemsHari.value.find((h) => Number(h.code) === Number(s1.day))
               ?.name || "Hari tidak diketahui";
-          const timeRange1 = `${formatTime(schedule1.startTime)}-${formatTime(
-            schedule1.endTime
+          const timeRange1 = `${formatTime(s1.startTime)}-${formatTime(
+            s1.endTime
           )}`;
-          const timeRange2 = `${formatTime(schedule2.startTime)}-${formatTime(
-            schedule2.endTime
+          const timeRange2 = `${formatTime(s2.startTime)}-${formatTime(
+            s2.endTime
           )}`;
           duplicates.push(`${dayName}: ${timeRange1} dengan ${timeRange2}`);
         }
       }
     }
   }
-
   return duplicates;
 };
 
@@ -468,7 +430,7 @@ const onSubmit = handleSubmit(async (values: any) => {
   };
 
   try {
-    useUtilsStore.setLoading(true);
+    utils.setLoading(true);
     await jadwalDokterStore.addJadwalDoctor(payload);
     toast.add({
       severity: "success",
@@ -486,7 +448,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       life: 3000,
     });
   } finally {
-    useUtilsStore.setLoading(false);
+    utils.setLoading(false);
   }
 });
 
@@ -546,33 +508,20 @@ watch(
 
 function handleReset() {
   resetForm();
-
-  // Clear selections
   poliUuid.value = undefined;
   dokterUuid.value = undefined;
   jadwalDokterPayload.value = [];
-
-  // Reset date filters
-  startDateFilter.value = new Date();
-  startDateFilter.value.setHours(0, 0, 0, 0);
-  endDateFilter.value = new Date();
-  endDateFilter.value.setHours(0, 0, 0, 0);
-
-  // Reset DataTable to single default row
-  data.value = [
+  replace([
     {
       day: undefined,
-      startTime: new Date(startDateFilter.value),
-      endTime: new Date(endDateFilter.value),
+      startTime: new Date(new Date().setHours(0, 0, 0, 0)),
+      endTime: new Date(new Date().setHours(0, 0, 0, 0)),
       kuotaJkn: 0,
       kuotaNonJkn: 0,
       durasiPelayanan: "0",
       aktif: true,
     },
-  ];
-
-  // Replace field array with single default row
-  replace(data.value);
+  ]);
 }
 
 // Function untuk menghapus row

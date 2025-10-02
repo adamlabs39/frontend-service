@@ -10,7 +10,7 @@ import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian"
 import { utilsStore } from "@/stores/utils";
 import EditDataKonfigurasiLayar from "./SectionEditKonfigurasiLayar.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
 
 const pageType = ref("");
 

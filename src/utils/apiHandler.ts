@@ -470,11 +470,8 @@ const apiAdmisiDelete = async (url: string, data: object) => {
   }
 };
 export const apiAdmisiDownload = async (url: string) => {
-  let fullUrl = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
+  const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
 
-    if (fullUrl === '/download') {
-    fullUrl = import.meta.env.VITE_BASE_ADMISI + url;
-  }
   try {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -488,10 +485,11 @@ export const apiAdmisiDownload = async (url: string) => {
         'Authorization': token,
         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       }
-    });
-    
-    return response;
 
+    });
+
+    return response;
+    
   } catch (error) {
     console.error("Error di apiAdmisiDownload:", error);
     throw error;
@@ -811,70 +809,60 @@ const apiAntrianPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
-const apiAntrianGetDatamaster = async (url: string, data: object) => {
-  url = cekHost(import.meta.env.VITE_BASE_DATAMASTER, url);
-  try {
-    let response = await baseInstanceDatamaster.get(url, data);
-    return response.data;
-  } catch (error) {
-    errorApiHandler(error);
-  }
-};
 export {
-    apiBasePost,
-    apiBaseGet,
-    apiBasePut,
-    apiBaseDelete,
-    apiAuthPost,
-    apiAuthDelete,
-    apiAuthGet,
-    apiAuthPut,
-    apiSettingPost,
-    apiSettingGet,
-    apiSettingPut,
-    apiSettingDelete,
-    apiDatamasterGet,
-    apiDatamasterPost,
-    apiDatamasterPut,
-    apiDatamasterDelete,
-    apiPembayaranGet,
-    apiPembayaranPost,
-    apiPembayaranPut,
-    apiPembayaranDelete,
-    apiLaboratoriumGet,
-    apiLaboratoriumPost,
-    apiLaboratoriumPut,
-    apiLaboratoriumDelete,
-    apiAdmisiGet,
-    apiAdmisiPost,
-    apiAdmisiPut,
-    apiAdmisiPatch,
-    apiAdmisiDelete,
-    apiIgdGet,
-    apiIgdPost,
-    apiIgdPut,
-    apiIgdDelete,
-    apiRawatJalanGet,
-    apiFarmasiGet,
-    apiFarmasiPost,
-    apiFarmasiPostNoMessage,
-    apiFarmasiPut,
-    apiFarmasiDelete,
-    apiRekamMedisGet,
-    apiRekamMedisPost,
-    apiRekamMedisPut,
-    apiRawatInapGet,
-    apiRawatInapPost,
-    apiRawatInapPut,
-    apiInventoryGet,
-    apiInventoryPost,
-    apiInventoryPut,
-    apiInventoryDelete,
-    apiRekamMedisDelete,
-    apiAntrianGet,
-    apiAntrianDelete,
-    apiAntrianPost,
-    apiAntrianPut,
-    apiAntrianGetDatamaster, 
-    apiAntrianGetNoMessage,
+  apiBasePost,
+  apiBaseGet,
+  apiBasePut,
+  apiBaseDelete,
+  apiAuthPost,
+  apiAuthDelete,
+  apiAuthGet,
+  apiAuthPut,
+  apiSettingPost,
+  apiSettingGet,
+  apiSettingPut,
+  apiSettingDelete,
+  apiDatamasterGet,
+  apiDatamasterPost,
+  apiDatamasterPut,
+  apiDatamasterDelete,
+  apiPembayaranGet,
+  apiPembayaranPost,
+  apiPembayaranPut,
+  apiPembayaranDelete,
+  apiLaboratoriumGet,
+  apiLaboratoriumPost,
+  apiLaboratoriumPut,
+  apiLaboratoriumDelete,
+  apiAdmisiGet,
+  apiAdmisiPost,
+  apiAdmisiPut,
+  apiAdmisiPatch,
+  apiAdmisiDelete,
+  apiIgdGet,
+  apiIgdPost,
+  apiIgdPut,
+  apiIgdDelete,
+  apiRawatJalanGet,
+  apiFarmasiGet,
+  apiFarmasiPost,
+  apiFarmasiPostNoMessage,
+  apiFarmasiPut,
+  apiFarmasiDelete,
+  apiRekamMedisGet,
+  apiRekamMedisPost,
+  apiRekamMedisPut,
+  apiRawatInapGet,
+  apiRawatInapPost,
+  apiRawatInapPut,
+  apiInventoryGet,
+  apiInventoryPost,
+  apiInventoryPut,
+  apiInventoryDelete,
+  apiRekamMedisDelete,
+  apiAntrianGet,
+  apiAntrianDelete,
+  apiAntrianPost,
+  apiAntrianPut,
+  apiAntrianGetNoMessage,
 };
