@@ -13,7 +13,7 @@ import PaymentView from "@/views/Pembayaran/PaymentView.vue";
 import PharmacyView from "@/views/Farmasi/PharmacyView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
-import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
+import ApmAktifView from "@/views/Antrian/APM/ApmMainMenu.vue";
 import RawatInapView from "@/views/RawatInap/RawatInapView.vue";
 import FisioterapiView from "@/views/Fisioterapi/FisioterapiView.vue";
 
@@ -118,7 +118,7 @@ import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilP
 import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
 import FarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiPage.vue";
-import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/DaftarFarmasiPage.vue";
+import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiDaftarPage.vue";
 import FarmasiBerhasilPage from "@/views/Antrian/APM/APMFarmasi/FarmasiBerhasilPage.vue";
 
 // NOTE Page Laboratorium
