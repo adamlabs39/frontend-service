@@ -72,7 +72,7 @@ const emit = defineEmits([
   "filterChipPayment",
 ]);
 
-const selectedTab = ref("0");
+const selectedTab = ref("2");
 const searchBulanFilter = ref<string>("");
 const optionBulan = ref([
   { label: "Januari", value: 1 },
@@ -93,9 +93,13 @@ const resetForm = () => {
   searchPatientFilter.value = "";
   valueSelectedFilter.value = "";
   searchBulanFilter.value = "";
+  selectedTab.value = "2";
   let date = new Date(),
     y = date.getFullYear(),
     m = date.getMonth();
+
+  selectedFilterPasien.value = [];
+  selectedPaymentMethod.value = [];
 
   startDateFilter.value = new Date(y, m, 1);
   endDateFilter.value = new Date(y, m + 1, 0);
@@ -243,6 +247,7 @@ defineExpose({
             @update:modelValue="
               $emit('update:startDateFilter', startDateFilter)
             "
+            :max-date="endDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -250,6 +255,7 @@ defineExpose({
             :showLabel="false"
             class="mt-auto"
             @update:modelValue="$emit('update:endDateFilter', endDateFilter)"
+            :min-date="startDateFilter"
           />
         </div>
 

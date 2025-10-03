@@ -46,6 +46,7 @@ const search = async () => {
     poly: filterData.value.poly,
     page: properties.value.page,
     limit: properties.value.page_size,
+    status: statusPelayanan.value,
   };
 
 
@@ -85,10 +86,11 @@ watch(
   () => props.filter,
   async (newFilter) => {
     resetFilter();
-    statusPelayanan.value = ""; // Reset statusPelayanan
+    // statusPelayanan.value = ""; // Reset statusPelayanan
     filterData.value = {
       ...filterData.value,
       poly: [newFilter.uuid],
+      status: statusPelayanan.value,
     };
     // console.log(`filter paling baru`, filterData.value);
     // search();
@@ -97,7 +99,7 @@ watch(
   { deep: true }
 );
 
-const statusPelayanan = ref("");
+const statusPelayanan = ref("2");
 
 const showCancelVisit = ref(false);
 const cancelReason = ref<string>();
@@ -187,6 +189,12 @@ const filterStatus = async (status: string) => {
   // search();
   patientData.value = await fetchRJPatient();
 };
+
+const handleReset = () => {
+  headerPoliBPJSRef.value?.resetFilter();
+  statusPelayanan.value = "2";
+  search();
+};
 </script>
 
 <template>
@@ -211,6 +219,7 @@ const filterStatus = async (status: string) => {
         @search="search"
         @reload-data="search"
         @payment="search"
+        @reset="handleReset"
         :filter-menu="filter"
         :filter-data="filterData"
         :current-route-name="currentRouteName"
@@ -263,12 +272,21 @@ const filterStatus = async (status: string) => {
       </DataPoliBPJSHeader>
     </template>
     <template #content>
-      <Tabs v-model:value="statusPelayanan" class="h-full overflow-hidden">
+      <Tabs v-model:value="statusPelayanan" class="h-full overflow flex flex-col">
         <TabPanels class="flex flex-col w-full h-full p-0">
-          <TabPanel value="2" class="flex-1">
-            <DataAllPasienRawatJalan :data-patient="patientData" />
+          <TabPanel value="2" class="flex-1 flex flex-col">
+            <DataAllPasienRawatJalan 
+              :data-patient="patientData"
+              :isResetPatient="isResetPatient"
+              :show-cancel-visit="showCancelVisit"
+              @handle-selected-patient="updateSelectedPatient"
+              @handle-unselected-patient="updateUnselectedPatient"
+              @selectedAll="updateSelectedPatient"
+              @handle-unselect-all="updateUnselectAll"
+              @is-reset-patient="handleResetPatient"
+            />
           </TabPanel>
-          <TabPanel value="1" class="flex-1">
+          <TabPanel value="1" class="flex-1 flex flex-col">
             <Pelayanan
               :data-patient="patientData"
               :isResetPatient="isResetPatient"
@@ -280,7 +298,7 @@ const filterStatus = async (status: string) => {
               @is-reset-patient="handleResetPatient"
             />
           </TabPanel>
-          <TabPanel value="0" class="flex-1">
+          <TabPanel value="0" class="flex-1 flex flex-col">
             <Discharge :data-patient="patientData" />
           </TabPanel>
           <TabPanel value="" class="flex-1">

@@ -40,6 +40,9 @@ const lokasiProperties = ref({
   total: 0,
 });
 
+// Search Dokter
+const searchDoctor = ref<string>("");
+
 
 // STORE
 const RJStore = useRJStore();
@@ -87,7 +90,13 @@ const searchQuery = ref<string>("");
 const fetchPraktisiData = async () => {
   useUtilsStore.setLoading(true);
     try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {

@@ -118,6 +118,7 @@ defineExpose({
             @update:model-value="
               $emit('update:startedDateFilter', valueStartDateFilter)
             "
+            :max-date="valueEndDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -127,6 +128,7 @@ defineExpose({
             @update:model-value="
               $emit('update:endedDateFilter', valueEndDateFilter)
             "
+            :min-date="valueStartDateFilter"
           />
         </div>
 

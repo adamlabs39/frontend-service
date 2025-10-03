@@ -44,8 +44,9 @@ const praktisiProperties = ref({
 });
 
 // Search Dokter
-const searchQuery = ref<string>("");
+const searchDoctor = ref<string>("");
 
+const selectedTab = ref("");
 // Fetch data Praktisi dari API
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
@@ -61,7 +62,13 @@ const fetchPraktisiData = async () => {
     //   non_doctor: isNonDoctor,
     // });
 
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
 
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
@@ -119,7 +126,8 @@ const resetFilter = () => {
 
   startDateFilter.value = new Date(y, m, 1);
   endDateFilter.value = new Date(y, m + 1, 0);
-  emit("search");
+  selectedTab.value = "2";
+  // emit("search");
 
   switch (props.currentRouteName) {
     case "rawat-jalan-poli":
@@ -176,7 +184,7 @@ const searchData = (dataString: any) => {
 
   filter.poly = [props.filterMenu.uuid ?? ""];
   filter.dpjp = searchDokterFilter.value ?? "";
-
+  filter.status = selectedTab.value;
   return filter;
 };
 
@@ -185,7 +193,7 @@ defineExpose({
   searchData,
 });
 
-const emit = defineEmits(["search", "reload-data", "payment"]);
+const emit = defineEmits(["search", "reload-data", "payment", "reset"]);
 
 onMounted(() => {
   setFilter(props.filterData);
@@ -287,12 +295,14 @@ onMounted(() => {
           v-model="startDateFilter"
           label="Tanggal"
           class="w-[200px]"
+          :max-date="endDateFilter"
         />
         <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
         <CustomDatePicker
           v-model="endDateFilter"
           :showLabel="false"
           class="mt-auto w-[200px]"
+          :min-date="startDateFilter"
         />
         <CustomButton
           icon="PhMagnifyingGlass"
@@ -301,7 +311,7 @@ onMounted(() => {
           @click="$emit('search')"
         />
         <CustomButton
-          @click="resetFilter"
+          @click="$emit('reset')"
           label="Reset"
           outlined
           borderColor="border-adameds-300"

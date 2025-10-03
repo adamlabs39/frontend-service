@@ -117,8 +117,8 @@ const openDialogRM = () => {
   v-if="props.dataPatient && props.dataPatient.length"
   :value="props.dataPatient"
     scrollable
-    class=""
-     scrollHeight="240px"
+    class="flex-1"
+    scrollHeight="flex"
     :pt="{ headerRow: 'text-SM' }"
     @row-click="openDialogRM"
   >

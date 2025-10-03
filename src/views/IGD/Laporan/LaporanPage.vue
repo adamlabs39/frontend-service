@@ -141,6 +141,14 @@ interface Filter {
   month?: number;
 }
 
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 9999,
+  total: 0,
+});
+
+const searchDoctor = ref<string>("");
+
 const fetchLaporanData = async (filter: Filter = {}) => {
   UseUtilsStore.setLoading(true);
   let response;
@@ -176,7 +184,13 @@ onMounted(() => {
 });
 const fetchPraktisi = async () => {
   try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
