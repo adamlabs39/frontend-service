@@ -4,7 +4,12 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import { useDataAntrianStore } from "@/stores/antrian/dataAntrian";
 import { utilsStore } from "@/stores/utils";
 import NoData from "@/components/section/NoData.vue";
-import { dateToEpoch, formatDate, formatTime } from "@/utils/Helpers";
+import {
+  dateToEpoch,
+  formatDate,
+  formatTime,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const props = defineProps<{
   paginationProperties: {
@@ -53,9 +58,10 @@ const fetchDataAntrianAdmisi = async () => {
   try {
     const startEpoch =
       props.paginationProperties.start_date ??
-      dateToEpoch(startDateFilter.value);
+      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
     const endEpoch =
-      props.paginationProperties.end_date ?? dateToEpoch(endDateFilter.value);
+      props.paginationProperties.end_date ??
+      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
 
     const statusQuery =
       props.paginationProperties.status_panggilan &&
