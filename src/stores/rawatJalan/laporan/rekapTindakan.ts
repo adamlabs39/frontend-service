@@ -12,7 +12,7 @@ export const useRekapTindakanStore = defineStore({
                 limit = 10,
                 name = "",
                 practitionerUuid = "",
-                month = 0, // Ganti `month?: any = null` dengan ini
+                month = 0,
                 lokasiUuid = "",
                 pelayanan = "",
             },

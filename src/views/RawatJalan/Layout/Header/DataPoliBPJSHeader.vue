@@ -119,6 +119,7 @@ const resetFilter = () => {
 
   startDateFilter.value = new Date(y, m, 1);
   endDateFilter.value = new Date(y, m + 1, 0);
+  emit("search");
 
   switch (props.currentRouteName) {
     case "rawat-jalan-poli":
@@ -173,7 +174,6 @@ const searchData = (dataString: any) => {
 
   // FIXME Belum bisa multiple
 
-  console.log("test", props.filterMenu);
   filter.poly = [props.filterMenu.uuid ?? ""];
   filter.dpjp = searchDokterFilter.value ?? "";
 

@@ -34,6 +34,7 @@ import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
 import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjunganPage.vue";
 import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
 import LaporanPendapatanPage from "@/views/Pembayaran/Report/LaporanPendapatanPage.vue";
+import PelunasanPage from "@/views/Pembayaran/layout/PelunasanPage.vue";
 
 // NOTE Farmasi
 import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescription/DoctorPrescriptionPage.vue";
@@ -173,14 +174,14 @@ import VerificationOfGoodsPurchasePage from "@/views/Inventory/Page/PengadaanBar
 import SupplierReturnsPage from "@/views/Inventory/Page/PengadaanBarang/ReturPenggantian/SupplierReturnsPage.vue";
 import UnitDeliveryVerificationPage from "@/views/Inventory/Page/PengeluaranBarang/VerifikasiPengirimanUnit/UnitDeliveryVerificationPage.vue";
 import UnitOfExpenditurePage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnit/UnitOfExpenditurePage.vue";
-import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
-import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
+import PurchaseAcceptancePage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelian/PurchaseAcceptancePage.vue"
+import ReturnReceiptPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnit/ReturnReceiptPage.vue"
 import SupplierPage from "@/views/Inventory/Page/Datamaster/SupplierPage.vue";
-import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
+import RateHistoryPage from "@/views/Inventory/Page/RiwayatTarif/RateHistoryPage.vue";
 import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
 import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
 import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
-import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
+import StockAndMutationCardsPage from "@/views/Inventory/Page/KartustokMutasi/StockAndMutationCardsPage.vue";
 import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
 import InventoryView from "@/views/Inventory/InventoryView.vue";
 
@@ -954,6 +955,17 @@ const router = createRouter({
       component: PaymentView,
     },
     {
+      path: "/pembayaran/closed-bill/:billUuid/pelunasan",
+      name: "pembayaran-pelunasan",
+      meta: {
+        layout: SidebarLayout,
+        page: PelunasanPage, 
+        requiresAuth: true,
+      },
+      component: PaymentView, 
+      props: true
+    },
+    {
       path: "/pembayaran/laporan/pendapatan",
       name: "pembayaran-laporan-pendapatan",
       meta: {
@@ -1449,7 +1461,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-pembelian",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanPembelianPage,
+        page: PurchaseAcceptancePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1459,7 +1471,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-retur-unit",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanReturUnitPage,
+        page: ReturnReceiptPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1479,7 +1491,7 @@ const router = createRouter({
       name: "inventory-riwayat-tarif",
       meta: {
         layout: SidebarLayout,
-        page: RiwayatTarifPage,
+        page: RateHistoryPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1489,7 +1501,7 @@ const router = createRouter({
       name: "inventory-kartustok-mutasi",
       meta: {
         layout: SidebarLayout,
-        page: KartustokMutasiPage,
+        page: StockAndMutationCardsPage,
         requiresAuth: true,
       },
       component: InventoryView,

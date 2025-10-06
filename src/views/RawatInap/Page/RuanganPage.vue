@@ -220,7 +220,6 @@ const updatePageType = async (path: string) => {
 
   let filter = {} as FilterAdmisi;
   filter = setFilter();
-  // console.log(currentRouteName.value);
   patientData.value = await fetchRIPatient(filter);
 };
 
@@ -235,9 +234,6 @@ onMounted(() => {
   // isDataFetched.value = true;
 });
 
-// onMounted(() => {
-//   fetchRIPatient()
-// });
 </script>
 <template>
   <!-- {{ patientData }} -->
@@ -352,8 +348,8 @@ onMounted(() => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.monitoringRoom.room
-                    ? slotProps.data.monitoringRoom.room
+                  slotProps.data.monitoringRoom.room.name
+                    ? slotProps.data.monitoringRoom.room.name
                     : 'RUANGAN'
                 "
                 customClass="h-5 pr-[5px] mr-[5px]"
@@ -361,8 +357,8 @@ onMounted(() => {
               <CustomChip
                 :showCheckedIcon="false"
                 :label="
-                  slotProps.data.monitoringRoom.bedName
-                    ? slotProps.data.monitoringRoom.bedName
+                  slotProps.data.monitoringRoom.bedLokasi.name
+                    ? slotProps.data.monitoringRoom.bedLokasi.name
                     : '-'
                 "
                 customClass="h-5 pr-[5px] mr-[5px]"
@@ -417,7 +413,7 @@ onMounted(() => {
               :size="18"
               class="mx-[5px] my-auto text-blueJeans-300"
             />
-           {{slotProps.data.tanggalDirawat ? slotProps.data.tanggalDirawat : '-'}}
+           {{ slotProps.data.tanggalDirawat ? epochToDate(slotProps.data.tanggalDirawat, 'dateTime') : '-' }}
 
           </div>
           <div
@@ -428,7 +424,7 @@ onMounted(() => {
               :size="18"
               class="mx-[5px] my-auto text-blueJeans-300"
             />
-            {{ slotProps.data.lamaHari || '-' }}
+            {{ slotProps.data.lamaDirawat || '-' }}
           </div>
         </div>
       </template>
@@ -448,8 +444,9 @@ onMounted(() => {
                     ? 'Cancel'
                     : slotProps.data.statusRi == 1
                       ? 'Waiting'
-                      : slotProps.data.statusRi == 2 ?
-                        'Transfer' : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
+                      : slotProps.data.statusRi == 2 
+                      ? 'Transfer' 
+                      : slotProps.data.statusRi == 3 ? 'Dirawat' : 'Discharge'
                 "
                 customClass="h-5 pr-[5px] mr-[5px] border-none"
                 :bgColor="

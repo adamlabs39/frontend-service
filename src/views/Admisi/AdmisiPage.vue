@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import type { MenuItem } from "primevue/menuitem";
 import { utilsStore } from "@/stores/utils";
@@ -74,13 +74,10 @@ const search = async () => {
 const getPatientList = async () => {
   if (pageType.value == "rawat-jalan") {
     patientData.value = await fetchRJPatient();
-    console.log("Data rawat jalan:", patientData.value);
   } else if (pageType.value == "rawat-inap") {
     patientDataRI.value = await fetchRIPatient();
-    console.log("Data rawat inap:", patientDataRI.value);
   } else if (pageType.value == "igd") {
     patientDataIGD.value = await fetchIGDPatient();
-    console.log("Data IGD:", patientDataIGD.value);
   }
 };
 const fetchRJPatient = async () => {
@@ -170,11 +167,19 @@ onMounted(() => {
 });
 
 const openedPatientData = ref<any>({});
+const selectedPaymentMethod = ref<string>('TUNAI');
 const showPatientDetail = (event: DataTableRowClickEvent) => {
   openedPatientData.value = event.data;
 
+  if (openedPatientData.value.payment_method == 2) {
+    selectedPaymentMethod.value = "ASURANSI"; 
+  } else {
+    selectedPaymentMethod.value = "TUNAI";
+  }
+
   if (pageType.value == "rawat-jalan") {
     if (openedPatientData.value.statusRj == "1") {
+      formType.value = "add";
       changeSection("Checkin", { platform: openedPatientData.value.platform });
     } else {
       formType.value = "detail";
@@ -248,7 +253,9 @@ const cancelVisit = async () => {
       await admisiIGDStore.cancelVisitIGD(payload);
     }
     showCancelVisit.value = false;
-    cancelReason.value = undefined;
+    cancelReason.value = '';
+    selectedPatient.value = [];
+    
     await getPatientList();
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -257,12 +264,23 @@ const cancelVisit = async () => {
   }
 };
 
+watch(formType, (newValue, oldValue) => {
+  if (newValue === 'edit' && oldValue !== 'edit') {
+  }
+});
+
+const handleGoToDetail = (newData: any) => {
+  openedPatientData.value = newData;
+
+  dataBreadCrumb.value[0].label = 'Detail';
+  formType.value = 'detail';
+};
+
 const handlePage = (event: any) => {
   properties.value.page = event.page + 1;
   properties.value.pageSize = event.rows;
   getPatientList();
 };
-
 
 </script>
 
@@ -280,9 +298,7 @@ const handlePage = (event: any) => {
         :pageType="pageType"
         :filterData="filterData"
         @daftar="changeSection('Daftar'), (formType = 'add')"
-        @daftarBayi="
-          changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')
-        "
+        @daftarBayi="changeSection('Daftar Bayi Baru Lahir'), (formType = 'add')"
         @search="search"
       />
     </template>
@@ -307,14 +323,15 @@ const handlePage = (event: any) => {
             <div class="text-center">
               <div
                 v-if="
-                  slotProps.data.no_antrian_admisi && pageType == 'rawat-jalan'
+                  slotProps.data.noAntrianAdmisi && pageType == 'rawat-jalan'
                 "
                 class="w-min mx-auto bg-adameds-75 text-adameds-300 rounded-[5px] px-2 leading-5 text-SM font-semibold px-"
               >
-                {{ slotProps.data.noAntrianAdmisi }}
+                {{ slotProps.data.noAntrianAdmisi ?? " " }}
               </div>
               <div class="text-SM">{{ slotProps.data.noRm ?? "-" }}</div>
               <div class="text-SM">{{ slotProps.data.noReg }}</div>
+              <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
             </div>
           </template>
         </Column>
@@ -489,7 +506,7 @@ const handlePage = (event: any) => {
                 />
                 {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
               </div>
-              <div
+              <!-- <div
                 v-if="pageType == 'rawat-jalan'"
                 class="grid content-center grid-cols-[80px_min-content_150px] mt-[5px]"
               >
@@ -500,7 +517,7 @@ const handlePage = (event: any) => {
                   weight="bold"
                 />
                 {{ epochToDate(slotProps.data.jadwalPeriksa, "dateTime") }}
-              </div>
+              </div> -->
               <div
                 v-if="
                   pageType == 'rawat-jalan' && slotProps.data.tanggalCheckin
@@ -525,7 +542,8 @@ const handlePage = (event: any) => {
                   class="my-auto mr-5 text-grey-300"
                   weight="bold"
                 />
-                {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }}
+                <!-- {{ epochToDate(slotProps.data.tanggalDaftar, "dateTime") }} -->
+                  -
               </div>
               <div
                 v-if="pageType == 'rawat-inap' && slotProps.data.tanggalDirawat"
@@ -637,7 +655,7 @@ const handlePage = (event: any) => {
     :patientData="openedPatientData"
     :formType="formType"
     @back="closeRegistrationForm"
-    @goToDetail="dataBreadCrumb[0].label = 'Detail'"
+    @goToDetail="handleGoToDetail"
     @goToEdit="(dataBreadCrumb[0].label = 'Detail Edit'), (formType = 'edit')"
   />
 </template>

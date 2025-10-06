@@ -4,7 +4,6 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 
-
 const props = defineProps({
   patientData: {
     type: Object as PropType<any>,
@@ -12,7 +11,7 @@ const props = defineProps({
   }
 });
 
-// Helper untuk format tanggal lahir
+// Helper untuk format tanggal lahir khusus closebill
 const formattedBirthDate = computed(() => {
   if (!props.patientData?.tglLahir) return "";
   return new Date(props.patientData.tglLahir).toLocaleDateString('id-ID', {
@@ -20,13 +19,11 @@ const formattedBirthDate = computed(() => {
   });
 });
 
-// Computed property untuk menentukan cara bayar dari service_bill pertama
+// Computed property untuk menentukan cara bayar 
 const paymentType = computed(() => {
-  // Gunakan nama field camelCase: 'serviceBill' dan 'withInsurance'
   if (props.patientData?.serviceBill?.length > 0) {
     return props.patientData.serviceBill[0].withInsurance ? 'ASURANSI' : 'TUNAI';
   }
-  // Default jika tidak ada data service bill
   return 'TUNAI';
 });
 </script>
@@ -66,19 +63,20 @@ const paymentType = computed(() => {
               customClass="h-5 pr-[6px] border-none mr-[5px] ml-2"
             />
           </div>
-          <div class="bg-mediumGrey-300 w-[1px] h-[85px] mr-[20px]"></div>
+          <div class="bg-mediumGrey-300 w-[1px] h-[85px] ml-[50px] mr-[35px]"></div>
           <div class="mt-[20px] mr-[40px]">
-            <p class="text-xs font-bold underline underline-offset-2">Tgl. Lahir</p>
+            <p class=" font-bold underline underline-offset-2">Tgl. Lahir</p>
             <p class="">{{ formattedBirthDate }}</p>
           </div>
+          <div class=" w-[1px] h-[85px] mr-[170px]"></div>
           <div class="mt-[20px] mr-[40px]">
-            <p class="text-xs font-bold underline underline-offset-2">Umur</p>
+            <p class=" font-bold underline underline-offset-2">Umur</p>
             <p class="">{{ patientData.ageYear }}Thn {{ patientData.ageMonth }}Bln {{ patientData.ageDay }}Hr</p>
           </div>
-          <div class="mt-[20px] mr-[40px]">
+          <!-- <div class="mt-[20px] mr-[40px]">
             <p class="text-xs font-bold underline underline-offset-2">Alergi</p>
             <p class="">{{ patientData.allergy || 'Tidak Ada' }}</p>
-          </div>
+          </div> -->
         </div>
         <div class="grid grid-cols-3 mt-10">
           <div>
@@ -94,8 +92,14 @@ const paymentType = computed(() => {
             <p>{{ patientData.noHandphone }}</p>
             <p class="mt-4 font-bold underline underline-offset-2">Kabupaten/Kota</p>
             <p>{{ patientData.kabupatenKota }}</p>
-            <p class="mt-4 font-bold underline underline-offset-2">RT/RW</p>
-            <p>{{ patientData.rt }}/{{ patientData.rw }}</p>
+            
+            <div class="mt-4 font-bold flex space-x-4">
+            <p class="underline underline-offset-2">RT</p>
+            <p class="underline underline-offset-2">RW</p>
+            </div>
+            <div class="flex space-x-4">
+              <p class="w-6">{{ patientData.rt }}</p> <p>{{ patientData.rw }}</p>
+            </div>
           </div>
           <div>
             <p class="font-bold underline underline-offset-2">Agama</p>

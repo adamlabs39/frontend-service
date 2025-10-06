@@ -28,16 +28,19 @@ import { createPatientCard } from "@/utils/PdfMake";
 import axios from "axios";
 import { useDistrictStore } from "@/stores/datamaster/district";
 import { useAdmisiReportStore } from "@/stores/admisi/laporan";
+import { useToast } from "primevue/usetoast";
 
 // NOTE Store
 const storeUtils = utilsStore();
 const masterPasienStore = useAdmisiMasterPasienStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
+const admisiReportStore = useAdmisiReportStore();
 const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const toast = useToast();
 const handleExport = async () => {
   try {
-    const admisiReportStore = useAdmisiReportStore();
     const response = await admisiReportStore.DownloadLaporanAdmisiReport();
 
     if (!response || !response.data) {
@@ -53,7 +56,7 @@ const handleExport = async () => {
     const link = document.createElement("a");
     link.href = url;
     
-    link.setAttribute("download", "laporan_admisi.xlsx"); 
+    link.setAttribute("download", "format_import_pasien.xlsx"); 
     
     document.body.appendChild(link);
     link.click();
@@ -123,8 +126,47 @@ const propertiesHistory = ref({
   pageSize: 5,
   total: 0,
 });
-const search = ref("");
+const fetchHistoryData = async () => {
+  if (!patientUuid.value) {
+    console.warn("Tidak ada UUID pasien yang dipilih untuk mengambil riwayat.");
+    listHistoryPatient.value = [];
+    return;
+  }
 
+  storeUtils.setLoading(true);
+  try {
+    const payload = {
+      page: propertiesHistory.value.page,
+      limit: propertiesHistory.value.pageSize,
+    };
+
+    const response = await masterPasienStore.getPasienHistory({
+      uuid: patientUuid.value,
+      page: propertiesHistory.value.page,
+      limit: propertiesHistory.value.pageSize,
+    });
+
+    if (response && response.payload) {
+      listHistoryPatient.value = response.payload; 
+      propertiesHistory.value.total = response.properties.totalData;
+    } else {
+      listHistoryPatient.value = [];
+      propertiesHistory.value.total = 0;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil riwayat pasien:", error);
+    listHistoryPatient.value = [];
+    propertiesHistory.value.total = 0;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const search = ref("");
+const resetFilter = () => {
+  search.value = ""
+  searchData();
+};
 const patientUuid = ref<string>("");
 
 const onSelectPatient = (patient: any) => {
@@ -262,7 +304,7 @@ const showDetailPatient = async (event: DataTableRowClickEvent) => {
     }
     } else {
       openedPatientData.value = {};
-      itemsMedicalRecord.value = []; // kalau pasien kosong, reset juga
+      itemsMedicalRecord.value = [];
     }
     const responseHistory = await masterPasienStore.getPatientHistory(
       event.data.uuid,
@@ -327,7 +369,6 @@ const editFile = async (rowData: any) => {
 
       const fileUuid = rowData.uuid;
       const response = await masterPasienStore.uploadBerkasApi(fileUuid, file);
-      console.log("File berhasil diupdate:", response);
 
       const pasienUuid = patientUuid.value; 
       if (!pasienUuid) {
@@ -424,6 +465,28 @@ const removeFile = async (rowData: any) => {
   }
 };
 
+const nonaktifkanPasien = async () => {
+  storeUtils.setLoading(true);
+  try {
+    const listUuid = selectedPatient.value.map(pasien => pasien.uuid);
+
+    const payload = {
+      list_uuid: listUuid
+    };
+
+    await masterPasienStore.deletePasienApi(payload);
+
+    showConfirmNonaktifDialog.value = false;
+    selectedPatient.value = [];
+    
+    await fetchData();
+
+  } catch (error) {
+    console.error("Gagal menon-aktifkan pasien:", error);
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
 
 const patientIdentityForm = ref<InstanceType<
   typeof PatientIdentityForm
@@ -493,9 +556,9 @@ const handlePage = (event: any) => {
 const handlePageHistory = (event: any) => {
   propertiesHistory.value.page = event.page + 1;
   propertiesHistory.value.pageSize = event.rows;
-  fetchData();
-};
 
+  fetchHistoryData();
+};
 const files = ref<File[]>([]);
 const customUploadCallback = async (files: File[], uuid: string) => {
   if (!files[0]) {
@@ -506,7 +569,12 @@ const customUploadCallback = async (files: File[], uuid: string) => {
   const file = files[0];
 
   if (file.type !== "application/pdf") {
-    alert("File harus bertipe PDF");
+    toast.add({
+      severity: "error",
+      summary: "Warning",
+      detail: "File harus bertipe PDF",
+      life: 3000,
+    });
     return;
   }
 
@@ -552,7 +620,6 @@ const customUploadCallback = async (files: File[], uuid: string) => {
 
   } catch (error) {
     console.error("Upload gagal:", error);
-    alert("Upload gagal");
   }
 };
 
@@ -571,9 +638,10 @@ const onUpload = async (event: any) => {
   }
 };
 
-const showDeletePasien = ref(false);
+const showDeletePasien = ref(true);
 const deleteReason = ref<string>();
 const selectedPatient = ref<any[]>([]);
+const showConfirmNonaktifDialog = ref(false); 
 // FIXME Ada perubahan dari sisi BE
 const deletePatient = async () => {
   try {
@@ -833,14 +901,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
+          <div class = "flex mt-[10px]">
             <CustomTextfield
               v-model="search"
-              @update:model-value="searchData"
+              @keydown.enter="searchData"
               label="Pencarian"
               prependIcon="PhMagnifyingGlass"
               placeholder="Cari Nama / address / No. RM"
-              class="mt-[10px]"
+              class="mt-[10px] flex-1"
             />
+            <CustomButton
+              @click="searchData"
+              icon="PhMagnifyingGlass"
+              label="Cari"
+              class="ml-5 mr-[10px] mt-auto"
+            />
+            <CustomButton
+              @click="resetFilter"
+              label="Reset"
+              outlined
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              class="mt-auto"
+            />
+          </div>
             <hr class="border-grey-200 mt-[10px] mb-[2px]" />
           </template>
           <template #collapseIcon>
@@ -870,7 +954,14 @@ onMounted(() => {
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
           @rowClick="showDetailPatient"
-        >
+          >
+          <Column
+            v-if="showDeletePasien"
+            selectionMode="multiple"
+            headerStyle="width: 3rem"
+            headerClass="bg-adameds-50"
+            class="custom-checkbox"
+          ></Column>
           <Column
             field="nomor"
             headerClass="bg-adameds-50"
@@ -927,13 +1018,19 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          <Column
-            v-if="showDeletePasien"
-            selectionMode="multiple"
-            headerStyle="width: 3rem"
-            headerClass="bg-adameds-50"
-            class="custom-checkbox"
-          ></Column>
+          <Column field="status" header="Status" headerClass="bg-adameds-50">
+            <template #body="{ data }">
+              <CustomChip
+                :showCheckedIcon="data.status"
+                :label="data.status ? 'AKTIF' : 'NON-AKTIF'"
+                :textColor="data.status ? 'text-white' : 'text-[#80868d]'"
+                :bgColor="data.status ? 'bg-adameds-300' : 'bg-white'"
+                :borderColor="data.status ? 'border-transparent' : 'border-[#80868d]'"
+                :icon-color="data.status ? 'white' : '#80868d'"
+                customClass="text-xs font-semibold h-5"
+              />
+            </template>
+          </Column>
         </DataTable>
         <NoData v-else />
       </template>
@@ -943,7 +1040,6 @@ onMounted(() => {
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"
-              :maxFileSize="1000000"
               label="Import"
               chooseLabel="Import"
               auto
@@ -961,7 +1057,7 @@ onMounted(() => {
                 <FileImportIcon />
               </template>
             </FileUpload>
-            <CustomButton style=" margin-left: 11px; margin-top: 3px; margin-right: -4px;"
+            <CustomButton style=" margin-left: 11px; margin-right: -4px;"
                 @click="handleExport"
                 icon="PhDownload"
                 label="Download"
@@ -970,34 +1066,48 @@ onMounted(() => {
             />
             <div class="bg-adameds-300 w-[1px] my-[5px] mx-[15px]"></div>
             <CustomButton
-              v-if="!showDeletePasien"
-              @click="showDeletePasien = true"
+              v-if="showDeletePasien"
+              @click="showConfirmNonaktifDialog = true"
               class="my-auto bg-danger-300"
-              label="Hapus Data Pasien"
+              label="Non-Aktifkan"
             />
-            <CustomButton
-              v-if="showDeletePasien"
-              @click="showDeletePasien = false"
-              class="my-auto mr-[10px]"
-              label="Batal"
-              outlined
-              borderColor="border-grey-200"
-              textColor="text-grey-300"
-            />
-            <CustomButton
-              v-if="showDeletePasien"
-              @click="deletePatient"
-              class="my-auto mr-5 bg-danger-300"
-              label="Iya, Hapus"
-              :disabled="!deleteReason || selectedPatient.length == 0"
-            />
-            <CustomTextfield
-              v-if="showDeletePasien"
-              v-model="deleteReason"
-              :showLabel="false"
-              class="my-auto w-[400px]"
-              placeholder="Alasan Hapus Data Pasien"
-            />
+            <CustomDialog v-model:visible="showConfirmNonaktifDialog" width="600px" :pt="{
+                header: { class: 'bg-danger-300 text-white' }
+              }">
+              <template #header>
+                Non-Aktif
+              </template>
+              <template #body>
+                <div class="mt-5">
+                  <div class="mb-4">
+                    Anda yakin ingin menon-aktifkan data pasien No. RM
+                  </div>
+                  <ul>
+                    <li v-for="pasien in selectedPatient" :key="pasien.uuid" class="ml-5 font-semibold list-disc">
+                      {{ pasien.noRm }}
+                    </li>
+                  </ul>
+                </div>
+              </template>
+              <template #footer>
+                <div class="flex justify-end">
+                  <CustomButton
+                    @click="showConfirmNonaktifDialog = false"
+                    label="Tidak"
+                    outlined
+                    class="mr-[10px]"
+                    borderColor="border-grey-200"
+                    textColor="text-grey-300"
+                  />
+                  <CustomButton
+                    @click="nonaktifkanPasien"
+                    label="Iya, Non-aktifkan"
+                    class=""
+                    backgroundColor="bg-danger-300"
+                  />
+                </div>
+              </template>
+            </CustomDialog>
           </div>
           <CustomPaginator
             :rows="properties.pageSize"
@@ -1049,8 +1159,9 @@ onMounted(() => {
           :patientData="openedPatientData"
         />
       </div>
-      <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+      <Card class="h-min mt-[10px] z-10 absolute bottom-0 right-0 left-0">
         <template #content>
+          <!-- button simpan dan reset -->
           <div class="flex justify-end">
             <CustomButton
               @click="resetForm"
@@ -1299,7 +1410,7 @@ onMounted(() => {
                 <template #header="{ files, chooseCallback }">
                   <div class="flex mx-auto">
                     <span class="leading-10 text-SM">{{
-                      files[0] ? files[0].name : "No File Chosen"
+                      files[0] ? files[0].name : "Upload file dalam bentuk PDF"
                     }}</span>
                     <CustomButton
                       @click="chooseCallback()"

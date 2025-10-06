@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, watch, type PropType } from "vue";
 import { utilsStore } from "@/stores/utils";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
@@ -45,6 +45,18 @@ const props = defineProps({
   doctorVisitData: {
     type: Object as PropType<any>,
     required: true,
+  },
+  initialRoomCategory: {
+    type: String,
+    default: null
+  },
+  initialRoomClass: {
+    type: String,
+    default: null
+  },
+  initialRoom: {
+    type: String,
+    default: null
   },
 });
 
@@ -102,9 +114,20 @@ const setFormData = () => {
 
     noSpri.value = tempDoctorVisitData.noSpri ?? "";
     selectedRoomCategory.value = tempDoctorVisitData.kategoriRuanganUuid ?? "";
-    selectedRoomClass.value = tempDoctorVisitData.roomClass ?? "";
     selectedRoom.value = tempDoctorVisitData.roomUuid ?? "";
     selectedBed.value = [tempDoctorVisitData.monitoringRoomUuid ?? ""];
+
+    const classNameFromProp = tempDoctorVisitData.roomClassName;
+    if (classNameFromProp) {
+      const matchingClass = listKelasRuangan.value.find(
+        (kelas: any) => kelas.label === classNameFromProp
+      );
+      if (matchingClass) {
+        selectedRoomClass.value = matchingClass.value;
+      }
+    } else {
+      selectedRoomClass.value = "";
+    }
 
     fetchListRoomData();
 
@@ -113,7 +136,7 @@ const setFormData = () => {
     }
     if (tempDoctorVisitData.paymentMethod == 2) {
       const tempInsurance = listPenjamin.value.find(
-        (penjamin) => penjamin.code == tempDoctorVisitData.insurance.code
+        (penjamin: any) => penjamin.code == tempDoctorVisitData.insurance.code
       );
       if (tempInsurance) {
         tempDoctorVisitData.insurance.penjaminUuid = tempInsurance.uuid;
@@ -202,15 +225,16 @@ onMounted(() => {
   setFormData();
 });
 
-onUpdated(() => {
-  fetchUtils();
-  setFormData();
-});
+watch(() => props.doctorVisitData, (newData) => {
+    if (newData && Object.keys(newData).length > 0) {
+        setFormData();
+    }
+}, { deep: true });
 
 const listKelasRuangan = ref([
-  { label: "kelas 1", value: "Kelas 1" },
-  { label: "kelas 2", value: "Kelas 2" },
-  { label: "kelas 3", value: "Kelas 3" },
+  { label: "Kelas 1", value: "Kelas 1" },
+  { label: "Kelas 2", value: "Kelas 2" },
+  { label: "Kelas 3", value: "Kelas 3" },
   { label: "VIP", value: "VIP" },
   { label: "VVIP", value: "VVIP" },
 ]);
@@ -316,6 +340,7 @@ defineExpose({
 });
 </script>
 
+
 <template>
   <CustomAccordion :openWithHeader="false" class="mt-[10px]" initialState="0">
     <template #header>
@@ -329,6 +354,7 @@ defineExpose({
             }}
           </span>
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('TUNAI')"
             label="TUNAI"
             borderColor="border-adameds-300"
             bgColor="bg-adameds-50"
@@ -338,9 +364,11 @@ defineExpose({
             class="my-auto ml-5"
             :isSelected="selectedPaymentMethod.includes('TUNAI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-adameds-300 border-adameds-300"
           />
           <CustomChip
+            v-if="!isDetail || selectedPaymentMethod.includes('ASURANSI')"
             label="ASURANSI"
             borderColor="border-warning-300"
             bgColor="bg-warning-50"
@@ -350,6 +378,7 @@ defineExpose({
             class="ml-[10px] my-auto"
             :isSelected="selectedPaymentMethod.includes('ASURANSI')"
             @selected="onPaymentMethodSelect"
+            :disabled="isDetail"
             selectedColor="bg-warning-300 border-warning-300"
           />
         </div>
@@ -394,7 +423,7 @@ defineExpose({
               :disabled="isDetail"
             />
           </div>
-       <CustomSwitch
+        <CustomSwitch
           v-if="patientData.isNewBorn || formType == 'Daftar Bayi Baru Lahir'"
           v-model="familyBill"
           :disabled="isDetail"

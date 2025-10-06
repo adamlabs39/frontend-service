@@ -14,7 +14,7 @@ export const useReportCloseBillStore = defineStore({
             search: string = "",
             status: string = "SEMUA",
             service_type: string | string[] = "", 
-            payment_type: string = ""
+            payment_type: string | string[] = ""
         ) {
             const params = {
                 page,

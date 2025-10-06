@@ -104,6 +104,11 @@ const closePurchaseOfSupplierPage = () => {
   fetchPurchasingOfSupplier();
 };
 
+const closeEditPage = async () => {
+  dataBreadCrumb.value = dataBreadCrumb.value.slice(0, -2);
+  await fetchPurchasingOfSupplier();
+};
+
 onMounted(() => {
   fetchPurchasingOfSupplier();
 });
@@ -235,12 +240,20 @@ onMounted(() => {
               <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.kategoriItem"
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  customClass="h-5"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
                 />
               </div>
             </template>
@@ -270,7 +283,6 @@ onMounted(() => {
                   borderColor="border-grey-300"
                   bgColor="bg-grey-300" 
                   textColor="text-white"
-                  customClass="h-6"
                 />
                 <CustomChip
                   v-if="slotProps.data.status == 'cancel'"
@@ -279,16 +291,14 @@ onMounted(() => {
                   borderColor="border-danger-300"
                   bgColor="bg-danger-300" 
                   textColor="text-white"
-                  customClass="h-6"
                 />
                 <CustomChip
                   v-if="slotProps.data.status == 'verifikasi'"
                   label="DIVERIFIKASI"
                   :showCheckedIcon="false"
-                  borderColor="border-success-300"
-                  bgColor="bg-success-300" 
+                  borderColor="border-info-300"
+                  bgColor="bg-info-300" 
                   textColor="text-white"
-                  customClass="h-6"
                 />
               </div>
             </template>
@@ -308,9 +318,8 @@ onMounted(() => {
     </Card>
     <AddPurchaseOfSupplier
       v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
       @back="closePurchaseOfSupplierPage"
+      @backEdit="closeEditPage"
     />
     <DetailPurchaseOfSupplierPage
       v-else-if="dataBreadCrumb[0].label == 'Pembelian Barang Supplier'"

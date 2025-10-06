@@ -402,6 +402,7 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
   }
 };
 
+
 //Admisi
 const apiAdmisiGet = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);

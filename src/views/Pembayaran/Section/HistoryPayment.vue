@@ -17,30 +17,26 @@ const store = useReportCloseBillStore();
 const storeUtils = utilsStore();
 const paymentHistory = ref<any[]>([]);
 
-// [DITAMBAHKAN] Computed property untuk memeriksa status lunas
+const paymentTypeMap: { [key: string]: string } = {
+    'CASH': 'TUNAI',
+    'INSURANCE': 'ASURANSI'
+};
+
+// Computed property untuk memeriksa status lunas
 const shouldDisplayHistory = computed(() => {
     const history = paymentHistory.value;
 
-    // Jika tidak ada riwayat sama sekali, jangan tampilkan.
     if (history.length === 0) {
         return false;
     }
-
-    // Jika riwayatnya lebih dari satu, berarti pasti pernah ada hutang. Tampilkan.
     if (history.length > 1) {
         return true;
     }
 
-    // Jika riwayatnya HANYA SATU, kita perlu cek lebih lanjut.
     if (history.length === 1) {
-        // Ambil satu-satunya data histori tersebut.
         const singlePayment = history[0];
-        // Hanya tampilkan jika sisa hutangnya (debtAfter) LEBIH DARI 0.
-        // Jika debtAfter adalah 0, berarti itu pembayaran lunas langsung.
         return singlePayment.debtAfter > 0;
     }
-
-    // Default, jangan tampilkan.
     return false;
 });
 
@@ -71,7 +67,7 @@ onMounted(() => {
                 <div class="flex justify-between w-full align-middle">
                     <div class="flex">
                         <span class="leading-10 text-adameds-300 text-heading">
-                            Riwayat Pembayaran Hutang
+                            Riwayat Pembayaran 
                         </span>
                     </div>
                 </div>
@@ -85,19 +81,19 @@ onMounted(() => {
                                 {{ epochToDate(slotProps.data.createdAt, "date") }}
                             </template>
                         </Column>
-                        <Column header="Hutang" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="No.Kuitansi" headerClass="bg-adameds-50" style="width: 25%">
                             <template #body="slotProps">
-                                Rp. {{ slotProps.data.debtBefore }}
+                                {{ slotProps.data.receiptNumber }}
                             </template>
                         </Column>
-                        <Column header="Hutang Terbayar" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="Cara Bayar " headerClass="bg-adameds-50" style="width: 35%">
                             <template #body="slotProps">
-                                Rp. {{ slotProps.data.amount }}
+                                {{ paymentTypeMap[slotProps.data.paymentType] || slotProps.data.paymentType }}
                             </template>
                         </Column>
-                        <Column header="Catatan" field="note" headerClass="bg-adameds-50" style="width: 25%">
+                        <Column header="Jumlah Terbayar" headerClass="bg-adameds-50" style="width: 15%">
                             <template #body="slotProps">
-                                {{ slotProps.data.information }}
+                                Rp. {{ Number(slotProps.data.amount).toLocaleString('id-ID') }}
                             </template>
                         </Column>
                     </DataTable>

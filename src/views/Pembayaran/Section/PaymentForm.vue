@@ -42,6 +42,18 @@ const translatePaymentMethod = (method: string | null) => {
       return method;
   }
 };
+
+//formating Nominal IDR
+const formatPriceLokal = (price: number) => {
+    if (typeof price !== 'number') return 'Rp 0';
+    const roundedPrice = Math.ceil(price);
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(roundedPrice);
+};
+
 const fetchPaymentHistory = async () => {
   if (!props.billUuid) return;
   storeUtils.setLoading(true);
@@ -71,77 +83,58 @@ onMounted(() => {
           <p class="leading-10 text-adameds-300 text-heading">
             Pembayaran
           </p>
-          <CustomChip
-            v-if="paymentData.isPaid === true"
-            class="mt-2 ml-3"
-            :showCheckedIcon="false"
-            label="Lunas"
-            bgColor="bg-success-75"
-            textColor="text-success-300"
-            customClass="h-5 border-none"
-          />
-          <CustomChip
-            v-else
-            class="mt-2 ml-3"
-            :showCheckedIcon="false"
-            label="Piutang"
-            bgColor="bg-danger-75"
-            textColor="text-danger-300"
-            customClass="h-5 border-none"
-          />
+          <CustomChip v-if="paymentData.isPaid === true" class="mt-2 ml-3" :showCheckedIcon="false" label="Lunas"
+            bgColor="bg-success-75" textColor="text-success-300" customClass="h-5 border-none" />
+          <CustomChip v-else class="mt-2 ml-3" :showCheckedIcon="false" label="Piutang" bgColor="bg-danger-75"
+            textColor="text-danger-300" customClass="h-5 border-none" />
         </div>
       </div>
     </template>
     <template #content>
       <div v-if="paymentData" class="pt-5">
-        
-        <div v-if="paymentData.isPaid === true">
-          <div class="flex justify-between">
-            <p class="text-base font-bold">Grand Total</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.totalBill }}</p>
-          </div>
-          <div class="flex justify-between mt-4">
-            <p class="text-base font-bold">Diskon</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.discount || 0 }}</p>
-          </div>
-          <div class="flex justify-between mt-4">
-            <p class="text-base font-bold">Jumlah Terbayar</p>
-            <p class="text-base font-bold"> Rp. {{ paymentData.totalPaid }}</p>
-          </div>
+
+        <div class="flex justify-between">
+          <p class="text-base font-bold">Total</p>
+          <p class="text-base font-bold">Rp {{ paymentData.subTotal?.toLocaleString('id-ID') || 0 }}</p>
+        </div>
+        <div class="flex justify-between mt-4">
+          <p class="text-base font-bold">Biaya Administrasi</p>
+          <p class="text-base font-bold">Rp {{ paymentData.adminFee?.toLocaleString('id-ID') || 0 }}</p>
+        </div>
+        <div class="flex justify-between mt-4">
+          <p class="text-base font-bold">Diskon ({{ paymentData.discount?.percentage || 0 }}%)</p>
+          <p class="text-base font-bold">Rp {{ paymentData.discount.amount?.toLocaleString('id-ID') || 0 }}</p>
+        </div>
+        <div class="flex justify-between mt-4">
+          <p class="text-base font-bold">PPN ({{ paymentData.ppn?.percentage || 0 }}%)</p>
+          <p class="text-base font-bold">Rp {{ paymentData.ppn.amount?.toLocaleString('id-ID') || 0 }}</p>
+        </div>
+        <div class="flex justify-between mt-4">
+          <p class="text-base font-bold">Grand Total</p>
+          <p class="text-base font-bold">{{ formatPriceLokal(paymentData.grandTotal) || 0 }}</p>
         </div>
 
-        <div v-else>
-          <div class="flex justify-between">
-            <p class="text-base font-bold">Grand Total</p>
-            <p class="text-base font-bold">Rp. {{ paymentData.totalBill}}</p>
-          </div>
-          <div class="flex justify-between mt-4">
-            <p class="text-base font-bold">Diskon</p>
-            <p class="text-base font-bold">Rp. {{ paymentData.discount || 0}}</p>
-          </div>
-          
-          <div v-for="history in paymentData.paymentHistory" :key="history.createdAt">
-            <div class="flex justify-between mt-4">
-              <p class="text-base font-bold">Jumlah Terbayar</p>
-              <p class="text-base font-bold">Rp. {{ history.amount}}</p>
-            </div>
-            <hr class="my-7 border-2 border-grey-200" />
-            <div class="flex justify-between">
-              <p class="text-base font-bold text-danger-300">Hutang</p>
-              <p class="text-base font-bold text-danger-300">- Rp. {{ history.debtAfter }}</p>
-            </div>
-          </div>
+        <div class="flex justify-between mt-4">
+          <p class="text-base font-bold">Jumlah Terbayar</p>
+          <p class="text-base font-bold">Rp {{ paymentData.totalPaid?.toLocaleString('id-ID') || 0 }}</p>
+        </div>
+
+        <div v-if="!paymentData.isPaid" class="flex justify-between mt-4">
+          <p class="text-base font-bold text-danger-300">Sisa Bayar</p>
+          <p class="text-base font-bold text-danger-300">- Rp {{ paymentData.debt?.toLocaleString('id-ID') || 0 }}</p>
         </div>
 
         <hr class="mt-6 mb-3 border-2 border-grey-200">
         <div class="grid grid-cols-2 mt-6" v-if="paymentData.paymentHistory && paymentData.paymentHistory.length > 0">
           <div>
             <p class="text-xs font-bold underline underline-offset-2">Metode Pembayaran</p>
-            <p class="text-xs font-normal ">{{ translatePaymentMethod(paymentData.paymentHistory[paymentData.paymentHistory.length - 1].paymentMethod) }}</p>
+            <p class="text-xs font-normal ">{{
+              translatePaymentMethod(paymentData.paymentHistory[paymentData.paymentHistory.length - 1].paymentMethod) }}
+            </p>
           </div>
           <div>
             <p class="text-xs font-bold underline underline-offset-2">No. Referensi</p>
-            <p class="text-xs font-normal">{{ paymentData.paymentHistory[paymentData.paymentHistory.length - 1].referensi || '-' }}</p>
+            <p class="text-xs font-normal">{{ paymentData.paymentHistory[paymentData.paymentHistory.length -1].referensi || '-' }}</p>
           </div>
         </div>
 
@@ -151,18 +144,10 @@ onMounted(() => {
       </div>
     </template>
     <template #collapseIcon>
-      <CustomButton
-        icon="PhCaretUp"
-        backgroundColor="bg-adameds-75"
-        textColor="text-adameds-300"
-      />
+      <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
     </template>
     <template #expandIcon>
-      <CustomButton
-        icon="PhCaretDown"
-        backgroundColor="bg-adameds-75"
-        textColor="text-adameds-300"
-      />
+      <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
     </template>
   </CustomAccordion>
 </template>
