@@ -23,6 +23,7 @@ import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap }
 
 // Filter 
 interface Filter {
+  timestamp: number;
   kelas: string;
   page?: number;
   limit?: number;
@@ -61,7 +62,8 @@ const dokterPayload = ref<any[]>([])
 const ruanganPayload = ref<any[]>([])
 
 const fetchLaporanData = async (filter: Filter = {
-  kelas: ""
+  kelas: "",
+  timestamp: 0
 }) => {
   useUtilsStore.setLoading(true);
   let response;
@@ -172,7 +174,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
 
   return filter
   
@@ -183,8 +188,9 @@ const valueSearchRM = ref();
 const valueSearchPraktisi = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -210,7 +216,7 @@ const resetForm = () => {
   valueSearchPraktisi.value = "";
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
-  valueBulan.value = 0;
+  valueBulan.value = null;
   searchRuanganFilter.value = "";
   searchKelasFilter.value = "";
   searchDokterDPJPFilter.value = "";

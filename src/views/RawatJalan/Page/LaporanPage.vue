@@ -59,8 +59,9 @@ const praktisiPayload = ref<any[]>([]);
 const lokasiPayload = ref<any[]>([]);
 
 const fetchLaporanData = async (filter: Filter = {
-  polyclinic: ""
-  }) => {
+  polyclinic: "",
+  timestamp: 0
+}) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
@@ -177,6 +178,7 @@ onMounted(() => {
 });
 
 interface Filter {
+  timestamp: number;
   polyclinic: string;
   page?: number;
   limit?: number;
@@ -239,7 +241,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+   if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
   filter.lokasiUuid = searchPoliklinikFilter.value ?? ""
 
   return filter;
@@ -249,8 +254,9 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -276,7 +282,7 @@ const resetForm = () => {
   valueSearchRM.value = "";
   searchPoliklinikFilter.value = "";
   searchPraktisiFilter.value = "";
-  valueBulan.value = 0;
+  valueBulan.value = null;
   valueSearchDPJP.value = "";
   searchDokterDPJPFilter.value = "";
 

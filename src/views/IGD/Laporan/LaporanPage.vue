@@ -31,7 +31,7 @@ const UseUtilsStore = utilsStore();
 const reportType = ref("");
 const reportData = ref<any[]>([]);
 const searchQuery = ref("");
-const selectedBulan = ref<number>(0);
+const selectedTimestamp = ref<number>(0);
 const praktisiPayload = ref<any>([]);
 const selectedFilterValue = ref("");
 const startDateFilter = ref<Date>(new Date());
@@ -79,7 +79,7 @@ const setFilter = () => {
   )}`;
   filter.name = searchQuery.value;
   filter.practitionerUuid = selectedFilterValue.value ?? "";
-  filter.month = selectedBulan.value !== 0 ? selectedBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  filter.timestamp = selectedTimestamp.value !== 0 ? selectedTimestamp.value : undefined; // Pastikan month hanya ada jika terisi
   return filter;
 };
 
@@ -90,7 +90,7 @@ const resetFilter = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   resetFormRef.value.resetForm();
-  selectedBulan.value = 0;
+ selectedTimestamp.value = 0;
 };
 const handleReset = () => {
   resetFilter();
@@ -112,8 +112,12 @@ const handleSelectedPraktisi = (value: any) => {
 const handleSearchQuery = (value: string) => {
   searchQuery.value = value;
 };
-const handleSelectedBulan = (value: any) => {
-  selectedBulan.value = value;
+const handleSelectedBulan = (value: Date | null) => {
+  if (value) {
+    selectedTimestamp.value = dateToEpoch(value);
+  } else {
+    selectedTimestamp.value = 0;
+  }
 };
 const handleStartDate = (value: any) => {
   startDateFilter.value = value;
@@ -127,6 +131,7 @@ onBeforeRouteLeave((to, from) => {
 });
 
 interface Filter {
+  timestamp: number | undefined;
   page?: number;
   limit?: number;
   q?: string;
@@ -149,7 +154,9 @@ const praktisiProperties = ref({
 
 const searchDoctor = ref<string>("");
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const fetchLaporanData = async (filter: Filter = {
+  timestamp: undefined
+}) => {
   UseUtilsStore.setLoading(true);
   let response;
   try {

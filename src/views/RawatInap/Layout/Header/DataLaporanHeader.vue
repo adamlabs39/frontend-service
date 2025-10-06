@@ -27,8 +27,9 @@ const valueStartDateFilter = ref<Date>(new Date());
 const valueEndDateFilter = ref<Date>(new Date());
 const valueRMFilter = ref<string>("");
 const valuePraktisiFilter = ref<string>("");
-const valueBulanFilter = ref<string>("");
+// const valueBulanFilter = ref<string>("");
 
+const valueBulanFilter = ref<Date | null>(null); 
 const optionBulan = ref([
   { label: "Januari", value: 1 },
   { label: "Februari", value: 2 },
@@ -49,7 +50,7 @@ const resetForm = () => {
   valueStartDateFilter.value = new Date();
   valueEndDateFilter.value = new Date(); // Make sure to assign null to both
   valueRMFilter.value = "";
-  valueBulanFilter.value = "";
+  valueBulanFilter.value = null;
 }
 
 defineExpose({
@@ -124,18 +125,18 @@ defineExpose({
           :options="praktisiPayload"
           @update:model-value="$emit('update:valuePraktisiFilter', valuePraktisiFilter)"
         />
-        <CustomSelect
-          v-if="currentRouteName === 'rekap-tindakan-pasien'"
-          v-model="valueBulanFilter"
-            @update:model-value="
-            $emit('update:valueBulanFilter', valueBulanFilter)
-          "
-          label="Bulan"
-          class=""
-          optionLabel="label"
-          optionValue="value"
-          place-holder="Pilih Bulan"
-          :options="optionBulan"
+        <CustomDatePicker
+              v-if="currentRouteName === 'rekap-tindakan-pasien'"
+              v-model="valueBulanFilter"
+              dateFormat="mm-yy"
+              view="month"
+              label="Tanggal"
+              place-holder="Pilih Bulan"
+              class=""
+              @update:model-value="
+              $emit('update:valueBulanFilter', valueBulanFilter)
+            "
+              :max-date="new Date()"
         />
         <div class="flex">
           <CustomButton
