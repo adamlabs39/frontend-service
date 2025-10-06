@@ -123,8 +123,8 @@ const onClickSearch = () => {
     emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
     emit(
       "dateRange",
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value)
+      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59))
     );
   }
 };
@@ -134,20 +134,18 @@ const onClickReset = () => {
   searchPatientFilter.value = "";
   chipValues.value = ["SEMUA"];
   if (["0", "1", "2"].includes(props.activeTab)) {
-    startDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
-    endDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
+    startDateFilter.value = setTimeForDate(new Date(), 0, 0, 0);
+    endDateFilter.value = setTimeForDate(new Date(), 23, 59, 59);
     emit("search", "", getSelectedStatusCodes());
-    // Kirim juga rentang tanggal default: 30 hari ke belakang sampai hari ini
     emit(
       "dateRange",
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value)
+      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59))
     );
   } else {
     startDateFilter.value = null;
     endDateFilter.value = null;
     emit("search", "");
-    // Bersihkan rentang tanggal di parent
     emit("dateRange", null, null);
   }
 };
@@ -159,17 +157,15 @@ watch(
     chipValues.value = ["SEMUA"];
 
     if (["0", "1", "2"].includes(props.activeTab)) {
-      // Reset pencarian dan tanggal ke hari ini saat kembali ke tab antrian
+      // Reset pencarian dan tanggal ke hari ini (00:00:00) saat kembali ke tab antrian
       searchPatientFilter.value = "";
-      startDateFilter.value = new Date(
-        Math.floor(today.getTime() / 1000) * 1000
-      );
-      endDateFilter.value = new Date(Math.floor(today.getTime() / 1000) * 1000);
+      startDateFilter.value = setTimeForDate(new Date(), 0, 0, 0);
+      endDateFilter.value = setTimeForDate(new Date(), 23, 59, 59);
       emit("search", "");
       emit(
         "dateRange",
-        dateToEpoch(startDateFilter.value),
-        dateToEpoch(endDateFilter.value)
+        dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+        dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59))
       );
     } else {
       // Kosongkan tanggal jika keluar dari tab antrian
