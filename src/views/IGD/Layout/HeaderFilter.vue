@@ -73,26 +73,12 @@ const emit = defineEmits([
 ]);
 
 const selectedTab = ref("2");
-const searchBulanFilter = ref<string>("");
-const optionBulan = ref([
-  { label: "Januari", value: 1 },
-  { label: "Februari", value: 2 },
-  { label: "Maret", value: 3 },
-  { label: "April", value: 4 },
-  { label: "Mei", value: 5 },
-  { label: "Juni", value: 6 },
-  { label: "Juli", value: 7 },
-  { label: "Agustus", value: 8 },
-  { label: "September", value: 9 },
-  { label: "Oktober", value: 10 },
-  { label: "November", value: 11 },
-  { label: "Desember", value: 12 },
-]);
+const valueBulanFilter = ref<Date | null>(null);
 const valueSelectedFilter = ref();
 const resetForm = () => {
   searchPatientFilter.value = "";
   valueSelectedFilter.value = "";
-  searchBulanFilter.value = "";
+  valueBulanFilter.value = null;
   selectedTab.value = "2";
   let date = new Date(),
     y = date.getFullYear(),
@@ -228,16 +214,18 @@ defineExpose({
         />
 
         <!-- DatePicker -->
-        <CustomSelect
+        <CustomDatePicker
           v-if="['rekap-tindakan-pasien'].includes(pageType)"
-          v-model="searchBulanFilter"
-          label="Bulan"
-          class="w-1/4"
-          optionLabel="label"
-          optionValue="value"
+          v-model="valueBulanFilter"
+          date-format="mm-yy"
+          view="month"
+          label="Tanggal"
           place-holder="Pilih Bulan"
-          :options="optionBulan"
-          @update:modelValue="$emit('update:selectedMonth', searchBulanFilter)"
+          class="w-1/4"
+          @update:model-value="
+            $emit('update:selectedMonth', valueBulanFilter)
+          "
+          :max-date="new Date()"
         />
         <div v-else class="flex w-1/4">
           <CustomDatePicker

@@ -14,15 +14,16 @@ export const useIgdLaporanStore = defineStore({
         name = "",
         practitionerUuid = "",
         jenisKunjungan = "igd",
-        month = 0,
+        // month = 0,
+        timestamp = 0,
       },
       payload = {}
     ) {
       let url = `/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitionerUuid}&pelayanan=${jenisKunjungan}`;
-      
-      if (month !== 0) url += `&month=${month}`;
-      
-      return apiIgdGet(url, payload);
+        if (timestamp !== 0) {
+            url += `&timestamp=${timestamp}`;
+        }
+        return apiIgdGet(url, payload);
     },
     async getKunjunganIGD(
             {
