@@ -1,75 +1,39 @@
 <script lang="ts" setup>
+import { onMounted, ref, watchEffect, computed } from "vue";
+import { useForm, useFieldArray } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import { useSupplierReturnsStore } from "@/stores/inventory/supplierReturns";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { utilsStore } from "@/stores/utils";
+import { epochToDate, formatPrice, dateToEpoch } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import type { MenuItem } from "primevue/menuitem";
-import { onMounted, ref, type PropType } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
-import DialogCariFaktur from "./DialogCariFaktur.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
+import DialogInvoice from "./DialogInvoice.vue";
+import { useToast } from "primevue/usetoast";
 
+const emit = defineEmits(["back"]);
 const props = defineProps({
-  pageType: {
-    type: String,
+  fakturPayload: {
+    type: Object,
     required: true,
   },
-  dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
-  },
 });
 
-const isFakturDiterima = ref(false);
-
-const emit = defineEmits(["back", "onSimpanRetur"]);
-
-const dataReturs = ref();
-
-const tambahReturSchema = toTypedSchema(
-  yup.object({
-    noRetur: yup.string(),
-    alasanRetur: yup.string(),
-    asalLokasiGudang: yup.string().required("Harus diisi"),
-    tglRetur: yup.date().default(() => new Date()).required("Harus Diisi"),
-    catatan: yup.string(),
-    diskon: yup.number(),
-    materai: yup.number(),
-    ppn: yup.bool().default(false),
-    status: yup.string(),
-    petugasRetur: yup.string(),
-  })
-);
-
-const { handleSubmit, resetForm, defineField } = useForm({
-  validationSchema: tambahReturSchema,
-  initialValues: {
-    noRetur: "RTR1234",
-    alasanRetur: "",
-    asalLokasiGudang: "",
-    tglRetur: undefined,
-    catatan: "",
-    diskon: 0,
-    materai: 0,
-    status: "DIRETUR",
-    petugasRetur: "Nama Petugas",
-  },
-});
-
-const [noRetur] = defineField("noRetur");
-const [alasanRetur] = defineField("alasanRetur");
-const [asalLokasiGudang] = defineField("asalLokasiGudang");
-const [tglRetur] = defineField("tglRetur");
-const [catatan] = defineField("catatan");
-const [diskon] = defineField("diskon");
-const [materai] = defineField("materai");
-const [ppn] = defineField("ppn");
-const [petugasRetur] = defineField("petugasRetur");
+// --- State Management ---
+const isDialogVisible = ref(false);
+const FakturPayload = ref<any>(null);
+const SupplierReturnsStore = useSupplierReturnsStore();
+const UseUtilsStore = utilsStore();
+const StockLocationStore = useStockLocationStore(); // [BARU] Inisialisasi store
+const StockLocationPayload = ref<any[]>([]);
+const listAsalLokasiGudangs = ref([]);
 
 const listAlasanReturs = ref([
   { id: 1, value: "Rusak" },
@@ -78,337 +42,351 @@ const listAlasanReturs = ref([
   { id: 4, value: "Sisa Pemakaian Ruangan" },
 ]);
 
-const listAsalLokasiGudangs = ref([
-  { id: 1, value: "Gudang Farmasi" },
-  { id: 2, value: "Gudang Rawat Jalan" },
-]);
+//fetch lokasi gudang dari store
+const fetchStockLocations = async () => {
+  try {
+    const response = await StockLocationStore.getApi(1, 9999);
+    StockLocationPayload.value = response?.payload || [];
+  } catch (error) {
+    console.error("Gagal mengambil data lokasi stok:", error);
+  }
+}
 
-onMounted(() => {
-  dataReturs.value = {};
+//  Form Validation (YUP) 
+const schema = toTypedSchema(
+  yup.object({
+    tglRetur: yup.date().required("Tanggal Retur harus diisi"),
+    alasanRetur: yup.number().nullable().required("Alasan Retur harus diisi"),
+    asalLokasiGudang: yup.string().nullable().required("Asal Gudang harus diisi"),
+    catatan: yup.string().nullable(),
+    items: yup.array().of(
+      yup.object({
+        qtyRetur: yup.number()
+          .min(0, "Tidak boleh negatif")
+          .test(
+            'max',
+            'Retur tidak boleh melebihi jumlah diterima',
+            function (value) {
+              // 'this.parent' merujuk ke objek item saat ini
+              return value! <= this.parent.qty;
+            }
+          )
+          .required("Jumlah retur harus diisi"),
+      })
+    ),
+  })
+);
+const { handleSubmit, defineField, setValues, resetForm, errors } = useForm({
+  validationSchema: schema,
 });
 
-// Data dari Dialog Cari Faktur
-const handleFakturData = (data: any) => {
-  dataReturs.value = data;
-  isFakturDiterima.value = true;
+//form fields
+const [tglRetur] = defineField("tglRetur");
+const [alasanRetur] = defineField("alasanRetur");
+const [asalLokasiGudang] = defineField("asalLokasiGudang");
+const [catatan] = defineField("catatan");
+const { fields: itemFields, remove } = useFieldArray<any>("items");
+
+//  State & Kalkulasi untuk Footer 
+const diskon = ref(0);
+const materai = ref(0);
+const ppn = ref(0);
+const grandTotal = ref(0);
+
+//kalkukasi grand total
+const ppnAmount = computed(() => {
+  const subTotal = (itemFields.value || []).reduce((total, item) => {
+    const qty = item.value.qtyRetur || 0;
+    const harga = item.value.harga || 0;
+    return total + (qty * harga);
+  }, 0);
+  const totalSetelahDiskon = subTotal - diskon.value;
+  const nilaiPpn = totalSetelahDiskon * (11 / 100);
+  // Kembalikan hasilnya, pastikan tidak negatif
+  return Math.max(0, nilaiPpn);
+});
+
+// Watcher untuk mengupdate grandTotal saat itemFields, diskon, materai, atau ppn berubah
+watchEffect(() => {
+  const subTotal = (itemFields.value || []).reduce((total, item) => {
+    const qty = item.value.qtyRetur || 0;
+    const harga = item.value.harga || 0;
+    return total + (qty * harga);
+  }, 0);
+  const totalSetelahDiskon = subTotal - diskon.value;
+  // Tambahkan ppnAmount HANYA JIKA switch ppn aktif (bernilai > 0)
+  const ppnYangDitambahkan = ppn.value > 0 ? ppnAmount.value : 0;
+  const finalTotal = totalSetelahDiskon + materai.value + ppnYangDitambahkan;
+  grandTotal.value = Math.max(0, finalTotal);
+});
+
+//  Logika Fetch & Submit 
+const handleFakturSelected = async (faktur: any) => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await SupplierReturnsStore.getApiAvailableDetail(faktur.uuid);
+    FakturPayload.value = response?.payload || null;
+    if (FakturPayload.value?.availableItems) {
+      setValues({
+        tglRetur: new Date(),
+        alasanRetur: FakturPayload.value.alasanRetur,
+        asalLokasiGudang: FakturPayload.value.lokasiStokUuid,
+        catatan: FakturPayload.value.catatan,
+        items: FakturPayload.value.availableItems.map((item: any) => ({ ...item, qtyRetur: 0 })),
+      });
+
+      diskon.value = FakturPayload.value.diskon || 0;
+      materai.value = FakturPayload.value.materai || 0;
+      ppn.value = (FakturPayload.value.ppn > 0) ? 11 : 0;
+    }
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
 };
 
-const isDialogVisible = ref(false);
+//handle submit
+const onSubmit = handleSubmit(async (values) => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const payload = {
+      alasan_retur: values.alasanRetur,
+      pembelian_supplier_uuid: FakturPayload.value?.uuid,
+      diskon: diskon.value,
+      materai: materai.value,
+      ppn: ppn.value === 11,
+      catatan: values.catatan,
+      tanggal_retur: dateToEpoch(values.tglRetur as Date),
+      items: (values.items || [])
+        .filter(item => item.qtyRetur > 0)
+        .map((item: any) => ({
+          item_uuid: item.itemUuid,
+          qty_retur: item.qtyRetur,
+          konversi_uuid: item.konversiUuid,
+          harga_satuan: item.hargaSatuan,
+          exp_date: epochToDate(item.expDate, "date"), // Menggunakan epochToDate untuk format
+        })),
+    };
 
-const dialogCariFakturConfig = () => {
-  isDialogVisible.value = true;
-};
+    if (payload.items.length === 0) {
+      alert("Peringatan: Harap isi jumlah retur minimal 1 pada salah satu item.");
+      UseUtilsStore.setLoading(false);
+      return;
+    }
 
-const deleteRetur = (index: number) => {
-  dataReturs.value.datas.splice(index, 1);
-};
+    console.log("Payload yang akan dikirim:", JSON.stringify(payload, null, 2));
+    await SupplierReturnsStore.postApi(payload);
+    alert("Sukses: Data retur berhasil disimpan.");
+    emit("back");
+  } catch (error: any) {
+    console.error("GAGAL MENYIMPAN RETUR:", error.response?.data || error.message || error);
+    alert(`Error: ${error.response?.data?.message || 'Gagal menyimpan data retur.'}`);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+}, (validationErrors) => {
+  console.log('VALIDASI GAGAL:', validationErrors);
+  alert('Validasi Gagal: Harap periksa kembali semua isian yang wajib diisi (ditandai merah).');
+});
 
-const resetFormFields = () => {
+const resetAll = () => {
   resetForm();
-  dataReturs.value = {};
+  FakturPayload.value = null;
+  diskon.value = 0;
+  materai.value = 0;
+  ppn.value = 0;
+  setValues({ tglRetur: new Date() });
 };
 
-// Update onSubmit to use handleSubmit
-const onSubmit = handleSubmit((values) => {
-  // console.log(values)
-  emit("onSimpanRetur", {
-    ...values,
-    ...dataReturs.value, // Include data from dataReturs
-  });
+onMounted(() => {
+  fetchStockLocations();
+  if (props.fakturPayload) {
+    handleFakturSelected(props.fakturPayload);
+  }
+  setValues({ tglRetur: new Date() });
 });
 </script>
 
 <template>
-  <Card pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
-    <template #header>
-      <CustomAccordion :openWithHeader="false" noBorder initialState="0">
-        <template #header>
-          <div class="flex items-center justify-between w-full align-middle">
-            <div class="flex">
-              <CustomButton icon="PhArrowClockwise" class="mr-5" />
-              <CustomBreadCrumb
-                :home="{
-                  label: 'Pengadaan Barang',
-                  home: true,
-                }"
-              />
-              <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
-              <div class="">
-                <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                  Retur & Penggantian Barang Supplier
-                </p>
+  <div class="flex flex-col h-full overflow-hidden">
+    <Card pt:body:class="h-full pt-0" class="h-full overflow-hidden overflow-y-auto">
+      <template #header>
+        <CustomAccordion :openWithHeader="false" noBorder initialState="0">
+          <template #header>
+            <div class="flex justify-between w-full align-middle">
+              <div class="flex">
+                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomBreadCrumb :home="{ label: 'Pengadaan Barang', home: true }"
+                  :model="[{ label: 'Retur & Penggantian Barang Supplier' }, { label: 'Tambah Retur' }]" />
               </div>
-              <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
-              <div class="">
-                <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
-                  Tambah Retur
-                </p>
+              <div class="flex">
+                <CustomButton @click="emit('back')" icon="PhCaretLeft" label="Kembali" class="mr-[10px]" outlined
+                  borderColor="border-adameds-300" textColor="text-adameds-300" />
               </div>
             </div>
-            <CustomButton
-              @click="emit('back')"
-              icon="PhCaretLeft"
-              label="Kembali"
-              class="mr-[10px]"
-              outlined
-              borderColor="border-adameds-300"
-              textColor="text-adameds-300"
-            />
-          </div>
-        </template>
-        <template #content>
-          <div class="flex flex-col gap-2.5">
-            <div class="flex gap-5 pt-2.5">
-              <!-- Tanggal Retur -->
-              <CustomDatePicker
-                v-model="tglRetur"
-                label="Tgl. Retur"
-                class="w-[150px]"
-              />
-              <!-- Alasan Retur -->
-              <CustomSelect
-                label="Alasan Retur"
-                class="w-[200px]"
-                v-model="alasanRetur"
-                :options="listAlasanReturs"
-                optionLabel="value"
-                optionValue="value"
-                place-holder="Pilih Alasan Retur"
-              />
-              <!-- Asal lokasi -->
-              <CustomSelect
-                label="Asal Lokasi Gudang"
-                class="w-[300px]"
-                v-model:modelValue="asalLokasiGudang"
-                :options="listAsalLokasiGudangs"
-                optionLabel="value"
-                optionValue="value"
-                place-holder="Pilih Asal Lokasi Gudang "
-              />
-              <!-- Catatan -->
-              <CustomTextfield
-                label="Catatan"
-                placeholder="Catatan"
-                class="grow"
-                v-model:modelValue="catatan"
-              />
+          </template>
+          <template #content>
+            <div class="flex flex-col gap-4 px-4">
+              <div class="grid grid-cols-4 gap-5">
+                <CustomDatePicker v-model="tglRetur" label="Tgl. Retur" :invalid="!!errors.tglRetur"
+                  :invalid-message="errors.tglRetur" />
+                <CustomSelect label="Alasan Retur" v-model="alasanRetur" :options="listAlasanReturs" optionLabel="value"
+                  optionValue="id" :invalid="!!errors.alasanRetur" :invalid-message="errors.alasanRetur" />
+                <CustomSelect label="Asal Lokasi Gudang" v-model="asalLokasiGudang" :options="StockLocationPayload"
+                  optionLabel="name" optionValue="uuid" :invalid="!!errors.asalLokasiGudang"
+                  :invalid-message="errors.asalLokasiGudang" />
+                <CustomTextfield label="Catatan" placeholder="Catatan" v-model="catatan" />
+              </div>
+            </div>
+          </template>
+          <template #collapseIcon>
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+          </template>
+          <template #expandIcon>
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
+          </template>
+        </CustomAccordion>
+      </template>
+
+      <template #content>
+        <div class="p-4">
+          <hr class="border-grey-200" />
+          <div v-if="FakturPayload" class="flex gap-5 text-sm mb-4">
+            <div class="flex flex-col flex-1 gap-4">
+              <div>
+                <p class="font-bold underline">No. Penerimaan</p>
+                <p>{{ FakturPayload.noPenerimaan }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">No. Faktur</p>
+                <p>{{ FakturPayload.noFaktur }}</p>
+              </div>
+            </div>
+            <div class="flex flex-col flex-1 gap-4">
+              <div>
+                <p class="font-bold underline">Tgl. Penerimaan</p>
+                <p>{{ epochToDate(FakturPayload.tanggalPenerimaan, "date") }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">Tgl. Faktur</p>
+                <p>{{ epochToDate(FakturPayload.tanggalFaktur, "date") }}</p>
+              </div>
+            </div>
+            <hr class="h-auto border-[0.5px] w-px border-adameds-300" />
+            <div class="flex flex-col flex-1 gap-4">
+              <div>
+                <p class="font-bold underline">Supplier</p>
+                <p>{{ FakturPayload.supplier }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">Jenis Item</p>
+                <p class="capitalize">{{ FakturPayload.jenisItem }}</p>
+              </div>
+            </div>
+            <hr class="h-auto border-[0.5px] w-px border-adameds-300" />
+            <div class="grid grid-cols-2 flex-1 gap-4">
+              <div>
+                <p class="font-bold underline">Kategori</p>
+                <p class="capitalize">{{ FakturPayload.kategoriItem }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">Jenis Stok</p>
+                <p>{{ FakturPayload.jenisStok }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">Cara Bayar</p>
+                <p class="capitalize">{{ FakturPayload.metodePembelian }}</p>
+              </div>
             </div>
           </div>
-          <hr class="mt-[20px] border-grey-200" />
-        </template>
-        <template #collapseIcon>
-          <CustomButton
-            icon="PhCaretUp"
-            backgroundColor="bg-adameds-75"
-            textColor="text-adameds-300"
-          />
-        </template>
-        <template #expandIcon>
-          <CustomButton
-            icon="PhCaretDown"
-            backgroundColor="bg-adameds-75"
-            textColor="text-adameds-300"
-          />
-        </template>
-      </CustomAccordion>
-    </template>
-    <template #content>
-      <DataTable
-        :pt="{ headerRow: 'text-SM' }"
-        v-if="isFakturDiterima"
-        :value="dataReturs.datas"
-        scrollable
-        scrollHeight="160px"
-        class="overflow-hidden text-xs rounded-lg bg-adameds-50"
-      >
-        <Column headerClass="bg-adameds-50 font-semibold text-SM" class="w-[20px]">
-          <template #header>
-            <div class="flex items-center">No.</div>
-          </template>
-          <template #body="slotProps">
-            <div class="flex items-center justify-center">
-              {{ slotProps.index + 1 }}
-            </div>
-          </template>
-        </Column>
 
-        <Column headerClass="bg-adameds-50">
-          <template #header>
-            <div class="font-semibold">Nama Item</div>
-          </template>
-          <template #body="slotProps">
-            {{ slotProps.data.namaItems }}
-          </template>
-        </Column>
+          <hr v-if="FakturPayload" class="mb-4 border-grey-200" />
 
-        <Column headerClass="bg-adameds-50 " class="w-[300px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">Exp Date</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-center">{{ slotProps.data.expDate }}</div>
-          </template>
-        </Column>
-        
-        <Column headerClass="bg-adameds-50 " class="w-[150px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">Diterima</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-center">{{ slotProps.data.diterima }}</div>
-          </template>
-        </Column>
+          <div class="overflow-hidden grow">
+            <DataTable v-if="FakturPayload" :value="itemFields" class="text-xs" scrollable scrollHeight="flex"
+              stripedRows>
+              <Column header="No." headerClass="bg-adameds-50 font-bold"><template #body="slotProps">{{
+                slotProps.index + 1 }}</template>
+              </Column>
+              <Column field="value.name" header="Nama Item" headerClass="bg-adameds-50 font-bold"></Column>
+              <Column header="Exp. Date" headerClass="bg-adameds-50 font-bold">
+                <template #body="slotProps">{{ slotProps.data.value.expDate }}</template>
+              </Column>
+              <Column field="value.qty" header="Diterima" headerClass="bg-adameds-50 font-bold"></Column>
+              <Column header="Retur" headerClass="bg-adameds-50 font-bold">
+                <template #body="slotProps">
+                  <CustomInputNumber class="w-[130px]" :show-buttons="true" :show-label="false"
+                    v-model="slotProps.data.value.qtyRetur" :invalid="!!errors[`items[${slotProps.index}].qtyRetur`]" />
+                </template>
+              </Column>
+              <Column field="value.konversi" header="Satuan/Isi" headerClass="bg-adameds-50 font-bold"></Column>
+              <Column field="value.satuanPenggunaan" header="Satuan Penggunaan" headerClass="bg-adameds-50 font-bold">
+              </Column>
+              <Column header="Harga Satuan" headerClass="bg-adameds-50 font-bold text-end">
+                <template #body="slotProps">{{ formatPrice(slotProps.data.value.hargaSatuan) }}</template>
+              </Column>
+              <Column header="Total" headerClass="bg-adameds-50 font-bold text-end">
+                <template #body="slotProps">{{ formatPrice(slotProps.data.value.qtyRetur * slotProps.data.value.harga)
+                }}</template>
+              </Column>
+              <Column header="Action" headerClass="bg-adameds-50 font-bold">
+                <template #body="slotProps">
+                  <div class="flex justify-center">
+                    <CustomButton background-color="bg-danger-300 rounded-lg" class="h-6 w-6 p-0"
+                      @click="remove(slotProps.index)">
+                      <PhTrash :size="15" weight="fill" class="text-white" />
+                    </custombutton>
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
+        <DialogInvoice v-model:isDialogVisible="isDialogVisible" @faktur-selected="handleFakturSelected" />
+      </template>
 
-        <Column headerClass="bg-adameds-50 " class="min-w-[150px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">Retur</div>
-          </template>
-          <template #body="slotProps">
-            <CustomInputNumber
-              :show-label="false"
-              v-model="slotProps.data.jumlahBeli"
-              :show-buttons="true"
-            />
-          </template>
-        </Column>
-
-        <Column headerClass="bg-adameds-50" class="max-w-[160px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">Satuan/Isi</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-center">{{ slotProps.data.satuanBeli }}</div>
-          </template>
-        </Column>
-
-        <Column headerClass="bg-adameds-50 " class="min-w-[180px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">
-              Satuan Penggunaan
-            </div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-center">
-              {{ slotProps.data.satuanPenggunaan }}
-            </div>
-          </template>
-        </Column>
-        <Column headerClass="bg-adameds-50 " class="min-w-[120px]">
-          <template #header>
-            <div class="w-full font-semibold text-end">Harga Satuan</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-end">Rp. {{ slotProps.data.hargaSatuan }}</div>
-          </template>
-        </Column>
-        <Column headerClass="bg-adameds-50 " class="min-w-[100px]">
-          <template #header>
-            <div class="w-full font-semibold text-end">Total</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-end">
-              Rp. {{ slotProps.data.jumlahPermintaan }}
-            </div>
-          </template>
-        </Column>
-        <Column headerClass="bg-adameds-50" class="min-w-[100px]">
-          <template #header>
-            <div class="w-full font-semibold text-center">Action</div>
-          </template>
-          <template #body="slotProps">
-            <div class="flex items-center justify-center">
-              <CustomButton
-                label=""
-                background-color="bg-danger-300 rounded-lg"
-                @click="deleteRetur(slotProps.index)"
-              >
-                <img src="@/assets/icons/delete.svg" alt="" width="14px" />
-              </CustomButton>
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-
-      <div v-if="!isFakturDiterima" class="flex justify-center p-5 border border-dashed rounded-lg border-adameds-300">
-        <CustomButton
-          icon="PhMagnifyingGlass"
-          label="Cari & Pilih Faktur"
-          borderColor="border-adameds-300"
-          textColor="text-adameds-300"
-          backgroundColor="bg-white"
-          class="mt-[20px] mb-[20px]"
-          @click="dialogCariFakturConfig"
-        />
-      </div>
-      <DialogCariFaktur v-model:isDialogVisible="isDialogVisible"
-        @send-to-tambah-retur="handleFakturData"
-      />
-    </template>
-    <template #footer>
-      <hr class="pt-2 border-grey-200" />
-      <div v-if="isFakturDiterima">
-        <div class="flex justify-between">
-          <div class="flex gap-6">
-            <CustomInputNumber v-model="diskon" class="" label="Diskon">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                >
-                  Rp.
+      <template #footer>
+        <div class="p-4" v-if="FakturPayload">
+          <hr class="mb-4" />
+          <div class="flex justify-between">
+            <div class="flex gap-6">
+              <CustomInputNumber v-model="diskon" label="Diskon" mode="currency" currency="IDR" locale="id-ID" />
+              <CustomInputNumber v-model="materai" label="Materai" mode="currency" currency="IDR" locale="id-ID" />
+              <div>
+                <label class="block font-semibold mb-[11px] text-normal">PPN 11%</label>
+                <div class="flex items-center">
+                  <CustomSwitch v-model="ppn" :show-label="false" :binary="true" :trueValue="11" :falseValue="0"
+                    sideLabel="" sideLabelTrue="" />
+                  <p class="ml-3 text-sm">{{ formatPrice(ppnAmount) }}</p>
                 </div>
-              </template>
-            </CustomInputNumber>
-            <CustomInputNumber v-model="materai" class="" label="Materai">
-              <template #prependText>
-                <div
-                  class="flex items-center justify-center px-3 overflow-hidden font-semibold leading-7 text-white border-r text-MD bg-adameds-300 rounded-l-md"
-                >
-                  Rp.
-                </div>
-              </template>
-            </CustomInputNumber>
-            <CustomSwitch
-              label="PPN 11%"
-              v-model="ppn"
-              sideLabel="Rp. 2,200"
-              sideLabelTrue="Rp. 2,200"
-            />
+              </div>
+            </div>
+            <div class="flex items-center gap-5">
+              <hr class="h-3/4 border-x-[1px] border-adameds-300" />
+              <div>
+                <div class="font-bold underline">Grand Total</div>
+                <div class="font-bold text-lg">{{ formatPrice(grandTotal) }}</div>
+              </div>
+            </div>
           </div>
-
-          <div class="flex items-center gap-5 pr-16">
-            <hr class="h-3/4 border-x-[1px] border-adameds-300" />
-            <div class="">
-              <div class="font-semibold underline text-SM">Grand Total</div>
-              <div class="font-normal text-MD">Rp. 111,0000</div>
+          <hr class="mt-4" />
+          <div class="flex items-center justify-between pt-5">
+            <div class="flex gap-6">
+              <div>
+                <p class="font-bold underline">Total Item</p>
+                <p>{{ itemFields.length }}</p>
+              </div>
+              <div>
+                <p class="font-bold underline">Petugas Retur</p>
+                <p>Nama Petugas</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <CustomButton label="Reset" outlined @click="resetAll" />
+              <CustomButton label="Simpan & Proses Retur" @click="onSubmit" />
             </div>
           </div>
         </div>
-        <hr class="mt-4 border-grey-200" />
-        <div class="flex items-center justify-between pt-5">
-          <div class="flex gap-6">
-            <div>
-              <div class="font-semibold underline text-SM">Total Item</div>
-              <div class="font-normal text-normal">
-                {{ dataReturs.datas.length }}
-              </div>
-            </div>
-            <div>
-              <div class="font-semibold underline text-SM">Petugas Retur</div>
-              <div class="font-normal text-normal">{{ petugasRetur }}</div>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <CustomButton
-              label="Reset"
-              textColor="text-[#9DA4B1]"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-[#9DA4B1]"
-              @click="resetFormFields"
-            />
-            <CustomButton label="Simpan Pembelian" @click="onSubmit" />
-          </div>
-        </div>
-      </div>
-    </template>
-  </Card>
+      </template>
+    </Card>
+  </div>
 </template>

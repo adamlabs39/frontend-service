@@ -65,6 +65,7 @@ const fetchDetail = async () => {
   }
 };
 
+// Confirm Delete / Cancel Purchase
 const confirmDelete = async () => {
   UseUtilsStore.setLoading(true);
   try {
@@ -203,7 +204,7 @@ onMounted(() => {
               <!-- Cito -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">Cito</p>
-                <p>{{ DetailPayload.cito }}</p>
+                <p>{{ DetailPayload.cito ? 'Ya' : '-' }}</p>
               </div>
               <!-- Catatan -->
               <div>
@@ -278,7 +279,7 @@ onMounted(() => {
                 </div>
                 <div class="ml-[50px]">
                   <p class="font-bold underline underline-offset-2">PPN 11%</p>
-                  <p>{{ formatPrice(DetailPayload.ppn) }}</p>
+                  <p>{{ formatPrice (DetailPayload.grandTotal * DetailPayload.ppn / 100)  }}</p>
                 </div>
               </div>
               <div class="flex">

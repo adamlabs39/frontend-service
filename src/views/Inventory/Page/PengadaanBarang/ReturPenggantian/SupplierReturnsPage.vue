@@ -35,6 +35,8 @@ const changeSection = (label: string) => {
   }
 };
 
+const selectedFaktur = ref<any>(null);
+
 // State Management
 const searchQuery = ref<string>("");
 const SupplierReturnsStore = useSupplierReturnsStore();
@@ -92,12 +94,18 @@ const handlePage = (event: any) => {
   fetchSupplierReturns();
 };
 
+//handle faktur selected
+const handleFakturSelected = (fakturData: any) => {
+  selectedFaktur.value = fakturData; // Simpan data faktur
+  changeSection('Tambah Retur'); // Pindah ke halaman Tambah Retur
+};
+
 // Selected Row
 const metaKey = ref(true);
 const selectedData = ref();
 
 const onRowSelect = (event: any) => {
-  selectedData.value = event.data;  
+  selectedData.value = event.data;
   changeSection('Retur & Penggantian Barang Supplier');
 };
 
@@ -126,102 +134,64 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchSupplierReturns"/>
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Pengadaan Barang',
-                    home: true,
-                  }"
-                />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchSupplierReturns" />
+                <CustomBreadCrumb :home="{
+                  label: 'Pengadaan Barang',
+                  home: true,
+                }" />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Retur & Penggantian Barang Supplier
                   </p>
                 </div>
               </div>
-              <CustomButton
-                @click="openDialog('add')"
-                icon="PhPlus"
-                label="Retur"
-                class="mr-[10px]"
-              />
+              <CustomButton @click="openDialog('add')" icon="PhPlus" label="Retur" class="mr-[10px]" />
             </div>
           </template>
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
-              <CustomTextfield
-                v-model="searchQuery"
-                label="Pencarian"
-                prependIcon="PhMagnifyingGlass"
-                placeholder="Cari No. Retur / Tujuan Retur"
-              />
+              <CustomTextfield v-model="searchQuery" label="Pencarian" prependIcon="PhMagnifyingGlass"
+                placeholder="Cari No. Retur / Tujuan Retur" />
             </div>
             <!-- Filter -->
             <div class="grid grid-cols-2 mt-[15px]">
-              <CustomButton
-                @click="funcOnSelected('retur')"
-                label="RETUR SUPPLIER"
-                :outlined="onSelected != 'retur'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'retur' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'retur' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="font-semibold"
-              />
-              <CustomButton
-                @click="funcOnSelected('terima')"
-                label="TERIMA PENGGANTI"
-                :outlined="onSelected != 'terima'"
-                borderColor="border-adameds-300"
+              <CustomButton @click="funcOnSelected('retur')" label="RETUR SUPPLIER" :outlined="onSelected != 'retur'"
+                borderColor="border-adameds-300" :textColor="onSelected != 'retur' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'retur' ? 'bg-transparent' : 'bg-adameds-300'" class="font-semibold" />
+              <CustomButton @click="funcOnSelected('terima')" label="TERIMA PENGGANTI"
+                :outlined="onSelected != 'terima'" borderColor="border-adameds-300"
                 :textColor="onSelected != 'terima' ? 'text-adameds-300' : 'text-white'"
                 :backgroundColor="onSelected != 'terima' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold "
-              />
+                class="ml-[20px] font-semibold " />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
       <template #content>
         <NoData v-if="!hasData" />
-        <DataTable
-          v-else
-          :value="SupplierReturnsPayload"
-          v-model:selection="selectedData"
-          :metaKeySelection="metaKey"
-          @rowClick="onRowSelect"
-          tableStyle="min-width: 50rem"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-          :dt="{
+        <DataTable v-else :value="SupplierReturnsPayload" v-model:selection="selectedData" :metaKeySelection="metaKey"
+          @rowClick="onRowSelect" tableStyle="min-width: 50rem" stripedRows class="text-xs" scrollable
+          scrollHeight="flex" :dt="{
             rowSelectedColor: '#000000',
             rowSelectedBackground: 'transparent',
             bodyCellSelectedBorderColor: 'transparent',
             bodyCellBorderColor: 'transparent',
             rowStripedBackground: '#F8F8F8',
-          }"
-        > 
+          }">
           <!-- Tanggal Pembelian -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -239,42 +209,14 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="mb-[5px]">{{ slotProps.data.noReturSupplier }}</div>
               <div class="flex flex-wrap">
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'medis'"
-                  label="MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="mr-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'non-medis'"
-                  label="NON-MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="mr-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItem == 'obat'"
-                  label="OBAT"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="mr-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItem == 'alkes'"
-                  label="ALKES"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="mr-[5px]"
-                />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'medis'" label="MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'non-medis'" label="NON-MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisItem == 'obat'" label="OBAT" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisItem == 'alkes'" label="ALKES" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
               </div>
             </template>
           </Column>
@@ -296,54 +238,27 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                <CustomChip
-                  v-if="slotProps.data.status == 'retur'"
-                  label="RETUR"
-                  :showCheckedIcon="false"
-                  borderColor="border-lavender-300"
-                  bgColor="bg-lavender-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'diterima'"
-                  label="RETUR"
-                  :showCheckedIcon="false"
-                  borderColor="border-success-300"
-                  bgColor="bg-success-300" 
-                  textColor="text-white"
-                />
+                <CustomChip v-if="slotProps.data.status == 'retur'" label="RETUR" :showCheckedIcon="false"
+                  borderColor="border-lavender-300" bgColor="bg-lavender-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.status == 'diterima'" label="RETUR" :showCheckedIcon="false"
+                  borderColor="border-success-300" bgColor="bg-success-300" textColor="text-white" />
               </div>
             </template>
           </Column>
         </DataTable>
-        <DialogInvoice
-          v-model:isDialogVisible="InvoiceDialog"
-          :method="dialogConfig.method"
-        />
+        <DialogInvoice v-model:isDialogVisible="InvoiceDialog" @faktur-selected="handleFakturSelected" />
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            :rows="SupplierReturnsProperties.page_size"
-            :totalRecords="SupplierReturnsProperties.total"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @page="handlePage"
-          />
+          <CustomPaginator :rows="SupplierReturnsProperties.page_size" :totalRecords="SupplierReturnsProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]" @page="handlePage" />
         </div>
       </template>
     </Card>
-    <AddSupplierReturns
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Retur'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      @back="closeSupplierReturns"
-    />
-    <DetailSupplierReturns
-      v-else-if="dataBreadCrumb[0].label == 'Retur & Penggantian Barang Supplier'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      :selectedData="selectedData"
-      @back="closeSupplierReturns"
-    />
+    <AddSupplierReturns v-else-if="dataBreadCrumb[0]?.label == 'Tambah Retur'" :faktur-payload="selectedFaktur"
+      @back="closeSupplierReturns" />
+
+    <DetailSupplierReturns v-else-if="dataBreadCrumb[0]?.label == 'Retur & Penggantian Barang Supplier'"
+      :selectedData="selectedData" @back="closeSupplierReturns" />
   </div>
 </template>

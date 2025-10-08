@@ -1,50 +1,37 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useUnitDeliveryVerificationStore } from "@/stores/inventory/unitDeliveryVerification";
+import { useRateHistoryStore } from "@/stores/inventory/rateHistory";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import Card from "primevue/card";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
 
 const props = defineProps({
-  pageType: {
+  selectedDataUuid: {
     type: String,
     required: true,
   },
-  selectedData: {
-    type: Object,
-    default: () => ({}),
-  },
 });
 
-// State Management
-const UnitDeliveryVerificationStore = useUnitDeliveryVerificationStore();
+const emit = defineEmits(["kembali"]);
+
+const RateHistoryStore = useRateHistoryStore();
 const UseUtilsStore = utilsStore();
 const DetailPayload = ref<any>({});
 
-const emit = defineEmits(["back"]);
-
-// Fetch Detail
 const fetchDetail = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await UnitDeliveryVerificationStore.getApiDetail(
-      props.selectedData.uuid
-    );
-    if (response && response.payload) {
-      DetailPayload.value = response.payload;
-    } else {
-      DetailPayload.value = {};
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
+    const response = await RateHistoryStore.getApiDetail(props.selectedDataUuid);
+    DetailPayload.value = response?.payload || {};
   } finally {
     UseUtilsStore.setLoading(false);
   }
 };
-
-const emit = defineEmits(["kembali"]);
 
 onMounted(() => {
   fetchDetail();
@@ -53,35 +40,22 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card
-      pt:body:class="h-full pt-0 pb-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden overflow-y-auto"
-    >
+    <Card pt:body:class="h-full pt-0" class="h-full overflow-hidden overflow-y-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
-            <div class="flex items-center justify-between w-full align-middle">
+            <div class="flex items-center justify-between w-full">
               <div class="flex items-center">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDetail"/>
                 <CustomBreadCrumb
-                  :home="{
-                    label: 'Riwayat Tarif',
-                    home: true,
-                  }"
-                  :model="[
-                    {
-                      label: detailData?.namaItem,
-                    },
-                  ]"
-                >
-                </CustomBreadCrumb>
+                  :home="{ label: 'Riwayat Tarif', home: true }"
+                  :model="[{ label: DetailPayload.name || '...' }]"
+                />
               </div>
               <CustomButton
                 @click="emit('kembali')"
                 icon="PhCaretLeft"
                 label="Kembali"
-                class="mr-[10px]"
                 outlined
                 borderColor="border-adameds-300"
                 textColor="text-adameds-300"
@@ -89,235 +63,62 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="flex flex-col gap-2.5 pt-2.5">
-              <div class="flex gap-5">
-                <div class="grid grid-rows-2">
-                  <div class="grid grid-cols-2">
-                    <div>
-                      <div class="font-semibold underline text-SM">
-                        Kode Item
-                      </div>
-                      <div class="font-normal text-normal">{{}}</div>
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2">
-                    <div>
-                      <div class="font-semibold underline text-SM">Pabrik</div>
-                      <div class="font-normal text-normal">{{}}</div>
-                    </div>
-                  </div>
+            <div class="flex gap-5 text-sm pt-4">
+                <div class="flex flex-col flex-1 gap-4">
+                    <div><p class="font-bold underline">Kode Item</p><p>{{ DetailPayload.kodeItem || '-' }}</p></div>
+                    <div><p class="font-bold underline">Pabrik</p><p>{{ DetailPayload.pabrik || 'Nama Pabrik' }}</p></div>
                 </div>
                 <hr class="h-auto border-[0.5px] w-px border-adameds-300" />
-                <div class="grid grid-cols-2 grow">
-                  <div>
-                    <div class="font-semibold underline text-SM">Kategori</div>
-                    <div class="font-normal text-normal">{{}}</div>
-                  </div>
-                  <div>
-                    <div class="font-semibold underline text-SM">
-                      Jenis Stok
-                    </div>
-                    <div class="font-normal text-normal">{{}}</div>
-                  </div>
-                  <div>
-                    <div class="font-semibold underline text-SM">
-                      Jenis Item
-                    </div>
-                    <div class="font-normal text-normal">{{}}</div>
-                  </div>
-                  <div>
-                    <div class="font-semibold underline text-SM">
-                      Satuan Penggunaan
-                    </div>
-                    <div class="font-normal text-normal">{{}}</div>
-                  </div>
+                <div class="grid grid-cols-2 flex-[2] gap-4">
+                    <div><p class="font-bold underline">Kategori</p><p class="capitalize">{{ DetailPayload.kategoriItem || '-' }}</p></div>
+                    <div><p class="font-bold underline">Jenis Stok</p><p>{{ DetailPayload.jenisStok || '-' }}</p></div>
+                    <div><p class="font-bold underline">Jenis Item</p><p class="capitalize">{{ DetailPayload.jenisItem || '-' }}</p></div>
+                    <div><p class="font-bold underline">Satuan Penggunaan</p><p>{{ DetailPayload.satuanPenggunaan || '-' }}</p></div>
                 </div>
                 <hr class="h-auto border-[0.5px] w-px border-adameds-300" />
-                <div class="grid grid-rows-2 min-w-[400px]">
-                  <div class="grid grid-cols-2">
-                    <div>
-                      <div class="font-semibold underline text-SM">
-                        Harga Dasar
-                      </div>
-                      <div class="font-normal text-normal">{{}}</div>
-                    </div>
-                    <div>
-                      <div class="font-semibold underline text-SM">HNA</div>
-                      <div class="font-normal text-normal">{{}}</div>
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2">
-                    <div>
-                      <div class="font-semibold underline text-SM">HPP</div>
-                      <div class="font-normal text-normal">{{}}</div>
-                    </div>
-                  </div>
+                <div class="grid grid-cols-2 flex-1 gap-4">
+                    <div><p class="font-bold underline">Harga Dasar</p><p>{{ formatPrice(DetailPayload.hargaDasar) }}</p></div>
+                    <div><p class="font-bold underline">HNA</p><p>{{ formatPrice(DetailPayload.hna) }}</p></div>
+                    <div><p class="font-bold underline">HPP</p><p>{{ formatPrice(DetailPayload.hpp) }}</p></div>
                 </div>
-              </div>
-              <hr class="border-grey-200" />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
+
       <template #content>
-        <CustomAccordion
-          :openWithHeader="false"
-          noBorder
-          initialState="0"
-          header-class="-mt-4"
-        >
-          <template #header>
-            <div class="-mx-4">Konversi Satuan</div>
-          </template>
-          <template #content>
-            <DataTable
-              :value="[]"
-              tableStyle="min-width: 50rem"
-              scrollable
-              class="-mx-[18px]"
-              scrollHeight="240px"
-              :pt="{ headerRow: 'text-SM' }"
-            >
-              <Column field="jenisSatuan" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Jenis Satuan</div>
+        <div class="px-4 space-y-4">
+            <CustomAccordion header-class="bg-white" content-class="bg-white -mt-4" initialState="0">
+                <template #header>Konversi Satuan</template>
+                <template #content>
+                    <DataTable :value="DetailPayload.konversiSatuan">
+                        <Column field="jenisSatuan" header="Jenis Satuan" headerClass="bg-adameds-50"></Column>
+                        <Column field="satuan" header="Satuan" headerClass="bg-adameds-50"></Column>
+                        <Column field="konversiIsi" header="Konversi Isi" headerClass="bg-adameds-50"></Column>
+                    </DataTable>
                 </template>
-                <template #body="slotProps">
-                  <div class="text-SM">
-                    {{ slotProps.data.jenisSatuan }}
-                  </div>
+            </CustomAccordion>
+            
+            <CustomAccordion header-class="bg-white" content-class="bg-white -mt-4" initialState="0">
+                <template #header>Riwayat Penerimaan Pembelian</template>
+                <template #content>
+                    <DataTable :value="DetailPayload.riwayatPenerimaan">
+                        <Column header="Tanggal" headerClass="bg-adameds-50"><template #body="slotProps">{{ epochToDate(slotProps.data.tanggal, "date") }}</template></Column>
+                        <Column field="noPo" header="No. PO" headerClass="bg-adameds-50"></Column>
+                        <Column header="Exp. Date" headerClass="bg-adameds-50"><template #body="slotProps">{{ epochToDate(slotProps.data.expDate, "date") }}</template></Column>
+                        <Column header="Harga Dasar" headerClass="bg-adameds-50"><template #body="slotProps">{{ formatPrice(slotProps.data.hargaDasar) }}</template></Column>
+                        <Column header="HNA" headerClass="bg-adameds-50"><template #body="slotProps">{{ formatPrice(slotProps.data.hna) }}</template></Column>
+                        <Column header="HPP" headerClass="bg-adameds-50"><template #body="slotProps">{{ formatPrice(slotProps.data.hpp) }}</template></Column>
+                    </DataTable>
                 </template>
-              </Column>
-              <Column field="satuan" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Satuan</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">
-                    {{ slotProps.data.satuan }}
-                  </div>
-                </template>
-              </Column>
-              <Column field="konversiIsi" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Konversi Isi</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">
-                    {{ slotProps.data.konversiIsi }} Pcs
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </template>
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-white"
-              textColor="text-adameds-300"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-white"
-              textColor="text-adameds-300"
-            />
-          </template>
-        </CustomAccordion>
-        <CustomAccordion
-          :openWithHeader="false"
-          noBorder
-          initialState="0"
-          header-class="-mt-4"
-        >
-          <template #header>
-            <div class="-mx-4">Riwayat Penerimaan Pembelian</div>
-          </template>
-          <template #content>
-            <DataTable
-              :value="[]"
-              tableStyle="min-width: 50rem"
-              scrollable
-              class="-mx-[18px]"
-              scrollHeight="240px"
-              :pt="{ headerRow: 'text-SM' }"
-            >
-              <Column field="tanggal" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Tanggal</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">
-                    {{ slotProps.data.tanggal }}
-                  </div>
-                </template>
-              </Column>
-              <Column field="expDate" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Exp Date</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">
-                    {{ slotProps.data.expDate }}
-                  </div>
-                </template>
-              </Column>
-              <Column field="hargaDasar" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">Harga Dasar</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">Rp. {{ slotProps.data.hargaDasar }}</div>
-                </template>
-              </Column>
-              <Column field="HNA" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">HNA</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">Rp. {{ slotProps.data.HNA }}</div>
-                </template>
-              </Column>
-              <Column field="HPP" headerClass="bg-adameds-50">
-                <template #header>
-                  <div class="font-semibold">HPP</div>
-                </template>
-                <template #body="slotProps">
-                  <div class="text-SM">Rp. {{ slotProps.data.HPP }}</div>
-                </template>
-              </Column>
-            </DataTable>
-          </template>
-          <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-white"
-              textColor="text-adameds-300"
-            />
-          </template>
-          <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-white"
-              textColor="text-adameds-300"
-            />
-          </template>
-        </CustomAccordion>
+            </CustomAccordion>
+        </div>
       </template>
     </Card>
   </div>

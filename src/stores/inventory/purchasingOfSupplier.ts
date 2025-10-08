@@ -16,6 +16,7 @@ export const usePurchasingOfSupplierStore = defineStore({
       return apiInventoryPost("/inventory/pengadaan/pembelian-barang", payload);
     },
     async putApi(uuid: string, payload = {}) {
+      
       return apiInventoryPut(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
     },
     async deleteApi(uuid: string, payload = {}) {

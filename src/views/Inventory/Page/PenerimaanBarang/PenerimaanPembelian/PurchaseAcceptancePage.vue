@@ -10,10 +10,12 @@ import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import DetailPurchaseAcceptancePage from "./DetailPurchaseAcceptancePage.vue";
+import AcceptedPurchaseDetailPage from "./AcceptedPurchaseDetailPage.vue";
 import NoData from "@/components/section/NoData.vue";
 
 // Filter
-const onSelected = ref<string>("pending");
+const onSelected = ref<string>("verifikasi");
 
 const funcOnSelected = (label: string) => {
   onSelected.value = label;
@@ -89,15 +91,16 @@ const handlePage = (event: any) => {
 };
 
 // Selected Row
-const metaKey = ref(true);
-const selectedData = ref();
+const isDetailView = ref(false);
+const selectedData = ref<any>(null);
+const metaKey = ref(false);
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Detail Penerimaan Pembelian');
 };
 
-const closePurchaseOfSupplierPage = () => {
+const closeDetailPage = () => {
   dataBreadCrumb.value.pop();
   fetchPurchasingOfSupplier();
 };
@@ -115,20 +118,19 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier"/>
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Penerimaan Barang',
-                    home: true,
-                  }"
-                />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier" />
+                <CustomBreadCrumb :home="{
+                  label: 'Penerimaan Barang',
+                  home: true,
+                }" />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Penerimaan Pembelian
@@ -139,73 +141,43 @@ onMounted(() => {
           </template>
           <template #content>
             <div class="grid grid-cols-1 mt-[10px]">
-              <CustomTextfield
-                v-model="searchQuery"
-                label="Pencarian"
-                prependIcon="PhMagnifyingGlass"
-                placeholder="Cari No. Pembelian"
-              />
+              <CustomTextfield v-model="searchQuery" label="Pencarian" prependIcon="PhMagnifyingGlass"
+                placeholder="Cari No. Pembelian" />
             </div>
 
             <!-- Filter -->
             <div class="grid grid-cols-2 mt-[15px]">
-              <CustomButton
-                @click="funcOnSelected('pending')"
-                label="BELUM DITERIMA"
-                :outlined="onSelected != 'pending'"
+              <CustomButton @click="funcOnSelected('verifikasi')" label="BELUM DITERIMA"
+                :outlined="onSelected != 'verifikasi'" borderColor="border-adameds-300"
+                :textColor="onSelected != 'verifikasi' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'verifikasi' ? 'bg-transparent' : 'bg-adameds-300'"
+                class="font-semibold" />
+              <CustomButton @click="funcOnSelected('diterima')" label="DITERIMA" :outlined="onSelected != 'diterima'"
                 borderColor="border-adameds-300"
-                :textColor="onSelected != 'pending' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'pending' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="font-semibold"
-              />
-              <CustomButton
-                @click="funcOnSelected('cancel')"
-                label="DITERIMA"
-                :outlined="onSelected != 'cancel'"
-                borderColor="border-adameds-300"
-                :textColor="onSelected != 'cancel' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="onSelected != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold "
-              />
+                :textColor="onSelected != 'diterima' ? 'text-adameds-300' : 'text-white'"
+                :backgroundColor="onSelected != 'diterima' ? 'bg-transparent' : 'bg-adameds-300'"
+                class="ml-[20px] font-semibold " />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
       <template #content>
         <NoData v-if="!hasData" />
-        <DataTable
-          v-else
-          :value="PurchaseAcceptancePayload"
-          v-model:selection="selectedData"
-          :metaKeySelection="metaKey"
-          @rowClick="onRowSelect"
-          tableStyle="min-width: 50rem"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-          :dt="{
+        <DataTable v-else :value="PurchaseAcceptancePayload" v-model:selection="selectedData"
+          :metaKeySelection="metaKey" @rowClick="onRowSelect" tableStyle="min-width: 50rem" stripedRows class="text-xs"
+          scrollable scrollHeight="flex" :dt="{
             rowSelectedColor: '#000000',
             rowSelectedBackground: 'transparent',
             bodyCellSelectedBorderColor: 'transparent',
             bodyCellBorderColor: 'transparent',
             rowStripedBackground: '#F8F8F8',
-          }"
-        > 
+          }">
           <!-- Tanggal Pembelian -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -223,22 +195,20 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
               <div class="flex flex-wrap">
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'medis'"
-                  label="MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'non-medis'"
-                  label="NON-MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'medis'" label="MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'non-medis'" label="NON-MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.jenisItem == 'obat'" label="OBAT" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
+                <CustomChip v-if="slotProps.data.jenisItem == 'alkes'" label="ALKES" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
+                <CustomChip v-if="slotProps.data.jenisStok == 'BPJS'" label="BPJS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
+                <CustomChip v-if="slotProps.data.jenisStok == 'UMUM'" label="UMUM" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
+                <CustomChip v-if="slotProps.data.jenisStok == 'ASR'" label="ASURANSI LAIN" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
               </div>
             </template>
           </Column>
@@ -260,30 +230,12 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                <CustomChip
-                  v-if="slotProps.data.status == 'pending'"
-                  label="PENGAJUAN"
-                  :showCheckedIcon="false"
-                  borderColor="border-grey-300"
-                  bgColor="bg-grey-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'cancel'"
-                  label="DIBATALKAN"
-                  :showCheckedIcon="false"
-                  borderColor="border-danger-300"
-                  bgColor="bg-danger-300" 
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'verifikasi'"
-                  label="DIVERIFIKASI"
-                  :showCheckedIcon="false"
-                  borderColor="border-info-300"
-                  bgColor="bg-info-300" 
-                  textColor="text-white"
-                />
+                <CustomChip v-if="slotProps.data.status == 'verifikasi'" label="BELUM DITERIMA "
+                  :showCheckedIcon="false" borderColor="border-grey-300" bgColor="bg-grey-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.status == 'cancel'" label="DIBATALKAN" :showCheckedIcon="false"
+                  borderColor="border-danger-300" bgColor="bg-danger-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.status == 'diterima'" label="DITERIMA" :showCheckedIcon="false"
+                  borderColor="border-grey-300" bgColor="bg-grey-300" textColor="text-white" />
               </div>
             </template>
           </Column>
@@ -291,14 +243,17 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            :rows="PurchaseAcceptanceProperties.page_size"
-            :totalRecords="PurchaseAcceptanceProperties.total"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @page="handlePage"
-          />
+          <CustomPaginator :rows="PurchaseAcceptanceProperties.page_size"
+            :totalRecords="PurchaseAcceptanceProperties.total" :rowsPerPageOptions="[10, 20, 30]" @page="handlePage" />
         </div>
       </template>
     </Card>
+
+    <template v-else>
+      <DetailPurchaseAcceptancePage v-if="selectedData.status === 'verifikasi'" :selectedDataUuid="selectedData.uuid"
+        @kembali="closeDetailPage" @diterima="closeDetailPage" />
+      <AcceptedPurchaseDetailPage v-else-if="selectedData.status === 'diterima'" :selectedDataUuid="selectedData.uuid"
+        @kembali="closeDetailPage" />
+    </template>
   </div>
 </template>
