@@ -256,7 +256,7 @@ const downloadExcel = async () => {
       Periode: "Periode*",
     });
 
-    // Add Empty Rows (4 empty rows to match the example)
+    // Sample Row (sesuai contoh gambar)
     data.push({
       No: "1",
       Kode: "AP001",
@@ -270,21 +270,53 @@ const downloadExcel = async () => {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-    // Column Widths
-    const columnWidths = data.reduce((widths: any, row: any) => {
-      Object.keys(row).forEach((key, colIdx) => {
-        const cellValue = row[key] ? row[key].toString() : "";
-        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
-      });
-      return widths;
-    }, []);
+    // Column Widths (A–F)
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 10 },
+    ];
 
-    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
 
-    // Append Worksheet to Workbook and Save
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
+
+    // Save workbook
     XLSX.utils.book_append_sheet(
       workbook,
       worksheet,
