@@ -3,13 +3,41 @@ import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
 import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, ref } from "vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
+import { useApmStore } from "@/stores/antrian/apm";
+import { utilsStore } from "@/stores/utils";
+import { useAuthStore } from "@/stores/auth";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
 
 const selectedType = ref<string | null>(null);
 const isDisabled = computed(() => !selectedType.value);
+
+const useUtilsStore = utilsStore();
+const apmStore = useApmStore();
+const authStore = useAuthStore();
+const apmFlow = useApmFlowStore();
+
+// const faskesUuid = computed(() => authStore.getFaskesUuid);
+
+const faskesProfile = localStorage.getItem("user");
+let faskesUuid = "";
+
+if (faskesProfile) {
+  try {
+    const parsed = JSON.parse(faskesProfile);
+    faskesUuid = parsed.faskesUuid; // atau parsed.faskesUuid tergantung field mana yg kamu mau
+  } catch (e) {
+    console.error("Gagal parse faskes_profile:", e);
+  }
+}
+
 const selectType = (type: string) => {
   selectedType.value = type;
 };
@@ -18,12 +46,145 @@ const handleHome = () => {
   router.push("/antrian/apm/aktif");
 };
 
-const handleData = () => {
-  router.push("/antrian/apm/aktif/pasien/jkn/data-pasien");
-};
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/jkn/berhasil");
-};
+// Validasi dinamis berdasarkan tipe yang dipilih
+const schema = toTypedSchema(
+  yup.object({
+    no_identity: yup
+      .string()
+      .required("Nomor identitas wajib diisi")
+      .test("by-type", "", function (val) {
+        const type = selectedType.value;
+        const value = (val ?? "").trim();
+
+        switch (type) {
+          case "BPJS":
+            return this.createError({
+              message: "Fitur BPJS belum tersedia",
+            });
+
+          case "KTP":
+            // 16 digit angka
+            return (
+              /^\d{16}$/.test(value) ||
+              this.createError({
+                message: "Nomor KTP harus terdiri dari 16 digit angka",
+              })
+            );
+
+          case "Passport":
+            // Must be 9 characters: 1 uppercase letter followed by 8 digits
+            return (
+              /^[A-Z]\d{8}$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor Passport harus terdiri dari 1 huruf besar diikuti 8 angka (contoh: A12345678)",
+              })
+            );
+
+          case "RM":
+            // format 01-02-10 => 8 karakter dengan 2 tanda dash
+            return (
+              /^\d{2}-\d{2}-\d{2}$/.test(value) ||
+              this.createError({
+                message:
+                  "Nomor RM harus terdiri dari 8 karakter dengan format 01-02-10 (2 tanda dash)",
+              })
+            );
+
+          case "Lainnya":
+          default:
+            // bebas (tidak ada validasi panjang/format)
+            return true;
+        }
+      }),
+  })
+);
+
+const { errors, handleSubmit, defineField, validateField, setFieldError } =
+  useForm({
+    validationSchema: schema,
+  });
+
+const [no_identity] = defineField("no_identity");
+
+watch(selectedType, async () => {
+  // Hapus pesan error lama (mis. dari Passport) saat pindah tipe
+  setFieldError("no_identity", undefined);
+
+  // Jika ada nilai yang sudah diinput, validasi ulang dengan aturan tipe baru
+  const current = (no_identity.value ?? "").toString().trim();
+  if (current) {
+    await validateField("no_identity");
+  }
+});
+
+const identityLabel = computed(() =>
+  selectedType.value ? `No. ${selectedType.value}` : "No."
+);
+
+// Submit handler
+const onSubmit = handleSubmit(async (values) => {
+  try {
+    useUtilsStore.setLoading(true);
+
+    let payload: Record<string, any> = {};
+
+    if (
+      selectedType.value === "KTP" ||
+      selectedType.value === "Lainnya" ||
+      selectedType.value === "Passport"
+    ) {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_identity: values.no_identity,
+        identity: selectedType.value,
+      };
+    } else if (selectedType.value === "RM") {
+      payload = {
+        faskes_uuid: faskesUuid,
+        no_rm: values.no_identity,
+      };
+    }
+
+    const response = await apmStore.checkPasien(payload);
+
+    if (selectedType.value === "RM") {
+      const msg = typeof response?.message === "string" ? response.message : "";
+      const noRmNull = response?.payload?.noRm == null;
+      if (msg === "Pasien belum terdaftar" || noRmNull) {
+        setFieldError("no_identity", "Pasien belum terdaftar");
+        return;
+      }
+    }
+
+    if (response?.payload && response.payload.uuid) {
+      apmFlow.setPatientStatus("success");
+      apmFlow.setIdentity(selectedType.value || "", values.no_identity);
+      apmFlow.setPatientData(response.payload);
+
+      router.push({
+        path: "/antrian/apm/aktif/pasien/jkn/data-pasien",
+      });
+    } else {
+      throw new Error("Patient not found");
+    }
+  } catch (error: any) {
+    if (selectedType.value === "RM") {
+      setFieldError("no_identity", error?.message || "Pasien belum terdaftar");
+      return;
+    }
+
+    apmFlow.setPatientStatus("not_found");
+    apmFlow.setIdentity(selectedType.value || "", values.no_identity);
+    apmFlow.setPatientData(null);
+
+    router.push({
+      path: "/antrian/apm/aktif/pasien/jkn/data-pasien",
+    });
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+});
 
 const props = defineProps({
   isDialogVisible: {
@@ -175,17 +336,21 @@ const props = defineProps({
                 ></div>
               </div>
             </div>
+            <!-- Input dengan validasi -->
             <CustomTextfield
               :disabled="isDisabled"
-              :label="`No. ${selectedType || ''}`"
-              :placeholder="`Masukkan No. KTP`"
-              class="w-2/5 mb-4"
+              v-model="no_identity"
+              :label="identityLabel"
+              :placeholder="`Masukkan ${identityLabel}`"
+              class="mb-4 w-2/5"
+              :invalid="!!errors.no_identity"
+              :invalidMessage="errors.no_identity"
             ></CustomTextfield>
             <CustomButton
               :disabled="isDisabled"
               label="Lanjutkan"
               class="w-2/5"
-              @click="handleData"
+              @click="onSubmit"
             />
           </div>
         </div>

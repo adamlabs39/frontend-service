@@ -72,8 +72,8 @@ const isChipSelected = (value: string) => {
   return chipValues.value.includes(value);
 };
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+const startDateFilter = ref<Date | null>(new Date());
+const endDateFilter = ref<Date | null>(new Date());
 const searchPatientFilter = ref<string>("");
 
 // emit event pencarian dan rentang tanggal
@@ -123,8 +123,8 @@ const onClickSearch = () => {
     emit("search", searchPatientFilter.value.trim(), getSelectedStatusCodes());
     emit(
       "dateRange",
-      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
-      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59))
+      dateToEpoch(setTimeForDate(startDateFilter.value as Date, 0, 0, 0)),
+      dateToEpoch(setTimeForDate(endDateFilter.value as Date, 23, 59, 59))
     );
   }
 };
