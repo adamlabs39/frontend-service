@@ -150,7 +150,7 @@ watch(
   >
     <template #header>
       <div v-if="method !== 'detail'" class="grid grid-cols-1">
-        <p>Tambah Data Aturan Pakai</p>
+        <p>{{ title }} Data Aturan Pakai</p>
       </div>
       <div v-if="method === 'detail'" class="grid grid-cols-1">
         <p>Detail Data Aturan Pakai</p>
