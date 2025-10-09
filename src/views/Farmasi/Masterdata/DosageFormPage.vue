@@ -61,12 +61,12 @@ const resetSearch = () => {
 };
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchDosageForm();
-  }, 500);
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchDosageForm();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
