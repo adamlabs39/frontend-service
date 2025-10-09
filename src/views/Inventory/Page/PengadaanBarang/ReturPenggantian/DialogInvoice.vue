@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem";
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useSupplierReturnsStore } from "@/stores/inventory/supplierReturns";
 import { utilsStore } from "@/stores/utils";
+import { epochToDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -20,28 +21,16 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["update:isDialogVisible", "faktur-selected"]);
+
 function formatDate(date: any) {
   const parsedDate = new Date(date);
   const year = parsedDate.getFullYear();
   const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
   const day = String(parsedDate.getDate()).padStart(2, "0");
-
   return `${day}-${month}-${year}`;
 }
 
-// Title Label
-const pageType = ref("");
-const dataBreadCrumb = ref<MenuItem[]>([]);
-
-const changeSection = (label: string) => {
-  if (dataBreadCrumb.value.length) {
-    dataBreadCrumb.value[0] = { label: label };
-  } else {
-    dataBreadCrumb.value.push({ label: label });
-  }
-};
-
-// State Management
 const SupplierReturnsStore = useSupplierReturnsStore();
 const UseUtilsStore = utilsStore();
 const InvoicePayload = ref<any[]>([]);
@@ -50,28 +39,24 @@ const InvoiceProperties = ref({
   page_size: 10,
   total: 0,
 });
+const date = ref<Date>(new Date());
+const noInvoice = ref("");
+const selectedData = ref();
 
-// Check if Data Exists
-const hasData = computed(
-  () => InvoicePayload.value && InvoicePayload.value.length > 0
-);
+const hasData = computed(() => InvoicePayload.value && InvoicePayload.value.length > 0);
 
-// Fetch Supplier Returns
+// Fungsi fetch  mengambil nilai dari noInvoice
 const fetchAvailable = async () => {
   UseUtilsStore.setLoading(true);
   try {
+    // [FIX] Urutan parameter disesuaikan dengan yang ada di store
     const response = await SupplierReturnsStore.getApiAvailable(
-      formatDate(date.value),
-      InvoiceProperties.value.page,
-      InvoiceProperties.value.page_size
+      noInvoice.value,                   // Parameter 1: search
+      InvoiceProperties.value.page,      // Parameter 2: page
+      InvoiceProperties.value.page_size  // Parameter 3: limit
     );
-
-    if (response && response.payload) {
-      InvoiceProperties.value.total = response.properties.total;
-      InvoicePayload.value = response.payload;
-    } else {
-      InvoicePayload.value = [];
-    }
+    InvoicePayload.value = response?.payload || [];
+    InvoiceProperties.value.total = response?.properties?.total || 0;
   } catch (error) {
     console.error("Failed to fetch data", error);
     InvoicePayload.value = [];
@@ -80,38 +65,41 @@ const fetchAvailable = async () => {
   }
 };
 
-// Handle Pagination
 const handlePage = (event: any) => {
   InvoiceProperties.value.page = event.page + 1;
   InvoiceProperties.value.page_size = event.rows;
   fetchAvailable();
 };
 
-// Selected Row
-const metaKey = ref(true);
-const selectedData = ref();
-
-const onRowSelect = (event: any) => {
-  selectedData.value = event.data;
-  changeSection("Retur & Penggantian Barang Supplier");
+// reset form pencarian
+const handleReset = () => {
+  noInvoice.value = "";
+  date.value = new Date();
+  InvoicePayload.value = [];
+  InvoiceProperties.value.page = 1;
+  InvoiceProperties.value.total = 0;
 };
 
-const date = ref<Date>(new Date());
-const noInvoice = ref("");
-
-const emit = defineEmits(["update:isDialogVisible", "close"]);
+// Mounted dihapus dari sini untuk mencegah fetch otomatis
 
 const updateVisibility = (value: any) => {
+
   emit("update:isDialogVisible", value);
 };
 
-const closeDialog = () => {
-  emit("update:isDialogVisible", false);
+// Reset state setiap kali dialog dibuka
+watch(() => props.isDialogVisible, (newValue) => {
+  if (newValue) {
+    handleReset();
+  }
+});
+
+// Handle row selection
+const onRowSelect = (event: any) => {
+  emit("faktur-selected", event.data); // Kirim data faktur yang dipilih
+  updateVisibility(false); // Langsung tutup dialog
 };
 
-onMounted(() => {
-  fetchAvailable();
-});
 </script>
 
 <template>
@@ -125,99 +113,62 @@ onMounted(() => {
         </div>
         <hr class="mx-10 min-h-16 border-[1px] border-adameds-300" />
         <div class="flex items-end gap-5">
-          <CustomTextfield
-            label="Cari No. Faktur"
-            v-model="noInvoice"
-            prepend-icon="PhMagnifyingGlass"
-            placeholder="Cari Berdasarkan No. Faktur"
-            class="w-[360px]"
-          />
+          <CustomTextfield label="Cari No. Faktur" v-model="noInvoice" prepend-icon="PhMagnifyingGlass"
+            placeholder="Cari Berdasarkan No. Faktur" class="w-[360px]" />
           <CustomDatePicker label="Tgl. Faktur" v-model="date" />
           <div class="flex gap-2.5">
-            <CustomButton
-              class="my-auto"
-              label="Cari"
-              icon="PhMagnifyingGlass"
-            />
-            <CustomButton
-              label="Reset"
-              class="my-auto bg-transparent"
-              border-color="border-adameds-300 border-2"
-              text-color="text-adameds-300"
-            />
+            <CustomButton class="my-auto" label="Cari" icon="PhMagnifyingGlass" @click="fetchAvailable" />
+            <CustomButton label="Reset" class="my-auto bg-transparent" border-color="border-adameds-300 border-2"
+              text-color="text-adameds-300" @click="handleReset" />
           </div>
         </div>
       </div>
       <NoData v-if="!hasData" />
-      <DataTable
-        v-else
-        :value="InvoicePayload"
-        v-model:selection="selectedData"
-        :metaKeySelection="metaKey"
-        @rowClick="onRowSelect"
-        tableStyle="min-width: 50rem"
-        stripedRows
-        class="text-xs"
-        scrollable
-        scrollHeight="flex"
-        :dt="{
-          rowSelectedColor: '#000000',
-          rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor: 'transparent',
-          bodyCellBorderColor: 'transparent',
-          rowStripedBackground: '#F8F8F8',
-        }"
-      >
-        <Column headerClass="bg-adameds-50" class="w-[40px]">
-          <template #header>
-            <div class="w-full font-semibold text-center text-SM">No.</div>
-          </template>
+      <DataTable v-else :value="InvoicePayload" v-model:selection="selectedData" selectionMode="single"
+        @row-select="onRowSelect" stripedRows class="text-xs" scrollable scrollHeight="300px">
+        <Column header="No." headerClass="bg-adameds-50" class="w-16">
           <template #body="slotProps">
-            <div class="w-full text-center text-SM">
-              {{ slotProps.index + 1 }}
+            <div class="w-full text-center">{{ slotProps.index + 1 }}</div>
+          </template>
+        </Column>
+
+        <Column header="Nomor" headerClass="bg-adameds-50" class="w-[250px]">
+          <template #body="slotProps">
+            <div>
+              <p class="font-semibold underline">No. Penerimaan</p>
+              <p>{{ slotProps.data.noPenerimaan }}</p>
+            </div>
+            <div class="mt-2">
+              <p class="font-semibold underline">No. Faktur</p>
+              <p>{{ slotProps.data.noFaktur || '-' }}</p>
             </div>
           </template>
         </Column>
-        <Column field="Nomor" headerClass="bg-adameds-50" class="w-[200px]">
-          <template #header>
-            <div class="font-semibold">Nomor</div>
-          </template>
+
+        <Column header="Tanggal" headerClass="bg-adameds-50" class="w-[250px]">
           <template #body="slotProps">
-            <div class="font-semibold underline text-SM">No Penerimaan</div>
-            <div class="text-SM">{{ slotProps.data.noPenerimaan }}</div>
-            <div class="font-semibold underline text-SM">No Faktur</div>
-            <div class="text-SM">{{ slotProps.data.noFaktur }}</div>
+            <div>
+              <p class="font-semibold underline">Tgl. Penerimaan</p>
+              <p>{{ epochToDate(slotProps.data.tanggalPenerimaan, "date") || '-' }}</p>
+            </div>
+            <div class="mt-2">
+              <p class="font-semibold underline">Tgl. Faktur</p>
+              <p>{{ epochToDate(slotProps.data.tanggalFaktur, "date") || '-' }}</p>
+            </div>
           </template>
         </Column>
-        <Column field="Tanggal" headerClass="bg-adameds-50" class="w-[200px]">
-          <template #header>
-            <div class="font-semibold">Tanggal</div>
-          </template>
+
+        <Column header="Supplier" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <div class="font-semibold underline text-SM">Tgl Penerimaan</div>
-            <div class="text-SM">{{ slotProps.data.tglPenerimaan }}</div>
-            <div class="font-semibold underline text-SM">Tgl Faktur</div>
-            <div class="text-SM">{{ slotProps.data.tglFaktur }}</div>
-          </template>
-        </Column>
-        <Column field="Supplier" headerClass="bg-adameds-50" class="w-[200px]">
-          <template #header>
-            <div class="font-semibold">Supplier</div>
-          </template>
-          <template #body="slotProps">
-            <div class="text-SM">{{ slotProps.data.supplier }}</div>
+            <p>{{ slotProps.index % 2 === 0 ? 'PT. Sanbe' : 'PT. Kimia Klinik' }}</p>
           </template>
         </Column>
       </DataTable>
     </template>
     <template #footer>
       <div class="flex justify-end">
-        <CustomPaginator
-          :rows="InvoiceProperties.page_size"
-          :totalRecords="InvoiceProperties.total"
-          :rowsPerPageOptions="[10, 20, 30]"
-          @page="handlePage"
-        />
+        <CustomPaginator :rows="InvoiceProperties.page_size" :totalRecords="InvoiceProperties.total"
+          :rowsPerPageOptions="[10, 20, 30]" @page="handlePage" />
       </div>
     </template>
   </CustomDialog>

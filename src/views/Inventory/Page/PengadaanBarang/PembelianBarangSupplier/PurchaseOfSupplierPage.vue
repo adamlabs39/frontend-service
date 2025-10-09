@@ -246,6 +246,7 @@ onMounted(() => {
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
+                  customClass="h-5"
                 />
                 <CustomChip
                   v-if="slotProps.data.kategoriItem == 'non-medis'"
@@ -254,6 +255,54 @@ onMounted(() => {
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
+                  customClass="h-5"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-5"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-5"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'BPJS'"
+                  label="BPJS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'UMUM'"
+                  label="UMUM"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'ASR'"
+                  label="ASURANSI LAIN"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
                 />
               </div>
             </template>
