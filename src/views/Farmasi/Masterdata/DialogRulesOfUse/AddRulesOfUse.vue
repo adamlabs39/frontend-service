@@ -29,17 +29,26 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Satuan harus diisi"),
-    name: yup.string().required("Nama Satuan harus diisi"),
-    periodeUnit: yup.string().required("Periode Unit harus diisi"),
-    periode: yup.number().required("Periode harus diisi"),
-    frekuensi: yup.number().required("Frekuensi harus diisi"),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode Satuan harus diisi"),
+      name: yup.string().required("Nama Satuan harus diisi"),
+      periodeUnit: yup.string().required("Periode Unit harus diisi"),
+      periode: yup.number().required("Periode harus diisi"),
+      frekuensi: yup.number().required("Frekuensi harus diisi"),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  setFieldError,
+} = useForm({
   validationSchema: schema,
 });
 const RulesOfUseStore = useRulesOfUseStore();
@@ -61,6 +70,15 @@ const optionsPeriode = ref([
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
+// Helper: terjemahkan error API ke bahasa Indonesia yang mudah dipahami
+const translateValidationError = (err: unknown) => {
+  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
+  if (rawMsg.includes("validation error")) {
+    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
+  }
+  return "Gagal menyimpan data. Silakan coba lagi.";
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (method.value === "edit") {
@@ -76,7 +94,9 @@ const onSubmit = handleSubmit(async (values: any) => {
       emit("data-updated");
     }
     closeDialog();
-  } catch (error) {
+  } catch (error: any) {
+    // Menampilkan pesan error ramah pengguna di field Kode
+    setFieldError("code", translateValidationError(error));
     console.error("Failed to process the data:", error);
   }
 });
@@ -125,23 +145,23 @@ watch(
 <template>
   <CustomDialog
     :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
+    @update:visible="updateVisibility"
     width="600px"
-    >
+  >
     <template #header>
-        <div v-if="method !== 'detail'" class="grid grid-cols-1">
-            <p>Tambah Data Aturan Pakai</p>
-        </div>
-        <div v-if="method === 'detail'" class="grid grid-cols-1">
-            <p>Detail Data Aturan Pakai</p>
-        </div>
+      <div v-if="method !== 'detail'" class="grid grid-cols-1">
+        <p>Tambah Data Aturan Pakai</p>
+      </div>
+      <div v-if="method === 'detail'" class="grid grid-cols-1">
+        <p>Detail Data Aturan Pakai</p>
+      </div>
     </template>
     <template #body>
       <div v-if="method !== 'detail'">
         <div class="grid grid-cols-[30%,70%]">
           <div class="mt-[20px]">
             <CustomTextfield
-              v-model = "code"
+              v-model="code"
               :invalid="!!errors.code"
               :invalidMessage="errors.code"
               label="Kode Aturan Pakai"
@@ -151,7 +171,7 @@ watch(
           </div>
           <div class="mt-[20px]">
             <CustomTextfield
-              v-model = "name"
+              v-model="name"
               :invalid="!!errors.name"
               :invalidMessage="errors.name"
               label="Nama Aturan Pakai"
@@ -175,7 +195,7 @@ watch(
           </div>
           <div class="ml-[10px]">
             <CustomInputNumber
-              v-model = "frekuensi"
+              v-model="frekuensi"
               :invalid="!!errors.frekuensi"
               :invalidMessage="errors.frekuensi"
               label="Frekuensi"
@@ -187,7 +207,7 @@ watch(
           </div>
           <div class="ml-[10px]">
             <CustomInputNumber
-              v-model = "periode"
+              v-model="periode"
               :invalid="!!errors.periode"
               :invalidMessage="errors.periode"
               label="Periode"
@@ -197,34 +217,42 @@ watch(
           </div>
         </div>
         <div class="grid grid-cols-1 p-3 rounded-lg bg-adameds-50 mt-[20px]">
+          <div>
+            <p>Contoh Pengisian Aturan Pakai :</p>
+          </div>
+          <hr class="mt-[10px] border border-slate-300" />
+          <div class="grid grid-cols-[30%,30%,10%,30%] mt-[10px]">
             <div>
-              <p>Contoh Pengisian Aturan Pakai :</p>
+              <p class="text-xs font-bold underline underline-offset-2">
+                Periode Unit
+              </p>
+              <p class="">Hari</p>
             </div>
-            <hr class="mt-[10px] border border-slate-300"/>
-            <div class="grid grid-cols-[30%,30%,10%,30%] mt-[10px]">
-              <div>
-                  <p class="text-xs font-bold underline underline-offset-2">Periode Unit</p>
-                  <p class="">Hari</p>
-              </div>
-              <div class="ml-[10px]">
-                  <p class="text-xs font-bold underline underline-offset-2">Frekuensi</p>
-                  <p>3</p>
-              </div>
-              <div class="text-center ml-[10px]">
-                  <p class="font-bold mt-[10px]">X</p>
-              </div>
-              <div class="ml-[10px]">
-                  <p class="text-xs font-bold underline underline-offset-2">Periode</p>
-                  <p>1</p>
-              </div>
+            <div class="ml-[10px]">
+              <p class="text-xs font-bold underline underline-offset-2">
+                Frekuensi
+              </p>
+              <p>3</p>
             </div>
-            <div class="grid grid-cols-1 rounded-lg bg-adameds-300 mt-[20px]">
-              <div class="mt-[5px] ml-[10px] mb-[5px]">
-                <p class="italic font-semibold text-white">Cara Baca : sehari 3 kali</p>
-              </div>
+            <div class="text-center ml-[10px]">
+              <p class="font-bold mt-[10px]">X</p>
             </div>
+            <div class="ml-[10px]">
+              <p class="text-xs font-bold underline underline-offset-2">
+                Periode
+              </p>
+              <p>1</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 rounded-lg bg-adameds-300 mt-[20px]">
+            <div class="mt-[5px] ml-[10px] mb-[5px]">
+              <p class="italic font-semibold text-white">
+                Cara Baca : sehari 3 kali
+              </p>
+            </div>
+          </div>
         </div>
-        <hr class="mt-[20px] border border-slate-300"/>
+        <hr class="mt-[20px] border border-slate-300" />
         <div class="grid grid-cols-1 mt-[15px]">
           <div>
             <CustomSwitch
@@ -275,10 +303,12 @@ watch(
             <p class="mt-[10px]">: {{ payload.periode }}</p>
           </div>
         </div>
-        <hr class="mt-[20px] border border-slate-300"/>
+        <hr class="mt-[20px] border border-slate-300" />
         <div class="grid grid-cols-1">
           <div class="flex">
-            <p class="mt-[20px] font-bold">Status <span class="font-normal ml-[170px]">:</span></p>
+            <p class="mt-[20px] font-bold">
+              Status <span class="font-normal ml-[170px]">:</span>
+            </p>
             <CustomChip
               :label="status ? 'AKTIF' : 'NON-AKTIF'"
               :textColor="status ? 'text-white' : 'text-[#80868d]'"
@@ -303,9 +333,10 @@ watch(
             borderColor="border-2 border-grey-200"
             @click="resetForm"
           />
-          <CustomButton 
+          <CustomButton
             v-if="method !== 'detail'"
-            label="Simpan" @click="onSubmit"
+            label="Simpan"
+            @click="onSubmit"
           />
           <CustomButton
             v-if="method === 'detail'"
