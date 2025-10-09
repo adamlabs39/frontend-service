@@ -53,13 +53,20 @@ const fetchSatuan = async () => {
   }
 };
 
+// Reset search function
+const resetSearch = () => {
+  searchQuery.value = "";
+  UnitProperties.value.page = 1;
+  fetchSatuan();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchSatuan();
-  }, 500);
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchSatuan();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -236,7 +243,12 @@ const downloadExcel = async () => {
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    data.push({ No: "1", Kode: "KODE-001", Nama: "Nama Satuan 1", Satuan: "Aktif"});
+    data.push({
+      No: "1",
+      Kode: "KODE-001",
+      Nama: "Nama Satuan 1",
+      Satuan: "Aktif",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
@@ -257,7 +269,11 @@ const downloadExcel = async () => {
     const range = XLSX.utils.decode_range("A1:C5");
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Satuan");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Satuan"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Satuan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -271,13 +287,21 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchSatuan" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchSatuan"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
@@ -290,7 +314,11 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Satuan</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Satuan
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -302,13 +330,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
                 label="Cari Satuan"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Satuan"
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchSatuan"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
           </template>
           <template #collapseIcon>
@@ -343,11 +388,25 @@ onMounted(() => {
               <div class="">No.</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.index + 1 }}</div>
+              <div class="">
+                {{
+                  (UnitProperties.page - 1) * UnitProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
+              </div>
             </template>
           </Column>
-          <Column field="code" header="Kode Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="name" header="Nama Satuan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Satuan"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
+          <Column
+            field="name"
+            header="Nama Satuan"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <Column field="satuanDosis" headerClass="bg-adameds-50">
             <template #header>
               <div class="w-full font-semibold text-center text-SM">
@@ -358,9 +417,17 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.satuanDosis ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.satuanDosis ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.satuanDosis ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.satuanDosis ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.satuanDosis ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.satuanDosis ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.satuanDosis
+                      ? 'border-none'
+                      : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.satuanDosis ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -377,9 +444,15 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.editable ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.editable ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.editable ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.editable ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.editable ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.editable ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.editable ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.editable ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -394,9 +467,15 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -421,7 +500,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
