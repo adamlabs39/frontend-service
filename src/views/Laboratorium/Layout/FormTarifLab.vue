@@ -1554,7 +1554,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarif || "-" }}
+                      {{ slotProps.data.tarif }}
                     </template>
                   </Column>
                 </DataTable>
@@ -1635,7 +1635,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarif || "-" }}
+                      {{ slotProps.data.tarif }}
                     </template>
                   </Column>
                 </DataTable>
