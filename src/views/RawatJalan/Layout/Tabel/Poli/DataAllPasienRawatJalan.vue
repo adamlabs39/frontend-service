@@ -280,6 +280,12 @@ watch(
   </DataTable>
   <NoData v-else />
   <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="selectedPatientForRM" />
+   <!-- <MedicalRecord 
+  v-if="selectedPatientForRM && selectedPatientForRM.uuid"
+  ref="medicalRecord" 
+  rmType="rawat-jalan" 
+  :patientData="selectedPatientForRM" 
+/> -->
 </template>
 
 <style>

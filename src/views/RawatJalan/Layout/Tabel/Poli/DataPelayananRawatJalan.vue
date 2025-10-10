@@ -414,6 +414,7 @@ const resetSelection = () => {
   <!-- Else -->
   <NoData v-else />
   <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="selectedPatientForRM" />
+   
 </template>
 
 <style>

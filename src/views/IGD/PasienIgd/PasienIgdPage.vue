@@ -364,7 +364,7 @@ const fetchPraktisiData = async () => {
               </span>
             </div>
             <div class="text-XS">
-              {{ slotProps.data.patient.address.full_address }}
+              {{ slotProps.data.patient.address.fullAddress }}
             </div>
             <div class="flex flex-wrap">
               <!-- <PhUserCirclePlus
