@@ -6,8 +6,10 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import TambahPermintaanBarang from "./Layout/PermintaanBarang/TambahPermintaanBarang.vue";
 
 const buttonSelect = ref("permintaan-barang");
+const searchQuery = ref("");
 
 const tableData = ref([
   {
@@ -81,6 +83,8 @@ const PermintaanBarangProperties = ref({
   page_size: 10,
   total: 100,
 });
+
+const showTambah = ref(false);
 </script>
 
 <template>
@@ -89,6 +93,7 @@ const PermintaanBarangProperties = ref({
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
+      v-if="!showTambah"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -116,10 +121,10 @@ const PermintaanBarangProperties = ref({
                 </div>
               </div>
               <CustomButton
-                @click="openDialog('add', 'Tambah')"
                 icon="PhPlus"
                 label="Data"
                 class="mr-[10px]"
+                @click="showTambah = true"
               />
             </div>
           </template>
@@ -291,6 +296,7 @@ const PermintaanBarangProperties = ref({
         </div>
       </template>
     </Card>
+    <TambahPermintaanBarang @back="showTambah = false" v-else />
   </div>
 </template>
 
