@@ -16,12 +16,14 @@ export const useTarifPemeriksaanStore = defineStore({
         page?: number;
         limit?: number;
         name?: string;
+        penjamins?: string;
+        pelayanans?: string;
         payload?: object;
       } = {}
     ) {
-      const { page = 1, limit = 10, name = "", payload = {} } = params;
+      const { page = 1, limit = 10, name = "", penjamins = "", pelayanans = "", payload = {} } = params;
       return apiLaboratoriumGet(
-        `/lab/tarif-lab?page=${page}&limit=${limit}&name=${name}`,
+        `/lab/tarif-lab?page=${page}&limit=${limit}&name=${name}&penjamin_uuids=${penjamins}&pelayanans=${pelayanans}`,
         payload
       );
     },
