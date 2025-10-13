@@ -92,13 +92,20 @@ const fetchStockLocation = async () => {
   }
 };
 
+const resetSearch = () => {
+  searchQuery.value = "";
+  selectedFilteronStokLocationSelect.value = [];
+  StockLocationProperties.value.page = 1;
+  fetchStockLocation();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchStockLocation();
-  }, 500);
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchStockLocation();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -297,8 +304,41 @@ const downloadExcel = async () => {
 
     worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
 
     // Append Worksheet to Workbook and Save
     XLSX.utils.book_append_sheet(
@@ -362,15 +402,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
-                @update:model-value="searchData"
-                label="Cari Lokasi Stok"
+                label="Cari Manufaktur"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Lokasi Stok"
-                class=""
+                placeholder="Cari Nama Manufaktur"
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchStockLocation"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
             <!-- Filter Jenis Lokasi -->
             <div class="flex mb-[10px] mt-5">
