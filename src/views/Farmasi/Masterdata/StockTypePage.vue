@@ -60,12 +60,12 @@ const resetSearch = () => {
 };
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchStockType();
-  }, 500);
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchStockType();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
