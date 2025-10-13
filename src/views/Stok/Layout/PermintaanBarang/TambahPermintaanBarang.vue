@@ -154,22 +154,28 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                   />
                 </div>
               </div>
-              <div class="flex gap-2">
-                <CustomSelect
-                  class="w-full"
-                  label="Tujuan Permintaan"
-                  :options="[{ label: 'Unit 1', value: '1' }]"
-                />
-                <CustomSelect
-                  class="w-full"
-                  label="Catatan"
-                  :options="[{ label: 'Unit 1', value: '1' }]"
-                />
-                <CustomSwitch
-                  v-model="jenisItemSwitch"
-                  class="w-full"
-                  label="CITO"
-                />
+              <div class="grid grid-cols-12 gap-3 items-end">
+                <div class="col-span-6">
+                  <CustomSelect
+                    class="w-full"
+                    label="Tujuan Permintaan"
+                    :options="[{ label: 'Unit 1', value: '1' }]"
+                  />
+                </div>
+                <div class="col-span-5">
+                  <CustomSelect
+                    class="w-full"
+                    label="Catatan"
+                    :options="[{ label: 'Unit 1', value: '1' }]"
+                  />
+                </div>
+                <div class="col-span-1">
+                  <CustomSwitch
+                    v-model="jenisItemSwitch"
+                    class="w-auto"
+                    label="Cito"
+                  />
+                </div>
               </div>
             </div>
           </template>
