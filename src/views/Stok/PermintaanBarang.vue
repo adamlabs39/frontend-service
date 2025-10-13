@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
@@ -7,6 +7,7 @@ import { ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import TambahPermintaanBarang from "./Layout/PermintaanBarang/TambahPermintaanBarang.vue";
+import DetailPermintaanBarang from "./Layout/PermintaanBarang/DetailPermintaanBarang.vue";
 
 const buttonSelect = ref("permintaan-barang");
 const searchQuery = ref("");
@@ -85,6 +86,21 @@ const PermintaanBarangProperties = ref({
 });
 
 const showTambah = ref(false);
+const showDetail = ref(false);
+
+const selectedRow = ref<any | null>(null);
+
+const handlePage = (event: any) => {
+  PermintaanBarangProperties.value.page = event.page + 1;
+  PermintaanBarangProperties.value.page_size = event.rows;
+  // fetch data here if needed
+};
+
+const handleRowClick = (event: any) => {
+  selectedRow.value = event?.data;
+  showDetail.value = true;
+  console.log("Navigating to detail with data:", selectedRow.value);
+};
 </script>
 
 <template>
@@ -93,7 +109,7 @@ const showTambah = ref(false);
       pt:body:class="h-full pt-0 overflow-auto"
       pt:content:class="h-full overflow-hidden"
       class="h-full overflow-hidden"
-      v-if="!showTambah"
+      v-if="!showTambah && !showDetail"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -217,6 +233,7 @@ const showTambah = ref(false);
           scrollable
           scrollHeight="flex"
           :value="tableData"
+          @row-click="handleRowClick"
         >
           <Column
             field="tanggal"
@@ -296,7 +313,15 @@ const showTambah = ref(false);
         </div>
       </template>
     </Card>
-    <TambahPermintaanBarang @back="showTambah = false" v-else />
+    <!-- Detail -->
+    <DetailPermintaanBarang
+      v-else-if="showDetail"
+      :data="selectedRow"
+      @back="showDetail = false"
+    />
+
+    <!-- Tambah -->
+    <TambahPermintaanBarang v-else @back="showTambah = false" />
   </div>
 </template>
 

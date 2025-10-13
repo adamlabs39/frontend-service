@@ -9,6 +9,9 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
+// Terima data dari list
+const props = defineProps<{ data: any }>();
+
 const emit = defineEmits(["back"]);
 
 const searchQuery = ref("");
@@ -84,6 +87,10 @@ onBeforeUnmount(() => {
 
 // Re-evaluasi saat jumlah baris berubah
 watch(tableRows, () => nextTick(updateSticky), { deep: true });
+
+onMounted(() => {
+  console.log("DetailPermintaanBarang menerima data:", props.data);
+});
 </script>
 
 <template>
@@ -101,7 +108,7 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Permintaan Unit',
+                    label: 'Permintaan Unit Detail',
                     home: true,
                   }"
                 />
@@ -196,10 +203,7 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
         </CustomAccordion>
       </template>
       <template #content>
-        <div
-          ref="contentRef"
-          class="flex-1 flex flex-col overflow-auto min-h-0"
-        >
+        <div class="flex-1 flex flex-col overflow-auto min-h-0">
           <div class="flex-none">
             <DataTable
               :value="tableRows"
@@ -240,21 +244,6 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                 </template>
               </Column>
             </DataTable>
-          </div>
-          <div
-            :class="[
-              'mt-3 flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300 flex-shrink-0',
-              isSticky ? 'sticky bottom-0 bg-white' : '',
-            ]"
-          >
-            <CustomButton
-              icon="PhPlus"
-              label="Tambah Item"
-              borderColor="border-adameds-300"
-              textColor="text-adameds-300"
-              backgroundColor="bg-white"
-              @click="addRow"
-            />
           </div>
         </div>
       </template>
