@@ -101,7 +101,7 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Permintaan Unit',
+                    label: 'Permintaan Barang',
                     home: true,
                   }"
                 />

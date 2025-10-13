@@ -8,15 +8,28 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import DeleteDialog from "./DeleteDialog.vue";
 
 // Terima data dari list
 const props = defineProps<{ data: any }>();
 
-const emit = defineEmits(["back"]);
+const isDeleteDialogVisible = ref(false);
 
-const searchQuery = ref("");
-const buttonSelect = ref("permintaan-barang");
-const jenisItemSwitch = ref(false);
+// Function to show cancel dialog
+const showCancelDialog = () => {
+  isDeleteDialogVisible.value = true;
+};
+
+// Function to handle cancellation
+const handleCancellation = (alasan: string) => {
+  console.log("Permintaan dibatalkan dengan alasan:", alasan);
+  // Add your cancellation logic here
+  // For example: call API to cancel the request
+  // Then navigate back or update the status
+  emit("back");
+};
+
+const emit = defineEmits(["back"]);
 
 // Kontainer konten untuk mendeteksi overflow
 const contentRef = ref<HTMLElement | null>(null);
@@ -45,35 +58,6 @@ const tableRows = ref([
     jumlahPermintaan: 0,
   },
 ]);
-
-const addRow = () => {
-  const next = tableRows.value.length + 1;
-  tableRows.value.push({
-    no: next,
-    namaItem: "",
-    minStok: 0,
-    maxStok: 0,
-    stokPermintaan: 0,
-    satuanIsi: "",
-    hargaDasar: 0,
-    jumlahPermintaan: 0,
-  });
-};
-
-const resetTable = () => {
-  tableRows.value = [
-    {
-      no: 1,
-      namaItem: "",
-      minStok: 0,
-      maxStok: 0,
-      stokPermintaan: 0,
-      satuanIsi: "",
-      hargaDasar: 0,
-      jumlahPermintaan: 0,
-    },
-  ];
-};
 
 onMounted(() => {
   nextTick(updateSticky);
@@ -108,7 +92,7 @@ onMounted(() => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Permintaan Unit Detail',
+                    label: 'Permintaan Barang',
                     home: true,
                   }"
                 />
@@ -124,6 +108,14 @@ onMounted(() => {
                     Permintaan Unit
                   </p>
                 </div>
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
+                <div class="px-2">
+                  <CustomButton :label="props.data.permintaan" />
+                </div>
               </div>
               <CustomButton
                 @click="emit('back')"
@@ -135,53 +127,36 @@ onMounted(() => {
           </template>
           <template #content>
             <div class="py-3 space-y-3">
-              <div class="flex gap-2">
-                <div class="flex items-end">
-                  <CustomDatePicker class="w-36" label="Tgl. Permintaan" />
-                  <div class="flex items-center">
-                    <PhMinus :size="32" />
-                    <CustomDatePicker class="w-36" :showLabel="false" />
-                  </div>
+              <div class="flex">
+                <div class="flex flex-col w-full">
+                  <div class="font-bold text-sm underline">Tgl. Permintaan</div>
+                  <div>{{ props.data.tanggal }}</div>
                 </div>
                 <div class="flex gap-2 w-full">
-                  <CustomSelect
-                    class="w-full"
-                    label="Kategori Item"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
-                  <CustomSelect
-                    class="w-full"
-                    label="Kategori Item"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
-                  <CustomSelect
-                    class="w-full"
-                    label="Jenis Item"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
+                  <div class="flex flex-col w-full">
+                    <div class="font-bold text-sm underline">Kategori Item</div>
+                    <div>{{ props.data.kategoriItem }}</div>
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <div class="font-bold text-sm underline">Jenis Stok</div>
+                    <div>{{ props.data.jenisStok }}</div>
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <div class="font-bold text-sm underline">Jenis Item</div>
+                    <div>{{ props.data.jenisItem }}</div>
+                  </div>
                 </div>
               </div>
-              <div class="grid grid-cols-12 gap-3 items-end">
-                <div class="col-span-6">
-                  <CustomSelect
-                    class="w-full"
-                    label="Tujuan Permintaan"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
+              <div class="flex gap-3">
+                <div class="flex flex-col w-full">
+                  <div class="font-bold text-sm underline">
+                    Tujuan Permintaan
+                  </div>
+                  <div>{{ props.data.kategoriItem }}</div>
                 </div>
-                <div class="col-span-5">
-                  <CustomSelect
-                    class="w-full"
-                    label="Catatan"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
-                </div>
-                <div class="col-span-1">
-                  <CustomSwitch
-                    v-model="jenisItemSwitch"
-                    class="w-auto"
-                    label="Cito"
-                  />
+                <div class="flex flex-col w-full">
+                  <div class="font-bold text-sm underline">Catatan</div>
+                  <div>{{ props.data.catatan }}</div>
                 </div>
               </div>
             </div>
@@ -206,42 +181,22 @@ onMounted(() => {
         <div class="flex-1 flex flex-col overflow-auto min-h-0">
           <div class="flex-none">
             <DataTable
-              :value="tableRows"
+              :value="props.data.items"
               stripedRows
               scrollable
               class="text-xs h-full"
             >
               <Column header="No" field="no" />
-              <Column header="Nama Item" field="namaItem">
-                <template #body>
-                  <CustomSelect
-                    :showLabel="false"
-                    class="w-full"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
-                </template>
-              </Column>
+              <Column header="Nama Item" field="namaItem"> </Column>
               <Column header="Min. Stok" field="minStok" />
               <Column header="Max. Stok" field="maxStok" />
-              <Column header="Stok Ketika Permintaan" field="stokPermintaan" />
-              <Column header="Satuan/Isi" field="satuanIsi">
-                <template #body>
-                  <CustomSelect
-                    :showLabel="false"
-                    class="w-full"
-                    :options="[{ label: 'Unit 1', value: '1' }]"
-                  />
-                </template>
-              </Column>
+              <Column
+                header="Stok Ketika Permintaan"
+                field="stokKetikaPermintaan"
+              />
+              <Column header="Satuan/Isi" field="satuanIsi"> </Column>
               <Column header="Harga Dasar" field="hargaDasar" />
               <Column header="Jumlah Permintaan" field="jumlahPermintaan">
-                <template #body>
-                  <CustomInputNumber :showLabel="false" class="w-full">
-                    <template #appendText>
-                      <div class="flex items-center mr-2">Box</div>
-                    </template>
-                  </CustomInputNumber>
-                </template>
               </Column>
             </DataTable>
           </div>
@@ -261,21 +216,19 @@ onMounted(() => {
           </div>
           <div class="flex gap-3">
             <CustomButton
-              label="Reset"
-              @click="resetTable"
-              backgroundColor="bg-white"
-              borderColor="border-grey-500"
-              textColor="text-grey-500"
-            />
-            <CustomButton
-              label="Simpan"
-              backgroundColor="bg-adameds-300"
+              label="Batal"
+              backgroundColor="bg-danger-300"
               textColor="text-white"
+              @click="showCancelDialog"
             />
           </div>
         </div>
       </template>
     </Card>
+    <DeleteDialog
+      v-model:isDialogVisible="isDeleteDialogVisible"
+      @cancel="handleCancellation"
+    />
   </div>
 </template>
 
