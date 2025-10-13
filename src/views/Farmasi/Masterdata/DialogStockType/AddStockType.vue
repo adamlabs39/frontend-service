@@ -26,11 +26,13 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Satuan harus diisi"),
-    name: yup.string().required("Nama Satuan harus diisi"),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode Satuan harus diisi"),
+      name: yup.string().required("Nama Satuan harus diisi"),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -102,65 +104,66 @@ watch(
 </script>
 
 <template>
-    <CustomDialog 
+  <CustomDialog
     :visible="isDialogVisible"
-    @update:visible="updateVisibility" 
-    width="500px">
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Jenis Stok</p>
+    @update:visible="updateVisibility"
+    width="500px"
+  >
+    <template #header>
+      <div class="grid grid-cols-1">
+        <p>{{ title }} Jenis Stok</p>
+      </div>
+    </template>
+    <template #body>
+      <div class="grid grid-cols-[30%,70%]">
+        <div class="mt-[20px]">
+          <CustomTextfield
+            v-model="code"
+            label="Kode Jenis Stok"
+            placeholder="Kode Jenis Stok"
+            class="mr-2"
+            :invalid="!!errors.code"
+            :invalidMessage="errors.code"
+          />
         </div>
-      </template>
-      <template #body>
-        <div class="grid grid-cols-[30%,70%]">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model="code"
-              label="Kode Jenis Stok"
-              placeholder="Kode Jenis Stok"
-              class="mr-2"
-              :invalid="!!errors.code"
-              :invalidMessage="errors.code"
-            />
-          </div>
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model="name"
-              label="Nama Jenis Stok"
-              placeholder="Nama Jenis Stok"
-              class="ml-2"
-              :invalid="!!errors.name"
-              :invalidMessage="errors.name"
-            />
-          </div>
+        <div class="mt-[20px]">
+          <CustomTextfield
+            v-model="name"
+            label="Nama Jenis Stok"
+            placeholder="Nama Jenis Stok"
+            class="ml-2"
+            :invalid="!!errors.name"
+            :invalidMessage="errors.name"
+          />
         </div>
-        <hr class="mt-[20px] border border-slate-300"/>
-        <div class="grid grid-cols-2 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
+      </div>
+      <hr class="mt-[20px] border border-slate-300" />
+      <div class="grid grid-cols-2 mt-[15px]">
+        <div>
+          <CustomSwitch
+            v-model="status"
+            :show-label="true"
+            label="Status"
+            sideLabel="NON-AKTIF"
+            sideLabelTrue="AKTIF"
+          />
         </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="resetForm"
-            />
-            <CustomButton label="Simpan" @click="onSubmit"/>
-          </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <!-- <hr class="-mx-5 border-grey-200" /> -->
+        <div class="mt-5 flex justify-end gap-2.5">
+          <CustomButton
+            label="Reset"
+            textColor="text-grey-300"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-grey-200"
+            @click="resetForm"
+          />
+          <CustomButton label="Simpan" @click="onSubmit" />
         </div>
-      </template>
-    </CustomDialog>
+      </div>
+    </template>
+  </CustomDialog>
 </template>

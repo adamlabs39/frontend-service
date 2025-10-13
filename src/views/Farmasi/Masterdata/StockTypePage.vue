@@ -53,12 +53,18 @@ const fetchStockType = async () => {
   }
 };
 
+const resetSearch = () => {
+  searchQuery.value = "";
+  StockTypeProperties.value.page = 1;
+  fetchStockType();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchStockType();
-  }, 500); 
+  }, 500);
 });
 
 // Handle Pagination
@@ -125,7 +131,7 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await  StockTypeStore.exportApi();
+    const response = await StockTypeStore.exportApi();
     const rows = response.payload;
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
@@ -247,11 +253,48 @@ const downloadExcel = async () => {
 
     worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Jenis Stok");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Jenis Stok"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Jenis Stok.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -265,22 +308,38 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchStockType" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchStockType"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Jenis Stok</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Jenis Stok
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -292,14 +351,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
-                label="Cari Jenis Stok"
+                label="Cari Manufaktur"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Jenis Stok"
-                class=""
+                placeholder="Cari Nama Manufaktur"
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchStockType"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
           </template>
           <template #collapseIcon>
@@ -335,12 +410,25 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (StockTypeProperties.page - 1) *
+                    StockTypeProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
-          <Column field="code" header="Kode Jenis Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="name" header="Nama Jenis Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Jenis Stok"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
+          <Column
+            field="name"
+            header="Nama Jenis Stok"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="slotProps">
               <div class="w-full font-semibold text-center text-SM">Status</div>
@@ -349,9 +437,15 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -376,7 +470,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -384,14 +484,14 @@ onMounted(() => {
             </template>
           </Column>
         </DataTable>
-        <AddStockType 
+        <AddStockType
           v-model:isDialogVisible="StockTypeDialog"
           :title="dialogConfig.title"
           :method="dialogConfig.method"
           :payload="dialogConfig.data"
           @data-updated="fetchStockType"
         />
-        <DeleteStockType 
+        <DeleteStockType
           v-model:isDialogVisible="DeleteStockTypeDialog"
           :title="dialogConfig.title"
           :itemToDelete="dialogConfig.data"
