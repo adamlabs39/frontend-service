@@ -85,7 +85,7 @@ onMounted(() => {
       class="h-full overflow-hidden flex flex-col"
     >
       <template #header>
-        <CustomAccordion :openWithHeader="false" noBorder>
+        <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
