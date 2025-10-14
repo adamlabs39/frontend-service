@@ -16,6 +16,9 @@ export const useRekamMedisStore = defineStore({
     setOpenedRekamMedisData(rmData: any) {
       this.openedRekamMedis = rmData;
     },
+    resetOpenedRekamMedisData() {
+      this.openedRekamMedis = {};
+    },
     setAsesmentSummaryRekamMedisData(asesmenSummary: any) {
       this.openedRekamMedis.data = asesmenSummary.data;
       this.openedRekamMedis.summary = asesmenSummary.summary;
@@ -129,6 +132,15 @@ export const useRekamMedisStore = defineStore({
         `/rekam-medis/inform-consent?no_pelayanan=${noPelayanan}&no_rm=${noRm}&key=${key}&page=${page}&limit=${limit}`,
         payload
       );
+    },
+
+    async getCompare({ noPelayanan = "", noRm = "", key="" },
+      payload = {}
+    ) {
+      return apiRekamMedisGet (
+        `/rekam-medis/item-before?no_pelayanan=${noPelayanan}&no_rm=${noRm}&key=${key}`, 
+        payload
+      )
     },
   },
 });

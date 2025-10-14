@@ -6,20 +6,14 @@ export const useUnitOfExpenditureStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi( filter: String = "", name: String = "", page: number = 1, limit: number = 10, payload = {} ) {
-        return apiInventoryGet(`/inventory/pengadaan/pembelian-barang?filter=${filter}&name=${name}&page=${page}&limit=${limit}`, payload);
+    async getApi( lokasiStok: String= "", search: String = "", page: number = 1, limit: number = 10, payload = {} ) {
+        return apiInventoryGet(`/inventory/pengeluaran-unit?lokasi_stok_uuid=${lokasiStok}&search=${search}&page=${page}&limit=${limit}`, payload);
       },
       async getApiDetail(uuid: string, payload = {}) {
-        return apiInventoryGet(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
+        return apiInventoryGet(`/inventory/pengeluaran-unit/${uuid}`, payload);
       },
       async postApi(payload = {}) {
-        return apiInventoryPost("/inventory/pengadaan/pembelian-barang", payload);
+        return apiInventoryPost("/inventory/pengeluaran-unit", payload);
       },
-      async putApi(uuid: string, payload = {}) {
-        return apiInventoryPut(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
-      },
-      async deleteApi(uuid: string, payload = {}) {
-        return apiInventoryDelete(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
-      }
   },
 });

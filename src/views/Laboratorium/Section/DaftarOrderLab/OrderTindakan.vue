@@ -38,14 +38,17 @@ const allTarifsMap = ref<Record<string, any>>({});
 const orderLabStore = useOrderLab();
 const storeUtils = utilsStore();
 
-const schema = computed(() =>
-  toTypedSchema(
+const schema = computed(() => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // set jam ke 00:00:00
+
+  return toTypedSchema(
     yup
       .object({
         tglPemeriksaan: yup
           .date()
           .required("Tanggal pemeriksaan harus diisi")
-          .min(new Date(), "Tanggal tidak boleh kurang dari hari ini")
+          .min(today, "Tanggal tidak boleh kurang dari hari ini")
           .default(new Date()),
         cito: yup.boolean().default(false),
         statusPuasa: yup.boolean().default(false),
@@ -57,8 +60,8 @@ const schema = computed(() =>
         isMcu: yup.boolean().default(false),
       })
       .noUnknown()
-  )
-);
+  );
+});
 
 const { errors, handleSubmit, defineField, setFieldValue } = useForm({
   validationSchema: schema,

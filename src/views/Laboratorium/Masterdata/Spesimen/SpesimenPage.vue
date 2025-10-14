@@ -56,6 +56,7 @@ const spesimenDialogRef = ref();
 const openAddDialog = () => {
   spesimenDialogRef.value.resetForm(); // Reset form sebelum membuka dialog
   spesimenDialogRef.value.visible = true; // Buka dialog
+  spesimenDialogRef.value.editMode = false; 
 };
 
 // Fungsi untuk membuka dialog edit data

@@ -38,6 +38,84 @@ const props = defineProps({
   },
 });
 
+const schema = toTypedSchema(
+  yup
+    .object({
+      code: yup.string().required("Kode Tarif harus diisi"),
+      name: yup.string().required("Nama Tarif harus diisi"),
+      grandTotal: yup.number().default(0),
+      unitPelayanan: yup.array().of(yup.object()),
+      penjaminUuid: yup.array().of(yup.string()),
+      presentase: yup.bool().default(false),
+      pelayanans: yup
+        .array()
+        .of(yup.string().required("Unit Pelayanan harus dipilih"))
+        .min(1, "Minimal satu Unit Pelayanan harus dipilih")
+        .required("Unit Pelayanan harus dipilih"),
+      penjaminSelected: yup
+        .array()
+        .of(yup.string().required("Penjamin harus dipilih"))
+        .min(1, "Minimal satu Penjamin harus dipilih")
+        .required("Penjamin harus dipilih"),
+      tarifLabItems: yup.array().of(
+        yup.object({
+          itemPemeriksaanUuid: yup
+            .string()
+            .required("Item Pemeriksaan harus dipilih"),
+          listKomponenItem: yup
+            .array()
+            .of(
+              yup.object({
+                tarifKomponenUuid: yup
+                  .string()
+                  .required("Komponen tarif harus dipilih"),
+                tarifPerKomponen: yup
+                  .number()
+                  .min(0, "Tarif per komponen tidak boleh negatif")
+                  .required("Tarif per komponen harus diisi"),
+                persentase: yup
+                  .number()
+                  .min(0, "Persentase tidak boleh negatif")
+                  .max(100, "Persentase tidak boleh lebih dari 100")
+                  .required("Persentase harus diisi"),
+              })
+            )
+            .min(1, "Tambahkan minimal satu komponen tarif"),
+          total: yup.number().min(0).required("total harus diisi"),
+        })
+      ),
+      tarifLabKelompok: yup.array().of(
+        yup.object({
+          kelompokPemeriksaanUuid: yup
+            .string()
+            .required("Kelompok Pemeriksaan harus dipilih"),
+          listKomponenKelompok: yup
+            .array()
+            .of(
+              yup.object({
+                tarifKomponenUuid: yup
+                  .string()
+                  .required("Komponen tarif harus dipilih"),
+                tarifPerKomponen: yup
+                  .number()
+                  .min(0, "Tarif per komponen tidak boleh negatif")
+                  .required("Tarif per komponen harus diisi"),
+                persentase: yup
+                  .number()
+                  .min(0, "Persentase tidak boleh negatif")
+                  .max(100, "Persentase tidak boleh lebih dari 100")
+                  .required("Persentase harus diisi"),
+              })
+            )
+            .min(1, "Tambahkan minimal satu komponen tarif"),
+          total: yup.number().min(0).required("total harus diisi"),
+        })
+      ),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
+);
+
 const method = ref(props.method);
 const title = ref(props.title);
 const storeUtils = utilsStore();
@@ -108,7 +186,9 @@ const optionsPelayanan = ref([
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-const { errors, handleSubmit, resetForm, setValues, defineField } = useForm();
+const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
+  validationSchema: schema,
+});
 const fetchPenjamin = async () => {
   try {
     const response = await penjaminStore.getAktifApi();
@@ -140,10 +220,10 @@ const fetchKomponenTarif = async () => {
 const fetchItemPemeriksaan = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await itemPemeriksaanStore.getApi();
+    const response = await itemPemeriksaanStore.getActive();
 
     if (response && response.payload) {
-      itemPemeriksaanPayload.value = response.payload.data;
+      itemPemeriksaanPayload.value = response.payload;
       itemPemeriksaanOptions.value = itemPemeriksaanPayload.value.map(
         (item: any) => ({
           label: item.name,
@@ -165,10 +245,10 @@ const fetchItemPemeriksaan = async () => {
 const fetchKelompokPemeriksaan = async () => {
   storeUtils.setLoading(true);
   try {
-    const response = await kelompokPemeriksaanStore.getApi();
+    const response = await kelompokPemeriksaanStore.getActive();
 
     if (response && response.payload) {
-      kelompokPemeriksaanPayload.value = response.payload.data;
+      kelompokPemeriksaanPayload.value = response.payload;
       kelompokPemeriksaanOptions.value = kelompokPemeriksaanPayload.value.map(
         (item: any) => ({
           label: item.name,
@@ -195,12 +275,13 @@ const [penjaminUuid] = defineField("penjaminUuid");
 const [status] = defineField("status");
 const [pelayanans] = defineField("pelayanans");
 const [penjaminSelected] = defineField("penjaminSelected");
-const [prsentase] = defineField("presentase");
-const [tarifLabItems] = defineField("tarifLabItems");
-const [itemPemeriksaanUuid] = defineField("itemPemeriksaanUuid");
-const [tarifKomponenUuid] = defineField("tarifKomponenUuid");
-const [prosentasePerKomponen] = defineField("prosentasePerKomponen");
-const [tarifPerKomponen] = defineField("tarifPerKomponen");
+const [presentase] = defineField("presentase");
+// const [tarifLabItems] = defineField("tarifLabItems");
+// const [tarifLabKelompok] = defineField("tarifLabKelompok");
+// const [itemPemeriksaanUuid] = defineField("itemPemeriksaanUuid");
+// const [tarifKomponenUuid] = defineField("tarifKomponenUuid");
+// const [prosentasePerKomponen] = defineField("prosentasePerKomponen");
+// const [tarifPerKomponen] = defineField("tarifPerKomponen");
 
 const {
   remove: removeTindakan,
@@ -344,34 +425,50 @@ const handleUnitPelayananUpdate = (selectedValues: number[]) => {
 };
 
 const handlePenjaminUpdate = (selectedValues: string[]) => {
-  penjaminUuid.value = tempPenjamin.value.map(
-    (item: { penjaminUuid: string; uuid: string }) => {
-      if (!selectedValues.includes(item.penjaminUuid)) {
-        return {
-          penjaminUuid: item.penjaminUuid,
-          uuid: item.uuid,
-          isDeleted: true,
-        };
-      } else {
-        return {
-          penjaminUuid: item.penjaminUuid,
-          uuid: item.uuid,
-        };
-      }
-    }
+  console.log(
+    "handlePenjaminUpdate ~ selectedValues:",
+    JSON.stringify(selectedValues)
   );
 
-  selectedValues.forEach((value) => {
-    const existsInTemp = tempPenjamin.value.some(
-      (item: { penjaminUuid: string }) => item.penjaminUuid === value
-    );
+  console.log(
+    "handlePenjaminUpdate ~ tempPenjamin.value:",
+    JSON.stringify(tempPenjamin.value)
+  );
 
-    if (!existsInTemp) {
-      pushPenjamin({
-        penjaminUuid: value,
-      });
-    }
-  });
+  console.log(
+    "handlePenjaminUpdate ~ penjaminUuid.value:",
+    JSON.stringify(penjaminUuid.value)
+  );
+
+  penjaminUuid.value = selectedValues;
+  // penjaminUuid.value = tempPenjamin.value.map((item: any) => {
+  //   if (selectedValues.includes(item)) {
+  //     return item;
+  //   }
+  // });
+
+  // selectedValues.forEach((value) => {
+  //   const existsInTemp = tempPenjamin.value.some((item: any) => item === value);
+
+  //   if (!existsInTemp) {
+  //     pushPenjamin(value);
+  //   }
+  // });
+
+  console.log(
+    "handlePenjaminUpdate ~ after set selectedValues:",
+    JSON.stringify(selectedValues)
+  );
+
+  console.log(
+    "handlePenjaminUpdate ~ after set tempPenjamin.value:",
+    JSON.stringify(tempPenjamin.value)
+  );
+
+  console.log(
+    "handlePenjaminUpdate ~ after set penjaminUuid.value:",
+    JSON.stringify(penjaminUuid.value)
+  );
 };
 
 const getItemPemeriksaanUuid = (uuid: string | { value: string }): string => {
@@ -385,9 +482,9 @@ const getKelompokPemeriksaanUuid = (
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
+    console.log("🚀 ~ onSubmit ~ values:", values);
     if (!values.isPresentase) {
       values.grandTotal = grandTotalData.value;
-      console.log("🚀 ~ onSubmit ~ values.grandTotal:", values.grandTotal);
     }
     delete values.unitPelayananSelected;
     delete values.penjaminSelected;
@@ -423,7 +520,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       presentase: values.presentase || false,
       status: values.status || false,
       pelayanans: values.pelayanans || [],
-      penjaminUuids: values.penjaminUuid?.map((item: any) => item.penjaminUuid),
+      penjaminUuids: values.penjaminUuid || [],
       tarifLabItems: [
         ...(fieldsKelompokPemeriksaan.value || []).map((item) => ({
           kelompokPemeriksaanUuid: getKelompokPemeriksaanUuid(
@@ -454,6 +551,10 @@ const onSubmit = handleSubmit(async (values: any) => {
         })),
       ],
     };
+    console.log(
+      "🚀 ~ onSubmit ~ formattedData:",
+      JSON.stringify(formattedData, null, 2)
+    );
 
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -664,7 +765,10 @@ watch(
     if (newValue) {
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
-        console.log("🚀 ~ watch ~ props.payload:", props.payload);
+        console.log(
+          "🚀 ~ watch ~ props.payload:",
+          JSON.stringify(props.payload)
+        );
 
         // Map data dari payload ke form
         const dataPelayanan =
@@ -673,19 +777,47 @@ watch(
           props.payload.tarifLabPenjamin?.map(
             (item: any) => item.penjamin.uuid
           ) || [];
+
+        console.log("watch datapenjamin ==> ", dataPenjamin);
+        penjaminUuid.value = dataPenjamin;
+        console.log(
+          "watch penjaminUuid ==> ",
+          JSON.stringify(penjaminUuid.value)
+        );
         const dataTarifLabItems =
-          props.payload.tarifLabItem?.map((item: any) => ({
-            itemPemeriksaanUuid: item.itemPemeriksaanUuid,
-            total: item.totalTarif,
-            listKomponenItem: item.listKomponenItem || [],
-          })) || [];
+          props.payload.tarifLabItem
+            ?.filter((item: any) => item.itemPemeriksaanUuid != null)
+            .map((item: any) => ({
+              itemPemeriksaanUuid: item.itemPemeriksaanUuid,
+              total: item.totalTarif,
+              listKomponenItem:
+                item.komponenTarif?.map((komponen: any) => ({
+                  tarifKomponenUuid: komponen.tarifKomponenUuid,
+                  tarifPerKomponen: komponen.tarif,
+                  persentase: komponen.prosentase,
+                  isPresentase: komponen.prosentase > 0 ? true : false,
+                })) || [],
+            })) || [];
         const dataKelompokPemeriksaan =
-          props.payload.tarifLabKelompok?.map((item: any) => ({
-            kelompokPemeriksaanUuid: item.kelompokPemeriksaanUuid,
-            total: item.totalTarif,
-            listKomponenKelompok: item.listKomponenKelompok || [],
-          })) || [];
+          props.payload.tarifLabItem
+            ?.filter((item: any) => item.kelompokPemeriksaanUuid != null)
+            .map((item: any) => ({
+              kelompokPemeriksaanUuid: item.kelompokPemeriksaanUuid,
+              total: item.totalTarif,
+              listKomponenKelompok:
+                item.komponenTarif?.map((komponen: any) => ({
+                  tarifKomponenUuid: komponen.tarifKomponenUuid,
+                  tarifPerKomponen: komponen.tarif,
+                  persentase: komponen.prosentase,
+                  isPresentase: komponen.prosentase > 0 ? true : false,
+                })) || [],
+            })) || [];
         const grandTotalValue = props.payload.grandTotal;
+
+        // console.log(
+        //   "🚀 ~ watch ~ dataTarif:",
+        //   JSON.stringify(dataTarifLabItems)
+        // );
 
         // Set nilai ke form
         setValues({
@@ -698,6 +830,20 @@ watch(
           tarifLabKelompok: dataKelompokPemeriksaan,
           status: props.payload.status,
         });
+
+        // console.log(
+        //   "🚀 ~ handlePenjaminUpdate ~ tempPenjamin.value:",
+        //   JSON.stringify(tempPenjamin.value)
+        // );
+
+        // console.log(
+        //   "🚀 ~ handlePenjaminUpdate ~ penjaminUuid.value:",
+        //   JSON.stringify(penjaminUuid.value)
+        // );
+
+        // console.log("options = ", JSON.stringify(itemPemeriksaanOptions));
+
+        // console.log("tarif lab items", fieldsItemPemeriksaan);
 
         // Simpan data sementara untuk pembaruan
         tempPelayanan.value = dataPelayanan;
@@ -746,12 +892,18 @@ onMounted(() => {
               label="Kode Tarif"
               v-model="code"
               placeholder="Kode Tarif"
+              :invalid="!!errors.code"
+              :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
             />
             <CustomTextfield
               class="col-span-9"
               label="Nama Tarif Tindakan"
               v-model="name"
               placeholder="Nama Tarif Tindakan"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+              :required="errors.name ? true : false"
             />
 
             <CustomMultiSelect
@@ -763,6 +915,9 @@ onMounted(() => {
               optionLabel="label"
               placeholder="Pelayanan"
               class="col-span-12"
+              :invalid="!!errors.pelayanans"
+              :invalidMessage="errors.pelayanans"
+              :required="errors.pelayanans ? true : false"
             />
             <CustomMultiSelect
               label="Metode Pembayaran"
@@ -773,6 +928,9 @@ onMounted(() => {
               optionLabel="name"
               placeholder="Metode Pembayaran"
               class="col-span-12"
+              :invalid="!!errors.penjaminSelected"
+              :invalidMessage="errors.penjaminSelected"
+              :required="errors.penjaminSelected ? true : false"
             />
           </div>
 
@@ -825,6 +983,8 @@ onMounted(() => {
                         option-label="label"
                         option-value="value"
                         class="w-full"
+                        :invalid="(errors as any)[`tarifLabKelompok[${idx}].kelompokPemeriksaanUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`tarifLabKelompok[${idx}].kelompokPemeriksaanUuid`]"
                       />
                       <CustomButton
                         background-color="bg-danger-300"
@@ -857,7 +1017,9 @@ onMounted(() => {
                               place-holder="Pilih Komponen Tarif"
                               :options="komponenTarifPayload"
                               option-label="name"
-                              optionValue="uuid"
+                              option-value="uuid"
+                              :invalid="(errors as any)[`tarifLabKelompok[${idx}].listKomponenKelompok[${slotProps.index}].tarifKomponenUuid`] ? true : false"
+                              :invalidMessage="(errors as any)[`tarifLabKelompok[${idx}].listKomponenKelompok[${slotProps.index}].tarifKomponenUuid`]"
                             />
                           </template>
                         </Column>
@@ -914,6 +1076,8 @@ onMounted(() => {
                               :disabled="
                                 fieldKelompokPemeriksaan.value.isPresentase
                               "
+                              :invalid="(errors as any)[`tarifLabKelompok[${idx}].listKomponenKelompok[${slotProps.index}].tarifPerKomponen`] ? true : false"
+                              :invalidMessage="(errors as any)[`tarifLabKelompok[${idx}].listKomponenKelompok[${slotProps.index}].tarifPerKomponen`]"
                               @update:model-value="
                                 handleTotalKomponenKelompok(idx)
                               "
@@ -1061,11 +1225,13 @@ onMounted(() => {
                       <CustomSelect
                         v-model="fieldItemPemeriksaan.value.itemPemeriksaanUuid"
                         :showLabel="false"
-                        place-holder="Kelompok"
+                        place-holder="Item Pemeriksaan"
                         :options="itemPemeriksaanOptions"
-                        optionlabel="label"
-                        optionvalue="value"
+                        option-label="label"
+                        option-value="value"
                         class="w-full"
+                        :invalid="(errors as any)[`tarifLabItems[${idx}].itemPemeriksaanUuid`] ? true : false"
+                        :invalidMessage="(errors as any)[`tarifLabItems[${idx}].itemPemeriksaanUuid`]"
                       />
                       <CustomButton
                         background-color="bg-danger-300"
@@ -1096,7 +1262,9 @@ onMounted(() => {
                               place-holder="Pilih Komponen Tarif"
                               :options="komponenTarifPayload"
                               option-label="name"
-                              optionValue="uuid"
+                              option-value="uuid"
+                              :invalid="(errors as any)[`tarifLabItems[${idx}].listKomponenItem[${slotProps.index}].tarifKomponenUuid`] ? true : false"
+                              :invalidMessage="(errors as any)[`tarifLabItems[${idx}].listKomponenItem[${slotProps.index}].tarifKomponenUuid`]"
                             />
                           </template>
                         </Column>
@@ -1153,6 +1321,8 @@ onMounted(() => {
                               :disabled="
                                 fieldItemPemeriksaan.value.isPresentase
                               "
+                              :invalid="(errors as any)[`tarifLabItem[${idx}].listKomponenItem[${slotProps.index}].tarifPerKomponen`] ? true : false"
+                              :invalidMessage="(errors as any)[`tarifLabItem[${idx}].listKomponenItem[${slotProps.index}].tarifPerKomponen`]"
                               @update:model-value="handleTotalKomponenItem(idx)"
                             >
                               <template #prependText>
@@ -1384,7 +1554,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarif || "-" }}
+                      {{ slotProps.data.tarif }}
                     </template>
                   </Column>
                 </DataTable>
@@ -1465,7 +1635,7 @@ onMounted(() => {
                       <div class="w-full text-end">Rupiah (Rp)</div>
                     </template>
                     <template #body="slotProps">
-                      {{ slotProps.data.tarif || "-" }}
+                      {{ slotProps.data.tarif }}
                     </template>
                   </Column>
                 </DataTable>

@@ -322,10 +322,16 @@ const getAge = (date: Date) => {
   console.log("age", patientAge.value);
 };
 
+const getOptionLabel = (option: any) => {
+  return option.name || option.noRm || "Pasien tidak dikenal";
+};
+
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
 const searchPatientData = async (filter: string) => {
+  console.log("filter = ", filter);
+  console.log("timer = ", timer.value);
   if (timer.value) {
     clearTimeout(timer.value);
     timer.value = null;
@@ -337,7 +343,16 @@ const searchPatientData = async (filter: string) => {
         q: filter,
       });
       if (response && response.payload) {
-        listDataPatient.value = response.payload;
+        listDataPatient.value = response.payload.map((patient: any) => ({
+          ...patient,
+          optionLabel: `${patient.name || "Nama tidak tersedia"} ~ ${
+            patient.noRm || "No RM tidak tersedia"
+          }`,
+        }));
+        console.log(
+          "listDataPatient => ",
+          JSON.stringify(listDataPatient.value)
+        );
       } else listDataPatient.value = [];
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -396,7 +411,7 @@ defineExpose({
             label="Cari Nama / No. RM"
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
-            optionLabel="name"
+            optionLabel="optionLabel"
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
@@ -404,7 +419,7 @@ defineExpose({
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
           >
-          <template #customOptions="{ option }">
+            <template #customOptions="{ option }">
               {{ option.name }} ~ {{ option.noRm }}
             </template>
           </CustomSelect>

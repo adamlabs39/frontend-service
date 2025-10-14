@@ -282,6 +282,7 @@ baseInstanceLaboratorium.interceptors.response.use(
   }
 );
 
+
 //Admisi
 const baseInstanceAdmisi = axios.create({
   headers: {
@@ -560,6 +561,48 @@ baseInstanceInventory.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+//Antrian
+const baseInstanceAntrian = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_ANTRIAN,
+});
+
+baseInstanceAntrian.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstanceAntrian.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export {
   baseInstance,
   authInstance,
@@ -574,4 +617,5 @@ export {
   baseInstanceFarmasi,
   baseInstanceRekamMedis,
   baseInstanceInventory,
+  baseInstanceAntrian,
 };

@@ -12,9 +12,11 @@ import {
   baseInstanceRekamMedis,
   baseInstanceRawatInap,
   baseInstanceInventory,
+  baseInstanceAntrian,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
+import axios from "axios";
 
 const cekHost = (baseUrl: unknown, nextUrl: string) => {
   const url = new URL(baseUrl as string);
@@ -400,6 +402,7 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
   }
 };
 
+
 //Admisi
 const apiAdmisiGet = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
@@ -464,6 +467,32 @@ const apiAdmisiDelete = async (url: string, data: object) => {
     return response.data;
   } catch (error) {
     errorApiHandler(error);
+  }
+};
+export const apiAdmisiDownload = async (url: string) => {
+  const fullUrl = `${import.meta.env.VITE_BASE_ADMISI}${url}`;
+
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("Token tidak ditemukan, silakan login ulang");
+      return;
+    }
+
+    const response = await axios.get(fullUrl, {
+      responseType: "blob",
+      headers: {
+        'Authorization': token,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+
+    });
+
+    return response;
+    
+  } catch (error) {
+    console.error("Error di apiAdmisiDownload:", error);
+    throw error;
   }
 };
 
@@ -728,6 +757,58 @@ const apiInventoryDelete = async (url: string, data: object) => {
   }
 };
 
+//Antrian
+const apiAntrianGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianGetNoMessage = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    const response = await baseInstanceAntrian.get(url, data);
+    return response.data;
+  } catch (error) {
+    // Suppress global error toast; let caller handle empty state
+    throw error;
+  }
+};
+const apiAntrianDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiAntrianPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_ANTRIAN, url);
+  try {
+    let response = await baseInstanceAntrian.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -779,4 +860,9 @@ export {
   apiInventoryPut,
   apiInventoryDelete,
   apiRekamMedisDelete,
+  apiAntrianGet,
+  apiAntrianDelete,
+  apiAntrianPost,
+  apiAntrianPut,
+  apiAntrianGetNoMessage,
 };

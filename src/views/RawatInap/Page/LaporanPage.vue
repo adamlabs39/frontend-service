@@ -13,13 +13,18 @@ import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPa
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
-import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
+import { useRIStore } from "@/stores/rawatInap/laporanranap";
+import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap } from "@/stores/rawatInap/exportexcelranap";
 
 // Filter 
 interface Filter {
+  timestamp: number;
+  kelas: string;
   page?: number;
   limit?: number;
   q?: string;
@@ -43,38 +48,44 @@ const properties = ref({
 });
 
 // STORE
+const RIStore = useRIStore();
 const useUtilsStore = utilsStore();
 const rekapTindakanPasienStore = useRekapTindakanStore()
-const kunjunganRawatInap = useAdmisiIGDStore()
+const kunjunganRawatInap = useAdmisiReportStore()
 const dokterStore = usePraktisiStore()
 const ruanganStore = useRuanganStore();
-
+const monitoringKamarStore = useMonitoringKamarStore();
 
 // Data From API
 const reportData = ref([])
 const dokterPayload = ref<any[]>([])
 const ruanganPayload = ref<any[]>([])
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const fetchLaporanData = async (filter: Filter = {
+  kelas: "",
+  timestamp: 0
+}) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
   if (pageType.value === "kunjungan-rawat-inap") {
-    response = await kunjunganRawatInap.getKunjunganReport(filter)
+    response = await RIStore.getKunjunganRanap(filter);
   } else if (pageType.value === "perpindahan-pasien") {
   } else if (pageType.value === "pembatalan-dirawat") {
-    response = await kunjunganRawatInap.getBatalKunjunganReport(filter)
+    response = await RIStore.getBatalRawat(filter)
   } else {
     response = await rekapTindakanPasienStore.getTindakanPasien(filter)
   }
-   if(response && response.payload){
-     properties.value.total = response.properties.totalData;
-     return response.payload
+   if(response && response.payload.data){
+    properties.value.total = response.payload.pagination.totalData;
+    //  properties.value.total = response.properties.totalData;
+     return response.payload.data
    } else {
-    return []
+    return [];
    }
   } catch (error) {
     console.error("Failed to fetch data", error);
+    return [];
   } finally {
     useUtilsStore.setLoading(false);
   }
@@ -87,7 +98,6 @@ const fetchDokterData = async () => {
     const response = await dokterStore.getAktifApi();
     if (response && response.payload) {
       dokterPayload.value = response.payload.filter((item: { isDoctor: boolean }) => item.isDoctor)
-      console.log("Dokter Payload:", dokterPayload.value);
     } else {
       dokterPayload.value = [];
     }
@@ -104,10 +114,9 @@ const fetchRuangan = async () => {
   // Fetch data ruangan dari API
   useUtilsStore.setLoading(true);
   try {
-    const response = await ruanganStore.getAktifApi();
+    const response = await monitoringKamarStore.getMonitoringKamar({ page: 1, limit: 9999 });
     if (response && response.payload) {
       ruanganPayload.value = response.payload;
-      console.log("Ruangan Payload:", ruanganPayload.value);
     } else {
       ruanganPayload.value = [];
     }
@@ -119,13 +128,22 @@ const fetchRuangan = async () => {
   }
 };
 
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-inap') {
+    downloadExportExcelKunjunganRanap(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalRawatRanap(filter);
+  }
+};
+
 // Kelas
 const optionsKelas = ref([
-  { label: "kelas 1", value: 1 },
-  { label: "kelas 2", value: 2 },
-  { label: "kelas 3", value: 3 },
-  { label: "VIP", value: 4 },
-  { label: "VVIP", value: 5 },
+  { label: "Kelas 1", value: "Kelas 1" },
+  { label: "Kelas 2", value: "Kelas 2" },
+  { label: "Kelas 3", value: "Kelas 3" },
+  { label: "VIP", value: "VIP" },
+  { label: "VVIP", value: "VVIP" },
 ]);
 
 // Function to search data
@@ -143,9 +161,10 @@ const setFilter = () => {
   filter.q = valueSearchRM.value;
   filter.room = searchRuanganFilter.value;
 
-  if (pageType.value === "kunjungan-rawat-inap") {
+  if (pageType.value === "kunjungan-rawat-inap" || pageType.value === "pembatalan-dirawat") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
     filter.jenisKunjungan = "RI";
+    filter.kelas = searchKelasFilter.value ?? "";
   } else if (pageType.value === "perpindahan-pasien") {
      filter.pelayanan = "RI";
   }
@@ -155,7 +174,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
 
   return filter
   
@@ -166,8 +188,9 @@ const valueSearchRM = ref();
 const valueSearchPraktisi = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -193,7 +216,7 @@ const resetForm = () => {
   valueSearchPraktisi.value = "";
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
-  valueBulan.value = 0;
+  valueBulan.value = null;
   searchRuanganFilter.value = "";
   searchKelasFilter.value = "";
   searchDokterDPJPFilter.value = "";
@@ -324,7 +347,7 @@ onMounted(() => {
       <div v-if="reportData.length">
         <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" :payload="reportData"/>
         <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
-        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" />
+        <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" :payload="reportData" />
         <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
       </div>
       <NoData v-else/>
@@ -338,6 +361,7 @@ onMounted(() => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
        <CustomPaginator
           :rows="properties.page_size"
