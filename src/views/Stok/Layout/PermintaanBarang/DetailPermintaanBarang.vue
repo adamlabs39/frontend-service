@@ -8,7 +8,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import DeleteDialog from "./DeleteDialog.vue";
+import DeleteDialog from "./DeleteDialogPermintaanBarang.vue";
 
 // Terima data dari list
 const props = defineProps<{ data: any }>();
@@ -78,11 +78,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="flex flex-col h-full">
     <Card
-      pt:body:class="flex-1 pt-0 overflow-hidden flex flex-col"
-      pt:content:class="flex-1 overflow-hidden flex flex-col"
-      class="h-full overflow-hidden flex flex-col"
+      pt:body:class="flex overflow-hidden flex-col flex-1 pt-0"
+      pt:content:class="flex overflow-hidden flex-col flex-1"
+      class="flex overflow-hidden flex-col h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
@@ -129,33 +129,33 @@ onMounted(() => {
             <div class="py-3 space-y-3">
               <div class="flex">
                 <div class="flex flex-col w-full">
-                  <div class="font-bold text-sm underline">Tgl. Permintaan</div>
+                  <div class="text-sm font-bold underline">Tgl. Permintaan</div>
                   <div>{{ props.data.tanggal }}</div>
                 </div>
                 <div class="flex gap-2 w-full">
                   <div class="flex flex-col w-full">
-                    <div class="font-bold text-sm underline">Kategori Item</div>
+                    <div class="text-sm font-bold underline">Kategori Item</div>
                     <div>{{ props.data.kategoriItem }}</div>
                   </div>
                   <div class="flex flex-col w-full">
-                    <div class="font-bold text-sm underline">Jenis Stok</div>
+                    <div class="text-sm font-bold underline">Jenis Stok</div>
                     <div>{{ props.data.jenisStok }}</div>
                   </div>
                   <div class="flex flex-col w-full">
-                    <div class="font-bold text-sm underline">Jenis Item</div>
+                    <div class="text-sm font-bold underline">Jenis Item</div>
                     <div>{{ props.data.jenisItem }}</div>
                   </div>
                 </div>
               </div>
               <div class="flex gap-3">
                 <div class="flex flex-col w-full">
-                  <div class="font-bold text-sm underline">
+                  <div class="text-sm font-bold underline">
                     Tujuan Permintaan
                   </div>
                   <div>{{ props.data.kategoriItem }}</div>
                 </div>
                 <div class="flex flex-col w-full">
-                  <div class="font-bold text-sm underline">Catatan</div>
+                  <div class="text-sm font-bold underline">Catatan</div>
                   <div>{{ props.data.catatan }}</div>
                 </div>
               </div>
@@ -178,13 +178,13 @@ onMounted(() => {
         </CustomAccordion>
       </template>
       <template #content>
-        <div class="flex-1 flex flex-col overflow-auto min-h-0">
+        <div class="flex overflow-auto flex-col flex-1 min-h-0">
           <div class="flex-none">
             <DataTable
               :value="props.data.items"
               stripedRows
               scrollable
-              class="text-xs h-full"
+              class="h-full text-xs"
             >
               <Column header="No" field="no" />
               <Column header="Nama Item" field="namaItem"> </Column>
@@ -203,7 +203,7 @@ onMounted(() => {
         </div>
       </template>
       <template #footer>
-        <div class="border-t border-grey-200 py-2 flex justify-between">
+        <div class="flex justify-between py-2 border-t border-grey-200">
           <div class="flex gap-10">
             <div>
               <div class="underline">Total Item</div>
