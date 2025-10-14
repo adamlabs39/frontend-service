@@ -53,13 +53,20 @@ const fetchKategoriObat = async () => {
   }
 };
 
+// Reset search input and re-fetch data
+const resetSearch = () => {
+  searchQuery.value = "";
+  DrugCategoryProperties.value.page = 1;
+  fetchKategoriObat();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchKategoriObat();
-  }, 500); 
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchKategoriObat();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -209,7 +216,11 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Kategori Obat");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Kategori Obat"
+    );
     XLSX.writeFile(workbook, `Datamaster Kategori Obat.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -247,11 +258,48 @@ const downloadExcel = async () => {
 
     worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Kategori");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Kategori"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Kategori Obat.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -265,22 +313,38 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchKategoriObat"/>
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchKategoriObat"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Kategori Obat</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Kategori Obat
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -292,14 +356,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
                 label="Cari Kategori Obat"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Kategori Obat"
-                class=""
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchKategoriObat"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
           </template>
           <template #collapseIcon>
@@ -335,12 +415,25 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (DrugCategoryProperties.page - 1) *
+                    DrugCategoryProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
-          <Column field="code" header="Kode Kategori Obat" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="name" header="Nama Kategori Obat" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Kategori Obat"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
+          <Column
+            field="name"
+            header="Nama Kategori Obat"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="slotProps">
               <div class="w-full font-semibold text-center text-SM">Status</div>
@@ -349,9 +442,15 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -376,7 +475,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -389,9 +494,9 @@ onMounted(() => {
           :title="dialogConfig.title"
           :method="dialogConfig.method"
           :payload="dialogConfig.data"
-          @data-updated="fetchKategoriObat" 
+          @data-updated="fetchKategoriObat"
         />
-        <DeleteDrugCategory 
+        <DeleteDrugCategory
           v-model:isDialogVisible="deleteKategoriDialog"
           :title="dialogConfig.title"
           :itemToDelete="dialogConfig.data"

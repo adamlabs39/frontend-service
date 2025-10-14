@@ -53,13 +53,19 @@ const fetchRulesOfUse = async () => {
   }
 };
 
+const resetSearch = () => {
+  searchQuery.value = "";
+  RulesOfUseProperties.value.page = 1;
+  fetchRulesOfUse();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchRulesOfUse();
-  }, 500); 
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchRulesOfUse();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -223,7 +229,11 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Aturan Pakai");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Aturan Pakai"
+    );
     XLSX.writeFile(workbook, `Datamaster Aturan Pakai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -246,36 +256,72 @@ const downloadExcel = async () => {
       Periode: "Periode*",
     });
 
-    // Add Empty Rows (4 empty rows to match the example)
-    data.push({ 
-      No: "1", 
-      Kode: "AP001", 
+    // Sample Row (sesuai contoh gambar)
+    data.push({
+      No: "1",
+      Kode: "AP001",
       Nama: "Minum 3x sehari",
       PeriodeUnit: "Hari",
       Frekuensi: "3",
-      Periode: "1"
+      Periode: "1",
     });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
-    // Column Widths
-    const columnWidths = data.reduce((widths: any, row: any) => {
-      Object.keys(row).forEach((key, colIdx) => {
-        const cellValue = row[key] ? row[key].toString() : "";
-        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
-      });
-      return widths;
-    }, []);
+    // Column Widths (A–F)
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 10 },
+    ];
 
-    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
 
-    // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Aturan Pakai");
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
+
+    // Save workbook
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Aturan Pakai"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Aturan Pakai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -289,22 +335,38 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchRulesOfUse"/>
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchRulesOfUse"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Aturan Pakai</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Aturan Pakai
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -316,14 +378,30 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
                 label="Cari Aturan Pakai"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Aturan Pakai"
-                class=""
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchRulesOfUse"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
           </template>
           <template #collapseIcon>
@@ -356,11 +434,11 @@ onMounted(() => {
           scrollable
           scrollHeight="flex"
           :dt="{
-          rowSelectedColor: '#000000',
-          rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor: 'transparent',
-          bodyCellBorderColor: 'transparent',
-          rowStripedBackground: '#F8F8F8',
+            rowSelectedColor: '#000000',
+            rowSelectedBackground: 'transparent',
+            bodyCellSelectedBorderColor: 'transparent',
+            bodyCellBorderColor: 'transparent',
+            rowStripedBackground: '#F8F8F8',
           }"
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
@@ -369,38 +447,57 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (RulesOfUseProperties.page - 1) *
+                    RulesOfUseProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
-          <Column field="code" header="Kode Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
-          <Column field="name" header="Nama Aturan Pakai" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Aturan Pakai"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
+          <Column
+            field="name"
+            header="Nama Aturan Pakai"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <Column headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center text-SM">Periode Unit</div>
+              <div class="w-full font-semibold text-center text-SM">
+                Periode Unit
+              </div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 {{ slotProps.data.periodeUnit }}
               </div>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center text-SM">Frekuensi</div>
+              <div class="w-full font-semibold text-center text-SM">
+                Frekuensi
+              </div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 {{ slotProps.data.frekuensi }}
               </div>
             </template>
           </Column>
           <Column headerClass="bg-adameds-50">
             <template #header>
-              <div class="w-full font-semibold text-center text-SM">Periode</div>
+              <div class="w-full font-semibold text-center text-SM">
+                Periode
+              </div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 {{ slotProps.data.periode }}
               </div>
             </template>
@@ -410,12 +507,18 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -427,7 +530,7 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center gap-2.5 justify-center">
+              <div class="flex gap-2.5 justify-center items-center">
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
@@ -440,7 +543,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -464,7 +573,7 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex gap-2.5 items-center">
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"
@@ -496,6 +605,6 @@ onMounted(() => {
           />
         </div>
       </template>
-    </Card>    
+    </Card>
   </div>
 </template>
