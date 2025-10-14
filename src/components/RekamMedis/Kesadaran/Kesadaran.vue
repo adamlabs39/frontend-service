@@ -8,6 +8,7 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { epochToDate } from "@/utils/Helpers";
 
 // Import gambar mata
 import spontanMeresponOn from "@/assets/images/RekamMedis/Kesadaran/spontanMeresponOn.svg";
@@ -47,6 +48,8 @@ import verbalTidakResponOff from "@/assets/images/RekamMedis/Kesadaran/verbalTid
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriKesadaran from "@/components/RekamMedis/Kesadaran/HistoriKesadaran.vue";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import { PhBuildings } from "@phosphor-icons/vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -65,6 +68,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const isEditing = ref(props.method === "form");
@@ -78,6 +85,7 @@ const schema = toTypedSchema(
     gcsScore: yup.number(),
     gcsKesimpulan: yup.string(),
     petugas: yup.string().default("Super Admin"),
+    createdAt: yup.mixed(),
   })
 );
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -89,6 +97,7 @@ const [verbal] = defineField("verbal");
 const [gcsScore] = defineField("gcsScore");
 const [gcsKesimpulan] = defineField("gcsKesimpulan");
 const [petugas] = defineField("petugas");
+const [createdAt] = defineField("createdAt");
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -120,6 +129,7 @@ const setFormData = () => {
       gcsScore: tempKesadaran.gcsScore,
       gcsKesimpulan: tempKesadaran.kesimpulan,
       petugas: tempKesadaran.petugas,
+      createdAt: tempKesadaran.createdAt,
     });
     countKesimpulan();
   } else resetForm();
@@ -129,7 +139,6 @@ onBeforeMount(async () => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
@@ -259,39 +268,101 @@ const kesimpulanOption = ref([
   { name: "Sakit Berat" },
 ]);
 const getLabelFromValue = (value: any, responses: Array<{ label: string }>) => {
-  return responses[value]?.label || "Unknown";
+  if (value > 0 && value <= responses.length) {
+    return responses[value - 1]?.label || "Tidak Diketahui";
+  }
+  return "Tidak Diketahui";
 };
+
 
 const countKesimpulan = () => {
   if (eye.value && motorik.value && verbal.value) {
     gcsKesimpulan.value = "";
-
     let totalSkor = eye.value + motorik.value + verbal.value;
-
     gcsScore.value = totalSkor;
 
-    if (totalSkor == 3) {
-      gcsKesimpulan.value = "Coma";
-    } else if (totalSkor == 4) {
-      gcsKesimpulan.value = "Semi-coma";
-    } else if (totalSkor == 5 || totalSkor == 6) {
-      gcsKesimpulan.value = "Sopor";
-    } else if (totalSkor > 6 && totalSkor <= 9) {
-      gcsKesimpulan.value = "Somnolence";
-    } else if (totalSkor == 10 || totalSkor == 11) {
-      gcsKesimpulan.value = "Delirium";
-    } else if (totalSkor == 12 || totalSkor == 13) {
-      gcsKesimpulan.value = "Apatis";
-    } else if (totalSkor == 14 || totalSkor == 15) {
+    if (totalSkor >= 14) {
       gcsKesimpulan.value = "Compos Mentis";
+    } else if (totalSkor >= 12) {
+      gcsKesimpulan.value = "Apatis";
+    } else if (totalSkor >= 10) {
+      gcsKesimpulan.value = "Delirium";
+    } else if (totalSkor >= 7) {
+      gcsKesimpulan.value = "Somnolence";
+    } else if (totalSkor >= 5) {
+      gcsKesimpulan.value = "Sopor";
+    } else if (totalSkor === 4) {
+      gcsKesimpulan.value = "Semi-coma";
+    } else if (totalSkor === 3) {
+      gcsKesimpulan.value = "Coma";
     }
   }
 };
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
-  compareDialog.value = true;
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+
+const showDialogCompare = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "kesadaran",
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+    compareDialog.value = true;
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1];
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
+};
+
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
 
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -381,8 +452,11 @@ defineExpose({
         <CustomInfoRow label="Kesimpulan GCS" :value="gcsKesimpulan" />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
+        <CustomInfoRow
+            label="Jam Input"
+            :value="`${epochToDate(createdAt, 'time')}`"
+          />
       </div>
-      <!-- Dialog compare -->
       <CustomDialog
         class=""
         v-model:visible="compareDialog"
@@ -391,21 +465,36 @@ defineExpose({
       >
         <template #header>Kesadaran</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto">
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
+                <div class="flex items-center">
+                  <div class="flex items-center border border-adameds-50 rounded-md px-2 mr-4 h-9">
+                    <PhBuildings :size="20" class="text-adameds-50" />
+                    <CustomSelect
+                      v-model="selectedFilter"
+                      :options="filterOptions"
+                      optionLabel="name"
+                      optionValue="value"
+                      :show-label="false"
+                      custom-select-class="!border-none !text-adameds-50 focus:!ring-0"
+                      placeholder-class="!text-adameds-50"
+                      class="w-32"
+                    />
+                  </div>
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
                     icon="PhCaretLeft"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
                     icon="PhCaretRight"
@@ -413,11 +502,15 @@ defineExpose({
                 </div>
               </div>
               <div
-                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4"
               >
-                <HistoriKesadaran />
-                <div class="border border-adameds-300 mx-[15px]"></div>
-                <HistoriKesadaran />
+                <HistoriKesadaran v-if="leftHistoryItem" :history="leftHistoryItem.data" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
+
+                <div v-if="rightHistoryItem" class="border border-adameds-300"></div>
+                
+                <HistoriKesadaran v-if="rightHistoryItem" :history="rightHistoryItem.data" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>

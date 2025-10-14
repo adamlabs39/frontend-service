@@ -29,6 +29,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const isEditing = ref(props.method === "form");
@@ -88,8 +92,29 @@ const onSubmit = handleSubmit(async (values: any) => {
 });
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
-  compareDialog.value = true;
+const historyData = ref<Array<any> | null>(null);
+
+const showDialogCompare = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "diagnosa_perawat",
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+    } else {
+      historyData.value = null;
+    }
+    compareDialog.value = true;
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -172,9 +197,11 @@ defineExpose({
               <div
                 class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
               >
-                <HistoriAsuhanKeperawatan />
+                <HistoriAsuhanKeperawatan  v-if="historyData && historyData[0]" :history="historyData[0].data" />
+                <div v-else class="text-center text-grey-400">Tidak ada riwayat.</div>
                 <div class="border border-adameds-300 mx-[15px]"></div>
-                <HistoriAsuhanKeperawatan />
+                <HistoriAsuhanKeperawatan v-if="historyData && historyData[1]" :history="historyData[1].data" />
+                <div v-else class="text-center text-grey-400">Tidak ada riwayat.</div>
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>

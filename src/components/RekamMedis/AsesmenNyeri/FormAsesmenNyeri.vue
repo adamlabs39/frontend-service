@@ -23,6 +23,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import HistoriAsesmenNyeri from "@/components/RekamMedis/AsesmenNyeri/HistoriAsesmenNyeri.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -40,6 +41,10 @@ const props = defineProps({
   sessionUuid: {
     type: String,
     default: "",
+  },
+  patientData: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -135,15 +140,73 @@ onBeforeMount(async () => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
 });
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
-  compareDialog.value = true;
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const showDialogCompare = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "asesmen_nyeri",
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+    compareDialog.value = true;
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value].data;
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1].data;
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -237,7 +300,6 @@ defineExpose({
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />
       </div>
-      <!-- Dialog compare -->
       <CustomDialog
         class=""
         v-model:visible="compareDialog"
@@ -246,21 +308,31 @@ defineExpose({
       >
         <template #header>Asesmen Nyeri</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto">
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
+                <div class="flex items-center">
+                  <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
+                  />
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
                     icon="PhCaretLeft"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
                     icon="PhCaretRight"
@@ -268,11 +340,15 @@ defineExpose({
                 </div>
               </div>
               <div
-                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4"
               >
-                <HistoriAsesmenNyeri />
-                <div class="border border-adameds-300 mx-[15px]"></div>
-                <HistoriAsesmenNyeri />
+                <HistoriAsesmenNyeri v-if="leftHistoryItem" :history="leftHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
+
+                <div v-if="rightHistoryItem" class="border border-adameds-300"></div>
+                
+                <HistoriAsesmenNyeri v-if="rightHistoryItem" :history="rightHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
