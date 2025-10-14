@@ -52,13 +52,6 @@ const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
 const [catatan] = defineField("catatan");
 const [petugas] = defineField("petugas");
 
-onBeforeMount(async () => {
-  setValues({
-    catatan: "Tidak Ada",
-    petugas: "Adam",
-  });
-});
-
 const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.catatanPenunjang) {
     const tempHasilPenunjang =
@@ -74,7 +67,6 @@ onBeforeMount(async () => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
@@ -109,19 +101,21 @@ const compareDialog = ref(false);
 const historyData = ref<Array<any> | null>(null);
 const historyPageIndex = ref(0);
 const filterOptions = ref([
+  { name: "Semua", value: "semua" },
   { name: "RJ", value: "rj" },
   { name: "RI", value: "ri" },
   { name: "IGD", value: "igd" },
 ]);
-const selectedFilter = ref("rj");
+const selectedFilter = ref("semua");
 
-const showDialogCompare = async () => {
+const fetchHistoryData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.getCompare({
       noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
       noRm: props.patientData?.patient?.noRm,
       key: "catatan_penunjang",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
     });
 
     if (response && response.payload) {
@@ -130,7 +124,6 @@ const showDialogCompare = async () => {
     } else {
       historyData.value = null;
     }
-    compareDialog.value = true;
   } catch (error) {
     console.error("Gagal mengambil data compare:", error);
     historyData.value = null;
@@ -139,14 +132,25 @@ const showDialogCompare = async () => {
   }
 };
 
+const showDialogCompare = async () => {
+  await fetchHistoryData();
+  compareDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
 const leftHistoryItem = computed(() => {
   if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
-  return historyData.value[historyPageIndex.value].data;
+  return historyData.value[historyPageIndex.value];
 });
 
 const rightHistoryItem = computed(() => {
   if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
-  return historyData.value[historyPageIndex.value + 1].data;
+  return historyData.value[historyPageIndex.value + 1];
 });
 
 const canGoToPrevious = computed(() => historyPageIndex.value > 0);

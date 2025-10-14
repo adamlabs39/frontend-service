@@ -156,22 +156,23 @@ const filterOptions = ref([
 ]);
 const selectedFilter = ref("semua");
 
-const showDialogCompare = async () => {
+// Fungsi baru untuk mengambil data riwayat
+const fetchHistoryData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.getCompare({
       noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
       noRm: props.patientData?.patient?.noRm,
       key: "asesmen_nyeri",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
     });
 
     if (response && response.payload) {
       historyData.value = response.payload;
-      historyPageIndex.value = 0;
+      historyPageIndex.value = 0; // Selalu reset paginasi saat data baru dimuat
     } else {
       historyData.value = null;
     }
-    compareDialog.value = true;
   } catch (error) {
     console.error("Gagal mengambil data compare:", error);
     historyData.value = null;
@@ -179,6 +180,19 @@ const showDialogCompare = async () => {
     storeUtils.setLoading(false);
   }
 };
+
+const showDialogCompare = async () => {
+  await fetchHistoryData(); // Panggil fungsi baru saat dialog dibuka
+  compareDialog.value = true;
+};
+
+// Panggil ulang API setiap kali filter berubah
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
 
 const leftHistoryItem = computed(() => {
   if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;

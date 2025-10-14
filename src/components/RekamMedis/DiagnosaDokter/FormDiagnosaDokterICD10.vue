@@ -233,15 +233,16 @@ const filterOptions = ref([
   { name: "RI", value: "ri" },
   { name: "IGD", value: "igd" },
 ]);
-const selectedFilter = ref({ name: "Semua", value: "semua" });
+const selectedFilter = ref("semua");
 
-const showDialogCompare = async () => {
+const fetchHistoryData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.getCompare({
       noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
       noRm: props.patientData?.patient?.noRm,
       key: "diagnosis_dokter",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
     });
 
     if (response && response.payload) {
@@ -250,7 +251,6 @@ const showDialogCompare = async () => {
     } else {
       historyData.value = null;
     }
-    compareDialog.value = true;
   } catch (error) {
     console.error("Gagal mengambil data compare:", error);
     historyData.value = null;
@@ -258,6 +258,18 @@ const showDialogCompare = async () => {
     storeUtils.setLoading(false);
   }
 };
+
+const showDialogCompare = async () => {
+  await fetchHistoryData();
+  compareDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
 
 const leftHistoryItem = computed(() => {
   if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
@@ -527,8 +539,8 @@ defineExpose({
                   Riwayat Sebelumnya
                 </div>
                 <div class="flex items-center">
-                  <CustomSelect
-                    v-model="selectedFilter.value"
+                   <CustomSelect
+                    v-model="selectedFilter"
                     :options="filterOptions"
                     optionLabel="name"
                     optionValue="value"
