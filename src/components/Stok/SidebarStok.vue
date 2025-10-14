@@ -5,6 +5,7 @@ import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
 import { ref, watch } from "vue";
+import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
 import dialogStokView from "@/views/Stok/StokView.vue";
 
 const props = defineProps({
@@ -25,38 +26,27 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+
   showStockBtn: {
     type: Boolean,
     default: false,
   },
+  selectedKey: {
+    type: String,
+    default: "",
+  },
 });
-
-// State Management Stock Location
-const StockLocationStore = useStockLocationStore();
-const StockLocationPayload = ref<any[]>([]);
-
-// Fetch Stock Location
-const fetchStockLocation = async () => {  
-  try {
-    const response = await StockLocationStore.getApi();
-
-    if (response && response.payload) {
-      StockLocationPayload.value = response.payload;
-    } else {
-      StockLocationPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    StockLocationPayload.value = [];
-  }
-};
 
 const router = useRouter();
 const route = useRoute();
 
 const showSidebar = ref(true);
 const DialogStokView = ref(false);
-const emit = defineEmits(["filterChanged", "update:searchSidebar"]);
+const emit = defineEmits([
+  "filterChanged",
+  "update:searchSidebar",
+  "select-component",
+]);
 const searchSidebar = ref("");
 
 watch(searchSidebar, (newValue) => {
@@ -101,12 +91,6 @@ const getSVG = (svg: string) => {
   ).href;
   return imgUrl;
 };
-
-onMounted(() => {
-  if (props.sidebarTitle === 'Inventory'){
-    fetchStockLocation();
-  }
-});
 </script>
 
 <template>
@@ -140,27 +124,25 @@ onMounted(() => {
 
         <!-- body -->
         <div class="overflow-auto">
-          <hr v-if="props.sidebarTitle === 'Inventory'" />
-          <div v-if="props.sidebarTitle === 'Inventory'">
-            <CustomSelect
-              place-holder="Pilih Lokasi Stok"
-              :showLabel="false"
-              optionLabel="name"
-              optionValue="uuid"
-              :options="StockLocationPayload"
-              class="mb-[20px] mt-[20px]"
-            />
-          </div>
-          <div v-for="(section, index) in props.sidebarBodyList" class="text-SM">
+          <div
+            v-for="(section, index) in props.sidebarBodyList"
+            class="text-SM"
+          >
             <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
             <div v-for="row1 in section.child">
               <div v-if="showSidebar">
                 <div
                   v-if="row1.type == linkType.LINK"
-                  @click="goToPage(row1.url ?? '')"
+                  @click="
+                    row1.url
+                      ? goToPage(row1.url)
+                      : emit('select-component', row1.datas)
+                  "
                   class="font-bold cursor-pointer my-[15px] flex px-[10px] py-[5px]"
                   :class="{
-                    'bg-adameds-100 rounded-lg': route.path == row1.url,
+                    'bg-adameds-100 rounded-lg':
+                      route.path == row1.url ||
+                      (!row1.url && props.selectedKey === row1.datas),
                   }"
                 >
                   <component
@@ -205,7 +187,9 @@ onMounted(() => {
                       @click="
                         row1.name === 'Poli' || row1.name === 'Ruang Rawatan'
                           ? goToFilteredPage(row2.datas, row2.name)
-                          : goToPage(row2.url ?? '')
+                          : row2.url
+                          ? goToPage(row2.url)
+                          : emit('select-component', row2.datas)
                       "
                       class="cursor-pointer mx-[10px] my-[10px] px-[10px] py-[5px]"
                       :class="{
@@ -222,7 +206,8 @@ onMounted(() => {
                                 route.path === '/rawat-inap/ruangan'))) ||
                           (row1.name !== 'Poli' &&
                             row1.name !== 'Ruang Rawatan' &&
-                            route.path === row2.url),
+                            (route.path === row2.url ||
+                              (!row2.url && props.selectedKey === row2.datas))),
                       }"
                     >
                       {{ row2.name }}
