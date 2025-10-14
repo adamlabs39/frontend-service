@@ -104,7 +104,7 @@ onMounted(() => {
                   <p
                     class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
                   >
-                    Permintaan Unit
+                    Pengeluaran Unit
                   </p>
                 </div>
                 <PhCaretRight
