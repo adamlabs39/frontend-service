@@ -356,7 +356,7 @@ onMounted(() => {
                 v-model="searchQuery"
                 label="Cari Manufaktur"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama Manufaktur"
+                placeholder="Cari Nama Jenis Stok"
                 class="flex-1"
               />
               <div class="flex items-end">
