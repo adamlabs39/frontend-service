@@ -452,7 +452,7 @@ onMounted(() => {
             <div class="flex mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
-                label="Pencarian"
+                label="Cari Item Medis"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Item Medis (Obat / Alkes / dll)"
                 class="w-[70%] mr-5"
