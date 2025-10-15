@@ -54,12 +54,20 @@ const schema = toTypedSchema(
       isiKemasan: yup.number().required("Kemasan harus diisi"),
       satuanKemasanUuid: yup.string().required("Satuan Kemasan harus diisi"),
       jenisItem: yup.string().required("Jenis Item harus diisi"),
-      satuanPenggunaanUuid: yup.string().required("Satuan Pengguna harus diisi"),
+      satuanPenggunaanUuid: yup
+        .string()
+        .required("Satuan Pengguna harus diisi"),
       manufactureUuid: yup.string().required("Manufaktur harus diisi"),
       bentukSediaanUuid: yup.string().required("Bentuk Sediaan harus diisi"),
       kategoriObatUuid: yup.string().required("Kategori Item harus diisi"),
-      jenisStocks: yup.array().min(1, "Minimal satu Jenis Stok harus dipilih").required("Jenis Stok harus diisi"),
-      ingridients: yup.array().min(1, "Minimal satu Komposisi harus dipilih").required("Komposisi harus diisi"),
+      jenisStocks: yup
+        .array()
+        .min(1, "Minimal satu Jenis Stok harus dipilih")
+        .required("Jenis Stok harus diisi"),
+      ingridients: yup
+        .array()
+        .min(1, "Minimal satu Komposisi harus dipilih")
+        .required("Komposisi harus diisi"),
       status: yup.bool().default(true),
     })
     .noUnknown()
@@ -92,7 +100,7 @@ const addRow = () => {
     satuanPembelian: resultSelectedPembelian.value.name,
     satuanPenggunaanUuid: resultSelectedPenggunaan.value.uuid,
     satuanPenggunaan: resultSelectedPenggunaan.value.name,
-    konversi: konversi.value
+    konversi: konversi.value,
   });
 };
 
@@ -104,11 +112,15 @@ const satuanPembelianUuid = ref<any>({});
 const konversi = ref(0);
 const resultSelectedPenggunaan = ref<any>({});
 const selectedPenggunaan = (uuid: string) => {
-  resultSelectedPenggunaan.value = UnitPayload.value.find((unit) => unit.uuid === uuid);
+  resultSelectedPenggunaan.value = UnitPayload.value.find(
+    (unit) => unit.uuid === uuid
+  );
 };
 const resultSelectedPembelian = ref<any>({});
 const selectedPembelian = (uuid: string) => {
-  resultSelectedPembelian.value = UnitPayload.value.find((unit) => unit.uuid === uuid);
+  resultSelectedPembelian.value = UnitPayload.value.find(
+    (unit) => unit.uuid === uuid
+  );
 };
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -232,15 +244,15 @@ const MedicalItemStore = useMedicalItemStore();
 
 const onSubmit = handleSubmit(async (values: any) => {
   let jenisStokDelete = values.jenisStocks.map((uuid: string) => ({
-    jenis_stok_uuid: uuid
-  }))
+    jenis_stok_uuid: uuid,
+  }));
   let jenisStokNew = values.jenisStocks.map((uuid: string) => ({
-    jenis_stok_uuid: uuid
-  }))
+    jenis_stok_uuid: uuid,
+  }));
   let ingridientsNew = values.ingridients.map((name: string) => ({
-    name: name
-  }))
-  
+    name: name,
+  }));
+
   try {
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -268,11 +280,11 @@ const onSubmit = handleSubmit(async (values: any) => {
             satuan_pembelian: resultSelectedPembelian.value.name,
             satuan_penggunaan_uuid: resultSelectedPenggunaan.value.uuid,
             satuan_penggunaan: resultSelectedPenggunaan.value.name,
-            konversi: konversi.value
-          }
-        ] 
-      }
-      
+            konversi: konversi.value,
+          },
+        ],
+      };
+
       const response = await MedicalItemStore.putApi(uuid, payloadUpdated);
       console.log("Data updated successfully:", response);
       emit("data-updated");
@@ -298,10 +310,10 @@ const onSubmit = handleSubmit(async (values: any) => {
             satuan_pembelian: resultSelectedPembelian.value.name,
             satuan_penggunaan_uuid: resultSelectedPenggunaan.value.uuid,
             satuan_penggunaan: resultSelectedPenggunaan.value.name,
-            konversi: konversi.value
-          }
-        ]
-      }
+            konversi: konversi.value,
+          },
+        ],
+      };
       const response = await MedicalItemStore.postApi(payload);
       emit("data-updated");
     }
@@ -316,20 +328,19 @@ watch(
   (newValue) => {
     if (newValue) {
       resetDialogMode();
-      if (props.method !== "add" && props.payload) {        
-        const selectedJenisStok = props.payload.jenisStok?.map(
-          (item: any) => 
-            item.detailStok?.uuid         
-        ) || [];
-        const selectedIngridient = props.payload.ingridients?.map(
-          (item: {name: string}) => 
-            item.name         
-        ) || [];
-        
+      if (props.method !== "add" && props.payload) {
+        const selectedJenisStok =
+          props.payload.jenisStok?.map((item: any) => item.detailStok?.uuid) ||
+          [];
+        const selectedIngridient =
+          props.payload.ingridients?.map(
+            (item: { name: string }) => item.name
+          ) || [];
+
         setValues({
           ...props.payload,
           jenisStocks: selectedJenisStok,
-          ingridients: selectedIngridient
+          ingridients: selectedIngridient,
         });
       }
     } else {
@@ -349,10 +360,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="700px">
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="700px"
+  >
     <template #header>
       <div v-if="method !== 'detail'" class="grid grid-cols-1">
-        <p>Tambah Data Item Medis</p>
+        <p>{{ title }} Data Item Medis</p>
       </div>
       <div v-if="method === 'detail'" class="grid grid-cols-1">
         <p>Detail Data Item Medis</p>
@@ -540,7 +555,7 @@ onMounted(() => {
           </div>
         </div>
         <hr class="mt-[20px] border border-slate-300" />
-        
+
         <!-- Konversi Satuan -->
         <div class="grid grid-cols-1 mt-[30px]">
           <p class="text-xl font-bold">Konversi Satuan</p>
@@ -568,7 +583,9 @@ onMounted(() => {
               class="mr-[15px] ml-[15px]"
             >
               <template #appendText>
-                <div class="font-semibold text-sm text-adameds-300 mr-[15px] mt-[10px]">
+                <div
+                  class="font-semibold text-sm text-adameds-300 mr-[15px] mt-[10px]"
+                >
                   {{ resultSelectedPenggunaan.name }}
                 </div>
               </template>
@@ -603,17 +620,26 @@ onMounted(() => {
                 </div>
               </template>
             </Column>
-            <Column header="Satuan Pembelian" headerClass="bg-adameds-50 font-semibold text-SM">
+            <Column
+              header="Satuan Pembelian"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            >
               <template #body="slotProps">
                 <div class="text-sm">{{ slotProps.data.satuanPembelian }}</div>
               </template>
             </Column>
-            <Column header="Satuan Penggunaan" headerClass="bg-adameds-50 font-semibold text-SM">
+            <Column
+              header="Satuan Penggunaan"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            >
               <template #body="slotProps">
                 <div class="text-sm">{{ slotProps.data.satuanPenggunaan }}</div>
               </template>
             </Column>
-            <Column header="Konversi" headerClass="bg-adameds-50 font-semibold text-SM">
+            <Column
+              header="Konversi"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            >
               <template #body="slotProps">
                 <div class="text-sm">{{ slotProps.data.konversi }}</div>
               </template>
@@ -662,28 +688,30 @@ onMounted(() => {
             <p class="mt-[20px] text-sm font-bold">Kode Item Medis</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.code }}</p>
+            <p class="mt-[20px] text-sm">: {{ payload?.code || "-" }}</p>
           </div>
           <!-- Nama Item Medis -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Nama Item Medis</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.name }}</p>
+            <p class="mt-[20px] text-sm">: {{ payload?.name || "-" }}</p>
           </div>
           <!-- Jenis Item -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Jenis Item</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.jenisItem }}</p>
+            <p class="mt-[20px] text-sm">: {{ payload?.jenisItem || "-" }}</p>
           </div>
           <!-- Satuan Penggunaan -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Satuan Penggunaan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.satuanPenggunaan.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.satuanPenggunaan?.name || "-" }}
+            </p>
           </div>
           <!-- Jenis Stok -->
           <div>
@@ -691,9 +719,13 @@ onMounted(() => {
           </div>
           <div class="flex mt-[20px] text-sm">
             :
-            <div class="ml-[5px]" v-for="items in payload.jenisStok" :key="items">
+            <div
+              class="ml-[5px]"
+              v-for="(items, idx) in payload?.jenisStok || []"
+              :key="items?.detailStok?.uuid || idx"
+            >
               <CustomChip
-                :label="items.detailStok.name"
+                :label="items?.detailStok?.name || '-'"
                 :showCheckedIcon="false"
                 borderColor="border-adameds-300"
                 bgColor="bg-adameds-300"
@@ -708,14 +740,18 @@ onMounted(() => {
             <p class="mt-[20px] text-sm font-bold">Manufaktur</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.manufacture.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.manufacture?.name || "-" }}
+            </p>
           </div>
           <!-- Bentuk Sediaan -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Bentuk Sediaan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.bentukSediaan.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.bentukSediaan?.name || "-" }}
+            </p>
           </div>
         </div>
         <div class="grid grid-cols-[30%,20%,30%,20%]">
@@ -724,28 +760,32 @@ onMounted(() => {
             <p class="mt-[20px] text-sm font-bold">Dosis Kemasan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.dosis }}</p>
+            <p class="mt-[20px] text-sm">: {{ payload?.dosis ?? "-" }}</p>
           </div>
           <!-- Satuan -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Satuan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.satuanDosis.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.satuanDosis?.name || "-" }}
+            </p>
           </div>
           <!-- Isi Kemasan -->
           <div>
-            <p class="mt-[20px] text-sm font-bold">Isi Kemasan</p>
+            <p class="mt-[20px] text sm font-bold">Isi Kemasan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.isiKemasan }}</p>
+            <p class="mt-[20px] text-sm">: {{ payload?.isiKemasan ?? "-" }}</p>
           </div>
           <!-- Satuan -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Satuan</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.satuanKemasan.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.satuanKemasan?.name || "-" }}
+            </p>
           </div>
         </div>
         <div class="grid grid-cols-[30%,70%]">
@@ -754,16 +794,23 @@ onMounted(() => {
             <p class="mt-[20px] text-sm font-bold">Kategori Item</p>
           </div>
           <div>
-            <p class="mt-[20px] text-sm">: {{ payload.kategoriObat.name }}</p>
+            <p class="mt-[20px] text-sm">
+              : {{ payload?.kategoriObat?.name || "-" }}
+            </p>
           </div>
           <!-- Komposisi -->
           <div>
             <p class="mt-[20px] text-sm font-bold">Komposisi</p>
           </div>
-          <div class="flex mt-[20px] text-sm">:
-            <div class="ml-[5px]" v-for="items in payload.ingridients" :key="items">
+          <div class="flex mt-[20px] text-sm">
+            :
+            <div
+              class="ml-[5px]"
+              v-for="(items, idx) in payload?.ingridients || []"
+              :key="items?.uuid || items?.name || idx"
+            >
               <CustomChip
-                :label="items.name"
+                :label="items?.name || '-'"
                 :showCheckedIcon="false"
                 borderColor="border-adameds-300"
                 bgColor="bg-adameds-300"
@@ -780,7 +827,7 @@ onMounted(() => {
         </div>
         <hr class="mt-[10px] border border-slate-200" />
         <div class="mt-[20px]">
-          <DataTable :value="payload.conversions" class="text-xs">
+          <DataTable :value="payload?.conversions || []" class="text-xs">
             <Column headerClass="bg-adameds-50 font-semibold text-SM">
               <template #header>
                 <div class="w-full text-center">No.</div>
@@ -792,11 +839,23 @@ onMounted(() => {
               </template>
             </Column>
             <!-- Satuan Pembelian -->
-            <Column field="satuanPembelian" header="Satuan Pembelian" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+            <Column
+              field="satuanPembelian"
+              header="Satuan Pembelian"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            ></Column>
             <!-- Satuan Penggunaan -->
-            <Column field="satuanPenggunaan" header="Satuan Penggunaan" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+            <Column
+              field="satuanPenggunaan"
+              header="Satuan Penggunaan"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            ></Column>
             <!-- Konversi -->
-            <Column field="konversi" header="Konversi" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+            <Column
+              field="konversi"
+              header="Konversi"
+              headerClass="bg-adameds-50 font-semibold text-SM"
+            ></Column>
           </DataTable>
         </div>
         <div class="grid grid-cols-1">
