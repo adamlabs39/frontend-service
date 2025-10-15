@@ -28,8 +28,8 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup
     .object({
-      code: yup.string().required("Kode Cara Pakai harus diisi"),
-      caraPakai: yup.string().required("Nama Cara Pakai harus diisi"),
+      code: yup.string().trim().required("Kode Cara Pakai harus diisi"),
+      caraPakai: yup.string().trim().required("Nama Cara Pakai harus diisi"),
       status: yup.bool().default(true),
     })
     .noUnknown()
@@ -152,7 +152,7 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             label="Reset"
             textColor="text-grey-300"
