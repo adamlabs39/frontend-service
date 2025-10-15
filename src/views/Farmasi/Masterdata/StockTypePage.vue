@@ -354,7 +354,7 @@ onMounted(() => {
             <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
-                label="Cari Manufaktur"
+                label="Cari jenis Stok"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Jenis Stok"
                 class="flex-1"
