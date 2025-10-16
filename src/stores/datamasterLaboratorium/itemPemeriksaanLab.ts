@@ -59,5 +59,8 @@ export const useItemPemeriksaanStore = defineStore({
     async importApi(payload: any) {
       return apiLaboratoriumPost("/lab/item-pemeriksaan/import", payload);
     },
+    async getActive(payload = {}) {
+      return apiLaboratoriumGet(`/lab/item-pemeriksaan/active`, payload);
+    },
   },
 });

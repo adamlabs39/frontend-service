@@ -14,7 +14,12 @@ import NoData from "@/components/section/NoData.vue";
 import ExpertiseDetailPage from "./ExpertiseDetailPage.vue";
 import { useExpertiseLab } from "@/stores/Laboratorium/expertise";
 import { utilsStore } from "@/stores/utils";
-import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -55,6 +60,8 @@ const fetchExpertiseLab = async () => {
       page: expertiseLabProperties.value.page,
       limit: expertiseLabProperties.value.page_size,
       search: searchQuery.value,
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
     };
 
     if (selectedOrderType.value === "Periksa") {
@@ -129,9 +136,12 @@ const searchData = () => {
 };
 
 const resetData = () => {
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
   searchQuery.value = "";
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   selectedPaymentMethod.value = [];
   fetchExpertiseLab();
 };
@@ -143,6 +153,12 @@ const handlePage = (event: any) => {
 };
 
 onMounted(async () => {
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   await fetchExpertiseLab();
 });
 </script>
@@ -160,7 +176,11 @@ onMounted(async () => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchExpertiseLab"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Expertise',
@@ -173,6 +193,7 @@ onMounted(async () => {
           <template #content>
             <div class="flex mt-[10px]">
               <CustomTextfield
+                v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama, Alamat, No RM"
@@ -190,11 +211,13 @@ onMounted(async () => {
                 class="mt-auto w-[150px]"
               />
               <CustomButton
+                @click="searchData"
                 icon="PhMagnifyingGlass"
                 label="Cari"
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -474,11 +497,12 @@ onMounted(async () => {
               </div>
             </template>
           </Column>
-          <Column field="expertise"
+          <Column
+            field="expertise"
             header="Expertise"
             headerClass="bg-adameds-50"
           >
-           <template #body="slotProps">
+            <template #body="slotProps">
               <CustomChip
                 v-if="slotProps.data.expertise === 'true'"
                 label="Expertise"
@@ -488,7 +512,7 @@ onMounted(async () => {
                 textColor="text-adameds-300"
                 customClass="h-5 border-none items-center justify-center"
               />
-              <div v-else >-</div>
+              <div v-else>-</div>
             </template>
           </Column>
         </DataTable>

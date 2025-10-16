@@ -20,38 +20,6 @@ const tglFaktur = ref(new Date());
 const cariNoFaktur = ref("")
 
 onMounted(() => {
-  faktur.value = [
-    {
-      noPenerimaan: "TRM123456",
-      tglPenerimaan: "01-01-2024",
-      noFaktur: "FKT1234",
-      tglFaktur: "01-01-2024",
-      supplier: "PT.Sanbe",
-      jenisItem: "Obat",
-      kategori: "Medis",
-      caraBayar:"Tunai",
-      jenisStok:"Umum",
-      datas: [
-        {
-          namaItems: "Paracetamol",
-          expDate: "01-01-2025",
-          diterima:50,
-          jumlahBeli: 2,
-          satuanBeli: "Box/100",
-          satuanPenggunaan:"Pcs",
-          hargaSatuan: 1000,
-          jumlahPermintaan: 100000,
-        },
-      ],
-    },
-    {
-      noPenerimaan: "TRM123456",
-      tglPenerimaan: "01-01-2024",
-      noFaktur: "FKT1234",
-      tglFaktur: "01-01-2024",
-      supplier: "PT.Kimia Klinik",
-    },
-  ];
 });
 
 const emit = defineEmits(["update:isDialogVisible", "close", "sendToTambahRetur"]);

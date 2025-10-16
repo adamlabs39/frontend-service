@@ -2,194 +2,138 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
+import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
 
 const props = defineProps({
-  isDialogVisible: {
-    type: Boolean,
-    default: false,
-  },
-  title: {
-    type: String,
-  },
-  index: {
-    type: Number,
-    default: null,
-  },
+  isDialogVisible: { type: Boolean, default: false },
+  kategoriItem: { type: String, default: "" },
+  jenisStok: { type: String, default: "" },
+  jenisItem: { type: String, default: "" },
+  availableItems: { type: Array as () => any[], default: () => [] },
 });
 
-const emit = defineEmits(["update:isDialogVisible", "add-permintaan"]);
+const emit = defineEmits(["update:isDialogVisible", "add-items"]);
 
 function updateVisibility(value: boolean) {
   emit("update:isDialogVisible", value);
 }
 
+interface DialogItem {
+  uuid: string;
+  name: string;
+}
+
+// Validation schema for the form
 const tambahPermintaanMultipleSchema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
-        namaItems: yup.string(),
-        sisaStok: yup.number(),
-        stokTujuan: yup.number(),
+        uuid: yup.string(),
+        name: yup.string(),
       })
     ),
   })
 );
 
-const { errors, handleSubmit, resetForm } = useForm({
+// Vee-validate form setup
+const { handleSubmit, resetForm } = useForm({
   validationSchema: tambahPermintaanMultipleSchema,
-  initialValues: {
-    datas: [],
-  },
+  initialValues: { datas: [] },
 });
 
-const { remove, push, fields } = useFieldArray("datas");
+const { remove, push, fields } = useFieldArray<DialogItem>("datas");
 
-const listObat = ref([
-  { id: "1", value: "Paracetamol" },
-  { id: "2", value: "Decolgen" },
-  { id: "2", value: "Bodrex" },
-]);
+const selectedItem = ref<any>(null);
 
-const selectedItem = ref(""); // Store selected item
-
+// Function to add selected item to the data table
 function addItemToDataTable() {
   if (selectedItem.value) {
-    push({
-      namaItems: selectedItem.value,
-      sisaStok: 100,
-      stokTujuan: 3000,
-    });
-    selectedItem.value = "";
+    const isExist = fields.value.some(field => field.value.uuid === selectedItem.value!.uuid);
+    if (!isExist) {
+      push({
+        uuid: selectedItem.value.uuid,
+        name: selectedItem.value.name,
+      });
+    }
+    selectedItem.value = null;
   }
 }
 
-const onSubmitTambahPermintaanMultiple = handleSubmit((values: any) => {
-  emit("add-permintaan", values.datas);
-  console.log(values.datas);
-  resetForm(); // Reset form setelah submit
-  emit("update:isDialogVisible", false); // Tutup dialog
+// Form submission handler
+const onSubmit = handleSubmit((values) => {
+  if (values.datas) {
+    emit("add-items", values.datas);
+  }
+  resetForm();
+  updateVisibility(false);
 });
+
+// Computed properties for display
+const displayKategori = computed(() => props.kategoriItem || "-");
+const displayJenisStok = computed(() => props.jenisStok || "-");
+const displayJenisItem = computed(() => props.jenisItem || "-");
 </script>
 
 <template>
-  <CustomDialog
-    width="800px"
-    class=""
-    :visible="isDialogVisible"
-    headerBg="bg-adameds-300"
-    @update:visible="updateVisibility"
-  >
-    <template #header> {{ title }} </template>
+  <CustomDialog width="800px" :visible="isDialogVisible" headerBg="bg-adameds-300" @update:visible="updateVisibility">
+    <template #header> Tambah Item Multiple </template>
     <template #body>
       <div class="flex flex-col gap-5 mt-5">
+        <div class="grid grid-cols-3 p-4 border rounded-lg">
+          <div>
+            <p class="font-semibold underline">Kategori Item</p>
+            <p class="capitalize">{{ displayKategori }}</p>
+          </div>
+          <div>
+            <p class="font-semibold underline">Jenis Stok</p>
+            <p>{{ displayJenisStok }}</p>
+          </div>
+          <div>
+            <p class="font-semibold underline">Jenis Item</p>
+            <p class="capitalize">{{ displayJenisItem }}</p>
+          </div>
+        </div>
+
         <div class="flex items-end w-full gap-5">
-          <CustomSelect
-            prepend-icon="PhMagnifyingGlass"
-            label="Cari Item"
-            place-holder="Cari Item"
-            class="grow"
-            :options="listObat"
-            optionValue="value"
-            optionLabel="value"
-            v-model="selectedItem"
-          />
+          <CustomSelect prepend-icon="PhMagnifyingGlass" label="Cari Item" place-holder="Cari & Pilih Item" class="grow"
+            :options="props.availableItems" optionLabel="name" v-model="selectedItem" :return-object="true" />
           <CustomButton @click="addItemToDataTable">
             <PhPlus :size="16" />
           </CustomButton>
         </div>
-        <DataTable
-          tableStyle="min-width: 40rem"
-          :value="fields"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-          @row-click=""
-        >
-          <Column headerClass="bg-adameds-50">
-            <template #header>
-              <div class="w-full font-semibold text-center">No.</div>
-            </template>
+        <DataTable :value="fields" stripedRows class="text-xs" scrollable scrollHeight="200px">
+          <Column headerClass="bg-adameds-50" class="w-16"><template #header>No.</template><template
+              #body="slotProps">{{ slotProps.index + 1 }}</template></Column>
+          <Column field="value.name" header="Nama Obat" headerClass="bg-adameds-50"></Column>
+          <Column header="Sisa Stok" headerClass="bg-adameds-50"><template #body>0</template></Column>
+          <Column header="Stok Tujuan" headerClass="bg-adameds-50"><template #body>3000</template></Column>
+          <Column header="Action" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
-              </div>
-            </template>
-          </Column>
-          <Column headerClass="bg-adameds-50" class="w-1/2">
-            <template #header>
-              <div class="font-semibold">Nama Obat</div>
-            </template>
-            <template #body="slotProps">
-              {{ slotProps.data.value.namaItems }}
-            </template>
-          </Column>
-          <Column headerClass="bg-adameds-50" class="w-1/2">
-            <template #header>
-              <div class="w-full font-semibold text-center">Sisa Stok</div>
-            </template>
-            <template #body="slotProps">
-              <div class="text-center">{{ slotProps.data.value.sisaStok }}</div>
-            </template>
-          </Column>
-          <Column headerClass="bg-adameds-50" class="min-w-[200px]">
-            <template #header>
-              <div class="w-full font-semibold text-center">Stok Tujuan</div>
-            </template>
-            <template #body="slotProps">
-                <div class="text-center">{{ slotProps.data.value.stokTujuan }}</div>
-            </template>
-          </Column>
-          <Column headerClass="bg-adameds-50">
-            <template #header>
-              <div
-                class="flex items-center justify-center w-full font-semibold text-SM"
-              >
-                Action
-              </div>
-            </template>
-            <template #body="slotProps">
-              <div class="flex items-center gap-2.5 justify-center">
-                <CustomButton
-                  label=""
-                  background-color="bg-danger-300 rounded-lg"
-                  class="h-6 w-[26px] p-0"
-                  @click="remove(slotProps.index)"
-                >
-                  <img src="@/assets/icons/delete.svg" alt="" />
+              <div class="flex justify-center">
+                <CustomButton background-color="bg-danger-300 rounded-lg" class="h-6 w-6 p-0"
+                  @click="remove(slotProps.index)">
+                  <PhTrash :size="15" weight="fill" class="text-white" />
                 </CustomButton>
               </div>
             </template>
           </Column>
         </DataTable>
         <hr class="border-grey-200" />
-        <div class="font-semibold text-MD">
+        <div class="font-semibold">
           Total Item Terpilih : {{ fields.length }}
         </div>
       </div>
     </template>
     <template #footer>
-      <div class="w-full">
-        <hr class="-mx-5 border-grey-200" />
-        <div class="mt-5 flex justify-end gap-2.5">
-          <CustomButton
-            label="Hapus Semua"
-            border-color=" border-2 border-danger-300"
-            background-color="bg-white"
-            text-color="text-danger-300"
-            @click="resetForm"
-          >
-          </CustomButton>
-          <CustomButton
-            label="Ambil Item"
-            @click="onSubmitTambahPermintaanMultiple"
-          >
-          </CustomButton>
-        </div>
+      <div class="flex justify-end gap-2.5">
+        <CustomButton label="Hapus Semua" outlined borderColor="border-danger-300" textColor="text-danger-300"
+          @click="resetForm" />
+        <CustomButton label="Ambil Item" @click="onSubmit" />
       </div>
     </template>
   </CustomDialog>

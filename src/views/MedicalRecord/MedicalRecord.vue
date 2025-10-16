@@ -520,9 +520,9 @@ defineExpose({ showDialogRM });
             <div
               class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]"
             >
-              {{ patientData.noRm }}
+              {{ patientData.patient?.noRm }}
             </div>
-            {{ patientData.patient.name }}
+            {{ patientData.patient?.name }}
           </div>
           <CustomButton
             @click="() => {}"

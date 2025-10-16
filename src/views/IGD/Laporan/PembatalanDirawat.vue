@@ -16,8 +16,7 @@ const expandedRows = ref<any[]>([]);
   <DataTable
     :value="props.payload"
     responsiveLayout="scroll"
-    dataKey="id"
-    :expandedRows="expandedRows"
+    dataKey="uuid" v-model:expandedRows="expandedRows"
     scrollable
     scrollHeight="flex"
     class="h-full p-datatable-sm"
@@ -32,25 +31,25 @@ const expandedRows = ref<any[]>([]);
       ><template #body="{ index }">{{ index + 1 }}</template>
     </Column>
     <Column
-      field="tglRegistrasi"
+      field="tanggal_daftar"
       header="Tgl. Registrasi"
       header-class="text-black bg-adameds-50 "
       class="text-black text-SM"
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.tglRegistrasi, "dateTime") }}
+        {{ epochToDate(data.tanggal_daftar, "dateTime") }}
       </template>
     </Column>
     <Column
-      field="noreg"
+      field="no_reg"
       header="No. Registrasi"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
       style="min-width: 120px"
     />
     <Column
-      field="patient.noRm"
+      field="patient.no_rm"
       header="No. RM"
       header-class="text-black bg-adameds-50"
       class="text-black text-SM"
@@ -65,7 +64,7 @@ const expandedRows = ref<any[]>([]);
     >
     </Column>
     <Column
-      field="practitioner.nama"
+      field="practitioner.name"
       header="Dokter DPJP"
       header-class="text-black bg-adameds-50"
       class="text-SM"
@@ -73,32 +72,32 @@ const expandedRows = ref<any[]>([]);
     >
     </Column>
     <Column
-      field="cancelDate"
+      field="deleteAt"
       header="Tgl. Batal"
       header-class="text-black bg-adameds-50"
       class="text-SM"
       style="min-width: 100px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.cancelDate, "dateTime") }}
+        {{ epochToDate(data.deletedAt, "dateTime") }}
       </template>
     </Column>
 
     <template #expansion="slotProps">
       <div class="p-3 -mx-2 -my-1.5 bg-adameds-75">
         <DataTable
-          :value="slotProps.data.subMenu"
+          :value=[slotProps.data]
           class="overflow-hidden rounded-lg bg-adameds-50"
         >
           <Column
-            field="cancelBy"
+            field="petugas"
             header="Petugas"
             header-class="text-black bg-adameds-50"
             class="p-5 text-black text-SM"
             style="width: 300px"
           ></Column>
           <Column
-            field="cancelReason"
+            field="alasan_batal"
             header="Alasan Batal"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"

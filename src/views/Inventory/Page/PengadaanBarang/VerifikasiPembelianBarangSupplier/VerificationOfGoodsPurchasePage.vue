@@ -11,6 +11,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
+import DetailVerificationOfGoodsPurchasePage from "./DetailVerificationOfGoodsPurchasePage.vue";
 
 // Filter
 const onSelected = ref<string>("pending");
@@ -94,7 +95,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Pembelian Barang Supplier');
+  changeSection('Verifikasi');
 };
 
 const closePurchaseOfSupplierPage = () => {
@@ -218,12 +219,69 @@ onMounted(() => {
               <div class="mb-[5px]">{{ slotProps.data.noPo }}</div>
               <div class="flex flex-wrap">
                 <CustomChip
-                  :label="slotProps.data.kategoriItem"
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
                   customClass="h-5"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-5"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-5"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItem == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  customClass="h-5"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'BPJS'"
+                  label="BPJS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'UMUM'"
+                  label="UMUM"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisStok == 'ASR'"
+                  label="ASURANSI LAIN"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300" 
+                  textColor="text-white"
+                  class="ml-2"
                 />
               </div>
             </template>
@@ -289,5 +347,12 @@ onMounted(() => {
         </div>
       </template>
     </Card>
+    <DetailVerificationOfGoodsPurchasePage
+      v-else-if="dataBreadCrumb[0].label == 'Verifikasi'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :selectedData="selectedData"
+      @back="closePurchaseOfSupplierPage"
+    />
   </div>
 </template>

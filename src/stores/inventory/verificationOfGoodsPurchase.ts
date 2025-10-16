@@ -7,19 +7,16 @@ export const useVerificationOfGoodsPurchaseStore = defineStore({
   getters: {},
   actions: {
     async getApi( filter: String = "", name: String = "", page: number = 1, limit: number = 10, payload = {} ) {
-      return apiInventoryGet(`/inventory/pengadaan/verifikasi-barang?filter=${filter}&name=${name}&page=${page}&limit=${limit}`, payload);
+      return apiInventoryGet(`/inventory/pengadaan/pembelian-barang?filter=${filter}&no_po=${name}&page=${page}&limit=${limit}`, payload);
     },
     async getApiDetail(uuid: string, payload = {}) {
-      return apiInventoryGet(`/inventory/pengadaan/verifikasi-barang/${uuid}`, payload);
-    },
-    async postApi(payload = {}) {
-      return apiInventoryPost("/inventory/pengadaan/verifikasi-barang", payload);
+      return apiInventoryGet(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
     },
     async putApi(uuid: string, payload = {}) {
       return apiInventoryPut(`/inventory/pengadaan/verifikasi-barang/${uuid}`, payload);
     },
     async deleteApi(uuid: string, payload = {}) {
-      return apiInventoryDelete(`/inventory/pengadaan/verifikasi-barang/${uuid}`, payload);
+      return apiInventoryDelete(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
     }
   },
 });

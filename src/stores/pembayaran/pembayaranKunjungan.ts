@@ -12,11 +12,11 @@ export const useReportPembayaranKunjunganStore = defineStore({
       startDate: number = 0,
       endDate: number = 0,
       shiftType: string = "",
-      name: string = "",
+      search: string = "",
       payload = {}
     ) {
       return apiPembayaranGet(
-        `/report/payment?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&name=${name}&shift_type=${shiftType}`,
+        `/report/payment?&start_date=${startDate}&end_date=${endDate}&page=${page}&limit=${limit}&search=${search}&shift_type=${shiftType}`,
         payload
       );
     },

@@ -57,7 +57,7 @@ const validationSchema = toTypedSchema(
     metode: yup.string().required("Metode wajib diisi"),
     jenisInput: yup.string().required("Jenis Input wajib dipilih"),
     loinc: yup.string().required("LOINC wajib dipilih"),
-    icd9: yup.string().required("ICD 9-CM wajib dipilih"),
+    icd9: yup.string().nullable(),
     snomedCT: yup.string().nullable(),
     status: yup.boolean().default(true),
     statusNilaiRujukan: yup.boolean().default(false),
@@ -94,14 +94,10 @@ const [statusNilaiRujukan, statusNilaiRujukanAttrs] =
 const fetchKategoriPemeriksaan = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await kategoriPemeriksaanStore.getApi({
-      page: 1,
-      limit: 9999,
-      name: "",
-    });
+    const response = await kategoriPemeriksaanStore.getActive();
 
-    if (response?.payload?.data) {
-      kategoriPemeriksaanOptions.value = response.payload.data
+    if (response?.payload) {
+      kategoriPemeriksaanOptions.value = response.payload
         .filter((item: any) => item.status === true)
         .map((item: any) => ({
           label: item.name,
@@ -155,7 +151,7 @@ const fetchIcd9 = async () => {
 const fetchSnomed = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await snomedCTStore.getApi(1, 9999, "");
+    const response = await snomedCTStore.getAktifApi();
     if (response?.payload) {
       snomedCTOptions.value = response.payload.map((item: any) => ({
         label: item.name,

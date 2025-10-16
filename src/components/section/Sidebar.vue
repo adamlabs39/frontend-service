@@ -25,12 +25,31 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-
   showStockBtn: {
     type: Boolean,
     default: false,
   },
 });
+
+// State Management Stock Location
+const StockLocationStore = useStockLocationStore();
+const StockLocationPayload = ref<any[]>([]);
+
+// Fetch Stock Location
+const fetchStockLocation = async () => {  
+  try {
+    const response = await StockLocationStore.getApi();
+
+    if (response && response.payload) {
+      StockLocationPayload.value = response.payload;
+    } else {
+      StockLocationPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    StockLocationPayload.value = [];
+  }
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -82,6 +101,12 @@ const getSVG = (svg: string) => {
   ).href;
   return imgUrl;
 };
+
+onMounted(() => {
+  if (props.sidebarTitle === 'Inventory'){
+    fetchStockLocation();
+  }
+});
 </script>
 
 <template>
@@ -115,10 +140,18 @@ const getSVG = (svg: string) => {
 
         <!-- body -->
         <div class="overflow-auto">
-          <div
-            v-for="(section, index) in props.sidebarBodyList"
-            class="text-SM"
-          >
+          <hr v-if="props.sidebarTitle === 'Inventory'" />
+          <div v-if="props.sidebarTitle === 'Inventory'">
+            <CustomSelect
+              place-holder="Pilih Lokasi Stok"
+              :showLabel="false"
+              optionLabel="name"
+              optionValue="uuid"
+              :options="StockLocationPayload"
+              class="mb-[20px] mt-[20px]"
+            />
+          </div>
+          <div v-for="(section, index) in props.sidebarBodyList" class="text-SM">
             <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
             <div v-for="row1 in section.child">
               <div v-if="showSidebar">
