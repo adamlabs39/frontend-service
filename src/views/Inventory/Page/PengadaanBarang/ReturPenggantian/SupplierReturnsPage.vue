@@ -217,6 +217,9 @@ onMounted(() => {
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
                 <CustomChip v-if="slotProps.data.jenisItem == 'alkes'" label="ALKES" :showCheckedIcon="false"
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisStok" :label="slotProps.data.jenisStok.toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" customClass="h-5" class="ml-2" />
               </div>
             </template>
           </Column>
@@ -240,7 +243,7 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip v-if="slotProps.data.status == 'retur'" label="RETUR" :showCheckedIcon="false"
                   borderColor="border-lavender-300" bgColor="bg-lavender-300" textColor="text-white" />
-                <CustomChip v-if="slotProps.data.status == 'diterima'" label="RETUR" :showCheckedIcon="false"
+                <CustomChip v-if="slotProps.data.status == 'terima'" label="DITERIMA" :showCheckedIcon="false"
                   borderColor="border-success-300" bgColor="bg-success-300" textColor="text-white" />
               </div>
             </template>

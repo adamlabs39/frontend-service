@@ -257,30 +257,13 @@ onMounted(() => {
                   class="ml-2"
                 />
                 <CustomChip
-                  v-if="slotProps.data.jenisStok == 'BPJS'"
-                  label="BPJS"
+                  v-if="slotProps.data.jenisStok"
+                  :label="slotProps.data.jenisStok.toUpperCase()"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  class="ml-2"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisStok == 'UMUM'"
-                  label="UMUM"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="ml-2"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisStok == 'ASR'"
-                  label="ASURANSI LAIN"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
+                  customClass="h-5"
                   class="ml-2"
                 />
               </div>
@@ -292,7 +275,7 @@ onMounted(() => {
               <div class="">Supplier</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.supplier }}</div>
             </template>
           </Column>
           <!-- Petugas -->

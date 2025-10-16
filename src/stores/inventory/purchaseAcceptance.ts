@@ -17,7 +17,7 @@ export const usePurchaseAcceptanceStore = defineStore({
       payload = {}
     ) {
       return apiInventoryGet(
-        `/inventory/pengadaan/pembelian-barang?filter=${filter}&no_po=${name}&page=${page}&limit=${limit}`,
+        `/inventory/pengadaan/pembelian-barang?filter=${filter}&search=${name}&page=${page}&limit=${limit}`,
         payload
       );
     },

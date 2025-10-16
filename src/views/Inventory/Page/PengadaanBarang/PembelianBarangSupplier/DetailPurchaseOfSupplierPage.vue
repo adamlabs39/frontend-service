@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, type PropType } from "vue";
+import { ref, onMounted, type PropType, computed } from "vue";
 import { usePurchasingOfSupplierStore } from "@/stores/inventory/purchasingOfSupplier";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
@@ -82,12 +82,29 @@ const confirmDelete = async () => {
   }
 };
 
+// Kalkulasi ppn
+const ppnNominal = computed(() => {
+  if (!DetailPayload.value || !DetailPayload.value.items) {
+    return 0;
+  }
+  const subTotal = DetailPayload.value.items.reduce((total: any, item: { totalHarga: any; }) => {
+    return total + (item.totalHarga || 0);
+  }, 0);
+  const totalSetelahDiskon = subTotal - (DetailPayload.value.diskon || 0);
+  const nilaiPpn = totalSetelahDiskon * 0.11; // 11%
+  return Math.max(0, nilaiPpn);
+});
+
 const edit = async () => {  
   changeSection('Tambah Pembelian')
 };
 
 const closePurchaseOfSupplierPage = () => {
   dataBreadCrumb.value.pop();
+};
+
+const handleReset = () => {
+    fetchDetail(); // Memanggil data lagi dengan query kosong
 };
 
 onMounted(() => {
@@ -103,7 +120,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" @click="handleReset" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Pengadaan Barang',
@@ -209,7 +226,7 @@ onMounted(() => {
               <!-- Catatan -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">Catatan</p>
-                <p>{{ DetailPayload.catatan }}</p>
+                <p>{{ DetailPayload.catatanPo }}</p>
               </div>
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
@@ -279,7 +296,7 @@ onMounted(() => {
                 </div>
                 <div class="ml-[50px]">
                   <p class="font-bold underline underline-offset-2">PPN 11%</p>
-                  <p>{{ formatPrice (DetailPayload.grandTotal * DetailPayload.ppn / 100)  }}</p>
+                  <p>{{ formatPrice(DetailPayload.ppn ? ppnNominal : 0) }}</p>
                 </div>
               </div>
               <div class="flex">
@@ -316,7 +333,7 @@ onMounted(() => {
                   <p class="font-bold underline underline-offset-2">
                     Alasan Batal
                   </p>
-                  <p>{{ DetailPayload.alasanBatal }}</p>
+                  <p>{{ DetailPayload.alasanBatal || '-'}}</p>
                 </div>
               </div>
               <div v-if="props.selectedData.status == 'pending'" class="flex mt-[5px]">

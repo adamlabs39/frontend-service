@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useVerificationOfGoodsPurchaseStore } from "@/stores/inventory/verificationOfGoodsPurchase";
 import { utilsStore } from "@/stores/utils";
 import { epochToDate, formatPrice } from "@/utils/Helpers";
@@ -54,6 +54,19 @@ const verification = async () => {
     emit("back");
   }
 };
+
+// Kalkulasi ppn
+const ppnNominal = computed(() => {
+  if (!DetailPayload.value || !DetailPayload.value.items) {
+    return 0;
+  }
+  const subTotal = DetailPayload.value.items.reduce((total: any, item: { totalHarga: any; }) => {
+    return total + (item.totalHarga || 0);
+  }, 0);
+  const totalSetelahDiskon = subTotal - (DetailPayload.value.diskon || 0);
+  const nilaiPpn = totalSetelahDiskon * 0.11; // 11%
+  return Math.max(0, nilaiPpn);
+});
 
 onMounted(() => {
   fetchDetail();
@@ -156,7 +169,7 @@ onMounted(() => {
               <!-- Catatan -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">Catatan</p>
-                <p>{{ DetailPayload.catatan }}</p>
+                <p>{{ DetailPayload.catatanPo }}</p>
               </div>
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
@@ -226,7 +239,7 @@ onMounted(() => {
                 </div>
                 <div class="ml-[50px]">
                   <p class="font-bold underline underline-offset-2">PPN 11%</p>
-                  <p>{{ formatPrice(DetailPayload.ppn) }}</p>
+                  <p>{{ formatPrice(DetailPayload.ppn ? ppnNominal : 0) }}</p>
                 </div>
               </div>
               <div class="flex">

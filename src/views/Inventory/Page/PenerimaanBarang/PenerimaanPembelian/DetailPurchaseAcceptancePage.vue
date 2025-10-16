@@ -8,7 +8,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import Card from "primevue/card";
-import { onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref, watchEffect, computed } from "vue";
 import { useForm, useFieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import { usePurchaseAcceptanceStore } from "@/stores/inventory/purchaseAcceptance";
@@ -30,6 +30,7 @@ const emit = defineEmits(["kembali", "diterima"]);
 const PurchaseAcceptanceStore = usePurchaseAcceptanceStore();
 const UseUtilsStore = utilsStore();
 const DetailPayload = ref<any>({});
+const today = new Date();
 
 // Validasi schema dengan Yup
 const schema = toTypedSchema(
@@ -50,7 +51,7 @@ const schema = toTypedSchema(
 );
 
 // Vee-validate form setup
-const { handleSubmit, defineField, setValues, errors, resetForm } = useForm({
+const { handleSubmit, defineField, setValues, errors } = useForm({
     validationSchema: schema,
 });
 
@@ -69,6 +70,8 @@ const materai = ref(0);
 const ppn = ref(0);
 const grandTotal = ref(0);
 const selectedItems = ref([]);
+
+
 
 // Fetch detail data dari API
 const fetchDetail = async () => {
@@ -98,7 +101,19 @@ const fetchDetail = async () => {
     }
 };
 
+// Kalkukasi ppn
+const ppnAmount = computed(() => {
+    const subTotal = (itemFields.value || []).reduce((total, item) => {
+        const qty = item.value.qtyTerima || 0;
+        const harga = item.value.hargaSatuan || 0;
+        return total + (qty * harga);
+    }, 0);
+    const totalSetelahDiskon = subTotal - diskon.value;
+    const nilaiPpn = totalSetelahDiskon * (11 / 100);
+    return Math.max(0, nilaiPpn);
+});
 
+// kalkulasi grandtotal
 watchEffect(() => {
     const subTotal = (itemFields.value || []).reduce((total, item) => {
         const qty = item.value.qtyTerima || 0;
@@ -107,13 +122,21 @@ watchEffect(() => {
     }, 0);
 
     const totalSetelahDiskon = subTotal - diskon.value;
-    const nilaiPpn = totalSetelahDiskon * (ppn.value / 100);
-    const finalTotal = totalSetelahDiskon + materai.value + nilaiPpn;
+    // Gunakan ppnAmount hanya jika switch PPN aktif (bernilai 11)
+    const ppnYangDitambahkan = ppn.value === 11 ? ppnAmount.value : 0;
+    const finalTotal = totalSetelahDiskon + materai.value + ppnYangDitambahkan;
 
     grandTotal.value = Math.max(0, finalTotal);
 });
 
 const handleTerima = handleSubmit(async (values) => {
+    // Validasi: Pastikan setidaknya satu item dipilih
+    if (!selectedItems.value || selectedItems.value.length === 0) {
+        alert("Harap pilih setidaknya satu item untuk diterima.");
+        return; // Hentikan eksekusi jika tidak ada item yang dipilih
+    }
+
+
     UseUtilsStore.setLoading(true);
     try {
         const payload = {
@@ -121,12 +144,12 @@ const handleTerima = handleSubmit(async (values) => {
             noFaktur: values.noFaktur,
             tanggalFaktur: dateToEpoch(values.tanggalFaktur as Date),
             noSuratJalan: values.noSuratJalan,
-            catatan: values.catatan, 
+            catatanPenerimaan: values.catatan,
             // catatan_penerimaan: values.catatan, 
-            items: (values.items || []).map((item: any) => ({
-                uuid: item.uuid, 
-                qtyDiterima: item.qtyTerima,
-                expDate: dateToEpoch(item.expDate as Date),
+            items: selectedItems.value.map((item: any) => ({
+                uuid: item.value.uuid,
+                qtyDiterima: item.value.qtyTerima,
+                expDate: dateToEpoch(item.value.expDate as Date),
             })),
         };
         console.log("Payload untuk API Terima Pembelian:", payload);
@@ -139,6 +162,26 @@ const handleTerima = handleSubmit(async (values) => {
         UseUtilsStore.setLoading(false);
     }
 });
+
+// Menangani nama penerima 
+const petugasPenerima = computed(() => {
+    const userString = localStorage.getItem('user');
+    if (userString) {
+        try {
+            const userObject = JSON.parse(userString);
+            return userObject.name || 'Nama Petugas';
+        } catch (e) {
+            console.error("Gagal parse data user dari localStorage:", e);
+            return 'Nama Petugas';
+        }
+    }
+    return 'Nama Petugas';
+});
+
+// Handle reset button
+const handleReset = () => {
+    fetchDetail(); // Memanggil data lagi dengan query kosong
+};
 
 onMounted(fetchDetail);
 
@@ -227,11 +270,13 @@ onMounted(fetchDetail);
                             <hr class="border-grey-200" />
                             <div class="flex gap-5">
                                 <CustomDatePicker label="Tgl. Penerimaan" v-model="tanggalPenerimaan"
-                                    :invalid="!!errors.tanggalPenerimaan" :invalid-message="errors.tanggalPenerimaan" />
+                                    :invalid="!!errors.tanggalPenerimaan" :invalid-message="errors.tanggalPenerimaan"
+                                    :maxDate="today" />
                                 <CustomTextfield label="No. Faktur" v-model="noFaktur" :invalid="!!errors.noFaktur"
                                     :invalid-message="errors.noFaktur" />
                                 <CustomDatePicker label="Tgl. Faktur" v-model="tanggalFaktur"
-                                    :invalid="!!errors.tanggalFaktur" :invalid-message="errors.tanggalFaktur" />
+                                    :invalid="!!errors.tanggalFaktur" :invalid-message="errors.tanggalFaktur"
+                                    :maxDate="today" />
                                 <CustomTextfield label="No. Surat Jalan" v-model="noSuratJalan"
                                     :invalid="!!errors.noSuratJalan" :invalid-message="errors.noSuratJalan" />
                                 <CustomTextfield label="Catatan" class="grow" v-model="catatan" />
@@ -265,7 +310,7 @@ onMounted(fetchDetail);
                     </Column>
                     <Column header="Order" headerClass="bg-adameds-50 font-semibold text-center"
                         bodyClass="text-center pt-4"><template #body="slotProps">{{ slotProps.data.value.qtyOrder
-                        }}</template></Column>
+                            }}</template></Column>
                     <Column header="Terima" headerClass="bg-adameds-50 font-semibold text-center">
                         <template #body="slotProps">
                             <CustomInputNumber :show-label="false" v-model="slotProps.data.value.qtyTerima"
@@ -274,7 +319,7 @@ onMounted(fetchDetail);
                     </Column>
                     <Column header="Satuan/Isi" headerClass="bg-adameds-50 font-semibold text-center"
                         bodyClass="text-center pt-4"><template #body="slotProps">{{ slotProps.data.value.satuanBeli
-                        }}</template></Column>
+                            }}</template></Column>
                     <Column header="Exp. Date" headerClass="bg-adameds-50 font-semibold text-center">
                         <template #body="slotProps">
                             <CustomDatePicker label="" v-model="slotProps.data.value.expDate"
@@ -303,14 +348,22 @@ onMounted(fetchDetail);
                                 locale="id-ID" />
                             <CustomInputNumber v-model="materai" label="Materai" mode="currency" currency="IDR"
                                 locale="id-ID" />
-                            <CustomSwitch label="PPN 11%" v-model="ppn" :binary="true" :trueValue="11"
-                                :falseValue="0" />
+
+                            <div>
+                                <label class="block font-semibold mb-[11px] text-normal">PPN 11%</label>
+                                <div class="flex items-center">
+                                    <CustomSwitch v-model="ppn" :show-label="false" :binary="true" :trueValue="11"
+                                        :falseValue="0" sideLabel="" sideLabelTrue="" />
+                                    <p class="ml-3 text-sm text-gray-500">{{ formatPrice(ppnAmount) }}</p>
+                                </div>
+                            </div>
+
                         </div>
                         <div class="flex items-center gap-5">
                             <hr class="h-3/4 border-x-[1px] border-adameds-300" />
                             <div>
                                 <div class="font-semibold underline">Grand Total</div>
-                                <div class="font-bold text-lg">{{ formatPrice(DetailPayload.grandTotal) }}</div>
+                                <div class="font-bold text-lg">{{ formatPrice(grandTotal) }}</div>
                             </div>
                         </div>
                     </div>
@@ -322,8 +375,8 @@ onMounted(fetchDetail);
                                 <p>{{ DetailPayload.totalItem || 0 }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold underline">Petugas Retur Pengiriman</p>
-                                <p>{{ DetailPayload.petugasPengirim|| 'Nama Petugas' }}</p>
+                                <p class="font-semibold underline">Petugas Pengirim</p>
+                                <p>{{ DetailPayload.petugasPengirim || 'Nama Petugas' }}</p>
                             </div>
                             <CustomTextfield label="Nama Supplier Pengirim" class="w-[300px]"
                                 placeholder="Catatan Pengiriman" v-model="namaSupplierPengirim" />
@@ -331,10 +384,11 @@ onMounted(fetchDetail);
                         <div class="flex items-center gap-3">
                             <div>
                                 <p class="font-semibold text-end underline">Penerimaan Dilakukan Oleh</p>
-                                <p class="font-normal">Nama Petugas - {{ epochToDate(Date.now() / 1000, 'dateTime') }}
+                                <p class="font-normal">{{ petugasPenerima }}- {{ epochToDate(Date.now() / 1000,
+                                    'dateTime') }}
                                 </p>
                             </div>
-                            <CustomButton label="Reset" @click="resetForm" outlined borderColor="border-grey-300"
+                            <CustomButton label="Reset" @click="handleReset" outlined borderColor="border-grey-300"
                                 textColor="text-grey-400" />
                             <CustomButton label="Terima Pembelian" class="bg-adameds-300" @click="handleTerima" />
                         </div>

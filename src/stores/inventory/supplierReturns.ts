@@ -12,8 +12,12 @@ export const useSupplierReturnsStore = defineStore({
     async getApiDetail(uuid: string, payload = {}) {
       return apiInventoryGet(`/inventory/pengadaan/retur-supplier/${uuid}`, payload);
     },
-    async getApiAvailable(search: String = "", page: number = 1, limit: number = 10, payload = {})  {
-      return apiInventoryGet(`/inventory/pengadaan/retur-supplier/available-faktur?&search=${search}&page=${page}&limit=${limit}`, payload);
+    // async getApiAvailable(search: String = "", page: number = 1, limit: number = 10, payload = {})  {
+    //   return apiInventoryGet(`/inventory/pengadaan/retur-supplier/available-faktur?&search=${search}&page=${page}&limit=${limit}`, payload);
+    // },
+    // KODE BARU
+    async getApiAvailable(search: string = "", date: string = "", page: number = 1, limit: number = 10, payload = {})  {
+      return apiInventoryGet(`/inventory/pengadaan/retur-supplier/available-faktur?search=${search}&date=${date}&page=${page}&limit=${limit}`, payload);
     },
     async getApiAvailableDetail(uuid: string, payload = {}) {
       return apiInventoryGet(`/inventory/pengadaan/retur-supplier/available-faktur/${uuid}`, payload);

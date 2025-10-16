@@ -14,6 +14,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailRateHistoryPage from "./DetailRateHistoryPage.vue";
+import DetailRiwayatTarif from "./DetailRiwayatTarif.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 
 // State Management Kategori Item
@@ -235,7 +236,7 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ epochToDate(slotProps.data.tanggalPembelian, "date") }}
+                {{ epochToDate(slotProps.data.tanggalPembelian || '-', "date")}}
               </div>
             </template>
           </Column>
@@ -250,7 +251,7 @@ onMounted(() => {
               <div class="">Harga Dasar</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.spplr?.name }}</div>
+              <div class="">{{ slotProps.data.hargaSatuan || '-' }}</div>
             </template>
           </Column>
           <!-- HNA -->
@@ -259,7 +260,7 @@ onMounted(() => {
               <div class="">HNA</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.spplr?.name }}</div>
+              <div class="">{{ slotProps.data.hna || '-' }}</div>
             </template>
           </Column>
           <!-- HPP -->
@@ -268,7 +269,7 @@ onMounted(() => {
               <div class="">HPP</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.spplr?.name }}</div>
+              <div class="">{{ slotProps.data.hpp  || '-' }}</div>
             </template>
           </Column>
         </DataTable>
@@ -278,9 +279,12 @@ onMounted(() => {
           <CustomPaginator :rows="RateHistoryProperties.page_size" :totalRecords="RateHistoryProperties.total"
             :rowsPerPageOptions="[10, 20, 30]" @page="handlePage" />
         </div>
-      </template>
+      </template> 
     </Card>
 
-    <DetailRateHistoryPage v-else :selectedDataUuid="selectedData.uuid" @kembali="closeDetailPage" />
+    <DetailRiwayatTarif 
+    v-else 
+    :selectedDataUuid="selectedData.uuid" 
+    @kembali="closeDetailPage" />
   </div>
 </template>

@@ -46,14 +46,36 @@ const selectedData = ref();
 const hasData = computed(() => InvoicePayload.value && InvoicePayload.value.length > 0);
 
 // Fungsi fetch  mengambil nilai dari noInvoice
+// const fetchAvailable = async () => {
+//   UseUtilsStore.setLoading(true);
+//   try {
+//     const response = await SupplierReturnsStore.getApiAvailable(
+//       noInvoice.value,                   // Parameter 1: search
+//       InvoiceProperties.value.page,      // Parameter 2: page
+//       InvoiceProperties.value.page_size  // Parameter 3: limit
+//     );
+//     InvoicePayload.value = response?.payload || [];
+//     InvoiceProperties.value.total = response?.properties?.total || 0;
+//   } catch (error) {
+//     console.error("Failed to fetch data", error);
+//     InvoicePayload.value = [];
+//   } finally {
+//     UseUtilsStore.setLoading(false);
+//   }
+// };
+
+// KODE BARU
 const fetchAvailable = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    // [FIX] Urutan parameter disesuaikan dengan yang ada di store
+    // Format tanggal ke DD-MM-YYYY sebelum dikirim
+    const formattedDate = date.value ? formatDate(date.value) : "";
+
     const response = await SupplierReturnsStore.getApiAvailable(
-      noInvoice.value,                   // Parameter 1: search
-      InvoiceProperties.value.page,      // Parameter 2: page
-      InvoiceProperties.value.page_size  // Parameter 3: limit
+      noInvoice.value,
+      formattedDate, // Kirim tanggal yang sudah diformat
+      InvoiceProperties.value.page,
+      InvoiceProperties.value.page_size
     );
     InvoicePayload.value = response?.payload || [];
     InvoiceProperties.value.total = response?.properties?.total || 0;
@@ -160,7 +182,7 @@ const onRowSelect = (event: any) => {
 
         <Column header="Supplier" headerClass="bg-adameds-50">
           <template #body="slotProps">
-            <p>{{ slotProps.index % 2 === 0 ? 'PT. Sanbe' : 'PT. Kimia Klinik' }}</p>
+            <p>{{ slotProps.data.supplier || '-'}}</p>
           </template>
         </Column>
       </DataTable>
