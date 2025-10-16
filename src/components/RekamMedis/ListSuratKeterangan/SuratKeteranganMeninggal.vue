@@ -10,6 +10,13 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
+
 const schema = toTypedSchema(
   yup.object({
     noSurat: yup.string().default("No. 12345").notRequired(),
@@ -24,7 +31,7 @@ const schema = toTypedSchema(
   }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -57,8 +64,8 @@ const itemsPenyebabKematian = ref([
 const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -71,6 +78,16 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   submitForm,

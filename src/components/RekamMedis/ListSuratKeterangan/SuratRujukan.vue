@@ -14,6 +14,13 @@ import CustomButton from "@/components/Base/CustomButton.vue";
 
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
+
 const schema = toTypedSchema(
   yup.object({
     noSurat: yup.string().default("No. 12345").notRequired(),
@@ -31,7 +38,7 @@ const schema = toTypedSchema(
   }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -54,8 +61,8 @@ const itemsNonKlinikal = ref([
 ]);
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -70,6 +77,15 @@ const close = () => {
 };
 const selectedTab = ref("non-bpjs");
 
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   submitForm,
