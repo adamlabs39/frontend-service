@@ -133,18 +133,25 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await UnitStore.exportApi();
-    const rows = response.payload;
+    // Ambil state paginasi aktif
+    const { page, page_size } = UnitProperties.value;
+
+    // Ambil data sesuai page & page_size & pencarian aktif
+    const response = await UnitStore.getApi(page, page_size, searchQuery.value);
+    const rows = response?.payload ?? [];
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
       return;
     }
 
-    // Prepare Data for Export
-    const title = ["DATAMASTER SATUAN"];
-    const data = [];
+    // Hitung offset untuk penomoran sesuai page aktif
+    const offset = (page - 1) * page_size;
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
+    // Prepare Data for Export
+    const title = ["DATAMASTER ATURAN PAKAI"];
+    const data: any[] = [];
+
+    // Header Row (kosong untuk baris kedua tanpa border)
     data.push({});
     data.push({});
     data.push({
@@ -159,7 +166,7 @@ const ExportExcel = async () => {
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
+        No: offset + i + 1,
         KodeSatuan: rows[i].code,
         NamaSatuan: rows[i].name,
         SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
@@ -174,7 +181,7 @@ const ExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -187,14 +194,12 @@ const ExportExcel = async () => {
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
     for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
+        // Border untuk baris tabel
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
           worksheet[cellAddress].s.border = {
@@ -205,13 +210,13 @@ const ExportExcel = async () => {
           };
         }
 
-        // Align header cells (row 3)
+        // Align header (baris 3)
         worksheet[cellAddress].s.alignment = {
           horizontal: "center",
           vertical: "center",
         };
 
-        // Fill header with background color (row 3)
+        // Fill header (baris 3)
         if (row === 2) {
           worksheet[cellAddress].s.fill = {
             fgColor: { rgb: "9fe2db" },
@@ -221,8 +226,12 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Satuan");
-    XLSX.writeFile(workbook, `Datamaster Satuan.xlsx`);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Aturan Pakai"
+    );
+    XLSX.writeFile(workbook, `Datamaster Aturan Pakai.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
@@ -319,11 +328,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
@@ -447,7 +456,7 @@ onMounted(() => {
               </div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.satuanDosis ? 'AKTIF' : 'NON-AKTIF'"
                   :textColor="
@@ -474,7 +483,7 @@ onMounted(() => {
               </div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.editable ? 'AKTIF' : 'NON-AKTIF'"
                   :textColor="
@@ -497,7 +506,7 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
                   :textColor="
@@ -520,7 +529,7 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center gap-2.5 justify-center">
+              <div class="flex gap-2.5 justify-center items-center">
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
@@ -563,7 +572,7 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex gap-2.5 items-center">
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"
