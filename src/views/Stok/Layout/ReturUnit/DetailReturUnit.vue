@@ -2,18 +2,64 @@
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import CustomCheckbox from "@/components/Base/CustomCheckbox.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import DeleteDialog from "./DeleteDialogPermintaanBarang.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
+import { PhMinus } from "@phosphor-icons/vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 // Terima data dari list
 const props = defineProps<{ data: any }>();
 
 const isDeleteDialogVisible = ref(false);
+const pengiriman = ref(0);
+// Selection state per row (keyed by item.no)
+const rowSelection = ref<Record<number, boolean>>({});
+
+// True jika semua baris terpilih
+const allSelected = computed(() => {
+  return (
+    Array.isArray(props.data?.items) &&
+    props.data.items.length > 0 &&
+    props.data.items.every((item: any) => rowSelection.value[item.no] === true)
+  );
+});
+
+// Checkbox header: get mencerminkan status semua, set mengubah semua
+const selectAll = computed({
+  get: () => allSelected.value,
+  set: (val: boolean) => {
+    if (!Array.isArray(props.data?.items)) return;
+    for (const item of props.data.items) {
+      rowSelection.value[item.no] = !!val;
+    }
+  },
+});
+
+// Inisialisasi key selection saat daftar items tersedia/berubah
+watch(
+  () => props.data?.items,
+  (items) => {
+    if (!Array.isArray(items)) return;
+    for (const item of items) {
+      if (rowSelection.value[item.no] === undefined) {
+        rowSelection.value[item.no] = false;
+      }
+    }
+  },
+  { immediate: true }
+);
 
 // Function to show cancel dialog
 const showCancelDialog = () => {
@@ -92,7 +138,7 @@ onMounted(() => {
                 <CustomButton icon="PhArrowClockwise" class="mr-5" />
                 <CustomBreadCrumb
                   :home="{
-                    label: 'Permintaan Barang',
+                    label: 'Pengeluaran Barang',
                     home: true,
                   }"
                 />
@@ -105,7 +151,7 @@ onMounted(() => {
                   <p
                     class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
                   >
-                    Permintaan Unit
+                    Retur Unit
                   </p>
                 </div>
                 <PhCaretRight
@@ -113,7 +159,7 @@ onMounted(() => {
                   weight="bold"
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
-                <div class="px-2">
+                <div class="px-2 space-x-2">
                   <CustomButton :label="props.data.permintaan" />
                 </div>
               </div>
@@ -149,10 +195,28 @@ onMounted(() => {
               </div>
               <div class="flex gap-3">
                 <div class="flex flex-col w-full">
-                  <div class="text-sm font-bold underline">
-                    Tujuan Permintaan
-                  </div>
+                  <div class="text-sm font-bold underline">Tujuan Retur</div>
                   <div>{{ props.data.kategoriItem }}</div>
+                </div>
+                <div class="flex flex-col w-full">
+                  <div class="text-sm font-bold underline">Alasan Retur</div>
+                  <div>
+                    <CustomButton
+                      size="small"
+                      backgroundColor="bg-danger-300"
+                      :label="props.data.items?.some((i: any) => i.CITO) ? 'CITO' : '-'"
+                    />
+                  </div>
+                </div>
+                <div class="flex flex-col w-full">
+                  <div class="text-sm font-bold underline">Petugas Retur</div>
+                  <div>
+                    <CustomButton
+                      size="small"
+                      backgroundColor="bg-danger-300"
+                      :label="props.data.items?.some((i: any) => i.CITO) ? 'CITO' : '-'"
+                    />
+                  </div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Catatan</div>
@@ -188,16 +252,14 @@ onMounted(() => {
             >
               <Column header="No" field="no" />
               <Column header="Nama Item" field="namaItem"> </Column>
+              <Column header="EXP. Date" field="minStok" />
               <Column header="Min. Stok" field="minStok" />
-              <Column header="Max. Stok" field="maxStok" />
-              <Column
-                header="Stok Ketika Permintaan"
-                field="stokKetikaPermintaan"
-              />
+              <Column header="Stok" field="maxStok" />
+              <Column header="Pengeluaran" field="stokKetikaPermintaan" />
               <Column header="Satuan/Isi" field="satuanIsi"> </Column>
-              <Column header="Harga Dasar" field="hargaDasar" />
-              <Column header="Jumlah Permintaan" field="jumlahPermintaan">
-              </Column>
+              <Column header="HNA" field="jumlahPermintaan" />
+              <Column header="HPP" field="jumlahPermintaan" />
+              <Column header="Total" field="jumlahPermintaan" />
             </DataTable>
           </div>
         </div>
@@ -209,23 +271,11 @@ onMounted(() => {
               <div class="underline">Total Item</div>
               <div>{{ tableRows.length }}</div>
             </div>
-            <div>
-              <div class="underline">Petugas Permintaan</div>
-              <div>Nama Petugas</div>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <CustomButton
-              label="Batal"
-              backgroundColor="bg-danger-300"
-              textColor="text-white"
-              @click="showCancelDialog"
-            />
           </div>
         </div>
       </template>
     </Card>
-    <DeleteDialog
+    <DeleteDialogPengirimanUnit
       v-model:isDialogVisible="isDeleteDialogVisible"
       @cancel="handleCancellation"
     />

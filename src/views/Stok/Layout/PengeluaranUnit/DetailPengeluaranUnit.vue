@@ -8,7 +8,6 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import DeleteDialog from "./DeleteDialogPermintaanBarang.vue";
 
 // Terima data dari list
 const props = defineProps<{ data: any }>();
@@ -105,7 +104,7 @@ onMounted(() => {
                   <p
                     class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
                   >
-                    Permintaan Unit
+                    Pengeluaran Unit
                   </p>
                 </div>
                 <PhCaretRight
@@ -129,30 +128,44 @@ onMounted(() => {
             <div class="py-3 space-y-3">
               <div class="flex">
                 <div class="flex flex-col w-full">
-                  <div class="text-sm font-bold underline">Tgl. Permintaan</div>
+                  <div class="text-sm font-bold underline">
+                    Jenis Pengeluaran
+                  </div>
                   <div>{{ props.data.tanggal }}</div>
                 </div>
                 <div class="flex gap-2 w-full">
                   <div class="flex flex-col w-full">
-                    <div class="text-sm font-bold underline">Kategori Item</div>
+                    <div class="text-sm font-bold underline">
+                      Tgl. permintaan
+                    </div>
                     <div>{{ props.data.kategoriItem }}</div>
                   </div>
                   <div class="flex flex-col w-full">
-                    <div class="text-sm font-bold underline">Jenis Stok</div>
+                    <div class="text-sm font-bold underline">Kategori Item</div>
                     <div>{{ props.data.jenisStok }}</div>
                   </div>
                   <div class="flex flex-col w-full">
-                    <div class="text-sm font-bold underline">Jenis Item</div>
+                    <div class="text-sm font-bold underline">Jenis Stok</div>
                     <div>{{ props.data.jenisItem }}</div>
                   </div>
                 </div>
               </div>
               <div class="flex gap-3">
                 <div class="flex flex-col w-full">
-                  <div class="text-sm font-bold underline">
-                    Tujuan Permintaan
-                  </div>
+                  <div class="text-sm font-bold underline">Jenis Item</div>
                   <div>{{ props.data.kategoriItem }}</div>
+                </div>
+                <div class="flex flex-col w-full">
+                  <div class="text-sm font-bold underline">
+                    Tujuan Pengeluaran
+                  </div>
+                  <div>{{ props.data.catatan }}</div>
+                </div>
+                <div class="flex flex-col w-full">
+                  <div class="text-sm font-bold underline">
+                    Petugas Pengeluaran
+                  </div>
+                  <div>{{ props.data.catatan }}</div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Catatan</div>
@@ -188,30 +201,31 @@ onMounted(() => {
             >
               <Column header="No" field="no" />
               <Column header="Nama Item" field="namaItem"> </Column>
+              <Column header="EXP. Date" field="expDate" />
               <Column header="Min. Stok" field="minStok" />
-              <Column header="Max. Stok" field="maxStok" />
-              <Column
-                header="Stok Ketika Permintaan"
-                field="stokKetikaPermintaan"
-              />
-              <Column header="Satuan/Isi" field="satuanIsi"> </Column>
-              <Column header="Harga Dasar" field="hargaDasar" />
-              <Column header="Jumlah Permintaan" field="jumlahPermintaan">
-              </Column>
+              <Column header="Stok" field="stokKetikaPermintaan" />
+              <Column header="Pengeluaran" field="satuanIsi"> </Column>
+              <Column header="Satuan/Isi" field="hargaDasar" />
+              <Column header="HNA" field="jumlahPermintaan" />
+              <Column header="HPP" field="jumlahPermintaan" />
+              <Column header="Total" field="jumlahPermintaan" />
             </DataTable>
           </div>
         </div>
       </template>
       <template #footer>
-        <div class="flex justify-between py-2 border-t border-grey-200">
-          <div class="flex gap-10">
+        <div
+          class="flex justify-between items-center py-2 border-t border-grey-200"
+        >
+          <div class="flex gap-8">
+            <CustomButton icon="PhPrinter" label="Cetak"></CustomButton>
             <div>
               <div class="underline">Total Item</div>
               <div>{{ tableRows.length }}</div>
             </div>
             <div>
-              <div class="underline">Petugas Permintaan</div>
-              <div>Nama Petugas</div>
+              <div class="underline">Grand Total</div>
+              <div>Rp. 350.000</div>
             </div>
           </div>
           <div class="flex gap-3">
