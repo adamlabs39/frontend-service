@@ -151,7 +151,7 @@ const ExportExcel = async () => {
     const offset = (page - 1) * page_size;
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ATURAN PAKAI"];
+    const title = ["DATAMASTER BENTUK SEDIAAN"];
     const data: any[] = [];
 
     // Header Row (kosong untuk baris kedua tanpa border)
@@ -228,9 +228,9 @@ const ExportExcel = async () => {
     XLSX.utils.book_append_sheet(
       workbook,
       worksheet,
-      "Datamaster Aturan Pakai"
+      "Datamaster Bentuk Sediaan"
     );
-    XLSX.writeFile(workbook, `Datamaster Aturan Pakai.xlsx`);
+    XLSX.writeFile(workbook, `Datamaster Bentuk Sediaan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }

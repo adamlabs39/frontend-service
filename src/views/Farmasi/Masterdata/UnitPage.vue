@@ -148,7 +148,7 @@ const ExportExcel = async () => {
     const offset = (page - 1) * page_size;
 
     // Prepare Data for Export
-    const title = ["DATAMASTER ATURAN PAKAI"];
+    const title = ["DATAMASTER SATUAN"];
     const data: any[] = [];
 
     // Header Row (kosong untuk baris kedua tanpa border)
@@ -169,8 +169,8 @@ const ExportExcel = async () => {
         No: offset + i + 1,
         KodeSatuan: rows[i].code,
         NamaSatuan: rows[i].name,
-        SatuanDosis: rows[i].SatuanDosis ? "AKTIF" : "NON-AKTIF",
-        Editable: rows[i].Editable ? "AKTIF" : "NON-AKTIF",
+        SatuanDosis: rows[i].satuanDosis ? "AKTIF" : "NON-AKTIF",
+        Editable: rows[i].editable ? "AKTIF" : "NON-AKTIF",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -226,12 +226,8 @@ const ExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Datamaster Aturan Pakai"
-    );
-    XLSX.writeFile(workbook, `Datamaster Aturan Pakai.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Satuan");
+    XLSX.writeFile(workbook, `Datamaster Satuan.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
   }
