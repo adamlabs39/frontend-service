@@ -8,7 +8,7 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import TambahItemMultiple from "./TambahItemMultiple.vue";
+import TambahItemMultiple from "../../../../components/Stok/TambahItemMultiple.vue";
 
 const emit = defineEmits(["back"]);
 
@@ -325,7 +325,10 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
         </div>
       </template>
     </Card>
-    <TambahItemMultiple v-model:visible="showTambahItemMultiple" />
+    <TambahItemMultiple
+      :showHeaderInfo="true"
+      v-model:visible="showTambahItemMultiple"
+    />
   </div>
 </template>
 

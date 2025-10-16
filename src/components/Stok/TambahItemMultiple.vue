@@ -11,6 +11,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showHeaderInfo: {
+    type: Boolean,
+    default: true,
+  },
 });
 const emit = defineEmits(["update:visible"]);
 const visible = computed({
@@ -77,6 +81,7 @@ const clearAllRows = () => {
     <template #body>
       <div class="py-4 space-y-5">
         <div
+          v-if="showHeaderInfo"
           class="flex justify-between items-center px-4 py-2 border-b border-gray-300"
         >
           <div>
@@ -134,7 +139,7 @@ const clearAllRows = () => {
     </template>
     <template #footer>
       <div class="flex justify-between items-center">
-        <div>Total Item Terpilih: {{ rows.length }}</div>
+        <div class="font-bold">Total Item Terpilih: {{ rows.length }}</div>
         <div class="flex gap-2">
           <CustomButton
             label="Hapus Semua"
