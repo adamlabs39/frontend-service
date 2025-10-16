@@ -8,12 +8,14 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import TambahItemMultiple from "./TambahItemMultiple.vue";
 
 const emit = defineEmits(["back"]);
 
 const searchQuery = ref("");
 const buttonSelect = ref("permintaan-barang");
 const jenisItemSwitch = ref(false);
+const showTambahItemMultiple = ref(false);
 
 // Kontainer konten untuk mendeteksi overflow
 const contentRef = ref<HTMLElement | null>(null);
@@ -87,11 +89,11 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="flex flex-col h-full">
     <Card
-      pt:body:class="flex-1 pt-0 overflow-hidden flex flex-col"
-      pt:content:class="flex-1 overflow-hidden flex flex-col"
-      class="h-full overflow-hidden flex flex-col"
+      pt:body:class="flex overflow-hidden flex-col flex-1 pt-0"
+      pt:content:class="flex overflow-hidden flex-col flex-1"
+      class="flex overflow-hidden flex-col h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
@@ -198,17 +200,21 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
       <template #content>
         <div
           ref="contentRef"
-          class="flex-1 flex flex-col overflow-auto min-h-0"
+          class="flex overflow-auto flex-col flex-1 min-h-0"
         >
           <div class="flex-none">
             <DataTable
               :value="tableRows"
               stripedRows
               scrollable
-              class="text-xs h-full"
+              class="h-full text-xs"
             >
-              <Column header="No" field="no" />
-              <Column header="Nama Item" field="namaItem">
+              <Column header="No" headerClass="bg-adameds-50" field="no" />
+              <Column
+                header="Nama Item"
+                headerClass="bg-adameds-50"
+                field="namaItem"
+              >
                 <template #body>
                   <CustomSelect
                     :showLabel="false"
@@ -217,10 +223,26 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                   />
                 </template>
               </Column>
-              <Column header="Min. Stok" field="minStok" />
-              <Column header="Max. Stok" field="maxStok" />
-              <Column header="Stok Ketika Permintaan" field="stokPermintaan" />
-              <Column header="Satuan/Isi" field="satuanIsi">
+              <Column
+                header="Min. Stok"
+                headerClass="bg-adameds-50"
+                field="minStok"
+              />
+              <Column
+                header="Max. Stok"
+                headerClass="bg-adameds-50"
+                field="maxStok"
+              />
+              <Column
+                header="Stok Ketika Permintaan"
+                headerClass="bg-adameds-50"
+                field="stokPermintaan"
+              />
+              <Column
+                header="Satuan/Isi"
+                headerClass="bg-adameds-50"
+                field="satuanIsi"
+              >
                 <template #body>
                   <CustomSelect
                     :showLabel="false"
@@ -229,8 +251,16 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
                   />
                 </template>
               </Column>
-              <Column header="Harga Dasar" field="hargaDasar" />
-              <Column header="Jumlah Permintaan" field="jumlahPermintaan">
+              <Column
+                header="Harga Dasar"
+                headerClass="bg-adameds-50"
+                field="hargaDasar"
+              />
+              <Column
+                header="Jumlah Permintaan"
+                headerClass="bg-adameds-50"
+                field="jumlahPermintaan"
+              >
                 <template #body>
                   <CustomInputNumber :showLabel="false" class="w-full">
                     <template #appendText>
@@ -243,7 +273,7 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
           </div>
           <div
             :class="[
-              'mt-3 flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300 flex-shrink-0',
+              'mt-3 flex gap-3 justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300 flex-shrink-0',
               isSticky ? 'sticky bottom-0 bg-white' : '',
             ]"
           >
@@ -255,11 +285,19 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
               backgroundColor="bg-white"
               @click="addRow"
             />
+            <CustomButton
+              icon="PhPlus"
+              label="Tambah Item Multiple"
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              backgroundColor="bg-white"
+              @click="showTambahItemMultiple = true"
+            />
           </div>
         </div>
       </template>
       <template #footer>
-        <div class="border-t border-grey-200 py-2 flex justify-between">
+        <div class="flex justify-between py-2 border-t border-grey-200">
           <div class="flex gap-10">
             <div>
               <div class="underline">Total Item</div>
@@ -287,6 +325,7 @@ watch(tableRows, () => nextTick(updateSticky), { deep: true });
         </div>
       </template>
     </Card>
+    <TambahItemMultiple v-model:visible="showTambahItemMultiple" />
   </div>
 </template>
 
