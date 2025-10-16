@@ -8,12 +8,14 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import TambahItemMultiple from "../../../../components/Stok/TambahItemMultiple.vue";
 
 const emit = defineEmits(["back"]);
 
 const searchQuery = ref("");
 const buttonSelect = ref("permintaan-barang");
 const jenisItemSwitch = ref(false);
+const showTambahItemMultiple = ref(false);
 
 // Kontainer konten untuk mendeteksi overflow
 const contentRef = ref<HTMLElement | null>(null);
@@ -255,11 +257,11 @@ const deleteRow = (index: number) => {
               <Column header="HPP" field="hargaDasar" />
               <Column header="Total" field="hargaDasar" />
               <Column header="Action">
-                <template #body>
+                <template #body="slotProps">
                   <CustomButton
                     label=""
                     background-color="bg-danger-300 rounded-lg"
-                    @click="deleteRow(index)"
+                    @click="deleteRow(slotProps.index)"
                   >
                     <PhTrash :size="18" color="#ffffff" weight="fill" />
                   </CustomButton>
@@ -269,7 +271,7 @@ const deleteRow = (index: number) => {
           </div>
           <div
             :class="[
-              'mt-3 flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300 flex-shrink-0',
+              'mt-3 gap-3 flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300 flex-shrink-0',
               isSticky ? 'sticky bottom-0 bg-white' : '',
             ]"
           >
@@ -280,6 +282,14 @@ const deleteRow = (index: number) => {
               textColor="text-adameds-300"
               backgroundColor="bg-white"
               @click="addRow"
+            />
+            <CustomButton
+              icon="PhPlus"
+              label="Tambah Item Multiple"
+              borderColor="border-adameds-300"
+              textColor="text-adameds-300"
+              backgroundColor="bg-white"
+              @click="showTambahItemMultiple = true"
             />
           </div>
         </div>
@@ -313,6 +323,11 @@ const deleteRow = (index: number) => {
         </div>
       </template>
     </Card>
+    <TambahItemMultiple
+      v-model:visible="showTambahItemMultiple"
+      :showHeaderInfo="false"
+      @close-dialog="showTambahItemMultiple = false"
+    />
   </div>
 </template>
 
