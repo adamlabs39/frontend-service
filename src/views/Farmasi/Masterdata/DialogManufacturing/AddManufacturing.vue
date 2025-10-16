@@ -115,10 +115,10 @@ const schema = toTypedSchema(
           "Alamat tidak boleh hanya berisi spasi",
           (value) => !!value && value.trim().length > 0
         ),
-      provinsiCode: yup.string(),
-      kabupatenCode: yup.string(),
-      kecamatanCode: yup.string(),
-      kelurahanCode: yup.string(),
+      provinsiCode: yup.string().required("Provinsi harus dipilih"),
+      kabupatenCode: yup.string().required("Kabupaten harus dipilih"),
+      kecamatanCode: yup.string().required("Kecamatan harus dipilih"),
+      kelurahanCode: yup.string().required("Kelurahan harus dipilih"),
       status: yup.bool().default(true),
     })
     .noUnknown()
@@ -333,6 +333,9 @@ onMounted(() => {
               :options="provinsiPayload"
               option-label="name"
               option-value="code"
+              :invalid="!!errors.provinsiCode"
+              :invalidMessage="errors.provinsiCode"
+              :required="errors.provinsiCode ? true : false"
             />
           </div>
           <div class="mt-[20px] ml-[10px]">
@@ -344,6 +347,9 @@ onMounted(() => {
               :options="kabupatenPayload"
               option-label="name"
               option-value="code"
+              :invalid="!!errors.kabupatenCode"
+              :invalidMessage="errors.kabupatenCode"
+              :required="errors.kabupatenCode ? true : false"
             />
           </div>
           <div class="mt-[20px] mr-[10px]">
@@ -355,6 +361,9 @@ onMounted(() => {
               :options="kecamatanPayload"
               option-label="name"
               option-value="code"
+              :invalid="!!errors.kecamatanCode"
+              :invalidMessage="errors.kecamatanCode"
+              :required="errors.kecamatanCode ? true : false"
             />
           </div>
           <div class="mt-[20px] ml-[10px]">
@@ -366,6 +375,9 @@ onMounted(() => {
               :options="kelurahanPayload"
               option-label="name"
               option-value="code"
+              :invalid="!!errors.kelurahanCode"
+              :invalidMessage="errors.kelurahanCode"
+              :required="errors.kelurahanCode ? true : false"
             />
           </div>
         </div>
