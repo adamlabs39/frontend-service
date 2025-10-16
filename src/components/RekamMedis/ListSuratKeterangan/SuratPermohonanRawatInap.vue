@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -9,6 +9,9 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { utilsStore } from "@/stores/utils";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
@@ -42,8 +45,41 @@ const [dokter] = defineField("dokter");
 const [tujuan] = defineField("tujuan");
 const [keterangan] = defineField("keterangan");
 
-const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
+
+const doctorOptions = ref<any[]>([]);
 const itemsTujuan = ref(["Oprasi", "Rawat Inap"]);
+
+const praktisiStore = usePraktisiStore();
+const UseUtilsStore = utilsStore();
+const lokasiStore = useLokasiStore();
+
+
+const loadDropdownData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params = {
+      page: 1,
+      limit: 9999,
+      name: "",
+      isDoctor: true,
+    };
+    const response = await praktisiStore.getApi(params);
+    if (response && response.payload) {
+      doctorOptions.value = response.payload;
+    } else {
+      doctorOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data dokter:", error);
+    doctorOptions.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  loadDropdownData();
+});
 
 const submitForm = handleSubmit((values) => {
   emit("update:dataSurat", values);
@@ -140,10 +176,10 @@ defineExpose({
         <CustomSelect
           label="Dokter"
           v-model="dokter"
-          place-holder="Pilih Poli"
-          :options="itemsDokter"
-          option-label=""
-          option-value=""
+          place-holder="Pilih Dokter"
+          :options="doctorOptions"
+          option-label="pegawai.name"
+          option-value="uuid"
           class="col-span-7"
           :invalid="!!errors.dokter"
           :invalidMessage="errors.dokter"

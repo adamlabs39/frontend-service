@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -11,6 +11,8 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { utilsStore } from "@/stores/utils";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
 
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
@@ -59,6 +61,40 @@ const itemsNonKlinikal = ref([
   "Perlu Fasilitas Lebih Baik",
   "Permintaan Pasien/Keluarga",
 ]);
+
+const poliOptions = ref<any[]>([]);
+
+const UseUtilsStore = utilsStore();
+const lokasiStore = useLokasiStore();
+
+const fetchPoliOptions = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const responseLokasi = await lokasiStore.getApi(1, 9999);
+    if (responseLokasi && responseLokasi.payload) {
+      poliOptions.value = responseLokasi.payload
+        .filter((lokasi: any) => {
+          return (
+            lokasi.locationType?.toLowerCase() === "ward" &&
+            Boolean(lokasi.isPoli) === true
+          );
+        })
+        .map((lokasi: any) => ({
+          name: lokasi.name,
+          uuid: lokasi.uuid,
+        }));
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data poli:", error);
+    poliOptions.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  fetchPoliOptions();
+});
 
 const submitForm = handleSubmit((values) => {
   emit("update:dataSurat", values);
@@ -174,6 +210,8 @@ defineExpose({
         <CustomSelect
           label="Poli/Spesialis"
           v-model="poli"
+          :options="poliOptions"
+          option-label="name"
           place-holder="Pilih Poli/Spesialis"
           class="col-span-5"
           :invalid="!!errors.poli"
