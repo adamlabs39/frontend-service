@@ -257,11 +257,11 @@ const deleteRow = (index: number) => {
               <Column header="HPP" field="hargaDasar" />
               <Column header="Total" field="hargaDasar" />
               <Column header="Action">
-                <template #body>
+                <template #body="slotProps">
                   <CustomButton
                     label=""
                     background-color="bg-danger-300 rounded-lg"
-                    @click="deleteRow(index)"
+                    @click="deleteRow(slotProps.index)"
                   >
                     <PhTrash :size="18" color="#ffffff" weight="fill" />
                   </CustomButton>
