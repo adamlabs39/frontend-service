@@ -134,11 +134,11 @@ export const useRekamMedisStore = defineStore({
       );
     },
 
-    async getCompare({ noPelayanan = "", noRm = "", key="" },
+    async getCompare({ noPelayanan = "", noRm = "", jenisKunjungan = "", key = "" },
       payload = {}
     ) {
       return apiRekamMedisGet (
-        `/rekam-medis/item-before?no_pelayanan=${noPelayanan}&no_rm=${noRm}&key=${key}`, 
+        `/rekam-medis/item-before?no_pelayanan=${noPelayanan}&no_rm=${noRm}&jenis_kunjungan=${jenisKunjungan}&key=${key}`,
         payload
       )
     },
