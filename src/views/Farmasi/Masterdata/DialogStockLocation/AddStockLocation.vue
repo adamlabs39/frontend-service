@@ -85,7 +85,7 @@ const translateValidationError = (err: unknown) => {
   if (rawMsg.includes("validation error")) {
     return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
   }
-  return "Gagal menyimpan data. Silakan coba lagi.";
+  return "";
 };
 
 const onSubmit = handleSubmit(async (values: any) => {
