@@ -168,7 +168,7 @@ const ExportExcel = async () => {
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
+        No: offset + i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
