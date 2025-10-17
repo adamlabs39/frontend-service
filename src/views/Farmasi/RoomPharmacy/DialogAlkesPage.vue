@@ -26,7 +26,7 @@ const listAlkes = ref([
   },
 ]);
 const alkesItem = ref<any>({});
-const qty = ref (0);
+const qty = ref(0);
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
@@ -65,7 +65,7 @@ const editAlkes = async () => {
       props.payloadEdit.uuid,
       {
         qty: qty.value,
-        item_medis_uuid: alkesItem.value.uuid
+        item_medis_uuid: alkesItem.value.uuid,
       }
     );
   } catch (error) {
@@ -84,8 +84,8 @@ watch(
       if (props.payloadEdit) {
         const selectedAlkes = alkesPayload.value.find(
           (item: any) => props.payloadEdit.itemMedis.uuid == item.uuid
-        )
-        alkesItem.value = selectedAlkes
+        );
+        alkesItem.value = selectedAlkes;
       }
     }
   }
@@ -97,7 +97,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="700px">
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="700px"
+  >
     <template #header>Edit Alkes</template>
     <template #body>
       <div class="grid grid-cols-1">
@@ -135,10 +139,15 @@ onMounted(() => {
             <!-- Jumlah -->
             <Column field="jumlah" headerClass="bg-adameds-50">
               <template #header>
-                <div class="w-full font-bold" >Jumlah</div>
+                <div class="w-full font-bold">Jumlah</div>
               </template>
               <template #body="slotProps">
-                <CustomInputNumber v-model="qty" :show-label="false" :show-buttons="true" class="w-[130px]" />
+                <CustomInputNumber
+                  v-model="qty"
+                  :show-label="false"
+                  :show-buttons="true"
+                  class="w-[130px]"
+                />
               </template>
             </Column>
             <!-- Satuan -->
@@ -148,7 +157,9 @@ onMounted(() => {
               </template>
               <template #body="slotProps">
                 <div class="flex">
-                  <p class="text-xs">{{ alkesItem.satuanPenggunaan.name }}</p>
+                  <p class="text-xs">
+                    {{ alkesItem?.satuanPenggunaan?.name || "-" }}
+                  </p>
                 </div>
               </template>
             </Column>
@@ -165,7 +176,11 @@ onMounted(() => {
           borderColor="border-grey-200"
           textColor="text-grey-300"
         />
-        <CustomButton label="Simpan Edit" class="ml-[10px]" @click="editAlkes" />
+        <CustomButton
+          label="Simpan Edit"
+          class="ml-[10px]"
+          @click="editAlkes"
+        />
       </div>
     </template>
   </CustomDialog>
