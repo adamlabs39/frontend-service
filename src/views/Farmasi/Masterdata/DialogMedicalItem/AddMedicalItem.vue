@@ -73,7 +73,14 @@ const schema = toTypedSchema(
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  setFieldError,
+} = useForm({
   validationSchema: schema,
 });
 
@@ -242,6 +249,14 @@ const fetchComposition = async () => {
 const UseUtilsStore = utilsStore();
 const MedicalItemStore = useMedicalItemStore();
 
+const translateValidationError = (err: unknown) => {
+  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
+  if (rawMsg.includes("validation error")) {
+    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
+  }
+  return "";
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
   let jenisStokDelete = values.jenisStocks.map((uuid: string) => ({
     jenis_stok_uuid: uuid,
@@ -319,6 +334,8 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error) {
+    const message = translateValidationError(error);
+    setFieldError("code", message);
     console.error("Failed to process the data:", error);
   }
 });
@@ -495,7 +512,7 @@ onMounted(() => {
               optionLabel="name"
               optionValue="uuid"
               :options="UnitPayload"
-              class="ml-2 mr-1"
+              class="mr-1 ml-2"
             />
           </div>
           <!-- Isi Kemasan -->
@@ -833,7 +850,7 @@ onMounted(() => {
                 <div class="w-full text-center">No.</div>
               </template>
               <template #body="slotProps">
-                <div class="flex items-center justify-center">
+                <div class="flex justify-center items-center">
                   {{ slotProps.index + 1 }}
                 </div>
               </template>
@@ -878,7 +895,7 @@ onMounted(() => {
     </template>
     <template #footer>
       <div class="w-full">
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             v-if="method !== 'detail'"
             label="Reset"

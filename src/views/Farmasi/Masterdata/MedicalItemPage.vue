@@ -178,18 +178,29 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await MedicalItemStore.exportApi();
-    const rows = response.payload.itemMedis;
+    // Ambil state paginasi aktif
+    const { page, page_size } = MedicalItemProperties.value;
+
+    // Ambil data sesuai page & page_size & pencarian aktif
+    const response = await MedicalItemStore.getApi(
+      page,
+      page_size,
+      searchQuery.value
+    );
+    const rows = response?.payload ?? [];
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
       return;
     }
 
+    // Hitung offset untuk penomoran sesuai page aktif
+    const offset = (page - 1) * page_size;
+
     // Prepare Data for Export
     const title = ["DATAMASTER ITEM MEDIS"];
-    const data = [];
+    const data: any[] = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
+    // Header Row (kosong untuk baris kedua tanpa border)
     data.push({});
     data.push({});
     data.push({
@@ -210,24 +221,40 @@ const ExportExcel = async () => {
       Status: "Status",
     });
 
-    // Data Rows
+    // Helper untuk konversi objek/array ke label tabel
+    const toJenisStokLabels = (jenisStok: any) =>
+      Array.isArray(jenisStok)
+        ? jenisStok
+            .map((it: any) => it?.detailStok?.name)
+            .filter(Boolean)
+            .join(", ")
+        : "";
+
+    const toKomposisiLabels = (ingridients: any) =>
+      Array.isArray(ingridients)
+        ? ingridients
+            .map((it: any) => it?.name)
+            .filter(Boolean)
+            .join(", ")
+        : "";
+
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
-        Kode: rows[i].code,
-        Nama: rows[i].name,
-        JenisItem: rows[i].jenisItem,
-        SatuanPenggunaan: rows[i].satuanPenggunaan,
-        JenisStok: rows[i].jenisStok,
-        Manufaktur: rows[i].manufacture,
-        BentukSediaan: rows[i].bentukSediaan,
-        DosisKemasan: rows[i].dosis,
-        SatuanDosis: rows[i].satuanDosis,
-        IsiKemasan: rows[i].IsiKemasan,
-        SatuanKemasan: rows[i].satuanKemasan,
-        KategoriItem: rows[i].kategoriObat,
-        Komposisi: rows[i].ingridients,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        No: offset + i + 1,
+        Kode: rows[i]?.code,
+        Nama: rows[i]?.name,
+        JenisItem: rows[i]?.jenisItem,
+        SatuanPenggunaan: rows[i]?.satuanPenggunaan?.name || "",
+        JenisStok: toJenisStokLabels(rows[i]?.jenisStok),
+        Manufaktur: rows[i]?.manufacture?.name || "",
+        BentukSediaan: rows[i]?.bentukSediaan?.name || "",
+        DosisKemasan: rows[i]?.dosis ?? "",
+        SatuanDosis: rows[i]?.satuanDosis?.name || "",
+        IsiKemasan: rows[i]?.isiKemasan ?? "", // perbaiki huruf kecil
+        SatuanKemasan: rows[i]?.satuanKemasan?.name || "",
+        KategoriItem: rows[i]?.kategoriObat?.name || "",
+        Komposisi: toKomposisiLabels(rows[i]?.ingridients),
+        Status: rows[i]?.status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -237,7 +264,7 @@ const ExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -246,18 +273,32 @@ const ExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 }, // No
+      { wch: 14 }, // Kode
+      { wch: 28 }, // Nama
+      { wch: 12 }, // JenisItem
+      { wch: 18 }, // SatuanPenggunaan
+      { wch: 18 }, // JenisStok
+      { wch: 18 }, // Manufaktur
+      { wch: 18 }, // BentukSediaan
+      { wch: 14 }, // DosisKemasan
+      { wch: 16 }, // SatuanDosis
+      { wch: 14 }, // IsiKemasan
+      { wch: 16 }, // SatuanKemasan
+      { wch: 18 }, // KategoriItem
+      { wch: 24 }, // Komposisi
+      { wch: 10 }, // Status
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
     for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
+        // Border untuk baris tabel
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
           worksheet[cellAddress].s.border = {
@@ -268,13 +309,13 @@ const ExportExcel = async () => {
           };
         }
 
-        // Align header cells (row 3)
+        // Align header (baris 3)
         worksheet[cellAddress].s.alignment = {
           horizontal: "center",
           vertical: "center",
         };
 
-        // Fill header with background color (row 3)
+        // Fill header (baris 3)
         if (row === 2) {
           worksheet[cellAddress].s.fill = {
             fgColor: { rgb: "9fe2db" },
