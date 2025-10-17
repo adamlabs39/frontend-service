@@ -181,6 +181,7 @@ const props = defineProps({
       :selectedPemeriksaanMata="selectedPemeriksaanMata"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <BurnInput
       v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"
