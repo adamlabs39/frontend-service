@@ -420,7 +420,11 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (HowToUseProperties.page - 1) * HowToUseProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>

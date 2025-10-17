@@ -591,7 +591,12 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (MedicalItemProperties.page - 1) *
+                    MedicalItemProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
