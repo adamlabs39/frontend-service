@@ -12,10 +12,12 @@ import DataRekapTindakanPasien from "../Layout/Tabel/Laporan/DataRekapTindakanPa
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
-import { useAdmisiIGDStore } from "@/stores/admisi/laporan";
+import { useAdmisiReportStore } from "@/stores/admisi/laporan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
+import { useRJStore } from "@/stores/rawatJalan/laporanrajal";
+import { downloadExportExcelKunjunganRajal, downloadExportExcelBatalRawatJalan } from "@/stores/rawatJalan/exportexcelrajal";
 
 
 const properties = ref({
@@ -38,11 +40,15 @@ const lokasiProperties = ref({
   total: 0,
 });
 
+// Search Dokter
+const searchDoctor = ref<string>("");
+
 
 // STORE
+const RJStore = useRJStore();
 const useUtilsStore = utilsStore();
 const rekapTindakanPasienStore = useRekapTindakanStore();
-const kunjunganRawatJalanStore = useAdmisiIGDStore();
+const kunjunganRawatJalanStore = useAdmisiReportStore();
 const praktisiStore = usePraktisiStore();
 const lokasiStore = useLokasiStore();
 
@@ -52,21 +58,24 @@ const reportData = ref([]);
 const praktisiPayload = ref<any[]>([]);
 const lokasiPayload = ref<any[]>([]);
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const fetchLaporanData = async (filter: Filter = {
+  polyclinic: "",
+  timestamp: 0
+}) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
     if (pageType.value == "kunjungan-rawat-jalan") {
-      response = await kunjunganRawatJalanStore.getKunjunganReport(filter);
+      response = await RJStore.getKunjunganRajal(filter);
     } else if (pageType.value == "pembatalan-poli") {
-      response = await kunjunganRawatJalanStore.getBatalKunjunganReport(filter);
+      response = await RJStore.getBatalPoli(filter);
     } else if (pageType.value == "rekap-tindakan-pasien") {
       response = await rekapTindakanPasienStore.getTindakanPasien(filter);
     }
 
     if (response && response.payload) {
-      properties.value.total = response.properties.totalData;
-      return response.payload;
+      properties.value.total = response.payload.pagination.totalData;
+      return response.payload.data;
     } else return [];
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -82,10 +91,15 @@ const searchQuery = ref<string>("");
 const fetchPraktisiData = async () => {
   useUtilsStore.setLoading(true);
     try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
-      console.log(praktisiPayload.value)
     } else {
       praktisiPayload.value = [];
     }
@@ -99,32 +113,31 @@ const fetchPraktisiData = async () => {
 const fetchLokasiData = async () => {
   useUtilsStore.setLoading(true);
   try {
-    const response = await lokasiStore.getApi(
-      lokasiProperties.value.page,
-      lokasiProperties.value.page_size
-    );
-    // console.log("API Response:", response);
-
-    if (response && response.payload) {
-      // console.log("Response contains payload:", response.payload);
-      lokasiProperties.value.total = response.properties.total;
-
-      // Gabungkan data baru ke dalam lokasiPayload
-      lokasiPayload.value = [...response.payload];
-
-      // Jika jumlah data yang diambil sama dengan page_size, tambahkan halaman berikutnya
-      if (response.payload.length === lokasiProperties.value.page_size) {
-        lokasiProperties.value.page += 1;
-        await fetchLokasiData(); // Panggil kembali untuk halaman berikutnya
-      }
-    } else {
-      lokasiPayload.value = [];
-    }
+    const response = await lokasiStore.getApi(0, 9999);
+  if (response && response.payload) {
+    lokasiPayload.value = response.payload.filter((lokasi: any) => {
+      return (
+        lokasi.locationType?.toLowerCase() === "ward" &&
+        Boolean(lokasi.isPoli) === true
+      );
+    });
+  } else {
+    lokasiPayload.value = [];
+  }
   } catch (error) {
     console.error("Failed to fetch data", error);
     lokasiPayload.value = [];
   } finally {
     useUtilsStore.setLoading(false);
+  }
+};
+
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-jalan') {
+    downloadExportExcelKunjunganRajal(filter);
+  } else if (pageType.value === 'pembatalan-poli') {
+    downloadExportExcelBatalRawatJalan(filter);
   }
 };
 
@@ -165,6 +178,8 @@ onMounted(() => {
 });
 
 interface Filter {
+  timestamp: number;
+  polyclinic: string;
   page?: number;
   limit?: number;
   q?: string;
@@ -214,6 +229,7 @@ const setFilter = () => {
   } else if (pageType.value == "pembatalan-poli") {
     filter.practitionerUuid = searchDokterDPJPFilter.value ?? "";
     filter.pelayanan = "RJ"
+    filter.polyclinic = searchPoliklinikFilter.value ?? ""; 
   } else if (pageType.value == "rekap-tindakan-pasien") {
     filter.practitionerUuid = searchPraktisiFilter.value ?? "";
     filter.pelayanan = "rj"
@@ -225,7 +241,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+   if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
   filter.lokasiUuid = searchPoliklinikFilter.value ?? ""
 
   return filter;
@@ -235,8 +254,9 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -257,15 +277,24 @@ const handleBulan = (bulan: any) => {
 };
 const resetFormRef = ref();
 
+
 const resetForm = () => {
   valueSearchRM.value = "";
-  searchPoliklinikFilter.value = ""
-  searchPraktisiFilter.value = ""
-  valueBulan.value = 0;
+  searchPoliklinikFilter.value = "";
+  searchPraktisiFilter.value = "";
+  valueBulan.value = null;
   valueSearchDPJP.value = "";
-  valueStartedDate.value = new Date();
-  valueEndedDate.value = new Date();
-  resetFormRef.value.resetForm();
+  searchDokterDPJPFilter.value = "";
+
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+  valueStartedDate.value = new Date(y, m, 1);
+  valueEndedDate.value = new Date(y, m + 1, 0);
+
+  if (resetFormRef.value) {
+    resetFormRef.value.resetForm();
+  }
 };
 
 // Reset filter fields
@@ -280,18 +309,12 @@ const handleRefreshPage = () => {
 </script>
 
 <template>
-  <!-- {{ searchPraktisiFilter }} -->
-  <!-- {{ pageType}} -->
-    <!-- {{ reportData }} -->
-      <!-- {{ lokasiPayload }} -->
-      <!-- {{ praktisiPayload }} -->
   <Card
     pt:body:class="h-full pt-0 overflow-auto"
     pt:content:class="h-full overflow-auto"
     class=""
   >
     <template #header>
-      <!-- {{ pageType }} -->
       <DataLaporanHeader
         @update:value-r-m-filter="handleSearchRM"
         @update:selected-dokter-d-p-j-p="handleSearchDPJP"
@@ -352,7 +375,6 @@ const handleRefreshPage = () => {
       </DataLaporanHeader>
     </template>
     <template #content>
-      <!-- <NoData /> -->
       <DataKunjunganRawatJalan
         v-if="pageType === 'kunjungan-rawat-jalan'"
         :kunjunganData="reportData"
@@ -371,6 +393,7 @@ const handleRefreshPage = () => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
         <CustomPaginator
           :rows="properties.page_size"

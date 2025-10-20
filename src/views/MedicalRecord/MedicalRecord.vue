@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
@@ -181,6 +181,7 @@ const toggleShowAllDetailMR = (method = "show") => {
 };
 
 const resetInitialDialog = () => {
+  rekamMedisStore.resetOpenedRekamMedisData();
   selectedSessionTab.value = undefined;
   selectedTab.value = "rekam-medis";
   selectedAssesment.value = "Alergi";
@@ -490,6 +491,10 @@ const showDialogRM = () => {
 };
 
 defineExpose({ showDialogRM });
+
+onMounted(() => {
+  console.log("Data Pasien yang Diterima di MedicalRecord.vue:", props.patientData);
+});
 </script>
 
 <template>
@@ -520,9 +525,9 @@ defineExpose({ showDialogRM });
             <div
               class="bg-white rounded-lg text-adameds-300 px-[10px] mr-[10px]"
             >
-              {{ patientData.noRm }}
+              {{ patientData.patient?.noRm }}
             </div>
-            {{ patientData.patient.name }}
+            {{ patientData.patient?.name }}
           </div>
           <CustomButton
             @click="() => {}"
@@ -649,13 +654,21 @@ defineExpose({ showDialogRM });
                       selectedSoapier == 'Subjective')
                   "
                 >
-                  <FormAlergi
+                  <!-- <FormAlergi
                     id="Alergi"
                     :ref="refs.alergi"
                     method="form"
                     class="mb-[10px]"
                     :rmUuid="patientData.rekamMedisUuid"
                     :sessionUuid="selectedSessionData.id"
+                    :patientData="patientData"
+                  /> -->
+                  <FormAlergi
+                    id="Alergi"
+                    :ref="refs.alergi"
+                    method="form"
+                    class="mb-[10px]"
+                    :rmUuid="patientData?.rekamMedisUuid" :sessionUuid="selectedSessionData?.id" :patientData="patientData"
                   />
                   <Anamnesis
                     id="Anamnesis"

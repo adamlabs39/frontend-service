@@ -60,6 +60,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <Anamnesis
       v-if="selectedAssesment == 'Anamnesis'"
@@ -67,6 +68,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <!-- <AnamnesisIGD
       v-if="selectedAssesment == 'Anamnesis IGD'"
@@ -88,6 +90,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <Antropometri
       v-if="selectedAssesment == 'Antropometri'"
@@ -95,6 +98,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <FormAsesmenNyeri
       v-if="selectedAssesment == 'Asesmen Nyeri'"
@@ -102,6 +106,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <Kesadaran
       v-if="selectedAssesment == 'Kesadaran'"
@@ -109,6 +114,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <CatatanHasilPenunjang
       v-if="selectedAssesment == 'Catatan Hasil Penunjang'"
@@ -116,6 +122,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <FormDiagnosaDokterICD10
       v-if="selectedAssesment == 'Diagnosis Dokter'"
@@ -123,6 +130,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <AsuhanKeperawatan
       v-if="selectedAssesment == 'Asuhan Keperawatan'"
@@ -130,6 +138,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <FormCatatanPerawat
       v-if="selectedAssesment == 'Catatan Perawat'"
@@ -137,6 +146,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <InstruksiMedis
       v-if="selectedAssesment == 'Instruksi Medis'"
@@ -144,6 +154,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <PemeriksaanTindakan
       v-if="selectedAssesment == 'Pemeriksaan dan Tindakan'"
@@ -170,6 +181,7 @@ const props = defineProps({
       :selectedPemeriksaanMata="selectedPemeriksaanMata"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <BurnInput
       v-if="selectedAssesment == 'Derajat Luka Bakar (RON)'"

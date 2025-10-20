@@ -87,12 +87,12 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.LINK,
             url: "/admisi/laporan/kunjungan",
           },
-          {
-            name: "Penjamin",
-            icon: "Penjamin",
-            type: linkType.LINK,
-            url: "/admisi/laporan/penjamin",
-          },
+          // {
+          //   name: "Penjamin",
+          //   icon: "Penjamin",
+          //   type: linkType.LINK,
+          //   url: "/admisi/laporan/penjamin",
+          // },
           {
             name: "Batal Kunjungan",
             icon: "Batal Kunjungan",
@@ -118,10 +118,10 @@ const sidebarBodyList = ref<SidebarBody[]>([
             url: "/admisi/laporan/bayi-baru-lahir",
           },
           {
-            name: "Rekap Jumlah Pasien BPJS",
-            icon: "Rekap Jumlah Pasien BPJS",
+            name: "Rekap Kunjungan",
+            icon: "Rekap Kunjungan",
             type: linkType.LINK,
-            url: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
+            url: "/admisi/laporan/rekap-kunjungan",
           },
         ],
       },

@@ -211,3 +211,46 @@ export function checkPermission(
   }
   return true;
 }
+
+export const numberToWords = (angka: number): string => {
+    const bilangan = [
+        '', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'
+    ];
+
+    const format = (n: number): string => {
+        if (n < 12) {
+            return bilangan[n];
+        }
+        if (n < 20) {
+            return bilangan[n - 10] + ' belas';
+        }
+        if (n < 100) {
+            return bilangan[Math.floor(n / 10)] + ' puluh ' + bilangan[n % 10];
+        }
+        if (n < 200) {
+            return 'seratus ' + format(n - 100);
+        }
+        if (n < 1000) {
+            return bilangan[Math.floor(n / 100)] + ' ratus ' + format(n % 100);
+        }
+        if (n < 2000) {
+            return 'seribu ' + format(n - 1000);
+        }
+        if (n < 1000000) {
+            return format(Math.floor(n / 1000)) + ' ribu ' + format(n % 1000);
+        }
+        if (n < 1000000000) {
+            return format(Math.floor(n / 1000000)) + ' juta ' + format(n % 1000000);
+        }
+        if (n < 1000000000000) {
+            return format(Math.floor(n / 1000000000)) + ' miliar ' + format(n % 1000000000);
+        }
+        if (n < 1000000000000000) {
+            return format(Math.floor(n / 1000000000000)) + ' triliun ' + format(n % 1000000000000);
+        }
+        return '';
+    };
+
+    const result = format(angka).replace(/\s+/g, ' ').trim();
+    return result.charAt(0).toUpperCase() + result.slice(1);
+};

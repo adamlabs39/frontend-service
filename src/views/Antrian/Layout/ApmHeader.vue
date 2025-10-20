@@ -6,20 +6,20 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 
-const props=defineProps({
-  title:{
-    type:String,
-    default:"Title"
+const props = defineProps({
+  title: {
+    type: String,
+    default: "Title",
   },
-  filter:{
-    type:Boolean,
-    default:true
+  filter: {
+    type: Boolean,
+    default: true,
   },
-  search:{
-    type:Boolean,
-    default:true
-  }
-})
+  search: {
+    type: Boolean,
+    default: true,
+  },
+});
 
 // !SECTION
 
@@ -34,9 +34,7 @@ const onPaymentMethodSelect = (label: string) => {
   }
 };
 
-const filters = [
-  selectedPaymentMethod,
-];
+const filters = [selectedPaymentMethod];
 
 const resetFilter = () => {
   filters.forEach((filter) => {
@@ -51,7 +49,7 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex  items-center justify-between w-full gap-5 mr-2.5">
+      <div class="flex items-center justify-between w-full gap-5 mr-2.5">
         <CustomButton label="" icon="PhArrowClockwise" />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
@@ -62,42 +60,31 @@ defineExpose({
       </div>
     </template>
     <template #content>
-        <div class="flex flex-col gap-2.5 mt-2.5">
-          <CustomTextfield v-if="search"
-            :label="`Cari APM`" 
+      <div class="flex flex-col gap-2.5 mt-2.5">
+        <div class="flex">
+          <CustomTextfield
+            v-if="search"
+            :label="`Cari APM`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama APM`"
+            class="grow"
           >
-        </CustomTextfield>
-        <div class="font-semibold text-SM text-grey-300">
-          <div class="flex mb-[10px] mt-5">
-            <div class="w-[15%]">Filter Status</div>
-            <div class="flex">
-              |
-              <CustomChip
-                label="AKTIF"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-50"
-                iconColor="text-adameds-300"
-                textColor="text-adameds-300"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('AKTIF')"
-                @selected="onPaymentMethodSelect"
-                selectedColor="bg-adameds-300 border-adameds-300"
-              />
-              <CustomChip
-                label="NON-AKTIF"
-                customClass="h-5"
-                class="ml-[10px]"
-                :isSelected="selectedPaymentMethod.includes('NON-AKTIF')"
-                @selected="onPaymentMethodSelect"
-              />
-            </div>
-          </div>
+          </CustomTextfield>
+          <CustomButton
+            icon="PhMagnifyingGlass"
+            label="Cari"
+            class="ml-5 mr-[10px] mt-auto w-[95px]"
+          />
+          <CustomButton
+            label="Reset"
+            outlined
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            class="mt-auto w-[70px]"
+          />
         </div>
       </div>
-      <hr class="border-grey-200" />
+      <hr class="border-grey-200 mt-8" />
     </template>
     <template #collapseIcon>
       <CustomButton

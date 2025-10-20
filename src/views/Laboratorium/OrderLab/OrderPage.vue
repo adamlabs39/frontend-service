@@ -804,6 +804,7 @@ const totalTagihanLab = computed(() => {
       :dataBreadCrumb="dataBreadCrumb"
       :pageType="pageType"
       :patientData="patientData"
+      @fetchOrderLab="fetchOrderLab"
       @back="dataBreadCrumb.pop()"
     />
     <EditOrderLabApsPage

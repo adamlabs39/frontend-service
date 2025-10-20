@@ -72,30 +72,20 @@ const emit = defineEmits([
   "filterChipPayment",
 ]);
 
-const selectedTab = ref("0");
-const searchBulanFilter = ref<string>("");
-const optionBulan = ref([
-  { label: "Januari", value: 1 },
-  { label: "Februari", value: 2 },
-  { label: "Maret", value: 3 },
-  { label: "April", value: 4 },
-  { label: "Mei", value: 5 },
-  { label: "Juni", value: 6 },
-  { label: "Juli", value: 7 },
-  { label: "Agustus", value: 8 },
-  { label: "September", value: 9 },
-  { label: "Oktober", value: 10 },
-  { label: "November", value: 11 },
-  { label: "Desember", value: 12 },
-]);
+const selectedTab = ref("2");
+const valueBulanFilter = ref<Date | null>(null);
 const valueSelectedFilter = ref();
 const resetForm = () => {
   searchPatientFilter.value = "";
   valueSelectedFilter.value = "";
-  searchBulanFilter.value = "";
+  valueBulanFilter.value = null;
+  selectedTab.value = "2";
   let date = new Date(),
     y = date.getFullYear(),
     m = date.getMonth();
+
+  selectedFilterPasien.value = [];
+  selectedPaymentMethod.value = [];
 
   startDateFilter.value = new Date(y, m, 1);
   endDateFilter.value = new Date(y, m + 1, 0);
@@ -224,16 +214,18 @@ defineExpose({
         />
 
         <!-- DatePicker -->
-        <CustomSelect
+        <CustomDatePicker
           v-if="['rekap-tindakan-pasien'].includes(pageType)"
-          v-model="searchBulanFilter"
-          label="Bulan"
-          class="w-1/4"
-          optionLabel="label"
-          optionValue="value"
+          v-model="valueBulanFilter"
+          date-format="mm-yy"
+          view="month"
+          label="Tanggal"
           place-holder="Pilih Bulan"
-          :options="optionBulan"
-          @update:modelValue="$emit('update:selectedMonth', searchBulanFilter)"
+          class="w-1/4"
+          @update:model-value="
+            $emit('update:selectedMonth', valueBulanFilter)
+          "
+          :max-date="new Date()"
         />
         <div v-else class="flex w-1/4">
           <CustomDatePicker
@@ -243,6 +235,7 @@ defineExpose({
             @update:modelValue="
               $emit('update:startDateFilter', startDateFilter)
             "
+            :max-date="endDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -250,6 +243,7 @@ defineExpose({
             :showLabel="false"
             class="mt-auto"
             @update:modelValue="$emit('update:endDateFilter', endDateFilter)"
+            :min-date="startDateFilter"
           />
         </div>
 
@@ -277,28 +271,17 @@ defineExpose({
           label=""
           icon="PhListBullets"
           class="w-[60px]"
-          :text-color="selectedTab === '' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = ''))"
-          :outlined="selectedTab !== ''"
+          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '2'))"
+          :outlined="selectedTab !== '2'"
         />
         <!-- Filter = {{ props.filter }} -->
         <CustomButton
           label="PELAYANAN"
-          class="grow"
-          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
-          :border-color="
-            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
-          "
-          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '0'))"
-          :outlined="selectedTab !== '0'"
-        />
-        <CustomButton
-          label="DISCHARGE"
           class="grow"
           :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
           :border-color="
@@ -307,6 +290,17 @@ defineExpose({
           :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
           @click="$emit('selectedTab', (selectedTab = '1'))"
           :outlined="selectedTab !== '1'"
+        />
+        <CustomButton
+          label="DISCHARGE"
+          class="grow"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
+          :border-color="
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
+          "
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
         />
       </div>
       <div

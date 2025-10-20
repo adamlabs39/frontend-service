@@ -1,57 +1,51 @@
 <script lang="ts" setup>
+import type { PropType } from "vue";
 import AddPrint from "../icons/AddPrint.vue";
 import SolarUserCheckIcon from "../icons/SolarUserCheckIcon.vue";
 import Stethoscop from "../icons/Stethoscop.vue";
-
+// ... existing code ...
+import Card from "primevue/card"; // pastikan Card terdaftar agar slot #header & #content berfungsi
+// ... existing code ...
 const props = defineProps({
   cardAktivitas: {
-    type: Object as () => { keterangan: string },
-    default: () => ({ keterangan: "" }),
+    type: String,
+    default: "",
+  },
+  icon: {
+    type: String as PropType<"checkin" | "print" | "poli">,
+    default: "poli",
   },
 });
 </script>
 
 <template>
   <Card
-    style="width: full; overflow: hidden; height: full"
+    style="width: 100%; overflow: hidden; height: 100%"
     pt:body:class="p-0 bg-white"
     pt:root:class="h-full"
   >
     <template #header
       ><div
-        class="rounded-r-xl rounded-l-xl w-full h-[80px] flex items-center justify-center bg-adameds-50"
+        class="rounded-b-3xl w-full h-[80px] flex items-center justify-center bg-adameds-50"
       >
+        <!-- Render ikon berdasarkan varian -->
         <SolarUserCheckIcon
+          v-if="icon === 'checkin'"
           class="text-adameds-300"
           :size="50"
-          v-if="cardAktivitas.keterangan === 'Checkin'"
         />
         <AddPrint
+          v-else-if="icon === 'print'"
           class="text-adameds-300"
           :size="50"
-          v-if="cardAktivitas.keterangan === 'Print'"
         />
-        <!-- <img
-          v-if="cardAktivitas.keterangan === 'Umum'"
-          src="@/assets/icons/solar_user-check-bold.svg"
-          alt=""
-          class="w-[40px] h-[40px]"
-        /> -->
-        <Stethoscop
-          class="text-adameds-300"
-          :size="40"
-          v-if="
-            ['Umum', 'Anak', 'Mata', 'Kandungan', 'Gigi', 'THT', 'Tulang', 'Kulit'].includes(
-              cardAktivitas.keterangan
-            )
-          "
-        />
+        <Stethoscop v-else class="text-adameds-300" :size="40" />
       </div>
     </template>
     <template #content>
-      <div class="flex items-center justify-center h-full mt-2">
+      <div class="flex justify-center items-center h-full">
         <div class="font-extrabold text-[22px] text-adameds-300">
-          {{ cardAktivitas.keterangan }}
+          {{ cardAktivitas }}
         </div>
       </div>
     </template>

@@ -13,6 +13,7 @@ import { utilsStore } from "@/stores/utils";
 import { useAdmisiMasterPasienStore } from "@/stores/admisi/masterPasien";
 import { useDistrictStore } from "@/stores/datamaster/district";
 import { countAge } from "@/utils/Helpers";
+import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -40,7 +41,7 @@ const props = defineProps({
 
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi(); 
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {
@@ -54,7 +55,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId);
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -71,7 +72,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -87,7 +88,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId); 
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -108,6 +109,14 @@ const kelurahanPayload = ref<any[]>([]);
 const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
+
+    if (tempPatientData.address && tempPatientData.address.country === 'Indonesia') {
+      tempPatientData.address.country = 'id-ID';
+    }
+
+    if (tempPatientData.language === 'Indonesian') {
+      tempPatientData.language = 'ID';
+    }
 
     await fetchKabupaten(tempPatientData.address.prov);
     await fetchKecamatan(tempPatientData.address.city);
@@ -139,27 +148,37 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (filter: string) => {
-  if (timer.value) {
-    clearTimeout(timer.value);
-    timer.value = null;
-  }
-  timer.value = setTimeout(async () => {
-    loadingSearchPatient.value = true;
-    try {
-      const response = await masterPasienStore.getMasterPasien({
-        q: filter,
+const searchPatientData = async (query: string = "") => {
+  
+  loadingSearchPatient.value = true;  
+  try {
+    const response = await masterPasienStore.getMasterPasien({
+      q: query,
+      limit: 9999,
+      status: 'aktif'
+    });
+    if (response && response.payload) {
+      listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
+        return {
+          ...patient,
+          searchableText: `${patient.name} ${patient.noRm}` 
+        };
       });
-      if (response && response.payload) {
-        listDataPatient.value = response.payload;
-      } else listDataPatient.value = [];
-    } catch (error) {
-      console.error("Failed to fetch data", error);
-      return [];
-    } finally {
-      loadingSearchPatient.value = false;
+    } else {
+      listDataPatient.value = [];
     }
-  }, 800);
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    listDataPatient.value = [];
+  } finally {
+    loadingSearchPatient.value = false;
+  }
+};
+
+const fetchInitialPatientList = () => {
+  if (listDataPatient.value.length === 0) {
+    searchPatientData("");
+  }
 };
 
 const setSelectedPatientData = async (data: any) => {
@@ -189,7 +208,29 @@ const schema = toTypedSchema(
       title: yup.string().required("Awalan/Gelar harus dipilih"),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -202,6 +243,7 @@ const schema = toTypedSchema(
       language: yup.string().required("Bahasa yang dikuasai harus dipilih"),
       maritialStatus: yup.string().required("Status pernikahan harus dipilih"),
       motherName: yup.string().required("Nama ibu kandung harus diisi"),
+      status: yup.boolean().default(true),
       address: yup
         .object({
           prov: yup.string().required("Provinsi harus dipilih"),
@@ -219,9 +261,17 @@ const schema = toTypedSchema(
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+
+const { errors, handleSubmit, defineField, resetForm, setValues, values } = useForm({
   validationSchema: schema,
 });
+
+const getFormData = () => {
+  return {
+    ...values,
+    patientAge: patientAge.value,
+  };
+};
 
 const [noRm] = defineField("noRm");
 const [title] = defineField("title");
@@ -245,6 +295,7 @@ const [addressFullAddress] = defineField("address.fullAddress");
 const [addressCountry] = defineField("address.country");
 const [addressVillage] = defineField("address.village");
 const [addressPostalCode] = defineField("address.postalCode");
+const [status] = defineField("status");
 
 const onSubmit = handleSubmit(async (values) => {
   return values;
@@ -261,6 +312,7 @@ const getAge = (date: Date) => {
 defineExpose({
   onSubmit,
   onResetForm,
+  getFormData,
 });
 </script>
 
@@ -280,6 +332,7 @@ defineExpose({
         <div class="flex">
           <CustomSelect
             v-if="
+              formType != 'Checkin' &&
               formType != 'Edit Data Pasien' &&
               formType != 'Detail Edit' &&
               formType != 'Detail'
@@ -290,13 +343,14 @@ defineExpose({
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
-            optionLabel="name"
+            optionLabel="searchableText"
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
             :disabled="isDetail"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
+            @click="fetchInitialPatientList"
           >
             <template #customOptions="{ option }">
               {{ option.name }} ~ {{ option.noRm }}
@@ -595,6 +649,15 @@ defineExpose({
             :invalidMessage="errors['address.fullAddress']"
           />
         </div>
+        <hr class="my-[30px]" />
+          <CustomSwitch
+          v-if="formType == 'Edit Data Pasien'"
+          v-model="status"
+          label="Status Data Pasien"
+          sideLabel="Non-Aktif"
+          sideLabelTrue="Aktif"
+          :disabled="isDetail"
+          />
       </div>
     </template>
     <template #collapseIcon>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ListMenu, Module } from "@/utils/Interface";
-import { onMounted, ref, onBeforeMount } from "vue";
+import { onMounted, ref, onBeforeMount, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "../Base/CustomButton.vue";
@@ -9,6 +9,10 @@ import RMCustomSelect from "@/components/Base/RMCustomSelect.vue";
 import { useFaskesStore } from "@/stores/datamaster/faskes";
 import { useSettingStore } from "@/stores/setting";
 import CustomSelect from "../Base/CustomSelect.vue";
+import CardPanggilanAdmisi from "@/components/Base/CardPanggilanAdmisi.vue";
+import { PhMegaphone, PhX } from '@phosphor-icons/vue';
+import { useAntrianCallStore } from "@/stores/antrian/antrianCall";
+import AnnouncementIcon from "../icons/AnnouncementIcon.vue";
 
 interface userData {
   name: string;
@@ -20,6 +24,7 @@ const emit = defineEmits(["selectedFaskes"]);
 const UseUtilsStore = utilsStore();
 const faskesStore = useFaskesStore();
 const settingStore = useSettingStore();
+const antrianCallStore = useAntrianCallStore();
 
 const faskesPayload = ref<any[]>([]);
 const router = useRouter();
@@ -119,6 +124,56 @@ const isDialogVisible = ref(false);
 const showDialog = () => {
   isDialogVisible.value = true;
 };
+
+const isCardPanggilanVisible = ref(false);
+
+const toggleCardPanggilan = () => {
+  isCardPanggilanVisible.value = !isCardPanggilanVisible.value;
+};
+
+const fetchAntrianData = async () => {
+  await antrianCallStore.getAllAntrianCall();
+};
+
+watch(isCardPanggilanVisible, (newValue) => {
+  if (newValue) {
+    fetchAntrianData();
+  }
+});
+
+const activeTab = ref('aktif');
+
+const filteredPanggilan = computed(() => {
+  const list = antrianCallStore.antrianList;
+  if (!list) return [];
+  
+  switch (activeTab.value) {
+    case 'aktif':
+      return list.filter(p => [0, 1, 3].includes(p.statusPanggilan));
+    case 'terlewat':
+      return list.filter(p => p.statusPanggilan === 2);
+    case 'selesai':
+      return list.filter(p => p.statusPanggilan === 4);
+    default:
+      return [];
+  }
+});
+
+const handlePanggil = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 1);
+};
+
+const handleLewati = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 2);
+};
+
+const handleProses = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 3);
+};
+
+const handleSelesai = async (uuid: string) => {
+  await antrianCallStore.updateAntrianCall(uuid, 4);
+}
 
 const userData = ref<userData>();
 const logout = async () => {
@@ -291,6 +346,18 @@ const isSuperAdmin = getUserRole() === "super admin";
         </div>
       </div>
       <div class="flex justify-between">
+        <svg
+          @click="toggleCardPanggilan"
+          class="relative w-8 aspect-square mr-4 cursor-pointer"
+          viewBox="0 0 27 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13.5333 6.06673H2.86662C2.15937 6.06673 1.4811 6.34768 0.981 6.84778C0.480903 7.34788 0.199951 8.02615 0.199951 8.7334V14.0667C0.199951 14.774 0.480903 15.4523 0.981 15.9523C1.4811 16.4524 2.15937 16.7334 2.86662 16.7334H4.19995V22.0667C4.19995 22.4204 4.34043 22.7595 4.59048 23.0095C4.84052 23.2596 5.17966 23.4001 5.53328 23.4001H8.19995C8.55357 23.4001 8.89271 23.2596 9.14276 23.0095C9.39281 22.7595 9.53329 22.4204 9.53329 22.0667V16.7334H13.5333L20.2 22.0667V0.733398L13.5333 6.06673ZM26.2 11.4001C26.2 13.6801 24.92 15.7467 22.8666 16.7334V6.06673C24.9066 7.06673 26.2 9.1334 26.2 11.4001Z"
+            fill="white"
+          />
+        </svg>
         <img
           loading="lazy"
           src="../../assets/icons/Bell Notification.svg"
@@ -388,5 +455,101 @@ const isSuperAdmin = getUserRole() === "super admin";
         </Dialog>
       </div>
     </div>
+     <Transition name="drawer">
+    <div v-show="isCardPanggilanVisible" class="fixed inset-0 z-50 flex justify-end">
+    <div
+      @click="toggleCardPanggilan"
+      class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+    ></div>
+
+    <div class="relative w-full max-w-lg bg-white h-full flex flex-col shadow-xl">
+      <div class="flex items-center justify-between p-4 border-b">
+        <div class="flex items-center gap-x-2">
+          <AnnouncementIcon :size="24" class="text-[#14B8A6]" />
+          <h2 class="font-bold text-lg text-[#14B8A6]">Panggilan Antrian</h2>
+        </div>
+        <button @click="toggleCardPanggilan" class="text-gray-500 hover:text-gray-800">
+          <PhX :size="20" weight="bold" />
+        </button>
+      </div>
+      <Tabs style="margin-top: 7px;"
+      v-model:value="activeTab"
+      :dt="{
+        tabActiveBackground: '#E8F8F6',
+        tabActiveColor: '#14B8A6',
+        tabActiveBorderColor: '#14B8A6',
+      }"
+    >
+      <TabList :pt="{ tabList: 'h-10 text-SM' }">
+        <Tab
+          class="py-0 px-[10px]"
+          value="aktif"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            Antrian Aktif
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="terlewat"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            Terlewat
+          </div>
+        </Tab>
+        <Tab
+          class="py-0 px-[10px]"
+          value="selesai"
+          :pt="{ root: 'rounded-t-lg' }"
+        >
+          <div class="flex">
+            Selesai
+          </div>
+        </Tab>
+      </TabList>
+    </Tabs>
+      <div class="flex flex-col gap-y-3 p-4 flex-grow overflow-y-auto">
+        <CardPanggilanAdmisi
+        v-for="panggilan in filteredPanggilan"
+        :key="panggilan.uuid"
+        :panggilan="panggilan"
+        @panggil="handlePanggil"
+        @lewati="handleLewati"
+        @proses="handleProses"
+        @selesai="handleSelesai"
+      />
+      </div>
+    </div>
+  </div>
+</Transition>
   </div>
 </template>
+
+<style scoped>
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  & > div:first-child {
+    opacity: 0;
+  }
+  & > div:last-child {
+    transform: translateX(100%);
+  }
+}
+
+.drawer-enter-to,
+.drawer-leave-from {
+  & > div:first-child {
+    opacity: 1;
+  }
+  & > div:last-child {
+    transform: translateX(0);
+  }
+}
+</style>

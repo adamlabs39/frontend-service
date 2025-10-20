@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -13,6 +13,7 @@ import DialogRujukanText from "./DialogRujukanText.vue";
 import { useItemPemeriksaanStore } from "@/stores/datamasterLaboratorium/itemPemeriksaanLab";
 import * as XLSX from "xlsx-js-style";
 import DialogDelete from "../../Layout/DialogDelete.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const addItemDialog = ref(false);
 
@@ -53,6 +54,10 @@ const fetchItemPemeriksaan = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+const hasData = computed(() => {
+  return itemPemeriksaanPayload.value.length > 0;
+});
 
 //  dialog rujukan angka
 const nilaiRujukanAngka = ref(false);
@@ -101,7 +106,8 @@ const editDialog = (item: any) => {
     snomedCT: item.snomedUuid,
     status: item.status,
     statusNilaiRujukan: item.statusNilaiRujukan,
-    pilihanHasilItemPemeriksaans: item.pilihanHasilItemPemeriksaan?.pilihanHasil || [],
+    pilihanHasilItemPemeriksaans:
+      item.pilihanHasilItemPemeriksaan?.pilihanHasil || [],
   });
   tambahDataDialogRef.value.editMode = true;
   tambahDataDialogRef.value.visible = true;
@@ -113,15 +119,18 @@ const submitData = async (payload: any) => {
     const formattedPayload = {
       ...payload,
       categoryPemeriksaanUuid: payload.kategoriPemeriksaan,
-      loincUuid: payload.loinc,
-      icd9Uuid: payload.icd9,
-      snomedUuid: payload.snomedCT,
-      pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || []
+      loincUuid: payload.loinc || null,
+      icd9Uuid: payload.icd9 || null,
+      snomedUuid: payload.snomedCT || null,
+      pilihanHasilItemPemeriksaans: payload.pilihanHasilItemPemeriksaans || [],
     };
 
     let response;
     if (payload.id) {
-      response = await itemPemeriksaanStore.putApi(payload.id, formattedPayload);
+      response = await itemPemeriksaanStore.putApi(
+        payload.id,
+        formattedPayload
+      );
     } else {
       response = await itemPemeriksaanStore.postApi(formattedPayload);
     }
@@ -136,7 +145,6 @@ const submitData = async (payload: any) => {
     UseUtilsStore.setLoading(false);
   }
 };
-
 
 // Delete Data
 const isDeleteDialogVisible = ref(false);
@@ -591,6 +599,7 @@ console.log("jenis input", optionJenisInput.value);
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="itemPemeriksaanPayload"
           tableStyle="min-width: 50rem"
@@ -605,7 +614,12 @@ console.log("jenis input", optionJenisInput.value);
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+                {{
+                  (itemPemeriksaanProperties.page - 1) *
+                    itemPemeriksaanProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>

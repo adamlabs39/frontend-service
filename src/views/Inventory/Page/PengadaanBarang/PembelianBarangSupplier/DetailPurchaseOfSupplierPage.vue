@@ -9,6 +9,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
 import type { MenuItem } from "primevue/menuitem";
 
 const props = defineProps({
@@ -25,6 +26,18 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+// Title Label
+const pageType = ref("");
+const dataBreadCrumb = ref<MenuItem[]>([]);
+
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
+  } else {
+    dataBreadCrumb.value.push({ label: label });
+  }
+};
 
 // State Management
 const PurchasingOfSupplierStore = usePurchasingOfSupplierStore();
@@ -52,6 +65,7 @@ const fetchDetail = async () => {
   }
 };
 
+// Confirm Delete / Cancel Purchase
 const confirmDelete = async () => {
   UseUtilsStore.setLoading(true);
   try {
@@ -68,6 +82,14 @@ const confirmDelete = async () => {
   }
 };
 
+const edit = async () => {  
+  changeSection('Tambah Pembelian')
+};
+
+const closePurchaseOfSupplierPage = () => {
+  dataBreadCrumb.value.pop();
+};
+
 onMounted(() => {
   fetchDetail();
 });
@@ -75,7 +97,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
@@ -90,6 +112,12 @@ onMounted(() => {
                   :model="dataBreadCrumb"
                 />
                 <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <div class="">
+                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
+                    Pembelian Barang Supplier
+                  </p>
+                </div>
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
                 <div class="ml-[10px] mt-[5px]">
                   <CustomChip
                     :label="props.selectedData.noPo"
@@ -97,7 +125,24 @@ onMounted(() => {
                     borderColor="border-adameds-300"
                     bgColor="bg-adameds-300" 
                     textColor="text-white"
-                    customClass="h-7"
+                  />
+                </div>
+                <div v-if="props.selectedData.status == 'cancel'" class="ml-[10px] mt-[5px]">
+                  <CustomChip
+                    label="DIBATALKAN"
+                    :showCheckedIcon="false"
+                    borderColor="border-danger-300"
+                    bgColor="bg-danger-300" 
+                    textColor="text-white"
+                  />
+                </div>
+                <div v-if="props.selectedData.status == 'verifikasi'" class="ml-[10px] mt-[5px]">
+                  <CustomChip
+                    label="DIVERIFIKASI"
+                    :showCheckedIcon="false"
+                    borderColor="border-info-300"
+                    bgColor="bg-info-300" 
+                    textColor="text-white"
                   />
                 </div>
               </div>
@@ -159,7 +204,7 @@ onMounted(() => {
               <!-- Cito -->
               <div>
                 <p class="text-xs font-bold underline underline-offset-2">Cito</p>
-                <p>{{ DetailPayload.cito }}</p>
+                <p>{{ DetailPayload.cito ? 'Ya' : '-' }}</p>
               </div>
               <!-- Catatan -->
               <div>
@@ -168,7 +213,7 @@ onMounted(() => {
               </div>
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
-            <div class="mt-[20px] h-[260px]">
+            <div class="mt-[20px] h-[160px]">
               <DataTable
                 :value="DetailPayload.items"
                 scrollable
@@ -234,7 +279,7 @@ onMounted(() => {
                 </div>
                 <div class="ml-[50px]">
                   <p class="font-bold underline underline-offset-2">PPN 11%</p>
-                  <p>{{ formatPrice(DetailPayload.ppn) }}</p>
+                  <p>{{ formatPrice (DetailPayload.grandTotal * DetailPayload.ppn / 100)  }}</p>
                 </div>
               </div>
               <div class="flex">
@@ -261,8 +306,20 @@ onMounted(() => {
                   </p>
                   <p>{{ DetailPayload.petugasPembuatPo }}</p>
                 </div>
+                <div class="ml-[70px]" v-if="props.selectedData.status == 'cancel' || props.selectedData.status == 'verifikasi'">
+                  <p class="font-bold underline underline-offset-2">
+                    Petugas verifikasi
+                  </p>
+                  <p>{{ DetailPayload.petugasPenerima }}</p>
+                </div>
+                <div class="ml-[70px]" v-if="props.selectedData.status == 'cancel'">
+                  <p class="font-bold underline underline-offset-2">
+                    Alasan Batal
+                  </p>
+                  <p>{{ DetailPayload.alasanBatal }}</p>
+                </div>
               </div>
-              <div class="flex mt-[5px]">
+              <div v-if="props.selectedData.status == 'pending'" class="flex mt-[5px]">
                 <CustomButton
                   @click="batalDialog = true"
                   label="Batal Pembelian"
@@ -272,7 +329,7 @@ onMounted(() => {
                   textColor="text-white"
                 />
                 <CustomButton
-                  @click="batalDialog = true"
+                  @click="edit"
                   label="Ubah Pembelian"
                   class="w-[150px] ml-[20px]"
                   backgroundColor="bg-adameds-300"
@@ -300,8 +357,16 @@ onMounted(() => {
       </template>
     </Card>
 
-    <!-- Dialog Cancel -->
-    <CustomDialog v-model:visible="batalDialog" width="600px" headerBg="bg-danger-300">
+    <AddPurchaseOfSupplier
+      v-else-if="dataBreadCrumb[0].label == 'Tambah Pembelian'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      :DetailPayload="DetailPayload"
+      @back="closePurchaseOfSupplierPage"
+    />
+
+     <!-- Dialog Cancel -->
+     <CustomDialog v-model:visible="batalDialog" width="600px" headerBg="bg-danger-300">
       <template #header>Batal Penjualan</template>
       <template #body>
         <div class="grid grid-cols-1">

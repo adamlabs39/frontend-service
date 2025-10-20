@@ -57,10 +57,6 @@ const fetchKunjungan = async () => {
     if (response && response.payload) {
       kunjunganProperties.value.total = response.payload.pagination.total;
       kunjunganPayload.value = response.payload.data;
-      console.log(
-        "Kunjungan data fetched successfully",
-        kunjunganPayload.value
-      );
     } else {
       kunjunganPayload.value = [];
     }
@@ -185,7 +181,7 @@ const downloadExcel = () => {
           vertical: "center",
           horizontal:
             isTitle || isPeriod
-              ? "left"
+              ? "center"
               : isHeader
               ? "center"
               : C === 11
@@ -193,19 +189,19 @@ const downloadExcel = () => {
               : "left",
         },
         border: {
-          top: { style: "thin", color: { rgb: "5687F5" } },
-          bottom: { style: "thin", color: { rgb: "5687F5" } },
-          left: { style: "thin", color: { rgb: "5687F5" } },
-          right: { style: "thin", color: { rgb: "5687F5" } },
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } },
         },
       };
 
       // Background untuk header
       if (isHeader) {
         cell.s.fill = {
-          fgColor: { rgb: "CCCCCC" },
-          patternType: "solid",
+          fill: { fgColor: { rgb: "000000" } },
         };
+        cell.s.font.color = { rgb: "FFFFFF" };
       }
 
       // Alignment untuk kolom Biaya

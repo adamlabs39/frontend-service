@@ -54,22 +54,41 @@ const admisiRIStore = useAdmisiRIStore();
 const admisiIGDStore = useAdmisiIGDStore();
 const admisiGeneralConsentStore = useAdmisiGeneralConsent();
 const generalConsentStore = useGeneralConsentStore();
+const isEditing = ref(false);
+const emit = defineEmits(["back", "goToDetail", "goToEdit", "cancelEdit" , "closeForm"]);
 
-const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
+const consentText = computed(() => {
+  switch (props.pageType) {
+    case 'rawat-jalan':
+      return 'Rawat Jalan.';
+    case 'rawat-inap':
+      return 'Rawat Inap.';
+    case 'igd':
+      return 'IGD.';
+    default:
+      return 'Tidak Diketahui.';
+  }
+});
+
+const goToEdit = () => {
+  isEditing.value = true
+  emit ('goToEdit')
+}
 
 const confirmSaveDialog = ref(false);
 const inputGeneralConsentDialog = ref(false);
 const generalConsentDialog = ref(false);
 const generalConsentDialogInputType = ref("create");
-
 const selectedGeneralConsent = ref<"Pasien" | "Keluarga">("Pasien");
 const onGeneralConsentTypeSelect = (label: "Pasien" | "Keluarga") => {
   selectedGeneralConsent.value = label;
 };
+const isEditButtonDisabled = computed(() => {
+  return props.pageType === 'rawat-inap' && props.patientData?.tanggalDirawat;
+});
 
 const isDetail = () => {
-  if (props.dataBreadCrumb[0].label == "Detail") return true;
-  else return false;
+  return props.formType === 'detail';
 };
 
 const openedPatientData = ref<any>({});
@@ -85,40 +104,32 @@ const setDetailDoctorVisitData = (patientData: any) => {
     let tempOpenedDoctorVisit = {
       paymentMethod: patientData.paymentMethod,
       jadwalDokterUuid: patientData.jadwalDokterUuid,
-      maternity: patientData.maternity,
+      maternity: patientData.maternity ?? false,
       complaint: patientData.complaint,
       note: patientData.note,
       insurance: patientData.insurance,
       practitionerUuid: patientData.practitionerUuid,
+      lokasiUuid: patientData.lokasiUuid,
     };
     if (props.pageType == "rawat-jalan") {
-      delete tempOpenedDoctorVisit.practitionerUuid;
+      // delete tempOpenedDoctorVisit.practitionerUuid;
     } else {
       delete tempOpenedDoctorVisit.jadwalDokterUuid;
     }
     openedDoctorVisitData.value = tempOpenedDoctorVisit;
   }
   if (props.pageType == "rawat-inap") {
-    openedDoctorVisitData.value = {
-      paymentMethod: patientData.paymentMethod,
-      practitionerUuid: patientData.practitionerUuid,
-      complaint: patientData.complaint,
-      familyBill: patientData.familyBill,
-      maternity: patientData.maternity,
-      entrustedPatient: patientData.entrustedPatient,
-      upgradeClass: patientData.upgradeClass,
-      previousBill: patientData.previousBill,
-      insurance: patientData.insurance,
-      noSpri: patientData.noSpri,
-      // FIXME Belum ada
-      kategoriRuanganUuid: patientData.monitoringRoom.kategoriRuanganUuid,
-      roomClass: patientData.monitoringRoom.roomClass,
-      roomUuid: patientData.monitoringRoom.roomUuid,
-      monitoringRoomUuid: patientData.monitoringRoomUuid,
-      spareBed: patientData.spareBed,
-      boxBaby: patientData.boxBaby,
-      statusRi: patientData.statusRi,
-    };
+    let finalDataToPass = { ...patientData };
+
+    if (patientData.monitoringRoom && patientData.monitoringRoom.room) {
+      const roomData = patientData.monitoringRoom.room;
+
+      finalDataToPass.kategoriRuanganUuid = roomData.kategoriRuangan?.uuid;
+      finalDataToPass.roomUuid = roomData.uuid;
+      finalDataToPass.roomClassName = roomData.className;
+      finalDataToPass.monitoringRoomUuid = patientData.monitoringRoom.uuid;
+    }
+    openedDoctorVisitData.value = finalDataToPass;
   }
 };
 
@@ -134,6 +145,7 @@ const fetchDetailPatientData = async () => {
       response = await admisiIGDStore.getDetailIGD(props.patientData.uuid);
     }
     if (response && response.payload) {
+      fullVisitData.value = response.payload;
       openedPatientData.value = response.payload.patient;
       openedPatientData.value.withoutIdentity =
         response.payload.withoutIdentity;
@@ -150,6 +162,83 @@ const fetchDetailPatientData = async () => {
   } finally {
     storeUtils.setLoading(false);
   }
+};
+
+const fullVisitData = ref<any>({});
+
+const handlePrintPatientVisit = async () => {
+  if (props.pageType !== 'rawat-jalan') return;
+  if (!openedPatientData.value.uuid) {
+    await fetchDetailPatientData();
+  }
+  const patientIdentityData = openedPatientData.value;
+  const visitDetailData = fullVisitData.value;
+
+
+  const completeVisitData = {
+    queueNumber: visitDetailData.noAntrianPoli || '-',
+    qrCodeData: visitDetailData.bookingCode || visitDetailData.uuid,
+    doctorName: visitDetailData.practitioner.pegawai.nama || '-',
+    poliName: visitDetailData.lokasi?.name || '-',
+    patientType: visitDetailData.insurance
+      ? `ASURANSI (${visitDetailData.insurance.name || 'BPJS'})`
+      : 'TUNAI',
+    insuranceNumber: visitDetailData.insurance?.accountNumber || '-',
+    sepNumber: visitDetailData.sep || '-',
+    patient: {
+      ...patientIdentityData,
+      patientAge: patientIdentityData.patientAge || `${patientIdentityData.birthDetail?.ageYear || 0} Thn, ${patientIdentityData.birthDetail?.ageMonth || 0} Bln, ${patientIdentityData.birthDetail?.ageDay || 0} Hri`,
+      gender: patientIdentityData.gender || '-',
+    },
+  };
+  
+  const faskesProfileString = localStorage.getItem('faskes_profile');
+  const faskesProfileData = faskesProfileString ? JSON.parse(faskesProfileString) : {};
+  createPatientVisit({ visitData: completeVisitData, clinicProfile: faskesProfileData });
+};
+
+const handlePrintPatientLabel = async () => {
+  const visitDetailData = fullVisitData.value;
+  const patientIdentityData = visitDetailData.patient;
+
+  if (!visitDetailData || !patientIdentityData) {
+    console.error("Data pasien tidak ditemukan untuk mencetak label.");
+    return;
+  }
+
+  const labelData = {
+    patientName: patientIdentityData.name,
+    noRm: patientIdentityData.noRm,
+    noReg: visitDetailData.noReg,
+    birthDate: patientIdentityData.birthDetail?.birthDate,
+    patientAge: `${patientIdentityData.birthDetail?.ageYear || 0} Thn, ${patientIdentityData.birthDetail?.ageMonth || 0} Bln, ${patientIdentityData.birthDetail?.ageDay || 0} Hri`,
+    gender: patientIdentityData.gender,
+    address: patientIdentityData.address?.fullAddress,
+  };
+
+  await createPatientLabel({ labelData: labelData });
+};
+
+const handlePrintPatientBracelet = async () => {
+  const visitDetailData = fullVisitData.value;
+  const patientIdentityData = visitDetailData.patient;
+
+  if (!visitDetailData || !patientIdentityData) {
+    console.error("Data pasien tidak ditemukan untuk mencetak gelang.");
+    return;
+  }
+
+  const braceletData = {
+    patientName: patientIdentityData.name,
+    gender: patientIdentityData.gender,
+    noRm: patientIdentityData.noRm,
+    birthDate: patientIdentityData.birthDetail?.birthDate,
+    ageYear: patientIdentityData.birthDetail?.ageYear,
+    birthPlace: patientIdentityData.address?.fullAddress || '',
+    doctorName: `${visitDetailData.practitioner?.pegawai?.firstTitle || ''} ${visitDetailData.practitioner?.pegawai?.nama || ''}`.trim(),
+  };
+
+  await createPatientBracelet({ braceletData: braceletData });
 };
 
 // NOTE Patient form
@@ -192,6 +281,29 @@ const closeRegisterForm = () => {
   emit("back");
 };
 
+const ResetsForm = () => {
+  if (patientIdentityFormRJ.value) {
+    patientIdentityFormRJ.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormRI.value) {
+    patientIdentityFormRI.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (patientIdentityFormIGD.value) {
+    patientIdentityFormIGD.value.onResetForm();
+    openedPatientData.value = {};
+  }
+  if (doctorVisitDetail.value) {
+    doctorVisitDetail.value.onResetForm();
+    openedDoctorVisitData.value = {};
+  }
+  if (visitRoomDetail.value) {
+    visitRoomDetail.value.onResetForm();
+    openedDoctorVisitData.value = {};
+  }
+};
+
 const postRegisterPatient = async () => {
   let tempPatientData: any;
   let tempDocterVisitData: any;
@@ -209,8 +321,6 @@ const postRegisterPatient = async () => {
   } else {
     tempDocterVisitData = await doctorVisitDetail.value?.onSubmit();
   }
-  console.log("tempPatientData", tempPatientData);
-  console.log("tempDocterVisitData", tempDocterVisitData);
 
   if (tempPatientData && tempDocterVisitData) {
     let tempBirthDate = formatDate(
@@ -227,21 +337,22 @@ const postRegisterPatient = async () => {
     try {
       let response;
       if (props.pageType == "rawat-jalan") {
-        if (props.formType == "add") {
+      if (props.formType == "add" && props.dataBreadCrumb[0].label !== 'Checkin') {
           response = await admisiRJStore.registRJ(payload);
         } else {
           response = await admisiRJStore.updateRJ(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
       } else if (props.pageType == "rawat-inap") {
         payload.isNewborn = tempPatientData.isNewBorn;
+        payload.multipleBirth = tempPatientData.multipleBirth;
         if (props.formType == "add") {
           response = await admisiRIStore.registNewBorn(payload);
         } else {
           response = await admisiRIStore.updateRI(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
@@ -253,17 +364,18 @@ const postRegisterPatient = async () => {
           response = await admisiIGDStore.registIGD(payload);
         } else {
           response = await admisiIGDStore.updateIGD(
-            props.patientData.uuid,
+            fullVisitData.value.uuid || props.patientData.uuid,
             payload
           );
         }
       }
       if (response && response.payload) {
+        fullVisitData.value = response.payload;
         openedPatientData.value = response.payload.patient;
 
         setDetailDoctorVisitData(response.payload);
       }
-      emit("goToDetail");
+       emit("goToDetail", response.payload);
     } catch (error) {
       console.error("Failed to process the data:", error);
     } finally {
@@ -271,6 +383,8 @@ const postRegisterPatient = async () => {
     }
   }
 };
+
+const selectedIsiSurat = ref<string>("");
 
 const registPatient = async (type: string) => {
   if (type == "lewati") {
@@ -280,6 +394,7 @@ const registPatient = async (type: string) => {
   }
   confirmSaveDialog.value = false;
   inputGeneralConsentDialog.value = false;
+  storeUtils.setLoading(false);
 };
 
 // NOTE General Consent
@@ -332,44 +447,59 @@ const [familyDataGender] = defineField("familyData.gender");
 const [familyDataRelationship] = defineField("familyData.relationship");
 const [name] = defineField("name");
 
+
 const onSubmitGeneralConsent = submitGeneralConsent(async (values) => {
   storeUtils.setLoading(true);
-  try {
-    if (props.formType == "add") {
-      await postRegisterPatient();
-    }
+try {
 
-    values.familyData = Object.keys(values.familyData).length
-      ? values.familyData
-      : (null as any);
-    const tempGeneralConsentData = createGeneralConsentPdf({
-      data: selectedDataGeneralConsent.value.isiSurat,
-      patientData: openedPatientData.value,
-      familyData: values.familyData,
-    });
-    values.generalConsent = await new Promise((resolve, reject) => {
-      tempGeneralConsentData.getBase64((base64) => {
-        if (base64) {
-          resolve(base64);
-        } else {
-          reject("Gagal mendapatkan Base64 dari dokumen PDF.");
-        }
-      });
-    });
-    values.name = selectedDataGeneralConsent.value.name;
-    await admisiGeneralConsentStore.createGeneralConsent(
-      openedPatientData.value.uuid,
-      values
-    );
-    inputGeneralConsentDialog.value = false;
-  } catch (error) {
-    console.error("Failed to post data", error);
-  } finally {
-    storeUtils.setLoading(false);
+  if (props.formType == "add") {
+    await postRegisterPatient();
   }
+
+  values.familyData = Object.keys(values.familyData).length
+    ? values.familyData
+    : (null as any);
+
+  const tempGeneralConsentData = createGeneralConsentPdf({
+    data: selectedIsiSurat.value,
+    patientData: openedPatientData.value,
+    familyData: values.familyData,
+  });
+
+  values.generalConsent = await new Promise((resolve, reject) => {
+    tempGeneralConsentData.getBase64((base64) => {
+      if (base64) {
+        resolve(base64);
+      } else {
+        reject("Gagal mendapatkan Base64 dari dokumen PDF.");
+      }
+    });
+  });
+
+  values.name = selectedDataGeneralConsent.value?.name || "";
+
+  await admisiGeneralConsentStore.createGeneralConsent(
+    openedPatientData.value.uuid,
+    values
+  );
+
+
+  inputGeneralConsentDialog.value = false;
+} catch (error) {
+  console.error("❌ Gagal saat proses general consent:", error);
+} finally {
+  storeUtils.setLoading(false);
+}
 });
 
-const listDatamasterGeneralConsent = ref([]);
+
+interface GeneralConsentItem {
+  uuid: string;
+  name: string;
+  isiSurat: string;
+  status: boolean;
+}
+const listDatamasterGeneralConsent = ref<GeneralConsentItem[]>([]);
 const fetchListGeneralConsent = async () => {
   try {
     storeUtils.setLoading(true);
@@ -387,11 +517,13 @@ const fetchListGeneralConsent = async () => {
   }
 };
 
-const selectedDataGeneralConsent = ref();
+const selectedDataGeneralConsent = ref<GeneralConsentItem | undefined>();
 const setSelectedGeneralConsent = (uuid: string) => {
-  selectedDataGeneralConsent.value = listDatamasterGeneralConsent.value.find(
+  const found = listDatamasterGeneralConsent.value.find(
     (gc: any) => gc.uuid == uuid
   );
+  selectedDataGeneralConsent.value = found;
+  selectedIsiSurat.value = found?.isiSurat || "";
 };
 
 const listOpenedPatientGeneralConsent = ref<any[]>([]);
@@ -515,15 +647,16 @@ const deleteGeneralConsent = async () => {
               </div>
             </template>
           </CustomBreadCrumb>
+          <!-- batal edit -->
           <div class="flex">
             <CustomButton
-              @click="closeRegisterForm"
-              icon="PhCaretLeft"
-              label="Kembali"
-              class="mr-[10px]"
-              outlined
-              borderColor="border-adameds-300"
-              textColor="text-adameds-300"
+                @click="closeRegisterForm"
+                :icon="formType === 'edit' ? undefined : 'PhCaretLeft'"
+                :label="formType === 'edit' ? 'Batal Edit' : 'Kembali'"
+                class="mr-[10px]"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
             />
             <CustomButton
               v-if="isDetail()"
@@ -531,6 +664,8 @@ const deleteGeneralConsent = async () => {
               label="Edit"
               class="mr-[10px]"
               backgroundColor="bg-adameds-300"
+              :disabled="isEditButtonDisabled"  
+              :title="isEditButtonDisabled ? 'Pasien sudah dirawat dan tidak dapat diubah' : ''"
             />
           </div>
         </div>
@@ -580,27 +715,28 @@ const deleteGeneralConsent = async () => {
         :doctorVisitData="openedDoctorVisitData"
       />
     </div>
-    <Card class="h-min mt-[10px] absolute bottom-0 right-0 left-0">
+    <Card class="h-min mt-[10px] absolute z-10 bottom-0 right-0 left-0">
       <template #content>
         <div v-if="isDetail()" class="flex">
           <CustomButton
-            v-if="pageType == 'rawat-jalan'"
-            @click="createPatientVisit({ data: '' })"
+             v-if="pageType == 'rawat-jalan' && isDetail()"
+            @click="handlePrintPatientVisit"
             icon="PhPrinter"
             label="Cetak Kunjungan"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            v-else
-            @click="createPatientBracelet({ data: '' })"
+            v-else-if="isDetail()"
+            @click="handlePrintPatientBracelet"
             icon="PhPrinter"
             label="Cetak Gelang"
             class="mr-[10px]"
             backgroundColor="bg-adameds-300"
           />
           <CustomButton
-            @click="createPatientLabel({ data: '' })"
+            v-if="isDetail()"
+            @click="handlePrintPatientLabel"
             icon="PhPrinter"
             label="Cetak Label"
             class=""
@@ -616,6 +752,7 @@ const deleteGeneralConsent = async () => {
         </div>
         <div v-else class="flex justify-end">
           <CustomButton
+            @click="ResetsForm"
             label="Reset"
             class="mr-[10px]"
             outlined
@@ -655,7 +792,7 @@ const deleteGeneralConsent = async () => {
         <div class="mt-5">
           <div class="mb-2">
             Pasien belum menyetujui
-            <span class="font-bold">General Consent - Rawap Inap.</span>
+            <span class="font-bold">General Consent - {{ consentText }}</span>
           </div>
           <div>
             Membuat kesepakatan <span class="font-bold">General Consent?</span>

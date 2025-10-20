@@ -4,8 +4,10 @@ import { linkType } from "@/utils/Enum";
 import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import dialogStokView from "@/views/Stok/StokView.vue";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import CustomSelect from "../Base/CustomSelect.vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -25,12 +27,31 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-
   showStockBtn: {
     type: Boolean,
     default: false,
   },
 });
+
+// State Management Stock Location
+const StockLocationStore = useStockLocationStore();
+const StockLocationPayload = ref<any[]>([]);
+
+// Fetch Stock Location
+const fetchStockLocation = async () => {
+  try {
+    const response = await StockLocationStore.getApi();
+
+    if (response && response.payload) {
+      StockLocationPayload.value = response.payload;
+    } else {
+      StockLocationPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    StockLocationPayload.value = [];
+  }
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -82,6 +103,12 @@ const getSVG = (svg: string) => {
   ).href;
   return imgUrl;
 };
+
+onMounted(() => {
+  if (props.sidebarTitle === "Inventory") {
+    fetchStockLocation();
+  }
+});
 </script>
 
 <template>
@@ -115,6 +142,17 @@ const getSVG = (svg: string) => {
 
         <!-- body -->
         <div class="overflow-auto">
+          <hr v-if="props.sidebarTitle === 'Inventory'" />
+          <div v-if="props.sidebarTitle === 'Inventory'">
+            <CustomSelect
+              place-holder="Pilih Lokasi Stok"
+              :showLabel="false"
+              optionLabel="name"
+              optionValue="uuid"
+              :options="StockLocationPayload"
+              class="mb-[20px] mt-[20px]"
+            />
+          </div>
           <div
             v-for="(section, index) in props.sidebarBodyList"
             class="text-SM"
@@ -233,7 +271,7 @@ const getSVG = (svg: string) => {
       </div>
       <div
         v-if="showStockBtn && showSidebar"
-        class="flex flex-none justify-center w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
+        class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
         @click="DialogStokView = true"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />

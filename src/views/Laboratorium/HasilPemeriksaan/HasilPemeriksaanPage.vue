@@ -14,7 +14,12 @@ import NoData from "@/components/section/NoData.vue";
 import DetailHasilPemeriksaanPage from "./DetailHasilPemeriksaanPage.vue";
 import { useHasilPemeriksaanLab } from "@/stores/Laboratorium/hasilPemeriksaan";
 import { utilsStore } from "@/stores/utils";
-import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -56,6 +61,8 @@ const fetchHasilPemeriksaan = async () => {
       page: hasilPemeriksaanProperties.value.page,
       limit: hasilPemeriksaanProperties.value.page_size,
       search: searchQuery.value,
+      startDate: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
     };
 
     if (selectedOrderType.value === "Periksa") {
@@ -165,9 +172,12 @@ const searchData = () => {
 
 // Filter Reset Data
 const resetData = () => {
+    let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
   searchQuery.value = "";
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   selectedPaymentMethod.value = [];
   fetchHasilPemeriksaan();
 };
@@ -179,6 +189,12 @@ const handlePage = (event: any) => {
 };
 
 onMounted(async () => {
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   await fetchHasilPemeriksaan();
 });
 </script>

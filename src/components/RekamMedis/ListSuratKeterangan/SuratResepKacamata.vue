@@ -10,6 +10,13 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
+
 const tabs = ref([
   { title: "Pro login quitat", value: "0" },
   { title: "Pro Domo", value: "1" },
@@ -65,7 +72,7 @@ const schema = toTypedSchema(
   }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -115,8 +122,8 @@ const itemsPoli = ref(["Poli Gigi", "Poli Mata", "Poli Anak"]);
 const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -129,6 +136,16 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   submitForm,

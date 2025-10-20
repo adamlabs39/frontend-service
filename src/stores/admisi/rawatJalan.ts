@@ -54,6 +54,7 @@ export const useAdmisiRJStore = defineStore({
       return apiAdmisiDelete("/rawat-jalan/cancel", payload);
     },
     // FIXME Dummy
+    // JADWAL YANG HARUS DIGANTI
     async getListJadwalDokter(payload = {}) {
       return apiAdmisiGet(`/rawat-jalan/jadwal-dokter`, payload);
     },

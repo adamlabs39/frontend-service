@@ -57,10 +57,10 @@ const umurAtasTahun = ref(0);
 const umurAtasBulan = ref(0);
 const umurAtasHari = ref(0);
 const jenisKelamin = ref("");
-const batasBawahNilaiNormal = ref(0);
-const batasAtasNilaiNormal = ref(0);
-const kritisBawah = ref(0);
-const kritisAtas = ref(0);
+const batasBawahNilaiNormal = ref();
+const batasAtasNilaiNormal = ref();
+const kritisBawah = ref();
+const kritisAtas = ref();
 const optionJenisKelamin = ref([
   { label: "Laki-laki", value: "Male" },
   { label: "Perempuan", value: "Female" },
@@ -221,10 +221,10 @@ const resetForm = () => {
   umurAtasTahun.value = 0;
   umurAtasBulan.value = 0;
   umurAtasHari.value = 0;
-  batasBawahNilaiNormal.value = 0;
-  batasAtasNilaiNormal.value = 0;
-  kritisBawah.value = 0;
-  kritisAtas.value = 0;
+  batasBawahNilaiNormal.value = null;
+  batasAtasNilaiNormal.value = null;
+  kritisBawah.value = null;
+  kritisAtas.value = null;
   operator.value = "-";
   operatorKritisBawah.value = "<";
   operatorKritisAtas.value = ">";
@@ -535,6 +535,7 @@ watch(
             v-if="showBatasAtas"
             v-model="batasAtasNilaiNormal"
             label="Batas Atas"
+            placeholder="Batas Atas"
             type="number"
             class="w-[33%]"
           />
@@ -545,6 +546,7 @@ watch(
           <CustomInputNumber
             v-model="kritisBawah"
             label="Kritis Bawah"
+            placeholder="Kritis Bawah"
             type="number"
             class="w-[50%]"
           />
@@ -563,6 +565,7 @@ watch(
           <CustomInputNumber
             v-model="kritisAtas"
             label="Kritis Atas"
+            placeholder="Kritis Atas"
             type="number"
             class="w-[50%]"
           />
