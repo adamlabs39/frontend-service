@@ -12,6 +12,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DialogAlkes from "./DialogAlkesPage.vue";
 import DialogCancel from "./DialogCancelOrderPage.vue";
 import DialogMoving from "./DialogMovingLocationPage.vue";
+import { createOrderAlkesPdf } from "@/utils/pdf/pdfOrderAlkes";
 
 const props = defineProps({
   payloadDetail: {
@@ -197,6 +198,10 @@ watch(
 );
 
 console.log("payloadDetail", props.payloadDetail);
+
+const printOrderAlkes = () => {
+  createOrderAlkesPdf(props.payloadDetail);
+};
 
 // onMounted(() => {
 //   fetchMedicalItem();
@@ -514,7 +519,7 @@ console.log("payloadDetail", props.payloadDetail);
               class=""
               @click="openMovingLocationDialog(payloadDetail)"
             />
-            <CustomButton @click="cetakDialog = true">
+            <CustomButton @click="printOrderAlkes">
               <div class="flex gap-2 items-center">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
