@@ -15,6 +15,7 @@ import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { epochToDate } from "@/utils/Helpers";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -45,13 +46,13 @@ const currentMethod = ref(props.method);
 const modeChat = ref("Add");
 
 const messages = ref<any[]>([]);
+const petugasInput = ref<string>("-");
+const createdAt = ref<number | null>(null);
 
 const schemaCatatanPerawat = computed(() =>
-  toTypedSchema(
-    yup.object({
-      catatanPerawat: yup.string(),
-    })
-  )
+  yup.object({
+    catatanPerawat: yup.string(),
+  })
 );
 
 const {
@@ -106,12 +107,7 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
         if (response && response.payload) {
           rekamMedisStore.setAsesmentRekamMedisData(response.payload);
           resetForm();
-          const responseCatatan = await rekamMedisStore.getCatatan(
-            props.sessionUuid
-          );
-          if (responseCatatan && responseCatatan.payload) {
-            messages.value = responseCatatan.payload;
-          }
+          await setFormData();
         }
       } catch (error) {
         console.error("Failed to post data", error);
@@ -144,7 +140,7 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
       emit("edit", newReplyMessage);
       resetForm();
     }
-    modeChat.value = "";
+    modeChat.value = "Add";
     replyMessageRole.value = null;
     editMessageRole.value = null;
     editMessageIndex.value = null;
@@ -152,12 +148,30 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
 );
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.catatanPerawat) {
+  if (!props.sessionUuid) {
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+    resetForm();
+    return;
+  }
+  try {
     const responseCatatan = await rekamMedisStore.getCatatan(props.sessionUuid);
     if (responseCatatan && responseCatatan.payload) {
-      messages.value = responseCatatan.payload;
+      messages.value = responseCatatan.payload.data || [];
+      petugasInput.value = responseCatatan.payload.petugas || "-";
+      createdAt.value = responseCatatan.payload.createdAt || null;
+    } else {
+      messages.value = [];
+      petugasInput.value = "-";
+      createdAt.value = null;
     }
-  } else resetForm();
+  } catch (error) {
+    console.error("Gagal mengambil catatan perawat:", error);
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+  }
 };
 
 onBeforeMount(() => {
@@ -323,6 +337,12 @@ defineExpose({
                 />
             </div>
         </div>
+        
+        <div v-if="currentMethod === 'detail'" class="flex flex-col gap-[19px] py-2">
+          <hr class="border-grey-200 my-2.5" />
+          <CustomInfoRow label="Petugas Input" :value="petugasInput" />
+          <CustomInfoRow label="Jam Input" :value="createdAt ? String(epochToDate(createdAt, 'time')) : '-'" />
+        </div>
       </div>
 
       <CustomDialog class="" v-model:visible="compareDialog" width="80%" noScroll>
@@ -430,7 +450,27 @@ defineExpose({
           </template>
       </CustomDialog>
     </template>
-    <template #footer v-if="currentMethod == 'detail'">
-      </template>
+    
+    <template #footer>
+      <div v-if="currentMethod == 'detail'" class="flex items-end justify-end gap-3">
+          <CustomButton
+            @click="emit('editAsesmen')"
+            label="Edit"
+          />
+        </div>
+      <div v-else class="flex items-end justify-end gap-3">
+        <CustomButton
+            @click="resetForm"
+            label="Reset"
+            textColor="text-[#9DA4B1]"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-[#9DA4B1]"
+          />
+        <CustomButton
+          @click="onSubmitCatatanPerawat"
+          label="Simpan"
+        />
+      </div>
+    </template>
   </CustomAccordion>
 </template>

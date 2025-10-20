@@ -14,6 +14,7 @@ import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { epochToDate } from "@/utils/Helpers";
 import { PhCaretLeft, PhCaretRight, PhCalendarDots, PhClock, PhPaperPlaneTilt } from "@phosphor-icons/vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -42,7 +43,9 @@ const props = defineProps({
 const isEditing = ref(props.method === "form");
 const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
-const messages = ref<any>([]);
+const messages = ref<any[]>([]);
+const petugasInput = ref<string>("-");
+const createdAt = ref<number | null>(null);
 
 const schema = yup.object({
   instruksi: yup.string().required("Instruksi Medis tidak boleh kosong"),
@@ -67,12 +70,7 @@ const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
     if (response && response.payload) {
       rekamMedisStore.setAsesmentRekamMedisData(response.payload);
       resetForm();
-      const responseInstruksi = await rekamMedisStore.getInstruksi(
-        props.sessionUuid
-      );
-      if (responseInstruksi && responseInstruksi.payload) {
-        messages.value = responseInstruksi.payload;
-      }
+      await setFormData();
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -95,15 +93,35 @@ const fetchPraktisi = async () => {
 };
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.instruksiMedis) {
+  if (!props.sessionUuid) {
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+    resetForm();
+    return;
+  }
+
+  try {
     const responseInstruksi = await rekamMedisStore.getInstruksi(
       props.sessionUuid
     );
     if (responseInstruksi && responseInstruksi.payload) {
-      messages.value = responseInstruksi.payload;
+      messages.value = responseInstruksi.payload.data || [];
+      petugasInput.value = responseInstruksi.payload.petugas || "-";
+      createdAt.value = responseInstruksi.payload.created_at || null;
+    } else {
+      messages.value = [];
+      petugasInput.value = "-";
+      createdAt.value = null;
     }
-  } else resetForm();
+  } catch (error) {
+     console.error("Gagal mengambil instruksi medis:", error);
+     messages.value = [];
+     petugasInput.value = "-";
+     createdAt.value = null;
+  }
 };
+
 
 onBeforeMount(() => {
   setFormData();
@@ -126,7 +144,6 @@ const filterOptions = ref([
 ]);
 const selectedFilter = ref("semua");
 
-// Fungsi baru untuk mengambil data riwayat
 const fetchHistoryData = async () => {
   try {
     storeUtils.setLoading(true);
@@ -139,7 +156,7 @@ const fetchHistoryData = async () => {
 
     if (response && response.payload) {
       historyData.value = response.payload;
-      historyPageIndex.value = 0; // Selalu reset paginasi saat data baru dimuat
+      historyPageIndex.value = 0;
     } else {
       historyData.value = null;
     }
@@ -152,11 +169,10 @@ const fetchHistoryData = async () => {
 };
 
 const showDialogCompare = async () => {
-  await fetchHistoryData(); // Panggil fungsi baru saat dialog dibuka
+  await fetchHistoryData();
   compareDialog.value = true;
 };
 
-// Panggil ulang API setiap kali filter berubah
 watch(selectedFilter, async (newValue, oldValue) => {
     if (compareDialog.value && newValue !== oldValue) {
         await fetchHistoryData();
@@ -223,7 +239,7 @@ defineExpose({ open, close });
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokterName }})
+                {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokter_name }})
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
@@ -280,9 +296,10 @@ defineExpose({ open, close });
             </CustomButton>
           </div>
         </div>
-
-        <div v-if="!isEditing" class="flex items-end justify-end gap-3">
-          <CustomButton label="Edit" @click="emit('editAsesmen')" />
+        
+        <div v-if="!isEditing" class="flex flex-col gap-[19px] py-2">
+          <CustomInfoRow label="Petugas Input" :value="petugasInput" />
+          <CustomInfoRow label="Jam Input" :value="String(epochToDate(createdAt ?? 0, 'time'))" />
         </div>
       </div>
 
@@ -337,7 +354,7 @@ defineExpose({ open, close });
                   <div class="flex flex-col gap-2.5 w-full">
                     <div class="flex w-full gap-5">
                       <div class="font-semibold text-adameds-300 text-SM">
-                        {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokterName }})
+                        {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokter_name }})
                       </div>
                       <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                         <div class="flex items-center gap-[2px]">

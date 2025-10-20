@@ -142,5 +142,29 @@ export const useRekamMedisStore = defineStore({
         payload
       )
     },
+    async getBerkas ({ rekamMedisUuid = "" }, payload = {})
+    {
+      return apiRekamMedisGet(`/pelayanan/files?rekam_medis_uuid=${rekamMedisUuid}`, payload);
+    },
+    async getSurat ({ rekamMedisUuid = "" }, payload = {})
+    {
+      return apiRekamMedisGet(`/pelayanan/files/letters?rekam_medis_uuid=${rekamMedisUuid}`, payload);
+    },
+    async createFiles (payload = {})
+    {
+      return apiRekamMedisPost("/pelayanan/files", payload);
+    },
+    async deleteFiles (payload = {})
+    {
+      return apiRekamMedisDelete("/pelayanan/files", payload);
+    },
+    async updateFiles (payload = {})
+    {
+      return apiRekamMedisPut("/pelayanan/files", payload);
+    },
+    async GenerateNS ({ type = "" }, payload = {})
+    {
+      return apiRekamMedisGet(`/pelayanan/files/generate-code?type=${type}`, payload);
+    },
   },
 });

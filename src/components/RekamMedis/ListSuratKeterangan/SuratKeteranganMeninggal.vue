@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -9,6 +9,15 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { utilsStore } from "@/stores/utils";
+
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
 
 const schema = toTypedSchema(
   yup.object({
@@ -24,7 +33,7 @@ const schema = toTypedSchema(
   }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -54,11 +63,41 @@ const itemsPenyebabKematian = ref([
   "Cedera Kecelakaan Lainnya",
   "Lain-Lain",
 ]);
-const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
+const doctorOptions = ref<any[]>([]);
+
+const praktisiStore = usePraktisiStore();
+const UseUtilsStore = utilsStore();
+
+const loadDropdownData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const params = {
+      page: 1,
+      limit: 9999,
+      name: "",
+      isDoctor: true,
+    };
+    const response = await praktisiStore.getApi(params);
+    if (response && response.payload) {
+      doctorOptions.value = response.payload;
+    } else {
+      doctorOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data dokter:", error);
+    doctorOptions.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  loadDropdownData();
+});
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -71,6 +110,16 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   submitForm,
@@ -118,9 +167,9 @@ defineExpose({
           v-model="dokter"
           place-holder="Pilih Dokter Yang Menyatakan Meninggal"
           class="col-span-6"
-          :options="itemsDokter"
-          option-label=""
-          option-value=""
+          :options="doctorOptions"
+          option-label="pegawai.name"
+          option-value="uuid"
           :invalid="!!errors.dokter"
           :invalidMessage="errors.dokter"
         />
